@@ -1531,6 +1531,65 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     except Exception as _cit_e:
         logger.warning(f"  CIT vote error (non-fatal): {_cit_e}")
 
+    # 4d. Capital Deployment Review
+    # Board checks current deployment level against the firm's minimum target (50%).
+    # If under-deployed, board issues a formal DEPLOY_MORE directive logged in the
+    # meeting minutes and surfaced to the PDO and Manager Agent next cycle.
+    logger.info("\n  Step 4d/6: Capital Deployment Review...")
+    try:
+        from alpaca_trader import AlpacaTrader as _AT
+        from config import MIN_DEPLOYMENT_PCT, TARGET_DEPLOYMENT_PCT
+        _acct       = _AT().get_account()
+        _port_val   = _acct.get("portfolio_value", 0)
+        _cash       = _acct.get("cash", 0)
+        _deployed   = (_port_val - _cash) / _port_val if _port_val > 0 else 0
+        _deployed_pct = _deployed * 100
+
+        logger.info(
+            f"  Portfolio: ${_port_val:,.0f} | Cash: ${_cash:,.0f} | "
+            f"Deployed: {_deployed_pct:.1f}% (target: {TARGET_DEPLOYMENT_PCT*100:.0f}%)"
+        )
+
+        if _deployed < MIN_DEPLOYMENT_PCT:
+            logger.warning(
+                f"  ⚠ CAPITAL DEPLOYMENT ALERT: Only {_deployed_pct:.1f}% deployed — "
+                f"below the firm minimum of {MIN_DEPLOYMENT_PCT*100:.0f}%. "
+                f"Board issues DEPLOY_MORE directive for next pipeline cycle."
+            )
+            # Write deployment directive to PDO signal file so Manager Agent
+            # picks it up next cycle with loosened buy thresholds
+            import json as _jd, os as _osd
+            _pdo_path = "data/capital_efficiency_report.json"
+            _pdo_data = {}
+            if _osd.path.exists(_pdo_path):
+                try:
+                    with open(_pdo_path) as _f:
+                        _pdo_data = _jd.load(_f)
+                except Exception:
+                    pass
+            _pdo_data["pdo_signal"]    = "DEPLOY_MORE"
+            _pdo_data["board_override"] = True
+            _pdo_data["board_note"]    = (
+                f"Board capital deployment review ({datetime.now().strftime('%Y-%m-%d')}): "
+                f"only {_deployed_pct:.1f}% deployed vs {TARGET_DEPLOYMENT_PCT*100:.0f}% target. "
+                f"Manager Agent instructed to actively deploy capital next cycle."
+            )
+            _pdo_data["generated_at"]  = datetime.now().isoformat()
+            with open(_pdo_path, "w") as _f:
+                _jd.dump(_pdo_data, _f, indent=2, default=str)
+            logger.info("  ✓ DEPLOY_MORE directive written to PDO signal file")
+        elif _deployed < TARGET_DEPLOYMENT_PCT:
+            logger.info(
+                f"  ℹ Deployment {_deployed_pct:.1f}% — below target but above minimum. "
+                f"No emergency directive issued; normal PDO guidance applies."
+            )
+        else:
+            logger.info(
+                f"  ✓ Deployment {_deployed_pct:.1f}% — at or above target. No action needed."
+            )
+    except Exception as _dep_e:
+        logger.warning(f"  Capital deployment review error (non-fatal): {_dep_e}")
+
     # 5. Implement trades
     logger.info(f"\n  Step 5/6: Manager Agent implementing decisions "
                 f"{'[DRY RUN]' if dry_run else '[LIVE]'}...")

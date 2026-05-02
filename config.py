@@ -32,13 +32,19 @@ EMAIL_RECIPIENT    = _os.getenv("EMAIL_RECIPIENT",    "jack.beard07@gmail.com")
 GMAIL_APP_PASSWORD = _os.getenv("GMAIL_APP_PASSWORD", "vaje mgnh jhtm kknf")
 
 # --- TRADING PARAMETERS ---
-STARTING_CAPITAL       = 500.00       # USD — paper trading starting balance
-MAX_POSITION_SIZE_PCT  = 0.10         # Max 10% of portfolio per position
+STARTING_CAPITAL       = 100000.00    # USD — paper trading starting balance
+MAX_POSITION_SIZE_PCT  = 0.12         # Max 12% of portfolio per position (up from 10%)
 MIN_INSTITUTIONS_SIGNAL = 2           # Minimum institutions buying same stock to trigger buy
 STOP_LOSS_PCT          = 0.07         # 7% stop loss per position
 TAKE_PROFIT_PCT        = 0.20         # 20% take profit per position
-MAX_OPEN_POSITIONS     = 8            # Max simultaneous open positions
+MAX_OPEN_POSITIONS     = 15           # Max simultaneous open positions (up from 8)
 HOLD_DAYS_MAX          = 60           # Max days to hold a position before forced exit
+
+# --- CAPITAL DEPLOYMENT POLICY ---
+# Board directive: target keeping at least 50% of portfolio deployed at all times.
+# The PDO and board meeting will issue DEPLOY_MORE signals when below this threshold.
+MIN_DEPLOYMENT_PCT     = 0.50         # Alert if less than 50% of portfolio is invested
+TARGET_DEPLOYMENT_PCT  = 0.75         # Target 75% deployment in normal market conditions
 
 # --- TRACKED INSTITUTIONS (SEC CIK numbers) ---
 TRACKED_INSTITUTIONS = {

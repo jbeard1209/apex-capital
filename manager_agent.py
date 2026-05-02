@@ -90,9 +90,11 @@ def evaluate_recommendation(rec: dict, account: dict,
     buying_power_pct = (buying_power / portfolio_value * 100) if portfolio_value > 0 else 0
 
     # PDO adjusts buy thresholds: DEPLOY_MORE loosens them, HOLD_CASH tightens them
+    # Default thresholds lowered (15→10, 20→15) per board capital deployment directive:
+    # target 75% deployment — the firm should not sit on idle cash.
     if pdo_signal == "DEPLOY_MORE":
-        buy_bp_threshold  = 10    # relaxed: need only 10% buying power (normally 15%)
-        buy_new_threshold = 15    # relaxed: need only 15% (normally 20%)
+        buy_bp_threshold  = 5     # very relaxed: actively deploying capital
+        buy_new_threshold = 8     # near-unconditional buying when PDO says deploy
     elif pdo_signal == "HOLD_CASH":
         buy_bp_threshold  = 25    # tightened: need 25% buying power
         buy_new_threshold = 30    # tightened
@@ -100,8 +102,8 @@ def evaluate_recommendation(rec: dict, account: dict,
         buy_bp_threshold  = 30
         buy_new_threshold = 35
     else:
-        buy_bp_threshold  = 15   # default
-        buy_new_threshold = 20
+        buy_bp_threshold  = 10   # default (was 15) — deploy capital more actively
+        buy_new_threshold = 15   # default (was 20) — open new positions more readily
 
     # ── Streak adjustment — layer on top of PDO thresholds ─────────────────
     # A persistent loss streak signals the strategy is misaligned with current
