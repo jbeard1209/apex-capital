@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "mcp__ccd_session__mark_chapter(*)",
+      "mcp__ccd_session__spawn_task(*)"
+    ],
+    "deny": []
+  }
+}

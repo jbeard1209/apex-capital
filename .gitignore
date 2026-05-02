@@ -1,0 +1,69 @@
+# =============================================================================
+# APEX CAPITAL — .gitignore
+# =============================================================================
+
+# ── Secrets — NEVER commit these ─────────────────────────────────────────────
+.env
+config_local.py
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# ── Data & logs (large, ephemeral, contain trade PII) ────────────────────────
+logs/
+data/backups/
+
+# Runtime data files — contain live trade state, decisions, and agent evaluations.
+# Excluded to prevent sensitive portfolio data from being pushed to GitHub.
+# The two config files below (agent_registry, sector_assignments) ARE committed.
+data/state.json
+data/manager_decisions.json
+data/board_meeting_report.json
+data/canary_alert.json
+data/canary_state.json
+data/capital_efficiency_report.json
+data/chief_of_staff_report.json
+data/cos_advice_history.json
+data/hr_history.json
+data/hr_report.json
+data/hr_irm_sealed.json
+data/irm_daily_check.json
+data/rd_geopolitical_context.json
+data/rd_historical_context.json
+data/rd_system_performance.json
+data/research_team_report.json
+data/review_recommendations.json
+data/risk_bulletin.json
+data/risk_manager_report.json
+data/thematic_positions.json
+data/trade_review_report.json
+data/cit_morning_report.json
+data/cit_evening_report.json
+data/cit_pending_proposals.json
+data/cit_backlog.json
+data/cit_sensitive.json
+data/cit_approved_proposals.json
+data/cit_history.json
+data/energy_research_report.json
+data/cos_hr_coordination.json
+
+# ── Reports (generated HTML — can be regenerated) ────────────────────────────
+reports/
+
+# ── OS & editor noise ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
