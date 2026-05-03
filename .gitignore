@@ -57,6 +57,13 @@ data/cit_history.json
 data/energy_research_report.json
 data/cos_hr_coordination.json
 
+# Oracle setup — contains private keys and credentials
+oracle_setup/oci_key.pem
+oracle_setup/oracle_attempts.log
+oracle_setup/try_oracle.py
+oracle_setup/deploy.py
+oracle_setup/setup_server.sh
+
 # ── Reports (generated HTML — can be regenerated) ────────────────────────────
 reports/
 
