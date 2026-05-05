@@ -928,6 +928,21 @@ def _implement_decisions(consensus: dict, dry_run: bool = False) -> dict:
         try:
             # ── CLOSE / SELL — full position exit ──────────────────────────
             if verb in ("CLOSE", "SELL"):
+                # Check we actually hold this position before trying to sell
+                _positions = trader.get_positions()
+                _held = (not _positions.empty and ticker in _positions["ticker"].values) \
+                        if hasattr(_positions, 'empty') else False
+                if not _held:
+                    logger.warning(
+                        f"    ⚠ Board voted to close {ticker} but we have no position — skipping."
+                    )
+                    results["deferred"].append({
+                        "id":     aid,
+                        "action": action["action"],
+                        "ticker": ticker,
+                        "reason": f"No open position in {ticker} — board may have stale data.",
+                    })
+                    continue
                 order = trader.submit_sell(ticker, reason="board_meeting_consensus")
                 ok    = bool(order and order.get("id"))
                 results["executed"].append({
