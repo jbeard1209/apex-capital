@@ -1358,6 +1358,39 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     logger.info("  Briefing: Anonymous — attributions redacted")
     logger.info("=" * 65)
 
+    # ── Morning Briefing — shared context ────────────────────────────────────
+    # Board reads the morning briefing first so every member starts with
+    # identical shared context: market status, risk level, open positions,
+    # latest R&D picks, CIT proposals, IRM overnight flags, HR alerts.
+    _mb: dict = {}
+    try:
+        _mb_path = os.path.join(os.path.dirname(__file__), "data", "morning_briefing.json")
+        if os.path.exists(_mb_path):
+            with open(_mb_path) as _f:
+                _mb = json.load(_f)
+            _mb_age = (
+                datetime.now() -
+                datetime.fromisoformat(str(_mb.get("generated_at",""))[:19])
+            ).total_seconds() / 3600
+            if _mb_age < 4:
+                _mkt  = _mb.get("sections", {}).get("market",   {}).get("status", "?")
+                _risk = _mb.get("sections", {}).get("risk",     {}).get("risk_level", "?")
+                _irm  = _mb.get("sections", {}).get("irm",      {}).get("risk_score", "?")
+                _dep  = _mb.get("sections", {}).get("portfolio",{}).get("deployed_pct", "?")
+                _alts = _mb.get("alerts", [])
+                logger.info(
+                    f"\n  📋 Morning Briefing loaded ({_mb_age:.1f}h old) | "
+                    f"Market: {_mkt} | Risk: {_risk} | IRM: {_irm}/10 | Deployed: {_dep}%"
+                )
+                for _a in _alts[:5]:
+                    logger.info(f"    {_a}")
+            else:
+                logger.info(f"  ⚠ Morning briefing is {_mb_age:.1f}h old — may be stale")
+        else:
+            logger.info("  Morning briefing not found — proceeding without shared context")
+    except Exception as _mb_err:
+        logger.debug(f"  Morning briefing load error (non-fatal): {_mb_err}")
+
     # 1. Load reports
     logger.info("\n  Step 1/6: Loading source reports...")
     reports  = _load_reports()
