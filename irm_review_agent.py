@@ -1288,11 +1288,21 @@ def trigger_irm_review(subject: str, sender_name: str,
             priority="urgent" if review["red_flags"] else "normal",
         )
 
-        from email_sender import _send_raw
-        sent = _send_raw(polished, irm_subj)
+        from email_sender import send_daily_report
+        sent = send_daily_report(
+            html_body   = polished,
+            subject     = irm_subj,
+            paper_day   = 0,
+            sender_name = "irm_review",
+            key_metrics = {
+                "Confidence": confidence_label,
+                "Red Flags":  len(review["red_flags"]),
+                "Omissions":  len(review["omissions"]),
+            },
+        )
         if sent:
             logger.info(
-                f"  [IRM Review] Second opinion sent for '{sender_name}' email "
+                f"  [IRM Review] Second opinion buffered for '{sender_name}' email "
                 f"(confidence: {confidence_label}, "
                 f"flags: {len(review['red_flags'])}, "
                 f"omissions: {len(review['omissions'])})"
@@ -1436,8 +1446,18 @@ def run_irm_daily(send_email: bool = True) -> dict:
                      "HR Flags": len(_hr_report.get("action_required", []))},
                     priority="urgent" if risk_score >= 7 else "normal",
                 )
-                from email_sender import _send_raw
-                _send_raw(polished, subject)
+                from email_sender import send_daily_report
+                send_daily_report(
+                    html_body   = polished,
+                    subject     = subject,
+                    paper_day   = 0,
+                    sender_name = "irm_daily",
+                    key_metrics = {
+                        "Risk Score": f"{risk_score}/10",
+                        "Red Flags":  len(flags),
+                        "HR Flags":   len(_hr_report.get("action_required", [])),
+                    },
+                )
             except Exception as _e:
                 logger.warning(f"  [IRM Daily] Email failed: {_e}")
 

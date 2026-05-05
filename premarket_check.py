@@ -417,10 +417,21 @@ def _email_premarket_alerts(report: dict) -> None:
             },
             priority="urgent",
         )
-        from email_sender import _send_raw
-        sent = _send_raw(polished, subject)
+        from email_sender import send_daily_report
+        sent = send_daily_report(
+            html_body   = polished,
+            subject     = subject,
+            paper_day   = 0,
+            sender_name = "premarket_check",
+            key_metrics = {
+                "Status":   status,
+                "CRITICAL": n_crit,
+                "HIGH":     n_high,
+                "Alerts":   len(alerts),
+            },
+        )
         if sent:
-            logger.info("  ✅ Pre-market alert email sent to Chairman")
+            logger.info("  ✅ Pre-market alert email sent (or buffered) to Chairman")
         else:
             logger.warning("  ⚠️  Pre-market alert email failed")
 

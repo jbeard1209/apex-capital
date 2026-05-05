@@ -53,7 +53,12 @@ def send_daily_report(
     key_metrics: Optional[dict] = None,
 ) -> bool:
     """
-    Send the daily HTML report email via Gmail.
+    Send (or buffer) the daily HTML report email via Gmail.
+
+    Non-urgent emails are held in the daily digest buffer and sent
+    as one consolidated email at 6 PM EDT.  Urgent emails (dead-man's
+    switch, CRITICAL, circuit breakers) bypass the buffer and send
+    immediately via send_alert_email().
 
     Args:
         html_body:  Full HTML string (from report_generator.build_html_report)
@@ -61,7 +66,7 @@ def send_daily_report(
         paper_day:  Day number in the 30-day paper trading run
 
     Returns:
-        True if sent successfully, False otherwise.
+        True if buffered or sent successfully, False otherwise.
     """
     global _irm_review_active
 
@@ -69,14 +74,40 @@ def send_daily_report(
         today   = datetime.now().strftime("%b %d, %Y")
         subject = f"📈 Institutional Tracker | Day {paper_day}/30 | {today}"
 
+    # ── Route through email buffer ────────────────────────────────────────────
+    # Urgent emails send immediately; everything else goes to the digest.
+    try:
+        from email_buffer import buffer_email, _is_urgent
+        if _is_urgent(subject, sender_name):
+            # Send immediately as a priority alert
+            success = _send_raw(html_body, subject)
+            if success:
+                logger.info(f"✅ Urgent email sent immediately: {subject[:60]}")
+            return success
+        else:
+            buffered = buffer_email(subject, html_body, sender_name, key_metrics)
+            if buffered:
+                logger.info(f"✅ Email buffered for daily digest: {subject[:60]}")
+                # Still run IRM review even for buffered emails
+                if not _irm_review_active and sender_name:
+                    _irm_review_active = True
+                    try:
+                        from irm_review_agent import trigger_irm_review, IRM_REVIEW_EXCLUDED
+                        if sender_name.lower() not in IRM_REVIEW_EXCLUDED:
+                            trigger_irm_review(subject, sender_name, key_metrics)
+                    except Exception as e:
+                        logger.debug(f"IRM review hook error (non-fatal): {e}")
+                    finally:
+                        _irm_review_active = False
+                return True
+    except Exception as e:
+        logger.debug(f"Email buffer error (falling back to direct send): {e}")
+
+    # ── Fallback: send directly if buffer unavailable ─────────────────────────
     success = _send_raw(html_body, subject)
 
     if success:
         logger.info(f"✅ Daily report emailed to {EMAIL_RECIPIENT}")
-
-        # ── IRM second-opinion review ─────────────────────────────────────
-        # Fire after every successful send, except when IRM is already
-        # reviewing (re-entrancy guard) or sender is on the exclusion list.
         if not _irm_review_active and sender_name:
             _irm_review_active = True
             try:
@@ -87,7 +118,6 @@ def send_daily_report(
                 logger.debug(f"IRM review hook error (non-fatal): {e}")
             finally:
                 _irm_review_active = False
-
     else:
         logger.error("❌ Email send failed — check credentials in config.py")
 

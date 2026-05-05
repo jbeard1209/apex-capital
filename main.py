@@ -128,6 +128,37 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     logger.info(f"  {datetime.now().strftime('%A, %B %d, %Y  %H:%M:%S')}")
     logger.info("=" * 65)
 
+    # ── Morning Briefing — shared context for all agents ─────────────────
+    # The morning briefing runs 30 min before the pipeline (9:15 AM EDT).
+    # Every agent reads this file so they all start with identical shared context:
+    # market status, risk level, open positions, top R&D picks, CoS items, IRM flags.
+    _morning_briefing: dict = {}
+    try:
+        _mb_path = Path(__file__).parent / "data" / "morning_briefing.json"
+        if _mb_path.exists():
+            with open(_mb_path) as _mb_f:
+                _morning_briefing = json.load(_mb_f)
+            _mb_age = (
+                datetime.now() -
+                datetime.fromisoformat(str(_morning_briefing.get("generated_at", ""))[:19])
+            ).total_seconds() / 3600
+            if _mb_age < 4:
+                logger.info(
+                    f"  📋 Morning briefing loaded ({_mb_age:.1f}h old) | "
+                    f"Market: {_morning_briefing.get('sections', {}).get('market', {}).get('status', '?')} | "
+                    f"Risk: {_morning_briefing.get('sections', {}).get('risk', {}).get('risk_level', '?')} | "
+                    f"Alerts: {len(_morning_briefing.get('alerts', []))}"
+                )
+                if _morning_briefing.get("alerts"):
+                    for _alert in _morning_briefing["alerts"][:5]:
+                        logger.info(f"    {_alert}")
+            else:
+                logger.info(f"  ⚠ Morning briefing is {_mb_age:.1f}h old — context may be stale")
+        else:
+            logger.info("  Morning briefing not found — running without shared context")
+    except Exception as _mb_err:
+        logger.debug(f"  Morning briefing load error (non-fatal): {_mb_err}")
+
     # ── Dead-man's switch ─────────────────────────────────────────────────
     # If manager_decisions.json is stale (>30h) when the pipeline starts,
     # the Manager Agent missed an entire cycle — send an immediate warning email.

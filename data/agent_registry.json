@@ -10,8 +10,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T02:01:12.731151",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "BiotechResearchAgent",
@@ -23,8 +23,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T02:01:12.731269",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "FinancialSectorAgent",
@@ -36,8 +36,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T02:01:12.731378",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "ConsumerDiscretionaryAgent",
@@ -49,8 +49,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T02:35:18.960048",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "GlobalTechAgent",
@@ -62,8 +62,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T02:35:18.960168",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "IndustrialsDefenseAgent",
@@ -75,8 +75,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T02:35:18.960283",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "HealthcarePharmaAgent",
@@ -88,8 +88,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T11:59:10.752852",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "MaterialsMiningAgent",
@@ -101,8 +101,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T11:59:10.752973",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "CryptoEquitiesAgent",
@@ -114,8 +114,8 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-04-26T11:59:10.753081",
       "status": "active",
-      "consecutive_zero_cycles": 2,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 4,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "CommunicationsMediaAgent",
@@ -128,8 +128,8 @@
       "created_at": "2026-04-30T20:41:51.939445",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 1,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 3,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "HistoricalContextAnalyst",
@@ -142,8 +142,8 @@
       "created_at": "2026-04-30T20:41:51.939900",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 1,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 3,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "SystemPerformanceAnalyst",
@@ -155,7 +155,9 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-05-01T13:46:12.955243",
       "status": "active",
-      "permanent": true
+      "permanent": true,
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "GeopoliticalRiskAnalyst",
@@ -167,75 +169,129 @@
       "created_by": "Chief of Staff",
       "created_at": "2026-05-01T13:46:12.955653",
       "status": "active",
-      "permanent": true
+      "permanent": true,
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "CITDirector",
       "file": "cit_director.py",
-      "specialization": "Continuous Improvement — Orchestration & Proposal Routing",
+      "specialization": "Continuous Improvement \u2014 Orchestration & Proposal Routing",
       "sector": "CIT-Oversight",
       "tier": 1,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 0,
-      "last_checked": "2026-05-01",
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05",
       "notes": "Runs twice daily (6 AM + 6 PM EDT). Overseen by IRM and HR."
     },
     {
       "class_name": "CITCodeInspector",
       "file": "cit_director.py",
-      "specialization": "Continuous Improvement — Code Quality & Silent Exception Detection",
+      "specialization": "Continuous Improvement \u2014 Code Quality & Silent Exception Detection",
       "sector": "CIT-Code",
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 0,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "CITPipelineMonitor",
       "file": "cit_director.py",
-      "specialization": "Continuous Improvement — File Freshness, Log Errors & Backup Health",
+      "specialization": "Continuous Improvement \u2014 File Freshness, Log Errors & Backup Health",
       "sector": "CIT-Pipeline",
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 0,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "CITStrategyAnalyst",
       "file": "cit_director.py",
-      "specialization": "Continuous Improvement — Win/Loss Patterns & Research-to-Trade Conversion",
+      "specialization": "Continuous Improvement \u2014 Win/Loss Patterns & Research-to-Trade Conversion",
       "sector": "CIT-Strategy",
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 0,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05"
     },
     {
       "class_name": "CITArchitectureAdvisor",
       "file": "cit_director.py",
-      "specialization": "Continuous Improvement — Structural Gaps & Architecture Quality",
+      "specialization": "Continuous Improvement \u2014 Structural Gaps & Architecture Quality",
       "sector": "CIT-Architecture",
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
       "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 0,
-      "last_checked": "2026-05-01"
+      "consecutive_zero_cycles": 2,
+      "last_checked": "2026-05-05"
+    },
+    {
+      "class_name": "MacroPolicyHistorian",
+      "file": "agents/cos_macropolicyhistorian.py",
+      "specialization": "Fiscal & Monetary Policy History (Dr. James Okafor)",
+      "sector": "R&D-Context-MacroPolicy",
+      "etf": "XLF",
+      "tier": 2,
+      "created_by": "Chief of Staff",
+      "created_at": "2026-05-05T16:26:00.135219",
+      "status": "active",
+      "permanent": true,
+      "consecutive_zero_cycles": 1,
+      "last_checked": "2026-05-05"
+    },
+    {
+      "class_name": "HRPerformanceOfficer",
+      "file": "agents/cos_hrperformanceofficer.py",
+      "specialization": "Quantitative Agent Performance & Execution Accountability",
+      "sector": "HR-Quantitative",
+      "etf": "SPY",
+      "tier": 2,
+      "created_by": "Chief of Staff",
+      "created_at": "2026-05-05T16:26:00.135854",
+      "status": "active",
+      "permanent": true,
+      "consecutive_zero_cycles": 1,
+      "last_checked": "2026-05-05"
+    },
+    {
+      "class_name": "HRDevelopmentOfficer",
+      "file": "agents/cos_hrdevelopmentofficer.py",
+      "specialization": "Qualitative Agent Development, Trajectory & Cultural Alignment",
+      "sector": "HR-Qualitative",
+      "etf": "SPY",
+      "tier": 2,
+      "created_by": "Chief of Staff",
+      "created_at": "2026-05-05T16:42:00.061126",
+      "status": "active",
+      "permanent": true
+    },
+    {
+      "class_name": "DividendYieldAgent",
+      "file": "agents/cos_dividendyieldagent.py",
+      "specialization": "Dividend Growth & Income",
+      "sector": "Dividend",
+      "etf": "DVY",
+      "tier": 3,
+      "created_by": "Chief of Staff",
+      "created_at": "2026-05-05T16:42:00.061663",
+      "status": "active",
+      "permanent": true
     }
   ],
-  "last_updated": "2026-05-01T13:46:12.955727",
-  "total_spawned": 18
+  "last_updated": "2026-05-05T16:42:00.061754",
+  "total_spawned": 22
 }
