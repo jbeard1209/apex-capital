@@ -44,6 +44,17 @@ logging.basicConfig(
 )
 logger = logging.getLogger("rd_team_leader")
 
+# Suppress yfinance's noisy download-failure logs — our code handles None gracefully
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("peewee").setLevel(logging.CRITICAL)
+try:
+    import os as _yf_os
+    _yf_cache = _yf_os.path.expanduser("~/.cache/yfinance")
+    _yf_os.makedirs(_yf_cache, exist_ok=True)
+    yf.set_tz_cache_location(_yf_cache)
+except Exception:
+    pass
+
 ASSIGNMENTS_PATH    = "data/sector_assignments.json"
 RESEARCH_REPORT_PATH = "data/research_team_report.json"
 

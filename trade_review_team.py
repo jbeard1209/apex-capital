@@ -620,19 +620,19 @@ def _build_html_report(report: dict) -> str:
     </div>
     <div>
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Win Rate</div>
-      <div style="font-size:22px;font-weight:bold;color:{wr_color};">{a['win_rate']:.1f}%</div>
+      <div style="font-size:22px;font-weight:bold;color:{wr_color};">{'—' if a.get('win_rate') is None else f"{a['win_rate']:.1f}%"}</div>
     </div>
     <div>
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Avg P&amp;L</div>
-      <div style="font-size:22px;font-weight:bold;color:{pnl_color};">{a['avg_pnl_pct']:+.2f}%</div>
+      <div style="font-size:22px;font-weight:bold;color:{pnl_color};">{'—' if a.get('avg_pnl_pct') is None else f"{a['avg_pnl_pct']:+.2f}%"}</div>
     </div>
     <div>
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">vs SPY (same periods)</div>
-      <div style="font-size:22px;font-weight:bold;color:{bd_color};">{a['benchmark_delta']:+.2f}pp</div>
+      <div style="font-size:22px;font-weight:bold;color:{bd_color};">{'—' if a.get('benchmark_delta') is None else f"{a['benchmark_delta']:+.2f}pp"}</div>
     </div>
     <div>
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Avg Hold</div>
-      <div style="font-size:22px;font-weight:bold;">{a['avg_hold_days']:.1f}d</div>
+      <div style="font-size:22px;font-weight:bold;">{'—' if a.get('avg_hold_days') is None else f"{a['avg_hold_days']:.1f}d"}</div>
     </div>
     <div>
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Best Trade</div>

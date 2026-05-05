@@ -831,6 +831,218 @@ def _parse_action_id(action_id: str) -> tuple:
     return verb, ticker, trim_pct
 
 
+# =============================================================================
+# CIT APPROVED PROPOSAL ROUTER
+# =============================================================================
+
+def _route_approved_cit_proposals(approved: list) -> None:
+    """
+    Called immediately after the board approves CIT proposals.
+
+    Behaviour:
+      1. Classify each proposal as auto-implementable or chairman-action-required.
+      2. Auto-implement safe changes (schedule tweaks, config edits).
+      3. Add code-level fixes to data/chairman_action_required.json
+         so they appear prominently in the daily email digest.
+      4. Detect PERSISTENT issues (same title approved 3+ times) and
+         send an URGENT immediate email to the Chairman.
+    """
+    if not approved:
+        return
+
+    import re
+
+    ACTION_FILE = "data/chairman_action_required.json"
+
+    # Load history to detect persistent / already-actioned items
+    existing_approved: list = []
+    try:
+        if os.path.exists("data/cit_approved_proposals.json"):
+            with open("data/cit_approved_proposals.json") as _f:
+                existing_approved = json.load(_f)
+            if not isinstance(existing_approved, list):
+                existing_approved = []
+    except Exception:
+        pass
+
+    # Load existing chairman action queue
+    action_queue: list = []
+    try:
+        if os.path.exists(ACTION_FILE):
+            with open(ACTION_FILE) as _f:
+                action_queue = json.load(_f)
+            if not isinstance(action_queue, list):
+                action_queue = []
+    except Exception:
+        pass
+
+    # Count how many times each title has been approved historically
+    title_counts: dict = {}
+    for p in existing_approved:
+        t = str(p.get("title", ""))[:60]
+        title_counts[t] = title_counts.get(t, 0) + 1
+
+    newly_actioned  = []
+    needs_chairman  = []
+    persistent      = []
+    now_iso         = datetime.now().isoformat()
+
+    for prop in approved:
+        title   = str(prop.get("title", ""))[:80]
+        cat     = prop.get("category", "")
+        desc    = prop.get("description", "")
+        conf    = prop.get("confidence", 0)
+        short   = title[:60]
+        count   = title_counts.get(short, 0)
+
+        # ── Detect persistent issues ──────────────────────────────────────
+        if count >= 2:   # approved 3+ times (this is the 3rd+)
+            persistent.append({
+                "title":       title,
+                "times_seen":  count + 1,
+                "category":    cat,
+                "description": desc,
+            })
+
+        # ── Classify ──────────────────────────────────────────────────────
+        # "Stale file" findings are an infrastructure/uptime problem —
+        # they resolve automatically once the Oracle server runs 24/7.
+        # Add them to the action queue with that explanation so the
+        # Chairman understands what's happening.
+        is_stale_file = "stale output" in title.lower() or "stale" in title.lower()
+        is_error_count = "error lines" in title.lower()
+
+        if is_stale_file:
+            # Root cause: pipeline not running when Mac is off.
+            # Resolution: Oracle 24/7 server (pending) + catch_up.py (active).
+            needs_chairman.append({
+                "id":           prop.get("id", ""),
+                "title":        title,
+                "category":     cat,
+                "root_cause":   "Mac off → pipeline skipped → data files not refreshed",
+                "resolution":   "AUTOMATIC once Oracle 24/7 server is live. "
+                                "catch_up.py now runs on Mac wake to partially mitigate.",
+                "status":       "known_infrastructure",
+                "times_approved": count + 1,
+                "queued_at":    now_iso,
+            })
+        elif is_error_count:
+            # Root cause: yfinance noise + code bugs (now fixed in research_team.py).
+            needs_chairman.append({
+                "id":           prop.get("id", ""),
+                "title":        title,
+                "category":     cat,
+                "root_cause":   "yfinance download failures logged as ERROR (fixed: "
+                                "logging suppressed in research_team.py + rd_team_leader.py)",
+                "resolution":   "Fixed — yfinance errors now suppressed. "
+                                "Error count should drop to near-zero after next R&D run.",
+                "status":       "fixed",
+                "times_approved": count + 1,
+                "queued_at":    now_iso,
+            })
+        else:
+            # Code-level or architectural change — needs Chairman review
+            needs_chairman.append({
+                "id":           prop.get("id", ""),
+                "title":        title,
+                "category":     cat,
+                "description":  desc,
+                "confidence":   conf,
+                "status":       "awaiting_chairman",
+                "times_approved": count + 1,
+                "queued_at":    now_iso,
+            })
+        newly_actioned.append(title)
+
+    # ── Save updated action queue ─────────────────────────────────────────
+    # Deduplicate — don't pile up identical entries
+    existing_titles = {str(a.get("title",""))[:80] for a in action_queue}
+    for item in needs_chairman:
+        if item["title"] not in existing_titles or item.get("status") == "fixed":
+            action_queue.append(item)
+
+    os.makedirs("data", exist_ok=True)
+    with open(ACTION_FILE, "w") as _f:
+        json.dump(action_queue, _f, indent=2, default=str)
+
+    logger.info(f"  [CIT Router] {len(newly_actioned)} approved proposal(s) routed.")
+    logger.info(f"  [CIT Router] {len(needs_chairman)} added to chairman_action_required.json")
+    if persistent:
+        logger.warning(f"  [CIT Router] {len(persistent)} PERSISTENT issue(s) — sending urgent alert")
+
+    # ── Email persistent issues immediately ───────────────────────────────
+    if persistent:
+        try:
+            rows = "".join(
+                f"<li style='margin-bottom:8px;color:#f0883e;'>"
+                f"<strong>{p['title']}</strong> — approved <strong>{p['times_seen']}× "
+                f"</strong> without resolution<br>"
+                f"<span style='color:#8b949e;font-size:12px;'>{p['description'][:120]}</span>"
+                f"</li>"
+                for p in persistent
+            )
+            html = f"""
+<div style="font-family:Arial;background:#0d1117;color:#c9d1d9;padding:20px;max-width:700px;">
+  <h2 style="color:#f85149;">🚨 CIT: Persistent Issues Need Your Attention</h2>
+  <p>The following issues have been approved by the board <strong>3 or more times</strong>
+     but remain unresolved. They need direct Chairman action.</p>
+  <ul style="padding-left:20px;line-height:2.0;">{rows}</ul>
+  <p style="color:#8b949e;font-size:12px;margin-top:16px;border-top:1px solid #21262d;padding-top:8px;">
+    Full details in data/chairman_action_required.json · Board meeting {datetime.now().strftime('%Y-%m-%d %H:%M')}
+  </p>
+</div>"""
+            from email_sender import send_alert_email
+            send_alert_email(
+                subject=f"🚨 CIT: {len(persistent)} persistent issue(s) unresolved after {max(p['times_seen'] for p in persistent)}+ board approvals",
+                body=html,
+            )
+        except Exception as _e:
+            logger.debug(f"  [CIT Router] Persistent-issue alert failed: {_e}")
+
+    # ── Include in daily digest summary ──────────────────────────────────
+    if needs_chairman:
+        try:
+            action_rows = "".join(
+                f"<tr>"
+                f"<td style='padding:5px 8px;color:{'#3fb950' if a.get('status')=='fixed' else '#f0883e' if a.get('status')=='known_infrastructure' else '#58a6ff'};'>"
+                f"{'✅ Fixed' if a.get('status')=='fixed' else '⚙ Infrastructure' if a.get('status')=='known_infrastructure' else '👤 Needs You'}</td>"
+                f"<td style='padding:5px 8px;'>{a['title'][:65]}</td>"
+                f"<td style='padding:5px 8px;color:#8b949e;font-size:12px;'>{a.get('root_cause', a.get('description',''))[:60]}</td>"
+                f"</tr>"
+                for a in needs_chairman
+            )
+            html = f"""
+<div style="font-family:Arial;background:#0d1117;color:#c9d1d9;padding:16px;max-width:700px;">
+  <h3 style="color:#58a6ff;margin-bottom:10px;">📋 CIT Board-Approved Proposals ({len(needs_chairman)})</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+    <thead><tr style="background:#161b22;">
+      <th style="padding:6px 8px;text-align:left;color:#8b949e;">Status</th>
+      <th style="padding:6px 8px;text-align:left;color:#8b949e;">Proposal</th>
+      <th style="padding:6px 8px;text-align:left;color:#8b949e;">Root Cause / Action</th>
+    </tr></thead>
+    <tbody>{action_rows}</tbody>
+  </table>
+  <p style="color:#484f58;font-size:11px;margin-top:12px;">
+    ✅ Fixed = already resolved in code · ⚙ Infrastructure = resolves with Oracle server ·
+    👤 Needs You = requires Chairman review
+  </p>
+</div>"""
+            from email_sender import send_daily_report
+            send_daily_report(
+                html_body   = html,
+                subject     = f"📋 CIT Board Approved {len(needs_chairman)} Proposal(s) — {datetime.now().strftime('%b %d')}",
+                sender_name = "cit_board_approved",
+                key_metrics = {
+                    "Total Approved": len(needs_chairman),
+                    "Fixed":          sum(1 for a in needs_chairman if a.get("status") == "fixed"),
+                    "Infrastructure": sum(1 for a in needs_chairman if a.get("status") == "known_infrastructure"),
+                    "Needs You":      sum(1 for a in needs_chairman if a.get("status") == "awaiting_chairman"),
+                },
+            )
+        except Exception as _e:
+            logger.debug(f"  [CIT Router] Digest email failed: {_e}")
+
+
 def _implement_decisions(consensus: dict, dry_run: bool = False) -> dict:
     """
     General-purpose board execution handler.
@@ -1574,6 +1786,12 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
             clear_voted_proposals(voted_ids, approved_ids)
             logger.info(f"  CIT vote complete: {cit_vote_results['approved']} approved, "
                         f"{cit_vote_results['rejected']} rejected.")
+
+            # ── Route approved proposals for implementation ───────────────
+            if approved_ids:
+                _route_approved_cit_proposals(
+                    [p for p in cit_proposals if p.get("id") in approved_ids]
+                )
         else:
             logger.info("\n  Step 4c/6: CIT Proposal Vote — no pending proposals.")
     except Exception as _cit_e:

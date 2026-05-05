@@ -816,65 +816,66 @@ def _print_report(report: dict) -> None:
         "CRITICAL": "✗ CRITICAL",
     }.get(ra["risk_level"], ra["risk_level"])
 
-    print(f"\n{'═'*66}")
-    print("  APEX CAPITAL — CHIEF RISK OFFICER REPORT")
-    print(f"  Chairman's Eyes Only — {report['generated_at']}")
-    print(f"{'═'*66}")
-    print(f"\n  PORTFOLIO RISK LEVEL  :  {risk_badge}")
-    print(f"  MANAGER AGENT GRADE   :  {me['grade']}  ({me['score']}/100)")
-    print(f"\n  PERFORMANCE")
-    print(f"  Total Return vs Start : {perf['total_return_pct']:>+.2f}%")
-    print(f"  Today's P&L           : {perf['pnl_today_pct']:>+.2f}%")
-    print(f"  Total Unrealised P&L  : ${perf['total_unrealised']:>+,.2f}")
+    _log = logger.info  # use structured logging, not print()
+    _log(f"\n{'═'*66}")
+    _log("  APEX CAPITAL — CHIEF RISK OFFICER REPORT")
+    _log(f"  Chairman's Eyes Only — {report['generated_at']}")
+    _log(f"{'═'*66}")
+    _log(f"\n  PORTFOLIO RISK LEVEL  :  {risk_badge}")
+    _log(f"  MANAGER AGENT GRADE   :  {me['grade']}  ({me['score']}/100)")
+    _log(f"\n  PERFORMANCE")
+    _log(f"  Total Return vs Start : {perf['total_return_pct']:>+.2f}%")
+    _log(f"  Today's P&L           : {perf['pnl_today_pct']:>+.2f}%")
+    _log(f"  Total Unrealised P&L  : ${perf['total_unrealised']:>+,.2f}")
     if perf.get("worst_position"):
-        print(f"  Worst Position        : {perf['worst_position']['ticker']}  "
+        _log(f"  Worst Position        : {perf['worst_position']['ticker']}  "
               f"({perf['worst_position']['pnl_pct']:+.1f}%)")
     if perf.get("best_position"):
-        print(f"  Best Position         : {perf['best_position']['ticker']}  "
+        _log(f"  Best Position         : {perf['best_position']['ticker']}  "
               f"({perf['best_position']['pnl_pct']:+.1f}%)")
-    print(f"\n  RISK METRICS")
-    print(f"  VaR 95% 1-day         : ${var.get('var_95_1d',0):>,.2f}")
-    print(f"  VaR 99% 1-day         : ${var.get('var_99_1d',0):>,.2f}")
-    print(f"  CVaR 95% 1-day        : ${var.get('cvar_95',0):>,.2f}")
-    print(f"  VaR 95% 10-day        : ${var.get('var_95_10d',0):>,.2f}")
+    _log(f"\n  RISK METRICS")
+    _log(f"  VaR 95% 1-day         : ${var.get('var_95_1d',0):>,.2f}")
+    _log(f"  VaR 99% 1-day         : ${var.get('var_99_1d',0):>,.2f}")
+    _log(f"  CVaR 95% 1-day        : ${var.get('cvar_95',0):>,.2f}")
+    _log(f"  VaR 95% 10-day        : ${var.get('var_95_10d',0):>,.2f}")
 
     if ra["risk_flags"]:
-        print(f"\n  RISK FLAGS ({len(ra['risk_flags'])})")
+        _log(f"\n  RISK FLAGS ({len(ra['risk_flags'])})")
         for flag in ra["risk_flags"]:
-            print(f"    ⚑ {flag}")
+            _log(f"    ⚑ {flag}")
 
-    print(f"\n  MANAGER AGENT EVALUATION")
-    print(f"  Grade: {me['grade']}  ({me['score']}/100)")
-    print(f"  {me['assessment']}")
+    _log(f"\n  MANAGER AGENT EVALUATION")
+    _log(f"  Grade: {me['grade']}  ({me['score']}/100)")
+    _log(f"  {me['assessment']}")
     if me["strengths"]:
-        print(f"  Strengths:")
+        _log(f"  Strengths:")
         for s in me["strengths"]:
-            print(f"    ✓ {s}")
+            _log(f"    ✓ {s}")
     if me["weaknesses"]:
-        print(f"  Areas for Improvement:")
+        _log(f"  Areas for Improvement:")
         for w in me["weaknesses"]:
-            print(f"    ⚑ {w}")
+            _log(f"    ⚑ {w}")
     if me["recommendations"]:
-        print(f"  Recommendations to Chairman:")
+        _log(f"  Recommendations to Chairman:")
         for r in me["recommendations"]:
-            print(f"    → {r}")
+            _log(f"    → {r}")
 
     # Secret CoS evaluation (Chairman's eyes only)
     cos = report.get("cos_eval")
     if cos and cos.get("grade") != "N/A":
-        print(f"\n  CHIEF OF STAFF EVALUATION  [CHAIRMAN'S EYES ONLY]")
-        print(f"  Grade: {cos['grade']}  ({cos['score']}/100)")
-        print(f"  {cos['assessment']}")
+        _log(f"\n  CHIEF OF STAFF EVALUATION  [CHAIRMAN'S EYES ONLY]")
+        _log(f"  Grade: {cos['grade']}  ({cos['score']}/100)")
+        _log(f"  {cos['assessment']}")
         if cos.get("gaps"):
-            print(f"  Gaps:")
+            _log(f"  Gaps:")
             for g in cos["gaps"]:
                 print(f"    ⚑ {g}")
         if cos.get("notes"):
-            print(f"  Notes:")
+            _log(f"  Notes:")
             for n in cos["notes"]:
                 print(f"    ✓ {n}")
 
-    print(f"{'═'*66}\n")
+    _log(f"{'═'*66}\n")
 
 
 def _build_html_report(report: dict) -> str:
