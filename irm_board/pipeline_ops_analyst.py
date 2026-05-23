@@ -102,7 +102,15 @@ def _file_age_hours(path: str) -> Optional[float]:
     try:
         with open(path) as f:
             data = json.load(f)
-        gen_at = data.get("generated_at") or data.get("timestamp") or data.get("last_updated")
+        # Some files are lists (e.g. manager_decisions.json), others are dicts.
+        # Only try .get() on dicts; fall through to OS mtime otherwise.
+        gen_at = None
+        if isinstance(data, dict):
+            gen_at = data.get("generated_at") or data.get("timestamp") or data.get("last_updated")
+        elif isinstance(data, list) and data and isinstance(data[-1], dict):
+            # List of decision records — use the most recent entry's timestamp
+            last = data[-1]
+            gen_at = last.get("generated_at") or last.get("timestamp")
         if gen_at:
             dt = datetime.fromisoformat(str(gen_at)[:19])
             return (datetime.now() - dt).total_seconds() / 3600
@@ -110,7 +118,12 @@ def _file_age_hours(path: str) -> Optional[float]:
         mtime = os.path.getmtime(path)
         return (datetime.now().timestamp() - mtime) / 3600
     except Exception:
-        return None
+        # Last resort: OS mtime
+        try:
+            mtime = os.path.getmtime(path)
+            return (datetime.now().timestamp() - mtime) / 3600
+        except Exception:
+            return None
 
 
 class PipelineOpsAnalyst:
@@ -123,7 +136,11 @@ class PipelineOpsAnalyst:
     def __init__(self):
         self.name  = "James Osei"
         self.title = "Pipeline & Operations Architect"
-        self.domain = "Pipeline Execution Order · Agent Cadence · Configuration Drift · Operational Continuity"
+        self.domain = "Pipeline Execution Order · Agent Cadence · Configuration Drift · Operational Continuity · FE/FI Pod Health"
+
+    def _is_weekday_local(self) -> bool:
+        from datetime import datetime
+        return datetime.now().weekday() < 5
 
     def analyze(self, irm_context: dict = None) -> dict:
         findings      = []
@@ -173,7 +190,11 @@ class PipelineOpsAnalyst:
             # Earlier file should be OLDER (larger age_h) than later file.
             # If earlier is NEWER (smaller age_h), it ran after the later file
             # — which means the consumer used a stale version of the earlier file.
-            if age_e < age_l:
+            # Minimum delta: 30 minutes (0.5h) — differences under this are
+            # likely race conditions within the same pipeline cycle, not true
+            # ordering violations.
+            MIN_DELTA_H = 0.5
+            if age_e < age_l and (age_l - age_e) > MIN_DELTA_H:
                 earlier_name = earlier.split("/")[-1].replace(".json","")
                 later_name   = later.split("/")[-1].replace(".json","")
                 msg = (
@@ -260,7 +281,50 @@ class PipelineOpsAnalyst:
                 f"IRM self-audit may not have reached the Chairman this cycle."
             )
 
-        # ── 7. Risk score cap and confidence ──────────────────────────────
+        # ── 7. FE pod pipeline health ──────────────────────────────────────
+        import os as _os
+        fe_pipeline_age = _file_age_hours("data/fe_pipeline_report.json")
+        fe_board_age    = _file_age_hours("data/fe_board_report.json")
+        fe_picks_age    = _file_age_hours("data/fe_picks_queue.json")
+
+        if fe_pipeline_age is not None and fe_pipeline_age > 30:
+            findings.append(
+                f"FE PIPELINE: fe_pipeline_report.json is {fe_pipeline_age:.0f}h old — "
+                f"FE pipeline may have missed its daily run."
+            )
+        elif fe_pipeline_age is None and self._is_weekday_local():
+            findings.append("FE PIPELINE: fe_pipeline_report.json not found — FE pipeline may not have run yet.")
+
+        if fe_board_age is not None and fe_board_age > 200:
+            findings.append(
+                f"FE BOARD: Last board meeting was {fe_board_age:.0f}h ago "
+                f"({fe_board_age/24:.1f} days). FE board meets weekly — check schedule."
+            )
+
+        if fe_picks_age is not None:
+            findings.append(f"FE picks queue: {fe_picks_age:.0f}h old.")
+        else:
+            findings.append("FE picks queue not found — no picks awaiting FE board review.")
+
+        # ── 8. FI pod pipeline health ──────────────────────────────────────
+        fi_pipeline_age = _file_age_hours("data/fi_pipeline_report.json")
+        fi_board_age    = _file_age_hours("data/fi_board_report.json")
+
+        if fi_pipeline_age is not None and fi_pipeline_age > 30:
+            findings.append(
+                f"FI PIPELINE: fi_pipeline_report.json is {fi_pipeline_age:.0f}h old — "
+                f"FI pipeline may have missed its daily run."
+            )
+        elif fi_pipeline_age is None and self._is_weekday_local():
+            findings.append("FI PIPELINE: fi_pipeline_report.json not found — FI pipeline may not have run yet.")
+
+        if fi_board_age is not None and fi_board_age > 200:
+            findings.append(
+                f"FI BOARD: Last board meeting was {fi_board_age:.0f}h ago "
+                f"({fi_board_age/24:.1f} days). FI board meets weekly — check schedule."
+            )
+
+        # ── 10. Risk score cap and confidence ─────────────────────────────
         risk_score = min(10, risk_score)
 
         if red_flags:

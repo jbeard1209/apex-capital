@@ -262,13 +262,33 @@ class MacroAnalyst:
                 for p in positions_note
             )
             if not has_sh:
-                red_flags.append(
-                    f"NO TAIL HEDGE DETECTED in {regime_key} regime. "
-                    f"Dalio All-Weather principle: 'In a bear market, you need "
-                    f"assets that go up when equities go down.' SH (ProShares Short S&P500) "
-                    f"or equivalent hedge is recommended at this macro stage. "
-                    f"Without it, portfolio has no systematic downside protection."
-                )
+                # Tail hedge absence is a recommendation, not a hard red flag.
+                # A small retail portfolio may legitimately rely on cash allocation
+                # + stop-losses rather than a dedicated inverse ETF position.
+                # Only escalate to red_flag if the portfolio is ALSO over-deployed
+                # in equities beyond the regime's optimal range.
+                acct_local = irm.get("account", {})
+                pv_local = acct_local.get("portfolio_value", 0)
+                cash_local = acct_local.get("cash", 0)
+                equity_over_deployed = False
+                if pv_local > 0:
+                    eq_pct_local = (pv_local - cash_local) / pv_local * 100
+                    lo_local, hi_local = regime["optimal_equity_pct"]
+                    equity_over_deployed = eq_pct_local > hi_local + 10  # >10pp over hi
+                if equity_over_deployed:
+                    red_flags.append(
+                        f"NO TAIL HEDGE + OVER-DEPLOYED in {regime_key} regime. "
+                        f"Portfolio is both over-exposed to equities AND lacks a hedge — "
+                        f"a combination that creates asymmetric downside risk. "
+                        f"Consider SH, SPXS, or raising cash to the optimal {lo_local}–{hi_local}% range."
+                    )
+                else:
+                    findings.append(
+                        f"No inverse-ETF tail hedge detected in {regime_key} regime. "
+                        f"Dalio All-Weather: in a bear market, assets that go up when equities "
+                        f"go down provide systematic protection. Consider SH/SPXS if deploying "
+                        f"additional capital. Cash buffer + stop-losses are acceptable substitutes."
+                    )
 
         return findings, red_flags
 

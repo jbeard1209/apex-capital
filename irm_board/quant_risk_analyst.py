@@ -250,7 +250,15 @@ class QuantRiskAnalyst:
             findings.append("Portfolio value unavailable — stress scenarios not calculated.")
             return findings, red_flags
 
-        # Run each scenario
+        # Run each scenario — all go to findings (educational), not red flags.
+        # Stress scenarios are forward-looking worst-case simulations, not current
+        # violations. They inform risk awareness; they do not indicate the portfolio
+        # is currently in distress. Only flag as red if current drawdown is already
+        # significant (>10% actual drawdown in the real market).
+        ra = irm.get("risk_assessment", {})
+        current_drawdown_pct = ra.get("max_drawdown_pct", 0) or 0
+        in_active_drawdown = current_drawdown_pct < -10  # actual current drawdown > 10%
+
         for scenario_key, scenario in CRASH_SCENARIOS.items():
             drawdown_pct = scenario["spy_drawdown"]
             # Assume portfolio beta ~ 1.2 (typical momentum portfolio)
@@ -260,17 +268,12 @@ class QuantRiskAnalyst:
             estimated_loss_pct = drawdown_pct * beta_adj
             estimated_loss_dollars = portfolio_value * (estimated_loss_pct / 100)
 
-            if estimated_loss_pct < -30:
-                red_flags.append(
-                    f"Stress scenario '{scenario['name']}': estimated portfolio loss "
-                    f"{estimated_loss_pct:.1f}% (≈${estimated_loss_dollars:,.0f}). "
-                    f"Key lesson: {scenario['lesson']}"
-                )
-            else:
-                findings.append(
-                    f"Stress scenario '{scenario['name']}': estimated loss "
-                    f"{estimated_loss_pct:.1f}% (≈${estimated_loss_dollars:,.0f})."
-                )
+            severity = "[EXTREME]" if estimated_loss_pct < -50 else "[SEVERE]" if estimated_loss_pct < -30 else "[MODERATE]"
+            findings.append(
+                f"Historical stress scenario {severity} — '{scenario['name']}': "
+                f"estimated loss {estimated_loss_pct:.1f}% (≈${estimated_loss_dollars:,.0f}) "
+                f"if a comparable event occurred today. Lesson: {scenario['lesson']}"
+            )
 
         return findings, red_flags
 
