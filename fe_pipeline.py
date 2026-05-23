@@ -539,7 +539,101 @@ def prescreen_universe():
     import json as _json2
     cache_file.write_text(_json2.dumps(cache, indent=2))
     logger.info(f"[Prescreen] {len(blocked)} tickers blocked out of {len(all_tickers)} universe")
-    return blocked
+    return blocked, all_tickers  # also return full universe for IV scan
+
+
+def _iv_opportunity_scan(all_tickers: set, blocked_tickers: set, existing_tickers: set) -> list[dict]:
+    """
+    IV-first opportunity scan: runs intrinsic value on the full watchlist universe
+    and surfaces any BUY-rated ticker (MoS > 25%) that the R&D agents didn't pick.
+
+    This catches value opportunities that R&D agents may reject on qualitative
+    grounds despite strong IV discount (e.g., negative ROIC from goodwill impairment,
+    cyclical trough earnings, or simply not favored by agent's internal conviction model).
+
+    Results are tagged source='iv_opportunity_scan' and merged into the board queue
+    alongside R&D agent picks.
+
+    IV results are cached for 4h to keep pipeline runs fast.
+    """
+    from fe_intrinsic_value import calculate_iv
+
+    cache_file = DATA_DIR / "iv_scan_cache.json"
+    cache: dict = {}
+    if cache_file.exists():
+        try:
+            cached = json.loads(cache_file.read_text())
+            cutoff = (datetime.utcnow() - timedelta(hours=4)).isoformat()
+            cache  = {k: v for k, v in cached.items() if v.get("scanned_at", "") > cutoff}
+        except Exception:
+            pass
+
+    candidates   = all_tickers - blocked_tickers - existing_tickers
+    opportunities: list[dict] = []
+
+    logger.info(f"[IVScan] Scanning {len(candidates)} universe tickers for value opportunities...")
+
+    for ticker in sorted(candidates):
+        # Use cached result if fresh
+        if ticker in cache:
+            iv_result = cache[ticker].get("iv_result")
+        else:
+            try:
+                iv_result = calculate_iv(ticker)
+                cache[ticker] = {
+                    "iv_result":  iv_result,
+                    "scanned_at": datetime.utcnow().isoformat(),
+                }
+            except Exception as e:
+                logger.debug(f"[IVScan] IV failed for {ticker}: {e}")
+                cache[ticker] = {"iv_result": None, "scanned_at": datetime.utcnow().isoformat()}
+                continue
+
+        if not iv_result:
+            continue
+
+        mos     = iv_result.get("margin_of_safety", 0) or 0
+        verdict = iv_result.get("verdict", "")
+
+        if mos >= MIN_MOS_FOR_BOARD and verdict == "BUY":
+            pick = {
+                "ticker":           ticker,
+                "source":           "iv_opportunity_scan",
+                "conviction":       3,  # neutral conviction — needs R&D due diligence
+                "verdict":          "BUY",
+                "iv_verdict":       verdict,
+                "margin_of_safety": mos,
+                "conservative_iv":  iv_result.get("conservative_iv"),
+                "dcf_iv":           iv_result.get("dcf_iv"),
+                "epv_iv":           iv_result.get("epv_iv"),
+                "current_price":    iv_result.get("current_price"),
+                "fcf_yield":        iv_result.get("fcf_yield"),
+                "roic":             iv_result.get("roic"),
+                "data_source":      iv_result.get("data_source"),
+                "notes":            (
+                    f"IV-scan direct pick: MoS={mos*100:.1f}% | "
+                    f"IV=${iv_result.get('conservative_iv')} | "
+                    f"Price=${iv_result.get('current_price')} | "
+                    f"R&D agents did not nominate this ticker — board should apply enhanced due diligence"
+                ),
+            }
+            opportunities.append(pick)
+            logger.info(
+                f"[IVScan] ✓ OPPORTUNITY: {ticker} | MoS={mos*100:.1f}% | "
+                f"IV=${iv_result.get('conservative_iv')} | {iv_result.get('data_source')}"
+            )
+        elif mos >= -0.35 and mos < MIN_MOS_FOR_BOARD:
+            logger.debug(f"[IVScan] Near-miss: {ticker} MoS={mos*100:.1f}%")
+
+    # Persist cache
+    try:
+        cache_file.write_text(json.dumps(cache, indent=2))
+    except Exception:
+        pass
+
+    logger.info(f"[IVScan] {len(opportunities)} direct IV opportunity(ies) found from {len(candidates)} scanned")
+    return opportunities
+
 
 def run_pipeline() -> dict:
     """Main pipeline entry point."""
@@ -583,10 +677,11 @@ def run_pipeline() -> dict:
     # Prescreen: fraud-check entire universe before agent analysis
     logger.info("[Pipeline] Prescreen: Running fraud pre-screen on full watchlist universe...")
     try:
-        blocked_tickers = prescreen_universe()
+        blocked_tickers, universe_tickers = prescreen_universe()
     except Exception as _e:
         logger.warning(f"[Pipeline] Prescreen failed: {_e} -- proceeding without pre-screening")
-        blocked_tickers = set()
+        blocked_tickers  = set()
+        universe_tickers = set()
 
     # Step 1: Run all 10 R&D agents
     logger.info("[Pipeline] Step 1: Running all 10 FE R&D agents...")
@@ -605,6 +700,18 @@ def run_pipeline() -> dict:
                 filtered_prescreen.append(_p)
         raw_picks = filtered_prescreen
         logger.info(f"[Pipeline] {len(raw_picks)} picks remain after pre-screen filter.")
+
+    # Step 1.5: IV-first opportunity scan — catches value plays R&D agents overlooked
+    logger.info("[Pipeline] Step 1.5: IV opportunity scan across full universe...")
+    try:
+        existing_tickers = {p.get("ticker", "").upper() for p in raw_picks}
+        iv_opps = _iv_opportunity_scan(universe_tickers, blocked_tickers, existing_tickers)
+        if iv_opps:
+            for _op in iv_opps:
+                raw_picks.append(_op)
+            logger.info(f"[Pipeline] {len(iv_opps)} IV opportunity picks added to queue")
+    except Exception as _ive:
+        logger.warning(f"[Pipeline] IV opportunity scan failed: {_ive} — continuing without it")
 
     # Step 2: Attach IV calculations
     logger.info("[Pipeline] Step 2: Calculating intrinsic value for each pick...")
