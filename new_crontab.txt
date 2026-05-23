@@ -1,0 +1,85 @@
+# ============================================================
+# APEX CAPITAL — Automated Trading Pipeline
+# All times in UTC.  EDT = UTC-4.  EST = UTC-5.
+# ============================================================
+
+# ── FULL PIPELINE — 4× daily, Mon-Fri ──────────────────────
+# 9:45 AM EDT  = 13:45 UTC
+45 13 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 main.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+
+# 12:00 PM EDT = 16:00 UTC
+0 16 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 main.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+
+# 2:00 PM EDT  = 18:00 UTC
+0 18 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 main.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+
+# 4:15 PM EDT  = 20:15 UTC
+15 20 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 main.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+
+# ── R&D TEAM LEADER — 4× daily when Mac is idle ──────────────
+# 1am EDT=05UTC  (covers afterhours/overnight)
+# 4am EDT=08UTC  (warms cache before 9:45am pipeline)
+# noon EDT=16UTC (feeds 12pm + 2pm pipelines)
+# 3:15pm EDT=19:15UTC (fresh context for 4:15pm pipeline)
+0 5,8,16 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 rd_team_leader.py >> logs/rd_$(date +\%Y\%m\%d).log 2>&1
+15 19 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 rd_team_leader.py >> logs/rd_$(date +\%Y\%m\%d).log 2>&1
+
+# ── CANARY AGENT — market hours every 5 min, off-hours every 30 min ──
+# Market hours: 9:30 AM–4:30 PM EDT = 13:30–20:30 UTC → run */5 during 13–20 UTC
+*/5 13-20 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 canary_agent.py >> logs/canary_$(date +\%Y\%m\%d).log 2>&1
+
+# Off-hours weekdays (pre-market + after-hours): every 30 min
+*/30 0-12,21-23 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 canary_agent.py >> logs/canary_$(date +\%Y\%m\%d).log 2>&1
+
+# Weekends: every 30 min (overnight futures monitoring)
+*/30 * * * 0,6 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 canary_agent.py >> logs/canary_$(date +\%Y\%m\%d).log 2>&1
+
+# ── BOARD COUNCIL MEETING — daily, Mon-Fri 9:30 AM EDT = 13:30 UTC (after morning briefing) ──
+30 13 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 board_meeting.py >> logs/board_$(date +\%Y\%m\%d).log 2>&1
+
+# ── PRE-MARKET CHECK — 8:30 AM EDT = 12:30 UTC, Mon-Fri ──
+# Scans open positions for overnight gap-downs and stop-loss proximity
+# before market open. Emails Chairman if CRITICAL or HIGH alerts found.
+30 12 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 premarket_check.py >> logs/premarket_$(date +\%Y\%m\%d).log 2>&1
+
+# Generates twice-daily improvement proposals; board votes at next meeting.
+
+# ── MORNING BRIEFING — 9:15 AM EDT = 13:15 UTC, Mon-Fri ──
+# Runs 30 min before pipeline. Collects all agent state, writes shared
+# data/morning_briefing.json so every agent starts with identical context.
+15 13 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 morning_briefing.py >> logs/briefing_$(date +\%Y\%m\%d).log 2>&1
+
+# ── DAILY DIGEST — 6:00 PM EDT = 22:00 UTC, every day ──
+# Flushes all buffered non-urgent emails into one consolidated digest.
+# Urgent emails (dead-man's switch, CRITICAL, canary RED/ORANGE) always send immediately.
+0 22 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 email_buffer.py >> logs/digest_$(date +\%Y\%m\%d).log 2>&1
+
+# ── CONTINUOUS IMPROVEMENT TEAM — 6 AM, 12 PM, 6 PM, 9 PM EDT (daily) ──
+# Runs 4× daily so the board always has fresh proposals.
+# 6AM=10UTC  12PM=16UTC  6PM=22UTC  9PM=01UTC(+1day)
+0 10 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_director.py --session morning >> logs/cit_$(date +\%Y\%m\%d).log 2>&1
+0 16 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_director.py --session morning >> logs/cit_$(date +\%Y\%m\%d).log 2>&1
+0 22 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_director.py --session evening >> logs/cit_$(date +\%Y\%m\%d).log 2>&1
+0 1 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_director.py --session evening >> logs/cit_$(date +\%Y\%m\%d).log 2>&1
+@reboot cd "/Users/jackbeard/Claude investment strategy/institutional-tracker/oracle_setup" && /usr/bin/python3 try_oracle.py >> oracle_attempts.log 2>&1 &
+
+# ── R&D → ML BRIDGE AGENT — 30 min after each R&D cycle ──
+# After 1am (05:30), 4am (08:30), noon (16:30), 3:15pm (19:45)
+30 5,8 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_rd_bridge_agent.py >> logs/rd_bridge_$(date +\%Y\%m\%d).log 2>&1
+30 16 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_rd_bridge_agent.py >> logs/rd_bridge_$(date +\%Y\%m\%d).log 2>&1
+45 19 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_rd_bridge_agent.py >> logs/rd_bridge_$(date +\%Y\%m\%d).log 2>&1
+
+# ── ETF RESEARCH AGENT — 15 min after each R&D cycle ──
+# After 1am (05:15), 4am (08:15), noon (16:15), 3:15pm (19:30)
+15 5,8 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 etf_research_agent.py >> logs/etf_research_$(date +\%Y\%m\%d).log 2>&1
+15 16 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 etf_research_agent.py >> logs/etf_research_$(date +\%Y\%m\%d).log 2>&1
+30 19 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 etf_research_agent.py >> logs/etf_research_$(date +\%Y\%m\%d).log 2>&1
+
+# ── ETF POD BOARD — 45 min after each R&D cycle ──
+# After 1am (05:45), 4am (08:45), noon (16:45), 3:15pm (20:00)
+45 5,8 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 etf_pod_board.py >> logs/etf_board_$(date +\%Y\%m\%d).log 2>&1
+45 16 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 etf_pod_board.py >> logs/etf_board_$(date +\%Y\%m\%d).log 2>&1
+0 20 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 etf_pod_board.py >> logs/etf_board_$(date +\%Y\%m\%d).log 2>&1
+
+# ── CIT PIPELINE INTEGRITY AGENT — every 2h at :50 (after each pipeline cycle) ──
+50 */2 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_pipeline_integrity_agent.py >> logs/pipeline_integrity_$(date +\%Y\%m\%d).log 2>&1

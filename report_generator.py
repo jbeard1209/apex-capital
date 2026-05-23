@@ -112,7 +112,8 @@ def chart_monthly_heatmap(monthly_df: pd.DataFrame) -> str:
     )
     ax.set_facecolor(DARK_BG)
 
-    vmax = max(abs(pivot.values[~np.isnan(pivot.values)]).max(), 1)
+    _valid = pivot.values[~np.isnan(pivot.values)]
+    vmax = max(float(abs(_valid).max()) if len(_valid) > 0 else 1.0, 1)
     norm = TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
     cmap = plt.cm.RdYlGn
 
@@ -330,12 +331,12 @@ def build_html_report(
                 border-left:4px solid {BLUE};">
         <h1 style="margin:0 0 4px 0;color:{BLUE};">🏦 Institutional Tracker</h1>
         <p style="margin:0;color:#8b949e;font-size:13px;">
-            Paper Trading Report · Day {paper_day}/30 · {today}
+            Trading Report · Day {paper_day} · {today}
         </p>
     </div>
 
     <!-- TODAY'S METRICS -->
-    <h2 style="color:{TEXT_COL};">📊 Today's Paper Trading Performance</h2>
+    <h2 style="color:{TEXT_COL};">📊 Today's Trading Performance</h2>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin:16px 0;">
         {_metric_card("Portfolio Value",  f"${port_val:,.2f}",                       BLUE)}
         {_metric_card("Today's P&L",      f"{pnl_sign}${abs(pnl_today):,.2f}",       pnl_color)}
@@ -347,6 +348,8 @@ def build_html_report(
 
     {positions_html}
 
+    {_build_notable_changes_section()}
+
     {_build_thematic_section()}
 
     {bt_section}
@@ -354,8 +357,7 @@ def build_html_report(
     <!-- FOOTER -->
     <hr style="border-color:{GRID_COL};margin:32px 0 16px 0;">
     <p style="color:#8b949e;font-size:11px;text-align:center;">
-        Institutional Tracker · Paper Trading Mode · Generated {datetime.now().strftime("%Y-%m-%d %H:%M:%S ET")}
-        <br>This is a paper trading simulation. No real money is at risk.
+        Institutional Tracker · Apex Capital — Proprietary Trading · Generated {datetime.now().strftime("%Y-%m-%d %H:%M:%S ET")}
     </p>
     </body>
     </html>
@@ -424,6 +426,57 @@ def _monthly_table(monthly_df: pd.DataFrame) -> str:
 
 
 THEMATIC_LOG = os.path.join(os.path.dirname(__file__), "data", "thematic_positions.json")
+
+
+def _build_notable_changes_section() -> str:
+    """
+    Read data/notable_changes.json and render a 'Notable Changes' section
+    for board-approved ThinkTank proposals. Returns empty string if none exist.
+    """
+    notable_path = os.path.join("data", "notable_changes.json")
+    if not os.path.exists(notable_path):
+        return ""
+    try:
+        with open(notable_path) as f:
+            changes = json.load(f)
+    except Exception:
+        return ""
+    if not changes:
+        return ""
+
+    rows = ""
+    for c in changes:
+        approved_at = c.get("approved_at", "")[:10]
+        status = c.get("status", "approved")
+        sev = c.get("severity", "MEDIUM")
+        sev_color = {"HIGH": "#f85149", "MEDIUM": "#f0883e", "LOW": "#58a6ff"}.get(sev, "#8b949e")
+        rows += f"""
+        <div style="border-left:3px solid {sev_color};padding:12px 16px;margin-bottom:14px;
+                    background:#161b22;border-radius:0 8px 8px 0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <strong style="color:#e6edf3;font-size:14px;">{c.get('title','')}</strong>
+            <span style="font-size:11px;color:#8b949e;white-space:nowrap;margin-left:12px;">
+              Approved {approved_at} · Board unanimous
+            </span>
+          </div>
+          <p style="margin:0 0 6px 0;color:#8b949e;font-size:13px;">{c.get('description','')[:200]}{"..." if len(c.get("description","")) > 200 else ""}</p>
+          <div style="font-size:12px;color:#3fb950;">
+            <strong>Implementation path:</strong> {c.get('proposed_fix','')[:160]}{"..." if len(c.get("proposed_fix","")) > 160 else ""}
+          </div>
+          <div style="margin-top:6px;font-size:11px;color:#8b949e;">
+            Status: <span style="color:{sev_color};">{status}</span>
+          </div>
+        </div>"""
+
+    return f"""
+    <div style="background:#0d1117;border-radius:12px;padding:24px 28px;margin-bottom:24px;
+                border-left:4px solid #3fb950;">
+      <h2 style="color:#3fb950;margin:0 0 16px 0;">✅ Notable Changes — Board Approved</h2>
+      <p style="color:#8b949e;font-size:13px;margin:0 0 16px 0;">
+        The following proposals were unanimously approved by the board and are queued for implementation.
+      </p>
+      {rows}
+    </div>"""
 
 
 def _build_thematic_section() -> str:

@@ -60,14 +60,26 @@
 #   python3 canary_agent.py --status      # print current state and exit
 # =============================================================================
 
+import fcntl
 import json
 import logging
 import os
+import signal
 import sys
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import yfinance as yf
+
+# Suppress yfinance's internal download-failure ERROR messages — these are
+# noisy API failures (NoneType errors, 1 Failed download, etc.) that get
+# printed to stderr and counted as ERROR lines by the CIT Pipeline Monitor.
+# The canary already handles None returns from _get_intraday_change() gracefully.
+import logging as _logging
+_logging.getLogger("yfinance").setLevel(_logging.CRITICAL)
+_logging.getLogger("yfinance.base").setLevel(_logging.CRITICAL)
+_logging.getLogger("yfinance.download").setLevel(_logging.CRITICAL)
+_logging.getLogger("peewee").setLevel(_logging.CRITICAL)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -186,6 +198,18 @@ def _in_cooldown(state: dict, level: str) -> bool:
 # MARKET DATA FETCHERS
 # =============================================================================
 
+def _flatten_yf(df) -> "pd.DataFrame":
+    """
+    yfinance ≥ 0.2.x returns MultiIndex columns (metric, ticker) when
+    downloading a single ticker. Flatten to single-level so df["Close"]
+    always returns a Series regardless of yfinance version.
+    """
+    import pandas as pd
+    if isinstance(df.columns, pd.MultiIndex):
+        df = df.droplevel(1, axis=1)
+    return df
+
+
 def _pct_change_today(ticker: str, interval: str = "5m") -> Optional[float]:
     """
     Returns the intraday % change for a ticker (vs prior close).
@@ -193,11 +217,10 @@ def _pct_change_today(ticker: str, interval: str = "5m") -> Optional[float]:
     """
     try:
         if _is_market_open():
-            df = yf.download(ticker, period="2d", interval=interval,
-                             progress=False, auto_adjust=True)
+            df = _flatten_yf(yf.download(ticker, period="2d", interval=interval,
+                                         progress=False, auto_adjust=True))
             if df.empty or len(df) < 2:
                 return None
-            # Prior close = last bar of yesterday
             today_str = datetime.now().strftime("%Y-%m-%d")
             today_bars = df[df.index.strftime("%Y-%m-%d") == today_str]
             prev_bars  = df[df.index.strftime("%Y-%m-%d") < today_str]
@@ -207,8 +230,7 @@ def _pct_change_today(ticker: str, interval: str = "5m") -> Optional[float]:
             prev  = float(prev_bars["Close"].iloc[-1])
             return (close - prev) / prev * 100
         else:
-            # Use daily bar for after-hours context
-            df = yf.download(ticker, period="5d", progress=False, auto_adjust=True)
+            df = _flatten_yf(yf.download(ticker, period="5d", progress=False, auto_adjust=True))
             if df.empty or len(df) < 2:
                 return None
             close = float(df["Close"].iloc[-1])
@@ -221,12 +243,12 @@ def _pct_change_today(ticker: str, interval: str = "5m") -> Optional[float]:
 def _get_vix() -> tuple[Optional[float], Optional[float]]:
     """Returns (current VIX level, VIX daily % change)."""
     try:
-        df = yf.download("^VIX", period="5d", progress=False, auto_adjust=True)
+        df = _flatten_yf(yf.download("^VIX", period="5d", progress=False, auto_adjust=True))
         if df.empty or len(df) < 2:
             return None, None
-        level    = float(df["Close"].iloc[-1])
-        prev     = float(df["Close"].iloc[-2])
-        pct_chg  = (level - prev) / prev * 100
+        level   = float(df["Close"].iloc[-1])
+        prev    = float(df["Close"].iloc[-2])
+        pct_chg = (level - prev) / prev * 100
         return level, pct_chg
     except Exception:
         return None, None
@@ -291,6 +313,15 @@ def assess_alert_level() -> dict:
         readings["spy_pct"] = spy_chg
         readings["qqq_pct"] = qqq_chg
 
+        # If SPY data is unavailable (Yahoo Finance blip), raise at most YELLOW.
+        # Defaulting to ORANGE on a data-feed failure is too aggressive — it blocks
+        # all capital deployment for a network/API glitch rather than an actual crash.
+        # Other triggers (VIX, positions, QQQ) still fire independently.
+        if spy_chg is None:
+            _lvl_order = ["GREEN", "YELLOW", "ORANGE", "RED"]
+            level = max(level, "YELLOW", key=lambda l: _lvl_order.index(l))
+            triggers.append("SPY data unavailable — raising to YELLOW (data feed issue; not a crash signal)")
+
         if spy_chg is not None:
             if spy_chg <= SPY_RED:
                 level = "RED"
@@ -328,6 +359,16 @@ def assess_alert_level() -> dict:
     readings["vix_change"] = vix_spike
 
     _levels = ["GREEN", "YELLOW", "ORANGE", "RED"]
+    # When VIX data is unavailable during market hours, raise to YELLOW only.
+    # ORANGE was too aggressive — a Yahoo Finance blip would launch a full emergency
+    # cascade (CRO → Review → Manager → Board) on a data-feed failure, not a crash.
+    # YELLOW logs the gap and increases monitoring sensitivity without waking agents.
+    # If the feed is down for multiple consecutive runs, other triggers (SPY, QQQ,
+    # positions, sector breadth) will still fire at appropriate levels independently.
+    if vix_level is None and market_open:
+        level = max(level, "YELLOW", key=lambda l: _levels.index(l))
+        triggers.append("VIX data unavailable — raising to YELLOW (data feed issue, not a crash signal)")
+
     if vix_level is not None:
         if vix_level >= VIX_RED:
             level = max(level, "RED", key=lambda l: _levels.index(l))
@@ -375,8 +416,20 @@ def assess_alert_level() -> dict:
             level = max(level, "YELLOW", key=lambda l: _levels.index(l))
             triggers.append(f"Wide sector weakness: {neg_sectors}/{len(SECTOR_ETFS)} sectors negative")
 
+    # ── Regime field (CIT-2026-203) ─────────────────────────────────────────
+    # Maps canary alert level → strategic regime label consumed by R&D leader
+    # and Manager Agent to shift research mandate and position sizing.
+    _regime_map = {
+        "GREEN":  "BULL",
+        "YELLOW": "NEUTRAL",
+        "ORANGE": "DEFENSIVE",
+        "RED":    "CRISIS",
+    }
+    regime = _regime_map.get(level, "NEUTRAL")
+
     return {
         "level":       level,
+        "regime":      regime,
         "triggers":    triggers,
         "readings":    readings,
         "assessed_at": datetime.now().isoformat(),
@@ -400,6 +453,19 @@ def _write_alert_file(assessment: dict):
     os.makedirs("data", exist_ok=True)
     with open(ALERT_PATH, "w") as f:
         json.dump(alert, f, indent=2, default=str)
+
+    # Broadcast market stress to firm channel immediately
+    try:
+        from firm_channel import post as _fc_post
+        _level   = assessment["level"]
+        _triggers = "; ".join(assessment.get("triggers", [])[:3])
+        _fc_post(
+            "Canary Agent", "MARKET_NOTE",
+            f"🚨 CANARY {_level} — {_triggers}. All BUY orders blocked. Defensive mode active.",
+            priority="URGENT",
+        )
+    except Exception:
+        pass
 
 
 def _clear_alert_file():
@@ -598,16 +664,10 @@ def _emergency_response_cascade(assessment: dict):
     logger.info("  [Canary] Step 2/5 — Review Agent: emergency position scan...")
     try:
         from review_agent import run_review
-        run_review(send_email=True, canary_context=assessment)
+        run_review(quiet=True)
         logger.info("  [Canary] ✓ Review Agent scan complete")
     except Exception as e:
-        # review_agent may not accept canary_context kwarg — fall back gracefully
-        try:
-            from review_agent import run_review
-            run_review(send_email=True)
-            logger.info("  [Canary] ✓ Review Agent scan complete (standard mode)")
-        except Exception as e2:
-            logger.error(f"  [Canary] Review Agent step failed: {e2}")
+        logger.error(f"  [Canary] Review Agent step failed: {e}")
 
     # ── Step 3: Manager Agent — defensive execution ──────────────────────
     logger.info("  [Canary] Step 3/5 — Manager Agent: defensive execution...")
@@ -848,7 +908,21 @@ def run_canary(test_level: Optional[str] = None) -> dict:
                 "(CRO → Review → Manager → Board)"
             )
             _write_alert_file(assessment)
-            _send_alert_email(assessment, state)
+            # Log to issue tracker
+            try:
+                import issue_tracker as _it
+                _trigger = "; ".join(assessment.get("triggers", [])[:3])
+                _summary = f"Canary ORANGE alert. Triggers: {_trigger}. Emergency cascade launched."
+                _it.log_issue(
+                    reporter="Canary Agent",
+                    title=f"Market alert: ORANGE — {_trigger[:80]}",
+                    description=_summary,
+                    severity="HIGH",
+                    category="RISK",
+                )
+            except Exception as _it_err:
+                logger.debug(f"  [Canary] Issue tracker log error (non-fatal): {_it_err}")
+            # ORANGE: internal cascade only — no Chairman email (RED only reaches Chairman)
             _emergency_response_cascade(assessment)
             state["alerts_today"] = state.get("alerts_today", []) + [
                 {"level": "ORANGE", "time": now_iso,
@@ -868,10 +942,47 @@ def run_canary(test_level: Optional[str] = None) -> dict:
                 "(CRO → Review → Manager → Board → IRM)"
             )
             _write_alert_file(assessment)
+            # Log to issue tracker
+            try:
+                import issue_tracker as _it
+                _trigger = "; ".join(assessment.get("triggers", [])[:3])
+                _summary = f"Canary RED alert. Triggers: {_trigger}. Full emergency cascade launched."
+                _it.log_issue(
+                    reporter="Canary Agent",
+                    title=f"Market alert: RED — {_trigger[:80]}",
+                    description=_summary,
+                    severity="CRITICAL",
+                    category="RISK",
+                )
+            except Exception as _it_err:
+                logger.debug(f"  [Canary] Issue tracker log error (non-fatal): {_it_err}")
             _send_alert_email(assessment, state)
             _emergency_response_cascade(assessment)
+
+            # Call emergency board meeting for RED alerts
+            try:
+                from board_meeting import call_emergency_board_meeting
+                _triggers_str = "; ".join(assessment.get("triggers", [])[:3])
+                call_emergency_board_meeting(
+                    reason=f"Market alert: RED — {_triggers_str}",
+                    severity="CRITICAL",
+                    caller="Canary Agent",
+                    anonymous=False,
+                )
+            except Exception as _ebm_e:
+                logger.error(f"  [Canary] Emergency board meeting call failed: {_ebm_e}")
+
+            # If board meeting active, also run deputy manager
+            try:
+                from deputy_agents import is_board_meeting_active, DeputyManager
+                if is_board_meeting_active():
+                    logger.info("  [Canary] RED + board meeting active — running DeputyManager")
+                    DeputyManager().run()
+            except Exception as _dep_e:
+                logger.debug(f"  [Canary] Deputy manager error (non-fatal): {_dep_e}")
+
             state["manager_triggers"] = state.get("manager_triggers", []) + [
-                {"time": now_iso, "triggers": assessment["triggers"]}
+                {"time": now_iso, "triggers": assessment.get("triggers", [])}
             ]
         else:
             mins = COOLDOWN_RED - _minutes_since(state.get("last_red_time"))
@@ -880,6 +991,20 @@ def run_canary(test_level: Optional[str] = None) -> dict:
     # ── Update state ──────────────────────────────────────────────────────
     state["last_level"]      = level
     state["last_level_time"] = now_iso
+    # Persist regime field for R&D leader and other consumers (CIT-2026-203)
+    state["regime"] = assessment.get("regime", "NEUTRAL")
+    # Persist key market readings so downstream agents (CIT, board) can read them
+    # BUG FIX: use assessment["readings"] — bare `readings` and `market_open` are
+    # not in scope here; they only exist inside assess_alert_level().
+    _last_readings = assessment.get("readings", {})
+    state["last_readings"] = {
+        "spy_pct":    _last_readings.get("spy_pct"),
+        "qqq_pct":    _last_readings.get("qqq_pct"),
+        "vix_level":  _last_readings.get("vix_level"),
+        "vix_change": _last_readings.get("vix_change"),
+        "market_open": assessment.get("market_open"),
+        "updated_at":  now_iso,
+    }
     _save_state(state)
 
     return assessment
@@ -935,6 +1060,24 @@ def print_status():
 # =============================================================================
 
 if __name__ == "__main__":
+    # ── Single-instance guard ─────────────────────────────────────────────────
+    # Prevents multiple copies piling up when cron fires faster than the agent
+    # finishes (Claude API calls can take 1-3 min; cron fires every 5 min).
+    _LOCK_PATH = "/tmp/canary_agent.lock"
+    _lock_file = open(_LOCK_PATH, "w")
+    try:
+        fcntl.flock(_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        # Another instance is already running — exit immediately
+        sys.exit(0)
+
+    # ── Hard timeout: 4 min 30 sec — always exits before next cron tick ──────
+    def _timeout_handler(signum, frame):
+        logging.getLogger(__name__).warning("  [Canary] Hard timeout reached — exiting cleanly.")
+        sys.exit(0)
+    signal.signal(signal.SIGALRM, _timeout_handler)
+    signal.alarm(270)  # 4 min 30 sec
+
     if "--status" in sys.argv:
         print_status()
     elif "--test-red" in sys.argv:

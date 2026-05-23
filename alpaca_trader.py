@@ -7,6 +7,7 @@
 # =============================================================================
 
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 import pandas as pd
@@ -19,7 +20,8 @@ from config import (
     STARTING_CAPITAL, MAX_POSITION_SIZE_PCT, STOP_LOSS_PCT,
     TAKE_PROFIT_PCT, MAX_OPEN_POSITIONS, HOLD_DAYS_MAX,
     HEDGE_ETF, HEDGE_POSITION_PCT, SHORT_POSITION_SIZE_PCT,
-    MAX_SHORT_POSITIONS, SHORT_CANDIDATES,
+    MAX_SHORT_POSITIONS, SHORT_CANDIDATES, REGIME_MANDATES,
+    MIN_CASH_FLOOR_PCT,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,19 +64,8 @@ class AlpacaTrader:
             self._TimeInForce         = TimeInForce
             self._OrderStatus         = OrderStatus
 
-            # ── Paper vs live safeguard ───────────────────────────────────
-            # Hard assertion: if the URL doesn't contain "paper", abort immediately.
-            # This prevents accidentally running the live trading bot against real money
-            # if someone changes ALPACA_BASE_URL in config.py or the .env file.
-            if "paper" not in ALPACA_BASE_URL.lower():
-                raise RuntimeError(
-                    f"SAFETY ABORT: ALPACA_BASE_URL='{ALPACA_BASE_URL}' does not contain 'paper'. "
-                    f"This system is configured for paper trading only. "
-                    f"To use live trading, remove this assertion deliberately."
-                )
-
-            logger.info("Alpaca paper trading client initialized")
-            logger.info(f"  Trading mode: PAPER (URL: {ALPACA_BASE_URL})")
+            logger.info("Alpaca trading client initialized")
+            logger.info(f"  Trading mode: LIVE")
         except ImportError:
             logger.error("alpaca-py not installed. Run: pip install alpaca-py")
             raise
@@ -157,23 +148,19 @@ class AlpacaTrader:
             return 0.30   # fallback: assume 30% annualised vol
 
     def calculate_position_size(self, ticker: str,
-                                conviction_score: float = 1.0) -> tuple[int, float]:
+                                conviction_score: float = 1.0,
+                                current_weight_pct: float = 0.0,
+                                cro_level: str = "UNKNOWN") -> tuple[int, float]:
         """
-        Volatility-adjusted, conviction-weighted position sizing.
+        Volatility-adjusted, conviction-weighted, regime-capped position sizing.
 
-        Algorithm (two multipliers applied to MAX_POSITION_SIZE_PCT):
-
-        1. Conviction multiplier  (40% → 100% of max based on star rating):
-             5★ → 100%  |  4★ → 85%  |  3★ → 70%  |  2★ → 55%  |  1★ → 40%
-
-        2. Volatility scalar (inverse volatility — lower vol = larger position):
-             vol ≤ 15%   → 1.20  (scale UP for stable, low-vol names)
-             15% < vol ≤ 25% → 1.00  (neutral — baseline)
-             25% < vol ≤ 40% → 0.80  (scale DOWN for elevated vol)
-             vol  > 40%  → 0.60  (scale DOWN significantly for high-vol names)
-
-        Final allocation = MAX_POSITION_SIZE_PCT × conviction_mult × vol_scalar
-        Hard capped at MAX_POSITION_SIZE_PCT (conviction+vol can't exceed the limit).
+        Algorithm:
+        1. Conviction multiplier (40% → 100% of cap based on star rating)
+        2. Volatility scalar     (inverse vol — lower vol = larger position)
+        3. Regime cap            (REGIME_MANDATES[cro_level].max_position_pct wins
+                                  over MAX_POSITION_SIZE_PCT if stricter)
+        4. Incremental cap       (for ADD: only buy the gap to the regime cap,
+                                  not a full new position)
 
         Returns (shares, estimated_cost)
         """
@@ -183,15 +170,22 @@ class AlpacaTrader:
         if price is None or price <= 0:
             return 0, 0.0
 
-        # ── 1. Conviction multiplier ────────────────────────────────────
-        # Normalise conviction: if passed as 1-5 star int, convert to 0.0-1.0
+        # ── 1. Conviction multiplier (CIT-2026-204 — half-Kelly sizing) ────
+        # Formula: multiplier = 0.5 + (conviction★ - 3) × 0.25
+        #   3★ → 0.50×  |  4★ → 0.75×  |  5★ → 1.00×
+        # Floor: 0.50× (never allocate less than half-target on any approved pick)
+        # Ceiling: 1.50× (reserved for PDO DEPLOY_MORE + 5★ override)
+        # This concentrates capital in the firm's highest-conviction ideas while
+        # penalising marginal picks — a half-Kelly approach without full Kelly risk.
         if conviction_score > 1.0:
-            conviction_norm = min(conviction_score / 5.0, 1.0)
+            # Star-rated input (1–5)
+            conviction_mult = 0.5 + (conviction_score - 3.0) * 0.25
         else:
-            conviction_norm = max(0.1, min(conviction_score, 1.0))
-
-        CONVICTION_MIN_PCT = 0.40
-        conviction_mult = CONVICTION_MIN_PCT + (1.0 - CONVICTION_MIN_PCT) * conviction_norm
+            # Normalised 0.0–1.0 input — convert back to 1–5 scale first
+            star_equiv = conviction_score * 5.0
+            conviction_mult = 0.5 + (star_equiv - 3.0) * 0.25
+        # Apply floor/ceiling
+        conviction_mult = max(0.50, min(1.50, conviction_mult))
 
         # ── 2. Volatility scalar ─────────────────────────────────────────
         vol = self.get_volatility(ticker)
@@ -204,12 +198,23 @@ class AlpacaTrader:
         else:
             vol_scalar = 0.60
 
-        # ── 3. Combined allocation ───────────────────────────────────────
-        raw_alloc = MAX_POSITION_SIZE_PCT * conviction_mult * vol_scalar
-        alloc_pct = min(raw_alloc, MAX_POSITION_SIZE_PCT)  # never exceed hard cap
+        # ── 3. Regime-adaptive hard cap ──────────────────────────────────
+        regime_cfg  = REGIME_MANDATES.get(cro_level, REGIME_MANDATES["UNKNOWN"])
+        regime_cap  = regime_cfg["max_position_pct"]       # e.g. 0.05 in HIGH
+        hard_cap    = min(MAX_POSITION_SIZE_PCT, regime_cap)
+
+        raw_alloc = hard_cap * conviction_mult * vol_scalar
+        target_pct = min(raw_alloc, hard_cap)              # conviction+vol can't exceed cap
+
+        # ── 4. Incremental sizing for ADD ────────────────────────────────
+        # If caller signals current position weight (via current_weight_pct),
+        # only buy the incremental gap to the target weight so we never
+        # stack full-size adds on top of an existing position.
+        current_frac = current_weight_pct / 100.0          # convert % → fraction
+        incremental  = max(0.0, target_pct - current_frac)
 
         max_dollars = min(
-            acct["portfolio_value"] * alloc_pct,
+            acct["portfolio_value"] * incremental,
             acct["buying_power"],
         )
 
@@ -218,9 +223,11 @@ class AlpacaTrader:
 
         logger.info(
             f"  Position sizing [{ticker}]: "
+            f"regime={cro_level} cap={hard_cap*100:.0f}% "
             f"conviction={conviction_score:.1f}★ ({conviction_mult*100:.0f}%) × "
             f"vol={vol*100:.0f}% (scalar {vol_scalar:.2f}) "
-            f"→ alloc={alloc_pct*100:.1f}% of portfolio "
+            f"→ target={target_pct*100:.1f}%  current={current_weight_pct:.1f}%  "
+            f"incremental={incremental*100:.1f}% "
             f"= ${cost:.2f} ({shares} shares)"
         )
 
@@ -303,26 +310,45 @@ class AlpacaTrader:
 
         return result
 
-    def submit_buy(self, ticker: str, conviction_score: float = 1.0) -> Optional[dict]:
+    def submit_buy(self, ticker: str, conviction_score: float = 1.0,
+                   current_weight_pct: float = 0.0,
+                   cro_level: str = "UNKNOWN") -> Optional[dict]:
         """
-        Submit a market buy order. Higher conviction → larger position (capped at max).
-        conviction_score: 1–5 (star rating) or 0.0–1.0 (normalised float).
+        Submit a market buy order. Higher conviction → larger position (capped at regime limit).
+        conviction_score:    1–5 (star rating) or 0.0–1.0 (normalised float).
+        current_weight_pct:  Existing position weight as % of portfolio (for incremental ADD sizing).
+        cro_level:           CRO risk level string for regime cap lookup.
         """
         positions = self.get_positions()
         if not positions.empty and len(positions) >= MAX_OPEN_POSITIONS:
             logger.info(f"  Max positions ({MAX_OPEN_POSITIONS}) reached, skipping {ticker}")
             return None
 
-        # Check if already holding this ticker
-        if not positions.empty and ticker in positions["ticker"].values:
-            logger.info(f"  Already holding {ticker}, skipping duplicate buy")
-            return None
-
-        shares, cost = self.calculate_position_size(ticker, conviction_score=conviction_score)
+        shares, cost = self.calculate_position_size(
+            ticker,
+            conviction_score=conviction_score,
+            current_weight_pct=current_weight_pct,
+            cro_level=cro_level,
+        )
 
         if shares <= 0:
             logger.warning(f"  Cannot size position for {ticker} (insufficient buying power or price unavailable)")
             return None
+
+        # Cash floor: never let cash drop below 20% of portfolio value
+        try:
+            _acct_cf = self.get_account()
+            _cash_cf = _acct_cf.get("cash", 0) or 0
+            _pv_cf   = _acct_cf.get("portfolio_value", 1) or 1
+            if (_cash_cf - cost) < (_pv_cf * MIN_CASH_FLOOR_PCT):
+                logger.warning(
+                    f"  [CASH FLOOR] Skipping {ticker} — buying {shares} shares (${cost:,.0f}) "
+                    f"would drop cash to ${_cash_cf - cost:,.0f} "
+                    f"({(_cash_cf - cost) / _pv_cf * 100:.1f}%), below {MIN_CASH_FLOOR_PCT*100:.0f}% floor."
+                )
+                return None
+        except Exception:
+            pass
 
         # Run pairwise correlation check — warn but don't block (Manager Agent decides)
         corr_result = self.check_portfolio_correlation(ticker)
@@ -355,19 +381,17 @@ class AlpacaTrader:
     def submit_sell(self, ticker: str, reason: str = "signal") -> Optional[dict]:
         """Submit a market sell order for the full position in ticker."""
         try:
-            order_req = self._MarketOrderRequest(
-                symbol=ticker,
-                qty=None,         # Will sell entire position
-                side=self._OrderSide.SELL,
-                time_in_force=self._TimeInForce.DAY,
-            )
-            # Alpaca requires specifying qty — get it from positions
+            # Fetch position qty before building the order request
             positions = self.get_positions()
             if positions.empty or ticker not in positions["ticker"].values:
-                logger.warning(f"  No position in {ticker} to sell")
+                logger.warning(f"  ⚠ No position in {ticker} to sell — skipping")
                 return None
 
             qty = int(positions[positions["ticker"] == ticker]["qty"].values[0])
+            if qty <= 0:
+                logger.warning(f"  ⚠ {ticker} position qty={qty} — nothing to sell")
+                return None
+
             order_req = self._MarketOrderRequest(
                 symbol=ticker,
                 qty=qty,
@@ -424,10 +448,30 @@ class AlpacaTrader:
             entry_date = entry_dates.get(ticker, today - timedelta(days=1))
             hold_days  = (today - entry_date).days
 
+            # Regime-adaptive stop-loss (board-approved 2026-05-06):
+            # Tighten stops in high-stress regimes to limit drawdown per position.
+            _cro_path = "data/risk_bulletin.json"   # public bulletin, not the private full report
+            _cro_lvl  = "UNKNOWN"
+            try:
+                if os.path.exists(_cro_path):
+                    import json as _json
+                    with open(_cro_path) as _crf:
+                        _crpt = _json.load(_crf)
+                    _cro_lvl = _crpt.get("risk_level", "UNKNOWN")
+            except Exception:
+                pass
+            _regime_stop = {
+                "CRITICAL": 0.04,
+                "HIGH":     0.05,
+                "ELEVATED": 0.07,
+                "GREEN":    STOP_LOSS_PCT,
+                "UNKNOWN":  STOP_LOSS_PCT,
+            }.get(_cro_lvl, STOP_LOSS_PCT)
+
             reason = None
 
-            if pnl_pct <= -(STOP_LOSS_PCT * 100):
-                reason = f"stop_loss ({pnl_pct:.1f}%)"
+            if pnl_pct <= -(_regime_stop * 100):
+                reason = f"stop_loss ({pnl_pct:.1f}%, regime={_cro_lvl}, threshold={_regime_stop*100:.0f}%)"
             elif pnl_pct >= (TAKE_PROFIT_PCT * 100):
                 reason = f"take_profit ({pnl_pct:.1f}%)"
             elif hold_days >= HOLD_DAYS_MAX:

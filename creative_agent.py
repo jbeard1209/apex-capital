@@ -329,7 +329,7 @@ def polish_email(
     <div>
       <span style="color:{APEX_COLORS['text_dim']};font-size:11px;">
         Apex Capital Intelligence &nbsp;·&nbsp;
-        Paper trading simulation — not real investment advice &nbsp;·&nbsp;
+        Apex Capital — Proprietary Trading &nbsp;·&nbsp;
         Generated {now}
       </span>
     </div>

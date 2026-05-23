@@ -26,6 +26,7 @@
 #   python3 rd_team_leader.py --scan-only  # scan and assign only (no email)
 # =============================================================================
 
+import fcntl
 import json
 import logging
 import os
@@ -283,6 +284,151 @@ def _score_etf(etf: str) -> Optional[dict]:
         return None
 
 
+def _build_earnings_html_section() -> str:
+    """Build an HTML card showing upcoming earnings predictions."""
+    try:
+        ep_path = "data/earnings_predictions.json"
+        if not os.path.exists(ep_path):
+            return ""
+        with open(ep_path) as _f:
+            ep = json.load(_f)
+        preds = ep.get("predictions", [])
+        if not preds:
+            return ""
+        summ = ep.get("summary", {})
+
+        rows = ""
+        for p in preds[:20]:
+            col   = {"BEAT": "#3fb950", "MISS": "#f85149", "INLINE": "#f0883e"}.get(p["prediction"], "#8b949e")
+            icon  = {"BEAT": "▲", "MISS": "▼", "INLINE": "–"}.get(p["prediction"], "")
+            conf  = "★" * p["confidence"]
+            br    = f"{p['beat_rate']:.0%}" if p.get("beat_rate") is not None else "n/a"
+            rows += f"""
+            <tr style="border-bottom:1px solid #21262d;">
+              <td style="padding:7px 8px;font-weight:bold;color:#58a6ff;">{p['ticker']}</td>
+              <td style="padding:7px 8px;color:#8b949e;">{p['earnings_date']}</td>
+              <td style="padding:7px 8px;color:#8b949e;">{p['days_until']}d</td>
+              <td style="padding:7px 8px;color:{col};font-weight:bold;">{icon} {p['prediction']}</td>
+              <td style="padding:7px 8px;color:#f0c000;">{conf}</td>
+              <td style="padding:7px 8px;color:#8b949e;">{br}</td>
+              <td style="padding:7px 8px;color:#8b949e;font-size:11px;">{p['reasoning'][:70]}</td>
+            </tr>"""
+
+        return f"""
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;
+              padding:20px;margin-bottom:20px;">
+    <h2 style="color:#58a6ff;font-size:15px;margin:0 0 4px 0;">
+      Earnings Predictions — Next 90 Days
+    </h2>
+    <p style="color:#8b949e;font-size:12px;margin:0 0 14px 0;">
+      {summ.get('total',0)} upcoming earnings &nbsp;·&nbsp;
+      <span style="color:#3fb950;">{summ.get('beat_calls',0)} BEAT</span> &nbsp;·&nbsp;
+      <span style="color:#f85149;">{summ.get('miss_calls',0)} MISS</span> &nbsp;·&nbsp;
+      <span style="color:#f0883e;">{summ.get('inline_calls',0)} INLINE</span> &nbsp;·&nbsp;
+      {summ.get('high_conf',0)} high-confidence (4★+)
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-family:monospace;font-size:13px;">
+      <thead>
+        <tr style="border-bottom:1px solid #30363d;color:#8b949e;font-size:11px;">
+          <th style="padding:6px 8px;text-align:left;">TICKER</th>
+          <th style="padding:6px 8px;text-align:left;">DATE</th>
+          <th style="padding:6px 8px;text-align:left;">DAYS</th>
+          <th style="padding:6px 8px;text-align:left;">PREDICTION</th>
+          <th style="padding:6px 8px;text-align:left;">CONF</th>
+          <th style="padding:6px 8px;text-align:left;">BEAT RATE</th>
+          <th style="padding:6px 8px;text-align:left;">REASONING</th>
+        </tr>
+      </thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>"""
+    except Exception:
+        return ""
+
+
+def _build_intl_html_section() -> str:
+    """Build an HTML card showing the latest international markets snapshot."""
+    try:
+        rpt_path = "data/international_report.json"
+        if not os.path.exists(rpt_path):
+            return ""
+        with open(rpt_path) as _f:
+            rpt = json.load(_f)
+
+        sentiment = rpt.get("sentiment", "NEUTRAL")
+        score     = rpt.get("sentiment_score", 0)
+        session   = rpt.get("session", "")
+        watch     = rpt.get("watch_tickers", [])
+        impl      = rpt.get("us_implications", [])
+
+        sent_color = {"RISK_ON": "#3fb950", "RISK_OFF": "#f85149", "NEUTRAL": "#f0883e"}.get(sentiment, "#8b949e")
+
+        notable_rows = ""
+        for r in rpt.get("notable_indices", [])[:8]:
+            pct = r.get("pct")
+            if pct is None:
+                continue
+            col = "#3fb950" if pct > 0 else "#f85149"
+            notable_rows += f"""
+            <tr style="border-bottom:1px solid #21262d;">
+              <td style="padding:6px 8px;color:#e6edf3;">{r['name']}</td>
+              <td style="padding:6px 8px;color:{col};font-weight:bold;">{pct:+.2f}%</td>
+            </tr>"""
+
+        fx_rows = ""
+        for r in rpt.get("notable_currencies", [])[:4]:
+            pct = r.get("pct")
+            if pct is None:
+                continue
+            col = "#3fb950" if pct > 0 else "#f85149"
+            fx_rows += f"""
+            <tr style="border-bottom:1px solid #21262d;">
+              <td style="padding:6px 8px;color:#e6edf3;">{r['name']}</td>
+              <td style="padding:6px 8px;color:{col};font-weight:bold;">{pct:+.2f}%</td>
+            </tr>"""
+
+        impl_html = "".join(
+            f'<li style="margin-bottom:6px;color:#8b949e;">{i}</li>' for i in impl[:4]
+        )
+        watch_html = (
+            " &nbsp;·&nbsp; ".join(
+                f'<span style="color:#58a6ff;font-weight:bold;">{t}</span>' for t in watch[:8]
+            ) if watch else '<span style="color:#8b949e;">none flagged</span>'
+        )
+
+        return f"""
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;
+              padding:20px;margin-bottom:20px;">
+    <h2 style="color:#58a6ff;font-size:15px;margin:0 0 4px 0;">
+      International Markets Intelligence — {session.replace('_',' ').title()}
+    </h2>
+    <p style="color:#8b949e;font-size:12px;margin:0 0 14px 0;">
+      Sentiment: <span style="color:{sent_color};font-weight:bold;">{sentiment}</span>
+      &nbsp;({score:+d}) &nbsp;·&nbsp; IMI Desk / R&D Department
+    </p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;">
+        <p style="color:#8b949e;font-size:11px;margin:0 0 6px 0;">NOTABLE INDEX MOVES</p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tbody>{notable_rows or '<tr><td style="color:#8b949e;padding:6px 8px;">No major moves</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div style="flex:1;min-width:160px;">
+        <p style="color:#8b949e;font-size:11px;margin:0 0 6px 0;">FX MOVES</p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <tbody>{fx_rows or '<tr><td style="color:#8b949e;padding:6px 8px;">No major moves</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+    <p style="color:#8b949e;font-size:11px;margin:16px 0 6px 0;">US IMPLICATIONS</p>
+    <ul style="margin:0;padding-left:18px;font-size:13px;">{impl_html}</ul>
+    <p style="color:#8b949e;font-size:11px;margin:14px 0 6px 0;">UNIVERSE TICKERS TO WATCH</p>
+    <p style="font-size:13px;margin:0;">{watch_html}</p>
+  </div>"""
+    except Exception:
+        return ""
+
+
 # =============================================================================
 # R&D TEAM LEADER
 # =============================================================================
@@ -306,6 +452,35 @@ class RDTeamLeader:
         select top N_AGENTS sectors, and build research assignments.
         Returns list of assignment dicts.
         """
+        # ── Read canary regime (CIT-2026-203) ─────────────────────────────
+        # Shift sector scoring mandate based on current market regime:
+        #   BULL      → standard momentum scoring (no adjustment)
+        #   NEUTRAL   → slight preference for quality/low-beta sectors (+1 pt bonus)
+        #   DEFENSIVE → strong preference for defensive sectors (+3 pt bonus);
+        #               momentum-heavy sectors penalised (-2 pts)
+        #   CRISIS    → only capital-preservation sectors score positively;
+        #               all momentum sectors penalised (-4 pts)
+        _regime = "BULL"
+        try:
+            import json as _json
+            _canary = _json.load(open("data/canary_state.json")) if os.path.exists("data/canary_state.json") else {}
+            _regime = _canary.get("regime", "BULL")
+        except Exception:
+            pass
+
+        _DEFENSIVE_SECTORS = {"Consumer Staples", "Healthcare", "Utilities", "Real Estate"}
+        _MOMENTUM_SECTORS  = {"Technology", "Semiconductors", "Cloud & SaaS",
+                               "Consumer Discretionary", "Biotech"}
+
+        if _regime in ("DEFENSIVE", "CRISIS"):
+            logger.info(
+                f"  [R&D Leader] REGIME={_regime} — shifting mandate to defensive/quality sectors. "
+                f"Boosting: {', '.join(_DEFENSIVE_SECTORS)}. "
+                f"Penalising momentum sectors."
+            )
+        else:
+            logger.info(f"  [R&D Leader] REGIME={_regime} — standard momentum mandate.")
+
         logger.info("  [R&D Leader] Scanning sector universe for momentum opportunities...")
         logger.info(f"  [R&D Leader] Energy sector excluded per firm policy.")
 
@@ -322,6 +497,29 @@ class RDTeamLeader:
             if score is None:
                 continue
 
+            # ── Regime-adaptive score adjustment (CIT-2026-203) ──────────
+            regime_adj = 0
+            if _regime == "NEUTRAL":
+                if sector_name in _DEFENSIVE_SECTORS:
+                    regime_adj = +1
+            elif _regime == "DEFENSIVE":
+                if sector_name in _DEFENSIVE_SECTORS:
+                    regime_adj = +3
+                elif sector_name in _MOMENTUM_SECTORS:
+                    regime_adj = -2
+            elif _regime == "CRISIS":
+                if sector_name in _DEFENSIVE_SECTORS:
+                    regime_adj = +4
+                elif sector_name in _MOMENTUM_SECTORS:
+                    regime_adj = -4
+                else:
+                    regime_adj = -1
+
+            if regime_adj != 0:
+                # Apply adjustment to a copy so original score data is preserved
+                score = {**score, "score": score["score"] + regime_adj,
+                         "regime_adj": regime_adj}
+
             scored_sectors.append({
                 "sector_name": sector_name,
                 "etf":         etf,
@@ -335,6 +533,7 @@ class RDTeamLeader:
                 f"Trend:{score['trend']:<8}  "
                 f"RSI:{score['rsi_14']:>5.1f}  "
                 f"1M:{score['ret_1m_pct']:>+6.1f}%"
+                + (f"  [regime_adj={regime_adj:+d}]" if regime_adj != 0 else "")
             )
 
         # Sort by composite score descending
@@ -732,6 +931,39 @@ class RDTeamLeader:
         except Exception:
             pass
 
+        # ── Earnings Predictions Section ─────────────────────────────────
+        try:
+            if os.path.exists("data/earnings_predictions.json"):
+                with open("data/earnings_predictions.json") as _epf:
+                    _ep = json.load(_epf)
+                _preds = _ep.get("predictions", [])
+                if _preds:
+                    _summ = _ep.get("summary", {})
+                    lines += [
+                        "─" * 72,
+                        "  EARNINGS PREDICTIONS (next 90 days)",
+                        "─" * 72,
+                        f"  {_summ.get('total', 0)} upcoming earnings detected  |  "
+                        f"{_summ.get('beat_calls', 0)} BEAT · "
+                        f"{_summ.get('miss_calls', 0)} MISS · "
+                        f"{_summ.get('inline_calls', 0)} INLINE  |  "
+                        f"{_summ.get('high_conf', 0)} high-confidence (4★+)",
+                        "",
+                        f"  {'TICKER':<7} {'DATE':<12} {'DAYS':>4}  {'PRED':<8} {'CONF':>4}  REASONING",
+                        "  " + "─" * 68,
+                    ]
+                    for pred in _preds[:20]:
+                        _icon = {"BEAT": "+", "MISS": "✗", "INLINE": "~"}.get(pred["prediction"], " ")
+                        lines.append(
+                            f"  {pred['ticker']:<7} {pred['earnings_date']:<12} "
+                            f"{pred['days_until']:>4}d  "
+                            f"{_icon} {pred['prediction']:<6}  {'★' * pred['confidence']:<5}  "
+                            f"{pred['reasoning'][:60]}"
+                        )
+                    lines.append("")
+        except Exception:
+            pass
+
         lines += [
             "",
             "═" * 72,
@@ -906,10 +1138,14 @@ class RDTeamLeader:
     </p>
   </div>
 
+  {_build_earnings_html_section()}
+
+  {_build_intl_html_section()}
+
   <p style="color:#484f58;font-size:11px;margin-top:28px;border-top:1px solid #21262d;
             padding-top:12px;">
     Apex Capital Intelligence — R&amp;D Team Leader &nbsp;·&nbsp;
-    Paper trading simulation — not real investment advice &nbsp;·&nbsp; Generated {now}
+    Apex Capital — Proprietary Trading &nbsp;·&nbsp; Generated {now}
   </p>
 </body></html>"""
         return html
@@ -976,6 +1212,15 @@ class RDTeamLeader:
         logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         logger.info("=" * 60)
 
+        # Read HR coaching note at cycle start
+        try:
+            from performance_ledger import get_coaching_note
+            _coaching = get_coaching_note("RDTeamLeader") or get_coaching_note("R&D Team Leader")
+            if _coaching:
+                logger.info(f"  [R&D Leader] HR coaching note: {_coaching[:100]}...")
+        except Exception:
+            pass
+
         # Phase 1: Scan sectors and assign
         assignments = self.scan_and_assign()
 
@@ -998,6 +1243,39 @@ class RDTeamLeader:
         except Exception as e:
             logger.warning(f"  [R&D Leader] Research Team error: {e}")
 
+        # Phase 2b: Earnings Prediction Agent
+        logger.info("  [R&D Leader] Running Earnings Prediction Agent...")
+        ep_results = []
+        try:
+            import earnings_predictor
+            ep_results = earnings_predictor.run()
+            logger.info(
+                f"  [R&D Leader] Earnings Predictor complete — "
+                f"{len(ep_results)} upcoming earnings predicted"
+            )
+        except Exception as e:
+            logger.warning(f"  [R&D Leader] Earnings Predictor error: {e}")
+
+        # Phase 2c: International Markets Intelligence Desk
+        logger.info("  [R&D Leader] Running International Markets Intelligence (IMI) Desk...")
+        intl_report = {}
+        try:
+            import international_analyst
+            # Import STOCK_UNIVERSE here so a missing config doesn't abort the whole run;
+            # STOCK_UNIVERSE is defined in config.py, not in this file.
+            try:
+                from config import STOCK_UNIVERSE as _stock_universe
+            except Exception:
+                _stock_universe = None
+            intl_report = international_analyst.run(universe=_stock_universe) or {}
+            logger.info(
+                f"  [R&D Leader] IMI Desk complete — "
+                f"sentiment: {intl_report.get('sentiment','?')} | "
+                f"{len(intl_report.get('notable_indices', []))} notable index moves"
+            )
+        except Exception as e:
+            logger.warning(f"  [R&D Leader] IMI Desk error: {e}")
+
         # Phase 3: Load research report (freshly written by ResearchTeamCoordinator above)
         research_report = {}
         if os.path.exists(RESEARCH_REPORT_PATH):
@@ -1008,8 +1286,13 @@ class RDTeamLeader:
                 logger.warning(f"  [R&D Leader] Could not load research report: {e}")
 
         # Phase 4: Compile briefing
-        with open(ASSIGNMENTS_PATH) as f:
-            assignment_payload = json.load(f)
+        # Guard the load — if the write in scan_and_assign failed we'd crash here.
+        try:
+            with open(ASSIGNMENTS_PATH) as f:
+                assignment_payload = json.load(f)
+        except Exception as e:
+            logger.warning(f"  [R&D Leader] Could not load assignments file: {e}")
+            assignment_payload = {"assignments": [], "all_scored": [], "sectors_scanned": 0}
 
         text_brief = self.compile_briefing(research_report, assignment_payload)
         html_brief = self.compile_html_briefing(research_report, assignment_payload)
@@ -1018,6 +1301,156 @@ class RDTeamLeader:
 
         # Phase 5: Email Chairman
         self.email_chairman(text_brief, html_brief)
+
+        # Phase 6: Broadcast to firm channel
+        try:
+            from firm_channel import post as _fc_post
+            picks       = research_report.get("recommendations", [])
+            high_conv   = [p for p in picks if p.get("conviction", 0) >= 4]
+            top_sectors = [a.get("sector_name","?") for a in assignments[:3]]
+            _fc_post(
+                "R&D Team Leader", "SECTOR_OBS",
+                f"Research cycle complete: {len(picks)} picks across {len(assignments)} sectors "
+                f"({len(high_conv)} high-conviction 4★+). "
+                f"Top sectors: {', '.join(top_sectors)}. "
+                f"Top picks: {', '.join(p['ticker'] for p in high_conv[:5])}.",
+                priority="HIGH" if high_conv else "NORMAL",
+            )
+            # Post individual sector momentum observations
+            # Use a with-block instead of a bare open() to ensure the file handle is always closed.
+            if os.path.exists(ASSIGNMENTS_PATH):
+                try:
+                    with open(ASSIGNMENTS_PATH) as _af:
+                        asgn_payload = json.load(_af)
+                except Exception:
+                    asgn_payload = {}
+            else:
+                asgn_payload = {}
+            for s in asgn_payload.get("all_scored", [])[:4]:
+                sd = s.get("score_data", {})
+                _fc_post(
+                    "R&D Team Leader", "SECTOR_OBS",
+                    # Use .get() so a malformed entry never crashes the firm-channel post loop.
+                    f"{s.get('sector_name','?')}: score {sd.get('score','?')}/12 | "
+                    f"trend={sd.get('trend','?')} | RSI={sd.get('rsi_14',0):.0f} | "
+                    f"1M={sd.get('ret_1m_pct',0):+.1f}% | 3M={sd.get('ret_3m_pct',0):+.1f}%",
+                )
+            # Post high-confidence earnings predictions
+            for ep in ep_results[:3]:
+                if ep.get("confidence", 0) >= 4:
+                    _fc_post(
+                        "R&D Team Leader", "EARNINGS",
+                        f"EARNINGS ALERT: {ep['ticker']} — predicted {ep['prediction']} "
+                        f"(confidence {ep['confidence']}★) in {ep['days_until']}d. "
+                        f"{ep['reasoning'][:80]}",
+                        priority="HIGH",
+                    )
+            # Post IMI summary if significant
+            if intl_report:
+                _sent  = intl_report.get("sentiment", "NEUTRAL")
+                _score = intl_report.get("sentiment_score", 0)
+                _notable_idx = intl_report.get("notable_indices", [])
+                _watch = intl_report.get("watch_tickers", [])
+                _impl  = intl_report.get("us_implications", [])
+                # Guard r['pct'] — yfinance can return None for an index; skip those entries
+                # to avoid TypeError when formatting the f-string with a None value.
+                _notable_str = ", ".join(
+                    f"{r.get('name','?')} {r['pct']:+.1f}%"
+                    for r in _notable_idx[:3]
+                    if r.get("pct") is not None
+                ) or "no major moves"
+                _fc_post(
+                    "International Analyst (IMI)", "INTL_MARKETS",
+                    f"[IMI Desk cycle report] Global sentiment: {_sent} ({_score:+d}) | "
+                    f"{_notable_str}. "
+                    f"{'Watch: ' + ', '.join(_watch[:5]) + '. ' if _watch else ''}"
+                    f"{'Key implication: ' + _impl[0] if _impl else ''}",
+                    priority="HIGH" if _sent == "RISK_OFF" and _score <= -2 else "NORMAL",
+                )
+        except Exception as _fce:
+            logger.debug(f"  [FirmChannel] R&D post failed: {_fce}")
+
+        # ── Write ML feature snapshot (timestamped for historical training) ────
+        # Each run appends one record to rd_ml_history.json.  Once we have
+        # enough records, the ML model can use date-matched R&D signals as
+        # training features instead of today's R&D state.
+        try:
+            import json as _json_ml
+            _ml_snap_path = "data/rd_ml_history.json"
+            _existing: list = []
+            if os.path.exists(_ml_snap_path):
+                try:
+                    with open(_ml_snap_path) as _mf:
+                        _existing = _json_ml.load(_mf)
+                except Exception:
+                    _existing = []
+
+            # Extract precise numeric features from this run
+            _picks = research_report.get("recommendations", [])
+            _convictions = [p.get("conviction", 3) for p in _picks]
+            _n_high_conv = sum(1 for c in _convictions if c >= 4)
+            _avg_conv    = round(sum(_convictions) / max(len(_convictions), 1) / 5.0, 4) \
+                           if _convictions else 0.5
+
+            _scored = assignments  # already computed above
+            _sector_scores = []
+            for _s in _scored:
+                _sd = _s.get("score_data", {})
+                _sector_scores.append({
+                    "sector":    _s.get("sector_name", "?"),
+                    "score":     _sd.get("score", 0),
+                    "trend":     _sd.get("trend", "NEUTRAL"),
+                    "rsi":       round(float(_sd.get("rsi_14", 50)), 1),
+                    "ret_1m":    round(float(_sd.get("ret_1m_pct", 0)), 2),
+                    "ret_3m":    round(float(_sd.get("ret_3m_pct", 0)), 2),
+                })
+            _n_strong  = sum(1 for s in _sector_scores if s["score"] >= 6)
+            _breadth   = round(_n_strong / max(len(_sector_scores), 1), 3)
+            _regime    = 1 if _breadth > 0.6 else (-1 if _breadth < 0.3 else 0)
+
+            _cro_risk_str = assignment_payload.get("cro_risk_level", "MEDIUM")
+            _risk_map     = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3, "CRISIS": 3}
+
+            _intl_sent   = 0.0
+            _intl_raw    = 0
+            if intl_report:
+                _sent_map = {"RISK_ON": 1.0, "NEUTRAL": 0.0, "RISK_OFF": -1.0}
+                _intl_sent = _sent_map.get(
+                    intl_report.get("sentiment", "NEUTRAL").upper(), 0.0)
+                _intl_raw  = int(intl_report.get("sentiment_score", 0))
+
+            _snapshot = {
+                "ts":                    datetime.now().isoformat(),
+                "date":                  datetime.now().strftime("%Y-%m-%d"),
+                # Market regime
+                "rd_macro_regime":       _regime,
+                "rd_sector_breadth":     _breadth,
+                "rd_cro_risk_level":     _risk_map.get(_cro_risk_str, 1),
+                "rd_intl_sentiment":     _intl_sent,
+                "rd_intl_score_raw":     _intl_raw,
+                "rd_n_high_conviction":  _n_high_conv,
+                "rd_avg_conviction":     _avg_conv,
+                # Detailed sector breakdown
+                "sector_scores":         _sector_scores,
+                # Top picks with tickers (for ticker-specific lookup)
+                "top_picks": [
+                    {"ticker": p.get("ticker"), "conviction": p.get("conviction", 0),
+                     "action": p.get("action"), "momentum": p.get("momentum")}
+                    for p in sorted(_picks, key=lambda x: x.get("conviction", 0), reverse=True)[:20]
+                ],
+            }
+
+            # Keep last 365 snapshots (1 year of hourly R&D data → ~8,760 max)
+            _existing.append(_snapshot)
+            _existing = _existing[-8760:]
+            with open(_ml_snap_path, "w") as _mf:
+                _json_ml.dump(_existing, _mf, separators=(",", ":"))
+            logger.info(f"  [R&D] ML snapshot written → {_ml_snap_path} "
+                        f"({len(_existing)} records | regime: "
+                        f"{'BULLISH' if _regime==1 else 'BEARISH' if _regime==-1 else 'NEUTRAL'} "
+                        f"| breadth: {_breadth:.0%})")
+        except Exception as _ml_e:
+            logger.debug(f"  [R&D] ML snapshot write failed: {_ml_e}")
 
         return {
             "assignments":     assignments,
@@ -1031,6 +1464,32 @@ class RDTeamLeader:
 # =============================================================================
 
 if __name__ == "__main__":
-    scan_only = "--scan-only" in sys.argv
-    leader = RDTeamLeader()
-    leader.run(scan_only=scan_only)
+    # ── Single-instance guard ─────────────────────────────────────────────
+    # macOS enforces kern.maxfilesperproc=10240 regardless of ulimit.
+    # A stalled previous run (slow yfinance downloads) that overlaps with a
+    # new cron invocation doubles the open-FD count and can exhaust the limit.
+    # This lock ensures only one rd_team_leader process runs at a time.
+    _LOCK_PATH = "data/.rd_team_leader.lock"
+    os.makedirs("data", exist_ok=True)
+    _lock_fh = open(_LOCK_PATH, "w")
+    try:
+        fcntl.flock(_lock_fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        logger.warning(
+            "Another rd_team_leader instance is already running — "
+            "skipping this invocation to avoid fd exhaustion."
+        )
+        _lock_fh.close()
+        sys.exit(0)
+
+    try:
+        scan_only = "--scan-only" in sys.argv
+        leader = RDTeamLeader()
+        leader.run(scan_only=scan_only)
+    finally:
+        fcntl.flock(_lock_fh, fcntl.LOCK_UN)
+        _lock_fh.close()
+        try:
+            os.unlink(_LOCK_PATH)
+        except OSError:
+            pass

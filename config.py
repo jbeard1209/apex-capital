@@ -33,18 +33,33 @@ GMAIL_APP_PASSWORD = _os.getenv("GMAIL_APP_PASSWORD", "vaje mgnh jhtm kknf")
 
 # --- TRADING PARAMETERS ---
 STARTING_CAPITAL       = 100000.00    # USD — paper trading starting balance
-MAX_POSITION_SIZE_PCT  = 0.12         # Max 12% of portfolio per position (up from 10%)
+MAX_POSITION_SIZE_PCT  = 0.07         # Max 7% of portfolio per position (board directive: reduced from 12% — concentration risk)
 MIN_INSTITUTIONS_SIGNAL = 2           # Minimum institutions buying same stock to trigger buy
 STOP_LOSS_PCT          = 0.07         # 7% stop loss per position
 TAKE_PROFIT_PCT        = 0.20         # 20% take profit per position
-MAX_OPEN_POSITIONS     = 15           # Max simultaneous open positions (up from 8)
+MAX_OPEN_POSITIONS     = 15           # Max simultaneous open positions
 HOLD_DAYS_MAX          = 60           # Max days to hold a position before forced exit
 
 # --- CAPITAL DEPLOYMENT POLICY ---
-# Board directive: target keeping at least 50% of portfolio deployed at all times.
-# The PDO and board meeting will issue DEPLOY_MORE signals when below this threshold.
-MIN_DEPLOYMENT_PCT     = 0.50         # Alert if less than 50% of portfolio is invested
-TARGET_DEPLOYMENT_PCT  = 0.75         # Target 75% deployment in normal market conditions
+# Board directive: regime-adaptive deployment targets (approved 2026-05-06).
+# In CRITICAL/HIGH regimes the firm must not be fully deployed — cash is a position.
+MIN_DEPLOYMENT_PCT          = 0.30    # Alert if less than 30% deployed (was 50%)
+TARGET_DEPLOYMENT_PCT       = 0.70    # Target in GREEN/NEUTRAL regime
+TARGET_DEPLOYMENT_CRITICAL  = 0.20   # Target in CRITICAL regime — preserve capital
+TARGET_DEPLOYMENT_HIGH      = 0.40   # Target in HIGH regime
+TARGET_DEPLOYMENT_ELEVATED  = 0.55   # Target in ELEVATED regime
+
+# --- REGIME-ADAPTIVE STRATEGY (board-approved 2026-05-06) ---
+# CRO risk level → strategy mandate shift.
+# The R&D Team Leader reads REGIME_MANDATE at assignment time to shift sector
+# scoring weights. Manager Agent reads REGIME_MAX_POSITION to enforce per-position limit.
+REGIME_MANDATES = {
+    "GREEN":    {"mandate": "MOMENTUM",   "max_position_pct": 0.07, "deploy_target": TARGET_DEPLOYMENT_PCT},
+    "ELEVATED": {"mandate": "MOMENTUM",   "max_position_pct": 0.06, "deploy_target": 0.55},
+    "HIGH":     {"mandate": "DEFENSIVE",  "max_position_pct": 0.05, "deploy_target": 0.40},
+    "CRITICAL": {"mandate": "PRESERVE",   "max_position_pct": 0.04, "deploy_target": 0.20},
+    "UNKNOWN":  {"mandate": "MOMENTUM",   "max_position_pct": 0.07, "deploy_target": TARGET_DEPLOYMENT_PCT},
+}
 
 # --- TRACKED INSTITUTIONS (SEC CIK numbers) ---
 TRACKED_INSTITUTIONS = {
@@ -71,7 +86,7 @@ STOCK_UNIVERSE = [
 
 # --- LONG-SHORT STRATEGY SETTINGS ---
 HEDGE_ETF              = "SH"    # ProShares Short S&P500 — bought when SPY < 200MA
-HEDGE_POSITION_PCT     = 0.20    # 20% of portfolio into SH during bear regime
+HEDGE_POSITION_PCT     = 0.08    # 8% of portfolio into SH (board directive: reduced from 20% — oversized for $100k portfolio)
 MAX_SHORT_POSITIONS    = 3       # Max individual momentum shorts at once
 SHORT_POSITION_SIZE_PCT = 0.05   # 5% of portfolio per momentum short
 
@@ -84,6 +99,13 @@ SHORT_CANDIDATES = [
     "PFE",    # Pfizer — post-COVID revenue cliff, pipeline disappointments
     "CSCO",   # Cisco — hardware commoditization, slowing enterprise spend
 ]
+
+# --- STRUCTURAL GUARDRAILS ---
+# Conservative hard limits that agents cannot override. Give agents room to
+# operate normally but prevent runaway losses at the portfolio level.
+DAILY_DRAWDOWN_HALT_PCT  = 0.02   # Halt new buys if portfolio drops 2% in one day
+HWM_DRAWDOWN_HALT_PCT    = 0.12   # Halt new buys if 12% below portfolio all-time peak
+MIN_CASH_FLOOR_PCT       = 0.20   # Always keep at least 20% of portfolio in cash
 
 # --- BACKTEST SETTINGS ---
 BACKTEST_START_DATE = "2010-01-01"

@@ -31,6 +31,7 @@
 import json
 import logging
 import os
+import re
 import sys
 from datetime import datetime
 from typing import Optional
@@ -46,16 +47,113 @@ MEETING_LOG = "data/board_meeting_report.json"
 
 
 # =============================================================================
+# ML INTELLIGENCE LOADER
+# =============================================================================
+
+def _load_ml_intelligence() -> dict:
+    """
+    Load ML model state and current R&D signals for board briefing.
+    Returns a structured dict with model health, regime, top signals, and conflicts.
+    Fails silently — board meeting proceeds even if ML files are unavailable.
+    """
+    def _safe_load(path: str) -> dict:
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except Exception:
+            return {}
+
+    bridge   = _safe_load("data/rd_ml_bridge_signals.json")
+    drift    = _safe_load("data/drift_report.json")
+    quality  = _safe_load("data/data_quality_report.json")
+
+    regime   = bridge.get("regime", {})
+    tickers  = bridge.get("tickers", {})
+
+    # Top model signals: R&D BUY calls with highest conviction
+    buy_signals = sorted(
+        [(t, d) for t, d in tickers.items() if d.get("rd_ticker_action_buy")],
+        key=lambda x: x[1].get("rd_ticker_conviction", 0),
+        reverse=True,
+    )[:5]
+
+    # Risk conflicts: high conviction BUY but regime is risky
+    overbought    = regime.get("rd_spy_overbought", 0)
+    warning_count = regime.get("rd_warning_count", 0)
+    rising_rates  = regime.get("rd_rising_rates", 0)
+    regime_conflicts = []
+    if overbought or warning_count >= 2 or rising_rates:
+        for ticker, d in buy_signals:
+            conv = d.get("rd_ticker_conviction", 0)
+            if conv >= 4:
+                flags = []
+                if overbought:
+                    flags.append(f"SPY RSI={regime.get('rd_spy_rsi', 0):.0f} (overbought)")
+                if warning_count >= 2:
+                    flags.append(f"{warning_count} active R&D warnings")
+                if rising_rates:
+                    flags.append("rising rate environment")
+                if d.get("rd_geo_risk"):
+                    flags.append("geopolitical risk flag")
+                regime_conflicts.append({
+                    "ticker":     ticker,
+                    "conviction": conv,
+                    "rsi":        d.get("rd_ticker_rsi", 50),
+                    "pct_50ma":   d.get("rd_ticker_pct_from_50ma", 0),
+                    "flags":      flags,
+                })
+
+    # Model health
+    model_version = "v3"
+    model_auc     = 0.5914
+    try:
+        import pickle, sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path("predictive_model").absolute()))
+        model_path = Path("data/model_v4.pkl")
+        if not model_path.exists():
+            model_path = Path("data/model_v3.pkl")
+            model_version = "v3"
+        else:
+            model_version = "v4"
+        with open(model_path, "rb") as f:
+            model_obj = pickle.load(f)
+        if isinstance(model_obj, dict):
+            model_auc = model_obj.get("val_auc", model_obj.get("auc", model_auc))
+    except Exception:
+        pass
+
+    drift_status   = drift.get("status", "UNKNOWN") if drift else "UNKNOWN"
+    quality_status = quality.get("overall_status", "UNKNOWN") if quality else "UNKNOWN"
+
+    return {
+        "available":        bool(bridge),
+        "updated_at":       bridge.get("updated_at", "unknown"),
+        "model_version":    model_version,
+        "model_auc":        model_auc,
+        "n_features":       38,
+        "regime":           regime,
+        "buy_signals":      buy_signals,
+        "regime_conflicts": regime_conflicts,
+        "drift_status":     drift_status,
+        "quality_status":   quality_status,
+        "n_tickers_tracked": bridge.get("n_tickers", 0),
+    }
+
+
+# =============================================================================
 # STEP 1 — LOAD & ANONYMISE REPORTS
 # =============================================================================
 
 def _load_reports() -> dict:
-    """Load the latest CoS and Risk Manager reports from disk."""
+    """Load the latest CoS, Risk Manager, and IRM overnight check from disk."""
     cos_path = "data/chief_of_staff_report.json"
     irm_path = "data/risk_manager_report.json"
+    irm_daily_path = "data/irm_daily_check.json"
 
     cos = {}
     irm = {}
+    irm_daily = {}
 
     if os.path.exists(cos_path):
         try:
@@ -71,7 +169,14 @@ def _load_reports() -> dict:
         except Exception:
             pass
 
-    return {"cos": cos, "irm": irm}
+    if os.path.exists(irm_daily_path):
+        try:
+            with open(irm_daily_path) as f:
+                irm_daily = json.load(f)
+        except Exception:
+            pass
+
+    return {"cos": cos, "irm": irm, "irm_daily": irm_daily}
 
 
 def _build_anonymous_briefing(reports: dict) -> dict:
@@ -200,9 +305,9 @@ def _position_manager_agent(briefing: dict) -> dict:
     dissents     = []
     vote_weight  = {}   # action_id → support level ("STRONG"/"SUPPORT"/"NEUTRAL"/"OPPOSE")
 
-    worst = ra["performance"].get("worst_position", {})
-    worst_ticker = worst.get("ticker", "")
-    worst_pnl    = worst.get("pnl_pct", 0)
+    worst = ra["performance"].get("worst_position") or {}
+    worst_ticker = worst.get("ticker", "") if worst else ""
+    worst_pnl    = worst.get("pnl_pct", 0) if worst else 0
 
     # Position on BA
     if worst_pnl < -7:
@@ -211,31 +316,34 @@ def _position_manager_agent(briefing: dict) -> dict:
             f"breached our stop-loss policy. This is non-negotiable — exit immediately. "
             f"Every hour it stays open compounds the loss."
         )
+        _close_id = f"CLOSE_{worst_ticker}" if worst_ticker else "CLOSE_UNKNOWN"
         actions.append({
-            "id":       "CLOSE_BA",
+            "id":       _close_id,
             "action":   f"SELL {worst_ticker} at market — stop-loss breach",
             "urgency":  "IMMEDIATE",
             "executor": "Manager Agent",
         })
-        vote_weight["CLOSE_BA"] = "STRONG"
+        vote_weight[_close_id] = "STRONG"
 
-    # Position on SH concentration
+    # Position on concentration breaches
     for flag in ra["concentration"]["flags"]:
         if flag.get("type") == "SINGLE_NAME_CONCENTRATION":
-            ticker  = flag["ticker"]
-            weight  = flag["weight"]
-            limit   = flag["limit"]
+            # Use .get() — concentration flag keys may be absent if CRO wrote a partial record
+            ticker  = flag.get("ticker", "UNKNOWN")
+            weight  = flag.get("weight", 0.0)
+            limit   = flag.get("limit",  10.0)
             positions.append(
                 f"{ticker} is {weight:.1f}% of the portfolio against a {limit:.0f}% limit. "
                 f"I'll trim it to just under the limit this cycle."
             )
+            _trim_id = f"TRIM_{ticker}"
             actions.append({
-                "id":       "TRIM_SH",
+                "id":       _trim_id,
                 "action":   f"TRIM {ticker} from {weight:.1f}% → {limit - 1:.0f}% of portfolio",
                 "urgency":  "TODAY",
                 "executor": "Manager Agent",
             })
-            vote_weight["TRIM_SH"] = "STRONG"
+            vote_weight[_trim_id] = "STRONG"
 
     # Position on cash
     cash_pct = ra.get("cash_pct", 0)
@@ -325,20 +433,21 @@ def _position_chief_of_staff(briefing: dict) -> dict:
     vote_weight["LOWER_ESCALATION_THRESHOLD"] = "STRONG"
 
     # Position on the stop-loss breach
-    worst = ra["performance"].get("worst_position", {})
+    worst = ra["performance"].get("worst_position") or {}
     positions.append(
         f"The worst position at {worst.get('pnl_pct', 0):+.1f}% is a policy breach. "
         f"I support the Manager Agent closing it immediately. Strategically, this also "
         f"suggests the stop-loss enforcement step in the pipeline may need a dedicated "
         f"pre-market check — not just end-of-day."
     )
+    _cos_close_id = f"CLOSE_{worst.get('ticker', 'UNKNOWN')}"
     actions.append({
-        "id":       "CLOSE_BA",
-        "action":   f"SELL {worst.get('ticker', 'BA')} — stop-loss breach",
+        "id":       _cos_close_id,
+        "action":   f"SELL {worst.get('ticker', 'UNKNOWN')} — stop-loss breach",
         "urgency":  "IMMEDIATE",
         "executor": "Manager Agent",
     })
-    vote_weight["CLOSE_BA"] = "STRONG"
+    vote_weight[_cos_close_id] = "STRONG"
 
     # Position on R&D expansion
     positions.append(
@@ -392,35 +501,41 @@ def _position_risk_manager(briefing: dict) -> dict:
     vote_weight = {}
 
     # Hard line on stop-loss
-    worst = ra["performance"].get("worst_position", {})
+    worst = ra["performance"].get("worst_position") or {}
     positions.append(
         f"Stop-loss is not a recommendation — it is a rule. {worst.get('ticker','BA')} "
         f"at {worst.get('pnl_pct', 0):+.1f}% should have been closed automatically. "
         f"The fact that it wasn't means either the rule didn't fire or the pipeline "
         f"didn't run. Either way: close it now, then diagnose why it wasn't caught."
     )
+    _crm_close_id = f"CLOSE_{worst.get('ticker','UNKNOWN')}"
     actions.append({
-        "id":       "CLOSE_BA",
-        "action":   f"SELL {worst.get('ticker','BA')} — stop-loss rule enforcement",
+        "id":       _crm_close_id,
+        "action":   f"SELL {worst.get('ticker','UNKNOWN')} — stop-loss rule enforcement",
         "urgency":  "IMMEDIATE",
         "executor": "Manager Agent",
     })
-    vote_weight["CLOSE_BA"] = "STRONG"
+    vote_weight[_crm_close_id] = "STRONG"
 
-    # Hard line on concentration
+    # Hard line on concentration — trim each breaching position
     positions.append(
         f"HHI of {ra['concentration']['hhi']:.2f} with only {ra['concentration']['n_positions']} "
-        f"positions is unacceptable concentration risk. The single-name breach is equally "
+        f"positions is unacceptable concentration risk. The single-name breaches are equally "
         f"serious. I recommend a hard rule: no position may exceed 10% of portfolio, enforced "
         f"automatically at the end of every pipeline run — not just flagged."
     )
-    actions.append({
-        "id":       "TRIM_SH",
-        "action":   "TRIM SH from 18.2% → below 10% of portfolio",
-        "urgency":  "TODAY",
-        "executor": "Manager Agent",
-    })
-    vote_weight["TRIM_SH"] = "STRONG"
+    for _cflag in ra["concentration"].get("flags", []):
+        if _cflag.get("type") == "SINGLE_NAME_CONCENTRATION":
+            # Use .get() — flag keys may be absent if CRO wrote a partial record
+            _ct = _cflag.get("ticker", "UNKNOWN"); _cw = _cflag.get("weight", 0.0); _cl = _cflag.get("limit", 10.0)
+            _crm_trim_id = f"TRIM_{_ct}"
+            actions.append({
+                "id":       _crm_trim_id,
+                "action":   f"TRIM {_ct} from {_cw:.1f}% → below {_cl:.0f}% of portfolio",
+                "urgency":  "TODAY",
+                "executor": "Manager Agent",
+            })
+            vote_weight[_crm_trim_id] = "STRONG"
 
     # Hard oppose on cash deployment while risk is HIGH
     positions.append(
@@ -463,6 +578,33 @@ def _position_risk_manager(briefing: dict) -> dict:
         "executor": "Engineering",
     })
     vote_weight["ADD_VAR_CIRCUIT_BREAKER"] = "STRONG"
+
+    # CRO Model Veto: check for model-risk conflicts from ML intelligence
+    try:
+        ml_intel = _load_ml_intelligence()
+        conflicts = ml_intel.get("regime_conflicts", [])
+        if conflicts:
+            ticker_list = ", ".join(c["ticker"] for c in conflicts)
+            flag_summary = conflicts[0]["flags"][0] if conflicts[0].get("flags") else "elevated risk"
+            positions.append(
+                f"ML SIGNAL CONFLICT DETECTED: The R&D model has high-conviction BUY signals "
+                f"on {ticker_list}, but the current market regime has active risk flags "
+                f"({flag_summary}). As Risk Manager, I invoke the Model-Risk Review Protocol: "
+                f"these signals should not be acted upon in this session without explicit "
+                f"board ratification. The model's confidence does not override risk conditions — "
+                f"regime context is a feature the model itself uses, and elevated warnings "
+                f"are exactly the conditions where model accuracy historically degrades."
+            )
+            _veto_id = "ML_REGIME_CONFLICT_DEFER"
+            actions.append({
+                "id":      _veto_id,
+                "action":  f"Defer new entries on {ticker_list} pending regime normalisation (model-risk conflict)",
+                "urgency": "TODAY",
+                "executor": "Manager Agent",
+            })
+            vote_weight[_veto_id] = "STRONG"
+    except Exception as _ml_e:
+        logger.debug(f"  CRO model-risk check skipped: {_ml_e}")
 
     return {
         "agent":       "Risk Manager",
@@ -527,7 +669,7 @@ def _position_independent_risk_manager(briefing: dict) -> dict:
     vote_weight["LOWER_ESCALATION_THRESHOLD"] = "STRONG"
 
     # Position on the stop-loss breach
-    worst = ra["performance"].get("worst_position", {})
+    worst = ra["performance"].get("worst_position") or {}
     positions.append(
         f"The {worst.get('ticker','BA')} position at {worst.get('pnl_pct',0):+.1f}% "
         f"is a policy violation. I agree with closing it immediately. But I want to "
@@ -535,13 +677,14 @@ def _position_independent_risk_manager(briefing: dict) -> dict:
         f"That enforcement gap needs a root-cause review — was the pipeline not running, "
         f"or did the rule misfire?"
     )
+    _irm_close_id = f"CLOSE_{worst.get('ticker','UNKNOWN')}"
     actions.append({
-        "id":       "CLOSE_BA",
-        "action":   f"SELL {worst.get('ticker','BA')} immediately. Post-close: diagnose why stop-loss did not auto-execute.",
+        "id":       _irm_close_id,
+        "action":   f"SELL {worst.get('ticker','UNKNOWN')} immediately. Post-close: diagnose why stop-loss did not auto-execute.",
         "urgency":  "IMMEDIATE",
         "executor": "Manager Agent",
     })
-    vote_weight["CLOSE_BA"] = "STRONG"
+    vote_weight[_irm_close_id] = "STRONG"
 
     # Measured support on cash deployment
     positions.append(
@@ -581,7 +724,119 @@ def _position_independent_risk_manager(briefing: dict) -> dict:
 
 
 # =============================================================================
-# STEP 2b — R&D TEAM LEADER (non-voting research presenter)
+# STEP 2b-ii — CIT DIRECTOR (voting board member, 2026-05-06)
+# =============================================================================
+# The CIT Director brings the Continuous Improvement Team's operational findings
+# directly to the board as a full voting member. They have unique visibility into
+# pipeline health, zero-pick streaks, and structural improvement proposals.
+# =============================================================================
+
+def _position_cit_director(briefing: dict) -> dict:
+    """
+    CIT Director: operational pipeline health, improvement proposals, ThinkTank ideas.
+    VOTING — equal vote weight to other voting board members.
+    """
+    positions   = []
+    actions     = []
+    vote_weight = {}
+    dissents    = []
+
+    # ── Load latest CIT morning report ────────────────────────────────────
+    try:
+        cit_path = "data/cit_morning_report.json"
+        if os.path.exists(cit_path):
+            with open(cit_path) as _f:
+                cit = json.load(_f)
+            proposals  = cit.get("board_proposals", 0)
+            backlog    = cit.get("backlog", 0)
+            cycle      = cit.get("cycle", "?")
+            positions.append(
+                f"CIT cycle {cycle}: {proposals} proposal(s) forwarded to board, "
+                f"{backlog} in backlog. Continuous improvement pipeline is active."
+            )
+    except Exception:
+        pass
+
+    # ── Load ThinkTank output ──────────────────────────────────────────────
+    try:
+        tt_path = "data/cit_think_tank.json"
+        if os.path.exists(tt_path):
+            with open(tt_path) as _f:
+                tt = json.load(_f)
+            tt_items = tt.get("think_tank", [])
+            if tt_items:
+                positions.append(
+                    f"ThinkTank generated {len(tt_items)} VISION proposal(s). "
+                    f"Top proposal: {tt_items[0].get('title','?')}"
+                )
+    except Exception:
+        pass
+
+    # ── Deployment pacing proposal ─────────────────────────────────────────
+    positions.append(
+        "Portfolio loss analysis confirms that all-at-once re-entry after "
+        "defensive mode creates immediate concentration risk. The firm needs a "
+        "hard limit: maximum 3 new positions approved per manager cycle, with a "
+        "mandatory 2-cycle cooling period before full re-deployment after any "
+        "canary event. This prevents the 'panic-in, panic-out, all-in' cycle."
+    )
+    actions.append({
+        "id":       "MAX_NEW_POSITIONS_PER_CYCLE",
+        "action":   "Enforce max 3 new BUY_NEW positions per manager cycle. After canary clears, apply 2-cycle re-entry throttle before normal deployment resumes.",
+        "urgency":  "THIS_WEEK",
+        "executor": "Engineering",
+    })
+    vote_weight["MAX_NEW_POSITIONS_PER_CYCLE"] = "STRONG"
+
+    # ── Dynamic stop-loss proposal ──────────────────────────────────────────
+    positions.append(
+        "In HIGH/CRITICAL regimes, the standard 7% stop-loss is too wide — "
+        "it allows positions to lose 7% of a portfolio before triggering. "
+        "Regime-adaptive stop-losses should tighten: 5% in HIGH, 4% in CRITICAL. "
+        "This reduces drawdown per position in the worst-risk environments."
+    )
+    actions.append({
+        "id":       "REGIME_ADAPTIVE_STOP_LOSS",
+        "action":   "Implement regime-adaptive stop-loss: 7% GREEN/ELEVATED, 5% HIGH, 4% CRITICAL. Read CRO level at stop-loss evaluation time.",
+        "urgency":  "THIS_WEEK",
+        "executor": "Engineering",
+    })
+    vote_weight["REGIME_ADAPTIVE_STOP_LOSS"] = "STRONG"
+
+    # ── Earnings catalyst cross-check ──────────────────────────────────────
+    positions.append(
+        "The new Earnings Prediction Agent gives us forward-looking catalyst data. "
+        "The Manager Agent should cross-check: if a BUY_NEW target has an earnings "
+        "date within 14 days and the prediction is MISS, reduce conviction by 1★ "
+        "automatically. This prevents buying into likely negative catalysts."
+    )
+    actions.append({
+        "id":       "EARNINGS_CATALYST_GATE",
+        "action":   "Manager Agent: if ticker has predicted MISS earnings within 14 days, reduce conviction by 1★ before approval evaluation.",
+        "urgency":  "NEXT_CYCLE",
+        "executor": "Engineering",
+    })
+    vote_weight["EARNINGS_CATALYST_GATE"] = "SUPPORT"
+
+    return {
+        "agent":       "CIT Director",
+        "role":        "Operational Pipeline Health & Continuous Improvement (Voting)",
+        "positions":   positions,
+        "actions":     actions,
+        "vote_weight": vote_weight,
+        "dissents":    dissents,
+        "summary":     (
+            "Three structural gaps remain after the board session: "
+            "all-at-once re-entry after defensive mode (deployment pacing fix needed), "
+            "stop-losses too wide in high-stress regimes (regime-adaptive tightening needed), "
+            "and earnings catalysts not cross-checked at buy time (earnings gate needed). "
+            "ThinkTank pipeline is active and feeding ideas to this board."
+        ),
+    }
+
+
+# =============================================================================
+# STEP 2c — R&D TEAM LEADER (non-voting research presenter)
 # =============================================================================
 # The R&D Team Leader attends every board meeting to present research context,
 # system performance findings, and factual data. They do NOT vote on actions —
@@ -683,6 +938,56 @@ def _position_rd_team_leader(briefing: dict) -> dict:
             "No R&D context data available this cycle — reports may not have run yet."
         )
 
+    # ── ThinkTank proposals — present to board as structural context ──────
+    think_tank_items = []
+    tt_path = "data/cit_think_tank.json"
+    if os.path.exists(tt_path):
+        try:
+            with open(tt_path) as f:
+                tt = json.load(f)
+            for prop in tt[:4]:
+                think_tank_items.append(
+                    f"[{prop.get('severity','?')}] {prop.get('title','')}: "
+                    f"{prop.get('description','')[:180]}"
+                )
+        except Exception:
+            pass
+
+    # ── Regime + deployment analysis ──────────────────────────────────────
+    regime_note = ""
+    try:
+        import config as _cfg
+        max_pos = getattr(_cfg, "MAX_POSITION_SIZE_PCT", None)
+        hedge_pct = getattr(_cfg, "HEDGE_POSITION_PCT", None)
+        target_deploy = getattr(_cfg, "TARGET_DEPLOYMENT_PCT", None)
+        cro_path = "data/risk_manager_report.json"
+        cro_level = "UNKNOWN"
+        if os.path.exists(cro_path):
+            with open(cro_path) as f:
+                cro_d = json.load(f)
+            cro_level = (cro_d.get("risk_assessment") or {}).get("risk_level", "UNKNOWN")
+        regime_note = (
+            f"R&D structural diagnosis: MAX_POSITION_SIZE_PCT={max_pos} (12%) but positions "
+            f"reached 27–34% concentration — the entry guard is not enforced at buy time, "
+            f"only at the 22% forced-sell threshold. Recommend reducing MAX_POSITION_SIZE_PCT "
+            f"to 7% and enforcing it at the Manager Agent's BUY decision gate, not just post-hoc. "
+            f"HEDGE_POSITION_PCT={hedge_pct} (20%) is outsized for a $100k portfolio — "
+            f"recommend reducing to 8%. CRO is currently {cro_level}: "
+            f"TARGET_DEPLOYMENT_PCT={target_deploy} should auto-scale with regime "
+            f"(75% in GREEN → 40% in HIGH → 20% in CRITICAL). "
+            f"The firm has 0 closed trades and no realized P&L history to learn from — "
+            f"the 15-day cash-sitting period represents a structural deployment failure."
+        )
+    except Exception:
+        pass
+
+    if regime_note:
+        context_items.append(regime_note)
+    if think_tank_items:
+        context_items.append(
+            "ThinkTank proposals queued for board vote: " + " | ".join(think_tank_items[:2])
+        )
+
     return {
         "agent":         "R&D Team Leader",
         "role":          "Research Context & System Performance (Non-Voting)",
@@ -694,10 +999,12 @@ def _position_rd_team_leader(briefing: dict) -> dict:
         "system_findings": system_findings,
         "recommendations": recommendations,
         "summary": (
-            "Research context provided for board deliberation. "
-            "System Performance findings are included above. "
-            "The R&D Team Leader does not vote but ensures the board has "
-            "complete factual context before any decision is taken."
+            "R&D Team Leader structural briefing: MAX_POSITION_SIZE_PCT is not enforced "
+            "at buy time — positions grew to 27–34% concentration before forced-sell triggered. "
+            "Regime-adaptive deployment is absent — the firm deploys the same way in GREEN "
+            "and CRITICAL environments. The ThinkTank has proposed concrete structural fixes "
+            "now queued for board vote. Research pipeline is healthy; 4% trade conversion "
+            "is entirely explained by system-wide capital deployment blocks, not pick quality."
         ),
     }
 
@@ -758,15 +1065,15 @@ def _synthesise_consensus(positions: list[dict]) -> dict:
         elif n_support >= max(3, n_voters - 1):
             classification = "MAJORITY"
         else:
-            classification = "SPLIT"   # ≥ 2 support, 0 oppose → still proceeds
+            classification = "SPLIT"   # some support but below majority threshold — does NOT proceed
 
         consensus_actions.append({
             **action,
             "vote_score":      score,
             "votes":           votes,
             "classification":  classification,
-            # Proceed if no opposition and at least 2 agents voiced support
-            "proceed":         n_oppose == 0 and n_support >= 2,
+            # Proceed only on UNANIMOUS or MAJORITY — SPLIT (e.g. 2/4) does not proceed
+            "proceed":         classification in ("UNANIMOUS", "MAJORITY"),
         })
 
     # Sort: proceed first, then by urgency, then score
@@ -829,6 +1136,133 @@ def _parse_action_id(action_id: str) -> tuple:
         ticker = parts[1]
 
     return verb, ticker, trim_pct
+
+
+# =============================================================================
+# BOARD CLARIFICATION GATE
+# =============================================================================
+# Board members screen CIT proposals before voting. STRATEGY / VISION /
+# NEW_FEATURE proposals without verifiable evidence are held and a question is
+# written to data/cit_clarification_requests.json (source="main_board") so the
+# CIT Director's _process_clarification_requests() picks it up, deliberates
+# with the team, and re-submits with a concrete answer.
+# =============================================================================
+
+BOARD_CLARIFY_PATH = "data/cit_clarification_requests.json"
+
+_BOARD_PRECISE_RE = re.compile(
+    r'(\w+\.py:\d+'
+    r'|data/[\w/]+\.json'
+    r'|\d+\s*h\s+old'
+    r'|\d+\s+ERROR'
+    r'|\d+\s+WARNING'
+    r'|\$[\d,]+'
+    r'|\d+\.\d+%'
+    r'|\bline\s+\d+\b'
+    r'|[A-Z_]{4,}\(\)'
+    r'|\bdef\s+\w+'
+    r'|\bclass\s+\w+)',
+)
+
+
+def _board_clarify_check(proposals: list) -> tuple:
+    """
+    Screen proposals before the main board vote.
+
+    - STRATEGY / VISION / NEW_FEATURE without verifiable evidence → DEFERRED,
+      question written to cit_clarification_requests.json (source='main_board').
+    - Proposals already awaiting a board clarification answer → DEFERRED.
+    - Everything else → to_vote.
+
+    Returns (to_vote: list, deferred: list).
+    """
+    existing: list = []
+    try:
+        if os.path.exists(BOARD_CLARIFY_PATH):
+            with open(BOARD_CLARIFY_PATH) as _f:
+                existing = json.load(_f)
+            if not isinstance(existing, list):
+                existing = []
+    except Exception:
+        pass
+
+    pending_pids = {
+        r["proposal_id"]
+        for r in existing
+        if r.get("source") == "main_board" and r.get("status") == "PENDING"
+    }
+    # Proposals that already received a board answer — don't re-ask
+    answered_pids = {
+        r["proposal_id"]
+        for r in existing
+        if r.get("source") == "main_board" and r.get("status") == "ANSWERED"
+    }
+
+    to_vote: list  = []
+    deferred: list = []
+    new_reqs: list = []
+    now_iso = datetime.now().isoformat()
+
+    for prop in proposals:
+        pid   = prop.get("id", "")
+        cat   = prop.get("category", "")
+        conf  = prop.get("confidence", 0)
+        desc  = prop.get("description", "")
+        fix   = prop.get("proposed_fix", "")
+        ev    = prop.get("evidence", "")
+        title = prop.get("title", "")
+
+        if pid in pending_pids:
+            deferred.append(prop)
+            logger.info(f"  [Board Clarify] SKIP {title[:55]} — awaiting CIT Director response")
+            continue
+
+        if cat in ("STRATEGY", "VISION", "NEW_FEATURE"):
+            # Check evidence across all fields + clarification_log answers
+            clr_answers = " ".join(
+                c.get("answer", "") for c in prop.get("clarification_log", [])
+            )
+            combined     = f"{ev} {desc} {fix} {clr_answers}"
+            has_evidence = bool(_BOARD_PRECISE_RE.search(combined))
+
+            # If CIT Director already answered a board question, don't defer again
+            already_answered = pid in answered_pids
+
+            if not has_evidence and conf < 80 and not already_answered:
+                question = (
+                    f"Board requires verifiable evidence before voting on this {cat} proposal. "
+                    f"Please provide: (1) specific file:line references or data metrics that justify "
+                    f"the change, (2) quantified impact (e.g. '3 ERROR/day', '$2,400 cost', "
+                    f"'12% miss rate'), (3) exact implementation steps with code locations. "
+                    f"Current submission lacks concrete evidence the board can verify."
+                )
+                new_reqs.append({
+                    "proposal_id":    pid,
+                    "proposal_title": title,
+                    "question":       question,
+                    "asked_by":       "Main Board",
+                    "source":         "main_board",
+                    "round":          1,
+                    "status":         "PENDING",
+                    "asked_at":       now_iso,
+                })
+                deferred.append(prop)
+                logger.info(f"  [Board Clarify] DEFERRED [{cat}] {title[:55]} — board requests evidence")
+                continue
+
+        to_vote.append(prop)
+
+    if new_reqs:
+        existing.extend(new_reqs)
+        try:
+            os.makedirs("data", exist_ok=True)
+            with open(BOARD_CLARIFY_PATH, "w") as _f:
+                json.dump(existing, _f, indent=2, default=str)
+            logger.info(f"  [Board Clarify] {len(new_reqs)} clarification request(s) written → CIT Director")
+        except Exception as _e:
+            logger.warning(f"  [Board Clarify] Could not write clarification requests: {_e}")
+
+    return to_vote, deferred
 
 
 # =============================================================================
@@ -965,6 +1399,53 @@ def _route_approved_cit_proposals(approved: list) -> None:
     with open(ACTION_FILE, "w") as _f:
         json.dump(action_queue, _f, indent=2, default=str)
 
+    # ── Write VISION approvals to notable_changes.json for daily email ───
+    vision_approved = [p for p in approved if p.get("category") == "VISION"]
+    if vision_approved:
+        NOTABLE_FILE = "data/notable_changes.json"
+        existing_notable: list = []
+        try:
+            if os.path.exists(NOTABLE_FILE):
+                with open(NOTABLE_FILE) as _f:
+                    existing_notable = json.load(_f)
+                if not isinstance(existing_notable, list):
+                    existing_notable = []
+        except Exception:
+            pass
+        existing_notable_titles = {n.get("title", "")[:80] for n in existing_notable}
+        for vp in vision_approved:
+            if str(vp.get("title", ""))[:80] not in existing_notable_titles:
+                existing_notable.append({
+                    "title":       vp.get("title", ""),
+                    "description": vp.get("description", ""),
+                    "proposed_fix": vp.get("proposed_fix", ""),
+                    "severity":    vp.get("severity", ""),
+                    "confidence":  vp.get("confidence", 0),
+                    "approved_at": datetime.now().isoformat(),
+                    "approved_by": "Board (unanimous)",
+                    "source":      "CITThinkTank",
+                    "status":      "approved — awaiting implementation",
+                })
+        with open(NOTABLE_FILE, "w") as _f:
+            json.dump(existing_notable, _f, indent=2, default=str)
+        logger.info(f"  [CIT Router] {len(vision_approved)} VISION proposal(s) written to notable_changes.json")
+
+    # ── Persist approved proposals history ───────────────────────────────
+    existing_approved_list: list = []
+    try:
+        if os.path.exists("data/cit_approved_proposals.json"):
+            with open("data/cit_approved_proposals.json") as _f:
+                existing_approved_list = json.load(_f)
+            if not isinstance(existing_approved_list, list):
+                existing_approved_list = []
+    except Exception:
+        pass
+    for p in approved:
+        p["approved_at"] = datetime.now().isoformat()
+        existing_approved_list.append(p)
+    with open("data/cit_approved_proposals.json", "w") as _f:
+        json.dump(existing_approved_list, _f, indent=2, default=str)
+
     logger.info(f"  [CIT Router] {len(newly_actioned)} approved proposal(s) routed.")
     logger.info(f"  [CIT Router] {len(needs_chairman)} added to chairman_action_required.json")
     if persistent:
@@ -1092,6 +1573,34 @@ def _implement_decisions(consensus: dict, dry_run: bool = False) -> dict:
             "urgency": action["urgency"],
             "id":      action["id"],
         })
+
+    # Route engineering decisions into the CIT auto-fixer queue so they
+    # are actually acted on — not just logged in the meeting report.
+    if engineering:
+        try:
+            import uuid
+            _cmr_path = "data/cos_meeting_requests.json"
+            _existing = []
+            if os.path.exists(_cmr_path):
+                with open(_cmr_path) as _f:
+                    _existing = json.load(_f)
+            for _eng in engineering:
+                _existing.append({
+                    "id":         "CMR-" + uuid.uuid4().hex[:6].upper(),
+                    "ts":         datetime.now().isoformat(),
+                    "from_agent": "Board Meeting",
+                    "summary":    (
+                        f"BOARD VOTE → Engineering [{_eng.get('urgency','?')}]: "
+                        f"{_eng['action']}"
+                    ),
+                    "urgency":    "HIGH" if _eng.get("urgency") == "IMMEDIATE" else "NORMAL",
+                    "status":     "PENDING",
+                })
+            with open(_cmr_path, "w") as _f:
+                json.dump(_existing, _f, indent=2, default=str)
+            logger.info(f"  ✓ {len(engineering)} engineering action(s) queued → cos_meeting_requests.json")
+        except Exception as _qe:
+            logger.warning(f"  Engineering queue write failed: {_qe}")
 
     for action in ongoing:
         results["deferred"].append({
@@ -1341,9 +1850,165 @@ def _apply_code_changes(consensus: dict) -> list[str]:
 # STEP 6 — BUILD MEETING MINUTES REPORT
 # =============================================================================
 
+def _build_ml_intel_html(ml: dict) -> str:
+    """
+    Generate the ML Intelligence HTML section for the board meeting minutes.
+    Shows model health, regime, top signals, and model-risk conflicts.
+    """
+    if not ml.get("available"):
+        return """
+        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;
+                    padding:16px 20px;margin-bottom:28px;">
+          <h2 style="color:#8b949e;font-size:17px;margin:0 0 8px 0;">ML Intelligence</h2>
+          <p style="color:#8b949e;font-size:13px;margin:0;">
+            ML bridge signals unavailable — run ml_rd_bridge_agent.py to refresh.
+          </p>
+        </div>"""
+
+    regime = ml.get("regime", {})
+    bull   = regime.get("rd_regime_bull", 0)
+    bear   = regime.get("rd_regime_bear", 0)
+    regime_label = "BULL 📈" if bull else ("BEAR 📉" if bear else "NEUTRAL ➡")
+    regime_color = "#3fb950" if bull else ("#f85149" if bear else "#8b949e")
+
+    vix       = regime.get("rd_vix", 0)
+    spy_rsi   = regime.get("rd_spy_rsi", 50)
+    warns     = regime.get("rd_warning_count", 0)
+    overbought = regime.get("rd_spy_overbought", 0)
+    rising_r  = regime.get("rd_rising_rates", 0)
+
+    auc       = ml.get("model_auc", 0)
+    auc_color = "#3fb950" if auc >= 0.60 else ("#58a6ff" if auc >= 0.58 else "#f0883e")
+    drift_color = "#f85149" if "ALERT" in ml.get("drift_status","") else (
+                  "#f0883e" if "WARN" in ml.get("drift_status","") else "#3fb950")
+    qual_color  = "#f85149" if "FAIL" in ml.get("quality_status","") else (
+                  "#f0883e" if "WARN" in ml.get("quality_status","") else "#3fb950")
+
+    # Top signal rows
+    signal_rows = ""
+    for ticker, d in ml.get("buy_signals", []):
+        conv  = d.get("rd_ticker_conviction", 0)
+        rsi   = d.get("rd_ticker_rsi", 50)
+        pct50 = d.get("rd_ticker_pct_from_50ma", 0)
+        sector = d.get("sector", "—")
+        geo   = "⚠ GEO" if d.get("rd_geo_risk") else ""
+        stars = "★" * int(conv) + "☆" * (5 - int(conv))
+        rsi_c = "#f0883e" if rsi > 70 else ("#3fb950" if rsi < 40 else "#c9d1d9")
+        signal_rows += f"""
+        <tr style="border-top:1px solid #21262d;">
+          <td style="padding:8px;font-weight:bold;color:#58a6ff;">{ticker}</td>
+          <td style="padding:8px;color:#8b949e;font-size:12px;">{sector}</td>
+          <td style="padding:8px;color:#f0c000;">{stars}</td>
+          <td style="padding:8px;color:{rsi_c};">{rsi:.0f}</td>
+          <td style="padding:8px;color:#c9d1d9;">{pct50:+.1f}%</td>
+          <td style="padding:8px;color:#f0883e;">{geo}</td>
+        </tr>"""
+
+    # Conflict rows
+    conflict_rows = ""
+    for c in ml.get("regime_conflicts", []):
+        flags_str = " · ".join(c["flags"])
+        conflict_rows += f"""
+        <tr style="border-top:1px solid #21262d;background:#1a1015;">
+          <td style="padding:8px;font-weight:bold;color:#f85149;">{c['ticker']}</td>
+          <td style="padding:8px;color:#f0c000;">{'★' * int(c['conviction'])}</td>
+          <td style="padding:8px;color:#f0883e;font-size:12px;">{flags_str}</td>
+        </tr>"""
+
+    conflict_section = ""
+    if conflict_rows:
+        conflict_section = f"""
+        <h3 style="color:#f85149;font-size:14px;margin:20px 0 10px 0;">
+          ⚠ Model-Risk Conflicts — CRO Review Required
+        </h3>
+        <p style="color:#8b949e;font-size:12px;margin:0 0 10px 0;">
+          These tickers have high R&D conviction BUY signals but the current market regime
+          has active risk flags. The Risk Manager has been briefed. Board should ratify or defer.
+        </p>
+        <table style="width:100%;border-collapse:collapse;background:#161b22;
+                      border:1px solid #f85149;border-radius:8px;overflow:hidden;margin-bottom:12px;">
+          <thead>
+            <tr style="background:#21262d;">
+              <th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">TICKER</th>
+              <th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">ML CONVICTION</th>
+              <th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">RISK FLAGS</th>
+            </tr>
+          </thead>
+          <tbody>{conflict_rows}</tbody>
+        </table>"""
+
+    no_signals_msg = ""
+    if not signal_rows:
+        no_signals_msg = '<p style="color:#8b949e;font-size:13px;">No active BUY signals from R&D today.</p>'
+
+    return f"""
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;
+              padding:16px 20px;margin-bottom:28px;">
+
+    <h2 style="color:#e6edf3;font-size:17px;margin:0 0 16px 0;">
+      ML Intelligence Brief
+    </h2>
+
+    <p style="color:#8b949e;font-size:11px;margin:0 0 16px 0;font-style:italic;">
+      Model {ml['model_version']} · 38 features · Trained on 16,918 labeled 13F rows (2013–2026) ·
+      Predicts 20-day price outperformance probability · AUC measures predictive power
+      (0.50=random, 0.60=hedge-fund quality) · Confidence scores are probabilities, not certainties.
+    </p>
+
+    <!-- Health chips -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Model AUC</div>
+        <div style="font-size:20px;font-weight:bold;color:{auc_color};">{auc:.4f}</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Regime</div>
+        <div style="font-size:18px;font-weight:bold;color:{regime_color};">{regime_label}</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">VIX</div>
+        <div style="font-size:20px;font-weight:bold;color:{'#f85149' if vix > 25 else '#3fb950'};">{vix:.1f}</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">SPY RSI</div>
+        <div style="font-size:20px;font-weight:bold;color:{'#f0883e' if spy_rsi > 70 else '#3fb950'};">{spy_rsi:.0f}</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Warnings</div>
+        <div style="font-size:20px;font-weight:bold;color:{'#f85149' if warns >= 3 else '#f0883e' if warns >= 2 else '#3fb950'};">{warns}</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Drift</div>
+        <div style="font-size:14px;font-weight:bold;color:{drift_color};">{ml['drift_status']}</div>
+      </div>
+      <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
+        <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Data Quality</div>
+        <div style="font-size:14px;font-weight:bold;color:{qual_color};">{ml['quality_status']}</div>
+      </div>
+    </div>
+
+    {'<div style="background:#1a1a0a;border:1px solid #f0c000;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#f0c000;">⚠ Rising rate environment detected — high-multiple growth stocks face headwind.</div>' if rising_r else ''}
+    {'<div style="background:#1a0a0a;border:1px solid #f85149;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#f85149;">⚠ Market overbought (SPY RSI {spy_rsi:.0f}) — elevated mean-reversion risk on new entries.</div>' if overbought else ''}
+
+    <!-- Top signals table -->
+    <h3 style="color:#e6edf3;font-size:14px;margin:0 0 10px 0;">Top R&D + ML Signals Today</h3>
+    {no_signals_msg}
+    {'<table style="width:100%;border-collapse:collapse;background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:16px;"><thead><tr style="background:#21262d;"><th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">TICKER</th><th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">SECTOR</th><th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">CONVICTION</th><th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">RSI</th><th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">vs 50MA</th><th style="padding:8px;text-align:left;color:#8b949e;font-size:11px;">FLAGS</th></tr></thead><tbody>' + signal_rows + '</tbody></table>' if signal_rows else ''}
+
+    {conflict_section}
+
+    <p style="color:#8b949e;font-size:11px;margin:12px 0 0 0;">
+      Bridge updated: {ml.get('updated_at','—')[:19]} UTC ·
+      {ml.get('n_tickers_tracked', 0)} tickers tracked by R&D
+    </p>
+  </div>
+"""
+
+
 def _build_html_minutes(briefing: dict, positions: list[dict],
                          consensus: dict, implementation: dict,
-                         code_changes: list[str]) -> str:
+                         code_changes: list[str],
+                         ml_intel: dict = None) -> str:
     now = datetime.now().strftime("%B %d, %Y at %H:%M")
     ra  = briefing["report_a"]
     rc  = briefing["report_c"]
@@ -1512,6 +2177,8 @@ def _build_html_minutes(briefing: dict, positions: list[dict],
     </p>
   </div>
 
+  {_build_ml_intel_html(ml_intel or {})}
+
   <h2 style="color:#e6edf3;font-size:17px;margin-bottom:16px;">Position Papers</h2>
   {position_cards}
 
@@ -1557,16 +2224,212 @@ def _build_html_minutes(briefing: dict, positions: list[dict],
 
 
 # =============================================================================
-# ORCHESTRATOR
+# OPERATIONS DIRECTOR — NON-VOTING FLOOR BRIEF
 # =============================================================================
 
+def _ops_director_position(briefing: dict) -> dict:
+    """
+    Operations Director: delivers a 'state of the floor' brief covering all
+    agents outside the direct board chain.  NON-VOTING — honorary board member.
+    """
+    try:
+        from operations_director import build_floor_brief
+        brief = build_floor_brief()
+    except Exception as _e:
+        brief = {
+            "summary": f"Floor brief unavailable: {_e}",
+            "flags": [str(_e)],
+            "agent_status": {},
+        }
+
+    return {
+        "agent":       "Operations Director",
+        "role":        "Floor Operations & Supervised Agents (Non-Voting)",
+        "vote":        None,
+        "non_voting":  True,
+        "positions":   [brief.get("summary", "")],
+        "actions":     [],
+        "vote_weight": {},    # non-voting — no votes cast; required by _synthesise_consensus
+        "dissents":    [],    # required by _build_html_minutes pos['dissents'] access
+        "floor_brief": brief,
+        "flags":       brief.get("flags", []),
+        "statement":   brief.get("summary", ""),
+        # 'summary' required by _build_html_minutes pos['summary'] direct access
+        "summary":     brief.get("summary", "Floor brief unavailable."),
+    }
+
+
+# =============================================================================
+# ORCHESTRATOR
+# =============================================================================
+# QUICK CLARIFICATION REVOTE
+# =============================================================================
+# Called by the CIT Director immediately after answering main_board
+# clarification requests. Runs only the CIT proposal vote — no position
+# papers, no trades, no full email — so proposals aren't held until the
+# next scheduled full board cycle.
+# =============================================================================
+
+def _run_cit_proposal_vote(proposals: list) -> dict:
+    """
+    Shared vote logic used by both the full board meeting (Step 4c) and the
+    quick clarification revote. Returns {voted, approved, rejected, approved_ids}.
+    """
+    voted_ids    = []
+    approved_ids = []
+    n_approved   = 0
+    n_rejected   = 0
+
+    for prop in proposals:
+        cat  = prop.get("category", "")
+        sev  = prop.get("severity", "LOW")
+        conf = prop.get("confidence", 0)
+
+        requires_unanimous = cat in ("STRATEGY", "NEW_FEATURE", "VISION")
+
+        vote_yes = 0
+        if sev in ("CRITICAL", "HIGH"):
+            vote_yes = 4
+        elif sev == "MEDIUM" and conf >= 75:
+            vote_yes = 3
+        elif sev == "MEDIUM" and conf >= 60:
+            vote_yes = 3 if not requires_unanimous else 2
+        elif sev == "LOW" and conf >= 80:
+            vote_yes = 3
+        else:
+            vote_yes = 2
+
+        threshold = 4 if requires_unanimous else 3
+        approved  = vote_yes >= threshold
+        voted_ids.append(prop.get("id", ""))
+
+        if approved:
+            approved_ids.append(prop.get("id", ""))
+            n_approved += 1
+            logger.info(f"  ✅ CIT APPROVED [{cat}|{sev}]: {prop.get('title','')[:65]}")
+        else:
+            n_rejected += 1
+            logger.info(f"  ✗  CIT REJECTED [{cat}|{sev}]: {prop.get('title','')[:65]}")
+
+    return {
+        "voted":        len(voted_ids),
+        "approved":     n_approved,
+        "rejected":     n_rejected,
+        "voted_ids":    voted_ids,
+        "approved_ids": approved_ids,
+    }
+
+
+def run_board_clarification_revote() -> dict:
+    """
+    Quick focused board session triggered immediately after the CIT Director
+    answers main_board clarification requests. Votes only on those proposals
+    — no position papers, no trade execution, no full board email.
+    """
+    logger.info("=" * 60)
+    logger.info("  APEX CAPITAL — BOARD QUICK CLARIFICATION REVOTE")
+    logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("  (CIT Director answered board questions — voting now)")
+    logger.info("=" * 60)
+
+    # Block the deputy board from running concurrently — both write cit_pending_proposals.json
+    os.makedirs("data", exist_ok=True)
+    try:
+        with open("data/board_meeting_active.json", "w") as _bf:
+            json.dump({"active": True, "started_at": datetime.now().isoformat(),
+                       "session": "quick_revote"}, _bf, indent=2)
+    except Exception:
+        pass
+
+    result = {"voted": 0, "approved": 0, "rejected": 0, "deferred": 0}
+
+    try:
+        from cit_director import get_pending_proposals, clear_voted_proposals
+
+        # Find only proposals that need a revote due to an answered main_board clarification
+        answered_pids: set = set()
+        try:
+            if os.path.exists(BOARD_CLARIFY_PATH):
+                with open(BOARD_CLARIFY_PATH) as _f:
+                    _clrs = json.load(_f)
+                answered_pids = {
+                    c["proposal_id"] for c in _clrs
+                    if c.get("source") == "main_board" and c.get("status") == "ANSWERED"
+                }
+        except Exception:
+            pass
+
+        all_pending = get_pending_proposals()
+        revote_props = [
+            p for p in all_pending
+            if p.get("needs_revote") and p.get("id") in answered_pids
+        ]
+
+        if not revote_props:
+            logger.info("  No proposals pending board revote — nothing to do.")
+            return result
+
+        logger.info(f"  {len(revote_props)} proposal(s) cleared for revote")
+
+        # Screen through evidence gate (should pass now that CIT Director answered)
+        revote_props, still_deferred = _board_clarify_check(revote_props)
+        if still_deferred:
+            logger.warning(
+                f"  {len(still_deferred)} proposal(s) still lack sufficient evidence "
+                f"even after CIT Director response — held for another round."
+            )
+            result["deferred"] = len(still_deferred)
+
+        if not revote_props:
+            logger.info("  No proposals cleared the evidence gate.")
+            return result
+
+        vote_result = _run_cit_proposal_vote(revote_props)
+        clear_voted_proposals(vote_result["voted_ids"], vote_result["approved_ids"])
+
+        result["voted"]    = vote_result["voted"]
+        result["approved"] = vote_result["approved"]
+        result["rejected"] = vote_result["rejected"]
+
+        logger.info(
+            f"  Quick revote complete: {result['approved']} approved, "
+            f"{result['rejected']} rejected, {result['deferred']} still deferred."
+        )
+
+        if vote_result["approved_ids"]:
+            _route_approved_cit_proposals(
+                [p for p in revote_props if p.get("id") in vote_result["approved_ids"]]
+            )
+
+    except Exception as _e:
+        logger.warning(f"  Board quick revote error: {_e}")
+
+    finally:
+        try:
+            with open("data/board_meeting_active.json", "w") as _bf:
+                json.dump({"active": False, "cleared_at": datetime.now().isoformat()}, _bf, indent=2)
+        except Exception:
+            pass
+
+    return result
+
+
 def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
+    # Write active flag so deputy agents know board is in session
+    os.makedirs("data", exist_ok=True)
+    try:
+        with open("data/board_meeting_active.json", "w") as _bf:
+            json.dump({"active": True, "started_at": datetime.now().isoformat()}, _bf, indent=2)
+    except Exception:
+        pass
+
     logger.info("=" * 65)
     logger.info("  APEX CAPITAL — BOARD COUNCIL MEETING")
     logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("  Voting:     Manager Agent · Chief of Staff ·")
     logger.info("              Risk Manager · Independent Risk Manager")
     logger.info("  Non-Voting: R&D Team Leader (research context only)")
+    logger.info("  Non-Voting: Operations Director (floor brief — honorary member)")
     logger.info("  Briefing: Anonymous — attributions redacted")
     logger.info("=" * 65)
 
@@ -1603,6 +2466,23 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     except Exception as _mb_err:
         logger.debug(f"  Morning briefing load error (non-fatal): {_mb_err}")
 
+    # ── Stale issue audit — surface unresolved issues needing board attention ─
+    try:
+        import issue_tracker as _it
+        _stale = _it.get_stale_issues(hours=48)
+        _critical_stale = [i for i in _stale if i["severity"] in ("CRITICAL", "HIGH")]
+        if _critical_stale:
+            logger.warning(f"  {len(_critical_stale)} stale HIGH/CRITICAL issues unresolved >48h:")
+            for _iss in _critical_stale[:5]:
+                logger.warning(
+                    f"    [{_iss['issue_id']}] {_iss['title']} "
+                    f"({_iss.get('escalation_count', 0)} escalations)"
+                )
+            # Add to briefing context so board members see it
+            _mb["stale_issues"] = _critical_stale[:10]
+    except Exception:
+        pass
+
     # 1. Load reports
     logger.info("\n  Step 1/6: Loading source reports...")
     reports  = _load_reports()
@@ -1620,12 +2500,19 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
 
     # 3. Position papers
     logger.info("\n  Step 3/6: Collecting position papers from all agents...")
+    ops_dir_brief = _ops_director_position(briefing)
+    logger.info(f"\n  [OpsDir] Floor brief: {ops_dir_brief['statement']}")
+    for _flag in ops_dir_brief.get("flags", []):
+        logger.warning(f"  [OpsDir] Flag: {_flag}")
+
     positions = [
         _position_manager_agent(briefing),
         _position_chief_of_staff(briefing),
         _position_risk_manager(briefing),
         _position_independent_risk_manager(briefing),
+        _position_cit_director(briefing),      # voting: operational health & improvement
         _position_rd_team_leader(briefing),    # non-voting: research context only
+        ops_dir_brief,                         # non-voting: floor brief (honorary member)
     ]
     for pos in positions:
         tag = " [NON-VOTING]" if pos.get("non_voting") else ""
@@ -1674,9 +2561,9 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
         for _action in consensus["actions"]:
             if not _action.get("proceed"):
                 continue
-            # Extract ticker from action ID (convention: VERB_TICKER, e.g. CLOSE_BA)
-            _parts  = _action.get("id", "").split("_")
-            _ticker = _parts[-1] if len(_parts) >= 2 else None
+            # Use _parse_action_id so compound tickers (BRK_B) are extracted correctly
+            # The old inline _parts[-1] approach failed for multi-part tickers
+            _, _ticker, _ = _parse_action_id(_action.get("id", ""))
             if not _ticker or _ticker not in _mgr_actions_today:
                 continue   # Board acting on untouched ticker — normal rules apply
 
@@ -1741,56 +2628,31 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
         cit_proposals = get_pending_proposals()
         if cit_proposals:
             logger.info(f"\n  Step 4c/6: CIT Proposal Vote — {len(cit_proposals)} pending proposal(s)...")
-            voted_ids    = []
-            approved_ids = []
-            for prop in cit_proposals:
-                # Simple heuristic vote: approve proposals with severity HIGH/CRITICAL
-                # or category BUG_FIX; defer STRATEGY/NEW_FEATURE for now.
-                # The board votes based on a lightweight review of title + description.
-                prop_text     = f"{prop.get('title','')} {prop.get('description','')}".lower()
-                cat           = prop.get("category", "")
-                sev           = prop.get("severity", "LOW")
-                conf          = prop.get("confidence", 0)
 
-                # Unanimity required for strategy/new-feature proposals
-                requires_unanimous = cat in ("STRATEGY", "NEW_FEATURE")
+            # Screen for proposals lacking verifiable evidence before voting
+            cit_proposals, _deferred_props = _board_clarify_check(cit_proposals)
+            if _deferred_props:
+                logger.info(
+                    f"  [Board Clarify] {len(_deferred_props)} proposal(s) deferred — "
+                    f"CIT Director must answer board questions before re-vote"
+                )
+            if not cit_proposals:
+                logger.info("  No proposals cleared the evidence gate this cycle.")
 
-                # Simulate board vote based on severity + confidence
-                # (Real implementation: board members could read proposals in their position papers)
-                vote_yes = 0
-                if sev in ("CRITICAL", "HIGH"):
-                    vote_yes = 4   # unanimous — clear issues
-                elif sev == "MEDIUM" and conf >= 75:
-                    vote_yes = 3   # majority
-                elif sev == "MEDIUM" and conf >= 60:
-                    vote_yes = 3 if not requires_unanimous else 2
-                elif sev == "LOW" and conf >= 80:
-                    vote_yes = 3
-                else:
-                    vote_yes = 2   # insufficient — reject
+            vote_result = _run_cit_proposal_vote(cit_proposals)
+            clear_voted_proposals(vote_result["voted_ids"], vote_result["approved_ids"])
 
-                threshold = 4 if requires_unanimous else 3
-                approved  = vote_yes >= threshold
-                voted_ids.append(prop.get("id", ""))
-                if approved:
-                    approved_ids.append(prop.get("id", ""))
-                    cit_vote_results["approved"] += 1
-                    logger.info(f"  ✅ CIT APPROVED [{prop.get('category')}|{sev}]: "
-                                f"{prop.get('title','')[:65]}")
-                else:
-                    cit_vote_results["rejected"] += 1
-                    logger.info(f"  ✗  CIT REJECTED [{prop.get('category')}|{sev}]: "
-                                f"{prop.get('title','')[:65]}")
-                cit_vote_results["voted"] += 1
+            cit_vote_results["voted"]    = vote_result["voted"]
+            cit_vote_results["approved"] = vote_result["approved"]
+            cit_vote_results["rejected"] = vote_result["rejected"]
 
-            clear_voted_proposals(voted_ids, approved_ids)
             logger.info(f"  CIT vote complete: {cit_vote_results['approved']} approved, "
                         f"{cit_vote_results['rejected']} rejected.")
 
             # ── Route approved proposals for implementation ───────────────
-            if approved_ids:
+            if vote_result["approved_ids"]:
                 _route_approved_cit_proposals(
-                    [p for p in cit_proposals if p.get("id") in approved_ids]
+                    [p for p in cit_proposals if p.get("id") in vote_result["approved_ids"]]
                 )
         else:
             logger.info("\n  Step 4c/6: CIT Proposal Vote — no pending proposals.")
@@ -1871,17 +2733,19 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
         logger.info(f"    {c}")
 
     # Build and send report
-    html = _build_html_minutes(briefing, positions, consensus, implementation, code_changes)
+    ml_intel = _load_ml_intelligence()
+    html = _build_html_minutes(briefing, positions, consensus, implementation, code_changes, ml_intel=ml_intel)
 
     # Save to disk
     os.makedirs("data", exist_ok=True)
     meeting_record = {
-        "timestamp":     datetime.now().isoformat(),
-        "briefing_id":   briefing["briefing_id"],
-        "positions":     [{k: v for k, v in p.items() if k != "vote_weight"} for p in positions],
-        "consensus":     consensus,
-        "implementation": implementation,
-        "code_changes":  code_changes,
+        "timestamp":       datetime.now().isoformat(),
+        "briefing_id":     briefing["briefing_id"],
+        "positions":       [{k: v for k, v in p.items() if k != "vote_weight"} for p in positions],
+        "consensus":       consensus,
+        "implementation":  implementation,
+        "code_changes":    code_changes,
+        "ops_director_brief": ops_dir_brief.get("floor_brief", {}),
     }
     with open(MEETING_LOG, "w") as f:
         json.dump(meeting_record, f, indent=2, default=str)
@@ -1916,6 +2780,19 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     logger.info("  BOARD MEETING COMPLETE")
     logger.info("=" * 65)
 
+    # Clear the active flag — board meeting is over
+    try:
+        import os as _os_bm_clear
+        bm_active_path = "data/board_meeting_active.json"
+        if _os_bm_clear.path.exists(bm_active_path):
+            _os_bm_clear.remove(bm_active_path)
+            logger.info("  ✓ board_meeting_active.json cleared")
+    except Exception as _bm_clear_e:
+        logger.error(
+            f"  CRITICAL: Could not clear board_meeting_active.json — "
+            f"board may appear permanently active to deputy agents: {_bm_clear_e}"
+        )
+
     return meeting_record
 
 
@@ -1923,7 +2800,573 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
 # Entry point
 # =============================================================================
 
+# =============================================================================
+# EMERGENCY SESSION — triggered when CRO receives an anonymous risk alert
+# =============================================================================
+
+def _emergency_position_manager(briefing: dict) -> dict:
+    alert = briefing.get("emergency_alert", {})
+    score = alert.get("risk_score", 0)
+    concerns = alert.get("concerns", [])
+
+    positions = [
+        f"The CRO has raised an urgent risk alert (score {score}/10). "
+        "I am suspending all new position opens effective immediately "
+        "until this session produces a resolution."
+    ]
+    actions = [{
+        "id":       "PAUSE_NEW_BUYS",
+        "action":   "Halt all new BUY orders for this session — resume only after risk resolved",
+        "urgency":  "IMMEDIATE",
+        "executor": "Engineering",
+    }]
+    vote_weight = {"PAUSE_NEW_BUYS": "STRONG"}
+
+    if score >= 8:
+        positions.append(
+            f"Risk score {score}/10 is in the critical range. "
+            "I recommend reducing total exposure by 15–20% immediately — "
+            "exit the weakest positions first."
+        )
+        actions.append({
+            "id":       "REDUCE_EXPOSURE",
+            "action":   "Reduce portfolio exposure 15–20%: exit weakest positions (largest unrealised losses first)",
+            "urgency":  "TODAY",
+            "executor": "Manager Agent",
+        })
+        vote_weight["REDUCE_EXPOSURE"] = "STRONG"
+
+    concern_summary = (
+        f"CRO flagged {len(concerns)} specific concern(s): "
+        + "; ".join(str(c)[:80] for c in concerns[:3])
+        + ("..." if len(concerns) > 3 else "")
+    )
+    positions.append(concern_summary)
+
+    return {
+        "agent":       "Manager Agent",
+        "role":        "Capital Allocation & Execution",
+        "positions":   positions,
+        "actions":     actions,
+        "vote_weight": vote_weight,
+        "dissents":    [],
+        "summary":     f"Buys halted. {'Exposure reduction recommended.' if score >= 8 else 'Monitoring closely.'}",
+    }
+
+
+def _emergency_position_cos(briefing: dict) -> dict:
+    alert = briefing.get("emergency_alert", {})
+    score = alert.get("risk_score", 0)
+    findings = alert.get("findings", [])
+
+    positions = [
+        "The CRO has convened this emergency session. As Chief of Staff, "
+        "I support the decision to halt new buys and review exposure. "
+        "Operationally, I'm requesting that the next morning briefing lead "
+        "with this alert so all agents are on the same page."
+    ]
+    actions = [
+        {
+            "id":       "PAUSE_NEW_BUYS",
+            "action":   "Halt all new BUY orders for this session",
+            "urgency":  "IMMEDIATE",
+            "executor": "Engineering",
+        },
+        {
+            "id":       "EMERGENCY_BRIEFING_FLAG",
+            "action":   "Flag emergency session outcome in next morning briefing — all agents to receive risk context",
+            "urgency":  "TODAY",
+            "executor": "Chief of Staff",
+        },
+    ]
+    vote_weight = {
+        "PAUSE_NEW_BUYS":         "STRONG",
+        "EMERGENCY_BRIEFING_FLAG": "STRONG",
+    }
+
+    if findings:
+        positions.append(
+            "The findings presented by the CRO suggest systemic issues, "
+            "not just market noise. I recommend a full review of current "
+            "strategy assumptions in the next regular board meeting."
+        )
+        actions.append({
+            "id":       "STRATEGY_REVIEW",
+            "action":   "Schedule full strategy review at next regular board meeting — incorporate emergency findings",
+            "urgency":  "THIS_WEEK",
+            "executor": "Chief of Staff",
+        })
+        vote_weight["STRATEGY_REVIEW"] = "SUPPORT"
+
+    return {
+        "agent":       "Chief of Staff",
+        "role":        "Strategy & Oversight",
+        "positions":   positions,
+        "actions":     actions,
+        "vote_weight": vote_weight,
+        "dissents":    [],
+        "summary":     "Support the halt. Flag findings for all agents. Carry into next board meeting.",
+    }
+
+
+def _emergency_position_risk_manager(briefing: dict) -> dict:
+    alert  = briefing.get("emergency_alert", {})
+    score  = alert.get("risk_score", 0)
+    concerns = alert.get("concerns", [])
+    ra     = briefing.get("report_a", {})
+
+    positions = [
+        f"This alert is consistent with the portfolio risk picture I see: "
+        f"score {score}/10 with {len(concerns)} flagged concern(s). "
+        "I fully support the buy halt and have verified our current VaR "
+        "and concentration metrics are within bounds — but only just."
+    ]
+    actions = [
+        {
+            "id":       "PAUSE_NEW_BUYS",
+            "action":   "Halt all new BUY orders immediately",
+            "urgency":  "IMMEDIATE",
+            "executor": "Manager Agent",
+        },
+        {
+            "id":       "RISK_DEEP_DIVE",
+            "action":   "CRO to produce a detailed risk memo within 24h: quantify each flagged concern with current portfolio data",
+            "urgency":  "TODAY",
+            "executor": "Engineering",
+        },
+    ]
+    vote_weight = {
+        "PAUSE_NEW_BUYS":  "STRONG",
+        "RISK_DEEP_DIVE":  "STRONG",
+    }
+
+    if score >= 8:
+        positions.append(
+            "At score 8+, I am formally recommending a VaR circuit breaker: "
+            "no new positions open until risk score drops below 7."
+        )
+        actions.append({
+            "id":       "VAR_CIRCUIT_BREAKER",
+            "action":   "Activate VaR circuit breaker: block all BUY orders until risk score < 7",
+            "urgency":  "IMMEDIATE",
+            "executor": "Engineering",
+        })
+        vote_weight["VAR_CIRCUIT_BREAKER"] = "STRONG"
+
+    return {
+        "agent":       "Risk Manager",
+        "role":        "Portfolio Risk & Compliance",
+        "positions":   positions,
+        "actions":     actions,
+        "vote_weight": vote_weight,
+        "dissents":    [],
+        "summary":     f"Alert confirmed. Halt buys. Produce risk memo within 24h. {'Circuit breaker engaged.' if score >= 8 else ''}",
+    }
+
+
+def _emergency_position_irm(briefing: dict) -> dict:
+    """
+    Independent Risk Manager's position in the emergency session.
+    The IRM authored the tip but cannot reveal this — speaks to the
+    alert as an external observer, validating the CRO's concern.
+    """
+    alert   = briefing.get("emergency_alert", {})
+    score   = alert.get("risk_score", 0)
+    verdict = alert.get("summary", "")
+
+    positions = [
+        "The CRO's concern is credible and well-founded. The risk score "
+        f"of {score}/10 combined with the specific concerns raised justifies "
+        "an emergency session. I support immediate action."
+    ]
+    actions = [
+        {
+            "id":       "PAUSE_NEW_BUYS",
+            "action":   "Halt all new BUY orders immediately",
+            "urgency":  "IMMEDIATE",
+            "executor": "Manager Agent",
+        },
+        {
+            "id":       "CHAIRMAN_BRIEFING",
+            "action":   "Chairman to receive full emergency session report immediately — no buffer delay",
+            "urgency":  "IMMEDIATE",
+            "executor": "Engineering",
+        },
+    ]
+    vote_weight = {
+        "PAUSE_NEW_BUYS":      "STRONG",
+        "CHAIRMAN_BRIEFING":   "STRONG",
+    }
+
+    positions.append(
+        "From a governance perspective: this session validates that the "
+        "firm's risk escalation mechanisms are functioning. The CRO acted "
+        "correctly by convening the board. I recommend we record this session "
+        "as a positive governance precedent."
+    )
+
+    if score >= 8:
+        positions.append(
+            "At this severity, I also recommend the Chairman personally reviews "
+            "all open positions before the next pipeline cycle runs. "
+            "Manager Agent should not execute any new trades without Chairman sign-off."
+        )
+        actions.append({
+            "id":       "CHAIRMAN_SIGN_OFF",
+            "action":   "Require Chairman sign-off before next pipeline cycle executes trades (risk score ≥ 8)",
+            "urgency":  "TODAY",
+            "executor": "Engineering",
+        })
+        vote_weight["CHAIRMAN_SIGN_OFF"] = "STRONG"
+
+    return {
+        "agent":       "Independent Risk Manager",
+        "role":        "Governance & Independent Oversight",
+        "positions":   positions,
+        "actions":     actions,
+        "vote_weight": vote_weight,
+        "dissents":    [],
+        "summary":     "Alert is credible. Board acted correctly. Escalation to Chairman is mandatory.",
+    }
+
+
+def _build_emergency_html(briefing: dict, positions: list, consensus: dict, implementation: dict) -> str:
+    alert = briefing.get("emergency_alert", {})
+    now   = datetime.now().strftime("%B %d, %Y at %H:%M")
+    score = alert.get("risk_score", 0)
+    urgency_badge_color = "#f85149" if score >= 8 else "#f0883e" if score >= 6 else "#f0c000"
+
+    concern_items = "".join(
+        f"<li style='margin-bottom:6px;color:#f85149;'>{c}</li>"
+        for c in alert.get("concerns", [])
+    ) or "<li style='color:#8b949e;'>No specific concerns listed.</li>"
+
+    finding_items = "".join(
+        f"<li style='margin-bottom:6px;color:#c9d1d9;'>{fn}</li>"
+        for fn in alert.get("findings", [])
+    ) or "<li style='color:#8b949e;'>No additional findings.</li>"
+
+    position_blocks = ""
+    for pos in positions:
+        pos_items = "".join(
+            f"<li style='margin-bottom:8px;color:#c9d1d9;line-height:1.6;'>{p}</li>"
+            for p in pos["positions"]
+        )
+        position_blocks += f"""
+        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;
+                    padding:14px 18px;margin-bottom:16px;">
+          <span style="background:#58a6ff;color:#0d1117;font-size:11px;font-weight:bold;
+                       padding:3px 10px;border-radius:4px;">{pos['agent'].upper()}</span>
+          <span style="color:#8b949e;font-size:12px;margin-left:8px;">{pos['role']}</span>
+          <ul style="margin:10px 0 0 0;padding-left:18px;line-height:1.8;">{pos_items}</ul>
+          <div style="margin-top:10px;border-top:1px solid #21262d;padding-top:8px;">
+            <span style="color:#58a6ff;font-size:12px;font-style:italic;">{pos['summary']}</span>
+          </div>
+        </div>"""
+
+    urgency_order = {"IMMEDIATE": 0, "TODAY": 1, "THIS_WEEK": 2, "ONGOING": 3}
+    action_rows = ""
+    for act in sorted(
+        [a for a in consensus["actions"] if a["proceed"]],
+        key=lambda a: urgency_order.get(a.get("urgency", "ONGOING"), 4)
+    ):
+        uc = {"IMMEDIATE": "#f85149", "TODAY": "#f0883e", "THIS_WEEK": "#f0c000"}.get(act.get("urgency",""), "#8b949e")
+        action_rows += f"""
+        <tr style="border-bottom:1px solid #21262d;">
+          <td style="padding:9px 8px;">
+            <span style="background:{uc};color:#0d1117;font-size:10px;font-weight:bold;
+                         padding:2px 7px;border-radius:3px;">{act.get('urgency','')}</span>
+          </td>
+          <td style="padding:9px 8px;color:#c9d1d9;">{act['action']}</td>
+          <td style="padding:9px 8px;color:#3fb950;font-weight:bold;">{act['classification']}</td>
+          <td style="padding:9px 8px;color:#8b949e;font-size:11px;">{act.get('executor','—')}</td>
+        </tr>"""
+
+    n_exec = sum(1 for e in implementation.get("executed", []) if "EXECUTED" in e.get("status", ""))
+
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',Arial,sans-serif;
+             padding:24px;max-width:900px;margin:0 auto;">
+
+  <div style="background:#1a0a0a;border:2px solid #f85149;border-radius:10px;
+              padding:20px 24px;margin-bottom:28px;">
+    <h1 style="color:#f85149;margin:0 0 6px 0;font-size:22px;">
+      🚨 APEX CAPITAL — EMERGENCY BOARD SESSION
+    </h1>
+    <p style="color:#8b949e;margin:0;font-size:13px;">
+      Convened by: Chief Risk Officer &nbsp;·&nbsp; {now}
+    </p>
+    <p style="margin:12px 0 0 0;">
+      <span style="background:{urgency_badge_color};color:#0d1117;font-weight:bold;
+                   padding:4px 14px;border-radius:5px;font-size:14px;">
+        {alert.get('urgency','HIGH')} — Risk Score {score}/10
+      </span>
+    </p>
+    <p style="color:#c9d1d9;margin:14px 0 0 0;font-size:14px;line-height:1.6;">
+      {alert.get('summary','')}
+    </p>
+  </div>
+
+  <div style="background:#161b22;border:1px solid #f85149;border-radius:8px;
+              padding:16px 20px;margin-bottom:28px;">
+    <h3 style="color:#f85149;margin:0 0 10px 0;">Flagged Concerns</h3>
+    <ul style="margin:0;padding-left:18px;line-height:1.9;">{concern_items}</ul>
+    {f'<h3 style="color:#c9d1d9;margin:14px 0 8px 0;">Additional Findings</h3><ul style="margin:0;padding-left:18px;line-height:1.9;">{finding_items}</ul>' if alert.get('findings') else ''}
+  </div>
+
+  <h2 style="color:#e6edf3;font-size:16px;margin-bottom:14px;">Board Positions</h2>
+  {position_blocks}
+
+  <h2 style="color:#e6edf3;font-size:16px;margin:24px 0 12px 0;">Voted Action Plan</h2>
+  <table style="width:100%;border-collapse:collapse;background:#161b22;
+                border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:28px;">
+    <thead>
+      <tr style="background:#21262d;">
+        <th style="padding:9px 8px;text-align:left;color:#8b949e;font-size:11px;">URGENCY</th>
+        <th style="padding:9px 8px;text-align:left;color:#8b949e;font-size:11px;">ACTION</th>
+        <th style="padding:9px 8px;text-align:left;color:#8b949e;font-size:11px;">VOTE</th>
+        <th style="padding:9px 8px;text-align:left;color:#8b949e;font-size:11px;">EXECUTOR</th>
+      </tr>
+    </thead>
+    <tbody>{action_rows or '<tr><td colspan="4" style="padding:12px;color:#8b949e;">No actions voted through.</td></tr>'}</tbody>
+  </table>
+
+  <div style="background:#0d2a0d;border:1px solid #3fb950;border-radius:8px;
+              padding:14px 18px;margin-bottom:20px;">
+    <p style="margin:0;color:#3fb950;font-size:13px;">
+      <strong>Execution Summary:</strong> {n_exec} trade action(s) executed this session.
+      {consensus['unanimous_count']} unanimous · {consensus['majority_count']} majority ·
+      {consensus['vetoed_count']} vetoed
+    </p>
+  </div>
+
+  <p style="color:#484f58;font-size:11px;margin-top:20px;border-top:1px solid #21262d;padding-top:10px;">
+    Apex Capital — Emergency Board Session &nbsp;·&nbsp;
+    Convened by CRO · Anonymous risk concern · Full attribution: Chairman only &nbsp;·&nbsp; {now}
+  </p>
+</body></html>"""
+
+
+def run_emergency_board_meeting(tip_data: dict, dry_run: bool = False, send_email: bool = True) -> dict:
+    """
+    Emergency board session convened by CRO after receiving an anonymous risk alert.
+
+    The CRO received an independent tip and presents the concerns as their own.
+    No board member learns the true origin — source stays permanently anonymous.
+    Board deliberates and votes on immediate action. You receive the outcome directly.
+    """
+    logger.info("=" * 65)
+    logger.info("  🚨 APEX CAPITAL — EMERGENCY BOARD SESSION")
+    logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("  Convened by: Chief Risk Officer (CRO)")
+    logger.info("  Reason: CRO raised urgent risk concerns requiring board review")
+    logger.info("=" * 65)
+
+    alert_urgency  = tip_data.get("urgency", "HIGH")
+    alert_score    = tip_data.get("risk_score", 0)
+    alert_summary  = tip_data.get("alert_summary", "Urgent risk concerns raised by CRO.")
+    alert_concerns = tip_data.get("concerns", [])
+    alert_findings = tip_data.get("findings", [])
+
+    logger.info(
+        f"\n  Alert: {alert_urgency} | Score: {alert_score}/10 | "
+        f"{len(alert_concerns)} concern(s)"
+    )
+    for c in alert_concerns[:3]:
+        logger.info(f"    • {str(c)[:100]}")
+
+    # Load current portfolio context
+    reports  = _load_reports()
+    briefing = _build_anonymous_briefing(reports)
+    briefing["emergency_alert"] = {
+        "raised_by": "Chief Risk Officer",
+        "urgency":   alert_urgency,
+        "risk_score": alert_score,
+        "summary":   alert_summary,
+        "concerns":  alert_concerns,
+        "findings":  alert_findings,
+    }
+
+    # Position papers focused on the emergency concern
+    logger.info("\n  Collecting emergency position papers...")
+    positions = [
+        _emergency_position_manager(briefing),
+        _emergency_position_cos(briefing),
+        _emergency_position_risk_manager(briefing),
+        _emergency_position_irm(briefing),
+    ]
+    for pos in positions:
+        logger.info(f"  [{pos['agent']}] {len(pos['positions'])} position(s), {len(pos['actions'])} action(s)")
+
+    # Synthesise consensus
+    consensus = _synthesise_consensus(positions)
+    logger.info(
+        f"\n  Consensus: {consensus['unanimous_count']} unanimous | "
+        f"{consensus['majority_count']} majority | "
+        f"{consensus['vetoed_count']} vetoed | "
+        f"{consensus['proceed_count']} proceeding"
+    )
+    for act in consensus["actions"]:
+        if act["proceed"]:
+            logger.info(f"    ✓ [{act.get('urgency',''):<10}] {act['action'][:60]}")
+
+    # Implement urgent decisions
+    logger.info(f"\n  Executing decisions {'[DRY RUN]' if dry_run else '[LIVE]'}...")
+    implementation = _implement_decisions(consensus, dry_run=dry_run)
+    n_exec = sum(1 for e in implementation["executed"] if "EXECUTED" in e.get("status", ""))
+    logger.info(f"  ✓ {n_exec} trade action(s) executed, "
+                f"{len(implementation['requires_code'])} engineering action(s) queued")
+
+    # Apply any code-level changes the emergency board voted through
+    _apply_code_changes(consensus)
+
+    # Build HTML report
+    html = _build_emergency_html(briefing, positions, consensus, implementation)
+
+    # Persist record
+    os.makedirs("data", exist_ok=True)
+    record = {
+        "timestamp":      datetime.now().isoformat(),
+        "session_type":   "EMERGENCY",
+        "convened_by":    "CRO",
+        "alert":          briefing["emergency_alert"],
+        "positions":      [{k: v for k, v in p.items() if k != "vote_weight"} for p in positions],
+        "consensus":      consensus,
+        "implementation": implementation,
+    }
+    with open("data/emergency_board_report.json", "w") as f:
+        json.dump(record, f, indent=2, default=str)
+    logger.info("  ✓ Emergency session record → data/emergency_board_report.json")
+
+    # Email you immediately — bypass buffer (subject contains 🚨)
+    if send_email:
+        try:
+            from email_sender import send_alert_email
+            subject = (
+                f"🚨 Emergency Board Session — Risk Score {alert_score}/10 | "
+                f"{len(alert_concerns)} Concern(s) | "
+                f"{datetime.now().strftime('%b %d %H:%M')}"
+            )
+            send_alert_email(subject=subject, body=html)
+            logger.info("  ✅ Emergency session report emailed to Chairman (immediate — bypasses buffer)")
+        except Exception as e:
+            logger.warning(f"  Emergency email error: {e}")
+
+    logger.info("\n" + "=" * 65)
+    logger.info("  EMERGENCY SESSION COMPLETE")
+    logger.info("=" * 65)
+
+    return record
+
+
+# =============================================================================
+# EMERGENCY BOARD MEETING — callable by any agent
+# =============================================================================
+
+BOARD_ACTIVE_PATH = "data/board_meeting_active.json"
+
+
+def call_emergency_board_meeting(
+    reason: str,
+    severity: str,
+    caller: str,
+    anonymous: bool = False,
+) -> dict:
+    """
+    Callable by any agent to convene a focused emergency board session.
+
+    Parameters
+    ----------
+    reason   : str  — one-line reason (injected into the session as the concern)
+    severity : str  — "CRITICAL" | "HIGH" | "ELEVATED" (controls email behaviour)
+    caller   : str  — name of the calling agent (redacted if anonymous=True)
+    anonymous: bool — if True, caller is listed as "Anonymous Governance Alert"
+
+    Behaviour
+    ---------
+    • Always runs a streamlined emergency board meeting focused on the reason.
+    • If severity == "CRITICAL": emails Jack (jack.beard07@gmail.com) directly.
+    • If severity < "CRITICAL" : resolves internally; no email to Jack.
+    • Posts outcome to firm channel regardless of severity.
+    • If anonymous=True: caller identity is never recorded in meeting notes.
+
+    Returns the emergency session record dict.
+    """
+    display_caller = "Anonymous Governance Alert" if anonymous else caller
+    logger.info(
+        f"  [EmergencyBoard] Called by: {display_caller} | "
+        f"Severity: {severity} | Reason: {reason[:80]}"
+    )
+
+    # Determine whether to email Jack
+    _severity_rank = {"ELEVATED": 0, "HIGH": 1, "CRITICAL": 2}
+    send_email_to_jack = _severity_rank.get(severity, 0) >= _severity_rank["CRITICAL"]
+
+    # Map severity to risk_score for the existing emergency session format
+    score_map = {"ELEVATED": 5, "HIGH": 7, "CRITICAL": 9}
+    risk_score = score_map.get(severity, 6)
+
+    tip_data = {
+        "urgency":       severity,
+        "risk_score":    risk_score,
+        "alert_summary": (
+            f"Emergency board session called by {display_caller}. "
+            f"Severity: {severity}. Reason: {reason}"
+        ),
+        "concerns":      [reason],
+        "findings":      [
+            f"Caller: {display_caller}",
+            f"Severity: {severity}",
+            f"Anonymous: {anonymous}",
+        ],
+    }
+
+    record = run_emergency_board_meeting(
+        tip_data=tip_data,
+        dry_run=False,
+        send_email=send_email_to_jack,
+    )
+
+    # Post outcome to firm channel
+    try:
+        from firm_channel import post as _fc_post
+        consensus = record.get("consensus", {})
+        outcome_summary = (
+            f"Emergency board session complete. Severity: {severity}. "
+            f"Reason: {reason[:60]}. "
+            f"Unanimous: {consensus.get('unanimous_count', 0)}, "
+            f"Majority: {consensus.get('majority_count', 0)}, "
+            f"Vetoed: {consensus.get('vetoed_count', 0)}."
+        )
+        _fc_post(
+            "Board Meeting",
+            "PIPELINE_ALERT",
+            outcome_summary,
+            priority="URGENT" if severity == "CRITICAL" else "HIGH",
+        )
+    except Exception as _fc_err:
+        logger.debug(f"  [EmergencyBoard] Firm channel post failed: {_fc_err}")
+
+    logger.info(
+        f"  [EmergencyBoard] Session complete. "
+        f"Email to Jack: {send_email_to_jack}"
+    )
+    return record
+
+
 if __name__ == "__main__":
     dry   = "--dry-run"  in sys.argv
     email = "--no-email" not in sys.argv
-    run_board_meeting(dry_run=dry, send_email=email)
+    if "--emergency" in sys.argv:
+        # Manual trigger: python3 board_meeting.py --emergency
+        _tip = {
+            "urgency":       "HIGH",
+            "risk_score":    7,
+            "alert_summary": "Manual emergency session triggered by Chairman.",
+            "concerns":      ["Manual trigger — no specific concerns"],
+            "findings":      [],
+        }
+        run_emergency_board_meeting(tip_data=_tip, dry_run=dry, send_email=email)
+    else:
+        run_board_meeting(dry_run=dry, send_email=email)

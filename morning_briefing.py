@@ -253,35 +253,55 @@ def run_morning_briefing() -> dict:
             briefing["alerts"].append(f"📌 CoS: {item.get('item', '')[:80]}")
     logger.info(f"    CoS: {len(attention)} attention items | Age: {cos_age_h:.1f}h")
 
-    # ── 8. CIT (Continuous Improvement Team) ─────────────────────────────────
-    logger.info("\n  [8/15] CIT — improvement proposals...")
+    # ── 8. CIT (Continuous Improvement Team) — PROMINENT SECTION ─────────────
+    logger.info("\n  [8/15] CIT — improvement proposals & ThinkTank...")
     cit_morning  = _safe_load("data/cit_morning_report.json")
     cit_evening  = _safe_load("data/cit_evening_report.json")
     cit_pending  = _safe_load("data/cit_pending_proposals.json")
     cit_approved = _safe_load("data/cit_approved_proposals.json")
     cit_backlog  = _safe_load("data/cit_backlog.json")
+    cit_think_tank = []
+    try:
+        import json as _json
+        if os.path.exists("data/cit_think_tank.json"):
+            with open("data/cit_think_tank.json") as _ttf:
+                _tt_data = _json.load(_ttf)
+                cit_think_tank = _tt_data if isinstance(_tt_data, list) else []
+    except Exception:
+        pass
 
     pending_list  = cit_pending  if isinstance(cit_pending,  list) else cit_pending.get("proposals",  [])
     approved_list = cit_approved if isinstance(cit_approved, list) else cit_approved.get("proposals", [])
     backlog_list  = cit_backlog  if isinstance(cit_backlog,  list) else cit_backlog.get("proposals",  [])
 
-    # Latest session is whichever ran most recently
-    cit_latest = cit_evening if _age_hours(cit_evening.get("generated_at","")) < _age_hours(cit_morning.get("generated_at","")) else cit_morning
+    # Latest session is whichever ran most recently; if both are missing timestamps, use empty dict
+    _eve_age = _age_hours(cit_evening.get("generated_at", ""))
+    _mrn_age = _age_hours(cit_morning.get("generated_at", ""))
+    if _eve_age == float("inf") and _mrn_age == float("inf"):
+        cit_latest = {}
+    else:
+        cit_latest = cit_evening if _eve_age < _mrn_age else cit_morning
     cit_proposals = cit_latest.get("proposals", [])
 
+    # All pending proposals with full detail — CIT gets full visibility in morning briefing
     briefing["sections"]["cit"] = {
-        "pending_count":   len(pending_list),
-        "approved_count":  len(approved_list),
-        "backlog_count":   len(backlog_list),
-        "latest_session":  cit_latest.get("session", ""),
-        "top_proposals":   cit_proposals[:3],
-        "last_updated":    cit_latest.get("generated_at", ""),
-        "morning_fresh":   _fresh(cit_morning.get("generated_at", ""), 14),
-        "evening_fresh":   _fresh(cit_evening.get("generated_at", ""), 14),
+        "pending_count":      len(pending_list),
+        "approved_count":     len(approved_list),
+        "backlog_count":      len(backlog_list),
+        "latest_session":     cit_latest.get("session", ""),
+        "top_proposals":      cit_proposals[:6],          # show top 6 (was 3)
+        "all_pending":        pending_list[:10],           # full pending queue for agents to see
+        "think_tank":         cit_think_tank[:5],          # ThinkTank VISION proposals
+        "quick_wins":         cit_latest.get("quick_win_items", [])[:4],
+        "last_updated":       cit_latest.get("generated_at", ""),
+        "morning_fresh":      _fresh(cit_morning.get("generated_at", ""), 14),
+        "evening_fresh":      _fresh(cit_evening.get("generated_at", ""), 14),
     }
     if len(pending_list) > 20:
         briefing["alerts"].append(f"📋 CIT: {len(pending_list)} proposals pending board vote — queue getting long")
-    logger.info(f"    CIT: {len(cit_proposals)} new proposals | {len(pending_list)} pending | {len(approved_list)} approved")
+    if cit_think_tank:
+        briefing["alerts"].append(f"💡 CIT ThinkTank: {len(cit_think_tank)} VISION proposal(s) awaiting board unanimous vote")
+    logger.info(f"    CIT: {len(cit_proposals)} new proposals | {len(pending_list)} pending | {len(approved_list)} approved | {len(cit_think_tank)} ThinkTank")
 
     # ── 9. IRM — overnight board check ───────────────────────────────────────
     logger.info("\n  [9/15] IRM — overnight risk check...")
@@ -402,6 +422,75 @@ def run_morning_briefing() -> dict:
         briefing["alerts"].append(f"💰 Capital: only {deploy_pct:.1f}% deployed — DEPLOY_MORE directive active")
     logger.info(f"    Capital: {deploy_pct}% deployed | Signal: {deploy_signal}")
 
+    # ── 16. Reconciliation Engine — last compliance check ────────────────────
+    logger.info("\n  [16/18] Reconciliation Engine — last compliance audit...")
+    recon_report = _safe_load("data/reconciliation_report.json")
+    recon_age_h  = _age_hours(recon_report.get("generated_at", ""))
+    recon_status = recon_report.get("status", "UNKNOWN")
+    recon_flags  = recon_report.get("flags", [])
+    briefing["sections"]["reconciliation"] = {
+        "age_hours":   round(recon_age_h, 1),
+        "status":      recon_status,
+        "n_flags":     recon_report.get("n_flags", 0),
+        "n_critical":  recon_report.get("n_critical", 0),
+        "n_high":      recon_report.get("n_high", 0),
+        "n_medium":    recon_report.get("n_medium", 0),
+        "top_flags":   recon_flags[:3],
+        "last_updated": recon_report.get("generated_at", ""),
+    }
+    if recon_report.get("n_critical", 0) > 0:
+        briefing["alerts"].append(
+            f"🚨 Reconciliation: {recon_report['n_critical']} CRITICAL flag(s) — "
+            + ", ".join(f['check'] for f in recon_flags if f.get('severity') == 'CRITICAL')[:80]
+        )
+    elif recon_report.get("n_high", 0) > 0:
+        briefing["alerts"].append(
+            f"⚠️ Reconciliation: {recon_report['n_high']} HIGH flag(s) — "
+            + ", ".join(f['check'] for f in recon_flags if f.get('severity') == 'HIGH')[:80]
+        )
+    logger.info(f"    Reconciliation: {recon_status} | {recon_report.get('n_flags', 0)} flag(s) | Age: {recon_age_h:.1f}h")
+
+    # ── 17. Operations Director — floor supervision summary ───────────────────
+    logger.info("\n  [17/18] Operations Director — floor supervision summary...")
+    ops_report  = _safe_load("data/ops_director_report.json")
+    ops_age_h   = _age_hours(ops_report.get("generated_at", ""))
+    briefing["sections"]["ops_director"] = {
+        "age_hours":       round(ops_age_h, 1),
+        "floor_status":    ops_report.get("floor_status", ops_report.get("status", "UNKNOWN")),
+        "agents_reviewed": ops_report.get("agents_reviewed", ops_report.get("total_agents_supervised", 0)),
+        "issues_found":    ops_report.get("issues_found", ops_report.get("total_issues", 0)),
+        "top_issues":      ops_report.get("issues", ops_report.get("agent_issues", []))[:3],
+        "directive":       ops_report.get("directive", ops_report.get("floor_directive", "")),
+        "last_updated":    ops_report.get("generated_at", ""),
+    }
+    if ops_report.get("issues_found", ops_report.get("total_issues", 0)) > 0:
+        briefing["alerts"].append(
+            f"🏢 Ops Director: {ops_report.get('issues_found', ops_report.get('total_issues', '?'))} issue(s) on the floor"
+        )
+    logger.info(f"    Ops Director: {ops_report.get('floor_status', ops_report.get('status', '—'))} | "
+                f"Age: {ops_age_h:.1f}h")
+
+    # ── 18. Firm Channel — ideas from the floor (overnight + this morning) ────
+    logger.info("\n  [18/18] Firm Channel — overnight idea sharing...")
+    try:
+        from firm_channel import summary_for_briefing as _fc_summary
+        _channel = _fc_summary(hours=20)   # last 20h covers yesterday evening + this morning
+        briefing["sections"]["firm_channel"] = _channel
+        _urgent = _channel.get("urgent", [])
+        if _urgent:
+            for _u in _urgent[:3]:
+                briefing["alerts"].append(
+                    f"📢 {_u['agent']}: {_u['content'][:80]}"
+                )
+        logger.info(
+            f"    Firm Channel: {_channel['total']} posts | "
+            f"{len(_channel.get('by_agent', {}))} agent(s) active | "
+            f"{len(_urgent)} urgent"
+        )
+    except Exception as _fce:
+        briefing["sections"]["firm_channel"] = {"total": 0, "error": str(_fce)}
+        logger.warning(f"    Firm Channel: unavailable ({_fce})")
+
     # ── Compile full agent status ──────────────────────────────────────────────
     briefing["agent_status"] = {
         "canary":            {"fresh": _fresh(canary.get("generated_at",""), 1),      "level": canary_level},
@@ -424,6 +513,12 @@ def run_morning_briefing() -> dict:
         "review":            {"fresh": rev_age_h < 12,  "buy_recs": len(buy_recs)},
         "trade_review":      {"fresh": briefing["sections"]["trade_review"]["fresh"]},
         "capital":           {"signal": deploy_signal},
+        "reconciliation":    {"fresh": recon_age_h < 1, "status": recon_status,
+                              "n_critical": recon_report.get("n_critical", 0)},
+        "ops_director":      {"fresh": ops_age_h < 12,
+                              "floor_status": ops_report.get("floor_status", ops_report.get("status", "—"))},
+        "deputy_board":      {"fresh": _fresh(_safe_load("data/deputy_board_report.json").get("generated_at",""), 24),
+                              "approved": _safe_load("data/deputy_board_report.json").get("approved_count", 0)},
     }
 
     # ── Save briefing ─────────────────────────────────────────────────────────

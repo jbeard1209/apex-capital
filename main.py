@@ -41,6 +41,7 @@
 #       ↳ Board can override Manager Agent with 3/4 vote (MAJORITY or UNANIMOUS)
 # =============================================================================
 
+import fcntl
 import os
 import sys
 import json
@@ -48,6 +49,20 @@ import logging
 import argparse
 from datetime import datetime
 from pathlib import Path
+
+# ---------------------------------------------------------------------------
+# Raise file-descriptor limit early — prevents "Too many open files" when
+# importing manager_agent late in a heavy pipeline run (yfinance + sqlite +
+# logging all hold FDs; macOS default soft limit is only 256).
+# ---------------------------------------------------------------------------
+try:
+    import resource as _resource
+    _soft, _hard = _resource.getrlimit(_resource.RLIMIT_NOFILE)
+    _target = min(8192, _hard)
+    if _soft < _target:
+        _resource.setrlimit(_resource.RLIMIT_NOFILE, (_target, _hard))
+except Exception:
+    pass  # Windows or permission error — best-effort only
 
 # ---------------------------------------------------------------------------
 # Logging Setup
@@ -102,6 +117,27 @@ def save_state(state: dict):
         json.dump(state, f, indent=2, default=str)
 
 
+def _classify_signal_source(source_agent: str) -> str:
+    """Map source_agent name → one of '13F' | 'R&D' | 'Energy' | 'Manager'."""
+    sa = (source_agent or "").lower()
+    if "energy" in sa:
+        return "Energy"
+    if any(x in sa for x in ("rd", "r&d", "research", "sector", "momentum", "factor",
+                               "optionsflow", "historical", "geopolit")):
+        return "R&D"
+    if "13f" in sa or "institutional" in sa:
+        return "13F"
+    return "Manager"
+
+
+def _lookup_buy_source(state: dict, ticker: str) -> str:
+    """Return the signal source recorded when this ticker was bought, or 'unknown'."""
+    for entry in reversed(state.get("buy_log", [])):
+        if entry.get("ticker") == ticker:
+            return entry.get("source", "unknown")
+    return "unknown"
+
+
 # ---------------------------------------------------------------------------
 # Main Daily Run
 # ---------------------------------------------------------------------------
@@ -127,6 +163,17 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     logger.info("  INSTITUTIONAL TRACKER — DAILY RUN")
     logger.info(f"  {datetime.now().strftime('%A, %B %d, %Y  %H:%M:%S')}")
     logger.info("=" * 65)
+
+    # ── Deputy mode check — if board meeting is active, run deputy instead ─
+    try:
+        from deputy_agents import activate_deputy_if_needed, DeputyManager
+        if activate_deputy_if_needed("Manager Agent"):
+            logger.info("  Board meeting in progress — running DeputyManager instead of full pipeline.")
+            DeputyManager().run()
+            logger.info("  Deputy run complete. Full pipeline deferred until board meeting ends.")
+            return
+    except Exception as _dep_import_e:
+        logger.debug(f"  Deputy agent check error (non-fatal): {_dep_import_e}")
 
     # ── Morning Briefing — shared context for all agents ─────────────────
     # The morning briefing runs 30 min before the pipeline (9:15 AM EDT).
@@ -159,11 +206,35 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception as _mb_err:
         logger.debug(f"  Morning briefing load error (non-fatal): {_mb_err}")
 
+    # ── Pipeline heartbeat — write on every run ───────────────────────────
+    # Lets any monitoring tool (CIT, catch_up, IRM) confirm the pipeline
+    # actually started.  Distinct from manager_decisions.json, which only
+    # exists once the Manager Agent finishes — this file exists the moment
+    # the pipeline begins, so a crash mid-run is detectable.
+    try:
+        import json as _hb_json
+        _hb_path = Path(__file__).parent / "data" / "pipeline_heartbeat.json"
+        _hb_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(_hb_path, "w") as _hb_f:
+            _hb_json.dump({
+                "last_started":  datetime.now().isoformat(),
+                "pid":           os.getpid() if hasattr(os, "getpid") else None,
+            }, _hb_f, indent=2)
+    except Exception:
+        pass
+
     # ── Dead-man's switch ─────────────────────────────────────────────────
-    # If manager_decisions.json is stale (>30h) when the pipeline starts,
-    # the Manager Agent missed an entire cycle — send an immediate warning email.
-    # This is a pre-flight check, not a pipeline abort: we continue the run but
-    # the Chairman knows before any money moves.
+    # Checks TWO signals:
+    #   1. pipeline_heartbeat.json  — did the pipeline even start recently?
+    #   2. manager_decisions.json   — did the Manager Agent complete a cycle?
+    # Threshold raised from 14h → 20h.
+    # The overnight gap between the last pipeline run (4:15 PM EDT) and the
+    # first next-day run (9:45 AM EDT) is 17.5h — the old 14h threshold fired
+    # every single weekday morning. 20h gives 2.5h of headroom above the
+    # expected overnight gap while still catching genuinely missed days.
+    # catch_up.py now handles the auto-remediation — this is a Chairman alert
+    # only. Pipeline continues regardless.
+    _DMS_THRESHOLD_H = 20
     try:
         _dm_path = Path(__file__).parent / "data" / "manager_decisions.json"
         if _dm_path.exists():
@@ -174,26 +245,44 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             _dm_ts  = _dm_raw.get("generated_at") or _dm_raw.get("timestamp", "")
             if _dm_ts:
                 _dm_age_h = (datetime.now() - datetime.fromisoformat(str(_dm_ts)[:19])).total_seconds() / 3600
-                if _dm_age_h > 30:
+                # Subtract weekend hours — pipeline is weekday-only, so a gap spanning
+                # Saturday/Sunday is expected and should not fire the alert.
+                _last_run = datetime.fromisoformat(str(_dm_ts)[:19])
+                _now      = datetime.now()
+                _d        = _last_run.date()
+                _weekend_h = 0.0
+                while _d <= _now.date():
+                    if _d.weekday() >= 5:   # 5=Saturday, 6=Sunday
+                        _weekend_h += 24.0
+                    from datetime import timedelta as _td
+                    _d += _td(days=1)
+                _effective_age_h = max(0.0, _dm_age_h - _weekend_h)
+                if _effective_age_h > _DMS_THRESHOLD_H:
                     logger.warning(
-                        f"  🚨 DEAD-MAN'S SWITCH: manager_decisions.json is {_dm_age_h:.0f}h old — "
-                        f"Manager Agent missed a cycle! Sending alert..."
+                        f"  🚨 DEAD-MAN'S SWITCH: manager_decisions.json is {_dm_age_h:.0f}h old "
+                        f"({_effective_age_h:.0f}h excl. weekends) — Manager Agent missed a cycle!"
                     )
                     if send_email:
                         try:
                             from email_sender import send_alert_email
                             send_alert_email(
-                                subject=f"⚠️ DEAD-MAN'S SWITCH — Manager Agent missed a cycle ({_dm_age_h:.0f}h stale)",
+                                subject=f"⚠️ DEAD-MAN'S SWITCH — Manager Agent missed a cycle ({_effective_age_h:.0f}h excl. weekends)",
                                 body=(
                                     f"<p><strong>ALERT:</strong> The pipeline's dead-man's switch has triggered.</p>"
                                     f"<p><code>data/manager_decisions.json</code> is <strong>{_dm_age_h:.0f} hours old</strong> "
-                                    f"(threshold: 30h). The Manager Agent did not complete its last cycle.</p>"
+                                    f"({_effective_age_h:.0f}h excluding weekends — threshold: {_DMS_THRESHOLD_H}h).</p>"
+                                    f"<p>The Manager Agent did not complete its last cycle on a trading day.</p>"
                                     f"<p>Possible causes: pipeline crash, scheduler failure, or Alpaca connectivity issue.</p>"
                                     f"<p>Pipeline is continuing this cycle. Please investigate.</p>"
                                 ),
                             )
                         except Exception as _dm_e:
                             logger.warning(f"  Dead-man's switch email failed: {_dm_e}")
+                else:
+                    logger.info(
+                        f"  ✓ Dead-man's switch: {_dm_age_h:.1f}h old "
+                        f"({_effective_age_h:.1f}h excl. weekends, threshold: {_DMS_THRESHOLD_H}h) — OK"
+                    )
     except Exception as _dm_err:
         logger.debug(f"  Dead-man's switch check error: {_dm_err}")
 
@@ -342,12 +431,12 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         except Exception:
             run_trade_review = True
 
-    logger.info(f"\n📅 PAPER TRADING DAY {paper_day} / 30\n")
+    logger.info(f"\n📅 TRADING DAY {paper_day}\n")
 
     # -----------------------------------------------------------------------
     # Step 1: Initialize Alpaca Trader
     # -----------------------------------------------------------------------
-    logger.info("Step 1: Connecting to Alpaca paper trading...")
+    logger.info("Step 1: Connecting to Alpaca...")
     try:
         from alpaca_trader import AlpacaTrader
         trader = AlpacaTrader()
@@ -356,6 +445,23 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         logger.error(f"  ❌ Alpaca connection failed: {e}")
         logger.error("  Check your API keys in config.py")
         return
+
+    # ── High-water mark tracking ───────────────────────────────────────────
+    # Update the all-time portfolio peak in state.json each run.
+    # Manager Agent reads this to enforce the 12% drawdown halt.
+    try:
+        _hwm_acct = trader.get_account()
+        _hwm_pv   = _hwm_acct.get("portfolio_value", 0) if _hwm_acct else 0
+        if _hwm_pv > 0:
+            _prev_hwm = state.get("high_water_mark", 0) or 0
+            if _hwm_pv > _prev_hwm:
+                state["high_water_mark"] = _hwm_pv
+                logger.info(f"  📈 New high-water mark: ${_hwm_pv:,.2f}")
+            elif _prev_hwm > 0:
+                _dd = (_prev_hwm - _hwm_pv) / _prev_hwm * 100
+                logger.info(f"  HWM: ${_prev_hwm:,.0f} | Current: ${_hwm_pv:,.0f} | Drawdown: {_dd:.1f}%")
+    except Exception as _hwm_e:
+        logger.warning(f"  HWM update skipped: {_hwm_e}")
 
     # -----------------------------------------------------------------------
     # Step 2: Enforce Risk Rules (stop-loss / take-profit / max hold)
@@ -374,10 +480,11 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         logger.info(f"  SOLD {sell['ticker']} — reason: {sell.get('reason','')}, "
                     f"P&L: {sell.get('pnl_pct', 0):+.1f}%")
         state["sell_log"].append({
-            "date":   datetime.now().strftime("%Y-%m-%d"),
-            "ticker": sell["ticker"],
-            "reason": sell.get("reason", ""),
-            "pnl_pct": sell.get("pnl_pct", 0),
+            "date":         datetime.now().strftime("%Y-%m-%d"),
+            "ticker":       sell["ticker"],
+            "reason":       sell.get("reason", ""),
+            "pnl_pct":      sell.get("pnl_pct", 0),
+            "signal_source": _lookup_buy_source(state, sell["ticker"]),
         })
         if sell["ticker"] in state["entry_dates"]:
             del state["entry_dates"][sell["ticker"]]
@@ -489,11 +596,16 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     try:
         from capital_efficiency_agent import run_pdo
         pdo_report = run_pdo(quiet=True)
+        # Guard None and missing keys — run_pdo() may return None or a partial dict
+        if not pdo_report:
+            raise ValueError("run_pdo() returned None")
+        _deploy = pdo_report.get("deployment") or {}
+        _mkt    = pdo_report.get("market_conditions") or {}
         logger.info(
-            f"  PDO: {pdo_report['recommendation']} | "
-            f"Deployed: {pdo_report['deployment']['current_pct']:.1f}% | "
-            f"Target: {pdo_report['deployment']['target_pct']:.1f}% | "
-            f"Regime: {pdo_report['market_conditions']['regime'].upper()}"
+            f"  PDO: {pdo_report.get('recommendation', '?')} | "
+            f"Deployed: {_deploy.get('current_pct', 0):.1f}% | "
+            f"Target: {_deploy.get('target_pct', 0):.1f}% | "
+            f"Regime: {(_mkt.get('regime') or 'unknown').upper()}"
         )
         for directive in pdo_report.get("manager_directives", []):
             logger.info(f"  PDO directive → {directive}")
@@ -517,6 +629,36 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 logger.info(f"    [{row['conviction_score']:.0f}⭐] {row['ticker']} — "
                             f"{row['institutions']}"
                             + (" [HIGH CONVICTION]" if row.get("high_conviction") else ""))
+
+            # ── Predictive model enhancement ──────────────────────────────
+            # Apply ML multiplier to conviction scores (non-breaking: falls back
+            # to multiplier=1.0 until model is trained with enough data).
+            try:
+                from predictive_model.predictor import enhance_signals as _enhance
+                _raw_sigs = signals_df.to_dict("records")
+                _enhanced = _enhance(_raw_sigs)
+                # Update signals_df with ml_enhanced_conviction
+                import pandas as _pd_ml
+                _enh_df = _pd_ml.DataFrame(_enhanced)
+                if "ml_enhanced_conviction" in _enh_df.columns and not _enh_df.empty:
+                    _merge = signals_df.merge(
+                        _enh_df[["ticker", "ml_score", "predictive_multiplier",
+                                 "ml_enhanced_conviction"]],
+                        on="ticker", how="left"
+                    )
+                    if "ml_enhanced_conviction" in _merge.columns:
+                        _merge["conviction_score"] = _merge["ml_enhanced_conviction"].fillna(
+                            _merge["conviction_score"]
+                        )
+                        signals_df = _merge
+                _n_boosted = sum(1 for s in _enhanced if s.get("predictive_multiplier", 1.0) > 1.0)
+                _model_on  = any(s.get("model_active", False) for s in _enhanced)
+                logger.info(
+                    f"  Predictive model: {'ACTIVE' if _model_on else 'WARMING UP (not enough data yet)'} "
+                    f"| {_n_boosted}/{len(_enhanced)} signal(s) boosted"
+                )
+            except Exception as _pred_e:
+                logger.debug(f"  Predictive enhancer error (non-fatal): {_pred_e}")
 
     except Exception as e:
         logger.warning(f"  Signal scan error: {e}")
@@ -631,6 +773,8 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     #   Phase B: Research agents run their sector analysis
     #   Phase C: R&D Team Leader compiles + emails Chairman
     # -----------------------------------------------------------------------
+    # TTL defined here so both branches (run_research True/False) can access it safely
+    _RESEARCH_TTL_HOURS = 72   # covers every day (R&D runs every 3 days, TTL = 72h = 3 days)
     research_picks = []
     if run_research:
         logger.info("\nStep 3c: R&D Team — sector scan + research cycle (every 3 days)...")
@@ -723,7 +867,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         # conditions may have changed materially since the R&D cycle ran.
         import json as _json
         from datetime import datetime as _dt2
-        _RESEARCH_TTL_HOURS = 72   # covers every day (R&D runs every 3 days, TTL = 72h = 3 days)
+        # _RESEARCH_TTL_HOURS already defined above the if/else block
 
         # Also load and TTL-check saved energy research picks on non-R&D days
         _energy_rpt_path = Path(__file__).parent / "data" / "energy_research_report.json"
@@ -745,18 +889,12 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 else:
                     _e_picks = _energy_saved.get("recommendations", [])
                     _seen_e  = {r["ticker"] for r in research_picks}
-                    _e_added = sum(
-                        1 for p in _e_picks
-                        if p["ticker"] not in _seen_e
-                        and not _seen_e.add(p["ticker"])  # type: ignore
-                    )
-                    research_picks += [p for p in _e_picks if p["ticker"] in _seen_e and p not in research_picks]
-                    # cleaner dedup
                     _all_tickers_seen: set = {r["ticker"] for r in research_picks}
                     for _ep in _e_picks:
                         if _ep["ticker"] not in _all_tickers_seen:
                             research_picks.append(_ep)
                             _all_tickers_seen.add(_ep["ticker"])
+                    _e_added = len(_all_tickers_seen) - len({r["ticker"] for r in research_picks} - {_ep["ticker"] for _ep in _e_picks})
                     logger.info(
                         f"  Loaded saved energy picks ({_e_age_h:.0f}h old, "
                         f"TTL={_RESEARCH_TTL_HOURS}h) — merged into research pipeline"
@@ -918,6 +1056,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         canary_alert = _canary_refreshed
     logger.info("\nStep 4c: Running Manager Agent — decisions & execution...")
     manager_decisions = []
+    executions        = []   # initialised here so the DMS write below always has a valid reference
     try:
         from manager_agent import evaluate_recommendation, execute_decision, build_management_report, _load_pdo_signal
         if review_report:
@@ -960,18 +1099,24 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 if ex.get("executed"):
                     if d["manager_action"] in ("SELL", "TRIM"):
                         state["sell_log"].append({
-                            "date":   datetime.now().strftime("%Y-%m-%d"),
-                            "ticker": d["ticker"],
-                            "reason": "manager_agent",
-                            "pnl_pct": d.get("unrealized_pnl_pct", 0),
+                            "date":          datetime.now().strftime("%Y-%m-%d"),
+                            "ticker":        d["ticker"],
+                            "reason":        "manager_agent",
+                            "pnl_pct":       d.get("unrealized_pnl_pct", 0),
+                            "signal_source": _lookup_buy_source(state, d["ticker"]),
                         })
                         state["entry_dates"].pop(d["ticker"], None)
                     elif d["manager_action"] in ("ADD", "BUY_NEW"):
                         state["entry_dates"][d["ticker"]] = datetime.now().strftime("%Y-%m-%d")
+                        # Compute Kelly multiplier for attribution (CIT-2026-204)
+                        _conv = d.get("conviction", 3.0)
+                        _kelly_mult = round(max(0.50, min(1.50, 0.5 + (_conv - 3.0) * 0.25)), 2)
                         state["buy_log"].append({
-                            "date":      datetime.now().strftime("%Y-%m-%d"),
-                            "ticker":    d["ticker"],
-                            "conviction": 1.0,
+                            "date":                    datetime.now().strftime("%Y-%m-%d"),
+                            "ticker":                  d["ticker"],
+                            "conviction":              _conv,
+                            "source":                  _classify_signal_source(d.get("source_agent", "")),
+                            "conviction_size_multiplier": _kelly_mult,
                         })
 
             text_rpt = build_management_report(manager_decisions, executions, acct_snap,
@@ -1005,6 +1150,170 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception as e:
         logger.warning(f"  Manager Agent error: {e}")
 
+    # ── Dead-man's switch heartbeat ───────────────────────────────────────
+    # main.py calls evaluate_recommendation() directly (not manager_agent.run()),
+    # so manager_decisions.json was never written here. This caused the DMS to
+    # fire an email on every pipeline run since April 27. Fixed: write the file
+    # after every manager agent block, regardless of how many trades were approved.
+    try:
+        _md_path = Path(__file__).parent / "data" / "manager_decisions.json"
+        _md_hist: list = []
+        if _md_path.exists():
+            try:
+                _md_hist = json.load(open(_md_path))
+                if not isinstance(_md_hist, list):
+                    _md_hist = [_md_hist]
+            except Exception:
+                _md_hist = []
+        _md_hist.append({
+            "generated_at": datetime.now().isoformat(),
+            "timestamp":    datetime.now().isoformat(),
+            "dry_run":      False,
+            "decisions":    manager_decisions,
+            "executions":   executions,
+        })
+        with open(_md_path, "w") as _md_f:
+            json.dump(_md_hist[-50:], _md_f, indent=2, default=str)
+        logger.info("  ✓ manager_decisions.json updated")
+    except Exception as _md_e:
+        logger.debug(f"  manager_decisions.json write failed (non-fatal): {_md_e}")
+
+    # -----------------------------------------------------------------------
+    # Step 4d: ETF Pod 3 orders — execute etf_pod_orders.json
+    # -----------------------------------------------------------------------
+    # The ETF Pod Board writes orders to data/etf_pod_orders.json.
+    # Each order with action BUY/SELL and status != "executed" is submitted
+    # here through the pod_ledger budget gate.  EMERGENCY_EXIT sells all
+    # Pod 3 positions at market.
+    # -----------------------------------------------------------------------
+    logger.info("\nStep 4d: ETF Pod 3 orders — processing etf_pod_orders.json...")
+    try:
+        import pod_ledger as _etf_pl
+        _etf_pl_ok = True
+    except Exception as _etf_pl_import_e:
+        logger.warning(f"  pod_ledger unavailable for ETF pod: {_etf_pl_import_e}")
+        _etf_pl_ok = False
+
+    _etf_orders_path = Path(__file__).parent / "data" / "etf_pod_orders.json"
+    if _etf_orders_path.exists() and _etf_pl_ok:
+        try:
+            with open(_etf_orders_path) as _etf_f:
+                _etf_orders = json.load(_etf_f)
+            if not isinstance(_etf_orders, list):
+                _etf_orders = _etf_orders.get("orders", [])
+
+            # Check for EMERGENCY_EXIT first
+            _emergency = any(o.get("action") == "EMERGENCY_EXIT" for o in _etf_orders)
+            if _emergency:
+                logger.warning("  [ETF POD 3] EMERGENCY_EXIT — selling ALL pod3 positions at market")
+                try:
+                    _p3_positions = trader.get_positions()
+                    if _p3_positions is not None and not _p3_positions.empty:
+                        from alpaca.trading.requests import MarketOrderRequest as _ETFMOR
+                        from alpaca.trading.enums import OrderSide as _ETFOS, TimeInForce as _ETFTIF
+                        for _, _p3row in _p3_positions.iterrows():
+                            _p3tk  = _p3row["ticker"]
+                            _p3qty = abs(int(float(_p3row["qty"])))
+                            if _p3qty > 0:
+                                try:
+                                    _etf_req = _ETFMOR(
+                                        symbol=_p3tk, qty=_p3qty,
+                                        side=_ETFOS.SELL, time_in_force=_ETFTIF.DAY
+                                    )
+                                    trader.client.submit_order(_etf_req)
+                                    logger.warning(f"  [EMERGENCY_EXIT] Sold {_p3qty} {_p3tk}")
+                                except Exception as _p3e:
+                                    logger.warning(f"  [EMERGENCY_EXIT] {_p3tk} sell failed: {_p3e}")
+                    else:
+                        logger.info("  [EMERGENCY_EXIT] No open positions to close")
+                except Exception as _em_e:
+                    logger.warning(f"  [EMERGENCY_EXIT] Error: {_em_e}")
+                # Mark all emergency orders done and skip normal processing
+                for _eo in _etf_orders:
+                    if _eo.get("action") == "EMERGENCY_EXIT":
+                        _eo["status"] = "executed"
+                with open(_etf_orders_path, "w") as _etf_wf:
+                    json.dump(_etf_orders, _etf_wf, indent=2, default=str)
+            else:
+                # Normal BUY/SELL processing
+                from alpaca.trading.requests import MarketOrderRequest as _ETFMOR2
+                from alpaca.trading.enums import OrderSide as _ETFOS2, TimeInForce as _ETFTIF2
+                _etf_changed = False
+                for _etf_ord in _etf_orders:
+                    if _etf_ord.get("action") not in ("BUY", "SELL"):
+                        continue
+                    if _etf_ord.get("status") == "executed":
+                        continue
+                    _etf_tk    = _etf_ord.get("ticker", "")
+                    _etf_qty   = int(_etf_ord.get("qty", 0))
+                    _etf_price = float(_etf_ord.get("price", 0) or 0)
+                    _etf_side  = "long" if _etf_ord["action"] == "BUY" else "short"
+                    if not _etf_tk or _etf_qty <= 0:
+                        continue
+                    # Budget check
+                    try:
+                        _etf_can, _etf_why = _etf_pl.can_trade(
+                            "pod3_macro", _etf_tk, _etf_qty, _etf_price, _etf_side
+                        )
+                    except Exception as _etf_ct_e:
+                        logger.warning(f"  [ETF POD 3] can_trade error for {_etf_tk}: {_etf_ct_e}")
+                        _etf_can, _etf_why = False, f"Budget check error: {_etf_ct_e}"
+                    if not _etf_can:
+                        logger.warning(
+                            f"  [ETF POD 3] Budget check failed for {_etf_tk}: {_etf_why}"
+                        )
+                        _etf_ord["status"] = "budget_rejected"
+                        _etf_ord["reject_reason"] = _etf_why
+                        _etf_changed = True
+                        continue
+                    # Submit order
+                    try:
+                        _alpaca_side = _ETFOS2.BUY if _etf_ord["action"] == "BUY" else _ETFOS2.SELL
+                        _etf_req = _ETFMOR2(
+                            symbol=_etf_tk, qty=_etf_qty,
+                            side=_alpaca_side, time_in_force=_ETFTIF2.DAY
+                        )
+                        _etf_filled = trader.client.submit_order(_etf_req)
+                        _etf_fill_price = (
+                            float(_etf_filled.filled_avg_price)
+                            if getattr(_etf_filled, "filled_avg_price", None)
+                            else _etf_price
+                        )
+                        _etf_ord["status"] = "executed"
+                        _etf_ord["fill_price"] = _etf_fill_price
+                        _etf_ord["executed_at"] = datetime.now().isoformat()
+                        _etf_changed = True
+                        logger.info(
+                            f"  [ETF POD 3] Executed {_etf_ord['action']} {_etf_qty} {_etf_tk} "
+                            f"@ ${_etf_fill_price:.2f}"
+                        )
+                        # Record in pod ledger
+                        try:
+                            _etf_pl.record_trade(
+                                "pod3_macro", _etf_tk, _etf_qty,
+                                _etf_fill_price, _etf_side, "etf_pod_board"
+                            )
+                        except Exception as _etf_rt_e:
+                            logger.warning(f"  [ETF POD 3] record_trade error: {_etf_rt_e}")
+                    except Exception as _etf_sub_e:
+                        logger.warning(
+                            f"  [ETF POD 3] Order submit failed for {_etf_tk}: {_etf_sub_e}"
+                        )
+                        _etf_ord["status"] = "submit_failed"
+                        _etf_ord["error"] = str(_etf_sub_e)
+                        _etf_changed = True
+                # Write back updated orders
+                if _etf_changed:
+                    with open(_etf_orders_path, "w") as _etf_wf2:
+                        json.dump(_etf_orders, _etf_wf2, indent=2, default=str)
+                    logger.info("  [ETF POD 3] etf_pod_orders.json updated")
+                else:
+                    logger.info("  [ETF POD 3] No pending ETF pod orders")
+        except Exception as _etf_e:
+            logger.warning(f"  ETF Pod 3 processing error: {_etf_e}")
+    elif not _etf_orders_path.exists():
+        logger.info("  Step 4d: etf_pod_orders.json not found — skipping ETF pod")
+
     # -----------------------------------------------------------------------
     # Step 5: Get Portfolio Snapshot
     # -----------------------------------------------------------------------
@@ -1017,6 +1326,17 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 f"({snapshot['pnl_today_pct']:+.2f}%)")
     logger.info(f"  Return vs Start:  {snapshot['return_vs_start']:+.2f}%")
     logger.info(f"  Open Positions:   {snapshot['n_positions']}")
+
+    # ── Pod Ledger daily report ────────────────────────────────────────────
+    try:
+        import pod_ledger as _pl_daily
+        _pl_report = _pl_daily.generate_daily_report()
+        logger.info(
+            f"  Pod Ledger report → data/pod_pnl_report.json | "
+            f"pods: {list(_pl_report.keys()) if isinstance(_pl_report, dict) else '?'}"
+        )
+    except Exception as _pl_rep_e:
+        logger.warning(f"  Pod ledger daily report error (non-fatal): {_pl_rep_e}")
 
     # ── Portfolio drawdown board trigger ──────────────────────────────────
     # If the portfolio loses more than 4% today, automatically convene the board.
@@ -1198,6 +1518,46 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         logger.info("\nStep 12: Board Meeting — no trigger threshold reached this cycle.")
 
     # -----------------------------------------------------------------------
+    # Predictive Model — collect snapshot + attempt retraining
+    # -----------------------------------------------------------------------
+    # Runs every cycle: logs current signals + fills in price outcomes for old
+    # snapshots. Retraining only fires if new data materially improves the model.
+    try:
+        from predictive_model.data_collector import collect_snapshot as _collect_snap
+        _snap_n = _collect_snap()
+        if _snap_n:
+            logger.info(f"  Predictive model: {_snap_n} snapshot(s) logged")
+
+        # Weekly retrain attempt (every 7 days) — only trains if data is ready
+        _last_train = state.get("last_model_train", "")
+        _train_now  = False
+        if not _last_train:
+            _train_now = True
+        else:
+            try:
+                from datetime import date as _dt_train
+                _train_now = (_dt_train.fromisoformat(today_str) -
+                              _dt_train.fromisoformat(_last_train)).days >= 7
+            except Exception:
+                pass
+
+        if _train_now:
+            from predictive_model.ml_model import train as _ml_train
+            _train_result = _ml_train(force=False)
+            _train_status = _train_result.get("status", "?")
+            if _train_status == "TRAINED":
+                state["last_model_train"] = today_str
+                logger.info(
+                    f"  Predictive model: retrained — "
+                    f"ensemble AUC={_train_result.get('ensemble_auc_val','?')}, "
+                    f"n={_train_result.get('n_samples','?')}"
+                )
+            elif _train_status == "SKIPPED":
+                logger.info(f"  Predictive model: {_train_result.get('reason','not enough data yet')}")
+    except Exception as _pm_e:
+        logger.debug(f"  Predictive model pipeline error (non-fatal): {_pm_e}")
+
+    # -----------------------------------------------------------------------
     # Save State
     # -----------------------------------------------------------------------
     save_state(state)
@@ -1228,12 +1588,30 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # -----------------------------------------------------------------------
 
     logger.info("\n" + "=" * 65)
-    logger.info(f"  DAILY RUN COMPLETE — Day {paper_day}/30")
+    logger.info(f"  DAILY RUN COMPLETE — Day {paper_day}")
     logger.info(f"  Portfolio: ${snapshot['portfolio_value']:,.2f} "
                 f"({snapshot['return_vs_start']:+.2f}% from start)")
     if paper_day == 30:
-        logger.info("  🎉 30-DAY PAPER TRADING PERIOD COMPLETE!")
+        logger.info("  TRADING MILESTONE COMPLETE")
     logger.info("=" * 65)
+
+    # ── External heartbeat ping (CIT-2026-217) ────────────────────────────
+    # Pings healthchecks.io (or similar) at end of each successful run.
+    # Set APEX_HEALTHCHECK_URL env var to enable:
+    #   export APEX_HEALTHCHECK_URL="https://hc-ping.com/<your-uuid>"
+    # If the scheduler misses two consecutive windows, healthchecks.io emails
+    # an alert immediately — much faster than the 14h dead-man's switch.
+    try:
+        import subprocess as _sp
+        _hc_url = os.environ.get("APEX_HEALTHCHECK_URL", "")
+        if _hc_url:
+            _sp.run(
+                ["curl", "-fsS", "--max-time", "10", "--retry", "3", _hc_url],
+                capture_output=True, timeout=15,
+            )
+            logger.info(f"  External heartbeat pinged: {_hc_url[:40]}...")
+    except Exception:
+        pass  # heartbeat is best-effort — never block the pipeline
 
 
 # ---------------------------------------------------------------------------
@@ -1241,6 +1619,17 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    # ── Single-instance guard ─────────────────────────────────────────────────
+    # main.py runs 4× daily — if a run takes longer than 2 hrs, the next cron
+    # would otherwise stack on top of it.
+    import tempfile as _tempfile
+    _lock_file = open(Path(_tempfile.gettempdir()) / "main_pipeline.lock", "w")
+    try:
+        fcntl.flock(_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        logging.getLogger(__name__).warning("  main.py already running — skipping this cron tick.")
+        sys.exit(0)
+
     parser = argparse.ArgumentParser(description="Institutional Tracker — Daily Run")
     parser.add_argument("--no-email",     action="store_true", help="Skip sending email")
     parser.add_argument("--backtest",     action="store_true", help="Include backtest in report")

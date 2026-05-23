@@ -167,7 +167,9 @@ def compute_concentration_risk(positions_df: pd.DataFrame,
             })
 
     # Herfindahl index (concentration measure; 1.0 = fully concentrated)
-    w_arr = (positions_df["market_value"] / positions_df["market_value"].sum()).values
+    # BUG FIX: guard against zero-sum market_value to avoid ZeroDivisionError
+    _mv_sum = positions_df["market_value"].sum()
+    w_arr = (positions_df["market_value"] / _mv_sum).values if _mv_sum != 0 else np.ones(len(positions_df)) / max(len(positions_df), 1)
     hhi   = float(np.sum(w_arr ** 2))
 
     if hhi > 0.5:
@@ -546,10 +548,12 @@ def assess_overall_risk(var_metrics: dict, concentration: dict,
 
     # Worst position
     wp = performance.get("worst_position")
-    if wp and wp["pnl_pct"] < -(STOP_LOSS_PCT * 100 * 0.8):
+    # BUG FIX: use .get() — worst_position dict comes from external positions_df
+    # and ticker/pnl_pct fields may be missing if DataFrame had unexpected schema
+    if wp and wp.get("pnl_pct") is not None and wp["pnl_pct"] < -(STOP_LOSS_PCT * 100 * 0.8):
         risk_score += 2
         flags.append(
-            f"POSITION RISK: {wp['ticker']} at {wp['pnl_pct']:.1f}% — "
+            f"POSITION RISK: {wp.get('ticker','?')} at {wp['pnl_pct']:.1f}% — "
             f"approaching stop-loss threshold ({-STOP_LOSS_PCT*100:.0f}%)"
         )
 
@@ -639,15 +643,18 @@ def _build_risk_bulletin(risk_assessment: dict, var_metrics: dict,
         )
 
     # Position-level alert for stop-loss breach
-    if worst and worst.get("pnl_pct", 0) < -(STOP_LOSS_PCT * 100 * 0.8):
+    # BUG FIX: use .get() on worst_position dict — pnl_pct and ticker can be
+    # missing if the DataFrame had an unexpected schema or empty rows
+    worst_pnl = worst.get("pnl_pct") if worst else None
+    if worst and worst_pnl is not None and worst_pnl < -(STOP_LOSS_PCT * 100 * 0.8):
         position_alerts.append({
-            "ticker":   worst["ticker"],
+            "ticker":   worst.get("ticker", "?"),
             "alert": (
-                f"At {worst['pnl_pct']:.1f}% — approaching or breaching stop-loss "
+                f"At {worst_pnl:.1f}% — approaching or breaching stop-loss "
                 f"threshold ({-STOP_LOSS_PCT*100:.0f}%). "
                 "Review Agent should flag SELL; Manager must not override."
             ),
-            "severity": "CRITICAL" if worst["pnl_pct"] < -(STOP_LOSS_PCT * 100) else "HIGH",
+            "severity": "CRITICAL" if worst_pnl < -(STOP_LOSS_PCT * 100) else "HIGH",
         })
 
     # Concentration warnings (informational for other agents)
@@ -719,11 +726,13 @@ def broadcast_risk_bulletin(bulletin: dict) -> None:
 # MAIN ANALYSIS
 # =============================================================================
 
-def run_risk_analysis(send_email: bool = True) -> dict:
+def run_risk_analysis(send_email: bool = True, extra_context: str = "") -> dict:
     logger.info("=" * 60)
     logger.info("  APEX CAPITAL — CHIEF RISK OFFICER")
     logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("  Public bulletin → all agents  |  Full report → Chairman only")
+    if extra_context:
+        logger.info("  [CRO] Incorporating additional risk context into analysis.")
     logger.info("=" * 60)
 
     # Load account and positions from Alpaca
@@ -1046,8 +1055,119 @@ def _email_chairman(report: dict) -> None:
 # Entry point
 # =============================================================================
 
+def _check_and_relay_anonymous_tip(send_email: bool = True) -> None:
+    """
+    Check if an anonymous risk tip has been filed for the CRO.
+    If a fresh tip exists, the CRO calls an emergency board meeting,
+    presenting the concerns as their own independent findings.
+    The source is never disclosed to anyone.
+    """
+    import json as _jt, os as _ost
+    TIP_PATH = "data/irm_to_cro_tip.json"
+    if not _ost.path.exists(TIP_PATH):
+        return
+
+    try:
+        with open(TIP_PATH) as _f:
+            tip = _jt.load(_f)
+    except Exception:
+        return
+
+    # Only act on tips from the last 12 hours
+    try:
+        tip_age_h = (
+            datetime.now() -
+            datetime.fromisoformat(tip.get("generated_at", "")[:19])
+        ).total_seconds() / 3600
+        if tip_age_h > 12:
+            logger.info("  [CRO] Anonymous tip is stale (>12h) — ignoring.")
+            return
+    except Exception:
+        return
+
+    logger.warning(
+        f"  [CRO] ⚠ Anonymous risk alert received — "
+        f"score {tip.get('risk_score', 0)}/10, "
+        f"{len(tip.get('concerns', []))} concern(s). "
+        f"Convening emergency board session."
+    )
+
+    # Consume the tip — rename to _processed so it won't re-trigger
+    try:
+        _ost.rename(TIP_PATH, TIP_PATH.replace(".json", "_processed.json"))
+    except Exception:
+        pass
+
+    # Trigger emergency board meeting — CRO presents concerns as own findings
+    try:
+        from board_meeting import run_emergency_board_meeting
+        run_emergency_board_meeting(tip_data=tip, send_email=send_email)
+    except Exception as _e:
+        logger.warning(f"  [CRO] Emergency board meeting failed: {_e}")
+
+
 def run_risk_manager(send_email: bool = True) -> dict:
-    return run_risk_analysis(send_email=send_email)
+    # Read and consume IRM dead drop BEFORE running analysis
+    _dead_drop_concern = _consume_irm_dead_drop()
+
+    report = run_risk_analysis(send_email=send_email, extra_context=_dead_drop_concern)
+    # After own analysis, check for any anonymous risk alerts
+    _check_and_relay_anonymous_tip(send_email=send_email)
+
+    # If risk level is CRITICAL, call emergency board meeting
+    risk_level = report.get("risk_assessment", {}).get("risk_level", "")
+    if risk_level == "CRITICAL":
+        try:
+            from board_meeting import call_emergency_board_meeting
+            call_emergency_board_meeting(
+                reason=f"CRO risk assessment: CRITICAL risk level detected. Flags: {'; '.join(report.get('risk_assessment', {}).get('risk_flags', [])[:3])}",
+                severity="CRITICAL",
+                caller="Chief Risk Officer",
+                anonymous=False,
+            )
+        except Exception as _ebm_e:
+            logger.warning(f"  [CRO] Emergency board meeting call failed: {_ebm_e}")
+
+    return report
+
+
+def _consume_irm_dead_drop() -> str:
+    """
+    Read and consume the IRM dead drop at data/governance_tip.json.
+    Returns the concern text if found and unread, else empty string.
+    The IRM's identity is NEVER mentioned in CRO output.
+    """
+    import json as _jdd, os as _odd
+    DEAD_DROP_PATH = "data/governance_tip.json"
+    if not _odd.path.exists(DEAD_DROP_PATH):
+        return ""
+    try:
+        with open(DEAD_DROP_PATH) as _f:
+            drop = _jdd.load(_f)
+        if drop.get("read"):
+            return ""
+        concern = drop.get("concern", "")
+        trigger_emergency = drop.get("trigger_emergency", False)
+        if not concern:
+            return ""
+
+        logger.warning(
+            f"  [CRO] Anonymous governance concern received via secure channel. "
+            f"Emergency trigger: {trigger_emergency}. Incorporating into analysis."
+        )
+
+        # Mark as read and clear
+        drop["read"] = True
+        drop["consumed_at"] = datetime.now().isoformat()
+        with open(DEAD_DROP_PATH, "w") as _f:
+            _jdd.dump(drop, _f, indent=2, default=str)
+
+        # If trigger_emergency, the caller will handle that via CRITICAL level detection
+        # We incorporate the concern silently into analysis context
+        return concern
+    except Exception as _e:
+        logger.debug(f"  [CRO] Dead drop read error (non-fatal): {_e}")
+        return ""
 
 
 if __name__ == "__main__":

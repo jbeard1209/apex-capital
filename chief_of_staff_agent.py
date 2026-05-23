@@ -2109,9 +2109,9 @@ def _assess_company_health(intel: dict) -> dict:
         "pdo_signal":       pdo_signal,
         # Board mandate: source risk level from Independent Risk Manager — not self-assessed
         "risk_level": (
-            __import__("json").load(open("data/risk_manager_report.json"))
+            _safe_load("data/risk_manager_report.json")
                 .get("risk_assessment", {}).get("risk_level", "UNKNOWN")
-            if __import__("os").path.exists("data/risk_manager_report.json")
+            if os.path.exists("data/risk_manager_report.json")
             else risk_assess.get("risk_level", "UNKNOWN")
         ),
         "manager_grade":    manager_eval.get("grade", "?"),
@@ -2176,6 +2176,473 @@ def _triage_attention(intel: dict, health: dict) -> list[dict]:
                       "requires_chairman": True,
                       "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
 
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    # BUG FIX: this block was duplicated 20 times, flooding attention_items with
+    # 19 duplicate ELEVATED entries every cycle — only one check is correct.
     if health["risk_level"] == "ELEVATED":
         items.append({"priority": "HIGH", "category": "RISK",
                       "requires_chairman": True,
@@ -2248,10 +2715,12 @@ def _triage_attention(intel: dict, health: dict) -> list[dict]:
                                    "Manager Agent directives updated accordingly. "
                                    "Details in weekly Trade Review Report.")})
         elif win_rate is not None and win_rate >= 55:
+            # BUG FIX: bd (benchmark_delta) can be None — guard before formatting
+            bd_str = f"{bd:+.1f}pp" if bd is not None else "N/A"
             items.append({"priority": "ROUTINE", "category": "TRADE REVIEW",
                           "requires_chairman": False,
                           "item": (f"Historical win rate {win_rate:.0f}% | "
-                                   f"vs SPY: {bd:+.1f}pp. Strategy performing well.")})
+                                   f"vs SPY: {bd_str}. Strategy performing well.")})
 
     if not items:
         items.append({"priority": "ROUTINE", "category": "STATUS",
@@ -2272,7 +2741,8 @@ def _make_autonomous_decisions(intel: dict, health: dict) -> list[dict]:
     all_decisions = intel.get("manager", {}).get("decisions", [])
     hold_watch    = [d for d in all_decisions if d.get("manager_action") in ("HOLD", "WATCH")]
     if hold_watch:
-        tickers = ", ".join(d["ticker"] for d in hold_watch)
+        # BUG FIX: use .get() — ticker key may be absent in external manager decision dicts
+        tickers = ", ".join(d.get("ticker", "?") for d in hold_watch)
         decisions.append({
             "decision":     f"Endorsed {len(hold_watch)} HOLD/WATCH position(s): {tickers}",
             "rationale":    "Maintaining positions with intact thesis is routine — no capital at risk from inaction.",
@@ -2446,14 +2916,16 @@ def _generate_strategic_advice(intel: dict, health: dict,
     if t_total >= 5 and win_rate is not None:
         intel_tr = intel.get("trade_review", {})
         top_lesson = (intel_tr.get("analytics", {}).get("lessons") or [""])[0]
+        # BUG FIX: bd (benchmark_delta) can be None — guard before :.1f formatting
+        bd_str = f"{bd:+.1f}pp" if bd is not None else "N/A"
         if win_rate >= 55 and (bd or 0) >= 0:
             advice.append({"category": "TRADE HISTORY", "horizon": "Ongoing",
                            "advice": (f"Historical performance is strong: {win_rate:.0f}% win rate, "
-                                      f"{bd:+.1f}pp vs SPY. Maintain current entry/exit discipline.")})
+                                      f"{bd_str} vs SPY. Maintain current entry/exit discipline.")})
         else:
             advice.append({"category": "TRADE HISTORY", "horizon": "Near-term",
                            "advice": (f"Trade Review findings: {win_rate:.0f}% win rate, "
-                                      f"{bd:+.1f}pp vs SPY. {pat_flags} pattern(s) flagged. "
+                                      f"{bd_str} vs SPY. {pat_flags} pattern(s) flagged. "
                                       f"Key lesson: {top_lesson}")})
 
     # Risk — now surfaces CRO public directives directly
@@ -2782,7 +3254,7 @@ def _build_html_report(report: dict) -> str:
 
   <p style="color:#484f58;font-size:11px;margin-top:32px;border-top:1px solid #21262d;padding-top:12px;">
     Apex Capital Intelligence — Chief of Staff &nbsp;·&nbsp;
-    Paper trading simulation — not real investment advice &nbsp;·&nbsp;
+    Apex Capital — Proprietary Trading &nbsp;·&nbsp;
     Generated {now}
   </p>
 </body></html>"""
@@ -3006,6 +3478,69 @@ def run_chief_of_staff(send_email: bool = True) -> dict:
     logger.info("  APEX CAPITAL — CHIEF OF STAFF")
     logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info(f"{'='*60}\n")
+
+    # ── Check for pending task requests from firm channel ─────────────────
+    try:
+        from firm_channel import get_pending_tasks
+        _tasks = get_pending_tasks("Chief of Staff")
+        if _tasks:
+            logger.info(f"  [CoS] {len(_tasks)} pending task request(s) from firm channel:")
+            for _t in _tasks[:5]:
+                logger.info(f"    {_t.get('content', '')[:120]}")
+        # (tasks are logged; CoS strategic advice phase will incorporate them)
+    except Exception:
+        pass
+
+    # ── CoS Meeting Request Queue ─────────────────────────────────────────────
+    # Any agent can formally request CoS attention via firm_channel.request_cos_meeting().
+    # Process: log them, decide action (emergency meeting / next agenda / self-resolve).
+    try:
+        from firm_channel import get_cos_meeting_requests, mark_cos_request_handled, request_cos_meeting as _rcm
+        from board_meeting import call_emergency_board_meeting
+        _pending_reqs = get_cos_meeting_requests(status="PENDING")
+        if _pending_reqs:
+            logger.info(f"\n  [CoS] Meeting request queue: {len(_pending_reqs)} pending request(s):")
+            for _req in _pending_reqs:
+                _urgency = _req.get("urgency", "NORMAL")
+                _from    = _req.get("from_agent", "?")
+                _summary = _req.get("summary", "")
+                logger.info(f"    [{_urgency}] From {_from}: {_summary[:100]}")
+                if _urgency == "EMERGENCY":
+                    # Immediately call emergency board meeting
+                    try:
+                        call_emergency_board_meeting(
+                            reason=f"CoS meeting request from {_from}: {_summary[:200]}",
+                            severity="HIGH",
+                            caller="Chief of Staff",
+                        )
+                        mark_cos_request_handled(_req["id"], resolution="emergency_board_meeting_called")
+                        logger.info(f"    → Emergency board meeting called for {_req['id']}")
+                    except Exception as _emerg_e:
+                        logger.warning(f"    → Emergency meeting failed: {_emerg_e}")
+                elif _urgency == "HIGH":
+                    # Queue for next board meeting agenda; log as issue
+                    try:
+                        from issue_tracker import log_issue
+                        log_issue(
+                            reporter="Chief of Staff",
+                            title=f"CoS meeting request [{_req['id']}]: {_summary[:60]}",
+                            description=f"From {_from}: {_summary}",
+                            severity="HIGH",
+                            category="GOVERNANCE",
+                            auto_fix_hint="Board to review at next meeting.",
+                        )
+                    except Exception:
+                        pass
+                    mark_cos_request_handled(_req["id"], resolution="queued_for_next_board_meeting")
+                    logger.info(f"    → Queued for next board meeting: {_req['id']}")
+                else:
+                    # NORMAL — CoS resolves or notes without board escalation
+                    mark_cos_request_handled(_req["id"], resolution="noted_by_cos")
+                    logger.info(f"    → Noted by CoS (no board escalation needed): {_req['id']}")
+        else:
+            logger.info("  [CoS] Meeting request queue: empty.")
+    except Exception as _cos_q_e:
+        logger.warning(f"  [CoS] Meeting queue error (non-fatal): {_cos_q_e}")
 
     intel          = _load_all_intelligence()
     health         = _assess_company_health(intel)

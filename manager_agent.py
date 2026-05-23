@@ -36,7 +36,8 @@ from config import (
     ALPACA_API_KEY, ALPACA_SECRET_KEY,
     STOP_LOSS_PCT, TAKE_PROFIT_PCT, HOLD_DAYS_MAX,
     MAX_POSITION_SIZE_PCT, MAX_OPEN_POSITIONS,
-    STARTING_CAPITAL,
+    STARTING_CAPITAL, REGIME_MANDATES,
+    DAILY_DRAWDOWN_HALT_PCT, HWM_DRAWDOWN_HALT_PCT,
 )
 
 logging.basicConfig(
@@ -45,6 +46,14 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger("manager_agent")
+
+# ── Pod Ledger — budget guardrail (graceful: non-fatal if unavailable) ────────
+try:
+    import pod_ledger as _pod_ledger
+    _POD_LEDGER_AVAILABLE = True
+except Exception:
+    _pod_ledger = None          # type: ignore[assignment]
+    _POD_LEDGER_AVAILABLE = False
 
 REVIEW_PATH  = "data/review_recommendations.json"
 MANAGER_LOG  = "data/manager_decisions.json"
@@ -110,29 +119,34 @@ def evaluate_recommendation(rec: dict, account: dict,
     # conditions; tighten buy gates to reduce drawdown velocity.
     # A strong win streak signals the strategy is working well; modestly relax
     # gates to let momentum compound (capped — cannot go below the PDO floor).
-    if loss_streak >= 5:
-        buy_bp_threshold  = max(buy_bp_threshold,  30)
-        buy_new_threshold = max(buy_new_threshold, 35)
-        rationale.append(
-            f"[STREAK] Loss streak {loss_streak} — buy thresholds tightened to "
-            f"{buy_bp_threshold}%/{buy_new_threshold}%."
-        ) if action in ("BUY_NEW", "ADD") else None
-    elif loss_streak >= 3:
-        buy_bp_threshold  = max(buy_bp_threshold,  20)
-        buy_new_threshold = max(buy_new_threshold, 25)
-        rationale.append(
-            f"[STREAK] Loss streak {loss_streak} — buy thresholds moderately tightened."
-        ) if action in ("BUY_NEW", "ADD") else None
-    elif win_streak >= 5:
-        buy_bp_threshold  = max(5,  buy_bp_threshold  - 3)
-        buy_new_threshold = max(10, buy_new_threshold - 3)
-        rationale.append(
-            f"[STREAK] Win streak {win_streak} — buy thresholds modestly relaxed."
-        ) if action in ("BUY_NEW", "ADD") else None
-
     decision    = "APPROVED"
     exec_action = action
     rationale  : list[str] = []
+
+    # Streak adjustments are recorded after rationale list is initialised
+    # (rationale was referenced before assignment in the original streak block)
+    if loss_streak >= 5:
+        buy_bp_threshold  = max(buy_bp_threshold,  30)
+        buy_new_threshold = max(buy_new_threshold, 35)
+        if action in ("BUY_NEW", "ADD"):
+            rationale.append(
+                f"[STREAK] Loss streak {loss_streak} — buy thresholds tightened to "
+                f"{buy_bp_threshold}%/{buy_new_threshold}%."
+            )
+    elif loss_streak >= 3:
+        buy_bp_threshold  = max(buy_bp_threshold,  20)
+        buy_new_threshold = max(buy_new_threshold, 25)
+        if action in ("BUY_NEW", "ADD"):
+            rationale.append(
+                f"[STREAK] Loss streak {loss_streak} — buy thresholds moderately tightened."
+            )
+    elif win_streak >= 5:
+        buy_bp_threshold  = max(5,  buy_bp_threshold  - 3)
+        buy_new_threshold = max(10, buy_new_threshold - 3)
+        if action in ("BUY_NEW", "ADD"):
+            rationale.append(
+                f"[STREAK] Win streak {win_streak} — buy thresholds modestly relaxed."
+            )
 
     # ── HARD SINGLE-NAME CEILING — non-waivable (board directive 2026-04-27) ─
     # If a long position exceeds 15% of portfolio it cannot be approved as
@@ -187,10 +201,12 @@ def evaluate_recommendation(rec: dict, account: dict,
         pdo_signal = "NEAR_OPTIMAL"   # CRO wins: block aggressive deployment
 
     # ── CANARY DEFENSIVE MODE ──────────────────────────────────────────────
-    canary_level = (canary_alert or {}).get("level", "GREEN")
+    if not isinstance(canary_alert, dict):
+        canary_alert = {}
+    canary_level = canary_alert.get("level", "GREEN")
     if canary_level in ("RED", "ORANGE"):
         canary_tag = f"[CANARY {canary_level}]"
-        triggers   = (canary_alert or {}).get("triggers", [])
+        triggers   = canary_alert.get("triggers", [])
         trigger_str = "; ".join(triggers) if triggers else "market stress detected"
 
         if action in ("BUY_NEW", "ADD"):
@@ -234,6 +250,50 @@ def evaluate_recommendation(rec: dict, account: dict,
                 "manager_rationale": rationale,
             }
 
+    # ── DAILY DRAWDOWN HALT ────────────────────────────────────────────────
+    # If the portfolio is already down 2% today, freeze all new deployment.
+    # Existing positions still run; only new capital is blocked.
+    _pnl_today_pct = account.get("pnl_today_pct") or 0
+    if _pnl_today_pct < -(DAILY_DRAWDOWN_HALT_PCT * 100) and action in ("BUY_NEW", "ADD"):
+        return {
+            **rec,
+            "manager_decision":  "REJECTED",
+            "manager_action":    "HOLD",
+            "manager_rationale": [
+                f"[DAILY DRAWDOWN HALT] Portfolio is down {_pnl_today_pct:.1f}% today "
+                f"(threshold: -{DAILY_DRAWDOWN_HALT_PCT*100:.0f}%). "
+                f"No new positions opened on down days. {ticker} deferred to next session."
+            ],
+        }
+
+    # ── HIGH-WATER MARK PROTECTION ─────────────────────────────────────────
+    # If the portfolio has dropped 12% from its all-time peak, freeze all new
+    # deployment until the drawdown recovers. State tracked in state.json.
+    try:
+        import json as _json
+        _state_path = "data/state.json"
+        if os.path.exists(_state_path):
+            with open(_state_path) as _sf:
+                _st = _json.load(_sf)
+            _hwm = _st.get("high_water_mark", 0)
+            _pv  = account.get("portfolio_value", 0)
+            if _hwm > 0 and _pv > 0 and _pv < _hwm * (1 - HWM_DRAWDOWN_HALT_PCT):
+                if action in ("BUY_NEW", "ADD"):
+                    _dd_pct = (_hwm - _pv) / _hwm * 100
+                    return {
+                        **rec,
+                        "manager_decision":  "REJECTED",
+                        "manager_action":    "HOLD",
+                        "manager_rationale": [
+                            f"[HWM PROTECTION] Portfolio is {_dd_pct:.1f}% below its peak "
+                            f"(${_pv:,.0f} vs HWM ${_hwm:,.0f}). "
+                            f"New positions frozen until drawdown recovers below "
+                            f"{HWM_DRAWDOWN_HALT_PCT*100:.0f}%. {ticker} deferred."
+                        ],
+                    }
+    except Exception:
+        pass
+
     # ── CVaR CIRCUIT BREAKER ───────────────────────────────────────────────
     # Board-mandated (Special Session): if 1-day CVaR > 5% of portfolio,
     # all BUY and ADD orders are blocked for this session.
@@ -254,9 +314,10 @@ def evaluate_recommendation(rec: dict, account: dict,
     if action == "SELL":
         # CRO position alert prepended if present
         if ticker_alert:
+            # Use .get() — 'alert' key may be missing if CRO wrote a partial record
             rationale.append(
                 f"[CRO ALERT — {ticker_alert.get('severity','HIGH')}] "
-                f"{ticker_alert['alert']}"
+                f"{ticker_alert.get('alert', 'see risk bulletin')}"
             )
         reasons = " ".join(rec.get("reasons", []))
 
@@ -304,23 +365,55 @@ def evaluate_recommendation(rec: dict, account: dict,
 
     # ── TRIM decisions ─────────────────────────────────────────────────────
     elif action == "TRIM":
-        limit = MAX_POSITION_SIZE_PCT * 100
+        # Use the stricter of config cap and regime cap for trim approval
+        _regime_trim     = REGIME_MANDATES.get(cro_risk_level, REGIME_MANDATES["UNKNOWN"])
+        _regime_trim_pct = _regime_trim["max_position_pct"] * 100
+        limit = min(MAX_POSITION_SIZE_PCT * 100, _regime_trim_pct)
         if weight_pct > limit * 1.3:
             rationale.append(
                 f"APPROVED: {ticker} is {weight_pct:.1f}% of portfolio — "
-                f"materially over {limit:.0f}% limit. Trimming to restore balance."
+                f"materially over {limit:.0f}% regime limit ({cro_risk_level}). Trimming to restore balance."
             )
         else:
             decision    = "MODIFIED"
             exec_action = "WATCH"
             rationale.append(
                 f"MODIFIED to WATCH: {ticker} is {weight_pct:.1f}% vs {limit:.0f}% "
-                f"limit — marginally over. Will trim only if it grows further."
+                f"regime limit ({cro_risk_level}) — marginally over. Will trim only if it grows further."
             )
 
     # ── ADD decisions ──────────────────────────────────────────────────────
     elif action == "ADD":
-        if pdo_signal == "HOLD_CASH":
+        # CRO CRITICAL hard block — same gate as BUY_NEW (both deploy new capital)
+        if cro_risk_level == "CRITICAL" and "PRESERVE" in cro_guidance.upper():
+            return {
+                **rec,
+                "manager_decision":  "REJECTED",
+                "manager_action":    "HOLD",
+                "manager_rationale": [
+                    f"[CRO MANDATE — CRITICAL] All capital deployment halted. "
+                    f"CRO directive: {cro_directives[0] if cro_directives else 'PRESERVE CAPITAL'}. "
+                    f"ADD on {ticker} deferred until CRO risk level normalises."
+                ],
+            }
+
+        # Regime-adaptive position cap (board-approved 2026-05-06):
+        # Use the stricter of config MAX_POSITION_SIZE_PCT and the current
+        # regime's max_position_pct.  An ADD that would push weight above the
+        # regime cap is rejected outright — not just post-hoc trimmed.
+        _regime_cfg       = REGIME_MANDATES.get(cro_risk_level, REGIME_MANDATES["UNKNOWN"])
+        _regime_max_pct   = _regime_cfg["max_position_pct"] * 100   # e.g. 5.0 in HIGH
+        _effective_cap    = min(MAX_POSITION_SIZE_PCT * 100, _regime_max_pct)
+        if weight_pct >= _effective_cap:
+            decision    = "REJECTED"
+            exec_action = "TRIM"
+            rationale.append(
+                f"[REGIME CAP — {cro_risk_level}] REJECTED ADD on {ticker}: position already "
+                f"at {weight_pct:.1f}% which meets or exceeds the {cro_risk_level} regime limit "
+                f"of {_regime_max_pct:.0f}% (effective cap {_effective_cap:.0f}%). "
+                f"Overriding to TRIM to restore compliance."
+            )
+        elif pdo_signal == "HOLD_CASH":
             decision    = "REJECTED"
             exec_action = "HOLD"
             rationale.append(
@@ -349,6 +442,33 @@ def evaluate_recommendation(rec: dict, account: dict,
         conviction = rec.get("conviction", 3)
         horizon    = rec.get("investment_horizon", "both")
         pdo_note   = f" [PDO: {pdo_signal}]" if pdo_signal else ""
+
+        # ── Earnings catalyst gate — board-mandated (CIT Director, 2026-05-06) ──
+        # If a predicted MISS earnings event is within 14 days, reduce conviction
+        # by 1★ to avoid buying into a likely negative catalyst.
+        _ep_path = "data/earnings_predictions.json"
+        if os.path.exists(_ep_path):
+            try:
+                with open(_ep_path) as _ef:
+                    _ep = json.load(_ef)
+                _ticker_pred = next(
+                    (p for p in _ep.get("predictions", [])
+                     if p.get("ticker") == ticker
+                     and p.get("prediction") == "MISS"
+                     and p.get("days_until", 999) <= 14),
+                    None
+                )
+                if _ticker_pred:
+                    conviction = max(1, conviction - 1)
+                    rec = {**rec, "conviction": conviction}
+                    rationale.append(
+                        f"[EARNINGS CATALYST GATE] Predicted MISS for {ticker} in "
+                        f"{_ticker_pred['days_until']}d (confidence {_ticker_pred['confidence']}★, "
+                        f"{_ticker_pred['reasoning'][:60]}). "
+                        f"Conviction reduced by 1★ to {conviction}★ (board 2026-05-06)."
+                    )
+            except Exception:
+                pass
 
         # ── OptionsFlow multi-signal gate — board-mandated ─────────────────
         # If this recommendation originates from OptionsFlowMonitorAgent,
@@ -386,6 +506,30 @@ def evaluate_recommendation(rec: dict, account: dict,
                     f"produces a matching pick in the next cycle."
                 )
 
+        # Regime-adaptive position cap — compute once for use in BUY_NEW gates below
+        _regime_cfg_bn    = REGIME_MANDATES.get(cro_risk_level, REGIME_MANDATES["UNKNOWN"])
+        _regime_max_pct_bn = _regime_cfg_bn["max_position_pct"] * 100   # e.g. 4.0 in CRITICAL
+        _effective_cap_bn  = min(MAX_POSITION_SIZE_PCT * 100, _regime_max_pct_bn)
+
+        # ── CRO CRITICAL hard block ────────────────────────────────────────
+        # When CRO issues PRESERVE CAPITAL guidance, all BUY_NEW are rejected
+        # outright — no buying-power threshold can override this. Mirrors the
+        # same early-return pattern used by the canary RED/ORANGE gate above.
+        if cro_risk_level == "CRITICAL" and "PRESERVE" in cro_guidance.upper():
+            decision    = "REJECTED"
+            exec_action = "HOLD"
+            rationale.append(
+                f"[CRO MANDATE — CRITICAL] All new position opens halted. "
+                f"CRO directive: {cro_directives[0] if cro_directives else 'PRESERVE CAPITAL — raise cash, enforce stop-losses.'}. "
+                f"{ticker} deferred until CRO risk level normalises."
+            )
+            return {
+                **rec,
+                "manager_decision":  decision,
+                "manager_action":    exec_action,
+                "manager_rationale": rationale,
+            }
+
         if pdo_signal == "HOLD_CASH":
             decision    = "REJECTED"
             exec_action = "HOLD"
@@ -398,7 +542,8 @@ def evaluate_recommendation(rec: dict, account: dict,
                 f"APPROVED: New position in {ticker} (via {source_agent}). "
                 f"Buying power {buying_power_pct:.1f}%, "
                 f"capacity available ({n_positions}/{MAX_OPEN_POSITIONS}). "
-                f"Conviction {conviction}★, horizon: {horizon}.{pdo_note}"
+                f"Conviction {conviction}★, horizon: {horizon}. "
+                f"Regime cap: {_effective_cap_bn:.0f}% of portfolio ({cro_risk_level}).{pdo_note}"
             )
             if cro_pdo_conflict:
                 rationale.append(
@@ -409,12 +554,13 @@ def evaluate_recommendation(rec: dict, account: dict,
                 rationale.append(
                     f"[CRO Advisory — {cro_risk_level}] {cro_directives[0]}"
                 )
-        elif conviction >= 5 and pdo_signal == "DEPLOY_MORE" and n_positions < MAX_OPEN_POSITIONS:
+        elif conviction >= 5 and pdo_signal == "DEPLOY_MORE" and n_positions < MAX_OPEN_POSITIONS and _effective_cap_bn >= 3.0:
             # Exceptional case: max-conviction + PDO says deploy → override BP threshold
+            # Still subject to regime cap — if CRITICAL capped to 4%, that's enforced by sizing
             rationale.append(
                 f"APPROVED (override): Max-conviction (5★) pick {ticker} from {source_agent}. "
                 f"PDO recommends deploying more capital — approving despite lower buying power "
-                f"({buying_power_pct:.1f}%).{pdo_note}"
+                f"({buying_power_pct:.1f}%). Regime cap: {_effective_cap_bn:.0f}%.{pdo_note}"
             )
         else:
             decision    = "REJECTED"
@@ -506,6 +652,7 @@ def evaluate_recommendation(rec: dict, account: dict,
         "manager_decision":  decision,
         "manager_action":    exec_action,
         "manager_rationale": rationale,
+        "cro_level":         cro_risk_level,   # passed to executor for regime-aware sizing
     }
 
 
@@ -599,6 +746,22 @@ def _log_execution_quality(result: dict, decision: dict) -> None:
 # TRADE EXECUTOR
 # =============================================================================
 
+def _resolve_pod_id(decision: dict) -> str:
+    """Map a manager decision to its pod_id based on source_agent."""
+    source = (decision.get("source_agent") or "").lower()
+    if not source:
+        logger.warning(f"Decision missing source_agent for {decision.get('ticker')} — defaulting to pod1_rd")
+        return "pod1_rd"
+    if "ml" in source:
+        return "pod2_ml"
+    if "pod3" in source:
+        return "pod3_macro"
+    if any(k in source for k in ("rd", "research", "review", "institutional")):
+        return "pod1_rd"
+    logger.warning(f"Unknown source_agent '{source}' for {decision.get('ticker')} — defaulting to pod1_rd")
+    return "pod1_rd"
+
+
 def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
     """
     Execute the manager-approved action for a single position.
@@ -621,6 +784,32 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
         logger.info(f"  [DRY RUN] {action} {ticker}")
         return result
 
+    # ── Pod Ledger budget gate ────────────────────────────────────────────────
+    # Determine pod and trade side for the ledger check.
+    # SELL/TRIM are always allowed (reducing exposure) — only BUY-side orders are gated.
+    _pod_id        = _resolve_pod_id(decision)
+    _signal_source = decision.get("source_agent") or "manager_agent"
+    if _POD_LEDGER_AVAILABLE and action in ("BUY_NEW", "ADD"):
+        try:
+            _est_price = float(decision.get("current_price") or 0)
+            _est_qty   = 1   # conservative fallback; ledger uses notional if price is 0
+            _ok, _reason = _pod_ledger.can_trade(
+                _pod_id, ticker, _est_qty, _est_price, side="long"
+            )
+            if not _ok:
+                logger.warning(
+                    f"  [POD LEDGER] {_pod_id} budget check FAILED for {ticker}: {_reason}"
+                )
+                decision["manager_decision"] = "REJECTED"
+                result["executed"] = False
+                result["note"]     = f"Pod budget rejected: {_reason}"
+                result["error"]    = f"Pod budget: {_reason}"
+                return result
+        except Exception as _pl_e:
+            logger.warning(
+                f"  [POD LEDGER] can_trade() error (proceeding): {_pl_e}"
+            )
+
     try:
         if action == "SELL":
             order = trader.submit_sell(ticker, reason="manager_agent")
@@ -634,12 +823,23 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                         decision.get("current_price", 0), float(fill_price), "SELL"
                     )
                 logger.info(f"  EXECUTED SELL: {ticker}  order_id={result['order_id']}")
+                # Record in pod ledger
+                if _POD_LEDGER_AVAILABLE:
+                    try:
+                        _fp = result.get("fill_price") or decision.get("current_price") or 0
+                        _pod_ledger.record_trade(
+                            _pod_id, ticker, 0, float(_fp), "short", _signal_source
+                        )
+                    except Exception as _pl_e:
+                        logger.warning(f"  [POD LEDGER] record_trade (SELL) error: {_pl_e}")
             else:
                 result["error"] = "submit_sell returned None — position may not exist"
 
         elif action == "TRIM":
             positions = trader.get_positions()
-            if not positions.empty and ticker in positions["ticker"].values:
+            if positions is None or positions.empty:
+                result["error"] = f"get_positions() returned None or empty — cannot trim {ticker}"
+            elif ticker in positions["ticker"].values:
                 qty_held = float(positions[positions["ticker"] == ticker]["qty"].values[0])
                 trim_qty = max(1, int(abs(qty_held) * 0.40))   # sell 40% of position
                 from alpaca.trading.requests import MarketOrderRequest
@@ -655,12 +855,29 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                 result["order_id"] = str(order.id)
                 result["qty_trimmed"] = trim_qty
                 logger.info(f"  EXECUTED TRIM: {trim_qty} shares of {ticker}  order_id={result['order_id']}")
+                # Record in pod ledger
+                if _POD_LEDGER_AVAILABLE:
+                    try:
+                        _trim_price = float(decision.get("current_price") or 0)
+                        _pod_ledger.record_trade(
+                            _pod_id, ticker, trim_qty, _trim_price, "short", _signal_source
+                        )
+                    except Exception as _pl_e:
+                        logger.warning(f"  [POD LEDGER] record_trade (TRIM) error: {_pl_e}")
             else:
                 result["error"] = f"No position in {ticker} to trim"
 
         elif action in ("ADD", "BUY_NEW"):
-            # Pass actual conviction so AlpacaTrader can size the position correctly
-            order = trader.submit_buy(ticker, conviction_score=decision.get("conviction", 3))
+            # Pass conviction, current weight, and CRO level so AlpacaTrader can
+            # apply regime cap and size ADD orders incrementally (not full-size).
+            _cro_lvl = decision.get("cro_level", "UNKNOWN")
+            _cur_wt  = decision.get("weight_pct", 0.0) if action == "ADD" else 0.0
+            order = trader.submit_buy(
+                ticker,
+                conviction_score=decision.get("conviction", 3),
+                current_weight_pct=_cur_wt,
+                cro_level=_cro_lvl,
+            )
             if order:
                 result["executed"] = True
                 result["order_id"] = order.get("id")
@@ -674,6 +891,16 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
                 logger.info(f"  EXECUTED BUY: {ticker}  order_id={result['order_id']}"
                             + (f"  slippage~{result.get('slippage_bps','—'):.1f}bps"
                                if result.get("slippage_bps") is not None else ""))
+                # Record in pod ledger
+                if _POD_LEDGER_AVAILABLE:
+                    try:
+                        _fp = result.get("fill_price") or decision.get("current_price") or 0
+                        _qty_filled = int(order.get("qty") or 0)
+                        _pod_ledger.record_trade(
+                            _pod_id, ticker, _qty_filled, float(_fp), "long", _signal_source
+                        )
+                    except Exception as _pl_e:
+                        logger.warning(f"  [POD LEDGER] record_trade (BUY) error: {_pl_e}")
             else:
                 result["error"] = "submit_buy returned None"
 
@@ -699,7 +926,7 @@ def build_management_report(decisions: list[dict], executions: list[dict],
                              account: dict, dry_run: bool) -> str:
     """Build a plain-text management report for the Chairman."""
     now = datetime.now().strftime("%B %d, %Y at %H:%M")
-    mode_label = "DRY RUN — no real orders placed" if dry_run else "LIVE PAPER TRADING"
+    mode_label = "DRY RUN — no real orders placed" if dry_run else "LIVE TRADING"
 
     exec_map = {e["ticker"]: e for e in executions}
 
@@ -773,16 +1000,18 @@ def build_management_report(decisions: list[dict], executions: list[dict],
             flag = "WATCH" if d["manager_action"] == "WATCH" else "HOLD"
             pnl  = d.get("unrealized_pnl_pct")
             pnl_s = f"{pnl:+.1f}%" if pnl is not None else "—"
+            # Guard empty reasons list — IndexError if Review Agent returned no reasons
+            _first_reason = (d.get('reasons') or [''])[0]
             lines.append(
                 f"  [{flag:<5}] {d['ticker']:<6}  P&L: {pnl_s:>7}  "
-                f"Hold: {d.get('hold_days', 0):>3}d  {d['reasons'][0][:45]}"
+                f"Hold: {d.get('hold_days', 0):>3}d  {_first_reason[:45]}"
             )
         lines.append("")
 
     lines += [
         "═" * 70,
         "  Apex Capital Intelligence — Manager Agent",
-        "  Paper trading simulation — not real investment advice",
+        "  Apex Capital — Proprietary Trading",
         f"  Generated {now}",
         "═" * 70,
     ]
@@ -794,7 +1023,7 @@ def build_html_report(decisions: list[dict], executions: list[dict],
                       account: dict, dry_run: bool) -> str:
     """HTML version of the management report for email delivery."""
     now        = datetime.now().strftime("%B %d, %Y at %H:%M")
-    mode_label = "DRY RUN" if dry_run else "PAPER TRADING"
+    mode_label = "DRY RUN" if dry_run else "LIVE TRADING"
     exec_map   = {e["ticker"]: e for e in executions}
 
     pnl_color = "#3fb950" if account["pnl_today"] >= 0 else "#f85149"
@@ -939,7 +1168,7 @@ def build_html_report(decisions: list[dict], executions: list[dict],
   <p style="color:#484f58;font-size:11px;margin-top:28px;border-top:1px solid #21262d;
             padding-top:12px;">
     Apex Capital Intelligence — Manager Agent &nbsp;·&nbsp;
-    Paper trading simulation — not real investment advice &nbsp;·&nbsp;
+    Apex Capital — Proprietary Trading &nbsp;·&nbsp;
     Generated {now}
   </p>
 </body></html>"""
@@ -1070,9 +1299,12 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
     logger.info(f"{'='*60}\n")
 
     # ── Canary Defensive Mode banner ─────────────────────────────────────
-    canary_level = (canary_alert or {}).get("level", "GREEN")
+    # Guard: canary_alert must be a dict — coerce if somehow a string was passed
+    if not isinstance(canary_alert, dict):
+        canary_alert = {}
+    canary_level = canary_alert.get("level", "GREEN")
     if canary_level in ("RED", "ORANGE"):
-        triggers = (canary_alert or {}).get("triggers", [])
+        triggers = canary_alert.get("triggers", [])
         logger.warning(f"  ⚠️  CANARY {canary_level} ALERT — DEFENSIVE MODE ACTIVE")
         logger.warning(f"  Triggers: {', '.join(triggers)}")
         logger.warning(f"  All BUY/ADD orders BLOCKED. SELLs fast-tracked.\n")
@@ -1090,6 +1322,10 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
         with open(REVIEW_PATH) as f:
             review_report = json.load(f)
 
+    # Guard None — run_review() can return None if it encounters an unhandled exception
+    if not review_report:
+        logger.error("  Review Agent returned None — cannot continue without recommendations.")
+        return
     recommendations = list(review_report["recommendations"])
     account         = review_report["account"]
 
@@ -1109,6 +1345,7 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
     # Load CRO public risk bulletin
     cro_bulletin = _load_cro_bulletin()
     cvar_circuit_breaker_active = False
+    cro_level_run = "UNKNOWN"  # initialised here so firm_channel post never hits NameError
     if cro_bulletin:
         cro_level_run = cro_bulletin.get("risk_level", "UNKNOWN")
         logger.info(
@@ -1166,6 +1403,9 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
                 f"{sum(1 for d in decisions if d['manager_decision']=='REJECTED')} rejected")
 
     # ── Step 3: Execute approved trades ──────────────────────────────────
+    # Board-mandated (2026-05-06): max 3 new BUY_NEW positions per cycle to
+    # prevent all-at-once deployment after a defensive mode period.
+    MAX_NEW_POSITIONS_PER_CYCLE = 2
     logger.info("  Step 3/5: Executing approved changes...")
     executions: list[dict] = []
 
@@ -1173,10 +1413,28 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
         from alpaca_trader import AlpacaTrader
         trader = AlpacaTrader()
 
+        new_positions_this_cycle = 0
         for d in decisions:
             if d["manager_decision"] == "APPROVED" and d["manager_action"] not in ("HOLD", "WATCH"):
+                if d["manager_action"] == "BUY_NEW":
+                    if new_positions_this_cycle >= MAX_NEW_POSITIONS_PER_CYCLE:
+                        d["manager_decision"]  = "REJECTED"
+                        d["manager_action"]    = "HOLD"
+                        d["manager_rationale"] = d.get("manager_rationale", []) + [
+                            f"[CYCLE PACING] BUY_NEW for {d['ticker']} deferred — "
+                            f"max {MAX_NEW_POSITIONS_PER_CYCLE} new positions per cycle "
+                            f"already reached (board-mandated 2026-05-06). "
+                            f"Will reconsider next cycle."
+                        ]
+                        continue
+                    new_positions_this_cycle += 1
                 ex = execute_decision(d, trader, dry_run=dry_run)
                 executions.append(ex)
+        if new_positions_this_cycle >= MAX_NEW_POSITIONS_PER_CYCLE:
+            logger.info(
+                f"  [CYCLE PACING] Cycle limit reached: {new_positions_this_cycle} new positions opened. "
+                f"Remaining BUY_NEW deferred to next cycle."
+            )
     else:
         logger.info("  No trades to execute this cycle.")
 
@@ -1204,6 +1462,37 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
         json.dump(history[-50:], f, indent=2, default=str)   # keep last 50 runs
 
     logger.info(f"  Decision log saved → {MANAGER_LOG}")
+
+    # ── Post cycle summary to firm channel ────────────────────────────────
+    try:
+        from firm_channel import post as _fc_post
+        _approved_buys  = [d for d in decisions if d["manager_decision"] == "APPROVED"
+                           and d["manager_action"] in ("BUY_NEW", "ADD")]
+        _approved_sells = [d for d in decisions if d["manager_decision"] == "APPROVED"
+                           and d["manager_action"] in ("SELL", "TRIM")]
+        _rejected       = [d for d in decisions if d["manager_decision"] == "REJECTED"]
+        _tickers_bought = [d["ticker"] for d in _approved_buys]
+        _tickers_sold   = [d["ticker"] for d in _approved_sells]
+        _prio = "HIGH" if _approved_sells else "NORMAL"
+        _fc_post(
+            "Manager Agent", "TRADE_SIGNAL",
+            f"Cycle complete: {len(_approved_buys)} buy(s) [{', '.join(_tickers_bought[:5])}], "
+            f"{len(_approved_sells)} sell(s)/trim(s) [{', '.join(_tickers_sold[:5])}], "
+            f"{len(_rejected)} rejected. "
+            f"CRO={cro_level_run} | PDO={pdo_signal} | Canary={canary_level}.",
+            priority=_prio,
+        )
+        # Flag any stop-loss triggers for firm visibility
+        _stops = [d for d in decisions if any("stop_loss" in r.lower() for r in d.get("manager_rationale", []))]
+        for _s in _stops:
+            _fc_post(
+                "Manager Agent", "RISK_OBS",
+                f"STOP-LOSS triggered on {_s['ticker']} — "
+                f"P&L: {_s.get('unrealized_pnl_pct', 0):+.1f}%. Position closed.",
+                priority="HIGH",
+            )
+    except Exception as _fce:
+        logger.debug(f"  [FirmChannel] Manager post failed: {_fce}")
 
     # ── Step 5: Build and send report ─────────────────────────────────────
     logger.info("  Step 5/5: Building management report...")

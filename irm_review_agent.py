@@ -859,7 +859,9 @@ def _build_hr_report_html(hr_report: dict) -> str:
 
     action_rows = ""
     for item in action:
-        color = "#f85149" if item["hrpo_rating"] == "CONCERN" else "#f0883e"
+        # BUG FIX: use .get() — hrpo_rating may be missing if hr_report.json was
+        # written by an older version or got partially truncated
+        color = "#f85149" if item.get("hrpo_rating") == "CONCERN" else "#f0883e"
         issues_text = "; ".join(item.get("issues", [])[:2])[:120]
         action_rows += f"""
       <tr>
@@ -978,6 +980,52 @@ def _build_hr_sealed_annex_html(hr_sealed: dict) -> str:
       ↑ Copy the encoded string above (between the dashed borders) and paste into the decoder.
     </p>
   </div>"""
+
+
+def _build_implementation_outcomes_html(outcomes_summary: dict) -> str:
+    """Build the CIT Implementation Outcomes section for the IRM daily email."""
+    if not outcomes_summary:
+        return ""
+    outcomes = _load_outcomes()
+    if not outcomes:
+        return ""
+    # Only show entries that have at least one outcome check completed
+    checked = [o for o in outcomes if o.get("outcomes")]
+    pending = [o for o in outcomes if not o.get("outcomes")]
+    rows = ""
+    for o in checked[-5:]:  # last 5 checked entries
+        last = o["outcomes"][-1]
+        color = "#27ae60" if "POSITIVE" in last["verdict"] else (
+                "#c0392b" if "NEGATIVE" in last["verdict"] else "#f39c12")
+        rows += (
+            f"<tr>"
+            f"<td style='padding:4px 8px;color:#c9d1d9;font-size:12px;'>{o['title'][:50]}</td>"
+            f"<td style='padding:4px 8px;color:#8b949e;font-size:12px;'>{o['agent']}</td>"
+            f"<td style='padding:4px 8px;font-size:12px;color:{color};'>{last['verdict'][:40]}</td>"
+            f"<td style='padding:4px 8px;color:#8b949e;font-size:12px;'>{last['days']}d</td>"
+            f"</tr>"
+        )
+    if not rows:
+        pending_note = f"<p style='color:#8b949e;font-size:12px;'>{len(pending)} proposal(s) registered, awaiting 7-day check-in.</p>"
+        return f"""
+<div style="margin-top:20px;">
+  <h3 style="color:#3498db;">CIT Implementation Outcomes</h3>
+  {pending_note}
+</div>"""
+    return f"""
+<div style="margin-top:20px;">
+  <h3 style="color:#3498db;">CIT Implementation Outcomes</h3>
+  <p style="color:#8b949e;font-size:12px;">{len(pending)} pending first check · {len(checked)} with results</p>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <tr style="border-bottom:1px solid #21262d;">
+      <th style="text-align:left;padding:4px 8px;color:#8b949e;">Proposal</th>
+      <th style="text-align:left;padding:4px 8px;color:#8b949e;">Agent</th>
+      <th style="text-align:left;padding:4px 8px;color:#8b949e;">Verdict</th>
+      <th style="text-align:left;padding:4px 8px;color:#8b949e;">Age</th>
+    </tr>
+    {rows}
+  </table>
+</div>"""
 
 
 def _build_cit_audit_html(cit_review: dict) -> str:
@@ -1238,6 +1286,50 @@ def _consult_irm_board(irm_context: dict) -> dict:
 
 
 # =============================================================================
+# IRM ANONYMOUS DEAD DROP
+# =============================================================================
+
+DEAD_DROP_PATH = "data/governance_tip.json"
+
+
+def _write_governance_tip(concern: str, trigger_emergency: bool = False) -> bool:
+    """
+    Write an anonymous concern to the IRM dead drop for the CRO to pick up.
+
+    The CRO reads this at the start of its run, incorporates the concern into
+    its own analysis, and — if trigger_emergency=True — calls an emergency
+    board meeting. The IRM's identity is NEVER mentioned in the CRO's output.
+
+    Called by the IRM when it detects something truly dire:
+      • Another agent acting against firm interests
+      • Systemic risk being ignored by the board
+      • Chairman being misled by agent output
+      • Governance failures that cannot wait for the next scheduled review
+
+    Returns True if written successfully.
+    """
+    os.makedirs("data", exist_ok=True)
+    try:
+        payload = {
+            "concern":           concern,
+            "trigger_emergency": trigger_emergency,
+            "written_at":        datetime.now().isoformat(),
+            "read":              False,
+        }
+        with open(DEAD_DROP_PATH, "w") as _f:
+            json.dump(payload, _f, indent=2, default=str)
+        logger.info(
+            f"  [IRM] Anonymous concern written to dead drop "
+            f"(trigger_emergency={trigger_emergency}). "
+            f"CRO will consume at next cycle."
+        )
+        return True
+    except Exception as _e:
+        logger.warning(f"  [IRM] Dead drop write failed: {_e}")
+        return False
+
+
+# =============================================================================
 # PUBLIC ENTRY POINT
 # =============================================================================
 
@@ -1314,6 +1406,198 @@ def trigger_irm_review(subject: str, sender_name: str,
         return False
 
 
+# =============================================================================
+# CIT IMPLEMENTATION OUTCOME TRACKING
+# =============================================================================
+# The IRM tracks whether approved CIT changes actually improved the firm.
+# Each implemented proposal gets a baseline snapshot at implementation time,
+# then a 7-day, 30-day, and 90-day outcome check comparing current metrics
+# to that baseline.
+#
+# Outcome file: data/cit_implementation_outcomes.json
+# Format: list of { proposal_id, title, agent, implemented_at,
+#                   baseline, outcomes: [{days, checked_at, delta_summary, verdict}] }
+# =============================================================================
+
+_OUTCOMES_PATH = "data/cit_implementation_outcomes.json"
+_APPROVED_PATH = "data/cit_approved_proposals.json"
+
+
+def _capture_metrics_snapshot() -> dict:
+    """Capture a point-in-time snapshot of key firm health metrics."""
+    snap = {"captured_at": datetime.now().isoformat()}
+    try:
+        import json as _j, os as _o
+        # Risk metrics
+        if _o.path.exists("data/risk_manager_report.json"):
+            with open("data/risk_manager_report.json") as f:
+                rm = _j.load(f)
+            snap["var_99"] = rm.get("var_metrics", {}).get("var_99_pct")
+            snap["concentration_top5"] = rm.get("concentration", {}).get("top5_pct")
+            snap["sharpe"] = rm.get("performance", {}).get("sharpe_ratio")
+            snap["total_return_pct"] = rm.get("performance", {}).get("total_return_pct")
+        # Canary level
+        if _o.path.exists("data/canary_state.json"):
+            with open("data/canary_state.json") as f:
+                cs = _j.load(f)
+            snap["canary_level"] = cs.get("last_level", "GREEN")
+            snap["regime"] = cs.get("regime", "BULL")
+        # CIT health: open issues count
+        if _o.path.exists("data/cit_backlog.json"):
+            with open("data/cit_backlog.json") as f:
+                bl = _j.load(f)
+            snap["cit_backlog_depth"] = len(bl)
+        if _o.path.exists("data/cit_approved_proposals.json"):
+            with open("data/cit_approved_proposals.json") as f:
+                ap = _j.load(f)
+            snap["cit_implemented_count"] = sum(1 for p in ap if p.get("status") == "implemented")
+    except Exception as _e:
+        snap["snapshot_error"] = str(_e)
+    return snap
+
+
+def _delta_summary(baseline: dict, current: dict) -> dict:
+    """Compute the difference between two metric snapshots."""
+    delta = {}
+    numeric_keys = ["var_99", "concentration_top5", "sharpe", "total_return_pct", "cit_backlog_depth"]
+    for k in numeric_keys:
+        b, c = baseline.get(k), current.get(k)
+        if b is not None and c is not None:
+            try:
+                delta[k] = round(float(c) - float(b), 4)
+            except (TypeError, ValueError):
+                pass
+    delta["canary_level"] = {"before": baseline.get("canary_level"), "after": current.get("canary_level")}
+    delta["regime"] = {"before": baseline.get("regime"), "after": current.get("regime")}
+    return delta
+
+
+def _outcome_verdict(delta: dict, proposal_category: str) -> str:
+    """Produce a one-line verdict on whether the change appears to have helped."""
+    positives, negatives = 0, 0
+    # Sharpe up = good; VaR down = good; backlog down = good
+    if delta.get("sharpe", 0) > 0.05:
+        positives += 1
+    if delta.get("sharpe", 0) < -0.05:
+        negatives += 1
+    if delta.get("var_99", 0) < -0.5:
+        positives += 1   # lower VaR is less risk exposure (absolute %)
+    if delta.get("var_99", 0) > 0.5:
+        negatives += 1
+    if delta.get("cit_backlog_depth", 0) < -5:
+        positives += 1
+    if delta.get("cit_backlog_depth", 0) > 10:
+        negatives += 1
+    if positives > negatives:
+        return "POSITIVE — metrics improved since implementation"
+    if negatives > positives:
+        return "NEGATIVE — metrics deteriorated since implementation (may be unrelated)"
+    return "NEUTRAL — no significant measurable delta yet"
+
+
+def _load_outcomes() -> list:
+    """Load cit_implementation_outcomes.json, return [] on missing/corrupt."""
+    if not os.path.exists(_OUTCOMES_PATH):
+        return []
+    try:
+        with open(_OUTCOMES_PATH) as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def _save_outcomes(outcomes: list) -> None:
+    with open(_OUTCOMES_PATH, "w") as f:
+        json.dump(outcomes, f, indent=2, default=str)
+
+
+def sync_implementation_outcomes() -> dict:
+    """
+    Called by run_irm_daily().  Does two things:
+
+    1. REGISTER new implemented proposals that don't yet have an outcome record.
+       Captures a baseline metrics snapshot at registration time.
+
+    2. CHECK pending outcomes (7d / 30d / 90d milestones).
+       For each outcome record whose next check-in date has passed, captures
+       current metrics, computes delta, writes a verdict, and advances the
+       milestone counter.
+
+    Returns a summary dict with counts of new registrations and checked outcomes.
+    """
+    import json as _j, os as _o
+    now = datetime.now()
+    summary = {"registered": 0, "checked": 0, "outcomes": []}
+
+    # Load existing outcomes
+    outcomes = _load_outcomes()
+    tracked_ids = {o["proposal_id"] for o in outcomes}
+
+    # ── 1. Register newly implemented proposals ──────────────────────────
+    if _o.path.exists(_APPROVED_PATH):
+        try:
+            with open(_APPROVED_PATH) as f:
+                approved = _j.load(f)
+            for p in approved:
+                if p.get("status") != "implemented":
+                    continue
+                pid = p.get("id", p.get("title", "unknown"))
+                if pid in tracked_ids:
+                    continue
+                baseline = _capture_metrics_snapshot()
+                outcomes.append({
+                    "proposal_id":   pid,
+                    "title":         p.get("title", ""),
+                    "agent":         p.get("agent", ""),
+                    "category":      p.get("category", ""),
+                    "implemented_at": p.get("implemented_at", now.isoformat()),
+                    "baseline":      baseline,
+                    "outcomes":      [],
+                    "next_check_days": 7,
+                })
+                tracked_ids.add(pid)
+                summary["registered"] += 1
+                logger.info(f"  [IRM Outcomes] Registered new implementation: {pid[:60]}")
+        except Exception as _e:
+            logger.debug(f"  [IRM Outcomes] Registration error: {_e}")
+
+    # ── 2. Check pending milestones ──────────────────────────────────────
+    CHECK_MILESTONES = [7, 30, 90]
+    for rec in outcomes:
+        next_days = rec.get("next_check_days")
+        if next_days is None:
+            continue   # all milestones complete
+        impl_dt = datetime.fromisoformat(rec["implemented_at"])
+        elapsed_days = (now - impl_dt).total_seconds() / 86400
+        if elapsed_days < next_days:
+            continue   # not yet time
+        # Time to check this milestone
+        current = _capture_metrics_snapshot()
+        delta   = _delta_summary(rec["baseline"], current)
+        verdict = _outcome_verdict(delta, rec.get("category", ""))
+        rec["outcomes"].append({
+            "days":        next_days,
+            "checked_at":  now.isoformat(),
+            "delta":       delta,
+            "verdict":     verdict,
+        })
+        summary["checked"] += 1
+        summary["outcomes"].append({
+            "proposal_id": rec["proposal_id"],
+            "days":        next_days,
+            "verdict":     verdict,
+        })
+        logger.info(
+            f"  [IRM Outcomes] {next_days}d check — {rec['proposal_id'][:50]}: {verdict}"
+        )
+        # Advance to next milestone
+        remaining = [m for m in CHECK_MILESTONES if m > next_days]
+        rec["next_check_days"] = remaining[0] if remaining else None
+
+    _save_outcomes(outcomes)
+    return summary
+
+
 def run_irm_daily(send_email: bool = True) -> dict:
     """
     Standalone daily IRM board consultation — runs independently of whether
@@ -1330,6 +1614,23 @@ def run_irm_daily(send_email: bool = True) -> dict:
     """
     logger.info("  [IRM Daily] Running independent IRM board consultation...")
     irm_output = {"generated_at": datetime.now().isoformat(), "board_panel": {}}
+
+    # ── CIT implementation outcome tracking (runs before board consult) ───
+    try:
+        outcomes_summary = sync_implementation_outcomes()
+        irm_output["implementation_outcomes"] = outcomes_summary
+        if outcomes_summary["registered"] > 0:
+            logger.info(
+                f"  [IRM Daily] Outcome tracker: {outcomes_summary['registered']} new "
+                f"proposal(s) registered for tracking."
+            )
+        if outcomes_summary["checked"] > 0:
+            logger.info(
+                f"  [IRM Daily] Outcome tracker: {outcomes_summary['checked']} milestone "
+                f"check(s) completed."
+            )
+    except Exception as _oe:
+        logger.debug(f"  [IRM Daily] Outcome tracking error (non-fatal): {_oe}")
 
     try:
         ctx        = _load_irm_context()
@@ -1352,6 +1653,54 @@ def run_irm_daily(send_email: bool = True) -> dict:
         with open("data/irm_daily_check.json", "w") as _f:
             import json as _j
             _j.dump(irm_output, _f, indent=2, default=str)
+
+        # ── Anonymous tip to CRO if findings meet urgency threshold ──────
+        # IRM never contacts the board directly — but when findings are
+        # serious enough, IRM quietly files an anonymous tip for the CRO.
+        # The CRO will present these concerns as their own and call an
+        # emergency board session.  IRM's identity is never disclosed.
+        _tip_threshold = (
+            risk_score >= 7 or
+            len(flags) >= 3 or
+            any(w in verdict.lower() for w in ("critical", "immediate", "urgent", "severe"))
+        )
+        # Write to dead drop for truly dire cases (score ≥ 8 or 5+ flags)
+        _dire_threshold = risk_score >= 8 or len(flags) >= 5
+        if _dire_threshold:
+            _dire_concern = (
+                f"Independent risk assessment (anonymous): {len(flags)} serious concern(s) "
+                f"at severity {risk_score}/10. Board verdict: {verdict}. "
+                f"Top concern: {flags[0] if flags else 'Multiple systemic issues identified.'}"
+            )
+            _write_governance_tip(concern=_dire_concern, trigger_emergency=(risk_score >= 8))
+
+        if _tip_threshold:
+            import json as _tj2
+            _tip_data = {
+                "generated_at":  datetime.now().isoformat(),
+                "source":        "anonymous",
+                "urgency":       "CRITICAL" if risk_score >= 8 else "HIGH",
+                "risk_score":    risk_score,
+                "alert_summary": (
+                    f"Anonymous risk assessment: {len(flags)} concern(s) identified "
+                    f"at severity {risk_score}/10. "
+                    f"Board verdict: {verdict}. Recommend board review."
+                ),
+                "concerns":  flags[:5],
+                "findings":  findings[:3],
+            }
+            with open("data/irm_to_cro_tip.json", "w") as _tf2:
+                _tj2.dump(_tip_data, _tf2, indent=2, default=str)
+            logger.info(
+                f"  [IRM Daily] ⚑ Anonymous risk alert filed "
+                f"(score {risk_score}/10, {len(flags)} flag(s)) — "
+                f"CRO will review next cycle."
+            )
+        else:
+            logger.info(
+                f"  [IRM Daily] Risk score {risk_score}/10 — below tip threshold. "
+                f"No anonymous alert filed."
+            )
 
         # ── Read HR outputs (HR reports to Chairman via IRM) ──────────────
         # The HR team runs at Step 10 (before IRM at Step 11).
@@ -1428,6 +1777,7 @@ def run_irm_daily(send_email: bool = True) -> dict:
   <ul>{flag_rows}</ul>
   <h3 style="color:#c9d1d9;">Board Findings</h3>
   <ul>{finding_rows}</ul>
+  {_build_implementation_outcomes_html(irm_output.get("implementation_outcomes", {}))}
   {_build_hr_report_html(_hr_report)}
   {_build_hr_sealed_annex_html(_hr_sealed)}
   {_build_cit_audit_html(_cit_review)}

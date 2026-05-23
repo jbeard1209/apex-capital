@@ -115,8 +115,9 @@ class SectorResearchAgent:
 
     def _fundamentals(self, ticker: str) -> dict:
         try:
-            info = yf.Ticker(ticker).info
-            return {
+            t    = yf.Ticker(ticker)
+            info = t.info
+            result = {
                 "forward_pe":     info.get("forwardPE"),
                 "revenue_growth": info.get("revenueGrowth"),
                 "profit_margins": info.get("profitMargins"),
@@ -126,6 +127,10 @@ class SectorResearchAgent:
                 "current_price":  info.get("currentPrice") or info.get("regularMarketPrice"),
                 "beta":           info.get("beta"),
             }
+            # Explicitly release the Ticker object so its internal SQLite cache
+            # connection is closed promptly rather than waiting for GC.
+            del t
+            return result
         except Exception:
             return {"short_name": ticker}
 
@@ -258,6 +263,22 @@ class SectorResearchAgent:
     # ------------------------------------------------------------------
 
     def run(self) -> dict:
+        # Read coaching note from HR/performance ledger at cycle start
+        _coaching_note = None
+        try:
+            from performance_ledger import get_coaching_note
+            _coaching_note = get_coaching_note(f"Agent {self.agent_id}")
+            if not _coaching_note:
+                # Also try sector-based agent name
+                _coaching_note = get_coaching_note(self.sector_name)
+            if _coaching_note:
+                logger.info(
+                    f"  [Agent {self.agent_id}] HR coaching note received: "
+                    f"{_coaching_note[:80]}..."
+                )
+        except Exception:
+            pass
+
         logger.info(
             f"  [Agent {self.agent_id} — {self.sector_name}] "
             f"Analysing {len(self.watchlist)} tickers..."
@@ -312,6 +333,19 @@ class SectorResearchAgent:
             f"  [Agent {self.agent_id} — {self.sector_name}] "
             f"→ {len(recommendations)} pick(s) from {len(scored)} analysed"
         )
+
+        # Record picks in performance ledger
+        try:
+            from performance_ledger import record_pick
+            for _rec in recommendations:
+                record_pick(
+                    agent=f"Agent {self.agent_id} ({self.sector_name})",
+                    ticker=_rec["ticker"],
+                    conviction=_rec["conviction"],
+                    prediction_type=_rec.get("action", "BUY"),
+                )
+        except Exception:
+            pass
 
         return {
             "agent_id":           self.agent_id,

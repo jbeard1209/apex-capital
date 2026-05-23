@@ -97,8 +97,8 @@ class TradeHistorianAgent:
                         r = d.get("manager_rationale", [])
                         if t and r:
                             rationale_map[t].extend(r)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.warning(f"  [Trade Historian] Error loading manager rationale: {_e}")
 
         # Group buys by ticker (FIFO queue)
         buy_queues: dict[str, list[dict]] = defaultdict(list)
@@ -689,7 +689,7 @@ def _build_html_report(report: dict) -> str:
 
   <p style="color:#484f58;font-size:11px;margin-top:28px;border-top:1px solid #21262d;padding-top:12px;">
     Apex Capital Intelligence — Historical Trade Review Team &nbsp;·&nbsp;
-    Paper trading simulation — not real investment advice &nbsp;·&nbsp;
+    Apex Capital — Proprietary Trading &nbsp;·&nbsp;
     Generated {now}
   </p>
 </body></html>"""

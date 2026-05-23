@@ -57,6 +57,7 @@ logger = logging.getLogger("hr_agent")
 HR_REPORT_PATH      = "data/hr_report.json"
 HR_IRM_SEALED_PATH  = "data/hr_irm_sealed.json"   # sealed — IRM never reads this
 HR_HISTORY_PATH     = "data/hr_history.json"
+CIT_HR_MEMO_PATH    = "data/cit_hr_memo.json"     # CIT context channel — read before evaluating streaks
 
 # The IRM is evaluated by HR but the evaluation is sealed from him.
 # It is written to HR_IRM_SEALED_PATH as a base64-encoded blob and passed
@@ -343,9 +344,11 @@ class HRPerformanceOfficer:
         cit_evening = _safe_load("data/cit_evening_report.json")
         # Pick the most recent non-empty report for metric extraction
         _cit_latest = cit_evening if cit_evening.get("generated_at") else cit_morning
+        def _cit_count(val):
+            return val if isinstance(val, int) else len(val) if val else 0
         cit_proposals_total = (
-            len(_cit_latest.get("board_proposals", []))
-            + len(_cit_latest.get("backlog", []))
+            _cit_count(_cit_latest.get("board_proposals", 0))
+            + _cit_count(_cit_latest.get("backlog", 0))
         )
         # Freshness: Director should have run within 14 hours (twice-daily cadence)
         cit_is_fresh = False
@@ -374,6 +377,23 @@ class HRPerformanceOfficer:
         cro_complete    = bool(risk_bulletin.get("risk_level"))
         cvar_non_zero   = (risk_bulletin.get("cvar_95") or 0) != 0
 
+        # ── CIT HR memo: exoneration context for zero-pick agents ─────────
+        # CIT cross-references canary + CRO + sector assignments and writes
+        # this memo so HR doesn't penalise agents for market-condition blockages.
+        cit_memo = _safe_load(CIT_HR_MEMO_PATH)
+        exonerated_classes = {
+            e.get("class_name") for e in cit_memo.get("exonerated", [])
+        }
+        cit_buys_blocked = cit_memo.get("buys_blocked", False)
+        cit_canary       = cit_memo.get("canary_level", "UNKNOWN")
+        cit_cro          = cit_memo.get("cro_level", "UNKNOWN")
+
+        if cit_memo:
+            logger.info(
+                f"  [HRPO] CIT memo loaded — canary={cit_canary}, CRO={cit_cro}, "
+                f"buys_blocked={cit_buys_blocked}, exonerated agents: {len(exonerated_classes)}"
+            )
+
         for agent in agents:
             cn     = agent.get("class_name", "?")
             status = agent.get("status", "active")
@@ -383,8 +403,17 @@ class HRPerformanceOfficer:
             issues  = []
             metrics = {}
 
+            # ── CIT Sub-agents evaluated separately below; skip here ──────
+            # CIT sub-agents have output_completeness=True but their findings
+            # are embedded in the CIT Director report, not individual output files.
+            # Evaluating them via context_outputs gives a false CONCERN every cycle.
+            _CIT_SUB_AGENTS = frozenset({
+                "CITCodeInspector", "CITPipelineMonitor",
+                "CITStrategyAnalyst", "CITArchitectureAdvisor",
+            })
+
             # ── Context agents ────────────────────────────────────────────
-            if goals.get("output_completeness"):
+            if goals.get("output_completeness") and cn not in _CIT_SUB_AGENTS:
                 produced = context_outputs.get(cn, False)
                 metrics["output_produced"] = produced
                 if not produced:
@@ -414,7 +443,21 @@ class HRPerformanceOfficer:
                     "target_approval_rate": target_rate,
                 })
 
-                if czc >= tolerance * 2:
+                if czc >= tolerance and cn in exonerated_classes:
+                    # CIT has cross-referenced canary + CRO + sector assignments
+                    # and confirmed this agent is blocked by market conditions,
+                    # not underperforming. Do not penalise — log the context instead.
+                    exon_reasons = next(
+                        (e.get("exoneration_reasons", []) for e in cit_memo.get("exonerated", [])
+                         if e.get("class_name") == cn), []
+                    )
+                    metrics["cit_exonerated"] = True
+                    metrics["exoneration_reasons"] = exon_reasons
+                    issues.append(
+                        f"[CIT EXONERATED] {czc} zero-pick cycles — confirmed market-condition blockage "
+                        f"({'; '.join(exon_reasons) or 'see cit_hr_memo.json'}). No performance action warranted."
+                    )
+                elif czc >= tolerance * 2:
                     rating = "CONCERN"
                     issues.append(
                         f"{czc} consecutive zero-pick cycles "
@@ -998,6 +1041,207 @@ def run_hr_review(send_email: bool = False) -> dict:
     logger.info(f"\n  Action required: {len(action_required)} agent(s)")
     logger.info(f"  Firm health score: {firm_health}/10")
     logger.info("=" * 65)
+
+    # Broadcast workforce health to firm channel + report up to CIT Director
+    try:
+        from firm_channel import post as _fc_post, post_task_request as _fc_task
+        _flagged = [a.get("agent","?") for a in action_required[:5]]
+        _prio = "HIGH" if firm_health < 6 or len(action_required) > 5 else "NORMAL"
+        _fc_post(
+            "HR Agent", "PIPELINE_ALERT",
+            f"Workforce check complete: {report.get('agents_reviewed',0)} agents evaluated. "
+            f"Firm health {firm_health}/10. "
+            f"Action required: {len(action_required)} agent(s)"
+            + (f" [{', '.join(_flagged)}]" if _flagged else "") + ".",
+            priority=_prio,
+        )
+        for ag in action_required[:3]:
+            # BUG FIX: action_required items use "hrpo_rating" not "rating",
+            # and "issues" (list) not "issue" (string)
+            _rating = ag.get("hrpo_rating", "?")
+            _issue_str = "; ".join(ag.get("issues", [])[:1])
+            _fc_post(
+                "HR Agent", "PIPELINE_ALERT",
+                f"FLAGGED: {ag.get('agent','?')} — {_rating}: {_issue_str[:100]}",
+                priority="HIGH" if _rating == "CONCERN" else "NORMAL",
+            )
+
+        # Report up to CIT Director (HR's supervisor)
+        _flagged_str = (", ".join(_flagged) + " flagged for action. ") if _flagged else ""
+        _hr_summary = (
+            f"HR workforce review complete. "
+            f"Firm health: {firm_health}/10. "
+            f"{report.get('agents_reviewed', 0)} agents evaluated. "
+            f"{_flagged_str}"
+            f"Full report: data/hr_report.json"
+        )
+        _task_prio = "HIGH" if firm_health < 6 or len(action_required) > 3 else "NORMAL"
+        _fc_task(
+            "HR Agent", "CIT Director",
+            _hr_summary,
+            priority=_task_prio,
+        )
+    except Exception:
+        pass
+
+    # ── Domain Learning Phase ─────────────────────────────────────────────
+    # HR reads each agent's recent outputs before writing coaching notes,
+    # so notes reflect actual domain context rather than generic feedback.
+    _domain_context = {}
+    try:
+        _domain_files = {
+            "Manager Agent":        "data/manager_decisions.json",
+            "Chief of Staff":       "data/chief_of_staff_report.json",
+            "Risk Manager":         "data/risk_manager_report.json",
+            "CIT Director":         "data/cit_morning_report.json",
+            "R&D Team Leader":      "data/research_team_report.json",
+            "Earnings Predictor":   "data/earnings_predictions.json",
+            "International Analyst":"data/international_report.json",
+            "Canary Agent":         "data/canary_state.json",
+        }
+        for _agent_name, _path in _domain_files.items():
+            if os.path.exists(_path):
+                try:
+                    with open(_path) as _df:
+                        _raw = json.load(_df)
+                    # Extract domain-relevant summary for coaching context
+                    if _agent_name == "Manager Agent":
+                        _decisions = _raw if isinstance(_raw, list) else _raw.get("decisions", [])
+                        _recent = _decisions[-10:] if isinstance(_decisions, list) else []
+                        # BUG FIX: manager decisions use "manager_action"/"manager_decision" keys,
+                        # not "action"/"decision" — wrong keys always produced count of 0
+                        _domain_context[_agent_name] = {
+                            "recent_decisions": len(_recent),
+                            "buy_count":   sum(1 for d in _recent if d.get("manager_action") in ("BUY_NEW", "ADD")),
+                            "trim_count":  sum(1 for d in _recent if d.get("manager_action") in ("TRIM", "SELL")),
+                            "reject_count":sum(1 for d in _recent if d.get("manager_decision") == "REJECTED"),
+                        }
+                    elif _agent_name == "Risk Manager":
+                        _domain_context[_agent_name] = {
+                            "risk_level":    _raw.get("risk_level", "?"),
+                            "risk_score":    _raw.get("risk_score", "?"),
+                            "n_flags":       len(_raw.get("risk_flags_summary", [])),
+                            "concentration": [f.get("ticker") for f in
+                                              _raw.get("concentration", {}).get("flags", [])[:3]],
+                        }
+                    elif _agent_name == "R&D Team Leader":
+                        _summ = _raw.get("summary", {})
+                        _recs = _raw.get("recommendations", [])
+                        _domain_context[_agent_name] = {
+                            "total_picks":     len(_recs),
+                            "high_conviction": sum(1 for r in _recs if r.get("conviction", 0) >= 4),
+                            "sectors_covered": _summ.get("sectors_covered", "?"),
+                            "top_picks":       [r.get("ticker") for r in _recs[:5]],
+                        }
+                    elif _agent_name == "CIT Director":
+                        _board_q = _raw.get("board_queue", [])
+                        _domain_context[_agent_name] = {
+                            "proposals_pending": len(_board_q),
+                            "high_priority":     sum(1 for p in _board_q if p.get("priority") == "HIGH"),
+                            "sessions_run":      _raw.get("sessions_run", "?"),
+                        }
+                    else:
+                        _domain_context[_agent_name] = {"loaded": True}
+                except Exception:
+                    pass
+        logger.info(f"  [HR] Domain learning complete — context loaded for {len(_domain_context)} agents")
+    except Exception as _dl_e:
+        logger.debug(f"  [HR] Domain learning error (non-fatal): {_dl_e}")
+
+    # ── Performance Ledger integration ────────────────────────────────────
+    # Record HR self-evaluation and write coaching notes using domain context.
+    try:
+        from performance_ledger import record_self_evaluation, write_coaching_note, get_agent_stats
+
+        # Record HR Agent's own self-evaluation (cycle summary)
+        _hr_summary = (
+            f"HR review cycle {hr_history.get('cycles_evaluated', 0)}. "
+            f"Agents reviewed: {len(agents)}. Firm health: {firm_health}/10. "
+            f"Action required: {len(action_required)} agent(s). "
+            f"HRPO: {hrpo_summary}. HRDO: {hrdo_summary}."
+        )
+        record_self_evaluation("HR Agent", _hr_summary)
+
+        # Write coaching notes for underperforming agents (NOTICE / CONCERN)
+        for _cn, _r in hrpo_ratings.items():
+            _rating = _r.get("rating", "PASS")
+            if _rating in ("NOTICE", "CONCERN"):
+                _issues = "; ".join(_r.get("issues", [])[:3])
+                _dev = hrdo_assessments.get(_cn, {})
+                _dev_plan = "; ".join(_dev.get("development_plan", [])[:2])
+                # Enrich coaching note with actual domain context for this agent
+                _ctx = _domain_context.get(_cn, {})
+                _ctx_note = ""
+                if _cn == "Manager Agent" and _ctx:
+                    _ctx_note = (
+                        f" Last cycle: {_ctx.get('buy_count',0)} buys, "
+                        f"{_ctx.get('trim_count',0)} trims, "
+                        f"{_ctx.get('reject_count',0)} rejected. "
+                        f"Focus on position sizing discipline and stop-loss adherence."
+                    )
+                elif _cn == "Risk Manager" and _ctx:
+                    # BUG FIX: _ctx['concentration'] is a list of ticker strings (already
+                    # extracted as [f.get("ticker") for f in ...[:3]]), filter out None values
+                    _conc_tickers = [t for t in _ctx.get("concentration", []) if t]
+                    _ctx_note = (
+                        f" Current risk level: {_ctx.get('risk_level','?')} "
+                        f"({_ctx.get('n_flags',0)} active flags). "
+                        f"Concentrated positions: {', '.join(_conc_tickers) or 'none'}."
+                    )
+                elif _cn == "R&D Team Leader" and _ctx:
+                    _ctx_note = (
+                        f" Last cycle: {_ctx.get('total_picks',0)} picks, "
+                        f"{_ctx.get('high_conviction',0)} high-conviction (4★+). "
+                        f"Top picks: {', '.join(_ctx.get('top_picks',[])[:3])}. "
+                        f"Review conviction calibration against outcomes."
+                    )
+                _note = (
+                    f"HR coaching ({datetime.now().strftime('%Y-%m-%d')}): "
+                    f"Performance rating {_rating}. Issues: {_issues}."
+                    + (f" Development plan: {_dev_plan}." if _dev_plan else "")
+                    + _ctx_note
+                )
+                write_coaching_note(_cn, _note)
+                logger.info(f"  [HR] Coaching note written for {_cn} ({_rating})")
+                # Log to issue tracker so underperformance gets tracked to resolution
+                try:
+                    import issue_tracker as _it
+                    _it.log_issue(
+                        reporter="HR Agent",
+                        title=f"Agent underperformance: {_cn} rated {_rating}",
+                        description=f"Issues: {_issues}. Development plan: {_dev_plan}",
+                        severity="HIGH" if _rating == "CONCERN" else "MEDIUM",
+                        category="PERFORMANCE",
+                        auto_fix_hint=f"Review coaching note written for {_cn}. CoS to follow up.",
+                    )
+                except Exception as _it_err:
+                    logger.debug(f"  [HR] Issue tracker log error (non-fatal): {_it_err}")
+
+        # Also write notes for overperforming agents (PASS streak ≥ 5 cycles)
+        for _cn, _rec in hr_history.get("agent_records", {}).items():
+            _hist = _rec.get("rating_history", [])
+            if len(_hist) >= 5 and all(r == "PASS" for r in _hist[-5:]):
+                # Only write if no recent coaching note
+                _stats = get_agent_stats(_cn)
+                if not _stats.get("coaching_notes"):
+                    write_coaching_note(
+                        _cn,
+                        f"HR coaching ({datetime.now().strftime('%Y-%m-%d')}): "
+                        f"Excellent streak — 5+ consecutive PASS ratings. "
+                        f"Consider broadening coverage or mentoring newer agents. "
+                        f"Win rate: {_stats.get('win_rate', 0):.0%}."
+                    )
+
+    except Exception as _ledger_e:
+        logger.debug(f"  [HR] Performance ledger update error (non-fatal): {_ledger_e}")
+
+    # Add Performance Ledger section to report
+    try:
+        from performance_ledger import get_all_agent_stats
+        report["performance_ledger"] = get_all_agent_stats()
+    except Exception:
+        pass
+
     return report
 
 
