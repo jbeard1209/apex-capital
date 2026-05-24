@@ -101,13 +101,34 @@ def buffer_email(subject: str, html_body: str, sender_name: str = "",
 def flush_digest(force: bool = False) -> bool:
     """
     Compile all buffered emails into one daily digest and send it.
-    Called at 6 PM EDT by cron. Pass force=True to send even if buffer is empty.
+    Called at 7 PM EDT by cron. Pass force=True to send even if buffer is empty.
+
+    Deduplication: if the same subject appears multiple times (e.g. because an
+    agent ran hourly and buffered a report each run), only the MOST RECENT entry
+    for that subject is included.  This prevents digest bloat when pipelines run
+    more than once per day.
     """
     buffer = _load_buffer()
 
     if not buffer and not force:
         logger.info("  [EmailBuffer] No buffered emails — digest skipped.")
         return True
+
+    # ── Deduplicate by subject (keep most recent) ─────────────────────────────
+    # Walk in reverse order so the last-seen subject wins (most recent run).
+    seen_subjects: set = set()
+    deduped = []
+    for item in reversed(buffer):
+        subj = item.get("subject", "")
+        # Normalize: strip IRM-review prefix for matching, so an R&D briefing
+        # and its IRM review are treated as distinct reports.
+        if subj not in seen_subjects:
+            seen_subjects.add(subj)
+            deduped.append(item)
+    buffer = list(reversed(deduped))  # restore chronological order
+    dupes_removed = len(_load_buffer()) - len(buffer)
+    if dupes_removed > 0:
+        logger.info(f"  [EmailBuffer] Removed {dupes_removed} duplicate report(s) before digest")
 
     today = datetime.now().strftime("%A, %B %d, %Y")
     count = len(buffer)
