@@ -104,8 +104,14 @@ def _log_age_hours(log_prefix: str) -> float | None:
             return age
     return None
 
-def _run_job(script: str, extra_args: list[str], dry_run: bool = False) -> bool:
-    """Run a pipeline job and return True on success."""
+def _run_job(script: str, log_prefix: str, extra_args: list[str], dry_run: bool = False) -> bool:
+    """
+    Run a pipeline job and write output to that job's own dated log file
+    (e.g. logs/fi_pipeline_20260524.log).  This is important: the staleness
+    check in _log_age_hours() reads that same file, so if output went to
+    recovery.log instead, the job would be considered stale on the very next
+    30-minute check and run again — causing an infinite loop.
+    """
     cmd = [PYTHON, str(BASE_DIR / script)] + extra_args
     logger.info(f"[Recovery] Running: {' '.join(cmd)}")
 
@@ -113,24 +119,40 @@ def _run_job(script: str, extra_args: list[str], dry_run: bool = False) -> bool:
         logger.info("[Recovery] DRY RUN — skipping actual execution")
         return True
 
-    log_path = LOGS_DIR / f"recovery_{_today()}.log"
+    # Write to the job's own dated log file (same naming as crontab)
+    job_log  = LOGS_DIR / f"{log_prefix}_{_today()}.log"
+    recovery_log = LOGS_DIR / f"recovery_{_today()}.log"
     try:
-        with open(log_path, "a") as lf:
-            lf.write(f"\n{'='*60}\n[{datetime.now().isoformat()}] {' '.join(cmd)}\n{'='*60}\n")
-            lf.flush()
-            result = subprocess.run(
+        with open(job_log, "a") as jf, open(recovery_log, "a") as rf:
+            header = f"\n{'='*60}\n[{datetime.now().isoformat()}] RECOVERY RUN: {' '.join(cmd)}\n{'='*60}\n"
+            jf.write(header)
+            rf.write(header)
+            jf.flush()
+            rf.flush()
+            # Use subprocess.PIPE and tee manually to both files
+            proc = subprocess.Popen(
                 cmd,
                 cwd=str(BASE_DIR),
-                stdout=lf,
+                stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                timeout=600,  # 10-minute max per job
             )
-        success = result.returncode == 0
-        status  = "✓ OK" if success else f"✗ exit {result.returncode}"
+            for line in proc.stdout:
+                jf.write(line.decode("utf-8", errors="replace"))
+                rf.write(line.decode("utf-8", errors="replace"))
+                jf.flush()
+                rf.flush()
+            proc.wait(timeout=600)
+            returncode = proc.returncode
+        success = returncode == 0
+        status  = "✓ OK" if success else f"✗ exit {returncode}"
         logger.info(f"[Recovery] {script} — {status}")
         return success
     except subprocess.TimeoutExpired:
         logger.warning(f"[Recovery] {script} timed out (10 min) — skipping")
+        try:
+            proc.kill()
+        except Exception:
+            pass
         return False
     except Exception as e:
         logger.error(f"[Recovery] {script} failed: {e}")
@@ -243,7 +265,7 @@ def run_recovery(force: bool = False, dry_run: bool = False, check_only: bool = 
         age_str = f"{age:.1f}h old" if age is not None else "no log"
         logger.info(f"[Recovery] STALE {script} ({age_str}, limit={max_stale_h}h) — running now")
 
-        success = _run_job(script, extra_args, dry_run=dry_run)
+        success = _run_job(script, log_prefix, extra_args, dry_run=dry_run)
         if success:
             ran.append(script)
         else:

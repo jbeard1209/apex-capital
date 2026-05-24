@@ -303,19 +303,35 @@ def _size_positions(approved_picks: list[dict]) -> list[dict]:
 
 
 def _send_daily_email(summary: dict) -> None:
+    """
+    Buffer the First Eagle daily summary for the 7 PM evening digest.
+
+    Uses the email_buffer system so all pod reports arrive in one consolidated
+    email instead of separate messages throughout the day.  A sentinel file
+    (data/fe_email_sent_YYYY-MM-DD.flag) prevents duplicate buffering if this
+    function is called more than once on the same calendar day.
+    """
+    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    sentinel = DATA_DIR / f"fe_email_sent_{date_str}.flag"
+
+    # Guard: only buffer once per calendar day
+    if sentinel.exists():
+        logger.info("[Pipeline] Daily email already buffered for %s — skipping duplicate", date_str)
+        return
+
     approved    = summary.get("approved_count", 0)
     filtered    = summary.get("filtered_count", 0)
     total_picks = summary.get("total_rd_picks", 0)
     positions   = summary.get("sized_positions", [])
 
     lines = [
-        "Apex Capital -- First Eagle Lane 4 Daily Pipeline",
+        "Apex Capital — First Eagle Lane 4 Daily Pipeline",
         f"Date: {summary.get('generated_at', 'unknown')}",
         "",
         f"R&D agents run: {summary.get('agents_run', 10)}/10",
         f"Total picks from R&D agents: {total_picks}",
-        f"Picks with IV calculated: {summary.get('iv_enriched_count', 0)}",
-        f"Filtered (MoS > 25% + BUY verdict): {summary.get('board_queue_count', 0)}",
+        f"Picks with IV (Intrinsic Value) calculated: {summary.get('iv_enriched_count', 0)}",
+        f"Filtered — MoS (Margin of Safety) > 25% + BUY verdict: {summary.get('board_queue_count', 0)}",
         f"Board approved: {approved}",
         f"Board rejected/held: {filtered}",
         "",
@@ -339,28 +355,24 @@ def _send_daily_email(summary: dict) -> None:
         lines.append("")
 
     lines += [
-        "Position sizing: MoS>=40% -> $1000 | MoS>=30% -> $750 | MoS>=25% -> $500",
-        "Gold miners: $750 target (15% lane allocation)",
+        "Position sizing: MoS>=40% -> $1,000 | MoS>=30% -> $750 | MoS>=25% -> $500",
+        "Gold miners (GLD, GDX etc.): $750 target (15% of lane allocation)",
         "",
-        "First Eagle Philosophy: First Eagle absolute return. Margin of safety only.",
-        "Lane capital: $5,000 | Max position: $1,000 (20%) | Gold target: $750 (15%)",
-        "-- Apex Capital First Eagle Pipeline",
+        "First Eagle philosophy: absolute return, margin of safety only.",
+        "Lane capital: $5,000 | Max single position: $1,000 (20%) | Gold target: $750 (15%)",
+        "— Apex Capital First Eagle Pipeline",
     ]
 
     body = "\n".join(lines)
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Apex Capital -- First Eagle Lane 4 Daily"
-    msg["From"]    = EMAIL_SENDER
-    msg["To"]      = EMAIL_RECIPIENT
-    msg.attach(MIMEText(body, "plain", "ascii"))
+    subject = f"Apex Capital — First Eagle Lane 4 Daily | {date_str}"
 
     try:
-        with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT) as server:
-            server.login(EMAIL_SENDER, APP_PASSWORD)
-            server.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, msg.as_string())
-        logger.info("[Pipeline] Daily email sent.")
+        from email_buffer import buffer_email
+        buffer_email(subject, body, sender_name="FE Pipeline")
+        sentinel.touch()
+        logger.info("[Pipeline] Daily email buffered for evening digest.")
     except Exception as e:
-        logger.error(f"[Pipeline] Failed to send email: {e}")
+        logger.error(f"[Pipeline] Failed to buffer daily email: {e}")
 
 
 
