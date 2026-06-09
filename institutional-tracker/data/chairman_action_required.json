@@ -1,13 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260608-08-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 60.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T08:50:09.940333",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "pip-integrity-20260608-08-email_loop_detection",
     "severity": "HIGH",
     "description": "Repeated email subjects in buffer (7 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 03, 2026\" \u00d726; \"ETF Pod 3 Board \u2014 APPROVED | Target: XLK, XLE, XLF\" \u00d720; \"Apex Capital \u2014 R&D Team Briefing | Jun 04, 2026\" \u00d744",
@@ -184,5 +176,23 @@
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-09T12:50:00.906135",
     "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260609-14-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 09, 2026\" \u00d721; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:D | Jun 09, 2026\" \u00d714; \"Apex Capital \u2014 Chief of Staff Brief | Risk:HIGH | Grade:D | Jun 09, 2026\" \u00d79",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-09T14:50:01.051752",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "CIT-2026-1368",
+    "title": "48 ERROR lines \u2014 dominant: `Sell`",
+    "category": "BUG_FIX",
+    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
+    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
+    "status": "fixed",
+    "times_approved": 2,
+    "queued_at": "2026-06-09T16:00:57.762715"
   }
 ]

@@ -1,93 +1,93 @@
 {
-  "generated_at": "2026-06-09T12:01:33.332466",
+  "generated_at": "2026-06-09T16:00:05.030396",
   "total_findings": 2,
   "queue_depth": 0,
-  "backlog_depth": 1118,
-  "approved_total": 299,
+  "backlog_depth": 1121,
+  "approved_total": 301,
   "agent_stats": {
     "CITCodeInspector": {
-      "total_findings": 32087,
+      "total_findings": 32191,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:30.731754"
+      "last_run": "2026-06-09T16:00:01.811527"
     },
     "CITPipelineMonitor": {
-      "total_findings": 962,
+      "total_findings": 964,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:30.801259"
+      "last_run": "2026-06-09T16:00:01.991366"
     },
     "CITStrategyAnalyst": {
-      "total_findings": 276,
+      "total_findings": 277,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:30.808986"
+      "last_run": "2026-06-09T16:00:02.036456"
     },
     "CITArchitectureAdvisor": {
-      "total_findings": 1615,
+      "total_findings": 1621,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:30.809606"
+      "last_run": "2026-06-09T16:00:02.039927"
     },
     "CITThinkTank": {
-      "total_findings": 1143,
+      "total_findings": 1148,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:30.810636"
+      "last_run": "2026-06-09T16:00:02.046281"
     },
     "CITDataQualityAnalyst": {
-      "total_findings": 692,
+      "total_findings": 694,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:33.299612"
+      "last_run": "2026-06-09T16:00:04.990911"
     },
     "CITProposalValidator": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T12:01:33.301301"
+      "last_run": "2026-06-09T16:00:04.992534"
     },
     "CITSelfImprovement": {
-      "total_findings": 452,
+      "total_findings": 454,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:03.439207"
+      "last_run": "2026-06-09T12:01:33.334246"
     },
     "CITSecurityMonitor": {
       "total_findings": 137,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:03.933655"
+      "last_run": "2026-06-09T12:01:33.589176"
     },
     "CIT Watchdog": {
       "total_findings": 13097,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:04.310175"
+      "last_run": "2026-06-09T12:01:33.703718"
     },
     "CIT Trading Auditor": {
-      "total_findings": 13499,
+      "total_findings": 13561,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:03.987312"
+      "last_run": "2026-06-09T12:01:33.612333"
     },
     "CIT Risk Auditor": {
-      "total_findings": 7069,
+      "total_findings": 7101,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:04.056312"
+      "last_run": "2026-06-09T12:01:33.642208"
     },
     "CIT Infra Auditor": {
-      "total_findings": 8733,
+      "total_findings": 8773,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:04.102516"
+      "last_run": "2026-06-09T12:01:33.661238"
     },
     "CIT Integration Auditor": {
-      "total_findings": 221,
+      "total_findings": 222,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-09T10:00:04.120458"
+      "last_run": "2026-06-09T12:01:33.669535"
     }
   },
   "findings": [
@@ -97,8 +97,8 @@
       "severity": "MEDIUM",
       "confidence": 80,
       "title": "96% of CIT bug proposals lack precise evidence \u2014 quality degradation",
-      "description": "468 of 487 BUG_FIX/DATA_QUALITY proposals (96%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
-      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 468/487 bug proposals vague",
+      "description": "471 of 490 BUG_FIX/DATA_QUALITY proposals (96%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
+      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 471/490 bug proposals vague",
       "proposed_fix": "Each CIT agent's analyze() method should be reviewed. BUG_FIX findings must include a specific file:line, metric, or data path. VISION/IMPROVEMENT proposals may be qualitative.",
       "auto_implementable": false
     },

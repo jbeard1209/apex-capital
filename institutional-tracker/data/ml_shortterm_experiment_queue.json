@@ -1,0 +1,8 @@
+{
+  "description": "Queue of ML experiments to run on the short-term (20-day) model. Each entry is processed by the overnight ML runner. Results are logged in ml_improvement_log.json.",
+  "target_model": "shortterm",
+  "target_horizon_days": 20,
+  "baseline_auc": 0.5316,
+  "threshold_auc": 0.55,
+  "queue": []
+}

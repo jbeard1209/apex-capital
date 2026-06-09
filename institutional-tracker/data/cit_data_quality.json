@@ -1,25 +1,14 @@
 {
-  "generated_at": "2026-06-09T12:01:33.298348",
-  "total_findings": 3,
+  "generated_at": "2026-06-09T16:00:04.986684",
+  "total_findings": 2,
   "findings": [
-    {
-      "agent": "CITDataQualityAnalyst",
-      "category": "BUG_FIX",
-      "severity": "MEDIUM",
-      "confidence": 75,
-      "title": "earnings_predictions: beat_rate None for all 41 tickers",
-      "description": "yfinance is not returning historical EPS beat rate data. beat_rate is used to adjust BEAT/MISS conviction \u2014 None means it falls back to base reasoning only.",
-      "evidence": "data/earnings_predictions.json: all 41 entries have beat_rate=null",
-      "proposed_fix": "Check yfinance earningsHistory availability; fall back to SEC EDGAR or a fixed historical beat-rate average per sector.",
-      "auto_implementable": false
-    },
     {
       "agent": "CITDataQualityAnalyst",
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 85,
       "title": "None score in sector_assignments.json (8 sector(s))",
-      "description": "Sectors assigned with None scores: ['Regional Banks', 'Technology', 'Cybersecurity', 'Semiconductors', 'Defense & Aerospace', 'Real Estate', 'Cloud & SaaS', 'Healthcare']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
+      "description": "Sectors assigned with None scores: ['Cybersecurity', 'Regional Banks', 'Technology', 'Financials', 'Cloud & SaaS', 'Semiconductors', 'Defense & Aerospace', 'Real Estate']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
       "evidence": "data/sector_assignments.json: 8 assignments with score=None",
       "proposed_fix": "In rd_team_leader.py: filter out sectors with None scores before ranking. Treat None as score=0 or skip entirely.",
       "auto_implementable": false

@@ -4459,7 +4459,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `Sell` (2/3 sampled). Locate the call site in logs/run'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-F93BBB",
@@ -4470,7 +4470,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-B1B03E",
@@ -4481,7 +4481,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-4A7EAA",
@@ -4492,6 +4492,60 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-30AE6F",
+    "ts": "2026-06-09T16:00:49.760452",
+    "proposal_id": "CIT-2026-1368",
+    "proposal_title": "48 ERROR lines \u2014 dominant: `Sell`",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `Sell` (2/3 sampled). Locate the call site in logs/run'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
     "status": "PENDING"
+  },
+  {
+    "id": "CLR-3BC383",
+    "ts": "2026-06-09T16:00:49.760452",
+    "proposal_id": "CIT-2026-1368",
+    "proposal_title": "48 ERROR lines \u2014 dominant: `Sell`",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-558410",
+    "ts": "2026-06-09T16:00:49.760452",
+    "proposal_id": "CIT-2026-1368",
+    "proposal_title": "48 ERROR lines \u2014 dominant: `Sell`",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-DDBACB",
+    "ts": "2026-06-09T16:00:49.760452",
+    "proposal_id": "CIT-2026-1368",
+    "proposal_title": "48 ERROR lines \u2014 dominant: `Sell`",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "PENDING"
+  },
+  {
+    "proposal_id": "CIT-2026-1430",
+    "proposal_title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+    "question": "Board requires verifiable evidence before voting on this VISION proposal. Please provide: (1) specific file:line references or data metrics that justify the change, (2) quantified impact (e.g. '3 ERROR/day', '$2,400 cost', '12% miss rate'), (3) exact implementation steps with code locations. Current submission lacks concrete evidence the board can verify.",
+    "asked_by": "Main Board",
+    "source": "main_board",
+    "round": 1,
+    "status": "PENDING",
+    "asked_at": "2026-06-09T16:00:57.699241"
   }
 ]

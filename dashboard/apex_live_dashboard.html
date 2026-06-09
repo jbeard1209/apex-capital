@@ -207,6 +207,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="tab" onclick="showTab('activity')">⚡ Activity</div>
   <div class="tab" onclick="showTab('riskintel')">🛡️ Risk Intel</div>
   <div class="tab" onclick="showTab('board')">🏛️ Board</div>
+  <div class="tab" onclick="showTab('teaching')">🎓 Teaching</div>
 </div>
 
 <!-- ═══════════════════════════ OVERVIEW ═══════════════════════════ -->
@@ -702,6 +703,86 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <tbody id="board-hr-tbody"></tbody>
         </table>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ TEACHING ═══════════════════════════ -->
+<div id="tab-teaching" class="content">
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="justify-content:center">Current Day</div>
+      <div style="font-size:28px;font-weight:700;color:var(--green)" id="teach-day">—</div>
+      <div style="font-size:11px;color:var(--text2)">of 90</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="justify-content:center">Days Completed</div>
+      <div style="font-size:28px;font-weight:700" id="teach-completed">—</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="justify-content:center">Learning Streak</div>
+      <div style="font-size:28px;font-weight:700;color:var(--orange)" id="teach-streak">—</div>
+      <div style="font-size:11px;color:var(--text2)">consecutive days</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title"><div class="dot g"></div>Today's Lesson</div>
+    <div id="teach-lesson-header" style="margin-bottom:10px;padding:10px;background:var(--bg);border-radius:6px">
+      <div style="font-size:13px;font-weight:700;color:var(--green)" id="teach-topic">Loading...</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px" id="teach-teacher">—</div>
+      <div style="font-size:12px;margin-top:8px" id="teach-description">—</div>
+    </div>
+    <div style="margin-top:10px">
+      <div style="font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);margin-bottom:6px">Key Concepts</div>
+      <div id="teach-concepts" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot b"></div>30-Minute Session Plan</div>
+      <div id="teach-plan" class="scroll" style="max-height:300px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot r"></div>Quiz Questions</div>
+      <div id="teach-quiz" class="scroll" style="max-height:300px"></div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot g"></div>Mastery Map</div>
+      <div id="teach-mastery" class="scroll" style="max-height:260px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot r"></div>Reinforcement Flags</div>
+      <div id="teach-struggles" style="padding:6px 0"></div>
+      <div style="font-size:11px;color:var(--text2);margin-top:8px" id="teach-director-notes"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="dot b"></div>ML Live Picks — Real-World Test (ST Model, 20-day horizon)</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div style="text-align:center">
+        <div style="font-size:11px;color:var(--text2)">Total Picks</div>
+        <div style="font-size:22px;font-weight:700" id="ml-picks-total">—</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:11px;color:var(--text2)">Hit Rate</div>
+        <div style="font-size:22px;font-weight:700;color:var(--green)" id="ml-picks-hitrate">—</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:11px;color:var(--text2)">Avg Return</div>
+        <div style="font-size:22px;font-weight:700" id="ml-picks-avgret">—</div>
+      </div>
+    </div>
+    <div class="scroll" style="max-height:280px">
+      <table>
+        <thead><tr><th>Ticker</th><th>Pick Date</th><th>Evaluate After</th><th>ML Score</th><th>Entry</th><th>Exit</th><th>Return</th><th>Status</th></tr></thead>
+        <tbody id="ml-picks-tbody"></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -1981,6 +2062,153 @@ function renderBoard(data) {
   }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text2)">No HR data</td></tr>';
 }
 
+// ── Teaching Division ─────────────────────────────────────────────────────
+function renderTeaching(data) {
+  const lesson   = data.teaching_lesson   || {};
+  const progress = data.teaching_progress || {};
+  const picks    = data.ml_live_picks     || {};
+
+  // Header stats
+  setText('teach-day',       progress.current_day || '1');
+  setText('teach-completed', (progress.completed_days||[]).length);
+  setText('teach-streak',    progress.streak_days || '0');
+
+  // Lesson card
+  const teacherMap = {
+    FinanceFundamentals:   'Prof. Harrington — Finance Fundamentals',
+    InvestmentBanking:     'Prof. Callahan — Investment Banking',
+    MarketsMicrostructure: 'Prof. Chen — Markets & Microstructure',
+    PortfolioManagement:   'Prof. Okafor — Portfolio Management',
+  };
+  setText('teach-topic',       lesson.topic       || 'No lesson generated yet — run teaching_division.py to begin');
+  setText('teach-teacher',     teacherMap[lesson.teacher] || (lesson.teacher || '—'));
+  setText('teach-description', lesson.description || '—');
+
+  // Key concepts pills
+  const conceptsEl = $('teach-concepts');
+  conceptsEl.innerHTML = '';
+  (lesson.key_concepts || []).forEach(c => {
+    const pill = document.createElement('span');
+    pill.style.cssText = 'background:var(--card);border:1px solid var(--border);padding:3px 10px;border-radius:12px;font-size:11px;color:var(--text)';
+    pill.textContent = c;
+    conceptsEl.appendChild(pill);
+  });
+
+  // Session plan
+  const planEl = $('teach-plan');
+  const plan = lesson.session_plan || [];
+  if (plan.length) {
+    planEl.innerHTML = plan.map(step =>
+      `<div style="padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--green);font-size:11px;font-weight:700">[${step.minute} min]</span>
+        <span style="font-weight:600;margin-left:6px">${step.segment}</span>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px">${step.content}</div>
+      </div>`
+    ).join('');
+  } else {
+    planEl.innerHTML = '<div style="color:var(--text2);padding:12px">Run <code>python3 teaching_division.py</code> to generate today\'s lesson.</div>';
+  }
+
+  // Quiz
+  const quizEl = $('teach-quiz');
+  const quiz = lesson.quiz || [];
+  if (quiz.length) {
+    quizEl.innerHTML = quiz.map((q, i) =>
+      `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="font-weight:600;font-size:12px">Q${i+1}: ${q.q}</div>
+        <details style="margin-top:6px">
+          <summary style="font-size:11px;color:var(--text2);cursor:pointer">Show answer</summary>
+          <div style="font-size:11px;margin-top:4px;color:var(--green)">${q.a}</div>
+        </details>
+      </div>`
+    ).join('');
+  } else {
+    quizEl.innerHTML = '<div style="color:var(--text2);padding:12px">No quiz yet.</div>';
+  }
+
+  // Mastery map
+  const masteryEl = $('teach-mastery');
+  const mastery = progress.mastery || {};
+  const masteryItems = Object.entries(mastery).sort((a,b) => b[1]-a[1]);
+  if (masteryItems.length) {
+    masteryEl.innerHTML = masteryItems.map(([concept, score]) => {
+      const color = score >= 80 ? 'var(--green)' : score >= 60 ? 'var(--orange)' : 'var(--red)';
+      const pct = Math.min(score, 100);
+      return `<div style="padding:5px 0">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span>${concept}</span><span style="color:${color};font-weight:700">${score}/100</span>
+        </div>
+        <div style="background:var(--border);border-radius:3px;height:4px">
+          <div style="background:${color};width:${pct}%;height:4px;border-radius:3px"></div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    masteryEl.innerHTML = '<div style="color:var(--text2);padding:8px">No quiz results yet — mastery map builds as you complete lessons.</div>';
+  }
+
+  // Struggle flags
+  const struggleEl = $('teach-struggles');
+  const struggles = progress.struggle_flags || [];
+  if (struggles.length) {
+    struggleEl.innerHTML = struggles.map(s =>
+      `<span style="display:inline-block;background:rgba(255,80,80,.15);border:1px solid var(--red);color:var(--red);padding:3px 10px;border-radius:12px;font-size:11px;margin:3px">${s}</span>`
+    ).join('');
+  } else {
+    struggleEl.innerHTML = '<span style="color:var(--green);font-size:12px">No struggling topics — all clear.</span>';
+  }
+
+  // Director notes
+  setText('teach-director-notes', lesson.director_notes || '');
+
+  // ML Live Picks
+  const allPicks = picks.picks || [];
+  const evaluated = allPicks.filter(p => p.status === 'evaluated');
+  const hitRate = evaluated.length
+    ? (evaluated.filter(p => p.correct_direction).length / evaluated.length * 100).toFixed(1)
+    : null;
+  const avgRet = evaluated.length
+    ? (evaluated.reduce((s,p) => s + (p.return_pct||0), 0) / evaluated.length).toFixed(2)
+    : null;
+
+  setText('ml-picks-total', allPicks.length || '0');
+  setText('ml-picks-hitrate', hitRate ? hitRate + '%' : '—');
+  const avgRetEl = $('ml-picks-avgret');
+  if (avgRet !== null) {
+    avgRetEl.textContent = avgRet + '%';
+    avgRetEl.style.color = parseFloat(avgRet) >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    avgRetEl.textContent = '—';
+  }
+
+  const tbody = $('ml-picks-tbody');
+  const recentPicks = allPicks.slice(-50).reverse();
+  if (recentPicks.length) {
+    tbody.innerHTML = recentPicks.map(p => {
+      const retStr = p.return_pct != null ? (p.return_pct >= 0 ? '+' : '') + p.return_pct + '%' : '—';
+      const retColor = p.return_pct != null ? (p.return_pct >= 0 ? 'var(--green)' : 'var(--red)') : 'inherit';
+      const statusColor = p.status === 'evaluated' ? (p.correct_direction ? 'var(--green)' : 'var(--red)') : 'var(--text2)';
+      return `<tr>
+        <td style="font-weight:700">${p.ticker||'—'}</td>
+        <td>${p.pick_date||'—'}</td>
+        <td>${p.evaluate_after||'—'}</td>
+        <td>${p.ml_score != null ? p.ml_score.toFixed(3) : '—'}</td>
+        <td>${p.entry_price != null ? '$'+p.entry_price.toFixed(2) : '—'}</td>
+        <td>${p.exit_price  != null ? '$'+p.exit_price.toFixed(2)  : '—'}</td>
+        <td style="color:${retColor};font-weight:700">${retStr}</td>
+        <td style="color:${statusColor}">${p.status||'—'}</td>
+      </tr>`;
+    }).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2)">No live picks yet — run ml_live_test_runner.py to start tracking.</td></tr>';
+  }
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
 // Hook the new tabs into renderAll
 const _origRenderAll = renderAll;
 renderAll = function(d) {
@@ -1990,6 +2218,7 @@ renderAll = function(d) {
   renderActivity(d.data||{});
   renderRiskIntel(d.data||{});
   renderBoard(d.data||{});
+  renderTeaching(d.data||{});
 };
 
 // ── Auto-refresh ───────────────────────────────────────────────────────────

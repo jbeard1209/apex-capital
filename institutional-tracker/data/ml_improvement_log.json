@@ -1,0 +1,4 @@
+{
+  "description": "Log of every ML improvement experiment. Each entry records the idea, whether it was promoted or failed, and AUC before/after.",
+  "entries": []
+}

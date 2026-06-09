@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-06-09T12:01:30.800167",
-  "canary_level": "ORANGE",
-  "cro_level": "ELEVATED",
+  "generated_at": "2026-06-09T16:00:01.987429",
+  "canary_level": "GREEN",
+  "cro_level": "HIGH",
   "buys_blocked": true,
   "assigned_sectors": [
     "cloud & saas",
     "cybersecurity",
     "defense & aerospace",
-    "healthcare",
+    "financials",
     "real estate",
     "regional banks",
     "semiconductors",
@@ -20,7 +20,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -29,7 +29,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -38,7 +38,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -47,7 +47,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -56,7 +56,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -65,7 +65,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -74,7 +74,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -83,7 +83,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -92,268 +92,268 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CommunicationsMediaAgent",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "HistoricalContextAnalyst",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "SystemPerformanceAnalyst",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "GeopoliticalRiskAnalyst",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITDirector",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITCodeInspector",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITPipelineMonitor",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITStrategyAnalyst",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITArchitectureAdvisor",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "MacroPolicyHistorian",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "HRPerformanceOfficer",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "HRDevelopmentOfficer",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "DividendYieldAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "IPOMomentumAgent",
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 10,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "ValueOpportunityAgent",
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 10,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "InternationalEmergingAgent",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "MacroRatesSensitivityAgent",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "QuantFactorScreenerAgent",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "EarningsCatalystAgent",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "ShortInterestMonitorAgent",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "OptionsFlowMonitorAgent",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "ExecutionAuditorAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "SmallCapGrowthAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "BiotechResearchAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "MacroRegimeMonitorAgent",
-      "consecutive_zero_cycles": 12,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "TechnicalPatternAgent",
-      "consecutive_zero_cycles": 12,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "DividendDefensiveAgent",
-      "consecutive_zero_cycles": 11,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "MicroCapAlphaAgent",
-      "consecutive_zero_cycles": 11,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "GlobalMacroETFAgent",
       "consecutive_zero_cycles": 10,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "TechnicalPatternAgent",
+      "consecutive_zero_cycles": 10,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "DividendDefensiveAgent",
+      "consecutive_zero_cycles": 9,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "MicroCapAlphaAgent",
+      "consecutive_zero_cycles": 9,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "GlobalMacroETFAgent",
+      "consecutive_zero_cycles": 13,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     }
   ],
@@ -364,7 +364,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -373,7 +373,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -382,7 +382,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -391,7 +391,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -400,7 +400,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -409,7 +409,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -418,7 +418,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -427,7 +427,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -436,268 +436,268 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CommunicationsMediaAgent",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "HistoricalContextAnalyst",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "SystemPerformanceAnalyst",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "GeopoliticalRiskAnalyst",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITDirector",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITCodeInspector",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITPipelineMonitor",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITStrategyAnalyst",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "CITArchitectureAdvisor",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "MacroPolicyHistorian",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "HRPerformanceOfficer",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "HRDevelopmentOfficer",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "DividendYieldAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "IPOMomentumAgent",
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 10,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "ValueOpportunityAgent",
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 10,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "InternationalEmergingAgent",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "MacroRatesSensitivityAgent",
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 9,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "QuantFactorScreenerAgent",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "EarningsCatalystAgent",
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 13,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "ShortInterestMonitorAgent",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "OptionsFlowMonitorAgent",
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 12,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "ExecutionAuditorAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "SmallCapGrowthAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "BiotechResearchAgent",
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 11,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
       "class_name": "MacroRegimeMonitorAgent",
-      "consecutive_zero_cycles": 12,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "TechnicalPatternAgent",
-      "consecutive_zero_cycles": 12,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "DividendDefensiveAgent",
-      "consecutive_zero_cycles": 11,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "MicroCapAlphaAgent",
-      "consecutive_zero_cycles": 11,
-      "status": "reassigned",
-      "role": "",
-      "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
-      ]
-    },
-    {
-      "class_name": "GlobalMacroETFAgent",
       "consecutive_zero_cycles": 10,
       "status": "reassigned",
       "role": "",
       "exoneration_reasons": [
-        "canary=ORANGE (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "TechnicalPatternAgent",
+      "consecutive_zero_cycles": 10,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "DividendDefensiveAgent",
+      "consecutive_zero_cycles": 9,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "MicroCapAlphaAgent",
+      "consecutive_zero_cycles": 9,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+      ]
+    },
+    {
+      "class_name": "GlobalMacroETFAgent",
+      "consecutive_zero_cycles": 13,
+      "status": "reassigned",
+      "role": "",
+      "exoneration_reasons": [
+        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     }
   ],

@@ -1,41 +1,34 @@
-[
-  {
-    "action": "SELL",
-    "ticker": "QQQ",
-    "qty": 11,
-    "price": 716.07,
-    "dollar_value": 7876.77,
-    "reason": "QQQ removed from rotation \u2014 not in board's approved ETF list.",
-    "status": "executed",
-    "fill_price": 716.07,
-    "executed_at": "2026-06-09T11:18:19.275307"
+{
+  "generated_at": "2026-06-09T20:45:01.331233",
+  "pod": "pod3_macro",
+  "board_vote": "APPROVED",
+  "target_holdings": [
+    "XLK",
+    "QQQ",
+    "XLV"
+  ],
+  "orders": [
+    {
+      "action": "BUY",
+      "ticker": "QQQ",
+      "qty": 7,
+      "price": 707.83,
+      "dollar_value": 4954.81,
+      "reason": "QQQ added to rotation. momentum_score=3.54, ret_1m=-0.5%, RSI=51.6, trend=bullish."
+    }
+  ],
+  "risk_flags": [],
+  "risk_officer_acknowledged": true,
+  "risk_officer_vote": "APPROVE",
+  "risk_officer_note": "Risk Officer flags logged and acknowledged. Execution proceeds per board governance: Director + Strategist majority overrides Risk Officer vote.",
+  "regime_context": {
+    "label": "neutral",
+    "vix": 20.0,
+    "spy_rsi": 50.0,
+    "spy_1d_return": -0.2854,
+    "overbought": false,
+    "warning_count": 0
   },
-  {
-    "action": "SELL",
-    "ticker": "XLV",
-    "qty": 54,
-    "price": 152.65,
-    "dollar_value": 8243.1,
-    "reason": "XLV removed from rotation \u2014 not in board's approved ETF list.",
-    "status": "submit_failed",
-    "error": "{\"available\":\"33\",\"code\":40310000,\"existing_qty\":\"33\",\"held_for_orders\":\"0\",\"message\":\"insufficient qty available for order (requested: 54, available: 33)\",\"symbol\":\"XLV\"}"
-  },
-  {
-    "action": "BUY",
-    "ticker": "XLE",
-    "qty": 0,
-    "price": 0.0,
-    "dollar_value": 0.0,
-    "reason": "XLE in target list but price unavailable \u2014 skipped.",
-    "skipped": true
-  },
-  {
-    "action": "BUY",
-    "ticker": "XLF",
-    "qty": 0,
-    "price": 0.0,
-    "dollar_value": 0.0,
-    "reason": "XLF in target list but price unavailable \u2014 skipped.",
-    "skipped": true
-  }
-]
+  "canary_alerts": null,
+  "emergency_revote": false
+}

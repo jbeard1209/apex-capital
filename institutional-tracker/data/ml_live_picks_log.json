@@ -1,0 +1,6 @@
+{
+  "description": "Real-world live pick tracking for the ST model. Each pick is entered on the pick date and evaluated after 20 days. Results feed back into model improvement.",
+  "model": "shortterm",
+  "horizon_days": 20,
+  "picks": []
+}

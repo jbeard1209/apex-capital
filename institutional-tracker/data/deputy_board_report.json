@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T12:01:38.149003",
+  "generated_at": "2026-06-09T16:00:49.752417",
   "dry_run": false,
   "proposals_reviewed": 1,
   "approved_count": 0,
@@ -9,8 +9,8 @@
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "CIT-2026-1367",
-      "title": "43 ERROR lines \u2014 dominant: `Sell`",
+      "proposal_id": "CIT-2026-1368",
+      "title": "48 ERROR lines \u2014 dominant: `Sell`",
       "severity": "HIGH",
       "category": "BUG_FIX",
       "passed": false,

@@ -1,20 +1,20 @@
 {
-  "timestamp": "2026-06-08T12:53:08.033977",
+  "timestamp": "2026-06-09T16:00:07.028085",
   "session_type": "EMERGENCY",
   "convened_by": "CRO",
   "alert": {
     "raised_by": "Chief Risk Officer",
     "urgency": "HIGH",
-    "risk_score": 5,
-    "summary": "Anonymous risk assessment: 3 concern(s) identified at severity 5/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+    "risk_score": 7,
+    "summary": "Anonymous risk assessment: 3 concern(s) identified at severity 7/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
     "concerns": [
       "DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated portfolio risk is HIGH. Shiller: complacency at fundamental highs is a classic late-cycle signal. Soros reflexivity: prices can remain irrational while risk accumulates silently.",
-      "CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spreads typically widen simultaneously, reducing cross-asset diversification. Equity-only portfolios lose their correlation buffer precisely when it is most needed (Ilmanen, 'Expected Returns').",
-      "IRM Daily Board \u2014 output is 136h old (threshold: 26h). Agent may have missed a cycle."
+      "FACTOR CONCENTRATION \u2014 Tech/Growth: 42% of R&D picks. Fama-French: factor tilts amplify both upside AND downside. In a rate-shock (2022 analogue), tech-heavy portfolios experienced -35% to -70% drawdowns. Recommend capping tech at 40.0%.",
+      "CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spreads typically widen simultaneously, reducing cross-asset diversification. Equity-only portfolios lose their correlation buffer precisely when it is most needed (Ilmanen, 'Expected Returns')."
     ],
     "findings": [
-      "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-66,618) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-      "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-39,760) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+      "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-66,556) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+      "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-39,723) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
       "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
     ]
   },
@@ -23,8 +23,8 @@
       "agent": "Manager Agent",
       "role": "Capital Allocation & Execution",
       "positions": [
-        "The CRO has raised an urgent risk alert (score 5/10). I am suspending all new position opens effective immediately until this session produces a resolution.",
-        "CRO flagged 3 specific concern(s): DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated p; CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spr; IRM Daily Board \u2014 output is 136h old (threshold: 26h). Agent may have missed a c"
+        "The CRO has raised an urgent risk alert (score 7/10). I am suspending all new position opens effective immediately until this session produces a resolution.",
+        "CRO flagged 3 specific concern(s): DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated p; FACTOR CONCENTRATION \u2014 Tech/Growth: 42% of R&D picks. Fama-French: factor tilts ; CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spr"
       ],
       "actions": [
         {
@@ -71,7 +71,7 @@
       "agent": "Risk Manager",
       "role": "Portfolio Risk & Compliance",
       "positions": [
-        "This alert is consistent with the portfolio risk picture I see: score 5/10 with 3 flagged concern(s). I fully support the buy halt and have verified our current VaR and concentration metrics are within bounds \u2014 but only just."
+        "This alert is consistent with the portfolio risk picture I see: score 7/10 with 3 flagged concern(s). I fully support the buy halt and have verified our current VaR and concentration metrics are within bounds \u2014 but only just."
       ],
       "actions": [
         {
@@ -94,7 +94,7 @@
       "agent": "Independent Risk Manager",
       "role": "Governance & Independent Oversight",
       "positions": [
-        "The CRO's concern is credible and well-founded. The risk score of 5/10 combined with the specific concerns raised justifies an emergency session. I support immediate action.",
+        "The CRO's concern is credible and well-founded. The risk score of 7/10 combined with the specific concerns raised justifies an emergency session. I support immediate action.",
         "From a governance perspective: this session validates that the firm's risk escalation mechanisms are functioning. The CRO acted correctly by convening the board. I recommend we record this session as a positive governance precedent."
       ],
       "actions": [
@@ -221,7 +221,7 @@
         "id": "PAUSE_NEW_BUYS"
       }
     ],
-    "timestamp": "2026-06-08T12:53:07.985500",
+    "timestamp": "2026-06-09T16:00:06.945630",
     "dry_run": false
   }
 }

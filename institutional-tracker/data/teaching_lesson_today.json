@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-06-09T16:46:13.862208",
+  "session_day": 1,
+  "student": "Jack Beard",
+  "teacher": "FinanceFundamentals",
+  "topic": "The Three Financial Statements",
+  "description": "How the P&L, balance sheet, and cash flow statement connect. Build intuition for how a single transaction flows through all three.",
+  "key_concepts": [
+    "revenue recognition",
+    "accrual vs. cash accounting",
+    "retained earnings link"
+  ],
+  "is_review": false,
+  "is_apex_bridge": false,
+  "warmup_topic": null,
+  "reinforcement_flags": [],
+  "session_plan": [
+    {
+      "minute": "0\u201315",
+      "segment": "Core Teaching",
+      "content": "Teacher delivers 'The Three Financial Statements'. Concepts covered: revenue recognition, accrual vs. cash accounting, retained earnings link. Uses concrete examples and analogies, not jargon."
+    },
+    {
+      "minute": "15\u201322",
+      "segment": "Worked Example",
+      "content": "Teacher walks through a numerical example or real-world case study applying the concepts."
+    },
+    {
+      "minute": "22\u201327",
+      "segment": "Jack's Turn",
+      "content": "Jack attempts to answer 1\u20132 application questions before seeing the answers. Teacher coaches rather than corrects."
+    },
+    {
+      "minute": "27\u201330",
+      "segment": "Quiz & Wrap-up",
+      "content": "2\u20133 quiz questions. Score recorded. Director updates mastery map. Preview of next session."
+    }
+  ],
+  "quiz": [
+    {
+      "q": "In your own words, what is the most important takeaway from today's topic: 'The Three Financial Statements'?",
+      "a": "Open-ended \u2014 teacher evaluates based on key concepts being present in the answer."
+    }
+  ],
+  "director_notes": "On track. Keep the pace.",
+  "lesson_text": "[Prof. Harrington \u2014 Finance Fundamentals \u2014 Head of Valuation & Accounting]\n\nToday's Topic: The Three Financial Statements\n\nHow the P&L, balance sheet, and cash flow statement connect. Build intuition for how a single transaction flows through all three.\n\nKey Concepts We Will Master Today:\n  \u2022 revenue recognition\n  \u2022 accrual vs. cash accounting\n  \u2022 retained earnings link\n\nProf. Harrington's Opening:\nLet me start with a question: why does a highly profitable company sometimes run out of cash? The answer is the foundation of everything we cover today. Keep that question in mind as we work through the material \u2014 by the end of the session, you will answer it with precision."
+}
