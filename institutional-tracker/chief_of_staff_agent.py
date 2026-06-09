@@ -3161,6 +3161,21 @@ def _triage_attention(intel: dict, health: dict) -> list[dict]:
                       "requires_chairman": True,
                       "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
 
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
     # BUG FIX: this block was duplicated 20 times, flooding attention_items with
     # 19 duplicate ELEVATED entries every cycle — only one check is correct.
     if health["risk_level"] == "ELEVATED":

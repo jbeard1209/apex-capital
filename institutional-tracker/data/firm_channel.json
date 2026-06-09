@@ -1,77 +1,5 @@
 [
   {
-    "ts": "2026-06-04T21:46:32.428730",
-    "date": "2026-06-04",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 91.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-04T21:46:32.673266",
-    "date": "2026-06-04",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] 50 ERROR lines \u2014 dominant: `known`: The last 24-48h of logs contain 50 ERROR-level entries (1358 WARNINGs). Most frequent error class: `known` (2 of 3 sampl",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-04T21:46:38.377306",
-    "date": "2026-06-04",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 3 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-04T22:03:47.293451",
-    "date": "2026-06-04",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 0 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 89.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-04T22:15:28.245747",
-    "date": "2026-06-04",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-04T22:44:58.435610",
-    "date": "2026-06-04",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-04T23:11:50.513969",
-    "date": "2026-06-04",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-04T23:40:11.190377",
-    "date": "2026-06-04",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-05T00:10:52.941550",
-    "date": "2026-06-05",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-05T00:38:26.343130",
     "date": "2026-06-05",
     "agent": "R&D Team Leader",
@@ -3993,6 +3921,78 @@
   },
   {
     "ts": "2026-06-09T13:24:11.418738",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T13:44:40.701008",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T13:44:40.706441",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T13:44:40.711736",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T13:45:39.194344",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T13:45:39.206487",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 12 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T13:45:39.218277",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T14:05:50.220886",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T14:05:50.227776",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 13 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T14:05:50.233030",
     "date": "2026-06-09",
     "agent": "HR Agent",
     "category": "TASK_REQUEST",

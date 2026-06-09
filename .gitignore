@@ -7,6 +7,7 @@
 *.env
 config_local.py
 institutional-tracker/.env
+CREDENTIALS.md
 
 # ── Python ───────────────────────────────────────────────────────────────────
 __pycache__/

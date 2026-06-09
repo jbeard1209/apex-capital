@@ -36983,11 +36983,43 @@
     "from_agent": "Board Meeting",
     "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
     "urgency": "NORMAL",
-    "status": "PENDING"
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-09T13:44:40.475422"
   },
   {
     "id": "CMR-5950EC",
     "ts": "2026-06-09T13:30:03.675474",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-09T13:44:40.526060"
+  },
+  {
+    "id": "CMR-0D2C7A",
+    "ts": "2026-06-09T13:44:42.368349",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-09T13:45:38.841127"
+  },
+  {
+    "id": "CMR-9664E0",
+    "ts": "2026-06-09T13:45:41.390445",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-09T14:05:49.995573"
+  },
+  {
+    "id": "CMR-D0F935",
+    "ts": "2026-06-09T14:05:52.359752",
     "from_agent": "Board Meeting",
     "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
     "urgency": "NORMAL",
