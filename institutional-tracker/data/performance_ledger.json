@@ -1,78 +1,6 @@
 {
   "picks": [
     {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "NVDA",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:39:15.575681"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "ADBE",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:39:15.603191"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:39:15.620812"
-    },
-    {
-      "agent": "Agent 7 (Defense & Aerospace)",
-      "ticker": "GD",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:39:18.931161"
-    },
-    {
-      "agent": "Agent 7 (Defense & Aerospace)",
-      "ticker": "RTX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:39:18.959301"
-    },
-    {
-      "agent": "Agent 7 (Defense & Aerospace)",
-      "ticker": "HII",
-      "conviction": 3,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:39:18.976636"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AMAT",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:59:30.389715"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AVGO",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:59:30.416254"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "TXN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T01:59:30.434049"
-    },
-    {
       "agent": "Agent 2 (Biotech)",
       "ticker": "NBIX",
       "conviction": 5,
@@ -15999,6 +15927,78 @@
       "prediction_type": "BUY_NEW",
       "acted_on": null,
       "ts": "2026-06-09T16:00:47.658226"
+    },
+    {
+      "agent": "Agent 1 (Cybersecurity)",
+      "ticker": "TENB",
+      "conviction": 5,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:20:13.990233"
+    },
+    {
+      "agent": "Agent 1 (Cybersecurity)",
+      "ticker": "CRWD",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:20:14.989758"
+    },
+    {
+      "agent": "Agent 1 (Cybersecurity)",
+      "ticker": "PANW",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:20:16.309992"
+    },
+    {
+      "agent": "Agent 2 (Regional Banks)",
+      "ticker": "USB",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:20:45.995852"
+    },
+    {
+      "agent": "Agent 2 (Regional Banks)",
+      "ticker": "TFC",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:20:47.158999"
+    },
+    {
+      "agent": "Agent 2 (Regional Banks)",
+      "ticker": "CFG",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:20:47.989248"
+    },
+    {
+      "agent": "Agent 3 (Technology)",
+      "ticker": "ORCL",
+      "conviction": 5,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:21:41.773859"
+    },
+    {
+      "agent": "Agent 3 (Technology)",
+      "ticker": "NOW",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:21:42.415526"
+    },
+    {
+      "agent": "Agent 3 (Technology)",
+      "ticker": "AAPL",
+      "conviction": 4,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-09T18:21:42.812877"
     }
   ],
   "outcomes": [],
@@ -16497,6 +16497,11 @@
       "agent": "HR Agent",
       "text": "HR review cycle 165. Agents reviewed: 38. Firm health: 9.7/10. Action required: 1 agent(s). HRPO: {'PASS': 35, 'WATCH': 0, 'NOTICE': 0, 'CONCERN': 1}. HRDO: {'DEVELOPING': 35, 'WATCH': 0, 'NEEDS_SUPPORT': 1}.",
       "ts": "2026-06-09T16:51:25.262668"
+    },
+    {
+      "agent": "HR Agent",
+      "text": "HR review cycle 166. Agents reviewed: 38. Firm health: 9.9/10. Action required: 0 agent(s). HRPO: {'PASS': 35, 'WATCH': 1, 'NOTICE': 0, 'CONCERN': 0}. HRDO: {'DEVELOPING': 35, 'WATCH': 1, 'NEEDS_SUPPORT': 0}.",
+      "ts": "2026-06-09T18:37:08.468325"
     }
   ],
   "coaching": {

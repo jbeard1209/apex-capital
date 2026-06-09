@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T16:00:49.752417",
+  "generated_at": "2026-06-09T18:15:04.733727",
   "dry_run": false,
   "proposals_reviewed": 1,
   "approved_count": 0,
@@ -9,51 +9,51 @@
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "CIT-2026-1368",
-      "title": "48 ERROR lines \u2014 dominant: `Sell`",
-      "severity": "HIGH",
+      "proposal_id": "CIT-2026-1449",
+      "title": "Agent zero-pick streaks: 2 exonerated, 0 genuine concern \u2014 HR memo written",
+      "severity": "MEDIUM",
       "category": "BUG_FIX",
       "passed": false,
       "classification": "NEEDS_INFO",
-      "approves": 3,
+      "approves": 2,
       "rejects": 0,
       "defers": 0,
-      "clarifies": 4,
+      "clarifies": 5,
       "votes": [
         {
           "deputy": "Deputy Manager",
-          "vote": "CLARIFY",
-          "rationale": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `Sell` (2/3 sampled). Locate the call site in logs/run'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
+          "vote": "APPROVE",
+          "rationale": "[MEDIUM/88%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "APPROVE",
-          "rationale": "No risk control exposure \u2014 evidence checks out."
+          "vote": "CLARIFY",
+          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
         },
         {
           "deputy": "Deputy CIT Director",
           "vote": "CLARIFY",
-          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
+          "rationale": "Evidence for 'Agent zero-pick streaks: 2 exonerated, 0 genuine concern \u2014 H' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
         },
         {
           "deputy": "Deputy Chief of Staff",
-          "vote": "APPROVE",
-          "rationale": "HIGH priority with verified evidence \u2014 within deputy mandate, CoS supports."
+          "vote": "CLARIFY",
+          "rationale": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric."
         },
         {
           "deputy": "Deputy IRM",
-          "vote": "APPROVE",
-          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
+          "vote": "CLARIFY",
+          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
         },
         {
           "deputy": "Deputy R&D Leader",
-          "vote": "CLARIFY",
-          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
+          "vote": "APPROVE",
+          "rationale": "No research pipeline exposure \u2014 fix is specific and evidence is present."
         },
         {
           "deputy": "Deputy Operations Director",
           "vote": "CLARIFY",
-          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
+          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
         }
       ]
     }

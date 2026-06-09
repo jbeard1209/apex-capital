@@ -180,5 +180,15 @@
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-09T16:50:01.192637",
     "status": "awaiting_chairman"
+  },
+  {
+    "id": "CIT-2026-1449",
+    "title": "Agent zero-pick streaks: 2 exonerated, 0 genuine concern \u2014 HR memo written",
+    "category": "BUG_FIX",
+    "description": "2 agent(s) have \u22654 consecutive zero-pick cycles. CIT diagnosis: 2 are exonerated (buys blocked system-wide by canary=GREEN/CRO=HIGH, or sector not assigned this cycle). 0 show genuine underperformance with no mitigating factor. Full context written to data/cit_hr_memo.json for HR to read.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-09T18:46:30.320460"
   }
 ]

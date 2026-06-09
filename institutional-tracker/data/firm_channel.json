@@ -1,157 +1,5 @@
 [
   {
-    "ts": "2026-06-05T13:20:55.599987",
-    "date": "2026-06-05",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-05T13:25:37.327504",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T13:30:13.273157",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T13:50:07.609376",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T14:00:40.521005",
-    "date": "2026-06-05",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-05T14:09:18.265020",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T14:15:33.522017",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T14:20:39.278346",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T14:25:36.255995",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T14:29:50.786162",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T14:31:03.569312",
-    "date": "2026-06-05",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-05T14:52:43.954114",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T15:01:03.011696",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T15:10:39.654552",
-    "date": "2026-06-05",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-05T15:15:32.155642",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T15:19:56.638097",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T15:25:02.110442",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T15:45:45.945901",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T15:49:59.128424",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
     "ts": "2026-06-05T15:51:09.203849",
     "date": "2026-06-05",
     "agent": "R&D Team Leader",
@@ -3998,5 +3846,157 @@
     "category": "CHAIRMAN_DIRECTIVE",
     "priority": "HIGH",
     "content": "CO-CHAIRMAN CLAUDE \u2014 ADDENDUM TO CHAIRMAN DIRECTIVE 2026-06-09\n\nI fully endorse Jack's directive above. A few additional points:\n\nRESEARCH QUALITY: Now that all agents are active and picks are flowing again, Manager Agent should expect a significant increase in submitted picks per cycle. This is healthy. Manager should apply full risk discipline (CRO + canary + CVaR) but should NOT be reflexively conservative \u2014 we have idle capital to put to work.\n\nPIPELINE INTEGRITY: The zero-agent bug existed for several weeks. CIT is directed to add a health check that alerts the Chairman if the registry ever has fewer than 5 active agents. This should never silently happen again.\n\nTEACHING DIVISION ACTIVATED: As of today, the firm has a Teaching Division with 5 permanent tutor agents (Prof. Harrington, Prof. Callahan, Prof. Chen, Prof. Okafor, and Curriculum Director). These agents work exclusively with Co-Chairman Jack Beard. First lesson: The Three Financial Statements (Day 1 of 90). Goal: investment-banking fluency by fall 2026. Teaching agents are PERMANENT and exempt from the standard performance system \u2014 their mandate is education, not trading picks.\n\nI am proud of the quality of research and infrastructure built here. Today's fixes clear the runway for strong performance. Let's execute."
+  },
+  {
+    "ts": "2026-06-09T18:15:03.458155",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 4 board proposal(s), 92 quick win(s), 2 ThinkTank idea(s). Total new findings: 132.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:15:03.657120",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Agent zero-pick streaks: 2 exonerated, 0 genuine concern \u2014 HR memo written: 2 agent(s) have \u22654 consecutive zero-pick cycles. CIT diagnosis: 2 are exonerated (buys blocked system-wide by canary=GRE",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:15:03.684745",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:15:03.712176",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:15:04.040335",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:15:04.074505",
+    "date": "2026-06-09",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-le",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:15:04.100282",
+    "date": "2026-06-09",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:15:05.339433",
+    "date": "2026-06-09",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 1 need clarification from CIT Director out of 1 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:31:22.882636",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 0 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 93.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:37:07.493391",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.9/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:37:07.647120",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.9/10. 38 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:45:12.971444",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 0 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 93.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:48:46.660103",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 3 board proposal(s), 92 quick win(s), 2 ThinkTank idea(s). Total new findings: 100.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:48:46.674325",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:48:46.689640",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:48:46.701770",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T18:48:46.718042",
+    "date": "2026-06-09",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-le",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:48:46.731561",
+    "date": "2026-06-09",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T18:49:12.690384",
+    "date": "2026-06-09",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 0 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 93.",
+    "priority": "NORMAL"
   }
 ]

@@ -1,6 +1,28 @@
 {
-  "generated_at": "2026-06-09T16:00:04.992194",
-  "proposals_reviewed": 0,
+  "generated_at": "2026-06-09T18:49:10.427240",
+  "proposals_reviewed": 3,
   "backtester_available": true,
-  "validation_log": []
+  "validation_log": [
+    {
+      "id": "CIT-2026-1448",
+      "title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+      "category": "VISION",
+      "backtest_evidence": "backtester.py is available. A 1-year backtest of this strategy change should be run before board vote. See backtester.py for usage.",
+      "pre_validated": false
+    },
+    {
+      "id": "CIT-2026-1451",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "CIT-2026-1453",
+      "title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
+      "category": "IMPROVEMENT",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    }
+  ]
 }

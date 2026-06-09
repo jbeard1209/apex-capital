@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-09T16:00:01.804829",
-  "files_scanned": 77,
-  "total_findings": 104,
+  "generated_at": "2026-06-09T18:49:07.781455",
+  "files_scanned": 79,
+  "total_findings": 110,
   "findings": [
     {
       "agent": "CITCodeInspector",
@@ -239,9 +239,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 55,
-      "title": "Possible missing makedirs before file write in fi_pipeline.py:226",
+      "title": "Possible missing makedirs before file write in fi_pipeline.py:239",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
-      "evidence": "fi_pipeline.py line 226: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
+      "evidence": "fi_pipeline.py line 239: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -1140,6 +1140,72 @@
       "agent": "CITCodeInspector",
       "category": "QUICK_WIN",
       "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:690",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 690: `print(\"\\n\" + \"=\"*60)`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:691",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 691: `print(\"QUIZ TIME \u2014 Day\", day)`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:692",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 692: `print(\"=\"*60)`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:696",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 696: `print(f\"\\nQ{i}: {q_item['q']}\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:698",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 698: `print(f\"A:  {q_item['a']}\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:708",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 708: `print(\"\\n\" + director.progress_report())`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
       "confidence": 60,
       "title": "Long f-string in logger.debug/info: wakeup_recovery.py:203",
       "description": "Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard with `if logger.isEnabledFor(...)`.",
@@ -1152,6 +1218,6 @@
     "CRITICAL": 0,
     "HIGH": 0,
     "MEDIUM": 18,
-    "LOW": 86
+    "LOW": 92
   }
 }

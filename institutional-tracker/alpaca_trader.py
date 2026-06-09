@@ -99,15 +99,18 @@ class AlpacaTrader:
 
         rows = []
         for p in positions:
+            # qty_available = shares not held for pending orders
+            qty_avail = float(getattr(p, "qty_available", p.qty) or p.qty)
             rows.append({
-                "ticker":        p.symbol,
-                "qty":           float(p.qty),
-                "avg_entry":     float(p.avg_entry_price),
-                "current_price": float(p.current_price),
-                "market_value":  float(p.market_value),
-                "unrealized_pl": float(p.unrealized_pl),
-                "unrealized_pct":float(p.unrealized_plpc) * 100,
-                "side":          p.side,
+                "ticker":         p.symbol,
+                "qty":            float(p.qty),
+                "qty_available":  qty_avail,
+                "avg_entry":      float(p.avg_entry_price),
+                "current_price":  float(p.current_price),
+                "market_value":   float(p.market_value),
+                "unrealized_pl":  float(p.unrealized_pl),
+                "unrealized_pct": float(p.unrealized_plpc) * 100,
+                "side":           p.side,
             })
         return pd.DataFrame(rows)
 
@@ -387,9 +390,16 @@ class AlpacaTrader:
                 logger.warning(f"  ⚠ No position in {ticker} to sell — skipping")
                 return None
 
-            qty = int(positions[positions["ticker"] == ticker]["qty"].values[0])
+            pos_row = positions[positions["ticker"] == ticker]
+            # Use qty_available (not held for pending orders) to avoid error 40310000
+            qty_avail_col = "qty_available" if "qty_available" in pos_row.columns else "qty"
+            qty = int(pos_row[qty_avail_col].values[0])
             if qty <= 0:
-                logger.warning(f"  ⚠ {ticker} position qty={qty} — nothing to sell")
+                total_qty = int(pos_row["qty"].values[0])
+                logger.warning(
+                    f"  ⚠ {ticker} available qty={qty} (total={total_qty}) — "
+                    f"all shares held for pending orders. Skipping to avoid error 40310000."
+                )
                 return None
 
             order_req = self._MarketOrderRequest(

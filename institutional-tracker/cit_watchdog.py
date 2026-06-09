@@ -77,7 +77,7 @@ _LOG_AGENT_RE  = re.compile(
 # HELPERS
 # =============================================================================
 
-def _load_json(path: Path) -> list | dict:
+def _load_json(path: Path):
     if not path.exists():
         return []
     try:

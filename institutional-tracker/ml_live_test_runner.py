@@ -100,7 +100,7 @@ def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
             "SPY", "QQQ", "IWM", "GLD", "TLT",
         ]
         stub_signals = [{"ticker": t, "action": "BUY", "conviction": 0.5} for t in universe]
-        enhanced = enhance_signals(stub_signals, horizon="short")
+        enhanced = enhance_signals(stub_signals)
     except Exception as e:
         logger.warning(f"  Predictor unavailable: {e}. Entering placeholder picks.")
         enhanced = []
