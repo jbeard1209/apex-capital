@@ -324,6 +324,88 @@ class PipelineOpsAnalyst:
                 f"({fi_board_age/24:.1f} days). FI board meets weekly — check schedule."
             )
 
+        # ── 9. Active research agent count ────────────────────────────────
+        # If the registry has zero active agents, the research pipeline is dark.
+        # This is a high-severity structural failure — the IRM should flag it
+        # immediately so the board can intervene before agents are unfairly retired.
+        try:
+            import json as _json
+            _reg_path = "data/agent_registry.json"
+            if _os.path.exists(_reg_path):
+                with open(_reg_path) as _rf:
+                    _reg = _json.load(_rf)
+                _all_agents    = _reg.get("agents", [])
+                _active_count  = sum(1 for a in _all_agents if a.get("status") == "active")
+                _retired_count = sum(1 for a in _all_agents if a.get("status") == "retired")
+                _total         = len(_all_agents)
+
+                if _active_count == 0 and _total > 0:
+                    red_flags.append(
+                        f"CRITICAL PIPELINE FAILURE: Registry has {_total} agents but ZERO are active "
+                        f"(status=active). Research pipeline is completely dark — no picks are being "
+                        f"generated. All agents may have been moved to 'reassigned' or 'retired' status. "
+                        f"IRM RECOMMENDATION: Board must meet immediately to audit agent statuses, "
+                        f"identify root cause, and restore the research pipeline. "
+                        f"Do not allow this to persist silently."
+                    )
+                    risk_score += 4
+                    recommendations.append(
+                        "Immediate board action required: restore research agents to active status. "
+                        "Check if agents were penalized during a CRO HIGH buy block (unfair). "
+                        "Audit research_team.py to ensure it loads all eligible agent statuses."
+                    )
+                elif _active_count < 5 and _total >= 10:
+                    red_flags.append(
+                        f"LOW ACTIVE AGENT COUNT: Only {_active_count} of {_total} agents are active. "
+                        f"Research coverage is dangerously thin. Board should review agent statuses."
+                    )
+                    risk_score += 2
+                else:
+                    findings.append(
+                        f"Research agent health: {_active_count} active / {_total} total "
+                        f"({_retired_count} retired). ✓"
+                    )
+        except Exception as _e:
+            findings.append(f"Could not audit agent registry: {_e}")
+
+        # ── 9b. Extended CRO HIGH check ────────────────────────────────────
+        # If the CRO has been HIGH or CRITICAL for an extended period, the IRM
+        # must flag this for board review. A sustained buy block that the board
+        # has not formally reviewed is a governance gap — the board should be
+        # deciding whether the block is still warranted, not just letting it
+        # persist automatically.
+        try:
+            _risk_path = "data/risk_bulletin.json"
+            if _os.path.exists(_risk_path):
+                with open(_risk_path) as _rrf:
+                    _rb = _json.load(_rrf)
+                _cro_level  = _rb.get("risk_level", "LOW")
+                _cro_since  = _rb.get("high_since") or _rb.get("generated_at", "")
+                _cro_streak = _rb.get("consecutive_high_cycles", 0)
+
+                if _cro_level in ("HIGH", "CRITICAL") and _cro_streak >= 3:
+                    red_flags.append(
+                        f"EXTENDED CRO {_cro_level}: The CRO has been at {_cro_level} for "
+                        f"{_cro_streak}+ consecutive cycles. This buy block has NOT been formally "
+                        f"reviewed by the board. IRM RECOMMENDATION: Board must convene to assess "
+                        f"whether the HIGH posture is still warranted or should be relaxed. "
+                        f"Extended buy blocks silently damage research throughput and agent performance."
+                    )
+                    risk_score += 3
+                    recommendations.append(
+                        f"Board should meet to formally review CRO HIGH status (streak: {_cro_streak} cycles). "
+                        f"Vote on: (a) maintain HIGH with explicit timeline, (b) step down to MEDIUM with "
+                        f"conditions, or (c) maintain CRITICAL with specific catalysts that would trigger review. "
+                        f"This governance gap allowed agents to be penalized without board oversight."
+                    )
+                elif _cro_level in ("HIGH", "CRITICAL"):
+                    findings.append(
+                        f"CRO at {_cro_level} — streak: {_cro_streak} cycle(s). "
+                        f"Board review recommended if streak exceeds 3 cycles."
+                    )
+        except Exception as _ce:
+            findings.append(f"Could not audit CRO streak: {_ce}")
+
         # ── 10. Risk score cap and confidence ─────────────────────────────
         risk_score = min(10, risk_score)
 

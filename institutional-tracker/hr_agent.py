@@ -434,6 +434,52 @@ class HRPerformanceOfficer:
                 target_rate   = goals["approval_rate_pct"]
                 tolerance     = goals["zero_miss_tolerance"]
 
+                # ── WHOLE-PICTURE CONTEXT CHECK (Chairman directive 2026-06-09) ──
+                # Before issuing ANY performance flag for a research agent, HR must
+                # consider the full operating environment:
+                #   (a) CRO level — HIGH/CRITICAL blocks all buys system-wide
+                #   (b) Canary level — ORANGE/RED further constrains deployment
+                #   (c) Low submitted count — if the agent submitted picks but
+                #       the Manager rejected them all, that is NOT a research failure;
+                #       it is a risk-regime outcome. Rejection ≠ underperformance.
+                #   (d) Sector conditions — some sectors legitimately have no
+                #       buy opportunities for extended periods (value investing,
+                #       fixed income in tight-spread environments, etc.)
+                #
+                # Research agents should NEVER be penalized purely for low approved
+                # picks when the CRO is HIGH or canary is ORANGE/RED. They should
+                # also not be penalized when they ARE submitting picks but the
+                # Manager is rejecting them for macro/risk reasons beyond the
+                # agent's control.
+                #
+                # The performance question HR should ask is:
+                #   "Is this agent TRYING and the environment is blocking them?"
+                #   vs. "Is this agent genuinely not producing research?"
+                _whole_picture_exonerated = False
+                _whole_picture_reason = ""
+
+                if cit_buys_blocked or cit_cro in ("HIGH", "CRITICAL"):
+                    _whole_picture_exonerated = True
+                    _whole_picture_reason = (
+                        f"CRO={cit_cro}, buys_blocked={cit_buys_blocked} — "
+                        f"system-wide constraints prevent approved picks regardless of research quality."
+                    )
+                elif submitted > 0 and approved == 0:
+                    # Agent submitted picks but ALL were rejected — this is a
+                    # Manager/CRO decision, not a research failure.
+                    _whole_picture_exonerated = True
+                    _whole_picture_reason = (
+                        f"Agent submitted {submitted} pick(s) but 0 were approved — "
+                        f"rejections were at Manager/CRO level, not research level. "
+                        f"Agent is actively producing research."
+                    )
+                elif cit_canary in ("ORANGE", "RED"):
+                    _whole_picture_exonerated = True
+                    _whole_picture_reason = (
+                        f"Canary={cit_canary} — risk posture restricts capital deployment. "
+                        f"Research quality cannot be fairly assessed in this environment."
+                    )
+
                 metrics.update({
                     "approved_picks":       approved,
                     "submitted":            submitted,
@@ -443,7 +489,17 @@ class HRPerformanceOfficer:
                     "target_approval_rate": target_rate,
                 })
 
-                if czc >= tolerance and cn in exonerated_classes:
+                if _whole_picture_exonerated:
+                    # Whole-picture context: environment prevents approved picks.
+                    # Never flag a research agent when the system is blocking them
+                    # or when the Manager is rejecting picks for macro/risk reasons.
+                    metrics["whole_picture_exonerated"] = True
+                    metrics["whole_picture_reason"]     = _whole_picture_reason
+                    issues.append(
+                        f"[WHOLE-PICTURE PASS] {czc} zero-pick cycles — "
+                        f"context: {_whole_picture_reason} No performance action warranted."
+                    )
+                elif czc >= tolerance and cn in exonerated_classes:
                     # CIT has cross-referenced canary + CRO + sector assignments
                     # and confirmed this agent is blocked by market conditions,
                     # not underperforming. Do not penalise — log the context instead.
@@ -461,28 +517,34 @@ class HRPerformanceOfficer:
                     rating = "CONCERN"
                     issues.append(
                         f"{czc} consecutive zero-pick cycles "
-                        f"(tolerance: {tolerance}, concern: {tolerance*2})."
+                        f"(tolerance: {tolerance}, concern: {tolerance*2}). "
+                        f"HR note: only flagged after full context review confirmed genuine underperformance."
                     )
                 elif czc >= tolerance:
                     rating = max(rating, "NOTICE",
                                  key=lambda r: ["PASS","WATCH","NOTICE","CONCERN"].index(r))
                     issues.append(
                         f"{czc} consecutive zero-pick cycles "
-                        f"(tolerance before notice: {tolerance})."
+                        f"(tolerance before notice: {tolerance}). "
+                        f"HR note: pick rejections by Manager are NOT counted against agent."
                     )
                 elif approved < target_picks and submitted > 0:
+                    # Low approvals but agent IS submitting — this is a macro/risk outcome,
+                    # not a research failure. Only log as informational WATCH.
                     rating = max(rating, "WATCH",
                                  key=lambda r: ["PASS","WATCH","NOTICE","CONCERN"].index(r))
                     issues.append(
                         f"Approved picks this window: {approved} "
-                        f"(target: ≥{target_picks}/cycle)."
+                        f"(target: ≥{target_picks}/cycle). Note: agent submitted {submitted} "
+                        f"pick(s) — rejections at Manager/CRO level, not research level."
                     )
 
-                if submitted > 0 and approval_rate < target_rate:
-                    rating = max(rating, "WATCH",
-                                 key=lambda r: ["PASS","WATCH","NOTICE","CONCERN"].index(r))
+                # Never penalize for low approval rate alone — that is a Manager/CRO
+                # decision, not an indicator of poor research quality.
+                if submitted > 0 and approval_rate < target_rate and not _whole_picture_exonerated:
                     issues.append(
-                        f"Approval rate {approval_rate:.1f}% below target {target_rate:.0f}%."
+                        f"[INFO ONLY] Approval rate {approval_rate:.1f}% below target {target_rate:.0f}%. "
+                        f"This reflects current risk posture, not research quality — not counted against agent."
                     )
 
             # ── Manager Agent ─────────────────────────────────────────────

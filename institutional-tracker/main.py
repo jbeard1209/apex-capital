@@ -524,17 +524,28 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # ── CRO board meeting trigger ──────────────────────────────────────────
     # If the CRO published a HIGH or CRITICAL bulletin, flag this cycle
     # for an automatic board meeting (Step 11).
+    # Also trigger if CRO has been HIGH for 3+ consecutive cycles (governance review).
     try:
         _cro_trigger_path = Path(__file__).parent / "data" / "risk_bulletin.json"
         if _cro_trigger_path.exists():
             with open(_cro_trigger_path) as _ctf:
                 _cro_trigger = json.load(_ctf)
-            _cro_trigger_level = _cro_trigger.get("risk_level", "UNKNOWN")
+            _cro_trigger_level  = _cro_trigger.get("risk_level", "UNKNOWN")
+            _cro_streak         = _cro_trigger.get("consecutive_high_cycles", 0)
+            _cro_board_required = _cro_trigger.get("board_review_warranted", False)
             if _cro_trigger_level in ("HIGH", "CRITICAL"):
                 _board_meeting_needed = True
                 _board_trigger_sources.append(f"CRO:{_cro_trigger_level}")
                 logger.info(
                     f"  🔔 Board meeting flagged — CRO risk level: {_cro_trigger_level}"
+                )
+            if _cro_board_required and _cro_streak >= 3:
+                _board_trigger_sources.append(
+                    f"CRO:governance_review(streak={_cro_streak}_cycles)"
+                )
+                logger.info(
+                    f"  🔔 Governance board meeting flagged — CRO at HIGH/CRITICAL "
+                    f"for {_cro_streak} consecutive cycles (Chairman directive 2026-06-09)"
                 )
     except Exception as _e:
         logger.debug(f"  CRO board trigger check failed: {_e}")

@@ -709,13 +709,66 @@ def broadcast_risk_bulletin(bulletin: dict) -> None:
     Write the public risk bulletin to disk for all agents to read.
     Called immediately after each risk analysis cycle.
     The bulletin is deliberately stripped of all grading and evaluation data.
+
+    Also tracks how many consecutive cycles the CRO has been at HIGH or CRITICAL.
+    When the streak reaches 3, the bulletin flags that a board review is warranted.
     """
     os.makedirs("data", exist_ok=True)
+
+    # ── Track consecutive HIGH/CRITICAL streak ─────────────────────────────
+    current_level = bulletin.get("risk_level", "LOW")
+    prev_streak   = 0
+    prev_level    = "LOW"
+    try:
+        if os.path.exists(BULLETIN_PATH):
+            with open(BULLETIN_PATH) as _pf:
+                _prev = json.load(_pf)
+            prev_streak = _prev.get("consecutive_high_cycles", 0)
+            prev_level  = _prev.get("risk_level", "LOW")
+    except Exception:
+        pass
+
+    if current_level in ("HIGH", "CRITICAL"):
+        if prev_level in ("HIGH", "CRITICAL"):
+            bulletin["consecutive_high_cycles"] = prev_streak + 1
+        else:
+            bulletin["consecutive_high_cycles"] = 1
+            bulletin["high_since"] = datetime.now().isoformat()
+    else:
+        bulletin["consecutive_high_cycles"] = 0
+        bulletin.pop("high_since", None)
+
+    streak = bulletin.get("consecutive_high_cycles", 0)
+
+    # ── Board review flag ──────────────────────────────────────────────────
+    # After 3+ consecutive HIGH/CRITICAL cycles, append a directive for the
+    # board to formally review whether the posture is still warranted.
+    # This prevents silent, indefinite buy blocks from persisting without
+    # board-level governance oversight.
+    if streak >= 3 and current_level in ("HIGH", "CRITICAL"):
+        board_review_directive = (
+            f"GOVERNANCE FLAG — BOARD REVIEW REQUIRED: CRO has been at {current_level} for "
+            f"{streak} consecutive cycles. Per Chairman directive 2026-06-09, the board must "
+            f"formally review this risk posture. A sustained buy block affects research agent "
+            f"performance and capital deployment. Board should vote: (a) maintain with timeline, "
+            f"(b) step down to ELEVATED with conditions, or (c) escalate to CRITICAL. "
+            f"This flag triggers an automatic board meeting in today's pipeline run."
+        )
+        if board_review_directive not in bulletin.get("directives", []):
+            bulletin.setdefault("directives", []).append(board_review_directive)
+        bulletin["board_review_warranted"] = True
+        logger.warning(
+            f"  [CRO] Board review flag raised — {current_level} for {streak} consecutive cycles."
+        )
+    else:
+        bulletin["board_review_warranted"] = False
+
     with open(BULLETIN_PATH, "w") as f:
         json.dump(bulletin, f, indent=2, default=str)
     logger.info(f"  [CRO] Risk bulletin broadcast → {BULLETIN_PATH}")
     logger.info(
         f"  [CRO] Level: {bulletin['risk_level']} | "
+        f"Streak: {streak} cycle(s) | "
         f"Guidance: {bulletin['capital_guidance']} | "
         f"Directives: {len(bulletin['directives'])} | "
         f"Alerts: {len(bulletin['position_alerts'])}"
