@@ -10,6 +10,7 @@ Configuration via environment variables (set in Railway dashboard):
   PASSWORD_REQUIRED  "true" or "false"  (default: true)
 """
 
+import base64
 import hashlib
 import hmac
 import json
@@ -37,26 +38,54 @@ except Exception:
 # Populated by POST /api/push from the Mac sync script.
 _data_store = {}
 _data_pushed_at = None  # type: Optional[str]
-_sessions = {}  # type: dict
 
 # HTML file (in same folder as this script)
 HTML_FILE = Path(__file__).parent / "apex_live_dashboard.html"
 
-# ── Helpers ──────────────────────────────────────────────────
-def get_session_token(cookie_header: Optional[str]) -> Optional[str]:
+SESSION_EXPIRY_DAYS = 30  # stay logged in for 30 days
+
+# ── Signed cookie auth (survives server restarts & redeploys) ─
+# No in-memory session store needed — the cookie is self-verifying.
+def _sign(payload: str) -> str:
+    return hmac.new(API_KEY.encode(), payload.encode(), hashlib.sha256).hexdigest()
+
+def make_session_cookie(username: str) -> str:
+    ts      = int(datetime.now(timezone.utc).timestamp())
+    payload = base64.b64encode(f"{username}:{ts}".encode()).decode()
+    sig     = _sign(payload)
+    return f"{payload}.{sig}"
+
+def verify_session_cookie(token: Optional[str]) -> Optional[str]:
+    """Return username if token is valid and not expired, else None."""
+    if not token:
+        return None
+    try:
+        payload, sig = token.rsplit(".", 1)
+        if not hmac.compare_digest(_sign(payload), sig):
+            return None
+        decoded       = base64.b64decode(payload).decode()
+        username, ts_str = decoded.rsplit(":", 1)
+        age_days      = (datetime.now(timezone.utc).timestamp() - int(ts_str)) / 86400
+        if age_days > SESSION_EXPIRY_DAYS:
+            return None
+        return username if username in USERS else None
+    except Exception:
+        return None
+
+def get_raw_cookie(cookie_header: Optional[str], name: str) -> Optional[str]:
     if not cookie_header:
         return None
     for part in cookie_header.split(";"):
         k, _, v = part.strip().partition("=")
-        if k.strip() == "apex_session":
+        if k.strip() == name:
             return v.strip()
     return None
 
 def is_authenticated(cookie_header: Optional[str]) -> bool:
     if not PASSWORD_REQUIRED:
         return True
-    token = get_session_token(cookie_header)
-    return token is not None and token in _sessions
+    token = get_raw_cookie(cookie_header, "apex_session")
+    return verify_session_cookie(token) is not None
 
 def data_age_str() -> str:
     if not _data_pushed_at:
@@ -168,9 +197,6 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path == "/logout":
-            token = get_session_token(self.cookies())
-            if token in _sessions:
-                del _sessions[token]
             self.send_html(LOGIN_PAGE.replace("ERRBLOCK", ""),
                            extra={"Set-Cookie": "apex_session=; Max-Age=0; Path=/"})
             return
@@ -233,12 +259,12 @@ class Handler(BaseHTTPRequestHandler):
             password = params.get("password", [""])[0]
             expected = USERS.get(username)
             if expected and hmac.compare_digest(expected, password):
-                token = secrets.token_hex(32)
-                _sessions[token] = username
+                cookie = make_session_cookie(username)
                 print(f"  ✓ Login: {username}")
                 self.send_response(302)
                 self.send_header("Location", "/")
-                self.send_header("Set-Cookie", f"apex_session={token}; Path=/; HttpOnly; SameSite=Lax")
+                self.send_header("Set-Cookie",
+                    f"apex_session={cookie}; Path=/; HttpOnly; SameSite=Lax; Max-Age={SESSION_EXPIRY_DAYS*86400}")
                 self.end_headers()
             else:
                 print(f"  ✗ Failed login: '{username}'")
