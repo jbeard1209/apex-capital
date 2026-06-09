@@ -76,8 +76,9 @@ institutional-tracker/gcp_setup/
 institutional-tracker/reports/
 reports/
 
-# ── Dashboard sync log ────────────────────────────────────────────────────────
+# ── Dashboard local files (pushed directly to Railway, not through git) ──────
 dashboard/sync.log
+dashboard/history.json
 
 # ── OS & editor noise ────────────────────────────────────────────────────────
 .DS_Store

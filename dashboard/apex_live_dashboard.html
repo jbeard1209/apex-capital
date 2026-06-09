@@ -202,6 +202,11 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="tab" onclick="showTab('teams')">Teams</div>
   <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
   <div class="tab" onclick="showTab('history')">📈 History</div>
+  <div class="tab" onclick="showTab('briefing')">☀️ Briefing</div>
+  <div class="tab" onclick="showTab('research')">🔬 Research</div>
+  <div class="tab" onclick="showTab('activity')">⚡ Activity</div>
+  <div class="tab" onclick="showTab('riskintel')">🛡️ Risk Intel</div>
+  <div class="tab" onclick="showTab('board')">🏛️ Board</div>
 </div>
 
 <!-- ═══════════════════════════ OVERVIEW ═══════════════════════════ -->
@@ -522,6 +527,182 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ═══════════════════════════ BRIEFING ═══════════════════════════ -->
+<div id="tab-briefing" class="content">
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Briefing Date</div><div style="font-size:16px;font-weight:700" id="brief-date">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Market Status</div><div style="font-size:16px;font-weight:700" id="brief-canary">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Pre-Market</div><div style="font-size:16px;font-weight:700" id="brief-premarket">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">VIX</div><div style="font-size:16px;font-weight:700" id="brief-vix">—</div></div>
+  </div>
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot o"></div>Risk & Directives</div>
+      <div id="brief-risk-section"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot g"></div>Market Triggers</div>
+      <div id="brief-triggers"></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><div class="dot b"></div>R&D Intelligence Summary</div>
+      <div id="brief-rd-section"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot y"></div>Pre-Market Position Alerts</div>
+      <div id="brief-alerts-section"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ RESEARCH ═══════════════════════════ -->
+<div id="tab-research" class="content">
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Total Picks</div><div style="font-size:28px;font-weight:700;color:var(--green)" id="res-total-picks">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">High Conviction</div><div style="font-size:28px;font-weight:700;color:var(--green)" id="res-hc-picks">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Agents Run</div><div style="font-size:28px;font-weight:700" id="res-agents-run">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Tickers Analysed</div><div style="font-size:28px;font-weight:700" id="res-tickers">—</div></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title"><div class="dot g"></div>Sectors Covered This Cycle</div>
+    <div id="res-sectors" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title"><div class="dot g"></div>All R&D Picks — Ranked by Conviction</div>
+    <div class="scroll" style="max-height:480px">
+      <table>
+        <thead><tr><th>Ticker</th><th>Name</th><th>Agent</th><th>Sector</th><th>Price</th><th>Trend</th><th>RSI</th><th>vs 50MA</th><th>Fwd P/E</th><th>Rev Growth</th><th>Market Cap</th><th>Conviction</th></tr></thead>
+        <tbody id="res-picks-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><div class="dot p"></div>Agent Reports by Sector</div>
+      <div id="res-agent-reports" class="scroll" style="max-height:300px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot b"></div>ETF Board — Latest Rotation</div>
+      <div id="res-etf-board"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ACTIVITY ═══════════════════════════ -->
+<div id="tab-activity" class="content">
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot y"></div>Canary Alerts — Recent</div>
+      <div id="act-canary" class="scroll" style="max-height:300px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot r"></div>Manager Triggers</div>
+      <div id="act-triggers" class="scroll" style="max-height:300px"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot o"></div>CoS Attention Items</div>
+      <div id="act-attention" class="scroll" style="max-height:300px"></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><div class="dot b"></div>Recent Trade Decisions</div>
+      <div class="scroll" style="max-height:360px">
+        <table>
+          <thead><tr><th>Time</th><th>Ticker</th><th>Rec.</th><th>Decision</th><th>Rationale</th></tr></thead>
+          <tbody id="act-decisions-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot g"></div>Trade Execution Log</div>
+      <div class="scroll" style="max-height:360px">
+        <table>
+          <thead><tr><th>Time</th><th>Ticker</th><th>Action</th><th>Executed</th><th>Context</th><th>Decision</th></tr></thead>
+          <tbody id="act-exec-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ RISK INTEL ═══════════════════════════ -->
+<div id="tab-riskintel" class="content">
+  <div class="grid4" style="margin-bottom:14px">
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Risk Level</div><div style="font-size:22px;font-weight:700" id="ri-level">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Manager Grade</div><div style="font-size:22px;font-weight:700" id="ri-grade">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Win Rate</div><div style="font-size:22px;font-weight:700;color:var(--green)" id="ri-winrate">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">SPY Alpha</div><div style="font-size:22px;font-weight:700;color:var(--green)" id="ri-alpha">—</div></div>
+  </div>
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot o"></div>Pre-Market Assessment</div>
+      <div id="ri-premarket"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot r"></div>Active Risk Directives</div>
+      <div id="ri-directives"></div>
+    </div>
+  </div>
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot b"></div>Trade Performance Analysis</div>
+      <div id="ri-trade-analysis"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot p"></div>Failure Mode Breakdown</div>
+      <div id="ri-failure-modes"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="dot g"></div>Execution Quality Log</div>
+    <div class="scroll" style="max-height:300px">
+      <table>
+        <thead><tr><th>Time</th><th>Ticker</th><th>Action</th><th>Executed</th><th>Conviction</th><th>Decision</th><th>Context</th></tr></thead>
+        <tbody id="ri-exec-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ BOARD ═══════════════════════════ -->
+<div id="tab-board" class="content">
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Meeting Time</div><div style="font-size:13px;font-weight:700" id="board-time">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Open Issues</div><div style="font-size:28px;font-weight:700;color:var(--orange)" id="board-issues">—</div></div>
+    <div class="card" style="text-align:center"><div class="card-title" style="justify-content:center">Agents Reviewed</div><div style="font-size:28px;font-weight:700" id="board-agents-rev">—</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title"><div class="dot b"></div>Board Positions & Actions</div>
+    <div id="board-positions" class="scroll" style="max-height:400px"></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-title"><div class="dot r"></div>Open Issues — Issue Tracker</div>
+      <div class="scroll" style="max-height:320px">
+        <table>
+          <thead><tr><th>ID</th><th>Severity</th><th>Title</th><th>Reporter</th><th>Status</th><th>Opened</th></tr></thead>
+          <tbody id="board-issues-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="dot g"></div>HR Performance Report</div>
+      <div id="board-hr-summary" style="margin-bottom:10px"></div>
+      <div class="scroll" style="max-height:260px">
+        <table>
+          <thead><tr><th>Agent</th><th>Status</th><th>Rating</th><th>Approved Picks</th><th>0-Pick Cycles</th><th>Exonerated</th></tr></thead>
+          <tbody id="board-hr-tbody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1407,6 +1588,408 @@ const _origShowTab = showTab;
 showTab = function(id) {
   _origShowTab(id);
   if (id === 'history' && historyData.length === 0) fetchHistory();
+};
+
+// ══════════════════════════════════════════════════════════════════════════
+// BRIEFING
+// ══════════════════════════════════════════════════════════════════════════
+function renderBriefing(data) {
+  const m    = data.morning || {};
+  const sec  = m.sections  || {};
+  const mkt  = sec.market  || {};
+  const risk = sec.risk    || {};
+  const rd   = sec.rd      || {};
+  const pre  = data.premarket || {};
+
+  $('brief-date').textContent = m.date || '—';
+  const cl = (mkt.canary_level||'—').toUpperCase();
+  $('brief-canary').textContent = cl;
+  $('brief-canary').className = {GREEN:'g',YELLOW:'y',ORANGE:'o',RED:'r'}[cl]||'dim';
+
+  const pmStatus = pre.overall_status || '—';
+  $('brief-premarket').textContent = pmStatus;
+  $('brief-premarket').className = pmStatus==='CLEAR'?'g':'r';
+
+  const vix = pre.vix?.vix;
+  $('brief-vix').textContent = vix ? vix.toFixed(2) : '—';
+  $('brief-vix').className = vix > 25 ? 'r' : vix > 20 ? 'o' : 'g';
+
+  // Risk section
+  const rl = risk.risk_level || '—';
+  const dirs = risk.directives || [];
+  $('brief-risk-section').innerHTML = `
+    <div style="margin-bottom:10px">
+      <div style="font-size:9px;color:var(--text2);margin-bottom:4px">RISK LEVEL</div>
+      <div style="font-size:20px;font-weight:700" class="${rl==='ELEVATED'?'o':rl==='HIGH'||rl==='CRITICAL'?'r':'g'}">${rl}</div>
+      <div style="font-size:10px;color:var(--text2)">PDO Signal: ${risk.pdo_signal||'—'}</div>
+    </div>
+    ${dirs.map(d=>`<div style="padding:7px 9px;background:rgba(255,153,0,.07);border:1px solid rgba(255,153,0,.2);border-radius:5px;font-size:11px;margin-bottom:6px">${d}</div>`).join('')||'<div class="dim" style="font-size:11px">No active directives</div>'}
+  `;
+
+  // Market triggers
+  const triggers = mkt.triggers || [];
+  $('brief-triggers').innerHTML = triggers.length
+    ? triggers.map(t=>`<div style="padding:7px 9px;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);border-radius:5px;font-size:11px;margin-bottom:6px">⚠ ${t}</div>`).join('')
+    : '<div style="font-size:11px;color:var(--text2)">No market triggers — conditions normal</div>';
+
+  // R&D section
+  const picks = rd.top_picks || [];
+  $('brief-rd-section').innerHTML = `
+    <div style="display:flex;gap:16px;margin-bottom:12px">
+      <div style="text-align:center"><div style="font-size:9px;color:var(--text2)">PICKS</div><div style="font-size:20px;font-weight:700;color:var(--green)">${rd.pick_count||0}</div></div>
+      <div style="text-align:center"><div style="font-size:9px;color:var(--text2)">AGE</div><div style="font-size:20px;font-weight:700">${rd.report_age_hours!=null?rd.report_age_hours.toFixed(1)+'h':'—'}</div></div>
+    </div>
+    ${picks.slice(0,5).map(p=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #111">
+        <div><strong>${p.ticker}</strong> <span style="font-size:10px;color:var(--text2)">${p.specialty||''}</span></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge ${(p.momentum?.trend||'')==='bullish'?'badge-g':'badge-dim'}">${p.momentum?.trend||'—'}</span>
+          <span class="g" style="letter-spacing:-1px;font-size:11px">${'★'.repeat(p.conviction||0)}</span>
+        </div>
+      </div>`).join('')}
+  `;
+
+  // Premarket alerts
+  const alerts = pre.alerts || [];
+  $('brief-alerts-section').innerHTML = alerts.length
+    ? alerts.map(a=>`<div style="padding:7px 9px;background:rgba(255,68,68,.07);border:1px solid rgba(255,68,68,.2);border-radius:5px;font-size:11px;margin-bottom:6px"><strong>${a.ticker||''}</strong> ${a.message||JSON.stringify(a)}</div>`).join('')
+    : `<div style="padding:20px;text-align:center;color:var(--text2);font-size:11px">
+        <div style="font-size:24px;margin-bottom:8px">✓</div>
+        Pre-market clear — no position alerts<br>
+        ${pre.n_positions!=null?`<span style="font-size:10px">${pre.n_positions} positions checked · SPY gap: ${pre.spy_proxy?.spy_gap_pct!=null?(pre.spy_proxy.spy_gap_pct>0?'+':'')+pre.spy_proxy.spy_gap_pct.toFixed(2)+'%':'—'}</span>`:''}
+       </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// RESEARCH
+// ══════════════════════════════════════════════════════════════════════════
+function renderResearch(data) {
+  const r   = data.research || {};
+  const sum = r.summary    || {};
+  const rpts = r.agent_reports || [];
+  const etf  = data.etf_board  || {};
+
+  set('res-total-picks', sum.total_picks ?? '—', 'g');
+  set('res-hc-picks', sum.high_conviction ?? '—', 'g');
+  set('res-agents-run', sum.agents_run ?? '—');
+  set('res-tickers', sum.total_tickers_analysed ?? '—');
+
+  const sectors = sum.sectors_covered || [];
+  $('res-sectors').innerHTML = sectors.map(s=>`<span class="badge badge-b">${s}</span>`).join('');
+
+  // All picks flattened
+  const allPicks = [];
+  rpts.forEach(rpt => {
+    (rpt.top_picks||[]).forEach(p => allPicks.push({...p, agent_id:rpt.agent_id, sector_name:rpt.sector_name}));
+  });
+  allPicks.sort((a,b)=>(b.conviction||0)-(a.conviction||0));
+
+  $('res-picks-tbody').innerHTML = allPicks.map(p => {
+    const vs50 = p.momentum?.pct_from_50ma;
+    const rsi  = p.momentum?.rsi_14;
+    const cap  = p.market_cap ? (p.market_cap>1e12?'$'+(p.market_cap/1e12).toFixed(1)+'T':p.market_cap>1e9?'$'+(p.market_cap/1e9).toFixed(1)+'B':'$'+(p.market_cap/1e6).toFixed(0)+'M') : '—';
+    return `<tr>
+      <td><strong>${p.ticker}</strong></td>
+      <td style="font-size:10px;color:var(--text2)">${(p.short_name||'').substring(0,28)}</td>
+      <td style="font-size:10px">Agent ${p.agent_id||'—'}</td>
+      <td style="font-size:10px;color:var(--text2)">${p.sector_name||'—'}</td>
+      <td>$${(p.current_price||0).toFixed(2)}</td>
+      <td><span class="badge ${(p.momentum?.trend||'')==='bullish'?'badge-g':'badge-r'}">${p.momentum?.trend||'—'}</span></td>
+      <td>${rsi??'—'}</td>
+      <td class="${(vs50||0)>=0?'g':'r'}">${vs50!=null?fmtPct(vs50):'—'}</td>
+      <td>${p.forward_pe?p.forward_pe.toFixed(1)+'x':'—'}</td>
+      <td class="${(p.revenue_growth_pct||0)>=0?'g':'r'}">${p.revenue_growth_pct!=null?fmtPct(p.revenue_growth_pct):'—'}</td>
+      <td style="font-size:10px">${cap}</td>
+      <td class="g" style="letter-spacing:-1px">${'★'.repeat(p.conviction||0)}</td>
+    </tr>`;
+  }).join('');
+
+  // Agent report summaries
+  $('res-agent-reports').innerHTML = rpts.map(rpt=>`
+    <div style="padding:10px;background:var(--card2);border:1px solid var(--border);border-radius:6px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <div><strong>Agent ${rpt.agent_id}</strong> — ${rpt.sector_name||'—'}</div>
+        <div style="display:flex;gap:6px">
+          <span class="badge badge-b">${rpt.sector_etf||'—'}</span>
+          <span class="badge badge-g">${rpt.tickers_analysed||0} analysed</span>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text2);margin-bottom:6px">${rpt.description||''}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${(rpt.top_picks||[]).map(p=>`<span style="background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3);border-radius:3px;padding:2px 6px;font-size:10px;color:var(--green)">${p.ticker} ${'★'.repeat(p.conviction||0)}</span>`).join('')}
+      </div>
+    </div>`).join('');
+
+  // ETF board
+  const etfOrders = etf.approved_rotations || etf.orders || etf.session_summary || null;
+  $('res-etf-board').innerHTML = etfOrders
+    ? `<pre style="font-size:10px;color:var(--text2);white-space:pre-wrap">${JSON.stringify(etfOrders,null,2)}</pre>`
+    : `<div style="font-size:11px;color:var(--text2);padding:16px">
+        ${etf.timestamp?`Last meeting: ${etf.timestamp?.slice(0,16).replace('T',' ')}<br>`:''}
+        <div id="etf-board-summary"></div>
+       </div>`;
+  if (etf && !etfOrders) {
+    const keys = Object.keys(etf).filter(k=>k!=='timestamp');
+    $('etf-board-summary').innerHTML = keys.slice(0,6).map(k=>`<div class="mrow"><span class="mkey">${k}</span><span class="mval" style="font-size:10px">${JSON.stringify(etf[k]).substring(0,60)}</span></div>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ACTIVITY
+// ══════════════════════════════════════════════════════════════════════════
+function renderActivity(data) {
+  const canary   = data.canary           || {};
+  const cos      = data.cos              || {};
+  const state    = data.state            || {};
+  const mgrdecs  = data.manager_decisions|| [];
+  const execq    = data.execution_quality|| [];
+
+  // Canary alerts (last 15)
+  const alerts = (canary.alerts_today || []).slice(-15).reverse();
+  $('act-canary').innerHTML = alerts.length
+    ? alerts.map(a=>{
+        const lvl = a.level||'ORANGE';
+        const cls = lvl==='RED'?'r':lvl==='ORANGE'?'o':'y';
+        return `<div style="padding:7px 9px;margin-bottom:5px;background:rgba(255,255,255,.03);border-left:3px solid var(--${cls==='r'?'red':cls==='o'?'orange':'yellow'});border-radius:0 4px 4px 0">
+          <div style="display:flex;justify-content:space-between">
+            <span class="badge badge-${cls}">${lvl}</span>
+            <span style="font-size:9px;color:var(--text2)">${(a.time||'').slice(5,16).replace('T',' ')}</span>
+          </div>
+          <div style="font-size:10px;color:var(--text2);margin-top:4px">${(a.triggers||[]).join(' · ')}</div>
+        </div>`;
+      }).join('')
+    : '<div style="padding:16px;text-align:center;font-size:11px;color:var(--text2)">No canary alerts today</div>';
+
+  // Manager triggers (last 10)
+  const triggers = (canary.manager_triggers || []).slice(-10).reverse();
+  $('act-triggers').innerHTML = triggers.length
+    ? triggers.map(t=>`<div style="padding:7px 9px;margin-bottom:5px;background:rgba(255,68,68,.05);border-left:3px solid var(--red);border-radius:0 4px 4px 0">
+        <div style="font-size:9px;color:var(--text2)">${(t.time||'').slice(5,16).replace('T',' ')}</div>
+        <div style="font-size:10px;margin-top:2px">${(t.triggers||[]).join('<br>')}</div>
+      </div>`).join('')
+    : '<div style="padding:16px;text-align:center;font-size:11px;color:var(--text2)">No manager triggers</div>';
+
+  // CoS attention items (deduplicated)
+  const attention = cos.attention_items || [];
+  const seen = new Set();
+  const deduped = attention.filter(a=>{ const k=a.item; if(seen.has(k)) return false; seen.add(k); return true; });
+  $('act-attention').innerHTML = deduped.slice(0,8).map(a=>{
+    const pc = a.priority==='HIGH'?'r':a.priority==='MEDIUM'?'o':'dim';
+    return `<div style="padding:7px 9px;margin-bottom:5px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:4px">
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:4px">
+        <span class="badge badge-${pc}">${a.priority||'LOW'}</span>
+        <span style="font-size:9px;color:var(--text2)">${a.category||''}</span>
+        ${a.requires_chairman?'<span class="badge badge-y">Chairman</span>':''}
+      </div>
+      <div style="font-size:10px;color:var(--text)">${a.item||''}</div>
+    </div>`;
+  }).join('') || '<div style="padding:16px;text-align:center;font-size:11px;color:var(--text2)">No attention items</div>';
+
+  // Manager decisions table
+  const allDecs = [];
+  (Array.isArray(mgrdecs)?mgrdecs:[mgrdecs]).forEach(batch=>{
+    const ts = batch.timestamp||batch.generated_at||'';
+    (batch.decisions||[]).forEach(d=>allDecs.push({...d,batch_ts:ts}));
+  });
+  allDecs.sort((a,b)=>b.batch_ts.localeCompare(a.batch_ts));
+  $('act-decisions-tbody').innerHTML = allDecs.slice(0,20).map(d=>{
+    const dc = d.manager_decision==='APPROVED'?'g':d.manager_decision==='REJECTED'?'r':'o';
+    return `<tr>
+      <td style="font-size:10px;color:var(--text2)">${(d.batch_ts||'').slice(5,16).replace('T',' ')}</td>
+      <td><strong>${d.ticker||'—'}</strong></td>
+      <td class="dim" style="font-size:10px">${d.action||'—'}</td>
+      <td><span class="badge badge-${dc}">${d.manager_decision||'—'}</span>
+          ${d.manager_action?`<span style="font-size:10px;color:var(--text2)"> → ${d.manager_action}</span>`:''}</td>
+      <td style="font-size:10px;color:var(--text2);max-width:200px">${(d.manager_rationale||[]).join(' ').substring(0,80)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--text2)">No decisions</td></tr>';
+
+  // Execution log
+  const execArr = Array.isArray(execq) ? execq : [];
+  $('act-exec-tbody').innerHTML = execArr.slice(-15).reverse().map(e=>`<tr>
+    <td style="font-size:10px;color:var(--text2)">${(e.timestamp||'').slice(5,16).replace('T',' ')}</td>
+    <td><strong>${e.ticker||'—'}</strong></td>
+    <td class="dim" style="font-size:10px">${e.action||'—'}</td>
+    <td><span class="badge ${e.executed?'badge-g':'badge-r'}">${e.executed?'YES':'NO'}</span></td>
+    <td style="font-size:10px;color:var(--text2)">${e.intraday_context||'—'}</td>
+    <td><span class="badge ${e.manager_decision==='APPROVED'?'badge-g':e.manager_decision==='REJECTED'?'badge-r':'badge-dim'}">${e.manager_decision||'—'}</span></td>
+  </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text2)">No execution records</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// RISK INTEL
+// ══════════════════════════════════════════════════════════════════════════
+function renderRiskIntel(data) {
+  const cos     = data.cos          || {};
+  const health  = cos.company_health|| {};
+  const review  = data.trade_review || {};
+  const pre     = data.premarket    || {};
+  const morning = data.morning      || {};
+  const riskSec = (morning.sections||{}).risk || {};
+  const execq   = data.execution_quality || [];
+
+  const rl = health.risk_level || '—';
+  set('ri-level', rl, rl==='ELEVATED'?'o':rl==='HIGH'||rl==='CRITICAL'?'r':'g');
+  set('ri-grade', (health.manager_grade||'—') + ' (' + (health.manager_score||'—') + ')',
+    health.manager_grade==='A'||health.manager_grade==='B'?'g':health.manager_grade==='D'||health.manager_grade==='F'?'r':'o');
+  set('ri-winrate', health.trade_win_rate!=null ? health.trade_win_rate.toFixed(1)+'%' : '—', 'g');
+  set('ri-alpha', health.trade_benchmark_delta!=null ? fmtPct(health.trade_benchmark_delta) : '—', 'g');
+
+  // Pre-market
+  $('ri-premarket').innerHTML = `
+    <div class="mrow"><span class="mkey">Overall Status</span><span class="mval ${pre.overall_status==='CLEAR'?'g':'r'}">${pre.overall_status||'—'}</span></div>
+    <div class="mrow"><span class="mkey">Portfolio Value</span><span class="mval">${fmt$(pre.portfolio_value)}</span></div>
+    <div class="mrow"><span class="mkey">Open Positions</span><span class="mval">${pre.n_positions??'—'}</span></div>
+    <div class="mrow"><span class="mkey">VIX</span><span class="mval ${(pre.vix?.vix||0)>25?'r':(pre.vix?.vix||0)>20?'o':'g'}">${pre.vix?.vix?.toFixed(2)||'—'} ${pre.vix?.elevated?'⚠ ELEVATED':''}</span></div>
+    <div class="mrow"><span class="mkey">SPY Gap</span><span class="mval ${(pre.spy_proxy?.spy_gap_pct||0)>=0?'g':'r'}">${pre.spy_proxy?.spy_gap_pct!=null?((pre.spy_proxy.spy_gap_pct>0?'+':'')+pre.spy_proxy.spy_gap_pct.toFixed(2)+'%'):'—'}</span></div>
+    <div class="mrow"><span class="mkey">PDO Signal</span><span class="mval b">${riskSec.pdo_signal||health.pdo_signal||'—'}</span></div>
+    <div class="mrow"><span class="mkey">CRO CVaR 95%</span><span class="mval">${riskSec.cvar_95??'—'}</span></div>
+  `;
+
+  // Directives
+  const dirs = riskSec.directives || [];
+  $('ri-directives').innerHTML = dirs.length
+    ? dirs.map(d=>`<div style="padding:8px 10px;background:rgba(255,153,0,.07);border:1px solid rgba(255,153,0,.2);border-radius:5px;font-size:11px;margin-bottom:6px">${d}</div>`).join('')
+    : '<div style="font-size:11px;color:var(--text2);padding:10px">No active directives</div>';
+
+  // Trade analysis
+  const trades = review.trades || [];
+  const wins   = trades.filter(t=>t.outcome==='WIN');
+  const losses = trades.filter(t=>t.outcome!=='WIN');
+  const avgWin = wins.length ? (wins.reduce((s,t)=>s+(t.pnl_pct||0),0)/wins.length).toFixed(2) : '—';
+  const avgLoss= losses.length ? (losses.reduce((s,t)=>s+(t.pnl_pct||0),0)/losses.length).toFixed(2) : '—';
+  const avgHold= trades.length ? (trades.reduce((s,t)=>s+(t.hold_days||0),0)/trades.length).toFixed(1) : '—';
+  $('ri-trade-analysis').innerHTML = `
+    <div class="mrow"><span class="mkey">Total Closed Trades</span><span class="mval">${trades.length}</span></div>
+    <div class="mrow"><span class="mkey">Win Rate</span><span class="mval g">${trades.length?((wins.length/trades.length)*100).toFixed(1)+'%':'—'}</span></div>
+    <div class="mrow"><span class="mkey">Avg Win</span><span class="mval g">${avgWin !== '—' ? '+'+avgWin+'%' : '—'}</span></div>
+    <div class="mrow"><span class="mkey">Avg Loss</span><span class="mval r">${avgLoss !== '—' ? avgLoss+'%' : '—'}</span></div>
+    <div class="mrow"><span class="mkey">Avg Hold Duration</span><span class="mval">${avgHold} days</span></div>
+    <div class="mrow"><span class="mkey">Pattern Flags</span><span class="mval o">${health.trade_pattern_flags??0}</span></div>
+    <div class="mrow"><span class="mkey">SPY Benchmark Delta</span><span class="mval g">${health.trade_benchmark_delta!=null?fmtPct(health.trade_benchmark_delta):'—'}</span></div>
+  `;
+
+  // Failure modes
+  const failMap = {};
+  trades.filter(t=>t.outcome!=='WIN').forEach(t=>{
+    const reason = (t.exit_reason||'unknown').split(' ')[0];
+    failMap[reason] = (failMap[reason]||0) + 1;
+  });
+  $('ri-failure-modes').innerHTML = Object.keys(failMap).length
+    ? Object.entries(failMap).map(([k,v])=>`
+        <div class="mrow">
+          <span class="mkey">${k}</span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:80px;background:#1a1a2a;border-radius:3px;height:5px">
+              <div style="width:${Math.min(v/trades.length*100*3,100)}%;height:100%;background:var(--red);border-radius:3px"></div>
+            </div>
+            <span class="mval r">${v}</span>
+          </div>
+        </div>`).join('')
+    : '<div style="font-size:11px;color:var(--text2);padding:10px">No failures recorded</div>';
+
+  // Execution quality
+  const execArr = Array.isArray(execq) ? execq : [];
+  $('ri-exec-tbody').innerHTML = execArr.slice(-20).reverse().map(e=>`<tr>
+    <td style="font-size:10px;color:var(--text2)">${(e.timestamp||'').slice(0,16).replace('T',' ')}</td>
+    <td><strong>${e.ticker||'—'}</strong></td>
+    <td style="font-size:10px">${e.action||'—'}</td>
+    <td><span class="badge ${e.executed?'badge-g':'badge-r'}">${e.executed?'YES':'NO'}</span></td>
+    <td>${e.conviction??'—'}</td>
+    <td><span class="badge ${e.manager_decision==='APPROVED'?'badge-g':e.manager_decision==='REJECTED'?'badge-r':'badge-o'}">${e.manager_decision||'—'}</span></td>
+    <td style="font-size:10px;color:var(--text2)">${e.intraday_context||'—'}</td>
+  </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text2)">No execution data</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// BOARD
+// ══════════════════════════════════════════════════════════════════════════
+function renderBoard(data) {
+  const bm     = data.board_meeting || {};
+  const issues = data.issue_tracker || [];
+  const hr     = data.hr_report     || {};
+
+  $('board-time').textContent = (bm.timestamp||'—').slice(0,16).replace('T',' ');
+  $('board-issues').textContent = Array.isArray(issues) ? issues.filter(i=>i.status!=='RESOLVED').length : '—';
+  $('board-agents-rev').textContent = hr.agents_reviewed ?? '—';
+
+  // Board positions
+  const positions = bm.positions || [];
+  $('board-positions').innerHTML = positions.length ? positions.map(pos=>`
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;font-weight:700">${pos.agent||'—'}</div>
+          <div style="font-size:10px;color:var(--text2)">${pos.role||''}</div>
+        </div>
+        ${(pos.actions||[]).length?`<span class="badge badge-b">${pos.actions.length} action${pos.actions.length>1?'s':''}</span>`:''}
+      </div>
+      ${(pos.positions||[]).map(p=>`<div style="font-size:11px;color:var(--text);padding:5px 0;border-bottom:1px solid #111;line-height:1.5">${p}</div>`).join('')}
+      ${(pos.actions||[]).length?`
+        <div style="margin-top:10px">
+          <div style="font-size:9px;color:var(--text2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Actions</div>
+          ${pos.actions.map(a=>`
+            <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:rgba(68,136,255,.08);border:1px solid rgba(68,136,255,.2);border-radius:4px;margin-bottom:4px">
+              <span class="badge badge-${a.urgency==='TODAY'?'r':a.urgency==='THIS_WEEK'?'o':'dim'}" style="flex-shrink:0">${a.urgency||'—'}</span>
+              <div style="font-size:10px">
+                <strong>${a.id||'—'}</strong><br>
+                <span style="color:var(--text2)">${a.action||''}</span><br>
+                <span style="color:var(--blue)">→ ${a.executor||'—'}</span>
+              </div>
+            </div>`).join('')}
+        </div>`:''}
+      ${pos.summary?`<div style="margin-top:8px;font-size:11px;font-style:italic;color:var(--text2);padding:6px 8px;border-top:1px solid var(--border)">${pos.summary}</div>`:''}
+    </div>`).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--text2)">No board meeting data available</div>';
+
+  // Issue tracker
+  const issueArr = Array.isArray(issues) ? issues : [];
+  $('board-issues-tbody').innerHTML = issueArr.slice(0,30).map(i=>{
+    const sc = i.severity==='CRITICAL'||i.severity==='HIGH'?'r':i.severity==='MEDIUM'?'o':'dim';
+    const stc= i.status==='RESOLVED'?'g':i.status==='ASSIGNED'?'b':'dim';
+    return `<tr style="${i.status==='RESOLVED'?'opacity:.5':''}">
+      <td style="font-size:10px;color:var(--text2)">${i.issue_id||'—'}</td>
+      <td><span class="badge badge-${sc}">${i.severity||'—'}</span></td>
+      <td style="font-size:11px;max-width:220px">${i.title||'—'}</td>
+      <td style="font-size:10px;color:var(--text2)">${i.reporter||'—'}</td>
+      <td><span class="badge badge-${stc}">${i.status||'—'}</span></td>
+      <td style="font-size:10px;color:var(--text2)">${(i.created_at||'').slice(0,10)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text2)">No issues</td></tr>';
+
+  // HR summary
+  $('board-hr-summary').innerHTML = `
+    <div style="display:flex;gap:16px;margin-bottom:10px">
+      <div style="text-align:center"><div style="font-size:9px;color:var(--text2)">CYCLES</div><div style="font-size:18px;font-weight:700">${hr.cycles_evaluated||'—'}</div></div>
+      <div style="text-align:center"><div style="font-size:9px;color:var(--text2)">REVIEWED</div><div style="font-size:18px;font-weight:700">${hr.agents_reviewed||'—'}</div></div>
+      <div style="font-size:10px;color:var(--text2);align-self:center">${hr.reporting_chain||''}</div>
+    </div>`;
+
+  const hrRatings = hr.hrpo_ratings || {};
+  $('board-hr-tbody').innerHTML = Object.entries(hrRatings).slice(0,20).map(([name, agent])=>{
+    const rc = agent.rating==='PASS'?'g':agent.rating==='FAIL'?'r':'o';
+    const sc = agent.status==='retired'?'r':agent.status==='reassigned'?'o':'g';
+    const m  = agent.metrics || {};
+    return `<tr>
+      <td style="font-size:11px;font-weight:600">${name}</td>
+      <td><span class="badge badge-${sc}">${agent.status||'—'}</span></td>
+      <td><span class="badge badge-${rc}">${agent.rating||'—'}</span></td>
+      <td class="g">${m.approved_picks??'—'}</td>
+      <td class="${(m.consecutive_zero||0)>=10?'r':(m.consecutive_zero||0)>=5?'o':'dim'}">${m.consecutive_zero??'—'}</td>
+      <td>${m.cit_exonerated?'<span class="badge badge-b">Exonerated</span>':'<span class="dim">—</span>'}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--text2)">No HR data</td></tr>';
+}
+
+// Hook the new tabs into renderAll
+const _origRenderAll = renderAll;
+renderAll = function(d) {
+  _origRenderAll(d);
+  renderBriefing(d.data||{});
+  renderResearch(d.data||{});
+  renderActivity(d.data||{});
+  renderRiskIntel(d.data||{});
+  renderBoard(d.data||{});
 };
 
 // ── Auto-refresh ───────────────────────────────────────────────────────────
