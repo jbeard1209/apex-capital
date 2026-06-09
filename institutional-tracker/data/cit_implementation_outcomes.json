@@ -1,0 +1,648 @@
+[
+  {
+    "proposal_id": "CIT-2026-216",
+    "title": "Zero test coverage \u2014 no integration tests for the pipeline",
+    "agent": "CITArchitectureAdvisor",
+    "category": "NEW_FEATURE",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.302868",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-217",
+    "title": "No cron heartbeat \u2014 silent scheduler failure goes undetected",
+    "agent": "CITArchitectureAdvisor",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.305409",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-184",
+    "title": "No P&L attribution by signal source (13F vs R&D vs Energy)",
+    "agent": "CITArchitectureAdvisor",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.307995",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-203",
+    "title": "Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation",
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.309881",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-204",
+    "title": "Replace flat position sizing with conviction-weighted Kelly-derived sizing",
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.311679",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-210",
+    "title": "Hardcoded ticker in action ID: cit_director.py:326",
+    "agent": "CITCodeInspector",
+    "category": "BUG_FIX",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.313758",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-267",
+    "title": "None score in sector_assignments.json (8 sector(s))",
+    "agent": "CITDataQualityAnalyst",
+    "category": "BUG_FIX",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.315118",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-268",
+    "title": "None canary indicators in canary_state.json: ['spy_price', 'vix', 'spy_change_pct', 'vix_change_pct']",
+    "agent": "CITDataQualityAnalyst",
+    "category": "BUG_FIX",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.316458",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-275",
+    "title": "62% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.317865",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-278",
+    "title": "45% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.321739",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-279",
+    "title": "80% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.324024",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-289",
+    "title": "82% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.326317",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-295",
+    "title": "75% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.327720",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-299",
+    "title": "None canary readings: ['spy_pct']",
+    "agent": "CITDataQualityAnalyst",
+    "category": "BUG_FIX",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.329084",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-322",
+    "title": "98% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.330384",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-472",
+    "title": "99% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.331684",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  },
+  {
+    "proposal_id": "CIT-2026-1827",
+    "title": "100% of CIT proposals lack precise evidence \u2014 quality degradation",
+    "agent": "CITSelfImprovement",
+    "category": "IMPROVEMENT",
+    "implemented_at": "2026-05-13",
+    "baseline": {
+      "captured_at": "2026-05-13T20:21:44.333004",
+      "var_99": null,
+      "concentration_top5": null,
+      "sharpe": null,
+      "total_return_pct": -3.52,
+      "canary_level": "GREEN",
+      "regime": "BULL",
+      "cit_backlog_depth": 256,
+      "cit_implemented_count": 19
+    },
+    "outcomes": [
+      {
+        "days": 7,
+        "checked_at": "2026-05-20T20:16:26.625974",
+        "delta": {
+          "total_return_pct": -0.44,
+          "cit_backlog_depth": 663.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      }
+    ],
+    "next_check_days": 30
+  }
+]

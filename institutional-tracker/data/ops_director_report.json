@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-06-09T13:30:01.179267",
+  "supervised_agents": [
+    "Trade Review Team",
+    "Creative Agent",
+    "Capital Efficiency Agent",
+    "Report Generator",
+    "Premarket Check",
+    "Earnings Predictor"
+  ],
+  "agent_status": {
+    "Trade Review Team": {
+      "status": "OK",
+      "note": "Last updated 25h ago",
+      "data_keys": [
+        "generated_at",
+        "team",
+        "trades",
+        "analytics",
+        "manager_directives",
+        "risk_insights",
+        "cos_summary"
+      ]
+    },
+    "Creative Agent": {
+      "status": "OK",
+      "note": "Timestamp unknown",
+      "data_keys": [
+        "_list_data",
+        "items"
+      ]
+    },
+    "Capital Efficiency Agent": {
+      "status": "OK",
+      "note": "Last updated 0h ago",
+      "data_keys": [
+        "generated_at",
+        "agent",
+        "account",
+        "deployment",
+        "market_conditions",
+        "recommendation",
+        "uncapped_signal",
+        "cro_risk_at_time"
+      ]
+    },
+    "Report Generator": {
+      "status": "OK",
+      "note": "Last updated 0h ago",
+      "data_keys": [
+        "timestamp",
+        "company_health",
+        "attention_items",
+        "autonomous_decisions",
+        "strategic_advice",
+        "factory_result",
+        "cos_hr_coordination"
+      ]
+    },
+    "Premarket Check": {
+      "status": "OK",
+      "note": "Last updated 1h ago",
+      "data_keys": [
+        "generated_at",
+        "agent",
+        "overall_status",
+        "portfolio_value",
+        "n_positions",
+        "vix",
+        "spy_proxy",
+        "severity_counts"
+      ]
+    },
+    "Earnings Predictor": {
+      "status": "OK",
+      "note": "Last updated 1h ago",
+      "data_keys": [
+        "generated_at",
+        "lookahead_days",
+        "tickers_scanned",
+        "predictions",
+        "summary"
+      ]
+    }
+  },
+  "flags": [],
+  "summary": "Floor status: 6 OK, 0 stale, 0 missing. 0 flag(s)."
+}

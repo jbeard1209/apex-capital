@@ -1,0 +1,41 @@
+[
+  {
+    "action": "SELL",
+    "ticker": "QQQ",
+    "qty": 11,
+    "price": 716.07,
+    "dollar_value": 7876.77,
+    "reason": "QQQ removed from rotation \u2014 not in board's approved ETF list.",
+    "status": "executed",
+    "fill_price": 716.07,
+    "executed_at": "2026-06-09T11:18:19.275307"
+  },
+  {
+    "action": "SELL",
+    "ticker": "XLV",
+    "qty": 54,
+    "price": 152.65,
+    "dollar_value": 8243.1,
+    "reason": "XLV removed from rotation \u2014 not in board's approved ETF list.",
+    "status": "submit_failed",
+    "error": "{\"available\":\"33\",\"code\":40310000,\"existing_qty\":\"33\",\"held_for_orders\":\"0\",\"message\":\"insufficient qty available for order (requested: 54, available: 33)\",\"symbol\":\"XLV\"}"
+  },
+  {
+    "action": "BUY",
+    "ticker": "XLE",
+    "qty": 0,
+    "price": 0.0,
+    "dollar_value": 0.0,
+    "reason": "XLE in target list but price unavailable \u2014 skipped.",
+    "skipped": true
+  },
+  {
+    "action": "BUY",
+    "ticker": "XLF",
+    "qty": 0,
+    "price": 0.0,
+    "dollar_value": 0.0,
+    "reason": "XLF in target list but price unavailable \u2014 skipped.",
+    "skipped": true
+  }
+]

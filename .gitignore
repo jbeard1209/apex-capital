@@ -1,10 +1,12 @@
 # =============================================================================
-# APEX CAPITAL — .gitignore
+# APEX CAPITAL — Root .gitignore
 # =============================================================================
 
-# ── Secrets — NEVER commit these ─────────────────────────────────────────────
+# ── Secrets — NEVER commit ────────────────────────────────────────────────────
 .env
+*.env
 config_local.py
+institutional-tracker/.env
 
 # ── Python ───────────────────────────────────────────────────────────────────
 __pycache__/
@@ -19,53 +21,62 @@ build/
 venv/
 env/
 
-# ── Data & logs (large, ephemeral, contain trade PII) ────────────────────────
+# ── Logs ─────────────────────────────────────────────────────────────────────
 logs/
-data/backups/
+institutional-tracker/logs/
+*.log
 
-# Runtime data files — contain live trade state, decisions, and agent evaluations.
-# Excluded to prevent sensitive portfolio data from being pushed to GitHub.
-# The two config files below (agent_registry, sector_assignments) ARE committed.
-data/state.json
-data/manager_decisions.json
-data/board_meeting_report.json
-data/canary_alert.json
-data/canary_state.json
-data/capital_efficiency_report.json
-data/chief_of_staff_report.json
-data/cos_advice_history.json
-data/hr_history.json
-data/hr_report.json
-data/hr_irm_sealed.json
-data/irm_daily_check.json
-data/rd_geopolitical_context.json
-data/rd_historical_context.json
-data/rd_system_performance.json
-data/research_team_report.json
-data/review_recommendations.json
-data/risk_bulletin.json
-data/risk_manager_report.json
-data/thematic_positions.json
-data/trade_review_report.json
-data/cit_morning_report.json
-data/cit_evening_report.json
-data/cit_pending_proposals.json
-data/cit_backlog.json
-data/cit_sensitive.json
-data/cit_approved_proposals.json
-data/cit_history.json
-data/energy_research_report.json
-data/cos_hr_coordination.json
+# ── Backups ───────────────────────────────────────────────────────────────────
+institutional-tracker/data/backups/
 
-# Oracle setup — contains private keys and credentials
-oracle_setup/oci_key.pem
-oracle_setup/oracle_attempts.log
-oracle_setup/try_oracle.py
-oracle_setup/deploy.py
-oracle_setup/setup_server.sh
+# ── Runtime data (live trade state, PII, agent evaluations) ──────────────────
+# These are pushed directly to the cloud server via sync_to_cloud.py,
+# never stored in git.
+institutional-tracker/data/state.json
+institutional-tracker/data/manager_decisions.json
+institutional-tracker/data/board_meeting_report.json
+institutional-tracker/data/canary_alert.json
+institutional-tracker/data/canary_state.json
+institutional-tracker/data/capital_efficiency_report.json
+institutional-tracker/data/chief_of_staff_report.json
+institutional-tracker/data/cos_advice_history.json
+institutional-tracker/data/hr_history.json
+institutional-tracker/data/hr_report.json
+institutional-tracker/data/hr_irm_sealed.json
+institutional-tracker/data/irm_daily_check.json
+institutional-tracker/data/rd_geopolitical_context.json
+institutional-tracker/data/rd_historical_context.json
+institutional-tracker/data/rd_system_performance.json
+institutional-tracker/data/research_team_report.json
+institutional-tracker/data/review_recommendations.json
+institutional-tracker/data/risk_bulletin.json
+institutional-tracker/data/risk_manager_report.json
+institutional-tracker/data/thematic_positions.json
+institutional-tracker/data/trade_review_report.json
+institutional-tracker/data/cit_morning_report.json
+institutional-tracker/data/cit_evening_report.json
+institutional-tracker/data/cit_pending_proposals.json
+institutional-tracker/data/cit_backlog.json
+institutional-tracker/data/cit_sensitive.json
+institutional-tracker/data/cit_approved_proposals.json
+institutional-tracker/data/cit_history.json
+institutional-tracker/data/energy_research_report.json
+institutional-tracker/data/cos_hr_coordination.json
 
-# ── Reports (generated HTML — can be regenerated) ────────────────────────────
+# ── Oracle / GCP credentials ─────────────────────────────────────────────────
+institutional-tracker/oracle_setup/oci_key.pem
+institutional-tracker/oracle_setup/oracle_attempts.log
+institutional-tracker/oracle_setup/try_oracle.py
+institutional-tracker/oracle_setup/deploy.py
+institutional-tracker/oracle_setup/setup_server.sh
+institutional-tracker/gcp_setup/
+
+# ── Generated reports (can be regenerated) ───────────────────────────────────
+institutional-tracker/reports/
 reports/
+
+# ── Dashboard sync log ────────────────────────────────────────────────────────
+dashboard/sync.log
 
 # ── OS & editor noise ────────────────────────────────────────────────────────
 .DS_Store

@@ -1,0 +1,62 @@
+[
+  {
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "severity": "HIGH",
+    "confidence": 82,
+    "title": "Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation",
+    "description": "The firm runs a pure momentum strategy in all market conditions. CRO is currently CRITICAL and the canary fired ORANGE 2\u00d7 today. In CRITICAL/HIGH regimes, momentum names are systematically the hardest hit \u2014 we're fighting the market instead of adapting to it. A regime layer would detect the risk environment from canary + CRO signals and auto-rotate the research mandate: in GREEN regimes, pursue momentum; in ORANGE/CRITICAL, mandate defensive picks (low-beta, dividend yield, quality factor) and reduce position sizing. This doesn't require a new strategy \u2014 it's a wrapper around the existing one.",
+    "evidence": "CRO level: CRITICAL | Canary alerts today: 2 | Current portfolio down from start; all buys blocked for extended period.",
+    "proposed_fix": "Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and dividend sectors; in CRISIS, assign only capital-preservation mandates. Manager Agent adjusts MAX_POSITION_SIZE_PCT down 30% in DEFENSIVE mode.",
+    "auto_implementable": false,
+    "id": "CIT-2026-203"
+  },
+  {
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "severity": "MEDIUM",
+    "confidence": 75,
+    "title": "Replace flat position sizing with conviction-weighted Kelly-derived sizing",
+    "description": "All approved picks receive the same capital allocation regardless of conviction score (3\u2605 vs 5\u2605 get identical sizing). This treats a high-conviction thesis identically to a marginal one, compressing returns. A Kelly-fraction approach \u2014 sizing proportional to edge estimate derived from conviction score, historical approval rate per agent, and sector momentum score \u2014 would concentrate capital in the firm's best ideas and reduce it in weaker ones. Even a half-Kelly implementation would improve capital efficiency.",
+    "evidence": "buy_log has 20 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier.",
+    "proposed_fix": "In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conviction_size_multiplier` in buy_log for post-trade attribution.",
+    "auto_implementable": false,
+    "id": "CIT-2026-204"
+  },
+  {
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "severity": "MEDIUM",
+    "confidence": 70,
+    "title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+    "description": "In CRITICAL risk regimes (current: CRITICAL), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-level moves but misses the outsized drawdowns in weakest names. Proposal: when CRO declares CRITICAL, the R&D leader runs a 'short scan' pass alongside the normal long scan, looking for names with: deteriorating fundamentals, failed support levels, high short interest already, and negative sector momentum. These enter a separate 'short book' with its own position limits and stop-loss rules (inverted: stop-gain not stop-loss).",
+    "evidence": "CRO level: CRITICAL. SH is current only short vehicle. Individual name shorts in CRITICAL regime could 3-5\u00d7 the hedge alpha vs. index-level SH.",
+    "proposed_fix": "Add `short_book_enabled` flag to config.py, gated on CRO level. R&D leader gets a `--scan-shorts` mode that inverts scoring criteria. Manager Agent executes short sells via Alpaca (supported in paper mode). Separate MAX_SHORT_POSITION_PCT (suggest 3%) and SHORT_STOP_GAIN_PCT (15%).",
+    "auto_implementable": false,
+    "id": "CIT-2026-205"
+  },
+  {
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "severity": "LOW",
+    "confidence": 72,
+    "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "description": "The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post-hoc but can't stop a trade in-flight. Proposal: for any BUY with conviction \u22654\u2605, spawn a 'BearCaseAgent' that reads the same thesis and produces a structured counter-argument: what would have to be true for this trade to fail? What's the base rate of success for this sector/pattern? Does the canary context invalidate the thesis? Manager Agent sees both the bull and bear case before deciding. This won't block good trades \u2014 it will surface hidden risks on marginal ones.",
+    "evidence": "Current pipeline: Review \u2192 Manager (single path). 20 historical buys with no pre-trade adversarial check in pipeline.",
+    "proposed_fix": "Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review.",
+    "auto_implementable": false,
+    "id": "CIT-2026-206"
+  },
+  {
+    "agent": "CITThinkTank",
+    "category": "VISION",
+    "severity": "MEDIUM",
+    "confidence": 78,
+    "title": "Replace fixed R&D cadence with event-triggered research cycles",
+    "description": "R&D last ran 49h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after earnings beats, sector breakouts, and macro prints \u2014 not on a Tuesday-every-three-days basis. Proposal: keep the 3-day heartbeat, but add event triggers: any sector ETF moving >3% in a day forces an immediate targeted R&D cycle for that sector only. Canary YELLOW triggers a full cycle. This would have caught the DIS move that fired ORANGE today.",
+    "evidence": "last_research_run: 2026-05-05 (49h ago). Canary fired 2 alert(s) today without fresh research.",
+    "proposed_fix": "In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes.",
+    "auto_implementable": false,
+    "id": "CIT-2026-265"
+  }
+]

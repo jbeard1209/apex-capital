@@ -1,0 +1,13 @@
+[
+  {
+    "id": "rd_bridge_002",
+    "source": "ml_rd_bridge_agent",
+    "date": "2026-05-14",
+    "category": "FEATURE",
+    "priority": "REVIEW",
+    "title": "Add rd_spy_overbought + rd_warning_count regime features",
+    "description": "Current regime: SPY RSI=82.0, 3 warnings. Historical analyst is flagging overbought conditions. These regime signals are in rd_ml_bridge_signals.json but not fed to the model.",
+    "proposed_fix": "Add 'rd_spy_overbought' and 'rd_warning_count' to FEATURE_COLS in feature_engineer.py. Read from rd_ml_bridge_signals.json['regime'] in _get_rd_features(ticker). These are ticker-independent (market-wide) features.",
+    "status": "PENDING"
+  }
+]

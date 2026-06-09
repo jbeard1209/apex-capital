@@ -1,0 +1,106 @@
+{
+  "generated_at": "2026-05-15T00:23:31.372337",
+  "agent": "Pod 3 Macro Agent",
+  "regime": {
+    "rd_regime_bull": 1,
+    "rd_regime_bear": 0,
+    "rd_vix": 17.3,
+    "rd_vix_high": 0,
+    "rd_spy_rsi": 82.0,
+    "rd_spy_overbought": 1,
+    "rd_rising_rates": 1,
+    "rd_momentum_late": 1,
+    "rd_warning_count": 3,
+    "rd_spy_pct_vs_200ma": 11.2
+  },
+  "bear_mode": false,
+  "scoring_method": "score = (ret_1m*0.4) + (ret_3m*0.3) + (pct_from_50ma*0.2) - (vol*0.1) +2 if bullish, -2 if bearish",
+  "top_etfs_ranked": [
+    {
+      "rank": 1,
+      "etf": "XLK",
+      "sector": "Technology",
+      "momentum_score": 19.674
+    },
+    {
+      "rank": 2,
+      "etf": "XLI",
+      "sector": "Industrials",
+      "momentum_score": 1.71
+    },
+    {
+      "rank": 3,
+      "etf": "XLP",
+      "sector": "Consumer Staples",
+      "momentum_score": 1.561
+    }
+  ],
+  "all_scored": [
+    {
+      "etf": "XLK",
+      "sector": "Technology",
+      "momentum_score": 19.674
+    },
+    {
+      "etf": "XLI",
+      "sector": "Industrials",
+      "momentum_score": 1.71
+    },
+    {
+      "etf": "XLP",
+      "sector": "Consumer Staples",
+      "momentum_score": 1.561
+    },
+    {
+      "etf": "XLF",
+      "sector": "Financials",
+      "momentum_score": -1.301
+    },
+    {
+      "etf": "XLV",
+      "sector": "Healthcare",
+      "momentum_score": -3.55
+    }
+  ],
+  "signals": {
+    "buy": [
+      {
+        "action": "BUY",
+        "ticker": "XLK",
+        "pod_id": "pod3_macro",
+        "sector": "Technology",
+        "momentum_score": 19.674,
+        "reason": "Top 3 ETF by momentum score (19.67). ret_1m=18.1%, ret_3m=28.8%, pct_from_50ma=20.5%, trend=bullish",
+        "signal_source": "pod3_macro_agent",
+        "bear_mode": false
+      },
+      {
+        "action": "BUY",
+        "ticker": "XLI",
+        "pod_id": "pod3_macro",
+        "sector": "Industrials",
+        "momentum_score": 1.71,
+        "reason": "Top 3 ETF by momentum score (1.71). ret_1m=2.5%, ret_3m=0.5%, pct_from_50ma=3.2%, trend=bullish",
+        "signal_source": "pod3_macro_agent",
+        "bear_mode": false
+      },
+      {
+        "action": "BUY",
+        "ticker": "XLP",
+        "pod_id": "pod3_macro",
+        "sector": "Consumer Staples",
+        "momentum_score": 1.561,
+        "reason": "Top 3 ETF by momentum score (1.56). ret_1m=4.4%, ret_3m=-4.5%, pct_from_50ma=2.4%, trend=bullish",
+        "signal_source": "pod3_macro_agent",
+        "bear_mode": false
+      }
+    ],
+    "sell": [],
+    "hold": []
+  },
+  "summary": {
+    "n_buy": 3,
+    "n_sell": 0,
+    "n_hold": 0
+  }
+}

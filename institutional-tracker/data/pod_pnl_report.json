@@ -1,0 +1,140 @@
+{
+  "generated_at": "2026-06-09T17:24:10.288869",
+  "pods": {
+    "pod1_rd": {
+      "name": "R&D / Institutional",
+      "total_value": 44283.7,
+      "cash_balance": 81.48,
+      "positions_value": 44202.22,
+      "cash_pct": 0.18,
+      "positions_pct": 99.82,
+      "pnl_today": 1.5687,
+      "pnl_lifetime": 0.0,
+      "n_positions": 12,
+      "top_positions": [
+        {
+          "ticker": "TSLA",
+          "qty": 5.0,
+          "avg_entry": 407.36,
+          "current_price": 442.69,
+          "unrealized_pct": 8.6729,
+          "unrealized_dollar": 176.65,
+          "market_value": 2213.45
+        },
+        {
+          "ticker": "ARM",
+          "qty": 8.0,
+          "avg_entry": 214.2,
+          "current_price": 227.0,
+          "unrealized_pct": 5.9757,
+          "unrealized_dollar": 102.4,
+          "market_value": 1816.0
+        },
+        {
+          "ticker": "COST",
+          "qty": 2.0,
+          "avg_entry": 1001.79,
+          "current_price": 1028.0,
+          "unrealized_pct": 2.6163,
+          "unrealized_dollar": 52.42,
+          "market_value": 2056.0
+        }
+      ],
+      "worst_positions": [
+        {
+          "ticker": "APD",
+          "qty": 14.0,
+          "avg_entry": 303.24,
+          "current_price": 304.43,
+          "unrealized_pct": 0.3924,
+          "unrealized_dollar": 16.66,
+          "market_value": 4262.02
+        },
+        {
+          "ticker": "AMAT",
+          "qty": 6,
+          "avg_entry": 458.17,
+          "current_price": 458.17,
+          "unrealized_pct": 0.0,
+          "unrealized_dollar": 0.0,
+          "market_value": 2749.02
+        },
+        {
+          "ticker": "NEE",
+          "qty": 72.0,
+          "avg_entry": 96.52,
+          "current_price": 94.6,
+          "unrealized_pct": -1.9892,
+          "unrealized_dollar": -138.24,
+          "market_value": 6811.2
+        }
+      ]
+    },
+    "pod2_ml": {
+      "name": "ML / Quantitative",
+      "total_value": 30000.0,
+      "cash_balance": 30000.0,
+      "positions_value": 0.0,
+      "cash_pct": 100.0,
+      "positions_pct": 0.0,
+      "pnl_today": 0.0,
+      "pnl_lifetime": 0.0,
+      "n_positions": 0,
+      "top_positions": [],
+      "worst_positions": []
+    },
+    "pod3_macro": {
+      "name": "Macro / ETF Rotation",
+      "total_value": 30000.0,
+      "cash_balance": 16821.62,
+      "positions_value": 13178.38,
+      "cash_pct": 56.07,
+      "positions_pct": 43.93,
+      "pnl_today": 0.0,
+      "pnl_lifetime": 0.0,
+      "n_positions": 2,
+      "top_positions": [
+        {
+          "ticker": "XLK",
+          "qty": 28,
+          "avg_entry": 176.26,
+          "current_price": 176.26,
+          "unrealized_pct": 0.0,
+          "unrealized_dollar": 0.0,
+          "market_value": 4935.28
+        },
+        {
+          "ticker": "XLV",
+          "qty": 54,
+          "avg_entry": 152.65,
+          "current_price": 152.65,
+          "unrealized_pct": 0.0,
+          "unrealized_dollar": 0.0,
+          "market_value": 8243.1
+        }
+      ],
+      "worst_positions": [
+        {
+          "ticker": "XLV",
+          "qty": 54,
+          "avg_entry": 152.65,
+          "current_price": 152.65,
+          "unrealized_pct": 0.0,
+          "unrealized_dollar": 0.0,
+          "market_value": 8243.1
+        },
+        {
+          "ticker": "XLK",
+          "qty": 28,
+          "avg_entry": 176.26,
+          "current_price": 176.26,
+          "unrealized_pct": 0.0,
+          "unrealized_dollar": 0.0,
+          "market_value": 4935.28
+        }
+      ]
+    }
+  },
+  "firm_total_value": 114283.7,
+  "reserve_balance": 10000.0
+}

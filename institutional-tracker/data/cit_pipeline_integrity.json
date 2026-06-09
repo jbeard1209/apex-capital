@@ -1,0 +1,12 @@
+{
+  "checked_at": "2026-06-09T12:50:00.906135",
+  "issues": [
+    {
+      "severity": "HIGH",
+      "check": "email_loop_detection",
+      "message": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 09, 2026\" \u00d720; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:D | Jun 09, 2026\" \u00d75",
+      "auto_fixed": false
+    }
+  ],
+  "healthy": false
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "title": "Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation",
+    "description": "The firm runs a pure momentum strategy in all market conditions. CRO is currently CRITICAL and the canary fired ORANGE 2\u00d7 today. In CRITICAL/HIGH regimes, momentum names are systematically the hardest hit \u2014 we're fighting the market instead of adapting to it. A regime layer would detect the risk environment from canary + CRO signals and auto-rotate the research mandate: in GREEN regimes, pursue momentum; in ORANGE/CRITICAL, mandate defensive picks (low-beta, dividend yield, quality factor) and reduce position sizing. This doesn't require a new strategy \u2014 it's a wrapper around the existing one.",
+    "proposed_fix": "Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and dividend sectors; in CRISIS, assign only capital-preservation mandates. Manager Agent adjusts MAX_POSITION_SIZE_PCT down 30% in DEFENSIVE mode.",
+    "severity": "HIGH",
+    "confidence": 82,
+    "approved_at": "2026-05-06T18:15:06.853141",
+    "approved_by": "Board (unanimous)",
+    "source": "CITThinkTank",
+    "status": "approved \u2014 awaiting implementation"
+  },
+  {
+    "title": "Replace flat position sizing with conviction-weighted Kelly-derived sizing",
+    "description": "All approved picks receive the same capital allocation regardless of conviction score (3\u2605 vs 5\u2605 get identical sizing). This treats a high-conviction thesis identically to a marginal one, compressing returns. A Kelly-fraction approach \u2014 sizing proportional to edge estimate derived from conviction score, historical approval rate per agent, and sector momentum score \u2014 would concentrate capital in the firm's best ideas and reduce it in weaker ones. Even a half-Kelly implementation would improve capital efficiency.",
+    "proposed_fix": "In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conviction_size_multiplier` in buy_log for post-trade attribution.",
+    "severity": "MEDIUM",
+    "confidence": 75,
+    "approved_at": "2026-05-06T18:15:06.853144",
+    "approved_by": "Board (unanimous)",
+    "source": "CITThinkTank",
+    "status": "approved \u2014 awaiting implementation"
+  }
+]

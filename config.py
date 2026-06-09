@@ -1,117 +1,138 @@
-# =============================================================================
-# INSTITUTIONAL TRACKER — CONFIGURATION
-# =============================================================================
-# Credentials are loaded from .env (via python-dotenv).
-# .env is gitignored — never hardcode secrets here.
-#
-# To set up:
-#   pip install python-dotenv
-#   cp .env.example .env   (or create .env manually)
-#   Fill in your credentials in .env
-#
-# The hardcoded fallbacks below are kept only so the system still runs if
-# python-dotenv is not installed.  They should be removed in production.
-# =============================================================================
+"""
+Central configuration for the Institutional Block Tracker system.
+Research Team / Development Team joint ownership.
+"""
 
-import os as _os
-
-try:
-    from dotenv import load_dotenv as _load_dotenv
-    _load_dotenv(dotenv_path=_os.path.join(_os.path.dirname(__file__), ".env"), override=False)
-except ImportError:
-    pass   # python-dotenv not installed — fall back to hardcoded values below
-
-# --- ALPACA PAPER TRADING ---
-ALPACA_API_KEY    = _os.getenv("ALPACA_API_KEY",    "PKMJMECIKK235BQTNKGCCSKEL3")
-ALPACA_SECRET_KEY = _os.getenv("ALPACA_SECRET_KEY", "7uxURY6amjpDaQkVcoD2tXrcMsrpUHntjut95QwHZbR8")
-ALPACA_BASE_URL   = _os.getenv("ALPACA_BASE_URL",   "https://paper-api.alpaca.markets")
-
-# --- EMAIL (Gmail App Password) ---
-EMAIL_SENDER       = _os.getenv("EMAIL_SENDER",       "jack.beard07@gmail.com")
-EMAIL_RECIPIENT    = _os.getenv("EMAIL_RECIPIENT",    "jack.beard07@gmail.com")
-GMAIL_APP_PASSWORD = _os.getenv("GMAIL_APP_PASSWORD", "vaje mgnh jhtm kknf")
-
-# --- TRADING PARAMETERS ---
-STARTING_CAPITAL       = 100000.00    # USD — paper trading starting balance
-MAX_POSITION_SIZE_PCT  = 0.07         # Max 7% of portfolio per position (board directive: reduced from 12% — concentration risk)
-MIN_INSTITUTIONS_SIGNAL = 2           # Minimum institutions buying same stock to trigger buy
-STOP_LOSS_PCT          = 0.07         # 7% stop loss per position
-TAKE_PROFIT_PCT        = 0.20         # 20% take profit per position
-MAX_OPEN_POSITIONS     = 15           # Max simultaneous open positions
-HOLD_DAYS_MAX          = 60           # Max days to hold a position before forced exit
-
-# --- CAPITAL DEPLOYMENT POLICY ---
-# Board directive: regime-adaptive deployment targets (approved 2026-05-06).
-# In CRITICAL/HIGH regimes the firm must not be fully deployed — cash is a position.
-MIN_DEPLOYMENT_PCT          = 0.30    # Alert if less than 30% deployed (was 50%)
-TARGET_DEPLOYMENT_PCT       = 0.70    # Target in GREEN/NEUTRAL regime
-TARGET_DEPLOYMENT_CRITICAL  = 0.20   # Target in CRITICAL regime — preserve capital
-TARGET_DEPLOYMENT_HIGH      = 0.40   # Target in HIGH regime
-TARGET_DEPLOYMENT_ELEVATED  = 0.55   # Target in ELEVATED regime
-
-# --- REGIME-ADAPTIVE STRATEGY (board-approved 2026-05-06) ---
-# CRO risk level → strategy mandate shift.
-# The R&D Team Leader reads REGIME_MANDATE at assignment time to shift sector
-# scoring weights. Manager Agent reads REGIME_MAX_POSITION to enforce per-position limit.
-REGIME_MANDATES = {
-    "GREEN":    {"mandate": "MOMENTUM",   "max_position_pct": 0.07, "deploy_target": TARGET_DEPLOYMENT_PCT},
-    "ELEVATED": {"mandate": "MOMENTUM",   "max_position_pct": 0.06, "deploy_target": 0.55},
-    "HIGH":     {"mandate": "DEFENSIVE",  "max_position_pct": 0.05, "deploy_target": 0.40},
-    "CRITICAL": {"mandate": "PRESERVE",   "max_position_pct": 0.04, "deploy_target": 0.20},
-    "UNKNOWN":  {"mandate": "MOMENTUM",   "max_position_pct": 0.07, "deploy_target": TARGET_DEPLOYMENT_PCT},
+# ─── Organizational Metadata ─────────────────────────────────────────────────
+ORG = {
+    "company": "Apex Capital Intelligence",
+    "chairman": "Jack Beard",
+    "president": "Claude (AI President)",
+    "teams": [
+        "Development",
+        "Research",
+        "Quantitative Analysis",
+        "Design",
+        "Data Engineering",
+        "Risk Management",
+    ],
 }
 
-# --- TRACKED INSTITUTIONS (SEC CIK numbers) ---
-TRACKED_INSTITUTIONS = {
-    "Citadel":              "0001423053",
-    "Renaissance Tech":     "0001037389",
-    "Two Sigma":            "0001649339",
-    "Millennium Mgmt":      "0001273087",
-    "Point72":              "0001603466",
-    "D.E. Shaw":            "0001009207",
-    "AQR Capital":          "0001167557",
-    "Bridgewater":          "0001350694",
+# ─── Target Institutions (CIK numbers from SEC EDGAR) ────────────────────────
+# These are the "smart money" firms we track.
+INSTITUTIONS = {
+    "Citadel Advisors":       "1423298",
+    "Renaissance Technologies": "1037389",
+    "Two Sigma Investments":  "1450144",
+    "Bridgewater Associates": "1350694",
+    "Millennium Management":  "1273931",
+    "D.E. Shaw":              "1009207",
+    "Point72 Asset Management": "1841201",
+    "AQR Capital Management": "1167557",
 }
 
-# --- UNIVERSE OF STOCKS TO MONITOR ---
-# Large-cap stocks most likely to appear in institutional 13F filings
+# ─── Block Detection Parameters (Research Team) ──────────────────────────────
+BLOCK_CONFIG = {
+    # Minimum shares to qualify as a block trade
+    "min_block_shares": 10_000,
+    # Minimum USD value to qualify as a block trade
+    "min_block_value_usd": 200_000,
+    # Volume ratio — must exceed X * avg_daily_volume to flag as significant
+    "volume_spike_multiplier": 2.0,
+    # Rolling window (days) for average volume calculation
+    "avg_volume_window": 20,
+    # Consecutive days of accumulation to confirm a pattern
+    "accumulation_days": 5,
+    # Price impact threshold: flag if large volume occurs with minimal price move
+    # (signature of institutional stealth buying)
+    "stealth_buy_max_price_change_pct": 0.5,
+}
+
+# ─── 13F Filing Parameters ────────────────────────────────────────────────────
+SEC_CONFIG = {
+    "base_url": "https://data.sec.gov",
+    "submissions_url": "https://data.sec.gov/submissions/CIK{cik}.json",
+    "user_agent": "Apex Capital Intelligence research@apexcapital.ai",
+    # Minimum position change (shares) to flag as new/increased block
+    "min_position_change": 50_000,
+    # Minimum NEW position size to flag
+    "min_new_position": 100_000,
+    # Filing types to pull
+    "target_filings": ["13F-HR", "13F-HR/A"],
+}
+
+# ─── Backtesting Parameters (Quant Team) ─────────────────────────────────────
+BACKTEST_CONFIG = {
+    "start_date": "2018-01-01",
+    "end_date": "2024-12-31",
+    "initial_capital": 1_000_000,      # $1M starting capital
+    "commission_per_trade": 0.001,     # 0.1% per trade (slippage + commission)
+    "max_position_size_pct": 0.10,     # Max 10% of portfolio in one position
+    "stop_loss_pct": 0.08,             # 8% stop loss
+    "take_profit_pct": 0.25,           # 25% take profit
+    "rebalance_frequency": "weekly",   # How often to rebalance
+    "benchmark": "SPY",                # Benchmark for alpha calculation
+}
+
+# ─── Strategy Parameters ─────────────────────────────────────────────────────
+STRATEGY_CONFIG = {
+    "institutional_follow": {
+        "enabled": True,
+        "signal_lag_days": 3,          # Days after 13F filing to enter
+        "holding_period_days": 90,     # Days to hold the position
+        "min_institutions_buying": 2,  # Must have 2+ institutions buying
+        "weight": 0.5,                 # Portfolio weight for this strategy
+    },
+    "momentum": {
+        "enabled": True,
+        "lookback_days": 252,          # 1-year momentum
+        "holding_period_days": 21,
+        "top_percentile": 0.2,         # Buy top 20% momentum stocks
+        "weight": 0.2,
+    },
+    "mean_reversion": {
+        "enabled": True,
+        "lookback_days": 20,
+        "z_score_entry": -2.0,         # Enter when Z-score < -2
+        "z_score_exit": 0.0,           # Exit at mean
+        "weight": 0.15,
+    },
+    "value": {
+        "enabled": True,
+        "pe_max": 20,                  # Max P/E ratio
+        "pb_max": 3,                   # Max P/B ratio
+        "holding_period_days": 180,
+        "weight": 0.15,
+    },
+}
+
+# ─── Risk Management Parameters (Risk Team) ──────────────────────────────────
+RISK_CONFIG = {
+    "max_portfolio_drawdown_pct": 0.20,    # Halt trading if DD > 20%
+    "max_sector_exposure_pct": 0.30,       # Max 30% in one sector
+    "max_single_stock_pct": 0.10,          # Max 10% in one stock
+    "var_confidence": 0.95,                # 95% VaR
+    "var_lookback_days": 252,
+    "position_sizing_method": "kelly",     # 'kelly', 'equal_weight', 'risk_parity'
+    "kelly_fraction": 0.25,                # Use 25% Kelly (conservative)
+}
+
+# ─── Reporting (Design Team) ──────────────────────────────────────────────────
+REPORT_CONFIG = {
+    "output_dir": "reports",
+    "chart_style": "dark_background",
+    "color_primary": "#00FF88",
+    "color_secondary": "#FF4444",
+    "color_neutral": "#AAAAAA",
+}
+
+# ─── Universe of Stocks to Monitor ───────────────────────────────────────────
+# Default watchlist — institutions tend to hold large-cap US equities
 STOCK_UNIVERSE = [
-    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK.B",
-    "JPM",  "V",    "JNJ",   "XOM",  "UNH",  "MA",   "HD",   "PG",
-    "BAC",  "AVGO", "MRK",   "CVX",  "LLY",  "ABBV", "COST", "PEP",
-    "KO",   "TMO",  "CSCO",  "MCD",  "WMT",  "DIS",  "CRM",  "ADBE",
-    "NFLX", "AMD",  "INTC",  "QCOM", "TXN",  "HON",  "UPS",  "CAT",
-    "GS",   "MS",   "BLK",   "SPGI", "CB",   "MMC",  "AXP",  "C",
+    "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META", "TSLA", "BRK-B",
+    "JPM", "V", "UNH", "XOM", "JNJ", "WMT", "MA", "LLY", "AVGO", "CVX",
+    "HD", "MRK", "PEP", "ABBV", "KO", "PFE", "COST", "TMO", "DHR", "MCD",
+    "CSCO", "ACN", "WFC", "ABT", "DIS", "BAC", "ADBE", "NEE", "CRM", "PM",
+    "TXN", "NFLX", "QCOM", "VZ", "RTX", "INTC", "AMD", "AMGN", "HON", "GE",
+    "CAT", "SBUX", "GS", "MS", "BLK", "SPGI", "AXP", "PLD", "C", "USB",
 ]
-
-# --- LONG-SHORT STRATEGY SETTINGS ---
-HEDGE_ETF              = "SH"    # ProShares Short S&P500 — bought when SPY < 200MA
-HEDGE_POSITION_PCT     = 0.08    # 8% of portfolio into SH (board directive: reduced from 20% — oversized for $100k portfolio)
-MAX_SHORT_POSITIONS    = 3       # Max individual momentum shorts at once
-SHORT_POSITION_SIZE_PCT = 0.05   # 5% of portfolio per momentum short
-
-# Momentum short candidates — stocks in our universe most likely to underperform
-# Selected for: losing market share, below 50MA + 200MA, earnings misses
-SHORT_CANDIDATES = [
-    "INTC",   # Intel — catastrophic AI chip market share loss to NVDA/AMD
-    "DIS",    # Disney — streaming losses, theme park softness
-    "BA",     # Boeing — production crises, safety scandals
-    "PFE",    # Pfizer — post-COVID revenue cliff, pipeline disappointments
-    "CSCO",   # Cisco — hardware commoditization, slowing enterprise spend
-]
-
-# --- STRUCTURAL GUARDRAILS ---
-# Conservative hard limits that agents cannot override. Give agents room to
-# operate normally but prevent runaway losses at the portfolio level.
-DAILY_DRAWDOWN_HALT_PCT  = 0.02   # Halt new buys if portfolio drops 2% in one day
-HWM_DRAWDOWN_HALT_PCT    = 0.12   # Halt new buys if 12% below portfolio all-time peak
-MIN_CASH_FLOOR_PCT       = 0.20   # Always keep at least 20% of portfolio in cash
-
-# --- BACKTEST SETTINGS ---
-BACKTEST_START_DATE = "2010-01-01"
-BACKTEST_END_DATE   = "2024-12-31"
-
-# --- REPORT SETTINGS ---
-PAPER_TRADING_DAYS = 30
-DAILY_REPORT_HOUR  = 16   # 4:00 PM ET — after market close
-DAILY_REPORT_MIN   = 15   # 4:15 PM ET

@@ -1,0 +1,159 @@
+{
+  "created_at": "2026-05-14T20:15:00.000000",
+  "last_updated": "2026-06-09T15:18:19.275534",
+  "rebalancing_policy": "compound",
+  "reserve": {
+    "balance": 10000.0,
+    "purpose": "Emergency buffer. Board votes to allocate to struggling pod."
+  },
+  "pods": {
+    "pod1_rd": {
+      "name": "R&D / Institutional",
+      "strategy": "Sector research + institutional 13F signal following. R&D team picks individual stocks based on momentum, sector rotation, and institutional conviction.",
+      "budget_inception": 30000.0,
+      "cash_balance": 81.48,
+      "positions_value": 44202.22,
+      "total_value": 44283.7,
+      "_note": "Pod 1 is over-allocated at inception ($44,102 positions vs $30k budget). cash_balance floored at 0. total_value locked at budget until positions normalize via closes.",
+      "pnl_today": 1.5687,
+      "pnl_lifetime": 0.0,
+      "positions": {
+        "APD": {
+          "qty": 14.0,
+          "avg_entry": 303.24,
+          "current_price": 304.43,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "ARM": {
+          "qty": 8.0,
+          "avg_entry": 214.2,
+          "current_price": 227.0,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "COST": {
+          "qty": 2.0,
+          "avg_entry": 1001.79,
+          "current_price": 1028.0,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "ETN": {
+          "qty": 7.0,
+          "avg_entry": 401.66,
+          "current_price": 407.0,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "AVGO": {
+          "qty": 10.0,
+          "avg_entry": 435.07,
+          "current_price": 441.5,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "GS": {
+          "qty": 7.0,
+          "avg_entry": 940.3,
+          "current_price": 955.42,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "KO": {
+          "qty": 37.0,
+          "avg_entry": 78.54,
+          "current_price": 80.21,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "LLY": {
+          "qty": 5.0,
+          "avg_entry": 987.61,
+          "current_price": 1006.76,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "NEE": {
+          "qty": 72.0,
+          "avg_entry": 96.52,
+          "current_price": 94.6,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "SBUX": {
+          "qty": 22.0,
+          "avg_entry": 104.42,
+          "current_price": 106.41,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "TSLA": {
+          "qty": 5.0,
+          "avg_entry": 407.36,
+          "current_price": 442.69,
+          "side": "long",
+          "signal_source": "rd_team",
+          "opened_at": "2026-05-14T20:15:00.000000"
+        },
+        "AMAT": {
+          "qty": 6,
+          "avg_entry": 458.17,
+          "current_price": 458.17,
+          "side": "long",
+          "signal_source": "Agent 1",
+          "opened_at": "2026-06-02T00:15:37.132111"
+        }
+      }
+    },
+    "pod2_ml": {
+      "name": "ML / Quantitative",
+      "strategy": "Pure ML model predictions. Scores institutional 13F filings using a trained model (38 features, AUC ~0.59). Systematic, no discretion.",
+      "budget_inception": 30000.0,
+      "cash_balance": 30000.0,
+      "positions_value": 0.0,
+      "total_value": 30000.0,
+      "pnl_today": 0.0,
+      "pnl_lifetime": 0.0,
+      "positions": {}
+    },
+    "pod3_macro": {
+      "name": "Macro / ETF Rotation",
+      "strategy": "Sector ETF rotation based on R&D sector breadth scores, VIX regime, and SPY RSI. Holds top 3-4 sector ETFs, rebalances monthly. ETFs: XLK, XLE, XLF, XLU, XLP, XLV, XLI, GLD, TLT, QQQ.",
+      "budget_inception": 30000.0,
+      "cash_balance": 16821.62,
+      "positions_value": 13178.38,
+      "total_value": 30000.0,
+      "pnl_today": 0.0,
+      "pnl_lifetime": 0.0,
+      "positions": {
+        "XLK": {
+          "qty": 28,
+          "avg_entry": 176.26,
+          "current_price": 176.26,
+          "side": "long",
+          "signal_source": "etf_pod_board",
+          "opened_at": "2026-05-16T00:15:45.644009"
+        },
+        "XLV": {
+          "qty": 54,
+          "avg_entry": 152.65,
+          "current_price": 152.65,
+          "side": "long",
+          "signal_source": "etf_pod_board",
+          "opened_at": "2026-06-08T21:01:40.984902"
+        }
+      }
+    }
+  }
+}

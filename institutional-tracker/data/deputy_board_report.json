@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-06-09T12:01:38.149003",
+  "dry_run": false,
+  "proposals_reviewed": 1,
+  "approved_count": 0,
+  "rejected_count": 0,
+  "deferred_count": 0,
+  "needs_info_count": 1,
+  "clarify_path": "data/cit_clarification_requests.json",
+  "results": [
+    {
+      "proposal_id": "CIT-2026-1367",
+      "title": "43 ERROR lines \u2014 dominant: `Sell`",
+      "severity": "HIGH",
+      "category": "BUG_FIX",
+      "passed": false,
+      "classification": "NEEDS_INFO",
+      "approves": 3,
+      "rejects": 0,
+      "defers": 0,
+      "clarifies": 4,
+      "votes": [
+        {
+          "deputy": "Deputy Manager",
+          "vote": "CLARIFY",
+          "rationale": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `Sell` (2/3 sampled). Locate the call site in logs/run'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
+        },
+        {
+          "deputy": "Deputy CRO",
+          "vote": "APPROVE",
+          "rationale": "No risk control exposure \u2014 evidence checks out."
+        },
+        {
+          "deputy": "Deputy CIT Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
+        },
+        {
+          "deputy": "Deputy Chief of Staff",
+          "vote": "APPROVE",
+          "rationale": "HIGH priority with verified evidence \u2014 within deputy mandate, CoS supports."
+        },
+        {
+          "deputy": "Deputy IRM",
+          "vote": "APPROVE",
+          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
+        },
+        {
+          "deputy": "Deputy R&D Leader",
+          "vote": "CLARIFY",
+          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
+        },
+        {
+          "deputy": "Deputy Operations Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
+        }
+      ]
+    }
+  ],
+  "status": "NEEDS_INFO"
+}
