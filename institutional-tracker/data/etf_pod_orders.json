@@ -1,34 +1,13 @@
-{
-  "generated_at": "2026-06-09T20:45:01.331233",
-  "pod": "pod3_macro",
-  "board_vote": "APPROVED",
-  "target_holdings": [
-    "XLK",
-    "QQQ",
-    "XLV"
-  ],
-  "orders": [
-    {
-      "action": "BUY",
-      "ticker": "QQQ",
-      "qty": 7,
-      "price": 707.83,
-      "dollar_value": 4954.81,
-      "reason": "QQQ added to rotation. momentum_score=3.54, ret_1m=-0.5%, RSI=51.6, trend=bullish."
-    }
-  ],
-  "risk_flags": [],
-  "risk_officer_acknowledged": true,
-  "risk_officer_vote": "APPROVE",
-  "risk_officer_note": "Risk Officer flags logged and acknowledged. Execution proceeds per board governance: Director + Strategist majority overrides Risk Officer vote.",
-  "regime_context": {
-    "label": "neutral",
-    "vix": 20.0,
-    "spy_rsi": 50.0,
-    "spy_1d_return": -0.2854,
-    "overbought": false,
-    "warning_count": 0
-  },
-  "canary_alerts": null,
-  "emergency_revote": false
-}
+[
+  {
+    "action": "BUY",
+    "ticker": "QQQ",
+    "qty": 7,
+    "price": 707.83,
+    "dollar_value": 4954.81,
+    "reason": "QQQ added to rotation. momentum_score=3.54, ret_1m=-0.5%, RSI=51.6, trend=bullish.",
+    "status": "executed",
+    "fill_price": 707.83,
+    "executed_at": "2026-06-09T16:51:17.334305"
+  }
+]

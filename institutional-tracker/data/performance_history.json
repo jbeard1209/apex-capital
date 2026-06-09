@@ -1,0 +1,53 @@
+{
+  "description": "Daily P&L snapshots with loss attribution. Agents and the Chairman can read this to understand firm performance history and what caused drawdowns.",
+  "starting_capital": 100000,
+  "snapshots": [
+    {
+      "snapshot_date": "2026-06-09",
+      "snapshot_time": "20:00 ET",
+      "portfolio_value": 97721.46,
+      "cash": 98056.57,
+      "n_positions": 14,
+      "pnl_today_usd": 112.28,
+      "pnl_today_pct": 0.115,
+      "pnl_inception_usd": -2278.54,
+      "pnl_inception_pct": -2.28,
+      "active_agents_at_snapshot": 29,
+      "pipeline_status": "RESTORED",
+      "loss_attribution": {
+        "primary_driver": "CRO HIGH risk level maintained for extended period, blocking all new capital deployment. Portfolio has been in capital-preservation mode since mid-May 2026.",
+        "contributing_factors": [
+          "QQQ short position (11 shares @ $709.87) — market rally hurt short book, covering recommended",
+          "System-wide buy blocks during CRO HIGH periods prevented new position accumulation and profit capture from ML/RD signals",
+          "29 of 29 research agents were stuck in non-loaded state (pipeline bug) — picks not reaching portfolio",
+          "Fixed Income pod ($30k) and ML pod ($30k) have $0 in deployed capital — idle cash drag"
+        ],
+        "fixes_applied_today": [
+          "Bug fixed: research_team.py now loads reassigned agents (was loading 0 agents)",
+          "29 agents restored to active status via Chairman amnesty 2026-06-09",
+          "CRO exoneration added — agents no longer penalized during buy blocks",
+          "PIP stage added before role reassignment",
+          "Thresholds increased: notice=8, PIP=14, reassign=20, replace=30 cycles",
+          "Teaching Division created — 5 tutor agents, 90-day curriculum"
+        ],
+        "expected_recovery_path": "Research pipeline should now generate picks each cycle. Pods 2 (ML) and 3 (Macro/ETF) have $30k idle each — as CRO normalizes to MEDIUM, these should be deployed. The QQQ short should be covered per Review Agent recommendation."
+      },
+      "positions_snapshot": [
+        {"ticker": "APD",  "side": "long",  "qty": 14, "unrealized_pnl_pct": 0.39},
+        {"ticker": "ARM",  "side": "long",  "qty": 8,  "unrealized_pnl_pct": 5.98},
+        {"ticker": "COST", "side": "long",  "qty": 2,  "unrealized_pnl_pct": 2.62},
+        {"ticker": "GS",   "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "LLY",  "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "NEE",  "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "AMAT", "side": "long",  "qty": 6,  "unrealized_pnl_pct": null},
+        {"ticker": "KO",   "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "ZION", "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "RF",   "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "KEY",  "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "CFG",  "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "USB",  "side": "long",  "unrealized_pnl_pct": null},
+        {"ticker": "QQQ",  "side": "short", "qty": -11, "unrealized_pnl_pct": 0.17, "note": "Review Agent recommends SELL — cover this short, it's recovered above 50MA"}
+      ]
+    }
+  ]
+}

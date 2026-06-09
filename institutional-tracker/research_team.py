@@ -426,11 +426,14 @@ class ResearchTeamCoordinator:
                     registry = json.load(f)
                 active_agents = [
                     a for a in registry.get("agents", [])
-                    if a.get("status") == "active"
+                    if a.get("status") in ("active", "reassigned")
+                    and a.get("status") != "retired"
                 ]
                 if active_agents:
                     logger.info(
-                        f"  Loading {len(active_agents)} CoS-spawned registry agent(s)..."
+                        f"  Loading {len(active_agents)} CoS-spawned registry agent(s) "
+                        f"({sum(1 for a in active_agents if a.get('status')=='active')} active, "
+                        f"{sum(1 for a in active_agents if a.get('status')=='reassigned')} reassigned)..."
                     )
                 for entry in active_agents:
                     try:

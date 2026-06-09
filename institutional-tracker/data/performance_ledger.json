@@ -16492,6 +16492,11 @@
       "agent": "HR Agent",
       "text": "HR review cycle 164. Agents reviewed: 38. Firm health: 9.7/10. Action required: 1 agent(s). HRPO: {'PASS': 35, 'WATCH': 0, 'NOTICE': 0, 'CONCERN': 1}. HRDO: {'DEVELOPING': 35, 'WATCH': 0, 'NEEDS_SUPPORT': 1}.",
       "ts": "2026-06-09T16:30:12.253632"
+    },
+    {
+      "agent": "HR Agent",
+      "text": "HR review cycle 165. Agents reviewed: 38. Firm health: 9.7/10. Action required: 1 agent(s). HRPO: {'PASS': 35, 'WATCH': 0, 'NOTICE': 0, 'CONCERN': 1}. HRDO: {'DEVELOPING': 35, 'WATCH': 0, 'NEEDS_SUPPORT': 1}.",
+      "ts": "2026-06-09T16:51:25.262668"
     }
   ],
   "coaching": {
@@ -16511,8 +16516,8 @@
       "read": false
     },
     "CITStrategyAnalyst": {
-      "note": "HR coaching (2026-06-09): Performance rating CONCERN. Issues: 10 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeline effectively.. Development plan: Deep-dive into new sector: read all relevant KNOWLEDGE_BASE frameworks and case studies before first pick submission in new role.; First pick in new sector should cite at least 2 specific data points from the sector's knowledge base \u2014 demonstrate learning, not recycling..",
-      "written_at": "2026-06-09T16:30:12.265024",
+      "note": "HR coaching (2026-06-09): Performance rating CONCERN. Issues: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeline effectively.. Development plan: Deep-dive into new sector: read all relevant KNOWLEDGE_BASE frameworks and case studies before first pick submission in new role.; First pick in new sector should cite at least 2 specific data points from the sector's knowledge base \u2014 demonstrate learning, not recycling..",
+      "written_at": "2026-06-09T16:51:25.303601",
       "read": false
     },
     "CITArchitectureAdvisor": {

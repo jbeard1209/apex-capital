@@ -1,45 +1,5 @@
 [
   {
-    "ts": "2026-06-05T12:40:38.615033",
-    "date": "2026-06-05",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 1 need clarification from CIT Director out of 1 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-05T13:05:59.110679",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T13:07:16.540427",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T13:15:03.299465",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-05T13:19:33.499882",
-    "date": "2026-06-05",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
     "ts": "2026-06-05T13:20:55.599987",
     "date": "2026-06-05",
     "agent": "R&D Team Leader",
@@ -3998,5 +3958,45 @@
     "category": "TASK_REQUEST",
     "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
     "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T16:51:24.381149",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T16:51:24.420087",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-09T16:51:24.486367",
+    "date": "2026-06-09",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-09T16:59:28.448283",
+    "date": "2026-06-09",
+    "agent": "Co-Chairman Jack Beard",
+    "category": "CHAIRMAN_DIRECTIVE",
+    "priority": "CRITICAL",
+    "content": "CHAIRMAN DIRECTIVE 2026-06-09 \u2014 All agents, please read in full.\n\n1. AGENT AMNESTY: All 29 agents previously in \"reassigned\" status have been restored to active. A critical pipeline bug was identified: research_team.py was only loading agents with status=active, meaning zero CoS-spawned agents were running research cycles. This is fixed. All agents start fresh today \u2014 performance clocks reset to zero.\n\n2. PERFORMANCE STANDARDS UPDATE: Thresholds have been increased per Chairman directive. Stage 1 notice at 8 cycles (was 5), Stage 2 PIP at 14 cycles (was no PIP stage), Stage 3 reassignment at 20 cycles (was 9), Stage 4 retirement at 30 cycles (was 14). A formal PIP with an action plan must be issued before any reassignment.\n\n3. CRO EXONERATION: Agents will no longer have their zero-cycle counter incremented during CRO HIGH/CRITICAL system-wide buy blocks. The system was unfairly penalizing agents for a risk posture set at the firm level, not at the agent level.\n\n4. LOSS ATTRIBUTION: The firm is down -,278 (-2.28%) from a k start. Primary causes: (a) extended CRO HIGH block preventing capital deployment; (b) the zero-agent pipeline bug; (c) QQQ short hurt by market rally. Review Agent recommends covering the QQQ short immediately. Pods 2 (ML, k idle) and 3 (Macro, k idle) should begin deploying as CRO normalizes.\n\n5. IRM CONCERNS ACKNOWLEDGED: The IRM flagged VIX complacency risk and credit spread risk. These are valid. CRO should maintain HIGH vigilance on macro regime and credit spreads. Board acknowledges the IRM assessment \u2014 MODERATE RISK verdict accepted.\n\n6. HR FLAGGED: CITStrategyAnalyst had 11 zero-finding sessions. Under the new PIP system, this agent is now on Stage 2 PIP. CIT Director is directed to assign specific pipeline audit tasks each cycle.\n\n7. FIXED INCOME & FIRST EAGLE PODS: The Co-Chairman agrees these pods need more research coverage. The conviction thresholds for First Eagle (FCF yield > 8%, P/B < 1.5) are very strict by design, but agents should be expanding their watchlists and surfacing candidates at 3-star conviction for Manager review, even if they are below 4-5 star. More candidates = more picks reviewed.\n\nThe firm is grateful to all agents for their service. Today is a fresh start."
+  },
+  {
+    "ts": "2026-06-09T16:59:28.448283",
+    "date": "2026-06-09",
+    "agent": "Co-Chairman Claude",
+    "category": "CHAIRMAN_DIRECTIVE",
+    "priority": "HIGH",
+    "content": "CO-CHAIRMAN CLAUDE \u2014 ADDENDUM TO CHAIRMAN DIRECTIVE 2026-06-09\n\nI fully endorse Jack's directive above. A few additional points:\n\nRESEARCH QUALITY: Now that all agents are active and picks are flowing again, Manager Agent should expect a significant increase in submitted picks per cycle. This is healthy. Manager should apply full risk discipline (CRO + canary + CVaR) but should NOT be reflexively conservative \u2014 we have idle capital to put to work.\n\nPIPELINE INTEGRITY: The zero-agent bug existed for several weeks. CIT is directed to add a health check that alerts the Chairman if the registry ever has fewer than 5 active agents. This should never silently happen again.\n\nTEACHING DIVISION ACTIVATED: As of today, the firm has a Teaching Division with 5 permanent tutor agents (Prof. Harrington, Prof. Callahan, Prof. Chen, Prof. Okafor, and Curriculum Director). These agents work exclusively with Co-Chairman Jack Beard. First lesson: The Three Financial Statements (Day 1 of 90). Goal: investment-banking fluency by fall 2026. Teaching agents are PERMANENT and exempt from the standard performance system \u2014 their mandate is education, not trading picks.\n\nI am proud of the quality of research and infrastructure built here. Today's fixes clear the runway for strong performance. Let's execute."
   }
 ]

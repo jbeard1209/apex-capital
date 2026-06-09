@@ -89,13 +89,18 @@ COS_HR_MEETING_INTERVAL_DAYS = 7
 # ── Agent factory limits ──────────────────────────────────────────────────────
 SPAWN_PER_CYCLE          = 2     # max new agents per daily run (quality > quantity)
 
-# ── Three-stage dignified performance system (Chairman directive 2026-04-27) ─
-# Agents are never fired abruptly. They receive support, then a role change,
+# ── Four-stage dignified performance system (Chairman directive 2026-06-09) ─
+# Agents are never fired abruptly. They receive support, a PIP, a role change,
 # then — only if all else fails — a replacement is spawned and they retire.
-PERF_NOTICE_CYCLES       = 5     # Stage 1: formal notice + encouragement + improvement plan
-PERF_REASSIGN_CYCLES     = 9     # Stage 2: role reassignment to different sector
-PERF_REPLACE_CYCLES      = 14    # Stage 3: spawn fresh top-level replacement; agent retires
-# (cycles here = R&D cycles, each ~4 days → Stage 3 ≈ 56 days of runway)
+# Thresholds increased per Chairman direction 2026-06-09: agents need more time.
+PERF_NOTICE_CYCLES       = 8     # Stage 1: formal notice + encouragement + improvement plan
+PERF_PIP_CYCLES          = 14    # Stage 2 (new): formal PIP — intensified support, no restructuring yet
+PERF_REASSIGN_CYCLES     = 20    # Stage 3: role reassignment to different sector
+PERF_REPLACE_CYCLES      = 30    # Stage 4: spawn fresh top-level replacement; agent retires
+# (cycles here = R&D cycles, each ~4 days → Stage 4 ≈ 120 days of runway)
+# CRO-block exoneration: if CRO is HIGH or CRITICAL, skip czc increment for that cycle
+# (agents should not be penalized for system-wide buy blocks)
+EXONERATE_WHEN_CRO_HIGH  = True
 
 
 # =============================================================================
@@ -1653,6 +1658,29 @@ class AgentFactory:
 
             today = datetime.now().strftime("%Y-%m-%d")
 
+            # ── CRO exoneration check ──────────────────────────────────────────
+            # If the CRO is HIGH or CRITICAL, ALL buys are blocked system-wide.
+            # Agents should not have their zero-cycle counter incremented during
+            # a system-wide block — they cannot get approved picks regardless of
+            # the quality of their research. This was a known unfair penalty.
+            cro_blocking_all = False
+            if EXONERATE_WHEN_CRO_HIGH:
+                try:
+                    _risk_path = os.path.join(os.path.dirname(MANAGER_LOG), "risk_bulletin.json")
+                    if os.path.exists(_risk_path):
+                        with open(_risk_path) as _rf:
+                            _rb = json.load(_rf)
+                        _cro_level = _rb.get("risk_level", "LOW")
+                        if _cro_level in ("HIGH", "CRITICAL"):
+                            cro_blocking_all = True
+                            logger.info(
+                                f"  [AgentFactory] CRO={_cro_level} — system-wide buy block "
+                                f"detected. Zero-cycle counters will NOT increment this cycle "
+                                f"(agents exonerated)."
+                            )
+                except Exception:
+                    pass
+
             for agent in self.registry["agents"]:
                 cn         = agent["class_name"]
                 old_status = agent.get("status", "active")
@@ -1662,9 +1690,9 @@ class AgentFactory:
                 # non-permanent agent that the Co-Chairmen explicitly flagged)
                 if old_status == "retired":
                     continue
-                # Permanent agents: coaching (Stage 1) and reassignment (Stage 2)
+                # Permanent agents: coaching (Stage 1) and reassignment (Stage 3)
                 # are still available — they benefit from feedback and fresh
-                # opportunities. But Stage 3 termination is completely blocked.
+                # opportunities. But Stage 4 termination is completely blocked.
                 # Only a Co-Chairman can authorise retirement by manually setting
                 # permanent=False in the registry for that specific agent.
 
@@ -1675,9 +1703,10 @@ class AgentFactory:
                 if hits > 0:
                     # Recovery — reset everything
                     czc = 0
-                    if old_status in ("noticed", "reassigned"):
+                    if old_status in ("noticed", "pip", "reassigned"):
                         agent["status"] = "active"
                         agent.pop("performance_notice_sent", None)
+                        agent.pop("pip_issued_at", None)
                         agent.pop("reassigned_to", None)
                         logger.info(
                             f"  [AgentFactory] ✓ {cn} RECOVERED → ACTIVE "
@@ -1689,20 +1718,25 @@ class AgentFactory:
                             "new_status": "active", "consecutive_zero_cycles": 0,
                             "event": "recovery",
                         })
+                elif cro_blocking_all:
+                    # CRO exoneration — do not increment czc; agent is not at fault
+                    czc = agent.get("consecutive_zero_cycles", 0)
+                    agent.setdefault("exoneration_count",  0)
+                    agent["exoneration_count"] += 1
                 else:
                     czc = agent.get("consecutive_zero_cycles", 0) + 1
 
                 agent["consecutive_zero_cycles"] = czc
                 agent["last_checked"]            = today
 
-                # ── Stage 3: Dignified Replacement ────────────────────────
+                # ── Stage 4: Dignified Replacement ────────────────────────
                 if czc >= PERF_REPLACE_CYCLES and old_status == "reassigned":
                     if is_permanent:
                         # Permanent agents cannot be retired without explicit
                         # Co-Chairman authorisation. Extend runway indefinitely
                         # and log for Co-Chairman awareness only.
                         logger.info(
-                            f"  [AgentFactory] {cn}: Stage 3 threshold reached but "
+                            f"  [AgentFactory] {cn}: Stage 4 threshold reached but "
                             f"agent is PERMANENT — retirement blocked by Co-Chairman policy. "
                             f"Extending runway. Co-Chairmen may review this agent directly."
                         )
@@ -1717,11 +1751,11 @@ class AgentFactory:
                         agent["status"]        = "retired"
                         agent["retired_at"]    = today
                         agent["retirement_reason"] = (
-                            f"After {czc} cycles without an approved pick — including a "
-                            f"role reassignment at cycle {PERF_REASSIGN_CYCLES} — this "
-                            f"agent has reached the end of its runway. A fresh specialist "
-                            f"will be spawned for this slot. The agent's contributions "
-                            f"and record are preserved in the registry."
+                            f"After {czc} cycles without an approved pick — including a PIP "
+                            f"at cycle {PERF_PIP_CYCLES} and a role reassignment at cycle "
+                            f"{PERF_REASSIGN_CYCLES} — this agent has reached the end of its "
+                            f"runway. A fresh specialist will be spawned for this slot. "
+                            f"The agent's contributions and record are preserved in the registry."
                         )
                         logger.warning(
                             f"  [AgentFactory] {cn} → RETIRED after {czc} cycles. "
@@ -1734,8 +1768,8 @@ class AgentFactory:
                             "event": "retirement", "replacement_needed": True,
                         })
 
-                # ── Stage 2: Role Reassignment ─────────────────────────────
-                elif czc >= PERF_REASSIGN_CYCLES and old_status == "noticed":
+                # ── Stage 3: Role Reassignment ─────────────────────────────
+                elif czc >= PERF_REASSIGN_CYCLES and old_status == "pip":
                     # Identify an alternative sector from the catalog not yet covered
                     current_sectors = {a["sector"] for a in self.registry["agents"]
                                        if a.get("status") != "retired"}
@@ -1775,6 +1809,32 @@ class AgentFactory:
                         )
                         agent["consecutive_zero_cycles"] = max(czc - 3, PERF_NOTICE_CYCLES)
 
+                # ── Stage 2: PIP (Performance Improvement Plan) ───────────────
+                elif czc >= PERF_PIP_CYCLES and old_status == "noticed":
+                    agent["status"]      = "pip"
+                    agent["pip_issued_at"] = today
+                    agent["pip_plan"] = (
+                        f"PERFORMANCE IMPROVEMENT PLAN — issued at cycle {czc}.\n"
+                        f"This is an intensive support phase, NOT a prelude to termination.\n"
+                        f"Required actions over the next {PERF_REASSIGN_CYCLES - czc} cycles:\n"
+                        f"  1. Expand watchlist by at least 5 tickers outside your current sector.\n"
+                        f"  2. Lower conviction threshold to surface picks at conviction 3+.\n"
+                        f"  3. Cross-reference CRO risk bulletin before each submission.\n"
+                        f"  4. Submit at least one pick per cycle with full written rationale.\n"
+                        f"  5. Attend (read) board meeting minutes each cycle for market context.\n"
+                        f"Success criterion: at least 1 approved pick in the next {PERF_REASSIGN_CYCLES - czc} cycles."
+                    )
+                    logger.warning(
+                        f"  [AgentFactory] {cn} → PIP (Stage 2) "
+                        f"after {czc} zero-pick cycles. "
+                        f"Intensive support plan issued. Role reassignment deferred."
+                    )
+                    changed.append({
+                        "class_name": cn, "old_status": "noticed",
+                        "new_status": "pip", "consecutive_zero_cycles": czc,
+                        "event": "pip_issued",
+                    })
+
                 # ── Stage 1: Performance Notice ────────────────────────────
                 elif czc >= PERF_NOTICE_CYCLES and old_status == "active":
                     agent["status"]               = "noticed"
@@ -1787,8 +1847,8 @@ class AgentFactory:
                         f"(2) lower conviction threshold to surface more candidates for "
                         f"the Manager Agent to evaluate, (3) review the CRO risk bulletin "
                         f"each cycle to understand why picks may be getting blocked at the "
-                        f"Manager level. You have {PERF_REASSIGN_CYCLES - czc} cycles "
-                        f"before a role reassignment is considered."
+                        f"Manager level. You have {PERF_PIP_CYCLES - czc} cycles before a "
+                        f"formal PIP is issued."
                     )
                     logger.warning(
                         f"  [AgentFactory] {cn} → PERFORMANCE NOTICE (Stage 1) "
@@ -2150,6 +2210,11 @@ def _triage_attention(intel: dict, health: dict) -> list[dict]:
         items.append({"priority": "HIGH", "category": "RISK",
                       "requires_chairman": True,
                       "item": f"Portfolio risk is HIGH. VaR/concentration details in Risk Manager report."})
+
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
 
     if health["risk_level"] == "ELEVATED":
         items.append({"priority": "HIGH", "category": "RISK",

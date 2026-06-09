@@ -95,9 +95,12 @@ def build_all_response():
         result["agent_files"] = sorted(p.name for p in agents_dir.glob("cos_*.py"))
 
     # Teaching Division
-    result["data"]["teaching_lesson"]   = load_json(DATA_DIR / "teaching_lesson_today.json")
-    result["data"]["teaching_progress"] = load_json(DATA_DIR / "teaching_progress.json")
-    result["data"]["ml_live_picks"]     = load_json(DATA_DIR / "ml_live_picks_log.json")
+    result["data"]["teaching_lesson"]    = load_json(DATA_DIR / "teaching_lesson_today.json")
+    result["data"]["teaching_progress"]  = load_json(DATA_DIR / "teaching_progress.json")
+    result["data"]["ml_live_picks"]      = load_json(DATA_DIR / "ml_live_picks_log.json")
+
+    # Performance history (loss attribution)
+    result["data"]["performance_history"] = load_json(DATA_DIR / "performance_history.json")
 
     return result
 

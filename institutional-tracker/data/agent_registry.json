@@ -189,15 +189,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-04-30T20:41:51.939445",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-05",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "HistoricalContextAnalyst",
@@ -208,15 +205,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-04-30T20:41:51.939900",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-05",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "SystemPerformanceAnalyst",
@@ -227,15 +221,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-01T13:46:12.955243",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "GeopoliticalRiskAnalyst",
@@ -246,15 +237,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-01T13:46:12.955653",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "CITDirector",
@@ -264,16 +252,13 @@
       "tier": 1,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "notes": "Runs twice daily (6 AM + 6 PM EDT). Overseen by IRM and HR.",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "CITCodeInspector",
@@ -283,15 +268,12 @@
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "CITPipelineMonitor",
@@ -301,15 +283,12 @@
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "CITStrategyAnalyst",
@@ -319,15 +298,12 @@
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "CITArchitectureAdvisor",
@@ -337,15 +313,12 @@
       "tier": 2,
       "created_by": "Chairman",
       "created_at": "2026-05-01T00:00:00.000000",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "MacroPolicyHistorian",
@@ -356,15 +329,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T16:26:00.135219",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "HRPerformanceOfficer",
@@ -375,15 +345,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T16:26:00.135854",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-08",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "HRDevelopmentOfficer",
@@ -394,15 +361,12 @@
       "tier": 2,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T16:42:00.061126",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-13",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "DividendYieldAgent",
@@ -413,15 +377,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T16:42:00.061663",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Macro-Regime",
-      "reassigned_at": "2026-05-13",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Macro-Regime'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "IPOMomentumAgent",
@@ -432,15 +393,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T17:48:11.493312",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Small Cap",
-      "reassigned_at": "2026-05-14",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Small Cap'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "ValueOpportunityAgent",
@@ -451,15 +409,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T17:48:11.493489",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-06",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Small Cap",
-      "reassigned_at": "2026-05-14",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Small Cap'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "InternationalEmergingAgent",
@@ -470,15 +425,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T20:15:38.952981",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-08",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-14",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "MacroRatesSensitivityAgent",
@@ -489,15 +441,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-05T20:15:38.953746",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-08",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-14",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "QuantFactorScreenerAgent",
@@ -508,15 +457,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-06T10:15:56.839670",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-08",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "EarningsCatalystAgent",
@@ -527,15 +473,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-06T10:15:56.839920",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-08",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "ShortInterestMonitorAgent",
@@ -546,15 +489,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-06T17:52:17.532560",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-13",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "OptionsFlowMonitorAgent",
@@ -565,15 +505,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-06T17:52:17.532735",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 9,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-13",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "ExecutionAuditorAgent",
@@ -584,15 +521,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-06T18:00:38.975803",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-14",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "SmallCapGrowthAgent",
@@ -603,15 +537,12 @@
       "tier": 1,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-14T18:01:14.104385",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "BiotechResearchAgent",
@@ -622,15 +553,12 @@
       "tier": 1,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-14T18:01:14.105050",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 13,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-15",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "MacroRegimeMonitorAgent",
@@ -641,15 +569,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-14T20:15:41.036793",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-18",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "TechnicalPatternAgent",
@@ -660,15 +585,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-14T20:15:41.037161",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 12,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-18",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "DividendDefensiveAgent",
@@ -679,15 +601,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-15T11:01:51.510373",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-18",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "MicroCapAlphaAgent",
@@ -698,15 +617,12 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-15T11:01:51.510538",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 11,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-18",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     },
     {
       "class_name": "GlobalMacroETFAgent",
@@ -717,17 +633,14 @@
       "tier": 3,
       "created_by": "Chief of Staff",
       "created_at": "2026-05-15T16:31:09.672207",
-      "status": "reassigned",
+      "status": "active",
       "permanent": true,
-      "consecutive_zero_cycles": 10,
+      "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
-      "performance_notice_sent": "2026-05-15",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Financials",
-      "reassigned_at": "2026-05-19",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Financials'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement."
+      "amnesty_restored_at": "2026-06-09",
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
     }
   ],
-  "last_updated": "2026-06-09T16:30:12.037639",
+  "last_updated": "2026-06-09T16:51:22.450494",
   "total_spawned": 38
 }

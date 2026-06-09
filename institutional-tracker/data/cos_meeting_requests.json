@@ -3135,6 +3135,16 @@
     "from_agent": "Board Meeting",
     "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
     "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-09T16:51:22.390582"
+  },
+  {
+    "id": "CMR-E33D3A",
+    "ts": "2026-06-09T16:51:28.328180",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
     "status": "PENDING"
   }
 ]

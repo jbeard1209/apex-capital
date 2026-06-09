@@ -1,27 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260608-08-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (7 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 03, 2026\" \u00d726; \"ETF Pod 3 Board \u2014 APPROVED | Target: XLK, XLE, XLF\" \u00d720; \"Apex Capital \u2014 R&D Team Briefing | Jun 04, 2026\" \u00d744",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T08:50:09.940333",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "CIT-2026-1354",
-    "title": "Stale data file: data/risk_manager_report.json (134h old, threshold 26h)",
-    "category": "BUG_FIX",
-    "description": "data/risk_manager_report.json has not been updated in 134h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-    "proposed_fix": "Check that the agent producing data/risk_manager_report.json ran successfully in recent logs. Verify its cron schedule is active.",
-    "evidence": "data/risk_manager_report.json: file age 134h. Max acceptable: 26h.",
-    "confidence": 88,
-    "severity": "HIGH",
-    "approved_by": "Deputy Board (MAJORITY)",
-    "status": "awaiting_chairman",
-    "times_approved": 1,
-    "queued_at": "2026-06-08T10:08:33.139229"
-  },
-  {
     "id": "CIT-2026-1000",
     "title": "62 ERROR lines \u2014 dominant: `known`",
     "category": "BUG_FIX",
@@ -194,5 +172,13 @@
     "status": "fixed",
     "times_approved": 2,
     "queued_at": "2026-06-09T16:00:57.762715"
+  },
+  {
+    "id": "pip-integrity-20260609-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (5 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 09, 2026\" \u00d722; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:D | Jun 09, 2026\" \u00d714; \"Apex Capital \u2014 Chief of Staff Brief | Risk:HIGH | Grade:D | Jun 09, 2026\" \u00d79",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-09T16:50:01.192637",
+    "status": "awaiting_chairman"
   }
 ]
