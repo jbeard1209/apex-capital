@@ -1,35 +1,33 @@
 #!/usr/bin/env python3
 """
 APEX CAPITAL — Mac → Cloud Data Sync Script
-Runs every 6 hours (via cron) and pushes all JSON data files to the cloud server.
-Zero dependencies — uses only Python built-ins.
+Runs every 6 hours (via cron) and pushes all JSON data files + historical
+snapshots to the cloud server. History is stored locally in history.json
+and grows over time — the cloud always receives the full history on each push.
 
 Usage:
   python3 sync_to_cloud.py
 
-Or add to crontab to run every 6 hours:
-  0 */6 * * * python3 "/Users/jackbeard/Claude investment strategy/cloud/sync_to_cloud.py" >> "/Users/jackbeard/Claude investment strategy/cloud/sync.log" 2>&1
+Crontab (every 6 hours):
+  0 */6 * * * python3 "/Users/jackbeard/Claude investment strategy/dashboard/sync_to_cloud.py" >> "/Users/jackbeard/Claude investment strategy/dashboard/sync.log" 2>&1
 """
 
 import json
-import os
 import sys
 import urllib.request
 import urllib.error
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # ============================================================
-#  ★ CONFIGURATION — update these after deploying to Railway
+CLOUD_URL = "https://apex-capital-production-17b6.up.railway.app"
+API_KEY   = "apex-2026-secret"
 # ============================================================
 
-CLOUD_URL = "https://YOUR-APP-NAME.up.railway.app"  # ← paste your Railway URL here
-API_KEY   = "change-this-secret-key"                # ← must match Railway env var API_KEY
-
-# ============================================================
-
-BASE_DIR = Path(__file__).parent.parent   # Claude investment strategy/
-DATA_DIR = BASE_DIR / "institutional-tracker" / "data"
+BASE_DIR     = Path(__file__).parent.parent   # Claude investment strategy/
+DATA_DIR     = BASE_DIR / "institutional-tracker" / "data"
+HISTORY_FILE = Path(__file__).parent / "history.json"
+MAX_SNAPSHOTS = 1500  # ~1 year at 4× daily
 
 DATA_FILES = {
     "state":             "state.json",
@@ -60,45 +58,127 @@ def load_json(path: Path):
     except Exception:
         return None
 
+def build_snapshot(data: dict, ts: str) -> dict:
+    """Extract key metrics from current data into a compact historical snapshot."""
+    snap = {"ts": ts}
+
+    # Portfolio
+    acct = (data.get("portfolio") or {}).get("account") or {}
+    snap["portfolio_value"] = acct.get("portfolio_value")
+    snap["cash"]            = acct.get("cash")
+    snap["n_positions"]     = acct.get("n_positions")
+    snap["pnl_today"]       = acct.get("pnl_today")
+    snap["pnl_today_pct"]   = acct.get("pnl_today_pct")
+
+    # State
+    state = data.get("state") or {}
+    snap["paper_day"]       = state.get("paper_day")
+    snap["high_water_mark"] = state.get("high_water_mark")
+
+    # CoS company health
+    health = (data.get("cos") or {}).get("company_health") or {}
+    snap["risk_level"]      = health.get("risk_level")
+    snap["manager_grade"]   = health.get("manager_grade")
+    snap["manager_score"]   = health.get("manager_score")
+    snap["win_rate"]        = health.get("trade_win_rate")
+    snap["spy_alpha"]       = health.get("trade_benchmark_delta")
+    snap["deployed_pct"]    = health.get("deployed_pct")
+    snap["pdo_signal"]      = health.get("pdo_signal")
+    snap["trades_exec"]     = health.get("trades_executed")
+    snap["trades_rej"]      = health.get("trades_rejected")
+
+    # Canary
+    canary = data.get("canary") or {}
+    snap["canary_level"]    = canary.get("last_level")
+    snap["canary_regime"]   = canary.get("regime")
+
+    # Pods
+    pod_pnl = (data.get("pod_pnl") or {}).get("pods") or {}
+    for pod_key, pod_label in [("pod1_rd","p1"),("pod2_ml","p2"),("pod3_macro","p3")]:
+        p = pod_pnl.get(pod_key) or {}
+        snap[f"{pod_label}_value"]      = p.get("total_value")
+        snap[f"{pod_label}_positions"]  = p.get("n_positions")
+        snap[f"{pod_label}_pnl_today"]  = p.get("pnl_today")
+        snap[f"{pod_label}_deployed"]   = p.get("positions_pct")
+        snap[f"{pod_label}_cash"]       = p.get("cash_balance")
+
+    return snap
+
+def load_history() -> list:
+    try:
+        with open(HISTORY_FILE) as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+def save_history(history: list):
+    with open(HISTORY_FILE, "w") as f:
+        json.dump(history, f)
+
 def main():
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{ts}] Starting data sync to {CLOUD_URL}")
+    ts  = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    ts_display = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{ts_display}] Starting data sync to {CLOUD_URL}")
 
     if "YOUR-APP-NAME" in CLOUD_URL:
-        print("ERROR: Update CLOUD_URL in sync_to_cloud.py with your Railway URL first.")
+        print("ERROR: Update CLOUD_URL in sync_to_cloud.py first.")
         sys.exit(1)
 
-    # Collect all data files
-    payload = {"data": {}, "synced_at": ts, "source": "mac_cron"}
+    # Collect all current data files
+    current_data = {}
     loaded, missing = 0, 0
     for key, filename in DATA_FILES.items():
-        data = load_json(DATA_DIR / filename)
-        if data is not None:
-            payload["data"][key] = data
+        d = load_json(DATA_DIR / filename)
+        if d is not None:
+            current_data[key] = d
             loaded += 1
         else:
             missing += 1
-
     print(f"  Loaded {loaded} files, {missing} missing/unreadable")
 
-    # POST to cloud server
-    body  = json.dumps(payload).encode()
-    req   = urllib.request.Request(
+    # Build and append snapshot to local history
+    snapshot = build_snapshot(current_data, ts)
+    history  = load_history()
+
+    # Only add a new snapshot if it's meaningfully different (avoid duplicates
+    # if the script runs twice in quick succession)
+    should_append = True
+    if history:
+        last_snap = history[-1]
+        last_val  = last_snap.get("portfolio_value")
+        curr_val  = snapshot.get("portfolio_value")
+        if last_val == curr_val and last_snap.get("ts", "")[:13] == ts[:13]:
+            should_append = False  # same hour, same value — skip
+
+    if should_append:
+        history.append(snapshot)
+        # Trim to max
+        if len(history) > MAX_SNAPSHOTS:
+            history = history[-MAX_SNAPSHOTS:]
+        save_history(history)
+        print(f"  History: {len(history)} snapshots saved locally")
+
+    # Push current data + full history to cloud
+    payload = {
+        "data":      current_data,
+        "history":   history,
+        "synced_at": ts,
+        "source":    "mac_cron",
+    }
+    body = json.dumps(payload).encode()
+    req  = urllib.request.Request(
         f"{CLOUD_URL.rstrip('/')}/api/push",
         data    = body,
-        headers = {
-            "Content-Type": "application/json",
-            "X-API-Key":    API_KEY,
-        },
+        headers = {"Content-Type": "application/json", "X-API-Key": API_KEY},
         method  = "POST",
     )
     try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
+        with urllib.request.urlopen(req, timeout=60) as resp:
             result = json.loads(resp.read().decode())
-            print(f"  ✓ Push successful: {result.get('keys', '?')} keys pushed at {result.get('pushed_at', '?')}")
+            print(f"  ✓ Push successful — {result.get('keys','?')} data keys, "
+                  f"{result.get('history_snapshots','?')} history snapshots")
     except urllib.error.HTTPError as e:
-        body_text = e.read().decode()[:200]
-        print(f"  ✗ Push failed: HTTP {e.code} — {body_text}")
+        print(f"  ✗ Push failed: HTTP {e.code} — {e.read().decode()[:200]}")
         sys.exit(1)
     except Exception as e:
         print(f"  ✗ Push failed: {e}")

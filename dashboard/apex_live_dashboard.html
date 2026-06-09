@@ -201,6 +201,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="tab" onclick="showTab('agents')">All Agents</div>
   <div class="tab" onclick="showTab('teams')">Teams</div>
   <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
+  <div class="tab" onclick="showTab('history')">📈 History</div>
 </div>
 
 <!-- ═══════════════════════════ OVERVIEW ═══════════════════════════ -->
@@ -425,6 +426,102 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <tr><td><span class="badge badge-r">CRITICAL</span></td><td>PRESERVE</td><td>4%</td><td>20%</td><td class="dim">—</td></tr>
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ HISTORY ═══════════════════════════ -->
+<div id="tab-history" class="content">
+
+  <div id="hist-empty" style="display:none;text-align:center;padding:60px;color:var(--text2)">
+    <div style="font-size:40px;margin-bottom:12px">📈</div>
+    <div style="font-size:14px;font-weight:700;margin-bottom:8px">No history yet</div>
+    <div style="font-size:12px">History builds automatically — each 6-hour sync adds a snapshot.<br>Come back after the next sync to see your first data points.</div>
+  </div>
+
+  <div id="hist-content" style="display:none">
+
+    <!-- Summary strip -->
+    <div class="grid5" style="margin-bottom:14px">
+      <div class="card" style="text-align:center">
+        <div class="card-title" style="justify-content:center">Snapshots</div>
+        <div style="font-size:22px;font-weight:700" id="hist-snapshots">—</div>
+        <div style="font-size:10px;color:var(--text2)" id="hist-first-date">—</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title" style="justify-content:center">Total Return</div>
+        <div style="font-size:22px;font-weight:700" id="hist-total-return">—</div>
+        <div style="font-size:10px;color:var(--text2)">vs $100,000 start</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title" style="justify-content:center">Peak Value</div>
+        <div style="font-size:22px;font-weight:700;color:var(--green)" id="hist-peak">—</div>
+        <div style="font-size:10px;color:var(--text2)">All-time high</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title" style="justify-content:center">Max Drawdown</div>
+        <div style="font-size:22px;font-weight:700" id="hist-drawdown">—</div>
+        <div style="font-size:10px;color:var(--text2)">From peak</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="card-title" style="justify-content:center">Last Snapshot</div>
+        <div style="font-size:14px;font-weight:700" id="hist-last-date">—</div>
+        <div style="font-size:10px;color:var(--text2)">Auto-syncs every 6h</div>
+      </div>
+    </div>
+
+    <!-- Charts row 1 -->
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="card">
+        <div class="card-title"><div class="dot g"></div>Portfolio Value Over Time</div>
+        <div style="height:220px"><canvas id="hist-portfolio-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot p"></div>Pod Values Over Time</div>
+        <div style="height:220px"><canvas id="hist-pods-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts row 2 -->
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="card">
+        <div class="card-title"><div class="dot y"></div>Capital Deployment %</div>
+        <div style="height:180px"><canvas id="hist-deploy-chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot o"></div>Risk Level Over Time</div>
+        <div style="height:180px"><canvas id="hist-risk-chart"></canvas></div>
+        <div style="font-size:9px;color:var(--text2);margin-top:6px;text-align:center">1=LOW · 2=MODERATE · 3=ELEVATED · 4=HIGH · 5=CRITICAL</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><div class="dot b"></div>Open Positions Over Time</div>
+        <div style="height:180px"><canvas id="hist-positions-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Snapshot table -->
+    <div class="card">
+      <div class="card-title"><div class="dot g"></div>Recent Snapshots (last 20)</div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Portfolio</th>
+              <th>P&L Today</th>
+              <th>Pod 1 (R&D)</th>
+              <th>Pod 2 (ML)</th>
+              <th>Pod 3 (ETF)</th>
+              <th>Risk</th>
+              <th>Canary</th>
+              <th>Grade</th>
+              <th>Day</th>
+            </tr>
+          </thead>
+          <tbody id="hist-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1179,6 +1276,138 @@ Chart.defaults.color = '#888';
 Chart.defaults.borderColor = '#1e1e30';
 Chart.defaults.font.family = "'SF Mono','Fira Code',monospace";
 Chart.defaults.font.size = 11;
+
+// ── History ────────────────────────────────────────────────────────────────
+let historyData = [];
+let histCharts  = {};
+
+async function fetchHistory() {
+  try {
+    const res = await fetch('/api/history');
+    if (!res.ok) return;
+    const d = await res.json();
+    historyData = d.snapshots || [];
+    renderHistory();
+  } catch(e) { console.error('History fetch failed:', e); }
+}
+
+function renderHistory() {
+  const snaps = historyData;
+  if (!snaps.length) {
+    $('hist-empty').style.display = 'block';
+    $('hist-content').style.display = 'none';
+    return;
+  }
+  $('hist-empty').style.display = 'none';
+  $('hist-content').style.display = 'block';
+
+  // Summary stats
+  const first = snaps[0], last = snaps[snaps.length - 1];
+  const firstVal = first.portfolio_value || 100000;
+  const lastVal  = last.portfolio_value  || firstVal;
+  const totalReturn = ((lastVal - 100000) / 100000 * 100).toFixed(2);
+  const peak = Math.max(...snaps.map(s => s.portfolio_value || 0));
+  const drawdown = peak ? ((lastVal - peak) / peak * 100).toFixed(2) : 0;
+  $('hist-snapshots').textContent  = snaps.length;
+  $('hist-first-date').textContent = (first.ts||'').slice(0,10);
+  $('hist-last-date').textContent  = (last.ts||'').slice(0,10);
+  $('hist-total-return').textContent = (totalReturn >= 0 ? '+' : '') + totalReturn + '%';
+  $('hist-total-return').className = totalReturn >= 0 ? 'g' : 'r';
+  $('hist-peak').textContent = fmt$(peak);
+  $('hist-drawdown').textContent = drawdown + '%';
+  $('hist-drawdown').className = drawdown < -5 ? 'r' : 'o';
+
+  const labels = snaps.map(s => (s.ts||'').slice(0,16).replace('T',' '));
+
+  // Portfolio value chart
+  const portVals = snaps.map(s => s.portfolio_value);
+  drawHistChart('hist-portfolio-chart', labels, [
+    { label:'Portfolio Value', data:portVals, color:'#00FF88' },
+    { label:'Starting Capital', data:snaps.map(()=>100000), color:'#444', dash:true },
+  ], '$');
+
+  // Pod values chart
+  drawHistChart('hist-pods-chart', labels, [
+    { label:'Pod 1 R&D',     data:snaps.map(s=>s.p1_value), color:'#00FF88' },
+    { label:'Pod 2 ML',      data:snaps.map(s=>s.p2_value), color:'#4488FF' },
+    { label:'Pod 3 Macro',   data:snaps.map(s=>s.p3_value), color:'#9966FF' },
+  ], '$');
+
+  // Deployment chart
+  drawHistChart('hist-deploy-chart', labels, [
+    { label:'Pod 1 Deployed %', data:snaps.map(s=>s.p1_deployed), color:'#00FF88' },
+    { label:'Pod 3 Deployed %', data:snaps.map(s=>s.p3_deployed), color:'#9966FF' },
+    { label:'Overall Deployed %', data:snaps.map(s=>s.deployed_pct), color:'#FFD700' },
+  ], '%');
+
+  // Risk / canary over time
+  const riskMap = {LOW:1,MODERATE:2,ELEVATED:3,HIGH:4,CRITICAL:5};
+  drawHistChart('hist-risk-chart', labels, [
+    { label:'Risk Level (1=LOW → 5=CRITICAL)',
+      data:snaps.map(s=>riskMap[s.risk_level]||null), color:'#FF9900' },
+  ], '');
+
+  // Positions over time
+  drawHistChart('hist-positions-chart', labels, [
+    { label:'Open Positions', data:snaps.map(s=>s.n_positions), color:'#4488FF' },
+    { label:'Pod 1 Positions', data:snaps.map(s=>s.p1_positions), color:'#00FF88' },
+    { label:'Pod 3 Positions', data:snaps.map(s=>s.p3_positions), color:'#9966FF' },
+  ], '');
+
+  // Snapshot table (last 20)
+  const recent = snaps.slice(-20).reverse();
+  $('hist-table-body').innerHTML = recent.map(s => `
+    <tr>
+      <td>${(s.ts||'').slice(0,16).replace('T',' ')}</td>
+      <td>${fmt$(s.portfolio_value)}</td>
+      <td class="${(s.pnl_today||0)>=0?'g':'r'}">${s.pnl_today!=null?(s.pnl_today>=0?'+':'')+s.pnl_today.toFixed(0):'—'}</td>
+      <td class="${(s.p1_value||0)>0?'g':'dim'}">${fmt$(s.p1_value)}</td>
+      <td class="b">${fmt$(s.p2_value)}</td>
+      <td class="p">${fmt$(s.p3_value)}</td>
+      <td><span class="badge ${s.risk_level==='ELEVATED'?'badge-o':s.risk_level==='HIGH'||s.risk_level==='CRITICAL'?'badge-r':'badge-g'}">${s.risk_level||'—'}</span></td>
+      <td><span class="badge ${s.canary_level==='YELLOW'?'badge-y':s.canary_level==='RED'?'badge-r':s.canary_level==='ORANGE'?'badge-o':'badge-g'}">${s.canary_level||'—'}</span></td>
+      <td>${s.manager_grade||'—'}</td>
+      <td>${s.paper_day||'—'}</td>
+    </tr>`).join('');
+}
+
+function drawHistChart(canvasId, labels, datasets, yPrefix) {
+  const canvas = $(canvasId);
+  if (!canvas) return;
+  if (histCharts[canvasId]) { histCharts[canvasId].destroy(); }
+  histCharts[canvasId] = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: datasets.map(d => ({
+        label: d.label,
+        data:  d.data,
+        borderColor: d.color,
+        backgroundColor: 'rgba(0,0,0,0)',
+        borderWidth: d.dash ? 1 : 2,
+        borderDash: d.dash ? [4,4] : [],
+        pointRadius: labels.length > 50 ? 0 : 2,
+        tension: 0.3,
+        spanGaps: true,
+      }))
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position:'top', labels:{boxWidth:10,font:{size:10}} } },
+      scales: {
+        x: { grid:{color:'#1e1e30'}, ticks:{maxTicksLimit:8,maxRotation:0} },
+        y: { grid:{color:'#1e1e30'}, ticks:{callback: v => yPrefix==='$' ? '$'+Number(v).toLocaleString() : v+yPrefix} }
+      }
+    }
+  });
+}
+
+// ── Tab switch — load history on first visit ────────────────────────────────
+const _origShowTab = showTab;
+showTab = function(id) {
+  _origShowTab(id);
+  if (id === 'history' && historyData.length === 0) fetchHistory();
+};
 
 // ── Auto-refresh ───────────────────────────────────────────────────────────
 fetchAll();

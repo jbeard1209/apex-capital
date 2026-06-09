@@ -36,7 +36,8 @@ except Exception:
 
 # ── In-memory store ──────────────────────────────────────────
 # Populated by POST /api/push from the Mac sync script.
-_data_store = {}
+_data_store     = {}
+_history_store  = []   # list of historical snapshots
 _data_pushed_at = None  # type: Optional[str]
 
 # HTML file (in same folder as this script)
@@ -226,11 +227,19 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/health":
             self.send_json({
-                "status":        "ok",
-                "server_time":   datetime.now(timezone.utc).isoformat(),
-                "data_pushed_at": _data_pushed_at,
-                "data_age":      data_age_str(),
-                "active_sessions": len(_sessions),
+                "status":          "ok",
+                "server_time":     datetime.now(timezone.utc).isoformat(),
+                "data_pushed_at":  _data_pushed_at,
+                "data_age":        data_age_str(),
+                "history_snapshots": len(_history_store),
+            })
+            return
+
+        if path == "/api/history":
+            self.send_json({
+                "snapshots":       _history_store,
+                "count":           len(_history_store),
+                "pushed_at":       _data_pushed_at,
             })
             return
 
@@ -284,12 +293,16 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error": "Invalid API key — check that API_KEY in Railway matches sync_to_cloud.py"}, 403)
                 return
             try:
-                payload = json.loads(body)
-                _data_store    = payload.get("data", {})
+                global _data_store, _data_pushed_at, _history_store
+                payload         = json.loads(body)
+                _data_store     = payload.get("data", {})
+                _history_store  = payload.get("history", [])
                 _data_pushed_at = datetime.now(timezone.utc).isoformat()
                 keys = list(_data_store.keys())
-                print(f"  ✓ Data pushed: {len(keys)} keys — {', '.join(keys[:6])}{'...' if len(keys)>6 else ''}")
-                self.send_json({"status": "ok", "keys": len(keys), "pushed_at": _data_pushed_at})
+                print(f"  ✓ Data pushed: {len(keys)} keys, {len(_history_store)} history snapshots")
+                self.send_json({"status": "ok", "keys": len(keys),
+                                "history_snapshots": len(_history_store),
+                                "pushed_at": _data_pushed_at})
             except Exception as e:
                 self.send_json({"error": str(e)}, 400)
             return
