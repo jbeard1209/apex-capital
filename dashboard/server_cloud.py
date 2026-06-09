@@ -248,13 +248,15 @@ class Handler(BaseHTTPRequestHandler):
 
         # Data push from Mac sync script
         if path == "/api/push":
-            auth_key = self.headers.get("X-API-Key", "")
-            if not hmac.compare_digest(API_KEY, auth_key):
-                self.send_json({"error": "Invalid API key"}, 403)
-                print("  ✗ Push rejected: bad API key")
-                return
+            # Always read the full body FIRST before checking the key —
+            # this prevents a "Broken pipe" on the client when we reject.
             length = int(self.headers.get("Content-Length", 0))
             body   = self.rfile.read(length).decode()
+            auth_key = self.headers.get("X-API-Key", "")
+            if not hmac.compare_digest(API_KEY, auth_key):
+                print(f"  ✗ Push rejected: key mismatch (got '{auth_key[:8]}...', expected '{API_KEY[:8]}...')")
+                self.send_json({"error": "Invalid API key — check that API_KEY in Railway matches sync_to_cloud.py"}, 403)
+                return
             try:
                 payload = json.loads(body)
                 _data_store    = payload.get("data", {})
