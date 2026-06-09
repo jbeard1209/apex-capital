@@ -45,6 +45,9 @@ class FEContrarianRecoveryAgent(SectorResearchAgent):
         "edge": "Sector hate + franchise intact + balance sheet survivability = First Eagle contrarian entry. Maximum patience required — contrarian thesis often takes 18-36 months to be recognized by market. Never invest in a hated sector with a broken balance sheet — that is a value trap.",
     }
 
+    # Chairman directive 2026-06-09: widen scope + surface 2-star picks as WATCH
+    MIN_SUBMISSION_CONVICTION = 2
+
     _RAW_WATCHLIST = [
         "CVS",   # CVS Health: pharmacy + benefits franchise under reimbursement pressure — thesis intact
         "WBA",   # Walgreens Boots Alliance: pharmacy network in structural reform — franchise value question
@@ -56,7 +59,6 @@ class FEContrarianRecoveryAgent(SectorResearchAgent):
         "MO",    # Altria: hated tobacco, franchise never impaired, 8%+ dividend yield, oral nicotine growth
         "BTI",   # British American Tobacco: global tobacco + vape portfolio, UK-listed discount
         "PARA",  # Paramount Global: streaming losses + linear TV decline — content library vs. debt load
-        # ── Expanded contrarian universe (2026-05-23) ─────────────────────────
         "DLTR",  # Dollar Tree: off multi-year lows post-Family Dollar struggles — franchise intact, fixing execution
         "DG",    # Dollar General: beaten down 65%+ from highs on margin pressure — convenience franchise durable
         "BAX",   # Baxter International: post-Hillrom spin-off restructuring discount, healthcare infrastructure
@@ -67,6 +69,31 @@ class FEContrarianRecoveryAgent(SectorResearchAgent):
         "XRAY",  # Dentsply Sirona: dental equipment, revenue miss cycle, franchise intact in dental duopoly
         "RRR",   # Red Rock Resorts: Las Vegas locals casino, hated gaming sector, best-in-class margins
         "ENR",   # Energizer Holdings: hated consumer staples, high debt but durable battery franchise + pricing power
+        # ── Expanded contrarian universe (2026-06-09) ─────────────────────────
+        "BBWI",  # Bath & Body Works: high leverage vs. dominant fragrance/candle brand, FCF positive
+        "CPRI",  # Capri Holdings: Michael Kors + Versace + JC + Versace, M&A overhang discount
+        "TPR",   # Tapestry: Coach + Kate Spade, accessible luxury discount vs. earnings power
+        "HBI",   # Hanesbrands: apparel brand restructuring, Champions + Hanes franchise
+        "ODP",   # ODP Corporation: office products, secular decline offset by B2B subscription
+        "AMCX",  # AMC Networks: cable TV decline + streaming struggle, content library real
+        "FOXA",  # Fox Corporation: news franchise hated post-Dominion, durable live sports + Fox News
+        "NYT",   # New York Times: digital subscription growth, franchise deeply undervalued
+        "NWSA",  # News Corp: Dow Jones + real estate data + HarperCollins — SOTP discount
+        "IPG",   # Interpublic Group: advertising holding company, hated amid digital shift
+        "OMC",   # Omnicom: advertising + PR, hated sector, durable client relationships
+        "IFF",   # International Flavors: fragrance + food ingredients, post-merger integration discount
+        "CE",    # Celanese: specialty chemicals, cyclical trough + structural growth drivers
+        "EMN",   # Eastman Chemical: specialty chemicals, integration discount vs. durable franchises
+        "WLK",   # Westlake Chemical: building products + PVC, cyclical trough opportunity
+        "OLN",   # Olin Corporation: chlor-alkali + Winchester ammunition — hated cycle play
+        "CC",    # Chemours: titanium dioxide + refrigerants, franchise discount vs. FCF
+        "TROX",  # Tronox: titanium dioxide, commodity cycle trough + market share
+        "GEO",   # GEO Group: private corrections REIT-like, hated ESG sector, cash generative
+        "CXW",   # CoreCivic: private corrections, ESG discount vs. government contract stability
+        "ABM",   # ABM Industries: facility services, low-glamour but durable recurring revenue
+        "KELYA", # Kelly Services: staffing, cyclical discount vs. steady fee-based business
+        "MAN",   # ManpowerGroup: global staffing, cyclical trough, franchise in 80 countries
+        "ASGN",  # ASGN: IT staffing, government focus, better quality than generalist staffing
     ]
     DEFAULT_WATCHLIST = [t for t in _RAW_WATCHLIST if t not in ENERGY_BLOCK]
     DEFAULT_SECTOR = "FE-ContrarianRecovery"

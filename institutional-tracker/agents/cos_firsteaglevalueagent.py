@@ -51,12 +51,16 @@ class FirstEagleValueAgent(SectorResearchAgent):
     #          OR gold miner with strong balance sheet in rising gold environment
     # 4 stars: FCF yield > 6% AND P/B < 2.0 AND net debt/EBITDA < 2.5 AND ROIC > 10%
     # 3 stars: FCF yield > 4% AND quality metrics mostly met
-    # Below 3 stars: reject — First Eagle does not buy marginal ideas
+    # 2 stars: FCF yield > 2% AND meets quality bar — surface for Manager review
+    #   (Chairman directive 2026-06-09: widen scope; surface 2-star as WATCH
+    #    so Manager can decide, not pre-filtered by research agent)
     CONVICTION_THRESHOLDS = {
-        5: {"fcf_yield_min": 0.08, "pb_max": 1.5, "nd_ebitda_max": 1.5, "roic_min": 0.15},
-        4: {"fcf_yield_min": 0.06, "pb_max": 2.0, "nd_ebitda_max": 2.5, "roic_min": 0.10},
-        3: {"fcf_yield_min": 0.04, "pb_max": 3.0, "nd_ebitda_max": 3.5, "roic_min": 0.07},
+        5: {"fcf_yield_min": 0.08, "pb_max": 1.5,  "nd_ebitda_max": 1.5, "roic_min": 0.15},
+        4: {"fcf_yield_min": 0.06, "pb_max": 2.0,  "nd_ebitda_max": 2.5, "roic_min": 0.10},
+        3: {"fcf_yield_min": 0.04, "pb_max": 3.0,  "nd_ebitda_max": 3.5, "roic_min": 0.07},
+        2: {"fcf_yield_min": 0.02, "pb_max": 4.0,  "nd_ebitda_max": 5.0, "roic_min": 0.05},
     }
+    MIN_SUBMISSION_CONVICTION = 2   # was effectively 3; lowered so Manager sees more candidates
 
     _RAW_WATCHLIST = [
         # Quality value — durable competitive advantages, strong FCF, low leverage
@@ -67,11 +71,28 @@ class FirstEagleValueAgent(SectorResearchAgent):
         "WTW",     # Willis Towers Watson: advisory moat, recurring revenue, depressed vs peers
         "FNF",     # Fidelity National Financial: title insurance leader, cyclical discount
         "LKQ",     # LKQ: auto parts distribution moat, fragmented market consolidator
-        "BRKR",   # Bruker: analytical instruments, niche scientific moat
+        "BRKR",    # Bruker: analytical instruments, niche scientific moat
         "RLI",     # RLI Corp: specialty insurance, 25-yr combined ratio < 100, pristine underwriting
         "CBOE",    # CBOE: exchange monopoly on VIX/options, durable market structure moat
         "MSCI",    # MSCI: index licensing monopoly, 95%+ retention, capital-light recurring revenue
         "MCO",     # Moody's: ratings duopoly, pricing power, financial infrastructure
+        "SPGI",    # S&P Global: data duopoly, ROIC>30%, recurring revenue
+        "ICE",     # Intercontinental Exchange: exchange infrastructure moat
+        "CME",     # CME Group: derivatives exchange monopoly, FCF machine
+        "NDAQ",    # Nasdaq: exchange + analytics, recurring revenue transformation
+        "FDS",     # FactSet: financial data subscription moat, low churn
+        "VRSK",    # Verisk Analytics: data analytics moat, insurance/energy verticals
+        "MORN",    # Morningstar: independent ratings and data, durable moat
+        "CSGP",    # CoStar Group: commercial real estate data monopoly
+        "ANSS",    # Ansys: simulation software monopoly, aerospace/auto/semi
+        "PTC",     # PTC Inc: industrial IoT software, niche moat
+        "CDNS",    # Cadence Design: EDA software duopoly with SNPS
+        "SNPS",    # Synopsys: EDA software duopoly with CDNS
+        "MANH",    # Manhattan Associates: supply chain software, high switching cost
+        "SAIC",    # Science Applications: government IT services, recurring contracts
+        "LDOS",    # Leidos: defense IT, recurring government revenue
+        "CACI",    # CACI International: government IT, predictable cash flow
+        "BAH",     # Booz Allen Hamilton: government consulting, top-secret clearances as moat
         # Gold/hard money — permanent portfolio insurance (target 15% allocation)
         "NEM",     # Newmont: largest gold miner, tier-1 assets, strong balance sheet
         "AEM",     # Agnico Eagle: premium operator, low-cost mines, disciplined capital allocation

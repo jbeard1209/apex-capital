@@ -201,9 +201,22 @@ def run_fi_pipeline():
             pick["verdict"]           = "HOLD"
         scored_picks.append(pick)
 
-    # Step 4: Filter to BUY / STRONG_BUY
-    qualified = [p for p in scored_picks if p.get("verdict") in ("STRONG_BUY", "BUY")]
-    log.info("Qualified picks (BUY/STRONG_BUY): %d of %d", len(qualified), len(scored_picks))
+    # Step 4: Filter — include WATCH when BUY/STRONG_BUY candidates are scarce
+    # (Chairman directive 2026-06-09: agents should widen scope and surface more
+    # candidates. Manager and FI board make the final call; we don't pre-filter
+    # too aggressively here.)
+    strong_picks = [p for p in scored_picks if p.get("verdict") in ("STRONG_BUY", "BUY")]
+    if len(strong_picks) >= 3:
+        qualified = strong_picks
+        log.info("Qualified picks (BUY/STRONG_BUY): %d of %d", len(qualified), len(scored_picks))
+    else:
+        # Not enough high-conviction picks — include WATCH tier so the board
+        # has candidates to review rather than seeing an empty queue
+        qualified = [p for p in scored_picks if p.get("verdict") in ("STRONG_BUY", "BUY", "WATCH")]
+        log.info(
+            "Sparse BUY pipeline (%d). Widening to WATCH tier: %d total candidates.",
+            len(strong_picks), len(qualified)
+        )
 
     # Step 5: Size positions
     for pick in qualified:

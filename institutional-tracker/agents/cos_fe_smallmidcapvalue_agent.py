@@ -44,7 +44,12 @@ class FESmallMidCapValueAgent(SectorResearchAgent):
         "edge": "Information edge in neglected small-cap universe where fundamental research is not commoditized. Liquidity discount is a feature, not a bug — patient capital earns the premium. Filter: ROIC > 12% + 0-2 analyst coverage + FCF > 0 for 5yr + net debt/EBITDA < 2x.",
     }
 
+    # Chairman directive 2026-06-09: widen scope beyond community banks
+    # to all neglected small/mid-cap sectors; surface 2-star as WATCH
+    MIN_SUBMISSION_CONVICTION = 2
+
     _RAW_WATCHLIST = [
+        # ── Community Banks (original core) ──────────────────────────────────
         "CSWC",  # Capital Southwest: internally managed BDC, owner-aligned, disciplined credit
         "ITIC",  # Investors Title: small-cap title insurance, family-controlled, 30yr track record
         "RLI",   # RLI Corp: specialty insurance, 25yr combined ratio < 100, neglected gem
@@ -54,9 +59,7 @@ class FESmallMidCapValueAgent(SectorResearchAgent):
         "NBTB",  # NBT Bancorp: Northeast community bank, pristine credit quality, 1x tangible book
         "PFIS",  # Peoples Financial Services: Pennsylvania community bank, conservative lending
         "ESSA",  # ESSA Bancorp: Pennsylvania thrift, below tangible book, improving efficiency
-        "MGLN",  # Magellan Health: specialty healthcare management, niche behavioral health moat
         "NFBK",  # Northfield Bancorp: NYC metro thrift, below tangible book, strong capital ratios
-        # ── Expanded small/mid-cap value universe (2026-05-23) ────────────────
         "HMNF",  # HMN Financial: Minnesota thrift, below tangible book, conservative loan book
         "BSVN",  # Bank7 Corp: Oklahoma/Texas community bank, disciplined credit, cheap on P/B
         "NWFL",  # Norwood Financial: Northeast community bank, below 1x tangible book
@@ -67,6 +70,39 @@ class FESmallMidCapValueAgent(SectorResearchAgent):
         "GSBC",  # Great Southern Bancorp: Midwest regional, disciplined credit, below peers on P/B
         "TRMK",  # Trustmark Corp: Mississippi/Alabama franchise bank, 1x tangible book, durable dividend
         "FBIZ",  # First Business Financial: Wisconsin business bank, niche commercial lending, low P/B
+        # ── Expanded: Neglected Small/Mid-Cap Non-Banks ───────────────────────
+        # Specialty Insurance
+        "ERIE",  # Erie Indemnity: mutual insurer, premium pricing power, neglected gem
+        "KMPR",  # Kemper: specialty P&C, restructuring discount vs. franchise
+        "MAIN",  # Main Street Capital: BDC, best-in-class management, below-peer P/B
+        "GBDC",  # Golub Capital BDC: quality middle-market lender, consistent dividend
+        # Small-cap industrial value
+        "HTLF",  # Heartland Financial: Midwest bank, disciplined M&A acquirer
+        "FFIN",  # First Financial Bankshares: Texas community bank, ROIC > 15% consistently
+        "CATY",  # Cathay General Bancorp: Asian-American community bank, LA/NYC franchise
+        "HAFC",  # Hanmi Financial: Korean-American community bank, L.A. focus
+        "HOPE",  # Hope Bancorp: Korean-American bank, trading below tangible book
+        # Neglected industrials / services
+        "WDFC",  # WD-40 Company: single-product global franchise, pricing power, ignored
+        "MGRC",  # McGrath RentCorp: modular building + electronics rental, recurring cash
+        "UFPI",  # UFP Industries: treated wood products, niche construction supply
+        "PGTI",  # PGT Innovations: impact windows, Florida dominance, recurring replacement
+        "PATK",  # Patrick Industries: RV and marine components, cyclical but dominant
+        "REVG",  # REV Group: specialty vehicles (fire trucks, ambulances), government contracts
+        "HBT",   # Heartland BancCorp: Illinois community bank, below-book opportunity
+        "SMBC",  # Southern Missouri Bancorp: conservative Midwest bank
+        "UVSP",  # Univest Financial: Pennsylvania community bank, franchise value
+        # Neglected healthcare
+        "GMED",  # Globus Medical: spine implants + robotics, niche surgical moat
+        "PNTG",  # Pennant Group: home health + hospice, low-float, neglected
+        "ADUS",  # Addus HomeCare: personal care services, government-reimbursed, neglected
+        "ENSG",  # Ensign Group: skilled nursing + senior living, consistent acquirer
+        "LHCG",  # LHC Group: home health, government reimbursement moat
+        # Neglected consumer/retail
+        "PRGO",  # Perrigo: OTC pharma, restructuring discount vs. global OTC franchise
+        "COTY",  # Coty: fragrance + cosmetics, post-restructuring discount vs. brand value
+        "USNA",  # USANA Health Sciences: nutrition MLM, depressed vs. Asian franchise value
+        "SMPL",  # Simply Good Foods: Quest + Atkins brands, clean balance sheet, growing
     ]
     DEFAULT_WATCHLIST = [t for t in _RAW_WATCHLIST if t not in ENERGY_BLOCK]
     DEFAULT_SECTOR = "FE-SmallMidCapValue"
