@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-09T15:49:35.976784",
+  "generated_at": "2026-06-09T18:37:13.976535",
   "source": "anonymous",
   "urgency": "HIGH",
-  "risk_score": 7,
-  "alert_summary": "Anonymous risk assessment: 3 concern(s) identified at severity 7/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+  "risk_score": 5,
+  "alert_summary": "Anonymous risk assessment: 3 concern(s) identified at severity 5/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
   "concerns": [
     "DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated portfolio risk is HIGH. Shiller: complacency at fundamental highs is a classic late-cycle signal. Soros reflexivity: prices can remain irrational while risk accumulates silently.",
-    "FACTOR CONCENTRATION \u2014 Tech/Growth: 42% of R&D picks. Fama-French: factor tilts amplify both upside AND downside. In a rate-shock (2022 analogue), tech-heavy portfolios experienced -35% to -70% drawdowns. Recommend capping tech at 40.0%.",
-    "CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spreads typically widen simultaneously, reducing cross-asset diversification. Equity-only portfolios lose their correlation buffer precisely when it is most needed (Ilmanen, 'Expected Returns')."
+    "CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spreads typically widen simultaneously, reducing cross-asset diversification. Equity-only portfolios lose their correlation buffer precisely when it is most needed (Ilmanen, 'Expected Returns').",
+    "EXTENDED CRO HIGH: The CRO has been at HIGH for 16+ consecutive cycles. This buy block has NOT been formally reviewed by the board. IRM RECOMMENDATION: Board must convene to assess whether the HIGH posture is still warranted or should be relaxed. Extended buy blocks silently damage research throughput and agent performance."
   ],
   "findings": [
-    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-66,556) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-39,723) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-66,630) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-39,767) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
     "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
   ]
 }

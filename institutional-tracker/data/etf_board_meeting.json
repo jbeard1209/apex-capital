@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T20:45:01.331233",
+  "generated_at": "2026-06-10T00:00:08.464693",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
@@ -9,14 +9,14 @@
     "XLV"
   ],
   "regime": {
-    "regime_label": "neutral",
-    "bull": false,
+    "regime_label": "bull",
+    "bull": true,
     "bear": false,
-    "vix": 20.0,
-    "spy_rsi": 50.0,
+    "vix": 20.2,
+    "spy_rsi": 52.7,
     "overbought": false,
-    "warning_count": 0,
-    "rising_rates": false,
+    "warning_count": 1,
+    "rising_rates": true,
     "momentum_phase": "early-bull",
     "defensive_rotation_advised": false,
     "historical_analogue": "Post-GFC Bull (2013\u20132015)",
@@ -26,14 +26,14 @@
       "Healthcare",
       "Consumer Discretionary"
     ],
-    "spy_1d_return": -0.2854,
+    "spy_1d_return": -0.2936,
     "canary_warning": null
   },
   "canary_alerts": null,
   "pod_state_at_meeting": {
-    "cash_balance": 16821.62,
+    "cash_balance": 11866.81,
     "total_value": 30000.0,
-    "n_positions": 2
+    "n_positions": 3
   },
   "deliberations": {
     "round_1": {
@@ -47,20 +47,20 @@
         "bear_mode": false,
         "overbought_mode": false,
         "momentum_scores": {
-          "XLK": 8.4878,
+          "XLK": 8.4577,
           "QQQ": 3.5405,
           "XLV": 2.7978,
           "XLF": 1.4929,
-          "XLI": 0.7148,
+          "XLI": 0.719,
           "XLE": -0.1802,
           "XLP": -1.7404,
           "TLT": -1.9709,
-          "XLB": -1.9744,
+          "XLB": -1.9901,
           "XLY": -2.9679,
-          "XLU": -4.6533,
-          "GLD": -12.972
+          "XLU": -4.6799,
+          "GLD": -12.97
         },
-        "reasoning": "BULL regime (VIX=20.0, SPY_RSI=50.0). Picking top 3 by momentum score. Top 3: [('XLK', 8.49), ('QQQ', 3.54), ('XLV', 2.8)]",
+        "reasoning": "BULL regime (VIX=20.2, SPY_RSI=52.7). Picking top 3 by momentum score. Top 3: [('XLK', 8.46), ('QQQ', 3.54), ('XLV', 2.8)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },
@@ -71,7 +71,9 @@
           "QQQ",
           "XLV"
         ],
-        "risk_flags": [],
+        "risk_flags": [
+          "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"
+        ],
         "critical_flags": 0,
         "fallback_suggestion": null,
         "vote": "APPROVE",
@@ -106,12 +108,14 @@
   "reconciliation_notes": [
     "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLV']"
   ],
-  "risk_flags": [],
+  "risk_flags": [
+    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"
+  ],
   "orders_summary": {
-    "n_buys": 1,
+    "n_buys": 0,
     "n_sells": 0,
     "n_skipped": 0,
-    "total_buy_value": 4954.81,
+    "total_buy_value": 0,
     "total_sell_value": 0
   }
 }

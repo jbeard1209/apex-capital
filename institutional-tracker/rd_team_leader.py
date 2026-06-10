@@ -1316,8 +1316,8 @@ class RDTeamLeader:
                 f"Top picks: {', '.join(p['ticker'] for p in high_conv[:5])}.",
                 priority="HIGH" if high_conv else "NORMAL",
             )
-            # Post individual sector momentum observations
-            # Use a with-block instead of a bare open() to ensure the file handle is always closed.
+            # Post sector momentum as ONE batched message (not individual posts per sector)
+            # This keeps each sector's data visible while preventing firm-channel flood.
             if os.path.exists(ASSIGNMENTS_PATH):
                 try:
                     with open(ASSIGNMENTS_PATH) as _af:
@@ -1326,14 +1326,21 @@ class RDTeamLeader:
                     asgn_payload = {}
             else:
                 asgn_payload = {}
-            for s in asgn_payload.get("all_scored", [])[:4]:
-                sd = s.get("score_data", {})
+            scored_sectors = asgn_payload.get("all_scored", [])
+            if scored_sectors:
+                sector_lines = []
+                for s in scored_sectors[:8]:   # show up to 8 sectors in one post
+                    sd = s.get("score_data", {})
+                    sector_lines.append(
+                        f"  • {s.get('sector_name','?'):30s} score={sd.get('score','?'):2}/12  "
+                        f"trend={sd.get('trend','NEUTRAL'):8s}  RSI={sd.get('rsi_14',0):.0f}  "
+                        f"1M={sd.get('ret_1m_pct',0):+.1f}%  3M={sd.get('ret_3m_pct',0):+.1f}%"
+                    )
                 _fc_post(
                     "R&D Team Leader", "SECTOR_OBS",
-                    # Use .get() so a malformed entry never crashes the firm-channel post loop.
-                    f"{s.get('sector_name','?')}: score {sd.get('score','?')}/12 | "
-                    f"trend={sd.get('trend','?')} | RSI={sd.get('rsi_14',0):.0f} | "
-                    f"1M={sd.get('ret_1m_pct',0):+.1f}% | 3M={sd.get('ret_3m_pct',0):+.1f}%",
+                    f"Sector momentum snapshot ({len(scored_sectors)} sectors scored):\n"
+                    + "\n".join(sector_lines),
+                    priority="NORMAL",
                 )
             # Post high-confidence earnings predictions
             for ep in ep_results[:3]:

@@ -21,7 +21,8 @@ from config import (
     TAKE_PROFIT_PCT, MAX_OPEN_POSITIONS, HOLD_DAYS_MAX,
     HEDGE_ETF, HEDGE_POSITION_PCT, SHORT_POSITION_SIZE_PCT,
     MAX_SHORT_POSITIONS, SHORT_CANDIDATES, REGIME_MANDATES,
-    MIN_CASH_FLOOR_PCT,
+    MIN_CASH_FLOOR_PCT, SHORT_BOOK_ENABLED, SHORT_BOOK_CRO_MIN,
+    SHORT_BOOK_CRITICAL_BONUS,
 )
 
 logger = logging.getLogger(__name__)
@@ -684,13 +685,35 @@ class AlpacaTrader:
             logger.error(f"  TAIL HEDGE order failed: {e}")
             return {"action": "hedge_failed", "cro_risk_level": cro_risk_level}
 
-    def get_momentum_short_candidates(self) -> list[str]:
+    def get_momentum_short_candidates(self, cro_risk_level: str = "MEDIUM") -> list[str]:
         """
         Screen SHORT_CANDIDATES for confirmed downtrend:
           - Current price below 50-day MA
           - Current price below 200-day MA
         Returns tickers that pass both conditions (worst first).
+
+        Short book is only activated when CRO >= SHORT_BOOK_CRO_MIN (HIGH).
+        In CRITICAL regime: allows MAX_SHORT_POSITIONS + SHORT_BOOK_CRITICAL_BONUS slots.
         """
+        # Short book gate — only activate in HIGH or CRITICAL CRO
+        if not SHORT_BOOK_ENABLED:
+            logger.info("  Short book disabled (SHORT_BOOK_ENABLED=False)")
+            return []
+
+        _cro_rank = {"LOW": 0, "MEDIUM": 1, "ELEVATED": 2, "HIGH": 3, "CRITICAL": 4}
+        _min_rank = _cro_rank.get(SHORT_BOOK_CRO_MIN, 3)
+        _cur_rank = _cro_rank.get(cro_risk_level, 1)
+        if _cur_rank < _min_rank:
+            logger.info(
+                f"  Short book inactive (CRO={cro_risk_level} < required={SHORT_BOOK_CRO_MIN})"
+            )
+            return []
+
+        # In CRITICAL, allow extra slots
+        max_slots = MAX_SHORT_POSITIONS
+        if cro_risk_level == "CRITICAL":
+            max_slots += SHORT_BOOK_CRITICAL_BONUS
+
         confirmed = []
         for ticker in SHORT_CANDIDATES:
             try:
@@ -709,12 +732,13 @@ class AlpacaTrader:
                     logger.info(
                         f"    SHORT candidate: {ticker} — "
                         f"{pct_from_50:+.1f}% vs 50MA, {pct_from_200:+.1f}% vs 200MA"
+                        f" | CRO={cro_risk_level}"
                     )
             except Exception as e:
                 logger.warning(f"  Could not screen {ticker}: {e}")
         # Sort by worst (most below MAs) first
         confirmed.sort(key=lambda x: x[1])
-        return [t for t, _ in confirmed[:MAX_SHORT_POSITIONS]]
+        return [t for t, _ in confirmed[:max_slots]]
 
     def manage_momentum_shorts(self) -> list[dict]:
         """
@@ -757,7 +781,17 @@ class AlpacaTrader:
             logger.info(f"  Max short positions ({MAX_SHORT_POSITIONS}) reached")
             return actions
 
-        candidates = self.get_momentum_short_candidates()
+        # Read current CRO level to pass into short candidate screener
+        _cro_level_for_shorts = "MEDIUM"
+        try:
+            import json as _js
+            _rb_path = "data/risk_bulletin.json"
+            if os.path.exists(_rb_path):
+                _rb = _js.load(open(_rb_path))
+                _cro_level_for_shorts = _rb.get("risk_level", "MEDIUM")
+        except Exception:
+            pass
+        candidates = self.get_momentum_short_candidates(cro_risk_level=_cro_level_for_shorts)
         for ticker in candidates:
             if ticker in current_shorts:
                 continue

@@ -1,12 +1,5 @@
 {
-  "checked_at": "2026-06-09T16:50:01.192637",
-  "issues": [
-    {
-      "severity": "HIGH",
-      "check": "email_loop_detection",
-      "message": "Repeated email subjects in buffer (5 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 09, 2026\" \u00d722; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:D | Jun 09, 2026\" \u00d714; \"Apex Capital \u2014 Chief of Staff Brief | Risk:HIGH | Grade:D | Jun 09, 2026\" \u00d79",
-      "auto_fixed": false
-    }
-  ],
-  "healthy": false
+  "checked_at": "2026-06-10T02:50:40.423421",
+  "issues": [],
+  "healthy": true
 }

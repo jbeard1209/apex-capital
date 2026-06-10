@@ -58,10 +58,37 @@ REPORT_PATH        = "data/deputy_board_report.json"
 CMR_PATH           = "data/cos_meeting_requests.json"
 BOARD_ACTIVE_PATH  = "data/board_meeting_active.json"
 
-# Categories routed to the deputy board (not the main board)
-DEPUTY_CATEGORIES  = {"BUG_FIX", "LOGIC_ERROR", "INTEGRATION"}
+# ── Proposal routing tiers (Chairman directive 2026-06-09) ─────────────────
+#
+# Tier 0 — CIT Implementation Agent (auto, no meeting needed):
+#   BUG_FIX / LOGIC_ERROR / INTEGRATION  severity=LOW   confidence>=70
+#   These are safe, well-scoped, low-risk code fixes. No vote needed.
+#
+# Tier 1 — Deputy Board (this file):
+#   BUG_FIX / LOGIC_ERROR / INTEGRATION  severity=MEDIUM/HIGH
+#   IMPROVEMENT / VISION                 severity=LOW/MEDIUM
+#   Deputies vote (4/7 majority). Approved proposals → CIT Implementation Agent.
+#
+# Tier 2 — Full Board:
+#   IMPROVEMENT / VISION                 severity=HIGH/CRITICAL
+#   STRATEGY / ARCHITECTURE              any severity
+#   Anything the deputy board DEFERs or cannot reach consensus on.
 
-# Minimum votes to approve (out of 7 deputies)
+# Categories the deputy board handles (extended from original BUG_FIX-only)
+DEPUTY_CATEGORIES = {
+    "BUG_FIX", "LOGIC_ERROR", "INTEGRATION",   # original scope
+    "IMPROVEMENT", "VISION",                    # NEW: mid-level ideas filtered here
+}
+
+# Categories that ALWAYS escalate to the full board regardless of severity
+FULL_BOARD_ONLY_CATEGORIES = {"STRATEGY", "ARCHITECTURE"}
+
+# Auto-implement without a vote: simple bugs, low severity, high confidence
+AUTO_IMPLEMENT_CATEGORIES  = {"BUG_FIX", "LOGIC_ERROR", "INTEGRATION"}
+AUTO_IMPLEMENT_MAX_SEVERITY = "LOW"
+AUTO_IMPLEMENT_MIN_CONFIDENCE = 70
+
+# Minimum votes to approve at deputy level (out of 7 deputies)
 APPROVAL_THRESHOLD = 4
 
 # Path for CIT clarification requests
@@ -620,6 +647,54 @@ def _mark_approved(proposal: dict):
 
 
 # =============================================================================
+# CIT IMPLEMENTATION AGENT ROUTER
+# =============================================================================
+
+CIT_IMPL_QUEUE_PATH = "data/cit_implementation_queue.json"
+
+def _route_to_cit_implementer(proposals: list) -> None:
+    """
+    Route auto-approved trivial fixes to the CIT Implementation Agent queue.
+    The CIT Implementation Agent reads this file and applies the fixes.
+    """
+    try:
+        queue = []
+        if os.path.exists(CIT_IMPL_QUEUE_PATH):
+            with open(CIT_IMPL_QUEUE_PATH) as f:
+                queue = json.load(f)
+        if not isinstance(queue, list):
+            queue = []
+
+        existing_ids = {item.get("proposal_id") for item in queue}
+        added = 0
+        for p in proposals:
+            pid = p.get("id", p.get("proposal_id", ""))
+            if pid in existing_ids:
+                continue
+            queue.append({
+                "proposal_id":   pid,
+                "title":         p.get("title", "?"),
+                "category":      p.get("category", "?"),
+                "severity":      p.get("severity", "LOW"),
+                "confidence":    p.get("confidence", 0),
+                "proposed_fix":  p.get("proposed_fix", ""),
+                "evidence":      p.get("evidence", ""),
+                "queued_at":     datetime.now().isoformat(),
+                "status":        "queued",
+                "routed_by":     "deputy_board:auto_tier0",
+            })
+            added += 1
+
+        with open(CIT_IMPL_QUEUE_PATH, "w") as f:
+            json.dump(queue, f, indent=2, default=str)
+
+        if added > 0:
+            logger.info(f"  → {added} fix(es) queued in cit_implementation_queue.json for CIT Implementation Agent")
+    except Exception as e:
+        logger.warning(f"  Could not route to CIT implementer: {e}")
+
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -653,21 +728,52 @@ def run_deputy_board(dry_run: bool = False) -> dict:
     except Exception:
         pass
 
-    bug_proposals = [
-        p for p in all_pending
-        if p.get("category", "") in DEPUTY_CATEGORIES
-        and p.get("id", "") not in unanswered_pids  # skip if awaiting CIT response
-    ]
-
     if unanswered_pids:
         logger.info(
             f"  {len(unanswered_pids)} proposal(s) skipped — still awaiting CIT Director response. "
             f"Check {CLARIFY_PATH} for open questions."
         )
 
+    # ── Tier 0: auto-implement trivial fixes without a vote ──────────────────
+    auto_implement = [
+        p for p in all_pending
+        if p.get("category", "") in AUTO_IMPLEMENT_CATEGORIES
+        and p.get("severity", "MEDIUM") == AUTO_IMPLEMENT_MAX_SEVERITY
+        and p.get("confidence", 0) >= AUTO_IMPLEMENT_MIN_CONFIDENCE
+        and p.get("id", "") not in unanswered_pids
+    ]
+    if auto_implement:
+        logger.info(f"  {len(auto_implement)} trivial fix(es) routed to CIT Implementation Agent (no vote needed)")
+        _route_to_cit_implementer(auto_implement)
+
+    # ── Tier 2: full-board-only categories — never touch ─────────────────────
+    # (STRATEGY / ARCHITECTURE are left in pending for the main board to pick up)
+
+    # ── Tier 1: proposals for deputy vote ────────────────────────────────────
+    def _should_deputy_vote(p: dict) -> bool:
+        cat = p.get("category", "")
+        sev = p.get("severity", "MEDIUM")
+        pid = p.get("id", "")
+        if pid in unanswered_pids:
+            return False
+        if cat in FULL_BOARD_ONLY_CATEGORIES:
+            return False  # escalate to full board
+        if cat in AUTO_IMPLEMENT_CATEGORIES and sev == AUTO_IMPLEMENT_MAX_SEVERITY:
+            return False  # already handled above
+        # IMPROVEMENT/VISION HIGH/CRITICAL → full board
+        if cat in ("IMPROVEMENT", "VISION") and sev in ("HIGH", "CRITICAL"):
+            return False
+        return cat in DEPUTY_CATEGORIES
+
+    bug_proposals = [p for p in all_pending if _should_deputy_vote(p)]
+
     if not bug_proposals:
-        logger.info("  No bug fix proposals pending — deputy board not needed.")
-        return {"status": "NO_ACTION", "proposals_reviewed": 0}
+        logger.info("  No proposals in deputy scope — deputy board not needed.")
+        return {
+            "status": "NO_ACTION",
+            "proposals_reviewed": 0,
+            "auto_implemented": len(auto_implement),
+        }
 
     logger.info(f"  {len(bug_proposals)} bug fix proposal(s) to review")
 

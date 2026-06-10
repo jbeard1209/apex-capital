@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-09T18:49:10.425090",
+  "generated_at": "2026-06-10T01:17:41.263969",
   "total_findings": 3,
   "findings": [
     {
@@ -8,7 +8,7 @@
       "severity": "MEDIUM",
       "confidence": 85,
       "title": "None score in sector_assignments.json (8 sector(s))",
-      "description": "Sectors assigned with None scores: ['Cybersecurity', 'Regional Banks', 'Technology', 'Semiconductors', 'Financials', 'Cloud & SaaS', 'Defense & Aerospace', 'Real Estate']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
+      "description": "Sectors assigned with None scores: ['Technology', 'Biotech', 'Defense & Aerospace', 'Consumer Discretionary', 'Regional Banks', 'Retail', 'Financials', 'Healthcare']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
       "evidence": "data/sector_assignments.json: 8 assignments with score=None",
       "proposed_fix": "In rd_team_leader.py: filter out sectors with None scores before ranking. Treat None as score=0 or skip entirely.",
       "auto_implementable": false

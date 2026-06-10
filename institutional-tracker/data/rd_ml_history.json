@@ -1,318 +1,5 @@
 [
   {
-    "ts": "2026-05-15T02:13:12.396286",
-    "date": "2026-05-15",
-    "rd_macro_regime": -1,
-    "rd_sector_breadth": 0.0,
-    "rd_cro_risk_level": 0,
-    "rd_intl_sentiment": 0.0,
-    "rd_intl_score_raw": 0,
-    "rd_n_high_conviction": 16,
-    "rd_avg_conviction": 0.8222,
-    "sector_scores": [
-      {
-        "sector": "Industrials",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Cloud & SaaS",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Biotech",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Consumer Staples",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Technology",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Semiconductors",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Consumer Discretionary",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      },
-      {
-        "sector": "Materials",
-        "score": 0,
-        "trend": "NEUTRAL",
-        "rsi": 50.0,
-        "ret_1m": 0.0,
-        "ret_3m": 0.0
-      }
-    ],
-    "top_picks": [
-      {
-        "ticker": "AMZN",
-        "conviction": 5,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 54.1,
-          "pct_from_50ma": 13.32,
-          "pct_from_200ma": 16.56,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "INCY",
-        "conviction": 5,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 57.4,
-          "pct_from_50ma": 2.3,
-          "pct_from_200ma": 3.02,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "CL",
-        "conviction": 5,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 64.4,
-          "pct_from_50ma": 3.34,
-          "pct_from_200ma": 7.11,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "AVGO",
-        "conviction": 5,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 56.6,
-          "pct_from_50ma": 19.71,
-          "pct_from_200ma": 27.4,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "EMR",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 45.5,
-          "pct_from_50ma": 0.44,
-          "pct_from_200ma": 0.76,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "ETN",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 44.6,
-          "pct_from_50ma": 5.89,
-          "pct_from_200ma": 12.82,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "CAT",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 66.4,
-          "pct_from_50ma": 18.34,
-          "pct_from_200ma": 50.69,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "GOOGL",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 80.5,
-          "pct_from_50ma": 21.24,
-          "pct_from_200ma": 38.27,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "BIIB",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 56.3,
-          "pct_from_50ma": 3.28,
-          "pct_from_200ma": 14.33,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "VRTX",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 64.2,
-          "pct_from_50ma": 1.19,
-          "pct_from_200ma": 3.59,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "COST",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 61.7,
-          "pct_from_50ma": 4.23,
-          "pct_from_200ma": 9.45,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "MO",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 63.7,
-          "pct_from_50ma": 8.22,
-          "pct_from_200ma": 16.29,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "NVDA",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 70.3,
-          "pct_from_50ma": 22.63,
-          "pct_from_200ma": 26.93,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "AAPL",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 81.0,
-          "pct_from_50ma": 12.46,
-          "pct_from_200ma": 15.5,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "AMAT",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 57.0,
-          "pct_from_50ma": 16.24,
-          "pct_from_200ma": 57.58,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "ARM",
-        "conviction": 4,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bullish",
-          "rsi_14": 47.8,
-          "pct_from_50ma": 37.62,
-          "pct_from_200ma": 58.9,
-          "above_50ma": true,
-          "above_200ma": true
-        }
-      },
-      {
-        "ticker": "NOW",
-        "conviction": 3,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "bearish",
-          "rsi_14": 50.7,
-          "pct_from_50ma": -9.72,
-          "pct_from_200ma": -37.72,
-          "above_50ma": false,
-          "above_200ma": false
-        }
-      },
-      {
-        "ticker": "APPN",
-        "conviction": 3,
-        "action": "BUY_NEW",
-        "momentum": {
-          "trend": "unknown",
-          "rsi_14": 50.0,
-          "pct_from_50ma": 0.0,
-          "pct_from_200ma": 0.0,
-          "above_50ma": false,
-          "above_200ma": false
-        }
-      }
-    ]
-  },
-  {
     "ts": "2026-05-15T06:30:08.534170+00:00",
     "date": "2026-05-15",
     "source": "rd_ml_bridge_agent",
@@ -128029,6 +127716,195 @@
         "ret_3m": -4.33,
         "vol_20d": 12.5,
         "pct_50ma": -3.13
+      }
+    ],
+    "n_tickers_tracked": 19,
+    "pct_tickers_bullish": 0.5789,
+    "pct_action_buy": 1.0
+  },
+  {
+    "ts": "2026-06-09T23:45:09.983111+00:00",
+    "date": "2026-06-09",
+    "source": "rd_ml_bridge_agent",
+    "rd_macro_regime": 1,
+    "rd_sector_breadth": 0.75,
+    "rd_cro_risk_level": 2,
+    "rd_intl_sentiment": 0.0,
+    "rd_intl_score_raw": 0,
+    "rd_n_high_conviction": 17,
+    "rd_avg_conviction": 4.0,
+    "regime": {
+      "rd_regime_bull": 1,
+      "rd_regime_bear": 0,
+      "rd_vix": 19.9,
+      "rd_vix_high": 0,
+      "rd_spy_rsi": 52.9,
+      "rd_spy_overbought": 0,
+      "rd_rising_rates": 1,
+      "rd_momentum_late": 0,
+      "rd_warning_count": 1,
+      "rd_spy_pct_vs_200ma": 7.97
+    },
+    "sector_scores": [
+      {
+        "sector": "Cybersecurity",
+        "etf": "CIBR",
+        "rsi": 56.8,
+        "trend": "BULLISH",
+        "ret_1m": 11.81,
+        "ret_3m": 28.48,
+        "vol_20d": 43.4,
+        "pct_50ma": 14.32
+      },
+      {
+        "sector": "Regional Banks",
+        "etf": "KRE",
+        "rsi": 66.6,
+        "trend": "BULLISH",
+        "ret_1m": 3.92,
+        "ret_3m": 11.99,
+        "vol_20d": 22.6,
+        "pct_50ma": 3.43
+      },
+      {
+        "sector": "Technology",
+        "etf": "XLK",
+        "rsi": 57.3,
+        "trend": "BULLISH",
+        "ret_1m": 1.62,
+        "ret_3m": 28.89,
+        "vol_20d": 35.3,
+        "pct_50ma": 9.52
+      },
+      {
+        "sector": "Semiconductors",
+        "etf": "SMH",
+        "rsi": 61.1,
+        "trend": "BULLISH",
+        "ret_1m": 2.55,
+        "ret_3m": 47.37,
+        "vol_20d": 51.7,
+        "pct_50ma": 14.62
+      },
+      {
+        "sector": "Financials",
+        "etf": "XLF",
+        "rsi": 64.0,
+        "trend": "BULLISH",
+        "ret_1m": 2.5,
+        "ret_3m": 6.22,
+        "vol_20d": 15.1,
+        "pct_50ma": 2.03
+      },
+      {
+        "sector": "Cloud & SaaS",
+        "etf": "CLOU",
+        "rsi": 53.2,
+        "trend": "BULLISH",
+        "ret_1m": 3.2,
+        "ret_3m": 17.05,
+        "vol_20d": 49.1,
+        "pct_50ma": 8.58
+      },
+      {
+        "sector": "Defense & Aerospace",
+        "etf": "ITA",
+        "rsi": 64.3,
+        "trend": "BULLISH",
+        "ret_1m": 1.97,
+        "ret_3m": -3.39,
+        "vol_20d": 25.3,
+        "pct_50ma": 2.6
+      },
+      {
+        "sector": "Real Estate",
+        "etf": "XLRE",
+        "rsi": 59.8,
+        "trend": "BULLISH",
+        "ret_1m": 0.9,
+        "ret_3m": 6.75,
+        "vol_20d": 17.1,
+        "pct_50ma": 3.04
+      },
+      {
+        "sector": "Retail",
+        "etf": "XRT",
+        "rsi": 72.4,
+        "trend": "BULLISH",
+        "ret_1m": 3.88,
+        "ret_3m": 4.06,
+        "vol_20d": 19.3,
+        "pct_50ma": 1.88
+      },
+      {
+        "sector": "Healthcare",
+        "etf": "XLV",
+        "rsi": 68.1,
+        "trend": "BULLISH",
+        "ret_1m": 8.06,
+        "ret_3m": 1.54,
+        "vol_20d": 17.6,
+        "pct_50ma": 5.06
+      },
+      {
+        "sector": "Industrials",
+        "etf": "XLI",
+        "rsi": 70.9,
+        "trend": "BULLISH",
+        "ret_1m": 0.32,
+        "ret_3m": 3.9,
+        "vol_20d": 14.1,
+        "pct_50ma": 2.34
+      },
+      {
+        "sector": "Biotech",
+        "etf": "IBB",
+        "rsi": 58.4,
+        "trend": "NEUTRAL",
+        "ret_1m": -0.38,
+        "ret_3m": -0.81,
+        "vol_20d": 25.0,
+        "pct_50ma": -0.4
+      },
+      {
+        "sector": "Consumer Staples",
+        "etf": "XLP",
+        "rsi": 39.7,
+        "trend": "BULLISH",
+        "ret_1m": 0.88,
+        "ret_3m": -0.02,
+        "vol_20d": 15.5,
+        "pct_50ma": 1.06
+      },
+      {
+        "sector": "Materials",
+        "etf": "XLB",
+        "rsi": 64.5,
+        "trend": "NEUTRAL",
+        "ret_1m": -2.85,
+        "ret_3m": 2.32,
+        "vol_20d": 19.1,
+        "pct_50ma": -0.78
+      },
+      {
+        "sector": "Consumer Discretionary",
+        "etf": "XLY",
+        "rsi": 52.6,
+        "trend": "BEARISH",
+        "ret_1m": -2.93,
+        "ret_3m": 1.72,
+        "vol_20d": 18.9,
+        "pct_50ma": -0.62
+      },
+      {
+        "sector": "Communication Services",
+        "etf": "XLC",
+        "rsi": 28.4,
+        "trend": "BEARISH",
+        "ret_1m": -3.55,
+        "ret_3m": -4.41,
+        "vol_20d": 12.5,
+        "pct_50ma": -3.21
       }
     ],
     "n_tickers_tracked": 19,

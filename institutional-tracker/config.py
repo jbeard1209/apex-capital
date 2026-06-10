@@ -92,13 +92,31 @@ SHORT_POSITION_SIZE_PCT = 0.05   # 5% of portfolio per momentum short
 
 # Momentum short candidates — stocks in our universe most likely to underperform
 # Selected for: losing market share, below 50MA + 200MA, earnings misses
+# Expanded (CIT Think Tank proposal 2026-06-09): wider short book for HIGH/CRITICAL regimes
 SHORT_CANDIDATES = [
     "INTC",   # Intel — catastrophic AI chip market share loss to NVDA/AMD
     "DIS",    # Disney — streaming losses, theme park softness
     "BA",     # Boeing — production crises, safety scandals
     "PFE",    # Pfizer — post-COVID revenue cliff, pipeline disappointments
     "CSCO",   # Cisco — hardware commoditization, slowing enterprise spend
+    # Extended short book — activated in HIGH/CRITICAL regime only
+    "WBA",    # Walgreens — HY downgrade, secular pharmacy decline
+    "MO",     # Altria — long-run secular decline, FDA pressure
+    "PARA",   # Paramount — streaming cash burn, M&A uncertainty
+    "INTC",   # Intel (already above) — AI era loser
+    "MPW",    # Medical Properties — tenant defaults, REIT stress
+    "VFC",    # VF Corp — brand portfolio restructuring, dividend cut
+    "KHC",    # Kraft Heinz — CPG secular decline, private label pressure
 ]
+SHORT_CANDIDATES = list(dict.fromkeys(SHORT_CANDIDATES))  # deduplicate
+
+# Short book policy (CIT Think Tank 2026-06-09):
+# In CRO HIGH regime: up to MAX_SHORT_POSITIONS single-name shorts
+# In CRO CRITICAL regime: up to MAX_SHORT_POSITIONS + 2 single-name shorts
+# In CRO MEDIUM or below: only SH ETF hedge (no single-name shorts)
+SHORT_BOOK_ENABLED          = True
+SHORT_BOOK_CRO_MIN          = "HIGH"   # minimum CRO level to activate short book
+SHORT_BOOK_CRITICAL_BONUS   = 2        # extra short slots in CRITICAL vs HIGH
 
 # --- STRUCTURAL GUARDRAILS ---
 # Conservative hard limits that agents cannot override. Give agents room to

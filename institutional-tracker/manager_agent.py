@@ -60,6 +60,112 @@ MANAGER_LOG  = "data/manager_decisions.json"
 
 
 # =============================================================================
+# BEAR CASE ADVERSARIAL CHECK
+# =============================================================================
+
+def _bear_case_check(ticker: str, rec: dict, cro_risk_level: str,
+                     existing_rationale: list) -> dict:
+    """
+    Devil's advocate check before approving a high-conviction (4★+) BUY.
+    Surfaces hidden risks by asking: what would have to go wrong for this to fail?
+
+    Returns {"concerns": [...], "severity": "LOW"|"MEDIUM"|"HIGH"}
+    Never blocks a trade — purely advisory context for Manager and IRM review.
+
+    Saved to data/bear_cases.json for IRM post-trade review.
+    """
+    concerns = []
+    severity = "LOW"
+
+    conviction  = rec.get("conviction", 3)
+    sector      = rec.get("sector_name", rec.get("sector", "?"))
+    source      = rec.get("source_agent", "?")
+    momentum    = rec.get("momentum", {})
+    pnl_pct     = rec.get("unrealized_pnl_pct", 0) or 0
+
+    # Bear case 1: CRO risk level — buying in HIGH/CRITICAL is inherently riskier
+    if cro_risk_level in ("HIGH", "CRITICAL"):
+        concerns.append(
+            f"CRO at {cro_risk_level} — macro environment is elevated risk. "
+            f"This is a new position entered against a restrictive risk backdrop."
+        )
+        severity = "MEDIUM"
+
+    # Bear case 2: Technical weakness — buying below key moving averages
+    if momentum:
+        above_50  = momentum.get("above_50ma", True)
+        above_200 = momentum.get("above_200ma", True)
+        rsi       = momentum.get("rsi_14", 50)
+        if not above_200:
+            concerns.append(f"{ticker} is below 200-day MA — potential downtrend buy.")
+            severity = max(severity, "MEDIUM", key=["LOW","MEDIUM","HIGH"].index)
+        if rsi > 75:
+            concerns.append(f"{ticker} RSI={rsi:.0f} — potentially overbought at entry.")
+
+    # Bear case 3: Earnings risk — if earnings are within 10 days
+    try:
+        import os
+        ep_path = "data/earnings_predictions.json"
+        if os.path.exists(ep_path):
+            import json as _json
+            ep = _json.loads(open(ep_path).read())
+            for pred in ep.get("predictions", []):
+                if pred.get("ticker") == ticker and pred.get("days_until", 999) <= 10:
+                    concerns.append(
+                        f"Earnings within {pred.get('days_until')} days — "
+                        f"predicted {pred.get('prediction','?')} (confidence {pred.get('confidence','?')}★). "
+                        f"Entry before earnings is a binary event risk."
+                    )
+                    if pred.get("prediction") == "MISS":
+                        severity = "HIGH"
+    except Exception:
+        pass
+
+    # Bear case 4: Sector concentration
+    sector_lower = sector.lower()
+    if any(s in sector_lower for s in ("tech", "semiconductor", "crypto")):
+        concerns.append(
+            f"Sector concentration risk: {sector} is volatile and already "
+            f"well-represented in most growth portfolios."
+        )
+
+    # Bear case 5: Single-source conviction — if only one agent flagged this
+    if "cos_" in source.lower() or "agent" in source.lower():
+        concerns.append(
+            f"Pick sourced from single agent ({source}) — no cross-validation from "
+            f"multiple independent research streams."
+        )
+
+    # Save to bear_cases.json for IRM
+    try:
+        bc_path = "data/bear_cases.json"
+        cases = []
+        if os.path.exists(bc_path):
+            import json as _json2
+            cases = _json2.loads(open(bc_path).read())
+        if not isinstance(cases, list):
+            cases = []
+        from datetime import datetime as _dt
+        cases.append({
+            "ts":           _dt.now().isoformat(),
+            "ticker":       ticker,
+            "conviction":   conviction,
+            "sector":       sector,
+            "source_agent": source,
+            "cro_level":    cro_risk_level,
+            "concerns":     concerns,
+            "severity":     severity,
+        })
+        cases = cases[-200:]   # keep last 200
+        import json as _json3
+        open(bc_path, "w").write(_json3.dumps(cases, indent=2, default=str))
+    except Exception:
+        pass
+
+    return {"concerns": concerns, "severity": severity}
+
+
+# =============================================================================
 # EVALUATION ENGINE
 # =============================================================================
 
@@ -571,6 +677,25 @@ def evaluate_recommendation(rec: dict, account: dict,
                 f"({buying_power_pct:.1f}% BP, {n_positions}/{MAX_OPEN_POSITIONS}). "
                 f"Will revisit when capacity opens.{pdo_note}"
             )
+
+    # ── BEAR CASE ADVERSARIAL CHECK (CIT Think Tank proposal 2026-06-09) ───
+    # For any BUY_NEW decision where conviction >= 4 and the trade was APPROVED,
+    # run a quick adversarial challenge to surface hidden risks before execution.
+    # This does NOT block good trades — it appends bear-case context to the
+    # rationale so the IRM can review it post-trade.
+    if action == "BUY_NEW" and decision == "APPROVED":
+        _conv = rec.get("conviction", 3)
+        if _conv >= 4:
+            try:
+                _bear = _bear_case_check(ticker, rec, cro_risk_level, rationale)
+                if _bear.get("concerns"):
+                    rationale.append(
+                        f"[BEAR CASE] {'; '.join(_bear['concerns'][:3])}. "
+                        f"Manager reviewed and approved despite bear case — conviction {_conv}★ "
+                        f"and risk environment ({cro_risk_level}) deemed manageable."
+                    )
+            except Exception as _bc_e:
+                pass   # bear case is advisory; never blocks a trade
 
     # ── WATCH / HOLD ───────────────────────────────────────────────────────
     elif action in ("WATCH", "HOLD"):

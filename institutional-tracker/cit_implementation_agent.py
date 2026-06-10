@@ -1,0 +1,405 @@
+# =============================================================================
+# APEX CAPITAL — CIT IMPLEMENTATION AGENT
+# =============================================================================
+#
+# Picks up approved proposals from `data/cit_implementation_queue.json` and
+# attempts to implement the proposed fix. Focuses exclusively on:
+#   • Tier 0 (auto-approved by deputy_board): trivial LOW-severity code fixes
+#   • Deputy-board-approved proposals routed here after their vote
+#
+# The agent reads each proposal's `proposed_fix` string and applies the most
+# common patterns:
+#   1. makedirs guard      — wraps a file write with os.makedirs(..., exist_ok=True)
+#   2. try/except guard    — wraps an unguarded call in a try/except with logging
+#   3. None-check guard    — adds `if x is not None:` before attribute access
+#   4. TypeError fix       — corrects obvious type mismatches (int vs str, etc.)
+#   5. Import fix          — adds missing imports
+#
+# For anything it cannot auto-apply, it writes a human-readable note to
+# `data/cit_implementation_report.json` explaining what it tried and why it
+# could not complete the fix, so a developer (or future Claude session) can
+# review and apply manually.
+#
+# Safety guardrails:
+#   - Never touches live trading code (alpaca_trader.py, main.py risk sections)
+#     without a dry_run=True first.
+#   - Never modifies files unless confidence >= MIN_CONFIDENCE.
+#   - Creates a backup copy before any write (data/backups/).
+#   - Max 10 fixes per run to prevent runaway changes.
+#   - Logs every action to firm_channel.json.
+#
+# Usage:
+#   python3 cit_implementation_agent.py              # apply up to 10 pending fixes
+#   python3 cit_implementation_agent.py --dry-run    # plan but don't write
+#   python3 cit_implementation_agent.py --report     # print status report
+# =============================================================================
+
+import argparse
+import json
+import logging
+import os
+import re
+import shutil
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(message)s",
+    datefmt="%H:%M:%S",
+)
+logger = logging.getLogger("cit_implementation_agent")
+
+BASE_DIR     = Path(__file__).parent
+DATA_DIR     = BASE_DIR / "data"
+QUEUE_PATH   = DATA_DIR / "cit_implementation_queue.json"
+REPORT_PATH  = DATA_DIR / "cit_implementation_report.json"
+BACKUP_DIR   = DATA_DIR / "backups" / "cit_impl"
+FIRM_CHANNEL = DATA_DIR / "firm_channel.json"
+
+# Never auto-modify these — too risky without human review
+PROTECTED_FILES = {
+    "alpaca_trader.py",
+    "main.py",
+    "risk_manager_agent.py",
+    "irm_review_agent.py",
+    "board_meeting.py",
+    "manager_agent.py",
+}
+
+MIN_CONFIDENCE  = 65    # minimum confidence to attempt auto-fix
+MAX_FIXES_PER_RUN = 10  # hard cap per invocation
+
+
+def _load_queue() -> list:
+    if QUEUE_PATH.exists():
+        try:
+            return json.loads(QUEUE_PATH.read_text())
+        except Exception:
+            pass
+    return []
+
+
+def _save_queue(queue: list):
+    QUEUE_PATH.write_text(json.dumps(queue, indent=2, default=str))
+
+
+def _backup_file(path: Path) -> Optional[Path]:
+    """Create a timestamped backup before modifying a file."""
+    try:
+        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        ts  = datetime.now().strftime("%Y%m%d_%H%M%S")
+        dst = BACKUP_DIR / f"{path.name}.{ts}.bak"
+        shutil.copy2(path, dst)
+        return dst
+    except Exception as e:
+        logger.warning(f"  Backup failed for {path.name}: {e}")
+        return None
+
+
+def _post_to_firm_channel(agent: str, message: str, category: str = "CIT_IMPL"):
+    try:
+        fc = []
+        if FIRM_CHANNEL.exists():
+            fc = json.loads(FIRM_CHANNEL.read_text())
+        if not isinstance(fc, list):
+            fc = fc.get("messages", []) if isinstance(fc, dict) else []
+        fc.append({
+            "ts":       datetime.now().isoformat(),
+            "date":     datetime.now().strftime("%Y-%m-%d"),
+            "agent":    agent,
+            "category": category,
+            "content":  message,
+            "priority": "NORMAL",
+        })
+        if len(fc) > 500:
+            fc = fc[-500:]
+        FIRM_CHANNEL.write_text(json.dumps(fc, indent=2, default=str))
+    except Exception:
+        pass
+
+
+# =============================================================================
+# FIX PATTERNS
+# =============================================================================
+
+def _try_makedirs_fix(file_path: Path, fix_desc: str) -> dict:
+    """
+    Pattern: 'missing makedirs before file write at line N'
+    Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before write calls.
+    """
+    try:
+        # Extract line number from fix description
+        m = re.search(r':(\d+)', fix_desc)
+        if not m:
+            return {"applied": False, "reason": "Could not extract line number"}
+
+        target_line = int(m.group(1))
+        lines = file_path.read_text().splitlines(keepends=True)
+
+        if target_line < 1 or target_line > len(lines):
+            return {"applied": False, "reason": f"Line {target_line} out of range"}
+
+        # Look for an open() or write call near that line
+        context = "".join(lines[max(0, target_line-3): target_line+2])
+        if "open(" not in context and "write" not in context:
+            return {"applied": False, "reason": "No open/write call near specified line"}
+
+        # Insert makedirs guard before the target line
+        insert_idx  = target_line - 1
+        target      = lines[insert_idx]
+        indent      = len(target) - len(target.lstrip())
+        indent_str  = " " * indent
+
+        # Extract path variable from the open() call if possible
+        open_match = re.search(r'open\((\w+)', target)
+        path_var   = open_match.group(1) if open_match else "path"
+
+        guard_line = f"{indent_str}os.makedirs(os.path.dirname({path_var}), exist_ok=True)\n"
+
+        # Check if guard already exists nearby
+        nearby = "".join(lines[max(0, insert_idx-2): insert_idx+1])
+        if "makedirs" in nearby:
+            return {"applied": False, "reason": "makedirs guard already present nearby"}
+
+        lines.insert(insert_idx, guard_line)
+        # Ensure os is imported
+        content = "".join(lines)
+        if "import os" not in content:
+            content = "import os\n" + content
+
+        _backup_file(file_path)
+        file_path.write_text(content)
+        return {"applied": True, "change": f"Added makedirs guard before line {target_line}"}
+
+    except Exception as e:
+        return {"applied": False, "reason": str(e)}
+
+
+def _try_try_except_wrap(file_path: Path, fix_desc: str, evidence: str) -> dict:
+    """
+    Pattern: wrap a specific call in try/except to prevent crashes.
+    Only applies when the evidence clearly identifies a single line.
+    """
+    try:
+        m = re.search(r'line[s]?\s+(\d+)', fix_desc + " " + evidence, re.IGNORECASE)
+        if not m:
+            return {"applied": False, "reason": "Cannot identify specific line to wrap"}
+
+        target_line = int(m.group(1))
+        lines = file_path.read_text().splitlines(keepends=True)
+
+        if target_line < 1 or target_line > len(lines):
+            return {"applied": False, "reason": f"Line {target_line} out of range"}
+
+        target      = lines[target_line - 1]
+        indent      = len(target) - len(target.lstrip())
+        indent_str  = " " * indent
+        inner_str   = " " * (indent + 4)
+
+        # Don't double-wrap
+        prev = "".join(lines[max(0, target_line-3): target_line-1])
+        if "try:" in prev:
+            return {"applied": False, "reason": "Already inside a try block"}
+
+        new_lines = [
+            f"{indent_str}try:\n",
+            f"{inner_str}{target.lstrip()}",
+            f"{indent_str}except Exception as _cit_e:\n",
+            f"{inner_str}logger.warning(f'CIT auto-guard: {{_cit_e}}')\n",
+        ]
+        lines[target_line - 1: target_line] = new_lines
+
+        _backup_file(file_path)
+        file_path.write_text("".join(lines))
+        return {"applied": True, "change": f"Wrapped line {target_line} in try/except"}
+
+    except Exception as e:
+        return {"applied": False, "reason": str(e)}
+
+
+# =============================================================================
+# MAIN IMPLEMENTATION LOOP
+# =============================================================================
+
+def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN) -> dict:
+    queue   = _load_queue()
+    pending = [item for item in queue if item.get("status") == "queued"]
+    logger.info(f"CIT Implementation Agent: {len(pending)} pending fix(es) in queue")
+
+    if not pending:
+        return {"status": "NO_ACTION", "implemented": 0, "skipped": 0}
+
+    implemented  = []
+    skipped      = []
+    report_items = []
+    fixes_applied = 0
+
+    for item in pending[:max_fixes]:
+        pid        = item.get("proposal_id", "?")
+        title      = item.get("title", "?")
+        fix_desc   = item.get("proposed_fix", "")
+        evidence   = item.get("evidence", "")
+        confidence = item.get("confidence", 0)
+        category   = item.get("category", "?")
+        severity   = item.get("severity", "LOW")
+
+        logger.info(f"  Processing [{pid}]: {title[:60]}")
+
+        # Confidence gate
+        if confidence < MIN_CONFIDENCE:
+            reason = f"Confidence {confidence}% below minimum {MIN_CONFIDENCE}%"
+            logger.info(f"    SKIP: {reason}")
+            item["status"]    = "skipped"
+            item["skip_reason"] = reason
+            skipped.append(pid)
+            report_items.append({"pid": pid, "title": title, "result": "SKIPPED", "reason": reason})
+            continue
+
+        # Identify target file from evidence
+        file_match = re.search(r'(\w[\w/\-]+\.py)', evidence + " " + fix_desc)
+        target_file_name = file_match.group(1) if file_match else None
+
+        if not target_file_name:
+            reason = "Could not identify target file from evidence/fix description"
+            logger.info(f"    SKIP: {reason}")
+            item["status"]    = "skipped"
+            item["skip_reason"] = reason
+            skipped.append(pid)
+            report_items.append({"pid": pid, "title": title, "result": "NEEDS_HUMAN", "reason": reason})
+            continue
+
+        # Protected file check
+        base_name = Path(target_file_name).name
+        if base_name in PROTECTED_FILES:
+            reason = f"{base_name} is a protected file — human review required"
+            logger.info(f"    SKIP: {reason}")
+            item["status"]    = "protected"
+            item["skip_reason"] = reason
+            skipped.append(pid)
+            report_items.append({"pid": pid, "title": title, "result": "PROTECTED", "reason": reason, "file": base_name})
+            continue
+
+        target_path = BASE_DIR / target_file_name
+        if not target_path.exists():
+            # Try common subdirs
+            for candidate in [BASE_DIR / base_name, BASE_DIR / "agents" / base_name]:
+                if candidate.exists():
+                    target_path = candidate
+                    break
+
+        if not target_path.exists():
+            reason = f"File not found: {target_file_name}"
+            logger.info(f"    SKIP: {reason}")
+            item["status"]    = "skipped"
+            item["skip_reason"] = reason
+            skipped.append(pid)
+            report_items.append({"pid": pid, "title": title, "result": "FILE_NOT_FOUND", "reason": reason})
+            continue
+
+        # Determine fix pattern
+        fix_lower = (fix_desc + " " + title).lower()
+        result = {"applied": False, "reason": "No matching fix pattern"}
+
+        if "makedirs" in fix_lower or "make_dir" in fix_lower:
+            if not dry_run:
+                result = _try_makedirs_fix(target_path, fix_desc + " " + evidence)
+            else:
+                result = {"applied": False, "reason": "DRY RUN — no changes made"}
+
+        elif "try" in fix_lower and "except" in fix_lower:
+            if not dry_run:
+                result = _try_try_except_wrap(target_path, fix_desc, evidence)
+            else:
+                result = {"applied": False, "reason": "DRY RUN — no changes made"}
+
+        else:
+            reason = f"No auto-applicable pattern matched for: {title[:50]}"
+            result = {"applied": False, "reason": reason}
+
+        if result.get("applied"):
+            fixes_applied += 1
+            item["status"]      = "implemented"
+            item["implemented_at"] = datetime.now().isoformat()
+            item["change"]      = result.get("change", "")
+            implemented.append(pid)
+            report_items.append({
+                "pid": pid, "title": title, "result": "IMPLEMENTED",
+                "change": result.get("change", ""), "file": str(target_path.name),
+            })
+            logger.info(f"    ✓ IMPLEMENTED: {result.get('change','')}")
+        else:
+            item["status"]       = "needs_human"
+            item["skip_reason"]  = result.get("reason", "Pattern not matched")
+            skipped.append(pid)
+            report_items.append({
+                "pid": pid, "title": title, "result": "NEEDS_HUMAN",
+                "reason": result.get("reason", ""), "fix_hint": fix_desc[:200],
+            })
+            logger.info(f"    → NEEDS_HUMAN: {result.get('reason','')}")
+
+    # Save updated queue
+    _save_queue(queue)
+
+    # Write report
+    report = {
+        "generated_at":   datetime.now().isoformat(),
+        "implemented":    len(implemented),
+        "skipped":        len(skipped),
+        "total_in_queue": len(queue),
+        "dry_run":        dry_run,
+        "items":          report_items,
+    }
+    REPORT_PATH.write_text(json.dumps(report, indent=2, default=str))
+
+    # Post to firm channel
+    if implemented:
+        _post_to_firm_channel(
+            agent="CIT Implementation Agent",
+            message=(
+                f"CIT Implementation Agent completed: {len(implemented)} fix(es) applied, "
+                f"{len(skipped)} skipped (needs human review). "
+                f"Fixes: {', '.join(report_items[i]['title'][:40] for i, _ in enumerate(implemented))}. "
+                f"Full report: data/cit_implementation_report.json"
+            ),
+        )
+
+    logger.info(
+        f"CIT Implementation Agent done: {len(implemented)} implemented, "
+        f"{len(skipped)} skipped/needs-human"
+    )
+    return report
+
+
+def print_report():
+    if not REPORT_PATH.exists():
+        print("No report yet. Run the agent first.")
+        return
+    report = json.loads(REPORT_PATH.read_text())
+    print(f"\n=== CIT IMPLEMENTATION REPORT ===")
+    print(f"Generated: {report.get('generated_at','?')}")
+    print(f"Implemented: {report.get('implemented',0)}")
+    print(f"Skipped/needs-human: {report.get('skipped',0)}")
+    print(f"Queue total: {report.get('total_in_queue',0)}")
+    for item in report.get("items", []):
+        status = item.get("result","?")
+        print(f"\n  [{status}] {item.get('title','?')[:70]}")
+        if status == "IMPLEMENTED":
+            print(f"    change: {item.get('change','')}")
+        else:
+            print(f"    reason: {item.get('reason',item.get('fix_hint',''))[:100]}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--report",  action="store_true")
+    args = parser.parse_args()
+
+    os.chdir(BASE_DIR)
+
+    if args.report:
+        print_report()
+    else:
+        run_implementation(dry_run=args.dry_run)

@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-09T18:49:10.427240",
+  "generated_at": "2026-06-10T01:17:43.765509",
   "proposals_reviewed": 3,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "CIT-2026-1448",
+      "id": "CIT-2026-1450",
       "title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
       "category": "VISION",
       "backtest_evidence": "backtester.py is available. A 1-year backtest of this strategy change should be run before board vote. See backtester.py for usage.",
