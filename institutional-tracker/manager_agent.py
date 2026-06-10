@@ -187,8 +187,12 @@ def evaluate_recommendation(rec: dict, account: dict,
       - manager_action:   the action that will actually be executed
       - manager_rationale: list of strings explaining the decision
     """
-    action          = rec["action"]
-    ticker          = rec["ticker"]
+    # Use .get() with sensible defaults — R&D picks sometimes omit 'action'
+    # which caused a KeyError crash 4x/day (logged as "Manager Agent error: 'action'")
+    action          = rec.get("action") or rec.get("signal", "BUY_NEW")
+    ticker          = rec.get("ticker", "?")
+    if not action:
+        action = "BUY_NEW"  # safe default: research picks are buy signals
     pnl_pct         = rec.get("unrealized_pnl_pct", 0) or 0
     hold_days       = rec.get("hold_days", 0) or 0
     weight_pct      = rec.get("weight_pct", 0) or 0

@@ -82,6 +82,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Install smart log filter — demotes known transient noise (DNS blips, yfinance
+# timeouts, SH "available=0") from ERROR to WARNING so real errors stand out.
+try:
+    from apex_logging import setup_logging as _setup_apex_logging, flush_health_now as _flush_log_health
+    _setup_apex_logging(level=logging.INFO)
+    logger.debug("  Apex smart log filter installed")
+except Exception as _log_filter_err:
+    logger.debug(f"  Apex log filter not available: {_log_filter_err}")
+
 # ---------------------------------------------------------------------------
 # State File — tracks paper trading day count & position entry dates
 # ---------------------------------------------------------------------------
@@ -1605,6 +1614,12 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     if paper_day == 30:
         logger.info("  TRADING MILESTONE COMPLETE")
     logger.info("=" * 65)
+
+    # ── Flush log health stats ────────────────────────────────────────────
+    try:
+        _flush_log_health()
+    except Exception:
+        pass
 
     # ── External heartbeat ping (CIT-2026-217) ────────────────────────────
     # Pings healthchecks.io (or similar) at end of each successful run.
