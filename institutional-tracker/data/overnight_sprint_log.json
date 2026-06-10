@@ -1,0 +1,151 @@
+[
+  {
+    "started_at": "2026-06-10T03:50:41.973526",
+    "cleanup": {
+      "auto_closed": 176,
+      "routed_to_implementer": 129,
+      "stale_backlog": 0
+    },
+    "initial_implementation": {
+      "generated_at": "2026-06-10T03:50:42.026095",
+      "implemented": 0,
+      "skipped": 20,
+      "total_in_queue": 129,
+      "dry_run": false,
+      "items": [
+        {
+          "pid": "CIT-2026-213",
+          "title": "880 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-216",
+          "title": "Zero test coverage \u2014 no integration tests for the pipeline",
+          "result": "FILE_NOT_FOUND",
+          "reason": "File not found: _test.py"
+        },
+        {
+          "pid": "CIT-2026-217",
+          "title": "No cron heartbeat \u2014 silent scheduler failure goes undetected",
+          "result": "PROTECTED",
+          "reason": "main.py is a protected file \u2014 human review required",
+          "file": "main.py"
+        },
+        {
+          "pid": "CIT-2026-220",
+          "title": "459 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-233",
+          "title": "152 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-240",
+          "title": "736 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-241",
+          "title": "1611 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-242",
+          "title": "2531 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-247",
+          "title": "2710 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-252",
+          "title": "3066 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-257",
+          "title": "3138 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-258",
+          "title": "3574 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-263",
+          "title": "4010 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-264",
+          "title": "5041 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-273",
+          "title": "5553 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-181",
+          "title": "5573 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-183",
+          "title": "5576 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-191",
+          "title": "5577 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-194",
+          "title": "2946 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        },
+        {
+          "pid": "CIT-2026-187",
+          "title": "2956 ERROR lines in recent logs",
+          "result": "NEEDS_HUMAN",
+          "reason": "Could not identify target file from evidence/fix description"
+        }
+      ]
+    },
+    "deputy_rounds": {
+      "rounds_run": 20,
+      "total_approved": 0,
+      "still_pending_for_full_board": 0
+    },
+    "full_board": {
+      "board_meetings_run": 0
+    },
+    "completed_at": "2026-06-10T03:55:27.380317",
+    "elapsed_minutes": 4.8,
+    "status": "COMPLETE"
+  }
+]

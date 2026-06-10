@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-06-10T03:51:57.165763",
+  "implemented": 0,
+  "skipped": 9,
+  "total_in_queue": 129,
+  "dry_run": false,
+  "items": [
+    {
+      "pid": "CIT-2026-1048",
+      "title": "66 ERROR lines \u2014 dominant: `known`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1074",
+      "title": "70 ERROR lines \u2014 dominant: `known`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1088",
+      "title": "32 ERROR lines \u2014 dominant: `known`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1369",
+      "title": "38 ERROR lines \u2014 dominant: `Sell`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1369",
+      "title": "38 ERROR lines \u2014 dominant: `Sell`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1367",
+      "title": "43 ERROR lines \u2014 dominant: `Sell`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1367",
+      "title": "43 ERROR lines \u2014 dominant: `Sell`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1368",
+      "title": "48 ERROR lines \u2014 dominant: `Sell`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    },
+    {
+      "pid": "CIT-2026-1368",
+      "title": "48 ERROR lines \u2014 dominant: `Sell`",
+      "result": "NEEDS_HUMAN",
+      "reason": "Could not identify target file from evidence/fix description"
+    }
+  ]
+}

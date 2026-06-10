@@ -4682,5 +4682,181 @@
     "round": 1,
     "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
     "status": "PENDING"
+  },
+  {
+    "id": "CLR-9BB58E",
+    "ts": "2026-06-10T03:50:42.033399",
+    "proposal_id": "CIT-2026-1450",
+    "proposal_title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for 'Build a targeted short book for CRITICAL/HIGH risk regimes' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-B700B1",
+    "ts": "2026-06-10T03:50:42.033399",
+    "proposal_id": "CIT-2026-1450",
+    "proposal_title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-E2B8E8",
+    "ts": "2026-06-10T03:50:42.033399",
+    "proposal_id": "CIT-2026-1450",
+    "proposal_title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+    "requesting_deputy": "Deputy IRM",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-1F8E72",
+    "ts": "2026-06-10T03:50:42.033399",
+    "proposal_id": "CIT-2026-1450",
+    "proposal_title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-16CCD5",
+    "ts": "2026-06-10T03:50:42.040228",
+    "proposal_id": "CIT-2026-1451",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-339846",
+    "ts": "2026-06-10T03:50:42.040228",
+    "proposal_id": "CIT-2026-1451",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-C24F4E",
+    "ts": "2026-06-10T03:50:42.040228",
+    "proposal_id": "CIT-2026-1451",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-8FA9FA",
+    "ts": "2026-06-10T03:50:42.045785",
+    "proposal_id": "CIT-2026-1453",
+    "proposal_title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Director should verify each approved self-improvement proposal has a correspondi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-1918E1",
+    "ts": "2026-06-10T03:50:42.045785",
+    "proposal_id": "CIT-2026-1453",
+    "proposal_title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-72C6CD",
+    "ts": "2026-06-10T03:50:42.045785",
+    "proposal_id": "CIT-2026-1453",
+    "proposal_title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-C628C5",
+    "ts": "2026-06-10T03:50:42.045785",
+    "proposal_id": "CIT-2026-1453",
+    "proposal_title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-9FB544",
+    "ts": "2026-06-10T03:50:42.051532",
+    "proposal_id": "CIT-2026-1452",
+    "proposal_title": "Replace fixed R&D cadence with event-triggered research cycles",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-70F07D",
+    "ts": "2026-06-10T03:50:42.051532",
+    "proposal_id": "CIT-2026-1452",
+    "proposal_title": "Replace fixed R&D cadence with event-triggered research cycles",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-8416E0",
+    "ts": "2026-06-10T03:50:42.051532",
+    "proposal_id": "CIT-2026-1452",
+    "proposal_title": "Replace fixed R&D cadence with event-triggered research cycles",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-39F730",
+    "ts": "2026-06-10T03:50:42.051532",
+    "proposal_id": "CIT-2026-1452",
+    "proposal_title": "Replace fixed R&D cadence with event-triggered research cycles",
+    "requesting_deputy": "Deputy IRM",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-BA0E7C",
+    "ts": "2026-06-10T03:50:42.051532",
+    "proposal_id": "CIT-2026-1452",
+    "proposal_title": "Replace fixed R&D cadence with event-triggered research cycles",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "PENDING"
   }
 ]
