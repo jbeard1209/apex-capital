@@ -1481,6 +1481,36 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         logger.warning(f"  HR review error: {e}")
 
     # -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # Step 10b: Logic Officer — whole-picture coherence check
+    # -----------------------------------------------------------------------
+    # Runs BEFORE the IRM so any anomalies it finds can be picked up by the
+    # IRM board and included in the Chairman report.
+    # -----------------------------------------------------------------------
+    logger.info("\nStep 10b: Logic Officer — coherence check...")
+    try:
+        from logic_officer import run_logic_officer
+        lo_result = run_logic_officer()
+        lo_anomalies = lo_result.get("anomalies_found", 0)
+        lo_proposals = lo_result.get("proposals_added", 0)
+        if lo_anomalies:
+            logger.warning(
+                f"  Logic Officer: {lo_anomalies} anomaly(ies) found, "
+                f"{lo_proposals} board proposal(s) submitted"
+            )
+            # Serious anomalies trigger a board meeting
+            serious = [f for f in lo_result.get("findings", [])
+                       if f.get("severity") in ("HIGH","CRITICAL")]
+            if serious:
+                _board_meeting_needed = True
+                _board_trigger_sources.append(
+                    f"LogicOfficer:{len(serious)}_anomalies"
+                )
+        else:
+            logger.info("  Logic Officer: no anomalies — system logic checks out ✓")
+    except Exception as e:
+        logger.warning(f"  Logic Officer error: {e}")
+
     # Step 11: IRM Daily Check — Independent of email pipeline
     # -----------------------------------------------------------------------
     # The IRM board runs here regardless of the --no-email flag.

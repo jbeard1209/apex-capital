@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T00:09:08.947285",
+  "generated_at": "2026-06-10T04:06:23.582362",
   "leader": "R&D Team Leader",
   "cro_risk_level": "HIGH",
   "sectors_scanned": 16,
@@ -656,7 +656,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Technology is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 35% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-10T00:09:08.756512",
+      "assigned_at": "2026-06-10T04:06:23.581616",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -702,7 +702,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Biotech is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 24% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-10T00:09:08.756527",
+      "assigned_at": "2026-06-10T04:06:23.581628",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -748,7 +748,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Defense & Aerospace is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 25% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-10T00:09:08.756534",
+      "assigned_at": "2026-06-10T04:06:23.581635",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -794,7 +794,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Consumer Discretionary is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 19% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-10T00:09:08.756541",
+      "assigned_at": "2026-06-10T04:06:23.581642",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -840,7 +840,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Regional Banks is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 22% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-10T00:09:08.756547",
+      "assigned_at": "2026-06-10T04:06:23.581648",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -886,7 +886,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Retail is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 19% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-10T00:09:08.756553",
+      "assigned_at": "2026-06-10T04:06:23.581655",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -932,7 +932,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Financials is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 15% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
-      "assigned_at": "2026-06-10T00:09:08.756560",
+      "assigned_at": "2026-06-10T04:06:23.581661",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4
@@ -978,7 +978,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Healthcare is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 17% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
-      "assigned_at": "2026-06-10T00:09:08.756566",
+      "assigned_at": "2026-06-10T04:06:23.581668",
       "cro_risk_level": "HIGH",
       "cro_advisory": "HIGH RISK: No new positions unless conviction is 5\u2605 and PDO signals DEPLOY_MORE. Maintain minimum 25% cash buffer.",
       "min_conviction_override": 4

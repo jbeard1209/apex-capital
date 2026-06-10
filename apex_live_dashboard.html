@@ -210,6 +210,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="tab" onclick="showTab('teaching')">🎓 Teaching</div>
 </div>
 
+<!-- ═══════════════ SINCE YOU WERE AWAY (login briefing) ══════════════ -->
+<div id="briefing-card" style="display:none;margin:14px;padding:16px 20px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.3);border-radius:8px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-size:13px;font-weight:700;color:var(--green);letter-spacing:.5px">☀️ SINCE YOU WERE AWAY</div>
+    <button onclick="dismissBriefing()" style="background:none;border:1px solid var(--border);color:var(--text2);font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit">Dismiss</button>
+  </div>
+  <div id="briefing-entries"></div>
+</div>
+
 <!-- ═══════════════════════════ OVERVIEW ═══════════════════════════ -->
 <div id="tab-overview" class="content active">
   <div class="grid3" style="margin-bottom:14px">
@@ -2209,6 +2218,75 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
+// ── Since You Were Away ───────────────────────────────────────────────────
+let _briefingDismissed = false;
+let _lastSeenTs = null;
+
+function renderLoginBriefing(d) {
+  const briefing = d.chairman_briefing || {};
+  const lastSeen = d._last_seen || liveData.last_seen || null;
+  const entries  = briefing.entries || [];
+
+  // Filter to entries since last login (or last 2 days if never logged in)
+  let cutoff = lastSeen
+    ? new Date(lastSeen)
+    : new Date(Date.now() - 2 * 24 * 3600 * 1000);
+
+  // Don't re-show within the same session
+  if (_lastSeenTs && new Date(lastSeen) <= new Date(_lastSeenTs)) return;
+  _lastSeenTs = lastSeen;
+
+  const unseen = entries.filter(e => new Date(e.ts) > cutoff);
+  const card   = document.getElementById('briefing-card');
+  const body   = document.getElementById('briefing-entries');
+
+  if (!unseen.length || _briefingDismissed) {
+    if (card) card.style.display = 'none';
+    return;
+  }
+
+  // Build the briefing card
+  const lines = [];
+  for (const entry of unseen) {
+    const dt    = new Date(entry.ts).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+    const pnl   = entry.pnl_vs_start;
+    const pnlStr = pnl != null ? `${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toLocaleString(undefined,{maximumFractionDigits:0})} vs start` : '';
+    const pnlColor = pnl != null ? (pnl >= 0 ? 'var(--green)' : 'var(--red)') : 'inherit';
+
+    lines.push(`<div style="border-bottom:1px solid rgba(0,255,136,.15);padding:8px 0">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px">
+        <span>${dt}</span>
+        <span style="color:${pnlColor};font-weight:700">${pnlStr}</span>
+      </div>
+      <div style="display:flex;gap:12px;font-size:11px;margin-bottom:6px">
+        <span>Canary: <b>${entry.canary||'?'}</b></span>
+        <span>CRO: <b>${entry.cro_level||'?'}</b></span>
+        <span>Picks: <b>${entry.picks_today||0}</b></span>
+        <span>Portfolio: <b>$${(entry.portfolio||0).toLocaleString(undefined,{maximumFractionDigits:0})}</b></span>
+      </div>
+      ${(entry.items||[]).map(item => {
+        const color = item.severity==='CRITICAL'?'var(--red)':item.severity==='HIGH'?'var(--orange)':'var(--text2)';
+        return `<div style="font-size:11px;padding:4px 8px;background:rgba(255,255,255,.03);border-radius:4px;margin-bottom:3px">
+          <span style="color:${color};font-weight:700">[${item.severity}]</span>
+          <span style="margin-left:6px">${item.title}</span>
+        </div>`;
+      }).join('')}
+      ${!entry.items?.length ? '<div style="font-size:11px;color:var(--green)">✓ No anomalies detected</div>' : ''}
+    </div>`);
+  }
+
+  body.innerHTML = lines.join('') || '<div style="font-size:12px;color:var(--green)">All clear while you were away.</div>';
+  card.style.display = 'block';
+}
+
+function dismissBriefing() {
+  _briefingDismissed = true;
+  const card = document.getElementById('briefing-card');
+  if (card) card.style.display = 'none';
+  // Tell server we've seen this
+  fetch('/api/seen').catch(()=>{});
+}
+
 // Hook the new tabs into renderAll
 const _origRenderAll = renderAll;
 renderAll = function(d) {
@@ -2219,6 +2297,7 @@ renderAll = function(d) {
   renderRiskIntel(d.data||{});
   renderBoard(d.data||{});
   renderTeaching(d.data||{});
+  renderLoginBriefing(d.data||{});
 };
 
 // ── Auto-refresh ───────────────────────────────────────────────────────────

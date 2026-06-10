@@ -42,6 +42,25 @@ HTML_FILE = BASE_DIR / "apex_live_dashboard.html"
 # In-memory session store  {token: username}
 _sessions = {}  # type: dict
 
+# Last-seen tracker — persisted to disk so it survives server restarts
+LAST_SEEN_PATH = DATA_DIR / "chairman_last_seen.json"
+
+def _load_last_seen() -> dict:
+    try:
+        if LAST_SEEN_PATH.exists():
+            return json.loads(LAST_SEEN_PATH.read_text())
+    except Exception:
+        pass
+    return {}
+
+def _save_last_seen(data: dict):
+    try:
+        LAST_SEEN_PATH.write_text(json.dumps(data, default=str))
+    except Exception:
+        pass
+
+_last_seen = _load_last_seen()
+
 # ── Data files ──────────────────────────────────────────────
 DATA_FILES = {
     "state":             "state.json",
@@ -101,6 +120,11 @@ def build_all_response():
 
     # Performance history (loss attribution)
     result["data"]["performance_history"] = load_json(DATA_DIR / "performance_history.json")
+
+    # Logic Officer findings + Chairman Briefing
+    result["data"]["logic_officer"]     = load_json(DATA_DIR / "logic_officer_findings.json")
+    result["data"]["chairman_briefing"] = load_json(DATA_DIR / "chairman_briefing.json")
+    result["data"]["log_health"]        = load_json(DATA_DIR / "log_health.json")
 
     return result
 
@@ -251,7 +275,25 @@ class Handler(BaseHTTPRequestHandler):
 
         # API
         if path == "/api/all":
-            self.send_json(build_all_response())
+            # Record this login/refresh in last-seen tracker
+            token    = get_session_token(self.cookies())
+            username = _sessions.get(token, "unknown") if token else "unknown"
+            _last_seen[username] = datetime.now(timezone.utc).isoformat()
+            _save_last_seen(_last_seen)
+            resp = build_all_response()
+            # Attach unread briefing entries since last login
+            resp["last_seen"]      = _last_seen.get(username)
+            resp["unread_since"]   = _last_seen.get(username)
+            self.send_json(resp)
+            return
+
+        # Mark briefing entries as read (called when user dismisses the card)
+        if path == "/api/seen":
+            token    = get_session_token(self.cookies())
+            username = _sessions.get(token, "unknown") if token else "unknown"
+            _last_seen[username] = datetime.now(timezone.utc).isoformat()
+            _save_last_seen(_last_seen)
+            self.send_json({"ok": True, "last_seen": _last_seen[username]})
             return
 
         if path == "/api/health":
