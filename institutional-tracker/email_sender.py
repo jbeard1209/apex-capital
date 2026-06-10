@@ -40,8 +40,23 @@ def _send_raw(html_body: str, subject: str) -> bool:
             server.login(EMAIL_SENDER, GMAIL_APP_PASSWORD)
             server.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, msg.as_string())
         return True
+    except OSError as e:
+        # DNS / network failure (Errno 8 "nodename nor servname provided") —
+        # this is a transient infrastructure issue, not a code bug. Demote to
+        # WARNING so it doesn't flood the error log or trigger CIT alerts.
+        err_str = str(e)
+        if "nodename" in err_str or "servname" in err_str or "Errno 8" in err_str or "Name or service" in err_str:
+            logger.warning(f"⚠ _send_raw: DNS/network unavailable — email queued for retry. ({e})")
+        else:
+            logger.warning(f"⚠ _send_raw: OS-level send failure (transient): {e}")
+        return False
+    except smtplib.SMTPAuthenticationError as e:
+        # Auth failure IS a real error — keep as ERROR
+        logger.error(f"❌ _send_raw: SMTP auth failed — check GMAIL_APP_PASSWORD in config.py: {e}")
+        return False
     except Exception as e:
-        logger.error(f"❌ _send_raw failed: {e}")
+        # Other SMTP errors — WARNING unless it's a repeated auth/config issue
+        logger.warning(f"⚠ _send_raw failed (will retry next cycle): {e}")
         return False
 
 

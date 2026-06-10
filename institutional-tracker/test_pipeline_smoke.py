@@ -293,6 +293,117 @@ class TestSignalSourceHelpers(unittest.TestCase):
 
 
 # =============================================================================
+# 5. CIT specificity gate
+# =============================================================================
+class TestCITSpecificityGate(unittest.TestCase):
+
+    def setUp(self):
+        from cit_director import _fix_is_specific
+        self.gate = _fix_is_specific
+
+    def test_rejects_vague_fix(self):
+        """Vague fix with only a file name fails the gate."""
+        self.assertFalse(self.gate("Review error handling in main.py."))
+        self.assertFalse(self.gate("Improve logging in the pipeline."))
+        self.assertFalse(self.gate("Add better error handling."))
+
+    def test_accepts_specific_fix(self):
+        """Specific fix with file + function + code passes the gate."""
+        good = ("In `email_sender.py`, in `_send_raw()`, "
+                "change `logger.error` to `logger.warning` for OSError/DNS exceptions (Errno 8).")
+        self.assertTrue(self.gate(good))
+
+    def test_accepts_fix_with_code_fragment(self):
+        """Fix containing a backtick-quoted code fragment passes."""
+        good = "In `rd_team_leader.py`, filter out None scores: `if score is None: continue` before sorting."
+        self.assertTrue(self.gate(good))
+
+    def test_rejects_short_fix(self):
+        """Fix under 40 chars always fails."""
+        self.assertFalse(self.gate("Fix main.py line 100"))
+
+
+# =============================================================================
+# 6. Deputy board routing
+# =============================================================================
+class TestDeputyBoardRouting(unittest.TestCase):
+
+    def setUp(self):
+        from deputy_board import DEPUTY_CATEGORIES, FULL_BOARD_ONLY_CATEGORIES, AUTO_IMPLEMENT_CATEGORIES
+        self.deputy_cats    = DEPUTY_CATEGORIES
+        self.full_board_cats = FULL_BOARD_ONLY_CATEGORIES
+        self.auto_cats      = AUTO_IMPLEMENT_CATEGORIES
+
+    def test_improvement_in_deputy_scope(self):
+        """IMPROVEMENT should now be in deputy scope (expanded routing)."""
+        self.assertIn("IMPROVEMENT", self.deputy_cats)
+        self.assertIn("VISION",      self.deputy_cats)
+
+    def test_strategy_is_full_board_only(self):
+        """STRATEGY and ARCHITECTURE should never go to deputies."""
+        self.assertIn("STRATEGY",     self.full_board_cats)
+        self.assertIn("ARCHITECTURE", self.full_board_cats)
+        self.assertNotIn("STRATEGY",     self.deputy_cats)
+        self.assertNotIn("ARCHITECTURE", self.deputy_cats)
+
+    def test_auto_implement_categories(self):
+        """Trivial bug categories should be in auto-implement set."""
+        for cat in ("BUG_FIX", "LOGIC_ERROR", "INTEGRATION"):
+            self.assertIn(cat, self.auto_cats)
+
+
+# =============================================================================
+# 7. System health check (module imports)
+# =============================================================================
+class TestCriticalImports(unittest.TestCase):
+
+    def _import(self, module):
+        import importlib
+        importlib.import_module(module)
+
+    def test_import_manager_agent(self):        self._import("manager_agent")
+    def test_import_risk_manager_agent(self):   self._import("risk_manager_agent")
+    def test_import_hr_agent(self):             self._import("hr_agent")
+    def test_import_irm_review_agent(self):     self._import("irm_review_agent")
+    def test_import_board_meeting(self):        self._import("board_meeting")
+    def test_import_cit_director(self):         self._import("cit_director")
+    def test_import_deputy_board(self):         self._import("deputy_board")
+    def test_import_email_sender(self):         self._import("email_sender")
+    def test_import_canary_agent(self):         self._import("canary_agent")
+    def test_import_cit_implementation_agent(self): self._import("cit_implementation_agent")
+    def test_import_overnight_sprint(self):     self._import("overnight_board_sprint")
+
+
+# =============================================================================
+# 8. Active agent count health check
+# =============================================================================
+class TestAgentRegistry(unittest.TestCase):
+
+    def setUp(self):
+        reg_path = Path(__file__).parent / "data" / "agent_registry.json"
+        self.agents = json.loads(reg_path.read_text()).get("agents", [])
+
+    def test_at_least_20_active_agents(self):
+        """After amnesty + sector gap fill, should have >= 20 active agents."""
+        active = [a for a in self.agents if a.get("status") == "active"]
+        self.assertGreaterEqual(len(active), 20,
+            f"Only {len(active)} active agents — expected >= 20 after sector gap fill")
+
+    def test_no_unknown_status(self):
+        """No agent should have a missing or None status."""
+        bad = [a["class_name"] for a in self.agents if not a.get("status")]
+        self.assertEqual(bad, [], f"Agents with missing status: {bad}")
+
+    def test_key_sectors_covered(self):
+        """Core sectors should have at least one active agent."""
+        active = [a for a in self.agents if a.get("status") == "active"]
+        sectors = {a.get("sector","").lower() for a in active}
+        key = ["technology", "financials", "healthcare", "industrials"]
+        missing = [s for s in key if not any(s in sector for sector in sectors)]
+        self.assertEqual(missing, [], f"Sectors with no active agent: {missing}")
+
+
+# =============================================================================
 # Runner
 # =============================================================================
 if __name__ == "__main__":
@@ -303,6 +414,10 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestEnforceRiskRules))
     suite.addTests(loader.loadTestsFromTestCase(TestStateRoundTrip))
     suite.addTests(loader.loadTestsFromTestCase(TestSignalSourceHelpers))
+    suite.addTests(loader.loadTestsFromTestCase(TestCITSpecificityGate))
+    suite.addTests(loader.loadTestsFromTestCase(TestDeputyBoardRouting))
+    suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
+    suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

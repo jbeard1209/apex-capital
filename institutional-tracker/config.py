@@ -118,6 +118,13 @@ SHORT_BOOK_ENABLED          = True
 SHORT_BOOK_CRO_MIN          = "HIGH"   # minimum CRO level to activate short book
 SHORT_BOOK_CRITICAL_BONUS   = 2        # extra short slots in CRITICAL vs HIGH
 
+# --- CRON HEARTBEAT (healthchecks.io) ---
+# Ping this URL at the end of each successful main.py run.
+# If the scheduler dies silently, healthchecks.io sends an alert to Jack.
+# Set up free at https://healthchecks.io — paste your ping URL here.
+# Set to "" or None to disable.
+HEALTHCHECK_PING_URL = ""   # e.g. "https://hc-ping.com/your-uuid-here"
+
 # --- STRUCTURAL GUARDRAILS ---
 # Conservative hard limits that agents cannot override. Give agents room to
 # operate normally but prevent runaway losses at the portfolio level.

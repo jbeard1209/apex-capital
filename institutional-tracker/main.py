@@ -1608,19 +1608,24 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
 
     # ── External heartbeat ping (CIT-2026-217) ────────────────────────────
     # Pings healthchecks.io (or similar) at end of each successful run.
-    # Set APEX_HEALTHCHECK_URL env var to enable:
-    #   export APEX_HEALTHCHECK_URL="https://hc-ping.com/<your-uuid>"
-    # If the scheduler misses two consecutive windows, healthchecks.io emails
-    # an alert immediately — much faster than the 14h dead-man's switch.
+    # Two ways to configure:
+    #   1. Set APEX_HEALTHCHECK_URL env var (recommended for GCP)
+    #   2. Set HEALTHCHECK_PING_URL in config.py (fallback for local)
+    # Free account at https://healthchecks.io — paste your UUID ping URL.
+    # If the scheduler misses two consecutive windows, you get an email immediately.
     try:
         import subprocess as _sp
-        _hc_url = os.environ.get("APEX_HEALTHCHECK_URL", "")
+        _hc_url = (os.environ.get("APEX_HEALTHCHECK_URL", "")
+                   or getattr(__import__("config"), "HEALTHCHECK_PING_URL", "")
+                   or "")
         if _hc_url:
             _sp.run(
                 ["curl", "-fsS", "--max-time", "10", "--retry", "3", _hc_url],
                 capture_output=True, timeout=15,
             )
-            logger.info(f"  External heartbeat pinged: {_hc_url[:40]}...")
+            logger.info(f"  Heartbeat pinged: {_hc_url[:40]}...")
+        else:
+            logger.debug("  Heartbeat: no URL configured (set HEALTHCHECK_PING_URL in config.py)")
     except Exception:
         pass  # heartbeat is best-effort — never block the pipeline
 

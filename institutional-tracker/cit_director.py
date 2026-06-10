@@ -41,20 +41,40 @@
 #   Findings queue up in data/cit_pending_proposals.json.
 #   Board reviews the queue at its next scheduled meeting.
 #
-# PRECISION MANDATE
-# ─────────────────
-#   Every finding reaching the board must cite specific, verifiable evidence:
-#   a file:line reference, a concrete metric, or a named data path. Vague
-#   findings ("this might fail", "seems slow") are automatically demoted to
-#   the backlog regardless of confidence score.
+# PRECISION MANDATE (Chairman directive 2026-06-10 — strengthened)
+# ─────────────────────────────────────────────────────────────────
+#   Every finding reaching the board MUST contain ALL of:
+#
+#   1. SPECIFIC EVIDENCE: a file:line reference, a concrete metric, or a named
+#      data path. "This might fail" or "seems slow" → backlog, no exceptions.
+#
+#   2. SPECIFIC PROPOSED FIX: the fix must name the exact file + function/line +
+#      the specific code change, written with enough detail that a developer
+#      can implement it without asking a follow-up question.
+#      TEMPLATE: "In `<file>`, in `<function>`, change `<old>` to `<new>`."
+#      EXAMPLE (GOOD):  "In `risk_manager_agent.py`, in `_build_risk_bulletin()`,
+#                        change `if risk_level == 'HIGH':` to add a
+#                        `consecutive_high_cycles` counter and emit a board
+#                        review flag when streak >= 3."
+#      EXAMPLE (BAD):   "Review error handling in main.py" — NO FILE+FUNCTION+CODE.
+#
+#   3. ACTIONABILITY: the proposed_fix must pass the _fix_is_specific() gate
+#      (score >= 3 specificity points). Vague fixes go to backlog, NOT board.
+#
+#   WHY THIS MATTERS: In the period up to 2026-06-10, the CIT accumulated 305
+#   approved proposals of which 144 were too vague to implement — wasted board
+#   votes that produced zero code changes. This standing directive prevents that.
+#
+#   EXEMPTIONS: VISION and QUICK_WIN categories are exempt from fix specificity.
+#   Strategic ideas have conceptual value even without a specific code change.
 #
 # ROUTING
 # ───────
-#   Proposals ≥70% confidence + precise evidence → data/cit_pending_proposals.json (board vote)
-#   Proposals  <70% confidence or vague evidence → data/cit_backlog.json (Director backlog)
-#   VISION proposals (ThinkTank)                 → data/cit_think_tank.json (Chairman review)
-#   Sensitive findings                           → data/cit_sensitive.json (Director + Chairman only)
-#   Urgent sensitive items                       → email to Chairman immediately
+#   Proposals ≥70% confidence + precise evidence + specific fix → board vote
+#   Proposals <70% confidence or vague evidence or vague fix    → backlog
+#   VISION proposals (ThinkTank)                                → think_tank + board
+#   Sensitive findings                                          → cit_sensitive.json only
+#   Trivial bug + LOW severity + ≥70% confidence               → inline fix (no queue)
 #
 # SENSITIVITY RULES (hard-coded — never route these to the board)
 # ───────────────────────────────────────────────────────────────
@@ -137,16 +157,39 @@ _VAGUE_FIX_RE = re.compile(
 )
 
 def _fix_is_specific(proposed_fix: str) -> bool:
-    """Return True if proposed_fix names something concrete enough to act on."""
-    if not proposed_fix or len(proposed_fix) < 30:
+    """
+    Return True if proposed_fix is specific enough to act on without guesswork.
+
+    A specific fix MUST contain at minimum TWO of:
+      (a) a .py filename
+      (b) a function name (def X / X() / X.method())
+      (c) a concrete code snippet (if X / return / except / import)
+      (d) a line number or data path
+      (e) a backtick-quoted code fragment `like this`
+
+    Single-element fixes like "In main.py, review the error handling" still
+    fail because (b)/(c)/(d)/(e) are missing — you'd still have to guess
+    what to actually write.
+
+    This is stricter than the old version, which passed anything with a .py name.
+    VISION and QUICK_WIN categories are exempt — ideas don't need code specificity.
+    """
+    if not proposed_fix or len(proposed_fix) < 40:
         return False
-    # Must mention a file, function, variable, or concrete code action
-    concrete = re.compile(
-        r'(\w+\.py|def\s+\w+|\w+\(\)|data/\w+|`[^`]+`|:\s*\d+|'
-        r'line\s+\d+|import\s+\w+|except\s+\w+|if\s+\w+|return\s+)',
-        re.IGNORECASE,
-    )
-    return bool(concrete.search(proposed_fix))
+
+    score = 0
+
+    if re.search(r'\w+\.py', proposed_fix):                     score += 1
+    if re.search(r'def\s+\w+|\w+\(\s*\)', proposed_fix):        score += 1
+    if re.search(r'`[^`]{3,}`', proposed_fix):                  score += 2  # code fragment = strong signal
+    if re.search(r'line\s+\d+|:\s*\d+', proposed_fix):         score += 1
+    if re.search(r'data/\w+\.json', proposed_fix):               score += 1
+    if re.search(r'\bif\s+\w+|\breturn\s+|\bexcept\s+\w+|\bimport\s+\w+', proposed_fix, re.IGNORECASE):
+        score += 1
+    if re.search(r'replace|insert|add|remove|change|rename', proposed_fix, re.IGNORECASE):
+        score += 1  # action verb is necessary but not sufficient
+
+    return score >= 3   # require at minimum 3 specificity points
 
 # ── Sensitivity patterns (any match → confidential route only) ───────────────
 # These describe the secret evaluation chains within the firm.
@@ -1214,20 +1257,34 @@ def _classify_finding(finding: dict) -> str:
             and not finding.get("for_hr")
             and not _PRECISE_EVIDENCE_RE.search(evidence)):
         return "backlog"
-    # Specificity check on proposed_fix: if vague, the idea still reaches the board
-    # but is flagged "needs_clarification" so the board can vote NEEDS_INFO rather
-    # than the idea being silently buried. A good idea with a vague fix is better
-    # than a lost idea — the board and Director can refine it.
+    # ── Specificity gate (HARD BLOCK — updated 2026-06-10) ────────────────────
+    # If proposed_fix is vague, the finding goes to BACKLOG — not to the board.
+    # Rationale: the board approved 144 vague proposals that nobody could implement
+    # because the fix said things like "review the error handling in main.py"
+    # with no function name, no line, no code. That is wasted board time.
+    #
+    # VISION / QUICK_WIN are exempt — strategic ideas don't need code specificity.
+    # A VISION finding is valuable even if the "fix" is conceptual.
+    #
+    # For everything else: if you can't describe the change specifically enough
+    # that a developer could implement it without asking a follow-up question,
+    # it goes to backlog until CIT tightens the proposal.
     proposed_fix = finding.get("proposed_fix", "")
     if (finding.get("category") not in ("QUICK_WIN", "VISION")
             and not finding.get("for_hr")
             and not _fix_is_specific(proposed_fix)):
-        finding["needs_clarification"] = True
-        finding["clarification_note"] = (
-            "proposed_fix is too vague to implement directly. "
-            "Board should vote NEEDS_INFO and request: specific file, function name, "
-            "or pseudocode showing the exact change needed."
+        # Check _VAGUE_FIX_RE as an additional catch
+        if proposed_fix and _VAGUE_FIX_RE.match(proposed_fix.strip()):
+            return "backlog"
+        # Score-based gate failed — route to backlog with a note for the Director
+        finding["specificity_blocked"] = True
+        finding["specificity_note"] = (
+            "CIT specificity gate: proposed_fix does not meet the minimum standard "
+            "(needs file + function/code + action). Finding held in backlog. "
+            "CIT must rewrite with: exact file name, function or line number, "
+            "and the specific code change in backtick-quoted form."
         )
+        return "backlog"
     return "board"
 
 
