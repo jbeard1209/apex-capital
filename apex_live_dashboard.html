@@ -208,6 +208,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="tab" onclick="showTab('riskintel')">🛡️ Risk Intel</div>
   <div class="tab" onclick="showTab('board')">🏛️ Board</div>
   <div class="tab" onclick="showTab('teaching')">🎓 Teaching</div>
+  <div class="tab" onclick="showTab('logic')">🧠 Logic Team</div>
 </div>
 
 <!-- ═══════════════ SINCE YOU WERE AWAY (login briefing) ══════════════ -->
@@ -793,6 +794,34 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <tbody id="ml-picks-tbody"></tbody>
       </table>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ LOGIC TEAM ════════════════════════ -->
+<div id="tab-logic" class="content">
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="justify-content:center">Anomalies Found</div>
+      <div style="font-size:28px;font-weight:700;color:var(--orange)" id="lt-total">—</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="justify-content:center">HIGH / CRITICAL</div>
+      <div style="font-size:28px;font-weight:700;color:var(--red)" id="lt-serious">—</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="card-title" style="justify-content:center">Board Proposals</div>
+      <div style="font-size:28px;font-weight:700" id="lt-proposals">—</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-title"><div class="dot r"></div>Active Anomalies</div>
+    <div id="lt-findings" class="scroll" style="max-height:500px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="dot g"></div>Sub-Agent Coverage</div>
+    <div id="lt-agents" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0"></div>
   </div>
 </div>
 
@@ -2218,6 +2247,65 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
+// ── Logic Team ───────────────────────────────────────────────────────────
+function renderLogicTeam(data) {
+  const lt    = data.logic_team || {};
+  const latest = lt.latest || [];
+  const sevColor = s => s==='CRITICAL'?'var(--red)':s==='HIGH'?'var(--orange)':s==='MEDIUM'?'#ffdd57':'var(--text2)';
+  const serious = latest.filter(f => ['HIGH','CRITICAL'].includes(f.severity));
+
+  setText('lt-total',     latest.length || '0');
+  setText('lt-serious',   serious.length || '0');
+
+  const findingsEl = document.getElementById('lt-findings');
+  if (!findingsEl) return;
+
+  if (!latest.length) {
+    findingsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--green)">✓ No anomalies — all systems logically consistent</div>';
+    setText('lt-proposals', '0');
+  } else {
+    const sorted = [...latest].sort((a,b) => ['CRITICAL','HIGH','MEDIUM','LOW'].indexOf(a.severity) - ['CRITICAL','HIGH','MEDIUM','LOW'].indexOf(b.severity));
+    findingsEl.innerHTML = sorted.map(f => `
+      <div style="border-bottom:1px solid var(--border);padding:12px 0">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="background:${sevColor(f.severity)}22;color:${sevColor(f.severity)};border:1px solid ${sevColor(f.severity)};padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">${f.severity}</span>
+          <span style="font-size:11px;color:var(--text2)">${f.agent||'?'}</span>
+          <span style="font-weight:700;font-size:12px">${f.title||'?'}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:4px">${(f.observation||'').substring(0,200)}</div>
+        <details style="margin-top:4px">
+          <summary style="font-size:11px;color:var(--text2);cursor:pointer">Why it's wrong + suggested fix</summary>
+          <div style="font-size:11px;margin-top:4px;padding:6px;background:var(--bg);border-radius:4px">
+            <b>Why:</b> ${f.why_wrong||''}<br><br>
+            <b style="color:var(--green)">Fix:</b> ${f.suggestion||''}
+          </div>
+        </details>
+      </div>`).join('');
+  }
+
+  // Sub-agent breakdown
+  const agentsEl = document.getElementById('lt-agents');
+  if (agentsEl) {
+    const agentNames = ['PipelineLogicAgent','CapitalLogicAgent','GovernanceLogicAgent','PerformanceLogicAgent','AgentHealthLogicAgent'];
+    const agentFindings = {};
+    latest.forEach(f => { agentFindings[f.agent] = (agentFindings[f.agent]||0)+1; });
+    agentsEl.innerHTML = agentNames.map(a => {
+      const count = agentFindings[a] || 0;
+      const color = count > 0 ? 'var(--orange)' : 'var(--green)';
+      const shortName = a.replace('LogicAgent','').replace('Logic','');
+      return `<div style="padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;font-size:11px">
+        <div style="font-weight:700">${shortName}</div>
+        <div style="color:${color}">${count} finding${count!==1?'s':''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Proposals count
+  const history = lt.history || [];
+  const lastRun = history[history.length-1] || {};
+  setText('lt-proposals', '--');
+}
+
 // ── Since You Were Away ───────────────────────────────────────────────────
 let _briefingDismissed = false;
 let _lastSeenTs = null;
@@ -2297,6 +2385,7 @@ renderAll = function(d) {
   renderRiskIntel(d.data||{});
   renderBoard(d.data||{});
   renderTeaching(d.data||{});
+  renderLogicTeam(d.data||{});
   renderLoginBriefing(d.data||{});
 };
 

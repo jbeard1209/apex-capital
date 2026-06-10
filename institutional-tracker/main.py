@@ -1487,29 +1487,31 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # Runs BEFORE the IRM so any anomalies it finds can be picked up by the
     # IRM board and included in the Chairman report.
     # -----------------------------------------------------------------------
-    logger.info("\nStep 10b: Logic Officer — coherence check...")
+    logger.info("\nStep 10b: Logic Team — whole-picture coherence check...")
     try:
-        from logic_officer import run_logic_officer
-        lo_result = run_logic_officer()
-        lo_anomalies = lo_result.get("anomalies_found", 0)
-        lo_proposals = lo_result.get("proposals_added", 0)
-        if lo_anomalies:
+        from logic_team import run_logic_team
+        lt_result    = run_logic_team()
+        lt_findings  = lt_result.get("findings", 0)
+        lt_critical  = lt_result.get("critical_high", 0)
+        lt_proposals = lt_result.get("proposals", 0)
+        if lt_findings:
             logger.warning(
-                f"  Logic Officer: {lo_anomalies} anomaly(ies) found, "
-                f"{lo_proposals} board proposal(s) submitted"
+                f"  Logic Team: {lt_findings} anomaly(ies) "
+                f"({lt_critical} HIGH/CRITICAL) — {lt_proposals} board proposal(s)"
             )
-            # Serious anomalies trigger a board meeting
-            serious = [f for f in lo_result.get("findings", [])
-                       if f.get("severity") in ("HIGH","CRITICAL")]
-            if serious:
+            if lt_critical:
                 _board_meeting_needed = True
-                _board_trigger_sources.append(
-                    f"LogicOfficer:{len(serious)}_anomalies"
-                )
+                _board_trigger_sources.append(f"LogicTeam:{lt_critical}_critical")
         else:
-            logger.info("  Logic Officer: no anomalies — system logic checks out ✓")
+            logger.info("  Logic Team: no anomalies — system logic checks out ✓")
+        # Also run the single-agent Logic Officer for briefing continuity
+        try:
+            from logic_officer import run_logic_officer
+            run_logic_officer()
+        except Exception:
+            pass
     except Exception as e:
-        logger.warning(f"  Logic Officer error: {e}")
+        logger.warning(f"  Logic Team error: {e}")
 
     # Step 11: IRM Daily Check — Independent of email pipeline
     # -----------------------------------------------------------------------

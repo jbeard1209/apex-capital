@@ -121,7 +121,8 @@ def build_all_response():
     # Performance history (loss attribution)
     result["data"]["performance_history"] = load_json(DATA_DIR / "performance_history.json")
 
-    # Logic Officer findings + Chairman Briefing
+    # Logic Team + Chairman Briefing
+    result["data"]["logic_team"]        = load_json(DATA_DIR / "logic_team_findings.json")
     result["data"]["logic_officer"]     = load_json(DATA_DIR / "logic_officer_findings.json")
     result["data"]["chairman_briefing"] = load_json(DATA_DIR / "chairman_briefing.json")
     result["data"]["log_health"]        = load_json(DATA_DIR / "log_health.json")

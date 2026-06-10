@@ -1,0 +1,76 @@
+{
+  "entries": [
+    {
+      "ts": "2026-06-10T04:16:34.142220",
+      "date": "2026-06-10",
+      "source": "Logic Officer",
+      "portfolio": 97776.21,
+      "pnl_vs_start": -2223.7899999999936,
+      "canary": "GREEN",
+      "cro_level": "HIGH",
+      "picks_today": 0,
+      "anomalies": 2,
+      "items": [
+        {
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 17 cycles \u2014 no board review",
+          "short": "The CRO has been at HIGH for 17 consecutive cycles (roughly 68 days). During this entire period, all new buy orders have been blocked or severely rest"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T04:25:33.060030",
+      "date": "2026-06-10",
+      "source": "Logic Team",
+      "portfolio": 97776.21,
+      "pnl_vs_start": -2223.7899999999936,
+      "canary": "GREEN",
+      "cro_level": "HIGH",
+      "picks_today": 0,
+      "anomalies": 6,
+      "items": [
+        {
+          "severity": "HIGH",
+          "title": "CRO=HIGH for 17 cycles (68 days) \u2014 board must vote",
+          "agent": "GovernanceLogicAgent",
+          "short": "The CRO has been at HIGH for 17 consecutive pipeline cycles (~68 days). During this time, all new buy orders have been b"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "agent": "PipelineLogicAgent",
+          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Board has not met in 999 days despite 3 IRM flags",
+          "agent": "GovernanceLogicAgent",
+          "short": "Last board meeting was 999 days ago. The IRM has 3 active red flag(s). These should have triggered a board session."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "agent": "PerformanceLogicAgent",
+          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
+        },
+        {
+          "severity": "LOW",
+          "title": "Key sectors with no active research agent: Energy",
+          "agent": "AgentHealthLogicAgent",
+          "short": "The following important sectors have no active research agent: Energy."
+        }
+      ]
+    }
+  ]
+}

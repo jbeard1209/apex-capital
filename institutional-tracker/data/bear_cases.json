@@ -1,0 +1,98 @@
+[
+  {
+    "ts": "2026-06-10T04:01:26.452021",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:01:26.453699",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:01:30.284885",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:01:30.286530",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:02:59.558504",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:02:59.560021",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:05:59.540615",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  },
+  {
+    "ts": "2026-06-10T04:05:59.542352",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "HIGH",
+    "concerns": [
+      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
+    ],
+    "severity": "MEDIUM"
+  }
+]
