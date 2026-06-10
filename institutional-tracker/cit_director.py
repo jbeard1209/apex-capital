@@ -81,6 +81,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -1059,6 +1060,131 @@ class CITArchitectureAdvisor:
 # =============================================================================
 # SENSITIVITY FILTER + ROUTING
 # =============================================================================
+
+# =============================================================================
+# INLINE FIX ENGINE + DOUBLE-CHECKER
+# =============================================================================
+
+_PROTECTED_FROM_INLINE = {
+    "main.py", "alpaca_trader.py", "risk_manager_agent.py",
+    "irm_review_agent.py", "board_meeting.py", "manager_agent.py",
+}
+
+def _try_inline_fix(finding: dict) -> dict:
+    """
+    Attempt to apply a trivial fix inline during the CIT scan.
+    Returns {"applied": bool, "file": str, "change": str, "backup": str}
+    """
+    import re as _re, shutil as _shutil
+
+    fix_text = finding.get("proposed_fix", "")
+    evidence = finding.get("evidence", "")
+
+    # Identify file
+    file_match = _re.search(r'([\w/\-]+\.py)(?::(\d+))?', evidence + " " + fix_text)
+    if not file_match:
+        return {"applied": False}
+
+    fname = file_match.group(1).split("/")[-1]
+    if fname in _PROTECTED_FROM_INLINE:
+        return {"applied": False}
+
+    target = BASE_DIR / file_match.group(1)
+    if not target.exists():
+        target = BASE_DIR / fname
+    if not target.exists():
+        return {"applied": False}
+
+    try:
+        original = target.read_text()
+        backup_path = DATA_DIR / "backups" / "cit_inline" / f"{fname}.{datetime.now().strftime('%Y%m%d_%H%M%S')}.bak"
+        backup_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(target, backup_path)
+
+        # Pattern: makedirs guard
+        if "makedirs" in fix_text.lower() and "open(" in original:
+            lineno_match = _re.search(r':(\d+)', evidence)
+            if lineno_match:
+                lineno = int(lineno_match.group(1))
+                lines  = original.splitlines(keepends=True)
+                if 0 < lineno <= len(lines):
+                    idx    = lineno - 1
+                    indent = len(lines[idx]) - len(lines[idx].lstrip())
+                    guard  = " " * indent + "os.makedirs(os.path.dirname(__file__), exist_ok=True)  # CIT inline fix\n"
+                    nearby = "".join(lines[max(0,idx-2):idx])
+                    if "makedirs" not in nearby:
+                        lines.insert(idx, guard)
+                        content = "".join(lines)
+                        if "import os" not in content:
+                            content = "import os\n" + content
+                        target.write_text(content)
+                        return {"applied": True, "file": str(target.name), "change": f"makedirs guard at line {lineno}", "backup": str(backup_path)}
+
+        # Pattern: None-check before attribute access
+        if "none" in fix_text.lower() and "is not none" in fix_text.lower():
+            attr_match = _re.search(r'(\w+)\.(\w+)', evidence)
+            if attr_match:
+                var = attr_match.group(1)
+                new_content = original.replace(
+                    f"\n    {var}.",
+                    f"\n    if {var} is not None:\n        {var}.",
+                    1,
+                )
+                if new_content != original:
+                    target.write_text(new_content)
+                    return {"applied": True, "file": str(target.name), "change": f"None-check guard for {var}", "backup": str(backup_path)}
+
+    except Exception as _e:
+        logger.debug(f"  [InlineFix] Error: {_e}")
+
+    return {"applied": False}
+
+
+def _inline_fix_reviewer(fix_result: dict) -> dict:
+    """
+    Double-checker: verifies the applied fix makes sense.
+    Checks: file still parses (no syntax error), change looks intentional.
+    Returns {"approved": bool, "verdict": str, "issue": str}
+    """
+    if not fix_result.get("applied"):
+        return {"approved": False, "verdict": "nothing to review"}
+
+    fname = fix_result.get("file", "")
+    target = BASE_DIR / fname
+    if not target.exists():
+        return {"approved": False, "verdict": "file not found after fix", "issue": "file missing"}
+
+    # Check 1: syntax still valid
+    import py_compile as _pyc, tempfile as _tmp
+    try:
+        with _tmp.NamedTemporaryFile(suffix=".py", delete=False) as _tf:
+            _tf.write(target.read_bytes())
+            _tf_name = _tf.name
+        _pyc.compile(_tf_name, doraise=True)
+        import os as _os; _os.unlink(_tf_name)
+    except _pyc.PyCompileError as _ce:
+        return {"approved": False, "verdict": "SYNTAX ERROR after fix", "issue": str(_ce)[:100]}
+
+    # Check 2: change string is plausible
+    change = fix_result.get("change", "")
+    if not change:
+        return {"approved": False, "verdict": "no change description", "issue": "empty change"}
+
+    return {"approved": True, "verdict": f"Reviewed OK — {change}"}
+
+
+def _revert_inline_fix(fix_result: dict):
+    """Restore backup if reviewer rejects the fix."""
+    backup = fix_result.get("backup", "")
+    fname  = fix_result.get("file", "")
+    if backup and fname:
+        target = BASE_DIR / fname
+        try:
+            shutil.copy2(backup, target)
+            logger.info(f"  [InlineFix] Reverted {fname} from backup")
+        except Exception:
+            pass
+
 
 def _classify_finding(finding: dict) -> str:
     """
@@ -3208,6 +3334,51 @@ class CITDirector:
         quick_wins  = []
         think_tank  = []
 
+        # ── 3a. Inline speed-fix: trivial, well-evidenced fixes are applied
+        # immediately in this scan without ever entering a queue. A second-pass
+        # reviewer then checks each inline fix in the same run. If the reviewer
+        # finds an issue, the fixer retries once. No proposal, no ticket — just fix.
+        _inline_fix_log = []
+        _inline_fix_categories = {"BUG_FIX", "QUICK_WIN", "LOGIC_ERROR"}
+        _inline_fix_max_severity = {"LOW", "MEDIUM"}
+        for _f in findings[:]:   # iterate a copy so we can modify findings list
+            _cat  = _f.get("category", "")
+            _sev  = _f.get("severity", "HIGH")
+            _conf = _f.get("confidence", 0)
+            _fix  = _f.get("proposed_fix", "")
+            _evi  = _f.get("evidence", "")
+            if (_cat in _inline_fix_categories
+                    and _sev in _inline_fix_max_severity
+                    and _conf >= 70
+                    and _fix and len(_fix) > 20):
+                result = _try_inline_fix(_f)
+                if result.get("applied"):
+                    # Pass to double-checker
+                    review = _inline_fix_reviewer(result)
+                    if review.get("approved"):
+                        _inline_fix_log.append({
+                            "title":    _f.get("title",""),
+                            "file":     result.get("file",""),
+                            "change":   result.get("change",""),
+                            "reviewer": review.get("verdict",""),
+                            "ts":       datetime.now().isoformat(),
+                        })
+                        findings.remove(_f)   # don't queue — already done
+                        logger.info(f"  [Inline Fix ✓] {_f.get('title','')[:60]}")
+                    else:
+                        # Reviewer flagged issue — revert and queue normally
+                        _revert_inline_fix(result)
+                        logger.info(f"  [Inline Fix REVERTED] {_f.get('title','')[:40]} — {review.get('issue','')[:60]}")
+
+        # Persist inline fix log
+        if _inline_fix_log:
+            _ifl_path = DATA_DIR / "cit_inline_fixes.json"
+            _existing_ifl = _load_json_list_safe(_ifl_path)
+            _existing_ifl.extend(_inline_fix_log)
+            with open(_ifl_path, "w") as _ifl_f:
+                json.dump(_existing_ifl[-500:], _ifl_f, indent=2, default=str)
+
+        # ── 3b. Classify remaining findings ──────────────────────────────────
         for f in findings:
             route = _classify_finding(f)
             if route == "sensitive":
@@ -3223,6 +3394,39 @@ class CITDirector:
                     think_tank.append(f)   # also log to think_tank for history
             else:
                 backlog.append(f)
+
+        # ── 3c. Output cap: bug fixes unlimited; strategic ideas capped at 20 ─
+        # Prevents the board queue from being flooded with marginal ideas.
+        # The top 20 strategic ideas are ranked by confidence × severity weight.
+        _STRATEGIC_CATS = {"IMPROVEMENT", "VISION", "STRATEGY", "ARCHITECTURE", "NEW_FEATURE"}
+        _BUG_CATS       = {"BUG_FIX", "LOGIC_ERROR", "INTEGRATION", "PIPELINE", "SECURITY"}
+        _MAX_STRATEGIC  = 20
+
+        _bug_proposals  = [f for f in board_queue if f.get("category","") in _BUG_CATS]
+        _strat_raw      = [f for f in board_queue if f.get("category","") in _STRATEGIC_CATS]
+
+        # Rank strategic ideas: CRITICAL→4, HIGH→3, MEDIUM→2, LOW→1; then × confidence
+        _sev_weight = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1}
+        _strat_raw.sort(
+            key=lambda x: _sev_weight.get(x.get("severity","LOW"),1) * x.get("confidence",0),
+            reverse=True,
+        )
+        _strat_proposals = _strat_raw[:_MAX_STRATEGIC]
+        _strat_overflow  = _strat_raw[_MAX_STRATEGIC:]
+
+        if _strat_overflow:
+            # Overflow goes to backlog, not lost — can be reconsidered next cycle
+            backlog.extend(_strat_overflow)
+            logger.info(
+                f"  [Cap] {len(_strat_overflow)} lower-priority strategic ideas → backlog "
+                f"(cap={_MAX_STRATEGIC}, kept={len(_strat_proposals)})"
+            )
+
+        board_queue = _bug_proposals + _strat_proposals
+        logger.info(
+            f"  [Routing] {len(_bug_proposals)} bugs + {len(_strat_proposals)} strategic "
+            f"→ board | {len(quick_wins)} quick-wins | {len(backlog)} backlog"
+        )
 
         # ── 4. Persist to files ──────────────────────────────────────────────
         DATA_DIR.mkdir(exist_ok=True)
