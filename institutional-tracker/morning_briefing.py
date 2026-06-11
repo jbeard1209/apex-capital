@@ -248,9 +248,13 @@ def run_morning_briefing() -> dict:
         "registry_size":    cos_report.get("registry_size", 0),
         "last_updated":     cos_report.get("generated_at", ""),
     }
-    for item in attention[:3]:
+    _cos_seen: set = set()
+    for item in attention[:5]:
         if isinstance(item, dict) and item.get("priority") in ("HIGH", "CRITICAL"):
-            briefing["alerts"].append(f"📌 CoS: {item.get('item', '')[:80]}")
+            _msg = f"📌 CoS: {item.get('item', '')[:80]}"
+            if _msg not in _cos_seen:
+                _cos_seen.add(_msg)
+                briefing["alerts"].append(_msg)
     logger.info(f"    CoS: {len(attention)} attention items | Age: {cos_age_h:.1f}h")
 
     # ── 8. CIT (Continuous Improvement Team) — PROMINENT SECTION ─────────────
