@@ -1,143 +1,5 @@
 [
   {
-    "id": "CIT-2026-1000",
-    "title": "62 ERROR lines \u2014 dominant: `known`",
-    "category": "BUG_FIX",
-    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
-    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
-    "status": "fixed",
-    "times_approved": 2,
-    "queued_at": "2026-06-08T10:23:46.214475"
-  },
-  {
-    "id": "CIT-2026-1048",
-    "title": "66 ERROR lines \u2014 dominant: `known`",
-    "category": "BUG_FIX",
-    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
-    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
-    "status": "fixed",
-    "times_approved": 2,
-    "queued_at": "2026-06-08T10:23:46.214475"
-  },
-  {
-    "id": "CIT-2026-1074",
-    "title": "70 ERROR lines \u2014 dominant: `known`",
-    "category": "BUG_FIX",
-    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
-    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
-    "status": "fixed",
-    "times_approved": 2,
-    "queued_at": "2026-06-08T10:23:46.214475"
-  },
-  {
-    "id": "CIT-2026-1088",
-    "title": "32 ERROR lines \u2014 dominant: `known`",
-    "category": "BUG_FIX",
-    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
-    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
-    "status": "fixed",
-    "times_approved": 2,
-    "queued_at": "2026-06-08T10:23:46.214475"
-  },
-  {
-    "id": "CIT-2026-1252",
-    "title": "95% of CIT bug proposals lack precise evidence \u2014 quality degradation",
-    "category": "IMPROVEMENT",
-    "description": "399 of 422 BUG_FIX/DATA_QUALITY proposals (95%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
-    "confidence": 80,
-    "status": "awaiting_chairman",
-    "times_approved": 2,
-    "queued_at": "2026-06-08T10:23:46.214475"
-  },
-  {
-    "id": "pip-integrity-20260608-10-deadmans_switch_sani",
-    "severity": "CRITICAL",
-    "description": "Pipeline running (heartbeat 0.3h old) but manager_decisions.json is 134.2h old (threshold 14h) \u2014 likely code wiring bug, not VM issue. Check that main.py writes manager_decisions.json after every manager block.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T10:50:01.652680",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260608-10-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (7 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 03, 2026\" \u00d726; \"ETF Pod 3 Board \u2014 APPROVED | Target: XLK, XLE, XLF\" \u00d720; \"Apex Capital \u2014 R&D Team Briefing | Jun 04, 2026\" \u00d744",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T10:50:01.652680",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "CIT-2026-1370",
-    "title": "Stale data file: data/risk_manager_report.json (136h old, threshold 26h)",
-    "category": "BUG_FIX",
-    "description": "data/risk_manager_report.json has not been updated in 136h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-    "proposed_fix": "Check that the agent producing data/risk_manager_report.json ran successfully in recent logs. Verify its cron schedule is active.",
-    "evidence": "data/risk_manager_report.json: file age 136h. Max acceptable: 26h.",
-    "confidence": 88,
-    "severity": "HIGH",
-    "approved_by": "Deputy Board (MAJORITY)",
-    "status": "awaiting_chairman",
-    "times_approved": 1,
-    "queued_at": "2026-06-08T12:25:04.636114"
-  },
-  {
-    "id": "pip-integrity-20260608-12-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (7 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 03, 2026\" \u00d726; \"ETF Pod 3 Board \u2014 APPROVED | Target: XLK, XLE, XLF\" \u00d720; \"Apex Capital \u2014 R&D Team Briefing | Jun 04, 2026\" \u00d744",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T12:50:00.687323",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260608-14-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (9 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 03, 2026\" \u00d726; \"ETF Pod 3 Board \u2014 APPROVED | Target: XLK, XLE, XLF\" \u00d720; \"Apex Capital \u2014 R&D Team Briefing | Jun 04, 2026\" \u00d744",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T14:50:00.404228",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260608-16-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (9 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 03, 2026\" \u00d726; \"ETF Pod 3 Board \u2014 APPROVED | Target: XLK, XLE, XLF\" \u00d720; \"Apex Capital \u2014 R&D Team Briefing | Jun 04, 2026\" \u00d744",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-08T16:50:01.547308",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260609-08-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 09, 2026\" \u00d711",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-09T08:50:01.271550",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "CIT-2026-1369",
-    "title": "38 ERROR lines \u2014 dominant: `Sell`",
-    "category": "BUG_FIX",
-    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
-    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
-    "status": "fixed",
-    "times_approved": 2,
-    "queued_at": "2026-06-09T09:37:23.287274"
-  },
-  {
-    "id": "pip-integrity-20260609-10-deadmans_switch_sani",
-    "severity": "CRITICAL",
-    "description": "Pipeline running (heartbeat 0.2h old) but manager_decisions.json is 14.6h old (threshold 14h) \u2014 likely code wiring bug, not VM issue. Check that main.py writes manager_decisions.json after every manager block.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-09T10:50:00.566295",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260609-10-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 09, 2026\" \u00d717",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-09T10:50:00.566295",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "CIT-2026-1367",
     "title": "43 ERROR lines \u2014 dominant: `Sell`",
     "category": "BUG_FIX",
@@ -190,5 +52,131 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-06-09T18:46:30.320460"
+  },
+  {
+    "id": "CIT-2026-1448",
+    "title": "6 ERROR lines \u2014 dominant: `'get'`",
+    "category": "BUG_FIX",
+    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
+    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
+    "status": "fixed",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T09:38:15.060599"
+  },
+  {
+    "id": "LO-20260610041634-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 17 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 17 consecutive cycles (roughly 68 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T09:38:15.060599"
+  },
+  {
+    "id": "LT-042533-cro_extended_no_review",
+    "title": "CRO=HIGH for 17 cycles (68 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 17 consecutive pipeline cycles (~68 days). During this time, all new buy orders have been blocked. The board last met 999 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T09:38:15.060599"
+  },
+  {
+    "id": "LT-095939-cro_extended_no_review",
+    "title": "CRO=HIGH for 18 cycles (72 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 18 consecutive pipeline cycles (~72 days). During this time, all new buy orders have been blocked. The board last met 999 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T09:59:41.403688"
+  },
+  {
+    "id": "LO-20260610095939-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 18 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 18 consecutive cycles (roughly 72 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T09:59:41.403688"
+  },
+  {
+    "id": "LT-124452-zero_picks",
+    "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
+    "category": "IMPROVEMENT",
+    "description": "36 agents active, canary=YELLOW, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T12:49:14.287525"
+  },
+  {
+    "id": "LO-20260610124453-zero_picks_anomaly",
+    "title": "Research pipeline producing ZERO picks despite 36 active agents",
+    "category": "IMPROVEMENT",
+    "description": "The firm has 36 agents with status=active. Canary is YELLOW. CRO is ELEVATED. Despite all of this, the research pipeline has produced zero picks for approximately 2 day(s). This is almost certainly a pipeline or routing bug, not a market condition.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-10T12:49:14.287525"
+  },
+  {
+    "id": "pip-integrity-20260610-12-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d76",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-10T12:50:08.693009",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260610-14-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d76",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-10T14:50:05.361933",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260610-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-10T16:50:09.149725",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260610-18-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-10T18:50:09.797608",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260610-20-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 R&D Team Briefing | Jun 10, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-10T20:50:09.998866",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260610-22-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 R&D Team Briefing | Jun 10, 2026\" \u00d79",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-10T22:50:10.192227",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260611-00-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 R&D Team Briefing | Jun 10, 2026\" \u00d711",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-11T00:50:00.687405",
+    "status": "awaiting_chairman"
   }
 ]

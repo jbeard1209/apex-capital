@@ -1,18 +1,9 @@
 {
-  "generated_at": "2026-06-10T01:09:54.461624",
+  "generated_at": "2026-06-10T22:00:25.997753",
   "canary_level": "GREEN",
-  "cro_level": "HIGH",
+  "cro_level": "ELEVATED",
   "buys_blocked": true,
-  "assigned_sectors": [
-    "biotech",
-    "consumer discretionary",
-    "defense & aerospace",
-    "financials",
-    "healthcare",
-    "regional banks",
-    "retail",
-    "technology"
-  ],
+  "assigned_sectors": [],
   "streak_agents": [
     {
       "class_name": "SmallCapGrowthAgent",
@@ -20,7 +11,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -29,7 +20,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     }
   ],
@@ -40,7 +31,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     },
     {
@@ -49,7 +40,7 @@
       "status": "retired",
       "role": "",
       "exoneration_reasons": [
-        "canary=GREEN (fired ORANGE today=True), CRO=HIGH \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
+        "canary=GREEN (fired ORANGE today=True), CRO=ELEVATED \u2014 all capital deployment blocked system-wide; zero trades expected regardless of pick quality"
       ]
     }
   ],

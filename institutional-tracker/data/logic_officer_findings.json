@@ -20,16 +20,178 @@
           "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
         }
       ]
+    },
+    {
+      "ts": "2026-06-10T09:59:39.570333",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 18 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 18 consecutive cycles (roughly 72 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T10:20:12.960312",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T10:42:17.238389",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T11:03:37.113365",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T11:24:58.988841",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T11:46:55.381884",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T12:13:48.122149",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T12:44:53.451962",
+      "findings": [
+        {
+          "rule": "zero_picks_anomaly",
+          "severity": "HIGH",
+          "title": "Research pipeline producing ZERO picks despite 36 active agents",
+          "observation": "The firm has 36 agents with status=active. Canary is YELLOW. CRO is ELEVATED. Despite all of this, the research pipeline has produced zero picks for approximately 2 day(s). This is almost certainly a pipeline or routing bug, not a market condition.",
+          "why_its_wrong": "With active agents and a non-emergency canary, the pipeline should always produce at least some pick candidates for the Manager to review. Zero picks means either: agents are not loading, agents are running but their output is not reaching the Manager, or all picks are being blocked at the Manager level by a misconfigured rule.",
+          "suggested_resolution": "Board should vote to: (1) check research_team.py's agent status filter (must load both 'active' AND 'reassigned'), (2) verify manager_agent.py is not blocking all picks due to a CRO/PDO misconfiguration, (3) run a manual research cycle and check the output."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T14:07:08.369323",
+      "findings": [
+        {
+          "rule": "zero_picks_anomaly",
+          "severity": "HIGH",
+          "title": "Research pipeline producing ZERO picks despite 36 active agents",
+          "observation": "The firm has 36 agents with status=active. Canary is GREEN. CRO is HIGH. Despite all of this, the research pipeline has produced zero picks for approximately 2 day(s). This is almost certainly a pipeline or routing bug, not a market condition.",
+          "why_its_wrong": "With active agents and a non-emergency canary, the pipeline should always produce at least some pick candidates for the Manager to review. Zero picks means either: agents are not loading, agents are running but their output is not reaching the Manager, or all picks are being blocked at the Manager level by a misconfigured rule.",
+          "suggested_resolution": "Board should vote to: (1) check research_team.py's agent status filter (must load both 'active' AND 'reassigned'), (2) verify manager_agent.py is not blocking all picks due to a CRO/PDO misconfiguration, (3) run a manual research cycle and check the output."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-10T16:37:17.204806",
+      "findings": [
+        {
+          "rule": "zero_picks_anomaly",
+          "severity": "HIGH",
+          "title": "Research pipeline producing ZERO picks despite 36 active agents",
+          "observation": "The firm has 36 agents with status=active. Canary is YELLOW. CRO is ELEVATED. Despite all of this, the research pipeline has produced zero picks for approximately 2 day(s). This is almost certainly a pipeline or routing bug, not a market condition.",
+          "why_its_wrong": "With active agents and a non-emergency canary, the pipeline should always produce at least some pick candidates for the Manager to review. Zero picks means either: agents are not loading, agents are running but their output is not reaching the Manager, or all picks are being blocked at the Manager level by a misconfigured rule.",
+          "suggested_resolution": "Board should vote to: (1) check research_team.py's agent status filter (must load both 'active' AND 'reassigned'), (2) verify manager_agent.py is not blocking all picks due to a CRO/PDO misconfiguration, (3) run a manual research cycle and check the output."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
     }
   ],
   "latest": [
     {
-      "rule": "extended_cro_high_no_review",
+      "rule": "zero_picks_anomaly",
       "severity": "HIGH",
-      "title": "CRO has been at HIGH for 17 cycles \u2014 no board review",
-      "observation": "The CRO has been at HIGH for 17 consecutive cycles (roughly 68 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-      "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-      "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+      "title": "Research pipeline producing ZERO picks despite 36 active agents",
+      "observation": "The firm has 36 agents with status=active. Canary is YELLOW. CRO is ELEVATED. Despite all of this, the research pipeline has produced zero picks for approximately 2 day(s). This is almost certainly a pipeline or routing bug, not a market condition.",
+      "why_its_wrong": "With active agents and a non-emergency canary, the pipeline should always produce at least some pick candidates for the Manager to review. Zero picks means either: agents are not loading, agents are running but their output is not reaching the Manager, or all picks are being blocked at the Manager level by a misconfigured rule.",
+      "suggested_resolution": "Board should vote to: (1) check research_team.py's agent status filter (must load both 'active' AND 'reassigned'), (2) verify manager_agent.py is not blocking all picks due to a CRO/PDO misconfiguration, (3) run a manual research cycle and check the output."
     },
     {
       "rule": "idle_capital",

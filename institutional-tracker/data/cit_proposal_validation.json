@@ -1,26 +1,19 @@
 {
-  "generated_at": "2026-06-10T01:17:43.765509",
-  "proposals_reviewed": 3,
+  "generated_at": "2026-06-10T22:03:39.126843",
+  "proposals_reviewed": 2,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "CIT-2026-1450",
-      "title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
-      "category": "VISION",
-      "backtest_evidence": "backtester.py is available. A 1-year backtest of this strategy change should be run before board vote. See backtester.py for usage.",
-      "pre_validated": false
-    },
-    {
       "id": "CIT-2026-1451",
-      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "CIT-2026-1453",
-      "title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
-      "category": "IMPROVEMENT",
+      "id": "CIT-2026-1452",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }

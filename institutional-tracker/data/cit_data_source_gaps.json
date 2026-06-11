@@ -2,46 +2,6 @@
   "first_detected": "2026-05-07T08:31:28.073487",
   "history": [
     {
-      "ts": "2026-06-02T21:24:52.464923",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-02T22:02:07.888756",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-03T01:01:46.907917",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-03T11:21:37.694563",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-03T13:04:06.251649",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-03T16:01:20.214279",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-03T18:27:38.599181",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-03T21:38:09.752450",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
       "ts": "2026-06-03T22:01:51.791831",
       "beat_rate_coverage_pct": 0,
       "sample_size": 5
@@ -300,7 +260,47 @@
       "ts": "2026-06-10T01:17:40.652076",
       "beat_rate_coverage_pct": 100,
       "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T06:10:43.792468",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T10:00:05.283757",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T12:11:13.309602",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T16:08:33.646504",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T18:56:05.373423",
+      "beat_rate_coverage_pct": 0,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T19:33:43.644963",
+      "beat_rate_coverage_pct": 0,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T21:14:42.448356",
+      "beat_rate_coverage_pct": 0,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-10T22:03:38.713323",
+      "beat_rate_coverage_pct": 0,
+      "sample_size": 5
     }
   ],
-  "latest_coverage_pct": 100
+  "latest_coverage_pct": 0
 }

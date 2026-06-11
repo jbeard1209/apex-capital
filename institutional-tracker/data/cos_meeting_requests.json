@@ -3185,6 +3185,114 @@
     "from_agent": "Board Meeting",
     "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
     "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-10T09:59:39.259640"
+  },
+  {
+    "id": "CMR-9A61EE",
+    "ts": "2026-06-10T06:10:45.291198",
+    "from_agent": "CIT Director",
+    "summary": "CODE BUG requires Chairman fix: cit_director.py:2353 \u2014 fcntl lock not released in try/finally. Proposed fix: Wrap the lock body in try/finally: fcntl.flock(f, LOCK_EX) \u2192 try: ... finally: fcntl.flock(f, LOCK_UN)",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-10T09:59:39.269775"
+  },
+  {
+    "id": "CMR-A46100",
+    "ts": "2026-06-10T06:10:45.375435",
+    "from_agent": "CIT Director",
+    "summary": "CODE BUG requires Chairman fix: Stale issue ISS-0163: Agent underperformance: CITStrategyAnalyst rated CONCERN. Proposed fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-10T09:59:39.279581"
+  },
+  {
+    "id": "CMR-F29672",
+    "ts": "2026-06-10T09:38:16.274127",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-10T09:59:39.284446"
+  },
+  {
+    "id": "CMR-D454D8",
+    "ts": "2026-06-10T09:59:41.582235",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-10T10:20:12.406068"
+  },
+  {
+    "id": "CMR-8BCE55",
+    "ts": "2026-06-10T10:00:10.311557",
+    "from_agent": "CIT Director",
+    "summary": "CODE BUG requires Chairman fix: Stale issue ISS-0166: Risk Manager HIGH \u2014 unfiled in issue tracker. Proposed fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-10T10:20:12.416621"
+  },
+  {
+    "id": "CMR-AFBA9F",
+    "ts": "2026-06-10T10:19:46.342993",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [IMMEDIATE]: Halt all new BUY orders for this session \u2014 resume only after risk resolved",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-10T10:20:12.427208"
+  },
+  {
+    "id": "CMR-3FF034",
+    "ts": "2026-06-10T12:14:13.685466",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-10T12:44:45.533125"
+  },
+  {
+    "id": "CMR-ECDB25",
+    "ts": "2026-06-10T13:35:21.516906",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-10T14:06:49.499761"
+  },
+  {
+    "id": "CMR-FD2A23",
+    "ts": "2026-06-10T14:14:40.209223",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-10T16:36:52.002114"
+  },
+  {
+    "id": "CMR-F4AA19",
+    "ts": "2026-06-10T16:47:29.956069",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D68596",
+    "ts": "2026-06-10T18:56:28.270225",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 27h: [HIGH] Agent underperformance: CITStrategyAnalyst rated CONCERN. Reporter: HR Agent. Description: Issues: 9 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeline effective",
+    "urgency": "HIGH",
     "status": "PENDING"
   }
 ]
