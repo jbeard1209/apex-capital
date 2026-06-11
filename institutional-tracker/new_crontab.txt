@@ -89,3 +89,8 @@
 # Checks pipeline coherence, capital deployment, governance gaps.
 0 12 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team.py >> logs/logic_team_$(date +\%Y\%m\%d).log 2>&1
 0 0 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team.py >> logs/logic_team_$(date +\%Y\%m\%d).log 2>&1
+
+# ── LOGIC TEAM IMPLEMENTATION AGENT — runs 15 min after each Logic Team cycle ──
+# 8:15 AM EDT = 12:15 UTC, 8:15 PM EDT = 00:15 UTC
+15 12 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team_implementation_agent.py >> logs/lt_impl_$(date +\%Y\%m\%d).log 2>&1
+15 0 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team_implementation_agent.py >> logs/lt_impl_$(date +\%Y\%m\%d).log 2>&1
