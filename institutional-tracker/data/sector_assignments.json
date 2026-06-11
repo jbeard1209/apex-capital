@@ -1,10 +1,48 @@
 {
-  "generated_at": "2026-06-11T02:24:35.376553",
+  "generated_at": "2026-06-11T02:45:09.058086",
   "leader": "R&D Team Leader",
   "cro_risk_level": "ELEVATED",
-  "sectors_scanned": 15,
+  "sectors_scanned": 16,
   "sectors_assigned": 8,
   "all_scored": [
+    {
+      "sector_name": "Technology",
+      "etf": "XLK",
+      "description": "Software, hardware, and IT services",
+      "watchlist": [
+        "MSFT",
+        "AAPL",
+        "NVDA",
+        "META",
+        "GOOGL",
+        "ORCL",
+        "CRM",
+        "ADBE",
+        "NOW",
+        "INTU"
+      ],
+      "score_data": {
+        "etf": "XLK",
+        "price": NaN,
+        "ma50": 165.82,
+        "ma200": 147.26,
+        "trend": "bearish",
+        "rsi_14": NaN,
+        "ret_1m_pct": NaN,
+        "ret_3m_pct": NaN,
+        "volatility_20d": 34.8,
+        "pct_from_50ma": NaN,
+        "pct_from_200ma": NaN,
+        "score": 2,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 2
+        }
+      }
+    },
     {
       "sector_name": "Biotech",
       "etf": "IBB",
@@ -579,6 +617,51 @@
   "assignments": [
     {
       "agent_id": 1,
+      "sector_name": "Technology",
+      "sector_etf": "XLK",
+      "description": "Software, hardware, and IT services",
+      "watchlist": [
+        "MSFT",
+        "AAPL",
+        "NVDA",
+        "META",
+        "GOOGL",
+        "ORCL",
+        "CRM",
+        "ADBE",
+        "NOW",
+        "INTU"
+      ],
+      "momentum_score": 2,
+      "momentum_data": {
+        "etf": "XLK",
+        "price": NaN,
+        "ma50": 165.82,
+        "ma200": 147.26,
+        "trend": "bearish",
+        "rsi_14": NaN,
+        "ret_1m_pct": NaN,
+        "ret_3m_pct": NaN,
+        "volatility_20d": 34.8,
+        "pct_from_50ma": NaN,
+        "pct_from_200ma": NaN,
+        "score": 2,
+        "score_breakdown": {
+          "trend": 0,
+          "rsi": 0,
+          "ret_1m": 0,
+          "ret_3m": 0,
+          "vol": 2
+        }
+      },
+      "investment_horizon": "both",
+      "leader_rationale": "Technology is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 35% annualised volatility \u2014 sufficient movement to capture momentum.",
+      "assigned_at": "2026-06-11T02:45:09.057499",
+      "cro_risk_level": "ELEVATED",
+      "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
+    },
+    {
+      "agent_id": 2,
       "sector_name": "Biotech",
       "sector_etf": "IBB",
       "description": "Biotechnology, genomics, and drug discovery",
@@ -618,12 +701,12 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Biotech is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 24% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-11T02:24:35.374653",
+      "assigned_at": "2026-06-11T02:45:09.057511",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
     {
-      "agent_id": 2,
+      "agent_id": 3,
       "sector_name": "Defense & Aerospace",
       "sector_etf": "ITA",
       "description": "Defense contractors, aerospace, and government services",
@@ -663,12 +746,12 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Defense & Aerospace is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 25% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-11T02:24:35.374675",
+      "assigned_at": "2026-06-11T02:45:09.057517",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
     {
-      "agent_id": 3,
+      "agent_id": 4,
       "sector_name": "Consumer Discretionary",
       "sector_etf": "XLY",
       "description": "Retail, autos, travel, and leisure",
@@ -708,12 +791,12 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Consumer Discretionary is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 19% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-11T02:24:35.374691",
+      "assigned_at": "2026-06-11T02:45:09.057523",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
     {
-      "agent_id": 4,
+      "agent_id": 5,
       "sector_name": "Materials",
       "sector_etf": "XLB",
       "description": "Chemicals, metals, and mining (non-energy)",
@@ -753,12 +836,12 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Materials is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 19% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-11T02:24:35.374704",
+      "assigned_at": "2026-06-11T02:45:09.057529",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
     {
-      "agent_id": 5,
+      "agent_id": 6,
       "sector_name": "Regional Banks",
       "sector_etf": "KRE",
       "description": "US regional and community banking sector",
@@ -798,12 +881,12 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Regional Banks is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 22% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-11T02:24:35.374715",
+      "assigned_at": "2026-06-11T02:45:09.057535",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
     {
-      "agent_id": 6,
+      "agent_id": 7,
       "sector_name": "Retail",
       "sector_etf": "XRT",
       "description": "US retail \u2014 big box, specialty, and e-commerce",
@@ -843,12 +926,12 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Retail is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 19% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-11T02:24:35.374726",
+      "assigned_at": "2026-06-11T02:45:09.057540",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
     {
-      "agent_id": 7,
+      "agent_id": 8,
       "sector_name": "Financials",
       "sector_etf": "XLF",
       "description": "Banks, insurance, and asset managers",
@@ -888,52 +971,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Financials is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 15% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
-      "assigned_at": "2026-06-11T02:24:35.374743",
-      "cro_risk_level": "ELEVATED",
-      "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
-    },
-    {
-      "agent_id": 8,
-      "sector_name": "Healthcare",
-      "sector_etf": "XLV",
-      "description": "Pharmaceuticals, medical devices, and managed care",
-      "watchlist": [
-        "UNH",
-        "LLY",
-        "ABBV",
-        "JNJ",
-        "MRK",
-        "TMO",
-        "ABT",
-        "ISRG",
-        "VRTX",
-        "ELV"
-      ],
-      "momentum_score": 1,
-      "momentum_data": {
-        "etf": "XLV",
-        "price": NaN,
-        "ma50": 147.2,
-        "ma200": 148.12,
-        "trend": "bearish",
-        "rsi_14": NaN,
-        "ret_1m_pct": NaN,
-        "ret_3m_pct": NaN,
-        "volatility_20d": 16.6,
-        "pct_from_50ma": NaN,
-        "pct_from_200ma": NaN,
-        "score": 1,
-        "score_breakdown": {
-          "trend": 0,
-          "rsi": 0,
-          "ret_1m": 0,
-          "ret_3m": 0,
-          "vol": 1
-        }
-      },
-      "investment_horizon": "both",
-      "leader_rationale": "Healthcare is under pressure but showing relative strength worth watching. Sector returned +nan% (1M) / +nan% (3M) with 17% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
-      "assigned_at": "2026-06-11T02:24:35.374755",
+      "assigned_at": "2026-06-11T02:45:09.057546",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     }

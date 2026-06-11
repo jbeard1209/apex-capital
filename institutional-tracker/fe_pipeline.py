@@ -161,6 +161,13 @@ def _attach_iv(picks: list[dict]) -> list[dict]:
                 pick["conservative_iv"]  = iv_result.get("conservative_iv")
                 pick["margin_of_safety"] = iv_result.get("margin_of_safety")
                 pick["iv_verdict"]       = iv_result.get("verdict")
+                # Recalculate conviction from MoS so it reflects actual IV data
+                _mos = iv_result.get("margin_of_safety") or 0
+                if _mos >= 0.35:   pick["conviction"] = 5
+                elif _mos >= 0.25: pick["conviction"] = 4
+                elif _mos >= 0.15: pick["conviction"] = 3
+                elif _mos >= 0.05: pick["conviction"] = 2
+                else:              pick["conviction"] = 1
                 pick["fcf_yield"]        = iv_result.get("fcf_yield")
                 pick["roic"]             = iv_result.get("roic")
                 pick["net_debt_ebitda"]  = iv_result.get("net_debt_ebitda")
