@@ -1160,14 +1160,28 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 executions.append(ex)
                 if ex.get("executed"):
                     if d["manager_action"] in ("SELL", "TRIM"):
+                        _pnl_pct = d.get("unrealized_pnl_pct", 0)
+                        _src     = _lookup_buy_source(state, d["ticker"])
                         state["sell_log"].append({
                             "date":          datetime.now().strftime("%Y-%m-%d"),
                             "ticker":        d["ticker"],
                             "reason":        "manager_agent",
-                            "pnl_pct":       d.get("unrealized_pnl_pct", 0),
-                            "signal_source": _lookup_buy_source(state, d["ticker"]),
+                            "pnl_pct":       _pnl_pct,
+                            "signal_source": _src,
                         })
                         state["entry_dates"].pop(d["ticker"], None)
+                        # Record outcome in performance ledger for agent attribution
+                        try:
+                            from performance_ledger import record_outcome as _rec_outcome
+                            _rec_outcome(
+                                ticker    = d["ticker"],
+                                outcome   = "WIN" if _pnl_pct > 0 else ("LOSS" if _pnl_pct < 0 else "FLAT"),
+                                pnl_pct   = _pnl_pct,
+                                exit_reason = d["manager_action"],
+                                agents    = [_src] if _src else [],
+                            )
+                        except Exception as _ple:
+                            logger.debug("  [Ledger] record_outcome failed: %s", _ple)
                     elif d["manager_action"] in ("ADD", "BUY_NEW"):
                         state["entry_dates"][d["ticker"]] = datetime.now().strftime("%Y-%m-%d")
                         # Compute Kelly multiplier for attribution (CIT-2026-204)
