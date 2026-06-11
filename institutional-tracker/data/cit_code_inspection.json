@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-11T01:52:37.826257",
-  "files_scanned": 93,
-  "total_findings": 118,
+  "generated_at": "2026-06-11T02:10:50.317955",
+  "files_scanned": 95,
+  "total_findings": 120,
   "findings": [
     {
       "agent": "CITCodeInspector",
@@ -227,17 +227,6 @@
       "agent": "CITCodeInspector",
       "category": "BUG_FIX",
       "severity": "MEDIUM",
-      "confidence": 80,
-      "title": "Silent exception in fe_board.py:24",
-      "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-      "evidence": "fe_board.py line 24: `except Exception: pass`",
-      "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
-      "auto_implementable": false
-    },
-    {
-      "agent": "CITCodeInspector",
-      "category": "BUG_FIX",
-      "severity": "MEDIUM",
       "confidence": 55,
       "title": "Possible missing makedirs before file write in fe_board.py:59",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
@@ -414,6 +403,28 @@
       "agent": "CITCodeInspector",
       "category": "BUG_FIX",
       "severity": "MEDIUM",
+      "confidence": 80,
+      "title": "Silent exception in ml_pod_board.py:42",
+      "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+      "evidence": "ml_pod_board.py line 42: `except Exception: pass`",
+      "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
+      "auto_implementable": false
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
+      "confidence": 55,
+      "title": "Possible missing makedirs before file write in ml_pod_board.py:48",
+      "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
+      "evidence": "ml_pod_board.py line 48: `with open(path, \"w\") as f: json.dump(data, f, indent=2, default=str)`",
+      "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
+      "auto_implementable": false
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
       "confidence": 55,
       "title": "Possible missing makedirs before file write in ml_rd_bridge_agent.py:72",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
@@ -496,6 +507,17 @@
       "description": "Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard with `if logger.isEnabledFor(...)`.",
       "evidence": "premarket_check.py line 252: `logger.info(f\"  \u26a0\ufe0f  NEAR STOP: {ticker} \u2014 projected {projected_pnl:+.1f}%, margi...`",
       "proposed_fix": "Convert to `logger.info('message %s', var)` style.",
+      "auto_implementable": false
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
+      "confidence": 55,
+      "title": "Possible missing makedirs before file write in rd_pod_board.py:69",
+      "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
+      "evidence": "rd_pod_board.py line 69: `with open(path, \"w\") as f:`",
+      "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
     {
@@ -1305,7 +1327,7 @@
   "severity_counts": {
     "CRITICAL": 0,
     "HIGH": 0,
-    "MEDIUM": 26,
+    "MEDIUM": 28,
     "LOW": 92
   }
 }

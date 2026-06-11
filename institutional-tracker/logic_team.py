@@ -831,8 +831,11 @@ class PodHealthLogicAgent:
             pname = pod_meta["name"]
 
             # Check if pipeline has run recently
+            # Prefer state-injected age (enables testing), fall back to filesystem
+            state_age_key = f"{pod_id}_pipeline_age_h"
             report_path = pod_meta["pipeline_report"]
-            if not report_path.exists():
+            state_age = state.get(state_age_key)
+            if state_age is None and not report_path.exists():
                 findings.append(_finding(
                     rule=f"{pod_id}_never_run",
                     severity="HIGH",
@@ -846,7 +849,7 @@ class PodHealthLogicAgent:
                 ))
                 continue
 
-            age_h = (datetime.now().timestamp() - report_path.stat().st_mtime) / 3600
+            age_h = state_age if state_age is not None else (datetime.now().timestamp() - report_path.stat().st_mtime) / 3600
             if age_h > pod_meta["max_stale_h"]:
                 findings.append(_finding(
                     rule=f"{pod_id}_pipeline_stale",

@@ -1,6 +1,6 @@
 {
-  "last_training": "2026-06-11T01:22:55.922406",
-  "scenarios_run": 19,
+  "last_training": "2026-06-11T02:13:08.038763",
+  "scenarios_run": 22,
   "grades": {
     "PipelineLogicAgent": "A",
     "CapitalLogicAgent": "A",
@@ -11,7 +11,8 @@
     "MLLogicAgent": "A",
     "DataIntegrityLogicAgent": "A",
     "CommunicationLogicAgent": "A",
-    "RiskCoherenceLogicAgent": "A"
+    "RiskCoherenceLogicAgent": "A",
+    "PodHealthLogicAgent": "A"
   },
   "agent_detail": {
     "PipelineLogicAgent": {
@@ -19,7 +20,7 @@
       "passes": 2,
       "misses": 0,
       "fp": 0,
-      "score": 3
+      "score": 5
     },
     "CapitalLogicAgent": {
       "grade": "A",
@@ -33,7 +34,7 @@
       "passes": 2,
       "misses": 0,
       "fp": 0,
-      "score": 16
+      "score": 19
     },
     "PerformanceLogicAgent": {
       "grade": "A",
@@ -47,14 +48,14 @@
       "passes": 2,
       "misses": 0,
       "fp": 0,
-      "score": 19
+      "score": 22
     },
     "StrategyLogicAgent": {
       "grade": "A",
       "passes": 2,
       "misses": 0,
       "fp": 0,
-      "score": 15
+      "score": 18
     },
     "MLLogicAgent": {
       "grade": "A",
@@ -82,7 +83,14 @@
       "passes": 2,
       "misses": 0,
       "fp": 0,
-      "score": 14
+      "score": 17
+    },
+    "PodHealthLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 4
     }
   },
   "weakest_agents": [

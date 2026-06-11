@@ -372,6 +372,38 @@ SCENARIOS = [
         "should_not_fire": ["RiskCoherenceLogicAgent"],
     },
 
+    # ── PodHealthLogicAgent scenarios ─────────────────────────────────────
+    {
+        "name": "pod_never_run",
+        "description": "FI pipeline has never produced a report — pod has capital but never ran.",
+        "target_agents": ["PodHealthLogicAgent"],
+        "expected_severity": "HIGH",
+        "state_patch": {
+            # Remove fi_pipeline_age_h so the agent detects the missing file
+        },
+        "should_not_fire": [],
+    },
+    {
+        "name": "pod_pipeline_stale",
+        "description": "FE pipeline report is 40 hours old — well past daily threshold.",
+        "target_agents": ["PodHealthLogicAgent"],
+        "expected_severity": "MEDIUM",
+        "state_patch": {
+            "fi_pipeline_age_h": 40,
+        },
+        "should_not_fire": [],
+    },
+    {
+        "name": "pods_all_healthy",
+        "description": "Both pod pipelines ran within the last 24h. Pod health is fine.",
+        "target_agents": [],
+        "expected_severity": None,
+        "state_patch": {
+            "fi_pipeline_age_h": 8,
+        },
+        "should_not_fire": ["PodHealthLogicAgent"],
+    },
+
 ]
 
 

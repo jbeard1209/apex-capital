@@ -2,454 +2,6 @@
   "picks": [
     {
       "agent": "Agent 5 (Regional Banks)",
-      "ticker": "ZION",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:37.651285"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "PNC",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:37.689446"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "NVDA",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:42.247481"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "ADBE",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:42.281306"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:42.320214"
-    },
-    {
-      "agent": "Agent 7 (Defense & Aerospace)",
-      "ticker": "GD",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:46.134463"
-    },
-    {
-      "agent": "Agent 7 (Defense & Aerospace)",
-      "ticker": "RTX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:46.173780"
-    },
-    {
-      "agent": "Agent 7 (Defense & Aerospace)",
-      "ticker": "HII",
-      "conviction": 3,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:00:46.210264"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AMAT",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:09.378252"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AVGO",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:09.945665"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "TXN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:10.558065"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "NBIX",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:29.403512"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "BIIB",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:29.679474"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "VRTX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:30.084113"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "AMZN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:58.471080"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "RCL",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:59.474266"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "SBUX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:18:59.916258"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "AMZN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:19:31.476688"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:19:32.169065"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "MDB",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:19:32.633745"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "FITB",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:20:52.775751"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "ZION",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:20:53.179385"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "PNC",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:20:53.520616"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "NVDA",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:22:09.820329"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "ADBE",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:22:10.323791"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:22:10.646069"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AMAT",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:48:08.866564"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AVGO",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:48:09.889412"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "TXN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:48:10.330165"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "NBIX",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:48:36.676258"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "BIIB",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:48:37.577525"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "VRTX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:48:38.095374"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "AMZN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:49:20.956746"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "RCL",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:49:21.694782"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "SBUX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:49:22.169840"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "AMZN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:49:50.408410"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:49:51.187285"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "MDB",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:49:51.413214"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "FITB",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:50:25.369913"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "ZION",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:50:25.868180"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
-      "ticker": "PNC",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:50:26.216680"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "NVDA",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:51:17.897063"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "ADBE",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:51:18.878521"
-    },
-    {
-      "agent": "Agent 6 (Technology)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T16:51:19.512837"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AMAT",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:19:11.292869"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "AVGO",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:19:12.211928"
-    },
-    {
-      "agent": "Agent 1 (Semiconductors)",
-      "ticker": "TXN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:19:12.456615"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "NBIX",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:19:36.191408"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "BIIB",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:19:36.498544"
-    },
-    {
-      "agent": "Agent 2 (Biotech)",
-      "ticker": "VRTX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:19:36.869125"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "AMZN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:20:01.053367"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "RCL",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:20:01.376639"
-    },
-    {
-      "agent": "Agent 3 (Consumer Discretionary)",
-      "ticker": "SBUX",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:20:01.600767"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "AMZN",
-      "conviction": 5,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:20:24.099272"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "CRM",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:20:25.075926"
-    },
-    {
-      "agent": "Agent 4 (Cloud & SaaS)",
-      "ticker": "MDB",
-      "conviction": 4,
-      "prediction_type": "BUY_NEW",
-      "acted_on": null,
-      "ts": "2026-05-30T17:20:26.119679"
-    },
-    {
-      "agent": "Agent 5 (Regional Banks)",
       "ticker": "FITB",
       "conviction": 5,
       "prediction_type": "BUY_NEW",
@@ -15999,6 +15551,454 @@
       "prediction_type": "BUY_NEW",
       "acted_on": null,
       "ts": "2026-06-11T02:04:28.967764"
+    },
+    {
+      "agent": "Agent 1 (Technology)",
+      "ticker": "MSFT",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:14.276180"
+    },
+    {
+      "agent": "Agent 1 (Technology)",
+      "ticker": "AAPL",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:14.294545"
+    },
+    {
+      "agent": "Agent 1 (Technology)",
+      "ticker": "NVDA",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:14.309400"
+    },
+    {
+      "agent": "Agent 2 (Biotech)",
+      "ticker": "REGN",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:17.879359"
+    },
+    {
+      "agent": "Agent 2 (Biotech)",
+      "ticker": "ALNY",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:17.902941"
+    },
+    {
+      "agent": "Agent 2 (Biotech)",
+      "ticker": "INCY",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:17.919346"
+    },
+    {
+      "agent": "Agent 3 (Defense & Aerospace)",
+      "ticker": "RTX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:21.584872"
+    },
+    {
+      "agent": "Agent 3 (Defense & Aerospace)",
+      "ticker": "GD",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:21.607160"
+    },
+    {
+      "agent": "Agent 3 (Defense & Aerospace)",
+      "ticker": "HII",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:21.623528"
+    },
+    {
+      "agent": "Agent 4 (Consumer Discretionary)",
+      "ticker": "AMZN",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:25.069063"
+    },
+    {
+      "agent": "Agent 4 (Consumer Discretionary)",
+      "ticker": "MCD",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:25.091901"
+    },
+    {
+      "agent": "Agent 4 (Consumer Discretionary)",
+      "ticker": "LOW",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:25.108052"
+    },
+    {
+      "agent": "Agent 5 (Materials)",
+      "ticker": "FCX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:28.186157"
+    },
+    {
+      "agent": "Agent 5 (Materials)",
+      "ticker": "NEM",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:28.208597"
+    },
+    {
+      "agent": "Agent 5 (Materials)",
+      "ticker": "ECL",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:28.224898"
+    },
+    {
+      "agent": "Agent 6 (Regional Banks)",
+      "ticker": "PNC",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:32.384975"
+    },
+    {
+      "agent": "Agent 6 (Regional Banks)",
+      "ticker": "FITB",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:32.405923"
+    },
+    {
+      "agent": "Agent 6 (Regional Banks)",
+      "ticker": "HBAN",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:32.421992"
+    },
+    {
+      "agent": "Agent 7 (Retail)",
+      "ticker": "AMZN",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:36.214396"
+    },
+    {
+      "agent": "Agent 7 (Retail)",
+      "ticker": "TJX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:36.236278"
+    },
+    {
+      "agent": "Agent 7 (Retail)",
+      "ticker": "ROST",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:36.252628"
+    },
+    {
+      "agent": "Agent 8 (Financials)",
+      "ticker": "JPM",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:40.235255"
+    },
+    {
+      "agent": "Agent 8 (Financials)",
+      "ticker": "BAC",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:40.257146"
+    },
+    {
+      "agent": "Agent 8 (Financials)",
+      "ticker": "GS",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:40.273465"
+    },
+    {
+      "agent": "Agent financialsectoragent_cos (Financials)",
+      "ticker": "JPM",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:48.065842"
+    },
+    {
+      "agent": "Agent financialsectoragent_cos (Financials)",
+      "ticker": "GS",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:48.087434"
+    },
+    {
+      "agent": "Agent financialsectoragent_cos (Financials)",
+      "ticker": "MS",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:48.103916"
+    },
+    {
+      "agent": "Agent consumerdiscretionaryagent_cos (Consumer Discretionary)",
+      "ticker": "AMZN",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:55.726524"
+    },
+    {
+      "agent": "Agent consumerdiscretionaryagent_cos (Consumer Discretionary)",
+      "ticker": "MCD",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:55.746463"
+    },
+    {
+      "agent": "Agent consumerdiscretionaryagent_cos (Consumer Discretionary)",
+      "ticker": "SBUX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:09:55.761982"
+    },
+    {
+      "agent": "Agent globaltechagent_cos (Technology)",
+      "ticker": "AAPL",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:03.461637"
+    },
+    {
+      "agent": "Agent globaltechagent_cos (Technology)",
+      "ticker": "MSFT",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:03.483192"
+    },
+    {
+      "agent": "Agent globaltechagent_cos (Technology)",
+      "ticker": "NVDA",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:03.499832"
+    },
+    {
+      "agent": "Agent industrialsdefenseagent_cos (Industrials)",
+      "ticker": "RTX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:12.108384"
+    },
+    {
+      "agent": "Agent industrialsdefenseagent_cos (Industrials)",
+      "ticker": "CAT",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:12.130354"
+    },
+    {
+      "agent": "Agent industrialsdefenseagent_cos (Industrials)",
+      "ticker": "FDX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:12.146502"
+    },
+    {
+      "agent": "Agent healthcarepharmaagent_cos (Healthcare)",
+      "ticker": "LLY",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:21.090228"
+    },
+    {
+      "agent": "Agent healthcarepharmaagent_cos (Healthcare)",
+      "ticker": "JNJ",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:21.105684"
+    },
+    {
+      "agent": "Agent healthcarepharmaagent_cos (Healthcare)",
+      "ticker": "ABBV",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:21.119376"
+    },
+    {
+      "agent": "Agent materialsminingagent_cos (Materials)",
+      "ticker": "FCX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:28.803006"
+    },
+    {
+      "agent": "Agent materialsminingagent_cos (Materials)",
+      "ticker": "NEM",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:28.821106"
+    },
+    {
+      "agent": "Agent materialsminingagent_cos (Materials)",
+      "ticker": "ECL",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:28.836052"
+    },
+    {
+      "agent": "Agent fe_contrarianrecovery_chairman (FE-ContrarianRecovery)",
+      "ticker": "CVS",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:39.132110"
+    },
+    {
+      "agent": "Agent fe_contrarianrecovery_chairman (FE-ContrarianRecovery)",
+      "ticker": "PFE",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:39.155432"
+    },
+    {
+      "agent": "Agent fe_contrarianrecovery_chairman (FE-ContrarianRecovery)",
+      "ticker": "INTC",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:39.172245"
+    },
+    {
+      "agent": "Agent communicationsmediaagent_cos (Communications)",
+      "ticker": "META",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:43.568855"
+    },
+    {
+      "agent": "Agent communicationsmediaagent_cos (Communications)",
+      "ticker": "GOOGL",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:43.581986"
+    },
+    {
+      "agent": "Agent communicationsmediaagent_cos (Communications)",
+      "ticker": "NFLX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:43.594747"
+    },
+    {
+      "agent": "Agent historicalcontextanalyst_cos (R&D-Context-Historical)",
+      "ticker": "^VIX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:45.188755"
+    },
+    {
+      "agent": "Agent systemperformanceanalyst_cos (R&D-Context-SystemPerformance)",
+      "ticker": "^VIX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:46.760881"
+    },
+    {
+      "agent": "Agent geopoliticalriskanalyst_cos (R&D-Context-Geopolitical)",
+      "ticker": "RTX",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:49.874222"
+    },
+    {
+      "agent": "Agent geopoliticalriskanalyst_cos (R&D-Context-Geopolitical)",
+      "ticker": "NVDA",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:49.890273"
+    },
+    {
+      "agent": "Agent geopoliticalriskanalyst_cos (R&D-Context-Geopolitical)",
+      "ticker": "AVGO",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:49.904269"
+    },
+    {
+      "agent": "Agent fe_smallmidcapvalue_chairman (FE-SmallMidCapValue)",
+      "ticker": "ITIC",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:55.380111"
+    },
+    {
+      "agent": "Agent fe_smallmidcapvalue_chairman (FE-SmallMidCapValue)",
+      "ticker": "RLI",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:55.396214"
+    },
+    {
+      "agent": "Agent fe_smallmidcapvalue_chairman (FE-SmallMidCapValue)",
+      "ticker": "LADR",
+      "conviction": 3,
+      "prediction_type": "BUY_NEW",
+      "acted_on": null,
+      "ts": "2026-06-11T02:10:55.410202"
     }
   ],
   "outcomes": [],

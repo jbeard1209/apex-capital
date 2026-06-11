@@ -6,6 +6,20 @@
       "reviewed": 13,
       "approved_count": 8,
       "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-11T02:09:39.356865",
+      "regime": "TIGHT",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-11T02:10:14.596068",
+      "regime": "TIGHT",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
     }
   ]
 }

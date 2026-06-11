@@ -3304,5 +3304,21 @@
     "status": "PENDING",
     "proposal_id": "CIT-2026-037",
     "evidence": "fe_board.py line 24: `except Exception: pass`"
+  },
+  {
+    "id": "CMR-C88ADF",
+    "ts": "2026-06-11T02:10:52.218639",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: cit_director.py:2452 \u2014 fcntl lock not released in try/finally. Fix: Wrap the lock body in try/finally: fcntl.flock(f, LOCK_EX) \u2192 try: ... finally: fcntl.flock(f, LOCK_UN)",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6F7579",
+    "ts": "2026-06-11T02:11:56.218846",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
   }
 ]

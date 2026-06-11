@@ -208,5 +208,15 @@
     "status": "awaiting_chairman",
     "times_approved": 1,
     "queued_at": "2026-06-11T01:52:40.353487"
+  },
+  {
+    "id": "LT-015346-fi_never_run",
+    "title": "Fixed Income pipeline has never run",
+    "category": "IMPROVEMENT",
+    "description": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produced a report.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-11T02:11:54.185272"
   }
 ]

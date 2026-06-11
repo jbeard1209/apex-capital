@@ -2,11 +2,6 @@
   "first_detected": "2026-05-07T08:31:28.073487",
   "history": [
     {
-      "ts": "2026-06-04T10:01:24.757384",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
       "ts": "2026-06-04T12:44:24.058716",
       "beat_rate_coverage_pct": 0,
       "sample_size": 5
@@ -298,6 +293,11 @@
     },
     {
       "ts": "2026-06-11T01:52:39.503709",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-11T02:10:51.276561",
       "beat_rate_coverage_pct": 100,
       "sample_size": 5
     }

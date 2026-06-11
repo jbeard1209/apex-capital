@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-06-11T01:52:40.338021",
+  "generated_at": "2026-06-11T02:10:52.335481",
   "dry_run": false,
-  "proposals_reviewed": 3,
-  "approved_count": 1,
+  "proposals_reviewed": 2,
+  "approved_count": 0,
   "rejected_count": 0,
   "deferred_count": 0,
   "needs_info_count": 2,
@@ -17,8 +17,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 0,
-      "clarifies": 5,
+      "defers": 2,
+      "clarifies": 3,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -27,8 +27,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
+          "vote": "DEFER",
+          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
         },
         {
           "deputy": "Deputy CIT Director",
@@ -42,8 +42,8 @@
         },
         {
           "deputy": "Deputy IRM",
-          "vote": "CLARIFY",
-          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
+          "vote": "DEFER",
+          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
         },
         {
           "deputy": "Deputy R&D Leader",
@@ -66,8 +66,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 2,
-      "clarifies": 3,
+      "defers": 3,
+      "clarifies": 2,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -76,8 +76,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
+          "vote": "DEFER",
+          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
         },
         {
           "deputy": "Deputy CIT Director",
@@ -105,56 +105,7 @@
           "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
         }
       ]
-    },
-    {
-      "proposal_id": "CIT-2026-037",
-      "title": "Silent exception in fe_board.py:24",
-      "severity": "MEDIUM",
-      "category": "BUG_FIX",
-      "passed": true,
-      "classification": "MAJORITY",
-      "approves": 6,
-      "rejects": 0,
-      "defers": 1,
-      "clarifies": 0,
-      "votes": [
-        {
-          "deputy": "Deputy Manager",
-          "vote": "APPROVE",
-          "rationale": "[MEDIUM/80%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
-        },
-        {
-          "deputy": "Deputy CRO",
-          "vote": "APPROVE",
-          "rationale": "No risk control exposure \u2014 evidence checks out."
-        },
-        {
-          "deputy": "Deputy CIT Director",
-          "vote": "APPROVE",
-          "rationale": "[80%] Evidence precise, fix specific, category in scope \u2014 CIT Director approves for implementation."
-        },
-        {
-          "deputy": "Deputy Chief of Staff",
-          "vote": "APPROVE",
-          "rationale": "Evidence and priority both check out \u2014 CoS approves."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
-        },
-        {
-          "deputy": "Deputy R&D Leader",
-          "vote": "APPROVE",
-          "rationale": "No research pipeline exposure \u2014 fix is specific and evidence is present."
-        },
-        {
-          "deputy": "Deputy Operations Director",
-          "vote": "APPROVE",
-          "rationale": "Infrastructure/pipeline fix with verified evidence [80%] \u2014 Operations Director approves."
-        }
-      ]
     }
   ],
-  "status": "PARTIAL"
+  "status": "NEEDS_INFO"
 }
