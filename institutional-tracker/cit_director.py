@@ -2937,6 +2937,8 @@ class CITBacklogCurator:
         "ERROR lines in recent logs",
         "ERROR lines in log",
         "print() in production code",   # after initial sweep, these are known
+        "Severely stale output:",       # PipelineMonitor staleness floods — resolved by cron schedule
+        "Stale issue ISS-",             # Issue tracker echoes — let IRM handle
     ]
 
     def analyze(self, context=None):
