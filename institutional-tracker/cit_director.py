@@ -3897,12 +3897,14 @@ class CITDirector:
             result.append(f)
         return result
 
-    def _update_history(self, agent_name: str, n_findings: int):
+    def _update_history(self, agent_name: str, n_findings: int, n_board: int = 0):
         """Update per-agent finding count in history file."""
         history = _load_json_safe(CIT_HISTORY)
         agents  = history.setdefault("agents", {})
         entry   = agents.setdefault(agent_name, {"total_findings": 0, "board_proposals": 0, "sensitive": 0})
         entry["total_findings"] += n_findings
+        if n_board:
+            entry["board_proposals"] = entry.get("board_proposals", 0) + n_board
         entry["last_run"] = datetime.now().isoformat()
         try:
             # Guard write so a disk error here never aborts the entire CIT run.
@@ -4100,11 +4102,18 @@ class CITDirector:
         # Board queue: route each proposal to the correct pod board
         # (pod-specific → pod board queue; firm-wide → main board / CIT_PENDING)
         _pod_routing_summary = {}
+        _agent_board_counts: dict[str, int] = {}
         for _prop in board_queue:
             _pod_dest = submit_to_pod_queue(_prop)
             _pod_routing_summary[_pod_dest] = _pod_routing_summary.get(_pod_dest, 0) + 1
+            _aname = _prop.get("agent", _prop.get("source", ""))
+            if _aname:
+                _agent_board_counts[_aname] = _agent_board_counts.get(_aname, 0) + 1
         if _pod_routing_summary:
             logger.info(f"  [CIT] Proposal routing: {_pod_routing_summary}")
+        # Update per-agent board_proposals counter in history
+        for _aname, _n in _agent_board_counts.items():
+            self._update_history(_aname, 0, n_board=_n)
 
         # Backlog: append
         existing_backlog = _load_json_list_safe(CIT_BACKLOG)
