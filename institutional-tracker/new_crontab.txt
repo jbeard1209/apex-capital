@@ -83,3 +83,9 @@
 
 # ── CIT PIPELINE INTEGRITY AGENT — every 2h at :50 (after each pipeline cycle) ──
 50 */2 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_pipeline_integrity_agent.py >> logs/pipeline_integrity_$(date +\%Y\%m\%d).log 2>&1
+
+# ── LOGIC TEAM — 2× daily, 8 AM and 8 PM EDT = 12 UTC and 00 UTC ──
+# Runs outside main pipeline so it still fires even on network-down cycles.
+# Checks pipeline coherence, capital deployment, governance gaps.
+0 12 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team.py >> logs/logic_team_$(date +\%Y\%m\%d).log 2>&1
+0 0 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team.py >> logs/logic_team_$(date +\%Y\%m\%d).log 2>&1

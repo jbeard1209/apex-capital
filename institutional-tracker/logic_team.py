@@ -258,7 +258,7 @@ class GovernanceLogicAgent:
         cro_level  = state.get("cro_level", "LOW")
         cro_streak = state.get("cro_streak", 0)
         board_rpt  = state.get("board_meeting", {}) or {}
-        last_board = board_rpt.get("generated_at","")
+        last_board = board_rpt.get("generated_at", "") or board_rpt.get("timestamp", "")
         days_since_board = _days_since(last_board) or 999
 
         # R6: Extended CRO HIGH with no board vote

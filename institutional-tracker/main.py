@@ -446,76 +446,88 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # Step 1: Initialize Alpaca Trader
     # -----------------------------------------------------------------------
     logger.info("Step 1: Connecting to Alpaca...")
+    _alpaca_ok = True
     try:
         from alpaca_trader import AlpacaTrader
         trader = AlpacaTrader()
         logger.info("  ✅ Alpaca connection established")
     except Exception as e:
         logger.error(f"  ❌ Alpaca connection failed: {e}")
-        logger.error("  Check your API keys in config.py")
-        return
+        logger.warning("  ⚠️  Continuing without Alpaca — trading steps will be skipped, "
+                       "research/analysis pipeline will still run.")
+        trader = None
+        _alpaca_ok = False
 
     # ── High-water mark tracking ───────────────────────────────────────────
-    # Update the all-time portfolio peak in state.json each run.
-    # Manager Agent reads this to enforce the 12% drawdown halt.
-    try:
-        _hwm_acct = trader.get_account()
-        _hwm_pv   = _hwm_acct.get("portfolio_value", 0) if _hwm_acct else 0
-        if _hwm_pv > 0:
-            _prev_hwm = state.get("high_water_mark", 0) or 0
-            if _hwm_pv > _prev_hwm:
-                state["high_water_mark"] = _hwm_pv
-                logger.info(f"  📈 New high-water mark: ${_hwm_pv:,.2f}")
-            elif _prev_hwm > 0:
-                _dd = (_prev_hwm - _hwm_pv) / _prev_hwm * 100
-                logger.info(f"  HWM: ${_prev_hwm:,.0f} | Current: ${_hwm_pv:,.0f} | Drawdown: {_dd:.1f}%")
-    except Exception as _hwm_e:
-        logger.warning(f"  HWM update skipped: {_hwm_e}")
+    if _alpaca_ok:
+        try:
+            _hwm_acct = trader.get_account()
+            _hwm_pv   = _hwm_acct.get("portfolio_value", 0) if _hwm_acct else 0
+            if _hwm_pv > 0:
+                _prev_hwm = state.get("high_water_mark", 0) or 0
+                if _hwm_pv > _prev_hwm:
+                    state["high_water_mark"] = _hwm_pv
+                    logger.info(f"  📈 New high-water mark: ${_hwm_pv:,.2f}")
+                elif _prev_hwm > 0:
+                    _dd = (_prev_hwm - _hwm_pv) / _prev_hwm * 100
+                    logger.info(f"  HWM: ${_prev_hwm:,.0f} | Current: ${_hwm_pv:,.0f} | Drawdown: {_dd:.1f}%")
+        except Exception as _hwm_e:
+            logger.warning(f"  HWM update skipped: {_hwm_e}")
 
     # -----------------------------------------------------------------------
     # Step 2: Enforce Risk Rules (stop-loss / take-profit / max hold)
     # -----------------------------------------------------------------------
-    logger.info("\nStep 2: Enforcing risk rules on open positions...")
-    entry_dates = {
-        ticker: datetime.strptime(date_str, "%Y-%m-%d")
-        for ticker, date_str in state["entry_dates"].items()
-    }
-    sells_executed = trader.enforce_risk_rules(
-        entry_dates,
-        exclude_tickers=_step0_closed_tickers,   # skip already-closed positions
-    )
+    sells_executed = []
+    if _alpaca_ok:
+        logger.info("\nStep 2: Enforcing risk rules on open positions...")
+        entry_dates = {
+            ticker: datetime.strptime(date_str, "%Y-%m-%d")
+            for ticker, date_str in state["entry_dates"].items()
+        }
+        sells_executed = trader.enforce_risk_rules(
+            entry_dates,
+            exclude_tickers=_step0_closed_tickers,
+        )
 
-    for sell in sells_executed:
-        logger.info(f"  SOLD {sell['ticker']} — reason: {sell.get('reason','')}, "
-                    f"P&L: {sell.get('pnl_pct', 0):+.1f}%")
-        state["sell_log"].append({
-            "date":         datetime.now().strftime("%Y-%m-%d"),
-            "ticker":       sell["ticker"],
-            "reason":       sell.get("reason", ""),
-            "pnl_pct":      sell.get("pnl_pct", 0),
-            "signal_source": _lookup_buy_source(state, sell["ticker"]),
-        })
-        if sell["ticker"] in state["entry_dates"]:
-            del state["entry_dates"][sell["ticker"]]
+        for sell in sells_executed:
+            logger.info(f"  SOLD {sell['ticker']} — reason: {sell.get('reason','')}, "
+                        f"P&L: {sell.get('pnl_pct', 0):+.1f}%")
+            state["sell_log"].append({
+                "date":         datetime.now().strftime("%Y-%m-%d"),
+                "ticker":       sell["ticker"],
+                "reason":       sell.get("reason", ""),
+                "pnl_pct":      sell.get("pnl_pct", 0),
+                "signal_source": _lookup_buy_source(state, sell["ticker"]),
+            })
+            if sell["ticker"] in state["entry_dates"]:
+                del state["entry_dates"][sell["ticker"]]
+    else:
+        logger.info("\nStep 2: SKIPPED (Alpaca unavailable)")
 
     # -----------------------------------------------------------------------
     # Step 2b: Manage Regime Hedge (SH inverse ETF in bear market)
     # -----------------------------------------------------------------------
-    logger.info("\nStep 2b: Managing regime hedge...")
-    hedge_result = trader.manage_regime_hedge()
-    logger.info(f"  Regime: {hedge_result['regime']}")
-    logger.info(f"  Hedge action: {hedge_result['action']}")
+    if _alpaca_ok:
+        logger.info("\nStep 2b: Managing regime hedge...")
+        hedge_result = trader.manage_regime_hedge()
+        logger.info(f"  Regime: {hedge_result['regime']}")
+        logger.info(f"  Hedge action: {hedge_result['action']}")
+    else:
+        logger.info("\nStep 2b: SKIPPED (Alpaca unavailable)")
 
     # -----------------------------------------------------------------------
     # Step 2c: Manage Momentum Short Book
     # -----------------------------------------------------------------------
-    logger.info("\nStep 2c: Managing momentum short positions...")
-    short_actions = trader.manage_momentum_shorts()
-    if short_actions:
-        for a in short_actions:
-            logger.info(f"  {a['action'].upper()}: {a['ticker']}")
+    if _alpaca_ok:
+        logger.info("\nStep 2c: Managing momentum short positions...")
+        short_actions = trader.manage_momentum_shorts()
+        if short_actions:
+            for a in short_actions:
+                logger.info(f"  {a['action'].upper()}: {a['ticker']}")
+        else:
+            logger.info("  No short position changes today")
     else:
-        logger.info("  No short position changes today")
+        logger.info("\nStep 2c: SKIPPED (Alpaca unavailable)")
 
     # -----------------------------------------------------------------------
     # Step 2d: Chief Risk Officer — run BEFORE PDO so capital-deployment
@@ -571,7 +583,10 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             with open(rb_tail_path) as _rbt_f:
                 _rbt = json.load(_rbt_f)
             _cro_level_for_hedge = _rbt.get("risk_level", "UNKNOWN")
-            tail_result = trader.manage_tail_hedge(_cro_level_for_hedge)
+            if _alpaca_ok:
+                tail_result = trader.manage_tail_hedge(_cro_level_for_hedge)
+            else:
+                tail_result = {'action': 'skipped'}
             if tail_result["action"] not in ("none", "hedge_active"):
                 logger.info(f"  Tail hedge: {tail_result['action']} | CRO risk: {_cro_level_for_hedge}")
     except Exception as e:
@@ -588,6 +603,8 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         if rb_path.exists():
             with open(rb_path) as _rb_f:
                 _rb = json.load(_rb_f)
+            if not _alpaca_ok:
+                raise Exception("Alpaca unavailable")
             _acct_tmp  = trader.get_account()
             _cvar_1d   = _rb.get("cvar_95", 0) or 0
             _pv_tmp    = _acct_tmp.get("portfolio_value", 1) or 1
@@ -695,7 +712,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     logger.info("\nStep 4: Evaluating & executing 13F signals through risk pipeline...")
     buys_today = []
 
-    if not signals_df.empty:
+    if not signals_df.empty and _alpaca_ok:
         from manager_agent import evaluate_recommendation as _eval_rec, execute_decision as _exec_dec, _load_pdo_signal as _load_pdo
         _pdo_signal_13f = _load_pdo()
         _acct_13f = trader.get_account()
@@ -1198,6 +1215,16 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception as _md_e:
         logger.debug(f"  manager_decisions.json write failed (non-fatal): {_md_e}")
 
+    # ── ML Live Picks Logging ─────────────────────────────────────────────
+    # Record today's ST model picks for 20-day live performance tracking.
+    try:
+        import ml_live_test_runner as _mltr
+        _mltr.enter_new_picks(model="shortterm", top_n=10)
+        _mltr.evaluate_expired_picks()
+        logger.info("  ✅ ML live picks logged → ml_live_picks_log.json")
+    except Exception as _mltr_e:
+        logger.debug(f"  ML live picks logging skipped: {_mltr_e}")
+
     # -----------------------------------------------------------------------
     # Step 4d: ETF Pod 3 orders — execute etf_pod_orders.json
     # -----------------------------------------------------------------------
@@ -1215,7 +1242,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         _etf_pl_ok = False
 
     _etf_orders_path = Path(__file__).parent / "data" / "etf_pod_orders.json"
-    if _etf_orders_path.exists() and _etf_pl_ok:
+    if _etf_orders_path.exists() and _etf_pl_ok and _alpaca_ok:
         try:
             with open(_etf_orders_path) as _etf_f:
                 _etf_orders = json.load(_etf_f)
@@ -1227,6 +1254,8 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             if _emergency:
                 logger.warning("  [ETF POD 3] EMERGENCY_EXIT — selling ALL pod3 positions at market")
                 try:
+                    if not _alpaca_ok:
+                        raise Exception("Alpaca unavailable")
                     _p3_positions = trader.get_positions()
                     if _p3_positions is not None and not _p3_positions.empty:
                         from alpaca.trading.requests import MarketOrderRequest as _ETFMOR
@@ -1338,7 +1367,11 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # Step 5: Get Portfolio Snapshot
     # -----------------------------------------------------------------------
     logger.info("\nStep 5: Capturing portfolio snapshot...")
-    snapshot = trader.get_portfolio_snapshot()
+    if _alpaca_ok:
+        snapshot = trader.get_portfolio_snapshot()
+    else:
+        snapshot = {"portfolio_value": 0, "positions": [], "cash": 0, "equity": 0}
+        logger.info("  Step 5: SKIPPED (Alpaca unavailable) — using empty snapshot")
 
     logger.info(f"  Portfolio Value:  ${snapshot['portfolio_value']:,.2f}")
     logger.info(f"  Cash:             ${snapshot['cash']:,.2f}")
