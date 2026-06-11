@@ -153,6 +153,22 @@ _FIRM_LEVEL_KEYWORDS = [
 ]
 
 
+def trigger_rd_research(reason: str, source: str = "CIT") -> None:
+    """Write rd_trigger.json so the next triggered cron fires R&D immediately."""
+    trigger_path = DATA_DIR / "rd_trigger.json"
+    # Don't overwrite a trigger that was just written (within 30 min)
+    if trigger_path.exists():
+        try:
+            existing = json.load(open(trigger_path))
+            age_h = (datetime.now() - datetime.fromisoformat(existing.get("created_at", "2000-01-01"))).total_seconds() / 3600
+            if age_h < 0.5:
+                return
+        except Exception:
+            pass
+    with open(trigger_path, "w") as f:
+        json.dump({"reason": reason, "source": source, "created_at": datetime.now().isoformat()}, f)
+
+
 def route_proposal_to_pod(proposal: dict) -> str:
     """
     Determine which pod queue a proposal belongs in.

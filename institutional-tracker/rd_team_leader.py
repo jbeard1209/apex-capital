@@ -32,6 +32,7 @@ import logging
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -1488,6 +1489,26 @@ if __name__ == "__main__":
         )
         _lock_fh.close()
         sys.exit(0)
+
+    # Event-triggered mode: if --triggered, check for rd_trigger.json first.
+    # Triggered runs are only skipped if the trigger file is absent or stale (>4h old).
+    _TRIGGER_PATH = Path("data/rd_trigger.json")
+    if "--triggered" in sys.argv:
+        if _TRIGGER_PATH.exists():
+            try:
+                _trig = json.load(open(_TRIGGER_PATH))
+                _age_h = (datetime.now() - datetime.fromisoformat(_trig.get("created_at", "2000-01-01"))).total_seconds() / 3600
+                if _age_h > 4:
+                    logger.info("[R&D] Trigger file is %0.1fh old — skipping triggered run", _age_h)
+                    sys.exit(0)
+                logger.info("[R&D] Event-triggered run: %s", _trig.get("reason", "?"))
+                _TRIGGER_PATH.unlink(missing_ok=True)
+            except Exception:
+                logger.info("[R&D] Trigger file unreadable — skipping")
+                sys.exit(0)
+        else:
+            logger.info("[R&D] --triggered flag set but no trigger file found — skipping")
+            sys.exit(0)
 
     try:
         scan_only = "--scan-only" in sys.argv
