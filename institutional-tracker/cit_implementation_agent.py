@@ -257,17 +257,28 @@ def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN
             report_items.append({"pid": pid, "title": title, "result": "SKIPPED", "reason": reason})
             continue
 
-        # Identify target file from evidence
-        file_match = re.search(r'(\w[\w/\-]+\.py)', evidence + " " + fix_desc)
+        # Identify target file from evidence, title, or fix description
+        _search_text = (evidence or "") + " " + (fix_desc or "") + " " + title
+        file_match = re.search(r'([\w/\-]+\.py)(?::[\d]+)?', _search_text)
         target_file_name = file_match.group(1) if file_match else None
 
+        # If still no file, try known-pattern titles
         if not target_file_name:
-            reason = "Could not identify target file from evidence/fix description"
-            logger.info(f"    SKIP: {reason}")
-            item["status"]    = "skipped"
-            item["skip_reason"] = reason
+            # "makedirs" findings are almost always about data writes
+            if "makedirs" in (fix_desc + title).lower():
+                # Extract from evidence: "file.py:line"
+                ev_match = re.search(r'([\w_]+\.py):(\d+)', evidence)
+                if ev_match:
+                    target_file_name = ev_match.group(1)
+
+        if not target_file_name:
+            # Some findings are systemic (log noise, zero tests) — not file-specific
+            # Mark as systemic rather than skipping silently
+            item["status"]    = "systemic"
+            item["skip_reason"] = "No specific file target — systemic finding"
             skipped.append(pid)
-            report_items.append({"pid": pid, "title": title, "result": "NEEDS_HUMAN", "reason": reason})
+            report_items.append({"pid": pid, "title": title, "result": "SYSTEMIC",
+                                  "reason": "Requires architectural change, not a single-file fix"})
             continue
 
         # Protected file check

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T02:10:50.364039",
+  "generated_at": "2026-06-11T02:43:06.548599",
   "canary_level": "GREEN",
   "cro_level": "ELEVATED",
   "buys_blocked": true,
@@ -8,10 +8,10 @@
     "consumer discretionary",
     "defense & aerospace",
     "financials",
+    "healthcare",
     "materials",
     "regional banks",
-    "retail",
-    "technology"
+    "retail"
   ],
   "streak_agents": [
     {

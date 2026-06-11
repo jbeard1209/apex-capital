@@ -1,33 +1,19 @@
 {
-  "generated_at": "2026-06-11T02:10:51.280026",
-  "proposals_reviewed": 4,
+  "generated_at": "2026-06-11T02:43:07.925530",
+  "proposals_reviewed": 2,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "CIT-2026-1451",
+      "id": "CIT-2026-399",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "CIT-2026-1452",
+      "id": "CIT-2026-401",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "category": "VISION",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LT-010856-zero_picks",
-      "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
-      "category": "IMPROVEMENT",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LT-015346-fi_never_run",
-      "title": "Fixed Income pipeline has never run",
-      "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }

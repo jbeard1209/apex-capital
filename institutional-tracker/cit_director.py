@@ -2743,6 +2743,510 @@ class CITIntegrationAuditor:
         return findings
 
 
+
+# =============================================================================
+# CIT ML AUDITOR — monitors ML model health, AUC trends, training data gaps
+# =============================================================================
+
+class CITMLAuditor:
+    """
+    Monitors the ML prediction pipeline. Checks model status, AUC trends,
+    training data availability, and live pick validation.
+    """
+    name = "CITMLAuditor"
+
+    def analyze(self, context=None):
+        return self.run(context or {})
+
+    def run(self, context: dict) -> list:
+        findings = []
+        try:
+            import sys as _sys
+            _sys.path.insert(0, str(BASE_DIR))
+
+            # Check model status
+            try:
+                from predictive_model.ml_model import get_model_status
+                status = get_model_status()
+                if status.get("status") == "NO_MODEL":
+                    findings.append({
+                        "category":     "IMPROVEMENT",
+                        "severity":     "HIGH",
+                        "confidence":   90,
+                        "title":        "ML model not trained — predictions returning neutral multiplier",
+                        "description":  "get_model_status() returns NO_MODEL. All signals get multiplier=1.0 "
+                                       "(no ML uplift). The historical_13f.db needs to be populated and "
+                                       "ml_model.py needs to be run.",
+                        "proposed_fix": "Run: python3 predictive_model/edgar_historical_scraper.py --full "
+                                       "to populate training data, then python3 predictive_model/ml_model.py",
+                        "evidence":     f"predictive_model/ml_model.py:get_model_status() → {status}",
+                    })
+            except Exception as _me:
+                findings.append({
+                    "category": "BUG_FIX", "severity": "MEDIUM", "confidence": 80,
+                    "title":    "ML model import failed",
+                    "description": f"Cannot import ML model: {_me}",
+                    "proposed_fix": "Check predictive_model/__init__.py and ml_model.py imports",
+                    "evidence": f"predictive_model/ml_model.py: {_me}",
+                })
+
+            # Check EDGAR training database
+            import sqlite3
+            db_path = DATA_DIR / "historical_13f.db"
+            if db_path.exists():
+                conn = sqlite3.connect(db_path)
+                c = conn.cursor()
+                c.execute("SELECT COUNT(*) FROM holdings")
+                n_holdings = c.fetchone()[0]
+                c.execute("SELECT COUNT(*) FROM filings")
+                n_filings = c.fetchone()[0]
+                conn.close()
+                if n_holdings == 0:
+                    findings.append({
+                        "category": "BUG_FIX", "severity": "HIGH", "confidence": 95,
+                        "title":    "EDGAR training DB has 0 holdings — ML model cannot train",
+                        "description": f"historical_13f.db has {n_filings} filings but 0 holdings. "
+                                      "The XML parser may be failing silently.",
+                        "proposed_fix": "Install lxml: pip3 install lxml. Then re-run edgar_historical_scraper.py --full",
+                        "evidence": f"data/historical_13f.db: {n_filings} filings, {n_holdings} holdings",
+                    })
+                elif n_holdings < 100000:
+                    findings.append({
+                        "category": "IMPROVEMENT", "severity": "LOW", "confidence": 75,
+                        "title":    f"EDGAR DB has only {n_holdings:,} holdings — more data improves model",
+                        "description": f"Training dataset has {n_holdings:,} holdings from {n_filings} filings. "
+                                      "Minimum ~500k holdings recommended for stable AUC.",
+                        "proposed_fix": "Continue running edgar_historical_scraper.py --full to collect more history.",
+                        "evidence": f"data/historical_13f.db: {n_filings} filings, {n_holdings} holdings",
+                    })
+            else:
+                findings.append({
+                    "category": "BUG_FIX", "severity": "HIGH", "confidence": 95,
+                    "title":    "historical_13f.db missing — ML training impossible",
+                    "description": "The EDGAR training database does not exist.",
+                    "proposed_fix": "Run: python3 predictive_model/edgar_historical_scraper.py",
+                    "evidence": "data/historical_13f.db: FILE_NOT_FOUND",
+                })
+
+            # Check ML live picks
+            live_picks_path = DATA_DIR / "ml_live_picks_log.json"
+            if live_picks_path.exists():
+                import json as _json
+                lp = _json.load(open(live_picks_path))
+                picks = lp.get("picks", []) if isinstance(lp, dict) else lp
+                if len(picks) == 0:
+                    findings.append({
+                        "category": "IMPROVEMENT", "severity": "MEDIUM", "confidence": 85,
+                        "title":    "ML live picks log empty — ST model not being validated",
+                        "description": "ml_live_picks_log.json has 0 picks. The ST model's real-world "
+                                      "performance cannot be measured without live pick tracking.",
+                        "proposed_fix": "Ensure ml_live_test_runner.enter_new_picks() is called each pipeline run. "
+                                       "Check main.py Step 4 ML live picks section.",
+                        "evidence": "data/ml_live_picks_log.json: 0 picks",
+                    })
+
+        except Exception as e:
+            logger.debug(f"  [CITMLAuditor] error: {e}")
+
+        return findings
+
+
+# =============================================================================
+# CIT POD AUDITOR — checks all 5 pods are healthy end-to-end
+# =============================================================================
+
+class CITPodAuditor:
+    """
+    Audits all 5 trading pods (R&D, ML, FI, FE, ETF/Macro).
+    Checks pipeline freshness, pick queue status, board connectivity.
+    """
+    name = "CITPodAuditor"
+
+    _PODS = {
+        "rd":  {"pipeline_report": "research_team_report.json",    "queue": "research_picks.json",   "max_age_h": 30},
+        "ml":  {"pipeline_report": "ml_live_picks_log.json",        "queue": None,                    "max_age_h": 48},
+        "fi":  {"pipeline_report": "fi_picks_queue.json",           "queue": "fi_approved_picks.json","max_age_h": 30},
+        "fe":  {"pipeline_report": "fe_pipeline_log.json",          "queue": "fe_picks_queue.json",   "max_age_h": 30},
+        "etf": {"pipeline_report": "etf_research_brief.json",       "queue": "etf_pod_orders.json",   "max_age_h": 30},
+    }
+
+    def analyze(self, context=None):
+        return self.run(context or {})
+
+    def run(self, context: dict) -> list:
+        findings = []
+        import time
+        now = time.time()
+        try:
+            for pod_id, cfg in self._PODS.items():
+                rpt_path = DATA_DIR / cfg["pipeline_report"]
+                if not rpt_path.exists():
+                    findings.append({
+                        "category": "BUG_FIX", "severity": "HIGH", "confidence": 90,
+                        "title":    f"Pod {pod_id.upper()}: pipeline report missing",
+                        "description": f"data/{cfg['pipeline_report']} does not exist. The {pod_id} pipeline "
+                                      "has never successfully run.",
+                        "proposed_fix": f"Run the {pod_id} pipeline manually to verify it works end-to-end.",
+                        "evidence": f"data/{cfg['pipeline_report']}: FILE_NOT_FOUND",
+                    })
+                else:
+                    age_h = (now - rpt_path.stat().st_mtime) / 3600
+                    if age_h > cfg["max_age_h"]:
+                        findings.append({
+                            "category": "IMPROVEMENT", "severity": "MEDIUM", "confidence": 80,
+                            "title":    f"Pod {pod_id.upper()}: pipeline report is {age_h:.0f}h old",
+                            "description": f"data/{cfg['pipeline_report']} last updated {age_h:.0f}h ago.",
+                            "proposed_fix": f"Check crontab for {pod_id}_pipeline.py. Verify no errors in logs.",
+                            "evidence": f"data/{cfg['pipeline_report']}: {age_h:.0f}h old",
+                        })
+        except Exception as e:
+            logger.debug(f"  [CITPodAuditor] error: {e}")
+        return findings
+
+
+# =============================================================================
+# CIT BACKLOG CURATOR — prunes the backlog, prevents infinite accumulation
+# =============================================================================
+
+class CITBacklogCurator:
+    """
+    Keeps the CIT backlog clean. Removes: resolved items, exact duplicates,
+    findings that have been in backlog >30 days without board attention,
+    and log-noise findings that were already fixed.
+    """
+    name = "CITBacklogCurator"
+
+    STALE_DAYS = 30
+    NOISE_PATTERNS = [
+        "ERROR lines in recent logs",
+        "ERROR lines in log",
+        "print() in production code",   # after initial sweep, these are known
+    ]
+
+    def analyze(self, context=None):
+        return self.run(context or {})
+
+    def run(self, context: dict) -> list:
+        findings = []
+        try:
+            import json as _json
+            from datetime import datetime as _dt, timedelta as _td
+
+            backlog_path = DATA_DIR / "cit_backlog.json"
+            if not backlog_path.exists():
+                return []
+
+            backlog = _json.load(open(backlog_path))
+            if not isinstance(backlog, list):
+                return []
+
+            before = len(backlog)
+            seen_titles: set = set()
+            cutoff = _dt.now() - _td(days=self.STALE_DAYS)
+            clean = []
+
+            for item in backlog:
+                title = item.get("title", "")
+                # Drop known noise
+                if any(p in title for p in self.NOISE_PATTERNS):
+                    continue
+                # Drop duplicates
+                key = title[:60]
+                if key in seen_titles:
+                    continue
+                # Drop very old items (>30 days, never actioned)
+                created = item.get("created_at", "")
+                if created:
+                    try:
+                        if _dt.fromisoformat(created[:19]) < cutoff:
+                            if item.get("status","pending") == "pending":
+                                continue  # stale and never actioned
+                    except Exception:
+                        pass
+                seen_titles.add(key)
+                clean.append(item)
+
+            after = len(clean)
+            if after < before:
+                with open(backlog_path, "w") as f:
+                    _json.dump(clean, f, indent=2)
+                findings.append({
+                    "category": "IMPROVEMENT", "severity": "LOW", "confidence": 95,
+                    "title":    f"Backlog curated: {before - after} stale/duplicate items pruned",
+                    "description": f"CIT backlog reduced from {before} to {after} items by removing "
+                                  "duplicates, noise patterns, and items >30 days old with no action.",
+                    "proposed_fix": "No action needed — cleanup applied automatically.",
+                    "evidence": f"data/cit_backlog.json: {before} → {after} items",
+                })
+        except Exception as e:
+            logger.debug(f"  [CITBacklogCurator] error: {e}")
+        return findings
+
+
+
+# =============================================================================
+# CIT PERFORMANCE ANALYST — P&L attribution by pod, agent, signal source
+# =============================================================================
+
+class CITPerformanceAnalyst:
+    """
+    Tracks which pods, agents, and signal sources are generating alpha vs drag.
+    Computes P&L attribution so the board can allocate capital intelligently.
+    """
+    name = "CITPerformanceAnalyst"
+
+    def analyze(self, context=None):
+        return self.run(context or {})
+
+    def run(self, context: dict) -> list:
+        findings = []
+        try:
+            import json as _json
+
+            # Check pod-level P&L
+            pods_path = DATA_DIR / "pod_allocations.json"
+            if pods_path.exists():
+                pods = _json.load(open(pods_path))
+                pod_dict = pods.get("pods", {})
+                idle_pods = []
+                negative_pods = []
+                for pod_id, pod in pod_dict.items():
+                    pnl = pod.get("pnl_lifetime", 0) or 0
+                    deployed = pod.get("positions_value", 0) or 0
+                    budget   = pod.get("budget_inception", 0) or 0
+                    if budget > 10000 and deployed == 0:
+                        idle_pods.append(pod.get("name", pod_id))
+                    if pnl < -0.05 and deployed > 0:
+                        negative_pods.append((pod.get("name", pod_id), pnl))
+
+                if len(idle_pods) >= 2:
+                    findings.append({
+                        "category":     "STRATEGY",
+                        "severity":     "HIGH",
+                        "confidence":   90,
+                        "title":        f"{len(idle_pods)} pods with capital but zero deployed",
+                        "description":  f"Pods with capital but no positions: {', '.join(idle_pods)}. "
+                                       "Undeployed capital cannot generate returns.",
+                        "proposed_fix": "Identify specific blocker per pod (CRO/pipeline/model) and "
+                                       "present targeted activation plan to board.",
+                        "evidence":     f"data/pod_allocations.json: idle pods = {idle_pods}",
+                    })
+
+            # Check sell log for P&L patterns
+            state_path = DATA_DIR / "state.json"
+            if state_path.exists():
+                state = _json.load(open(state_path))
+                sell_log = state.get("sell_log", [])
+                if len(sell_log) >= 5:
+                    wins   = [s for s in sell_log if (s.get("pnl_pct",0) or 0) > 0]
+                    losses = [s for s in sell_log if (s.get("pnl_pct",0) or 0) < 0]
+                    avg_win  = sum(s.get("pnl_pct",0) for s in wins)  / max(1,len(wins))
+                    avg_loss = sum(s.get("pnl_pct",0) for s in losses) / max(1,len(losses))
+                    win_rate = len(wins) / len(sell_log) * 100
+
+                    if win_rate < 40:
+                        findings.append({
+                            "category":     "STRATEGY",
+                            "severity":     "HIGH",
+                            "confidence":   85,
+                            "title":        f"Win rate {win_rate:.0f}% — majority of closed trades losing",
+                            "description":  f"Of {len(sell_log)} closed trades: {len(wins)} wins ({win_rate:.0f}%), "
+                                           f"{len(losses)} losses. Avg win: {avg_win:+.1f}%, avg loss: {avg_loss:+.1f}%.",
+                            "proposed_fix": "Review entry criteria and stop-loss thresholds. "
+                                           "Consider tighter conviction gates or wider stop-losses.",
+                            "evidence":     f"data/state.json: sell_log {len(sell_log)} trades",
+                        })
+
+                    # Signal source attribution
+                    sources = {}
+                    for s in sell_log:
+                        src = s.get("signal_source", "unknown")
+                        if src not in sources:
+                            sources[src] = {"wins": 0, "losses": 0, "total_pnl": 0}
+                        pnl = s.get("pnl_pct", 0) or 0
+                        sources[src]["total_pnl"] += pnl
+                        if pnl > 0:
+                            sources[src]["wins"] += 1
+                        else:
+                            sources[src]["losses"] += 1
+
+                    worst_source = min(sources.items(), key=lambda x: x[1]["total_pnl"], default=None)
+                    if worst_source and worst_source[1]["total_pnl"] < -5:
+                        src_name, src_data = worst_source
+                        findings.append({
+                            "category":  "STRATEGY",
+                            "severity":  "MEDIUM",
+                            "confidence": 80,
+                            "title":     f"Signal source '{src_name}' dragging P&L "
+                                        f"({src_data['total_pnl']:+.1f}% cumulative)",
+                            "description": f"Source '{src_name}': {src_data['wins']} wins, "
+                                          f"{src_data['losses']} losses, {src_data['total_pnl']:+.1f}% total P&L.",
+                            "proposed_fix": f"Review conviction threshold for '{src_name}' signals. "
+                                           "Consider higher minimum conviction score.",
+                            "evidence":  f"data/state.json: sell_log attribution by signal_source",
+                        })
+
+        except Exception as e:
+            logger.debug(f"  [CITPerformanceAnalyst] error: {e}")
+        return findings
+
+
+# =============================================================================
+# CIT EMAIL AUDITOR — email buffer quality, noise vs signal
+# =============================================================================
+
+class CITEmailAuditor:
+    """
+    Monitors email volume, buffer growth, and signal-to-noise ratio.
+    Flags when the system is generating more emails than a human can absorb.
+    """
+    name = "CITEmailAuditor"
+
+    MAX_BUFFER_SIZE     = 30   # more than this = noise problem
+    MAX_UNIQUE_SENDERS  = 15   # more than this per cycle = too many agents emailing
+
+    def analyze(self, context=None):
+        return self.run(context or {})
+
+    def run(self, context: dict) -> list:
+        findings = []
+        try:
+            import json as _json
+
+            eb_path = DATA_DIR / "email_buffer.json"
+            if not eb_path.exists():
+                return []
+
+            eb = _json.load(open(eb_path))
+            buffered = eb.get("buffered", []) if isinstance(eb, dict) else []
+
+            if len(buffered) > self.MAX_BUFFER_SIZE:
+                # Analyze by sender
+                senders = {}
+                for email in buffered:
+                    sender = email.get("sender_name", email.get("sender", "?"))
+                    senders[sender] = senders.get(sender, 0) + 1
+
+                top_senders = sorted(senders.items(), key=lambda x: -x[1])[:5]
+                sender_str = ", ".join(f"{s}({n})" for s, n in top_senders)
+
+                findings.append({
+                    "category":     "IMPROVEMENT",
+                    "severity":     "HIGH" if len(buffered) > 50 else "MEDIUM",
+                    "confidence":   90,
+                    "title":        f"Email buffer at {len(buffered)} — Chairman cannot absorb this volume",
+                    "description":  f"The email buffer has {len(buffered)} unsent emails. At this volume, "
+                                   f"important signals are buried in noise. Top senders: {sender_str}.",
+                    "proposed_fix": "1. Raise buffering threshold for low-priority senders. "
+                                   "2. Suppress duplicate-subject emails (keep latest only). "
+                                   "3. Batch same-sender emails into one. "
+                                   "Review email_buffer.py and sender priority settings.",
+                    "evidence":     f"data/email_buffer.json: {len(buffered)} buffered emails",
+                })
+
+            # Check for duplicate subjects
+            if buffered:
+                subjects = [e.get("subject","") for e in buffered]
+                dupes = {s: subjects.count(s) for s in set(subjects) if subjects.count(s) > 3}
+                if dupes:
+                    worst = max(dupes.items(), key=lambda x: x[1])
+                    findings.append({
+                        "category":  "BUG_FIX",
+                        "severity":  "MEDIUM",
+                        "confidence": 85,
+                        "title":     f"Email subject repeated {worst[1]}x: '{worst[0][:40]}'",
+                        "description": f"{len(dupes)} subject(s) appear 3+ times in buffer. "
+                                      "Deduplication should prevent this.",
+                        "proposed_fix": "Add subject-based dedup in email_buffer.py: "
+                                       "if subject already in buffer from same sender today, skip.",
+                        "evidence":  f"data/email_buffer.json: duplicate subjects = {list(dupes.keys())[:3]}",
+                    })
+
+        except Exception as e:
+            logger.debug(f"  [CITEmailAuditor] error: {e}")
+        return findings
+
+
+# =============================================================================
+# CIT AGENT QUALITY AUDITOR — grades research agents on pick performance
+# =============================================================================
+
+class CITAgentQualityAuditor:
+    """
+    Grades each research agent on the actual performance of their picks.
+    Zero-streak tracking catches lazy agents; this catches wrong agents.
+    """
+    name = "CITAgentQualityAuditor"
+
+    def analyze(self, context=None):
+        return self.run(context or {})
+
+    def run(self, context: dict) -> list:
+        findings = []
+        try:
+            import json as _json
+
+            # Check performance ledger for agent-level data
+            pl_path = DATA_DIR / "performance_ledger.json"
+            if not pl_path.exists():
+                return []
+
+            pl = _json.load(open(pl_path))
+            if not isinstance(pl, dict):
+                return []
+
+            low_performers = []
+            no_data_agents = []
+
+            for agent_name, data in pl.items():
+                if not isinstance(data, dict):
+                    continue
+                status   = data.get("status", "active")
+                if status not in ("active", "reassigned"):
+                    continue
+
+                # Get performance metrics
+                win_rate = data.get("win_rate")
+                total_picks = data.get("total_picks", 0) or 0
+                avg_return  = data.get("avg_return_pct", 0) or 0
+
+                if total_picks >= 5 and win_rate is not None:
+                    if win_rate < 0.35 and avg_return < -2:
+                        low_performers.append((agent_name, win_rate, avg_return, total_picks))
+                elif total_picks == 0:
+                    no_data_agents.append(agent_name)
+
+            if low_performers:
+                lp_str = "; ".join(f"{n}(wr={w:.0%},avg={r:+.1f}%)" for n, w, r, _ in low_performers[:3])
+                findings.append({
+                    "category":  "STRATEGY",
+                    "severity":  "MEDIUM",
+                    "confidence": 80,
+                    "title":     f"{len(low_performers)} agent(s) with poor pick quality",
+                    "description": f"Agents with <35% win rate AND negative avg return: {lp_str}",
+                    "proposed_fix": "Review these agents' sector assignments and watchlists. "
+                                   "Consider reassigning to sectors with better recent momentum, "
+                                   "or retiring if >10 picks with poor performance.",
+                    "evidence":  f"data/performance_ledger.json: low performers = {[n for n,*_ in low_performers[:3]]}",
+                })
+
+            if len(no_data_agents) > 10:
+                findings.append({
+                    "category":  "IMPROVEMENT",
+                    "severity":  "LOW",
+                    "confidence": 75,
+                    "title":     f"{len(no_data_agents)} agents have no performance data",
+                    "description": f"These agents have never had a pick approved through to execution. "
+                                  "Without outcome data, quality cannot be assessed.",
+                    "proposed_fix": "Ensure manager_decisions.json is tracking which agent "
+                                   "originated each approved trade. Check signal_source field.",
+                    "evidence":  f"data/performance_ledger.json: {len(no_data_agents)} agents, 0 picks",
+                })
+
+        except Exception as e:
+            logger.debug(f"  [CITAgentQualityAuditor] error: {e}")
+        return findings
+
 class CITWatchdog:
     """
     Scans for problems that were observed but never resolved.
@@ -3360,6 +3864,12 @@ class CITDirector:
             CITInfraAuditor(),
             CITIntegrationAuditor(),
             CITWatchdog(),
+            CITMLAuditor(),
+            CITPodAuditor(),
+            CITBacklogCurator(),
+            CITPerformanceAnalyst(),
+            CITEmailAuditor(),
+            CITAgentQualityAuditor(),
         ]
 
     def _load_existing_ids(self) -> set:

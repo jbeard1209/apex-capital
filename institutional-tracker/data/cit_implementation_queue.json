@@ -21,9 +21,8 @@
     "proposed_fix": "Create test_pipeline_smoke.py with at minimum: (1) mock evaluate_recommendation with known inputs and assert outputs, (2) mock enforce_risk_rules with a known position set, (3) verify state.json round-trips correctly.",
     "evidence": "Searched /Users/jackbeard/Claude investment strategy/institutional-tracker for test_*.py and *_test.py \u2014 none found.",
     "queued_at": "2026-06-10T03:50:41.991506",
-    "status": "skipped",
-    "routed_by": "overnight_sprint:cleanup",
-    "skip_reason": "File not found: _test.py"
+    "status": "queued",
+    "routed_by": "overnight_sprint:cleanup"
   },
   {
     "proposal_id": "CIT-2026-217",
