@@ -35,45 +35,79 @@ def _load(path: Path, default=None):
     return default if default is not None else {}
 
 
-def _duration_officer_vote(pick: dict, regime: str) -> tuple[str, str]:
-    duration = pick.get("credit_quality", {}).get("credit_tier", "IG")
-    score    = pick.get("opportunity_score", 50)
-    slope    = pick.get("credit_quality", {}).get("yield_curve_slope", 0) or 0
+_FI_BOARD_SYSTEM = """You are a member of the Apex Capital Fixed Income Board.
+The FI pod holds bond ETFs and fixed-income instruments with a $30k budget.
+Current spread regimes: TIGHT (<300bps), NORMAL (300-450), WIDE (450-700), DISTRESSED (>700).
 
+Vote on a bond pick: APPROVE | REJECT | WATCH
+Reply in exactly this JSON format (no other text):
+{"vote": "APPROVE" | "REJECT" | "WATCH", "reason": "one concise sentence"}"""
+
+
+def _fi_llm_vote(role: str, context: str, pick: dict, regime: str) -> tuple[str, str]:
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("fi_board"): return None, None
+        pick_text = (f"Ticker: {pick.get('ticker','?')}\nScore: {pick.get('opportunity_score',0)}\n"
+                     f"Credit tier: {pick.get('credit_tier','?')}\nVerdict: {pick.get('verdict','?')}\n"
+                     f"Regime: {regime}\nYield curve slope: {pick.get('credit_quality',{}).get('yield_curve_slope','?')}")
+        import json as _j
+        raw = _r(_FI_BOARD_SYSTEM, f"You are the {role}.\n{context}\n\nPick:\n{pick_text}",
+                 agent_name="fi_board", max_tokens=150)
+        if not raw: return None, None
+        p = _j.loads(raw.strip())
+        v, r = p.get("vote","").upper(), p.get("reason","")
+        return (v, r) if v in ("APPROVE","REJECT","WATCH") and r else (None, None)
+    except Exception: return None, None
+
+
+def _duration_officer_vote(pick: dict, regime: str) -> tuple[str, str]:
+    v, r = _fi_llm_vote("Duration Risk Officer",
+        "Focus on yield curve shape and duration risk. Inverted curves hurt long duration. "
+        "Reward short-duration picks in uncertain regimes.", pick, regime)
+    if v: return v, r
+    score = pick.get("opportunity_score", 50)
+    slope = pick.get("credit_quality", {}).get("yield_curve_slope", 0) or 0
     if regime in ("WIDE", "DISTRESSED") and score >= 68:
         return "APPROVE", f"Spread regime {regime} supports risk-on; score {score}"
     if slope < -0.3 and "long" in str(pick.get("credit_quality", {}).get("duration", "")):
         return "REJECT", f"Inverted curve (slope={slope:.2f}); long duration risky"
     if score >= 65:
         return "APPROVE", f"Score {score} clears duration threshold"
-    return "WATCH", f"Score {score} marginal — hold for better entry"
+    return "WATCH", f"Score {score} marginal"
 
 
 def _credit_analyst_vote(pick: dict, regime: str) -> tuple[str, str]:
+    v, r = _fi_llm_vote("Credit Analyst",
+        "Focus on credit quality, spread regime, and default risk. "
+        "HY in TIGHT spreads is poor risk/reward. EM local adds FX risk in stress.", pick, regime)
+    if v: return v, r
     tier  = pick.get("credit_tier", pick.get("credit_quality", {}).get("credit_tier", "IG"))
     score = pick.get("opportunity_score", 50)
     conv  = pick.get("conviction", 3)
-
-    if tier in ("HY",) and regime == "TIGHT":
-        return "REJECT", "HY spreads TIGHT — poor risk/reward in HY"
+    if tier == "HY" and regime == "TIGHT":
+        return "REJECT", "HY spreads TIGHT — poor risk/reward"
     if tier == "EM_LOCAL" and regime in ("WIDE", "DISTRESSED"):
-        return "WATCH", "EM local currency adds FX risk in stress regime"
+        return "WATCH", "EM local adds FX risk in stress"
     if score >= 70 and conv >= 3:
-        return "APPROVE", f"Credit quality score {score}, conviction {conv}"
+        return "APPROVE", f"Score {score}, conviction {conv}"
     if score >= 58:
-        return "APPROVE", f"Acceptable score {score} for regime {regime}"
-    return "REJECT", f"Score {score} below credit threshold"
+        return "APPROVE", f"Acceptable score {score}"
+    return "REJECT", f"Score {score} below threshold"
 
 
 def _portfolio_manager_vote(pick: dict, existing_tiers: dict) -> tuple[str, str]:
-    tier = pick.get("credit_tier", pick.get("credit_quality", {}).get("credit_tier", "IG"))
+    tier  = pick.get("credit_tier", pick.get("credit_quality", {}).get("credit_tier", "IG"))
     score = pick.get("opportunity_score", 50)
-
+    v, r  = _fi_llm_vote("Portfolio Manager",
+        "Focus on portfolio construction: tier diversification, concentration limits. "
+        f"Already in these tiers: {existing_tiers}. Max {MAX_PER_TIER} per tier.", pick, "")
+    if v: return v, r
     if existing_tiers.get(tier, 0) >= MAX_PER_TIER:
-        return "REJECT", f"Already at max {MAX_PER_TIER} positions in {tier} tier"
+        return "REJECT", f"Max {MAX_PER_TIER} positions in {tier} tier reached"
     if score >= 65:
         return "APPROVE", f"Portfolio fit good; diversifies into {tier}"
-    return "WATCH", f"Score {score} — add to watchlist for next cycle"
+    return "WATCH", f"Score {score} — watchlist"
 
 
 def run_fi_board() -> dict:

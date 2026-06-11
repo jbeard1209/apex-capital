@@ -74,47 +74,112 @@ def _save(path: Path, data):
 # BOARD MEMBER VOTE LOGIC
 # =============================================================================
 
+_BOARD_SYSTEM = """You are a member of the Apex Capital R&D / Institutional Pod Board.
+Apex Capital is an AI-driven paper trading firm with $100k AUM split across 5 pods.
+Pod 1 (R&D/Institutional, $30k) uses 13F institutional signals to find high-conviction buys.
+
+You will receive a proposal from the CIT (Continuous Improvement Team) and must vote:
+  APPROVE  — implement this proposal
+  HOLD     — defer, needs more evidence or lower priority
+  ESCALATE — beyond pod authority, send to main board
+
+Reply in exactly this JSON format (no other text):
+{
+  "vote": "APPROVE" | "HOLD" | "ESCALATE",
+  "reason": "one concise sentence explaining your vote"
+}"""
+
+
+def _llm_vote(member_role: str, member_context: str, proposal: dict) -> tuple[str, str]:
+    """Try an LLM vote; fall back to rule-based if unavailable."""
+    try:
+        from apex_llm import reason as _llm_reason, is_available
+        if not is_available("rd_pod_board"):
+            return None, None
+        prop_text = (
+            f"Title: {proposal.get('title','')}\n"
+            f"Severity: {proposal.get('severity','LOW')}\n"
+            f"Category: {proposal.get('category','')}\n"
+            f"Description: {proposal.get('description','')[:400]}\n"
+            f"Proposed fix: {proposal.get('proposed_fix','')[:300]}\n"
+            f"Confidence: {proposal.get('confidence',70)}%"
+        )
+        user_msg = f"You are the {member_role}.\n{member_context}\n\nProposal to vote on:\n{prop_text}"
+        import json as _json
+        raw = _llm_reason(_BOARD_SYSTEM, user_msg, agent_name="rd_pod_board", max_tokens=200)
+        if not raw:
+            return None, None
+        parsed = _json.loads(raw.strip())
+        vote   = parsed.get("vote", "").upper()
+        reason = parsed.get("reason", "")
+        if vote in ("APPROVE", "HOLD", "ESCALATE") and reason:
+            return vote, reason
+    except Exception as _e:
+        logger.debug("[RD Board] LLM vote failed: %s", _e)
+    return None, None
+
+
 def _investment_director_vote(proposal: dict) -> tuple[str, str]:
     """R&D Investment Director: focused on research quality and deployment."""
-    sev     = proposal.get("severity", "LOW")
-    cat     = proposal.get("category", "")
-    title   = proposal.get("title", "").lower()
-    fix     = proposal.get("proposed_fix", "").lower()
-
+    v, r = _llm_vote(
+        "R&D Investment Director",
+        "You focus on research output quality, pick conviction, sector coverage, and agent health. "
+        "You care most about whether this proposal will lead to better or more picks.",
+        proposal,
+    )
+    if v:
+        return v, r
+    # Rule-based fallback
+    sev   = proposal.get("severity", "LOW")
+    title = proposal.get("title", "").lower()
     if sev in ("CRITICAL", "HIGH"):
-        return "APPROVE", f"HIGH/CRITICAL severity warrants action: {sev}"
+        return "APPROVE", f"HIGH/CRITICAL severity warrants action"
     if any(x in title for x in ["pick", "research", "agent", "watchlist", "conviction", "sector"]):
         return "APPROVE", "Directly improves research output"
     if "pipeline" in title or "dark" in title:
         return "APPROVE", "Pipeline health = pod health"
     if sev == "MEDIUM":
-        return "APPROVE", "MEDIUM severity acceptable risk for improvement"
-    return "HOLD", f"LOW severity — queue for next cycle"
+        return "APPROVE", "MEDIUM severity — acceptable improvement"
+    return "HOLD", "LOW severity — queue for next cycle"
 
 
 def _risk_officer_vote(proposal: dict) -> tuple[str, str]:
     """Portfolio Risk Officer: checks if proposed change could hurt portfolio."""
-    fix    = proposal.get("proposed_fix", "").lower()
-    title  = proposal.get("title", "").lower()
-    sev    = proposal.get("severity", "LOW")
-
-    # Flag proposals that could disrupt live positions
+    v, r = _llm_vote(
+        "Portfolio Risk Officer",
+        "You focus on whether this proposal could disrupt live positions, affect capital allocation, "
+        "or introduce execution risk. Escalate anything touching live positions or budget.",
+        proposal,
+    )
+    if v:
+        return v, r
+    # Rule-based fallback
+    fix   = proposal.get("proposed_fix", "").lower()
+    title = proposal.get("title", "").lower()
+    sev   = proposal.get("severity", "LOW")
     if any(x in fix+title for x in ["close all", "emergency exit", "liquidate", "halt all"]):
         return "ESCALATE", "Proposal affects live positions — must go to main board"
     if any(x in fix+title for x in ["budget", "capital", "allocation", "$"]):
         return "ESCALATE", "Budget/capital changes require main board approval"
     if sev == "CRITICAL":
         return "APPROVE", "CRITICAL: risk of inaction exceeds risk of action"
-    return "APPROVE", "Operational improvement, no risk to portfolio"
+    return "APPROVE", "Operational improvement, no portfolio risk"
 
 
 def _quality_officer_vote(proposal: dict) -> tuple[str, str]:
     """Research Quality Officer: agent health, coverage gaps, data quality."""
-    title  = proposal.get("title", "").lower()
-    cat    = proposal.get("category", "")
-    sev    = proposal.get("severity", "LOW")
-    conf   = proposal.get("confidence", 70)
-
+    v, r = _llm_vote(
+        "Research Quality Officer",
+        "You focus on agent output quality, data integrity, coverage gaps, and whether proposals "
+        "have enough evidence to act on. Hold low-confidence proposals.",
+        proposal,
+    )
+    if v:
+        return v, r
+    # Rule-based fallback
+    title = proposal.get("title", "").lower()
+    sev   = proposal.get("severity", "LOW")
+    conf  = proposal.get("confidence", 70)
     if conf < 50:
         return "HOLD", f"Low confidence ({conf}%) — needs more evidence"
     if any(x in title for x in ["agent", "hr", "pip", "retire", "amnesty", "streak"]):
@@ -122,7 +187,7 @@ def _quality_officer_vote(proposal: dict) -> tuple[str, str]:
     if any(x in title for x in ["data", "source", "missing", "stale", "gap"]):
         return "APPROVE", "Data quality improvement is always worthwhile"
     if sev in ("HIGH", "CRITICAL"):
-        return "APPROVE", f"Quality concern at {sev} severity"
+        return "APPROVE", f"Quality concern at {sev}"
     return "APPROVE", "Supports research quality"
 
 
@@ -134,7 +199,6 @@ def _board_vote(proposal: dict) -> dict:
 
     votes = [v1, v2, v3]
 
-    # Escalation: if any member says ESCALATE, it goes to main board
     if "ESCALATE" in votes:
         decision = "ESCALATE"
     elif votes.count("APPROVE") >= 2:
@@ -142,7 +206,7 @@ def _board_vote(proposal: dict) -> dict:
     elif votes.count("HOLD") >= 2:
         decision = "DEFERRED"
     else:
-        decision = "APPROVED"  # majority rules
+        decision = "APPROVED"
 
     return {
         "decision":    decision,

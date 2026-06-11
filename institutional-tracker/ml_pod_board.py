@@ -48,6 +48,32 @@ def _save(path, data):
     with open(path, "w") as f: json.dump(data, f, indent=2, default=str)
 
 
+_ML_BOARD_SYSTEM = """You are a member of the Apex Capital ML / Quantitative Pod Board.
+Pod 2 owns a $30k quantitative trading pod using LightGBM/XGBoost models trained on 13F data.
+Current model status: training on 1.8M historical holdings; AUC target >0.60.
+
+Vote on CIT proposals: APPROVE | HOLD | ESCALATE
+Reply in exactly this JSON format (no other text):
+{"vote": "APPROVE" | "HOLD" | "ESCALATE", "reason": "one concise sentence"}"""
+
+
+def _llm_vote_ml(role: str, context: str, proposal: dict) -> tuple[str, str]:
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("ml_pod_board"): return None, None
+        prop_text = (f"Title: {proposal.get('title','')}\nSeverity: {proposal.get('severity','LOW')}\n"
+                     f"Description: {proposal.get('description','')[:400]}\n"
+                     f"Fix: {proposal.get('proposed_fix','')[:300]}\nConfidence: {proposal.get('confidence',70)}%")
+        import json as _j
+        raw = _r(_ML_BOARD_SYSTEM, f"You are the {role}.\n{context}\n\nProposal:\n{prop_text}",
+                 agent_name="ml_pod_board", max_tokens=200)
+        if not raw: return None, None
+        p = _j.loads(raw.strip())
+        v, r = p.get("vote","").upper(), p.get("reason","")
+        return (v, r) if v in ("APPROVE","HOLD","ESCALATE") and r else (None, None)
+    except Exception: return None, None
+
+
 def _board_vote(proposal: dict) -> dict:
     sev   = proposal.get("severity", "LOW")
     title = proposal.get("title", "").lower()
@@ -55,20 +81,32 @@ def _board_vote(proposal: dict) -> dict:
     conf  = proposal.get("confidence", 70)
 
     # Research Director
-    v1 = "APPROVE" if sev in ("CRITICAL","HIGH") or any(x in title for x in ["auc","model","train","feature","drift"]) else "HOLD"
-    r1 = f"Model quality concern at {sev}" if v1 == "APPROVE" else "LOW priority for model team"
+    v1, r1 = _llm_vote_ml("ML Research Director",
+        "Focus on model quality: AUC, feature engineering, overfitting, data leakage. "
+        "Approve anything that improves model accuracy or training pipeline.", proposal)
+    if not v1:
+        v1 = "APPROVE" if sev in ("CRITICAL","HIGH") or any(x in title for x in ["auc","model","train","feature","drift"]) else "HOLD"
+        r1 = f"Model quality concern at {sev}" if v1 == "APPROVE" else "LOW priority for model team"
 
     # Quant Risk Officer
-    if any(x in fix+title for x in ["live picks","deploy","capital","budget"]):
-        v2, r2 = "ESCALATE", "Capital deployment decisions require main board"
-    elif sev in ("CRITICAL","HIGH"):
-        v2, r2 = "APPROVE", f"Risk concern at {sev} severity"
-    else:
-        v2, r2 = "APPROVE", "No risk to portfolio from this change"
+    v2, r2 = _llm_vote_ml("Quant Risk Officer",
+        "Focus on live pick risk, deployment safety, and capital. "
+        "Escalate anything touching capital allocation or live positions.", proposal)
+    if not v2:
+        if any(x in fix+title for x in ["live picks","deploy","capital","budget"]):
+            v2, r2 = "ESCALATE", "Capital deployment decisions require main board"
+        elif sev in ("CRITICAL","HIGH"):
+            v2, r2 = "APPROVE", f"Risk concern at {sev} severity"
+        else:
+            v2, r2 = "APPROVE", "No portfolio risk"
 
     # Data Quality Officer
-    v3 = "APPROVE" if conf >= 60 or any(x in title for x in ["data","pipeline","validation","picks"]) else "HOLD"
-    r3 = f"Confidence {conf}% acceptable" if v3 == "APPROVE" else f"Low confidence {conf}% — needs more evidence"
+    v3, r3 = _llm_vote_ml("Data Quality Officer",
+        "Focus on data pipeline integrity, feature drift, lookahead bias. "
+        "Hold proposals with low confidence or vague evidence.", proposal)
+    if not v3:
+        v3 = "APPROVE" if conf >= 60 or any(x in title for x in ["data","pipeline","validation","picks"]) else "HOLD"
+        r3 = f"Confidence {conf}% acceptable" if v3 == "APPROVE" else f"Low confidence {conf}%"
 
     votes    = [v1, v2, v3]
     decision = "ESCALATE" if "ESCALATE" in votes else ("APPROVED" if votes.count("APPROVE") >= 2 else "DEFERRED")

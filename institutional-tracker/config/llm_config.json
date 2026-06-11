@@ -1,0 +1,16 @@
+{
+  "_comment": "To switch models after June 22, change 'model' to 'claude-opus-4-8' or 'claude-sonnet-4-6'. Nothing else needs to change.",
+  "model": "claude-fable-5",
+  "fallback_model": "claude-sonnet-4-6",
+  "api_key_env": "ANTHROPIC_API_KEY",
+  "max_tokens": 1024,
+  "timeout_seconds": 30,
+  "enabled_agents": [
+    "rd_pod_board",
+    "ml_pod_board",
+    "fi_board",
+    "fe_board",
+    "etf_pod_board",
+    "logic_team"
+  ]
+}
