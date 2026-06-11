@@ -1115,7 +1115,29 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 if pick["ticker"] not in seen_tickers:
                     all_recs.append(pick)
                     seen_tickers.add(pick["ticker"])
+            try:
+                from pre_trade_challenge import challenge as _da_challenge, log_challenge_result as _da_log
+                _da_available = True
+            except ImportError:
+                _da_available = False
+
             for rec in all_recs:
+                # Devil's advocate for high-conviction buys
+                if _da_available and rec.get("action") == "BUY_NEW" and rec.get("conviction", 0) >= 4:
+                    _da_result = _da_challenge(rec["ticker"], rec.get("conviction", 0))
+                    _da_log(_da_result)
+                    if _da_result.blocked:
+                        logger.warning(
+                            "  [Devil's Advocate] VETOED %s — %s",
+                            rec["ticker"], _da_result.block_reason
+                        )
+                        continue
+                    if _da_result.warnings:
+                        logger.info(
+                            "  [Devil's Advocate] %s warnings: %s",
+                            rec["ticker"], "; ".join(_da_result.warnings)
+                        )
+
                 decision = evaluate_recommendation(
                     rec, acct_snap,
                     pdo_signal=pdo_signal,
