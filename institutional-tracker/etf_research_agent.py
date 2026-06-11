@@ -392,13 +392,21 @@ def _build_regime_summary(bridge: dict, hist: dict, spy_1d_return: Optional[floa
     warning_count = regime.get("rd_warning_count", 0)
     overbought = regime.get("rd_spy_overbought", 0)
 
+    # Read firm CRO level to supplement market signals
+    _cro_level = "NORMAL"
+    try:
+        _state = json.load(open(DATA / "state.json"))
+        _cro_level = _state.get("cro_level", "NORMAL")
+    except Exception:
+        pass
+
     # Classify overall regime
-    if bull == 0 and (vix > 25 or spy_rsi > 70):
+    if _cro_level in ("CRITICAL", "HIGH") or (bull == 0 and (vix > 25 or spy_rsi > 70)):
         regime_label = "bear"
         defensive_rotation_advised = True
-    elif overbought or warning_count >= 3:
+    elif overbought or warning_count >= 3 or _cro_level == "ELEVATED":
         regime_label = "bull_extended"  # bull but late/overbought
-        defensive_rotation_advised = False  # still bull, but cautious
+        defensive_rotation_advised = True   # ELEVATED CRO = advise defensive tilt
     elif bull:
         regime_label = "bull"
         defensive_rotation_advised = False
