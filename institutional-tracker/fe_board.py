@@ -26,7 +26,10 @@ def _load(p, default=None):
 
 def run_board() -> dict:
     queue = _load(PICKS_QUEUE, {})
-    picks = queue.get("picks", [])
+    if isinstance(queue, list):
+        picks = queue
+    else:
+        picks = queue.get("picks", [])
     if not picks:
         return {"approved_count": 0, "rejected_count": 0, "approved": []}
 
