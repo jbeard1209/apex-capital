@@ -1,0 +1,571 @@
+[
+  {
+    "ticker": "RLI",
+    "side": "long",
+    "qty": null,
+    "avg_entry": null,
+    "current_price": 53.94,
+    "unrealized_pnl_pct": 0.0,
+    "hold_days": 0,
+    "weight_pct": 0.0,
+    "momentum": {
+      "trend": "neutral",
+      "rsi_14": NaN,
+      "pct_from_50ma": NaN,
+      "pct_from_200ma": NaN,
+      "above_50ma": false,
+      "above_200ma": false
+    },
+    "action": "BUY_NEW",
+    "priority": 4,
+    "conviction": 3,
+    "investment_horizon": "long",
+    "source_agent": "Agent fe_smallmidcapvalue_chairman",
+    "specialty": "FE-SmallMidCapValue",
+    "reasons": [
+      "[FE-SmallMidCapValue] RLI Corp.: At trend inflection \u2014 momentum building | RSI nan | Fwd P/E 19.4x | Rev growth +4% YoY | Conviction: \u2605\u2605\u2605"
+    ],
+    "fundamentals": {
+      "forward_pe": 19.42286,
+      "revenue_growth_pct": 4.0,
+      "market_cap": 4959153152
+    },
+    "source_agent_class": "FESmallMidCapValueAgent",
+    "dcf_iv": 110.0,
+    "epv_iv": null,
+    "conservative_iv": 110.0,
+    "margin_of_safety": 0.525,
+    "iv_verdict": "BUY",
+    "fcf_yield": 0.1268,
+    "roic": null,
+    "net_debt_ebitda": null,
+    "source": "quick_screen",
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "AMCX",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.6529,
+    "conservative_iv": 28.58,
+    "dcf_iv": 92.49,
+    "epv_iv": 28.58,
+    "current_price": 9.92,
+    "fcf_yield": 0.6181,
+    "roic": 0.1252,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=65.3% | IV=$28.58 | Price=$9.92 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": 10.9,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "ASGN",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.6454,
+    "conservative_iv": 57.31,
+    "dcf_iv": null,
+    "epv_iv": 57.31,
+    "current_price": 20.32,
+    "fcf_yield": 0.3907,
+    "roic": 0.1312,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=64.5% | IV=$57.31 | Price=$20.32 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": 3.9,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "BBWI",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.6201,
+    "conservative_iv": 48.17,
+    "dcf_iv": 67.79,
+    "epv_iv": 48.17,
+    "current_price": 18.3,
+    "fcf_yield": 0.2352,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=62.0% | IV=$48.17 | Price=$18.3 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": 3.18,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "BSVN",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.3724,
+    "conservative_iv": 72.66,
+    "dcf_iv": 72.66,
+    "epv_iv": null,
+    "current_price": 45.6,
+    "fcf_yield": 0.0959,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=37.2% | IV=$72.66 | Price=$45.6 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 58,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "CATY",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.2527,
+    "conservative_iv": 79.06,
+    "dcf_iv": 79.06,
+    "epv_iv": null,
+    "current_price": 59.08,
+    "fcf_yield": 0.0916,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=25.3% | IV=$79.06 | Price=$59.08 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 48,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "CHMG",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.3407,
+    "conservative_iv": 108.41,
+    "dcf_iv": 108.41,
+    "epv_iv": null,
+    "current_price": 71.47,
+    "fcf_yield": 0.1276,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=34.1% | IV=$108.41 | Price=$71.47 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 58,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "COTY",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.4999,
+    "conservative_iv": 4.02,
+    "dcf_iv": 8.4,
+    "epv_iv": 4.02,
+    "current_price": 2.01,
+    "fcf_yield": 0.2318,
+    "roic": 0.0886,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=50.0% | IV=$4.02 | Price=$2.01 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": 5.88,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "ENR",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.486,
+    "conservative_iv": 38.29,
+    "dcf_iv": 38.29,
+    "epv_iv": null,
+    "current_price": 19.68,
+    "fcf_yield": 0.0516,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=48.6% | IV=$38.29 | Price=$19.68 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "HOPE",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.5408,
+    "conservative_iv": 27.83,
+    "dcf_iv": 27.83,
+    "epv_iv": null,
+    "current_price": 12.78,
+    "fcf_yield": 0.0924,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=54.1% | IV=$27.83 | Price=$12.78 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "KELYA",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.7345,
+    "conservative_iv": 44.1,
+    "dcf_iv": 44.1,
+    "epv_iv": null,
+    "current_price": 11.71,
+    "fcf_yield": 0.2976,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=73.5% | IV=$44.1 | Price=$11.71 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "LKQ",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.2907,
+    "conservative_iv": 35.75,
+    "dcf_iv": 74.79,
+    "epv_iv": 35.75,
+    "current_price": 25.36,
+    "fcf_yield": 0.1617,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=29.1% | IV=$35.75 | Price=$25.36 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 48,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "NWFL",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.3353,
+    "conservative_iv": 47.1,
+    "dcf_iv": 47.1,
+    "epv_iv": null,
+    "current_price": 31.31,
+    "fcf_yield": 0.1012,
+    "roic": null,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=33.5% | IV=$47.1 | Price=$31.31 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 58,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "PRGO",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.553,
+    "conservative_iv": 25.01,
+    "dcf_iv": 25.01,
+    "epv_iv": null,
+    "current_price": 11.18,
+    "fcf_yield": 0.0943,
+    "roic": -0.0769,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=55.3% | IV=$25.01 | Price=$11.18 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "USNA",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.2796,
+    "conservative_iv": 26.39,
+    "dcf_iv": 26.39,
+    "epv_iv": 28.35,
+    "current_price": 19.01,
+    "fcf_yield": 0.0245,
+    "roic": 0.0884,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=28.0% | IV=$26.39 | Price=$19.01 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 48,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "WBD",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.3158,
+    "conservative_iv": 38.82,
+    "dcf_iv": 38.82,
+    "epv_iv": null,
+    "current_price": 26.56,
+    "fcf_yield": 0.0469,
+    "roic": -0.0768,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=31.6% | IV=$38.82 | Price=$26.56 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 58,
+    "conviction_position": 500,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  },
+  {
+    "ticker": "XRAY",
+    "source": "iv_opportunity_scan",
+    "conviction": 3,
+    "verdict": "BUY",
+    "iv_verdict": "BUY",
+    "margin_of_safety": 0.4478,
+    "conservative_iv": 18.96,
+    "dcf_iv": 18.96,
+    "epv_iv": null,
+    "current_price": 10.47,
+    "fcf_yield": 0.0412,
+    "roic": -0.2724,
+    "data_source": "EDGAR_XBRL",
+    "notes": "IV-scan direct pick: MoS=44.8% | IV=$18.96 | Price=$10.47 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+    "net_debt_ebitda": null,
+    "conviction_score": 68,
+    "conviction_position": 750,
+    "fraud_result": {
+      "risk_level": "LOW",
+      "recommendation": "CLEAR"
+    },
+    "mgmt_result": {
+      "category": "FAIR",
+      "score": 50
+    },
+    "moat_result": {
+      "moat_width": "NONE",
+      "score": 0
+    },
+    "blocked_by_fraud": false
+  }
+]

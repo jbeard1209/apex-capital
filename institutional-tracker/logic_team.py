@@ -795,6 +795,100 @@ class RiskCoherenceLogicAgent:
 
         return findings
 
+
+# =============================================================================
+# SUB-AGENT 11 — POD HEALTH LOGIC
+# Are the pods (FI, FE, RD, ML, Macro) functioning correctly?
+# Weekly deep check + daily staleness check.
+# =============================================================================
+
+class PodHealthLogicAgent:
+    name = "PodHealthLogicAgent"
+
+    def run(self, state: dict) -> list:
+        findings = []
+        import os
+        from datetime import timedelta
+
+        pods_map = {
+            "fi": {
+                "name": "Fixed Income",
+                "pipeline_report": DATA_DIR / "fi_pipeline_report.json",
+                "picks_queue":     DATA_DIR / "fi_picks_queue.json",
+                "approved":        DATA_DIR / "fi_approved_picks.json",
+                "max_stale_h":     30,
+            },
+            "fe": {
+                "name": "First Eagle",
+                "pipeline_report": DATA_DIR / "fe_pipeline_log.json",
+                "picks_queue":     DATA_DIR / "fe_picks_queue.json",
+                "approved":        DATA_DIR / "fe_approved_picks.json",
+                "max_stale_h":     30,
+            },
+        }
+
+        for pod_id, pod_meta in pods_map.items():
+            pname = pod_meta["name"]
+
+            # Check if pipeline has run recently
+            report_path = pod_meta["pipeline_report"]
+            if not report_path.exists():
+                findings.append(_finding(
+                    rule=f"{pod_id}_never_run",
+                    severity="HIGH",
+                    title=f"{pname} pipeline has never run",
+                    observation=f"No pipeline report found at {report_path.name}. "
+                                f"The {pname} pod has capital but its pipeline has "
+                                f"never produced a report.",
+                    why=f"A pod that never runs never deploys capital. This is infrastructure failure.",
+                    suggestion=f"Verify {pod_id}_pipeline.py is in crontab and can run without errors.",
+                    agent=self.name,
+                ))
+                continue
+
+            age_h = (datetime.now().timestamp() - report_path.stat().st_mtime) / 3600
+            if age_h > pod_meta["max_stale_h"]:
+                findings.append(_finding(
+                    rule=f"{pod_id}_pipeline_stale",
+                    severity="MEDIUM",
+                    title=f"{pname} pipeline report is {age_h:.0f}h old",
+                    observation=f"{report_path.name} last updated {age_h:.0f}h ago. "
+                                f"The {pname} pipeline should run daily.",
+                    why="Stale pipeline = stale picks = no capital deployment opportunity.",
+                    suggestion=f"Check crontab for {pod_id}_pipeline.py. Check logs for errors.",
+                    agent=self.name,
+                ))
+
+            # Check if approved picks exist and are recent
+            approved_path = pod_meta["approved"]
+            if approved_path.exists():
+                try:
+                    approved_data = json.load(open(approved_path))
+                    approved = approved_data.get("approved", [])
+                    if len(approved) == 0:
+                        queue_path = pod_meta["picks_queue"]
+                        queue_size = 0
+                        if queue_path.exists():
+                            q = json.load(open(queue_path))
+                            queue_size = len(q.get("picks", []))
+                        if queue_size == 0:
+                            findings.append(_finding(
+                                rule=f"{pod_id}_zero_picks",
+                                severity="MEDIUM",
+                                title=f"{pname}: 0 picks in queue and 0 approved",
+                                observation=f"Both {queue_path.name} and approved picks are empty. "
+                                            f"Agents are not finding qualifying opportunities.",
+                                why="Zero picks means zero trades. If this persists >3 days, "
+                                    "review conviction thresholds and watchlist quality.",
+                                suggestion=f"Check {pod_id}_pipeline.py agents. Lower thresholds "
+                                           f"or expand watchlists if market conditions warrant.",
+                                agent=self.name,
+                            ))
+                except Exception:
+                    pass
+
+        return findings
+
 # =============================================================================
 # LOGIC TEAM DIRECTOR
 # =============================================================================
@@ -810,6 +904,7 @@ SUB_AGENTS = [
     DataIntegrityLogicAgent(),
     CommunicationLogicAgent(),
     RiskCoherenceLogicAgent(),
+    PodHealthLogicAgent(),
 ]
 
 

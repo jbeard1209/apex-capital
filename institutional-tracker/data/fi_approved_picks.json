@@ -1,0 +1,255 @@
+{
+  "generated_at": "2026-06-11T01:42:49.142271",
+  "regime": "TIGHT",
+  "approved": [
+    {
+      "ticker": "SHY",
+      "conviction": 2,
+      "action": "WATCH",
+      "reasoning": "SHY: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
+      "credit_tier": "TREASURY",
+      "segment": "duration",
+      "opportunity_score": 77,
+      "verdict": "BUY",
+      "credit_score": 77,
+      "position_size_usd": 5000.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 77 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Acceptable score 77 for regime TIGHT"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into TREASURY"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141320"
+    },
+    {
+      "ticker": "BIL",
+      "conviction": 2,
+      "action": "WATCH",
+      "reasoning": "BIL: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
+      "credit_tier": "T_BILL",
+      "segment": "duration",
+      "opportunity_score": 77,
+      "verdict": "BUY",
+      "credit_score": 77,
+      "position_size_usd": 5000.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 77 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Acceptable score 77 for regime TIGHT"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into T_BILL"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141389"
+    },
+    {
+      "ticker": "VCSH",
+      "conviction": 4,
+      "action": "BUY",
+      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=200bps IG spread=60bps | thesis=spread compression play",
+      "credit_tier": "IG",
+      "segment": "credit_spread",
+      "opportunity_score": 74,
+      "verdict": "BUY",
+      "credit_score": 74,
+      "position_size_usd": 3750.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 74 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Credit quality score 74, conviction 4"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into IG"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141444"
+    },
+    {
+      "ticker": "IGSB",
+      "conviction": 3,
+      "action": "BUY",
+      "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=60bps | 10yr=4.5% | thesis=quality credit at spread premium",
+      "credit_tier": "IG",
+      "segment": "investment_grade",
+      "opportunity_score": 73,
+      "verdict": "BUY",
+      "credit_score": 73,
+      "position_size_usd": 3750.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 73 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Credit quality score 73, conviction 3"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into IG"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141494"
+    },
+    {
+      "ticker": "SLQD",
+      "conviction": 3,
+      "action": "BUY",
+      "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=60bps | 10yr=4.5% | thesis=quality credit at spread premium",
+      "credit_tier": "IG",
+      "segment": "investment_grade",
+      "opportunity_score": 73,
+      "verdict": "BUY",
+      "credit_score": 73,
+      "position_size_usd": 3750.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 73 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Credit quality score 73, conviction 3"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into IG"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141541"
+    },
+    {
+      "ticker": "VCIT",
+      "conviction": 4,
+      "action": "BUY",
+      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=200bps IG spread=60bps | thesis=spread compression play",
+      "credit_tier": "IG",
+      "segment": "credit_spread",
+      "opportunity_score": 72,
+      "verdict": "BUY",
+      "credit_score": 72,
+      "position_size_usd": 3750.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 72 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Credit quality score 72, conviction 4"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "REJECT",
+          "reason": "Already at max 3 positions in IG tier"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141589"
+    },
+    {
+      "ticker": "IEF",
+      "conviction": 3,
+      "action": "BUY",
+      "reasoning": "IEF: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
+      "credit_tier": "TREASURY",
+      "segment": "duration",
+      "opportunity_score": 72,
+      "verdict": "BUY",
+      "credit_score": 72,
+      "position_size_usd": 3750.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 72 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Credit quality score 72, conviction 3"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into TREASURY"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141634"
+    },
+    {
+      "ticker": "CWB",
+      "conviction": 3,
+      "action": "BUY",
+      "reasoning": "CWB: convertible bond | regime=NORMAL | HY spread=200bps | thesis=bond floor + equity option asymmetry",
+      "credit_tier": "CONVERT",
+      "segment": "convertible",
+      "opportunity_score": 70,
+      "verdict": "BUY",
+      "credit_score": 70,
+      "position_size_usd": 3750.0,
+      "board_votes": [
+        {
+          "member": "Duration Officer",
+          "vote": "APPROVE",
+          "reason": "Score 70 clears duration threshold"
+        },
+        {
+          "member": "Credit Analyst",
+          "vote": "APPROVE",
+          "reason": "Credit quality score 70, conviction 3"
+        },
+        {
+          "member": "Portfolio Manager",
+          "vote": "APPROVE",
+          "reason": "Portfolio fit good; diversifies into CONVERT"
+        }
+      ],
+      "board_decision": "APPROVED",
+      "board_ts": "2026-06-11T01:42:49.141679"
+    }
+  ],
+  "rejected": []
+}

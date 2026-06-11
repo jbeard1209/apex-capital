@@ -1,0 +1,22 @@
+{
+  "fetched_at": "2026-06-11T01:42:16.967830",
+  "spreads": {
+    "hy_spread": 200,
+    "ig_spread": 60,
+    "hy_spread_bps": 200,
+    "ig_spread_bps": 60,
+    "treasury_10yr": 4.528,
+    "yield_curve_slope": -0.772,
+    "spread_regime": "TIGHT",
+    "hyg_price": NaN,
+    "lqd_price": NaN
+  },
+  "signals": [
+    {
+      "type": "INVERTED_CURVE",
+      "message": "Yield curve inverted (-0.77). Favor short duration; avoid long-maturity bonds.",
+      "direction": "CAUTION"
+    }
+  ],
+  "regime_context": "Spreads compressed \u2014 reduce risk, avoid long duration HY."
+}

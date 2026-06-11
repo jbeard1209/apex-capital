@@ -1,0 +1,11 @@
+{
+  "sessions": [
+    {
+      "ts": "2026-06-11T01:42:49.142959",
+      "regime": "TIGHT",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    }
+  ]
+}

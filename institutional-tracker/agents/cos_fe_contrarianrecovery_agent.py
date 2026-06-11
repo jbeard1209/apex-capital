@@ -105,6 +105,50 @@ class FEContrarianRecoveryAgent(SectorResearchAgent):
         "Never invest in hated sector with broken balance sheet — that is a value trap, not value."
     )
 
+
+    def _conviction(self, mom: dict, fund: dict) -> int:
+        """
+        First Eagle conviction is driven by margin of safety, not momentum.
+        Beaten-down value stocks SHOULD have bearish momentum — that is the entry signal.
+        MoS >= 35% = 5 (strong buy), >= 25% = 4, >= 15% = 3, >= 5% = 2, else = 1.
+        """
+        mos = fund.get("margin_of_safety")
+        if mos is None:
+            # No IV data — fall back to moderate conviction
+            # Don't penalize for bearish momentum in a value context
+            base = 2
+            if fund.get("revenue_growth") and fund["revenue_growth"] > 0:
+                base += 1
+            if fund.get("profit_margin") and fund["profit_margin"] > 0.05:
+                base += 1
+            return min(5, base)
+        if mos >= 0.35:
+            return 5
+        elif mos >= 0.25:
+            return 4
+        elif mos >= 0.15:
+            return 3
+        elif mos >= 0.05:
+            return 2
+        else:
+            return 1
+
+    def _get_fundamentals(self, ticker: str) -> dict:
+        """Override to include IV data in fundamentals dict."""
+        fund = super()._get_fundamentals(ticker)
+        try:
+            from fe_intrinsic_value import calculate_iv
+            iv_result = calculate_iv(ticker)
+            if iv_result:
+                fund["margin_of_safety"] = iv_result.get("margin_of_safety")
+                fund["conservative_iv"]  = iv_result.get("conservative_iv")
+                fund["dcf_iv"]           = iv_result.get("dcf_iv")
+                fund["current_price"]    = iv_result.get("current_price")
+                fund["fe_verdict"]       = iv_result.get("verdict")
+        except Exception:
+            pass
+        return fund
+
     def __init__(self, agent_id: str = "fe_contrarianrecovery_chairman"):
         super().__init__({
             "agent_id":           agent_id,

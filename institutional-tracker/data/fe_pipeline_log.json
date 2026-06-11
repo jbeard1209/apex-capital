@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-06-11T05:50:03.239688+00:00",
+  "completed_at": "2026-06-11T05:52:09.884271+00:00",
+  "agents_run": 10,
+  "total_rd_picks": 22,
+  "iv_enriched_count": 21,
+  "board_queue_count": 17,
+  "approved_count": 0,
+  "filtered_count": 17,
+  "sized_positions": [],
+  "gold_allocation_pct": 0.0,
+  "lane_capital": 5000.0
+}

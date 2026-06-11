@@ -194,5 +194,19 @@
     "ts": "2026-06-11T00:50:00.687405",
     "status": "resolved",
     "resolution_note": "auto-resolved: malformed entry (no title)"
+  },
+  {
+    "id": "CIT-2026-037",
+    "title": "Silent exception in fe_board.py:24",
+    "category": "BUG_FIX",
+    "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
+    "evidence": "fe_board.py line 24: `except Exception: pass`",
+    "confidence": 80,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-06-11T01:52:40.353487"
   }
 ]

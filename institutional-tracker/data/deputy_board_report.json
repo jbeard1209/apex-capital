@@ -1,39 +1,39 @@
 {
-  "generated_at": "2026-06-10T03:50:42.029331",
+  "generated_at": "2026-06-11T01:52:40.338021",
   "dry_run": false,
-  "proposals_reviewed": 4,
-  "approved_count": 0,
+  "proposals_reviewed": 3,
+  "approved_count": 1,
   "rejected_count": 0,
   "deferred_count": 0,
-  "needs_info_count": 4,
+  "needs_info_count": 2,
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "CIT-2026-1450",
-      "title": "Build a targeted short book for CRITICAL/HIGH risk regimes",
+      "proposal_id": "CIT-2026-1451",
+      "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "severity": "MEDIUM",
       "category": "VISION",
       "passed": false,
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 1,
-      "clarifies": 4,
+      "defers": 0,
+      "clarifies": 5,
       "votes": [
         {
           "deputy": "Deputy Manager",
           "vote": "APPROVE",
-          "rationale": "[MEDIUM/70%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
+          "rationale": "[MEDIUM/78%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "DEFER",
-          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+          "vote": "CLARIFY",
+          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
         },
         {
           "deputy": "Deputy CIT Director",
           "vote": "CLARIFY",
-          "rationale": "Evidence for 'Build a targeted short book for CRITICAL/HIGH risk regimes' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
+          "rationale": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
         },
         {
           "deputy": "Deputy Chief of Staff",
@@ -48,7 +48,7 @@
         {
           "deputy": "Deputy R&D Leader",
           "vote": "APPROVE",
-          "rationale": "No research pipeline exposure \u2014 fix is specific and evidence is present."
+          "rationale": "Research pipeline bug with specific evidence [78%] \u2014 fixing will improve signal quality."
         },
         {
           "deputy": "Deputy Operations Director",
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "proposal_id": "CIT-2026-1451",
+      "proposal_id": "CIT-2026-1452",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "severity": "LOW",
       "category": "VISION",
@@ -107,21 +107,21 @@
       ]
     },
     {
-      "proposal_id": "CIT-2026-1453",
-      "title": "CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation",
-      "severity": "LOW",
-      "category": "IMPROVEMENT",
-      "passed": false,
-      "classification": "NEEDS_INFO",
-      "approves": 2,
+      "proposal_id": "CIT-2026-037",
+      "title": "Silent exception in fe_board.py:24",
+      "severity": "MEDIUM",
+      "category": "BUG_FIX",
+      "passed": true,
+      "classification": "MAJORITY",
+      "approves": 6,
       "rejects": 0,
       "defers": 1,
-      "clarifies": 4,
+      "clarifies": 0,
       "votes": [
         {
           "deputy": "Deputy Manager",
-          "vote": "CLARIFY",
-          "rationale": "Proposed fix is not specific enough to implement safely: 'Director should verify each approved self-improvement proposal has a correspondi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
+          "vote": "APPROVE",
+          "rationale": "[MEDIUM/80%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
         },
         {
           "deputy": "Deputy CRO",
@@ -130,80 +130,31 @@
         },
         {
           "deputy": "Deputy CIT Director",
-          "vote": "CLARIFY",
-          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
+          "vote": "APPROVE",
+          "rationale": "[80%] Evidence precise, fix specific, category in scope \u2014 CIT Director approves for implementation."
         },
         {
           "deputy": "Deputy Chief of Staff",
+          "vote": "APPROVE",
+          "rationale": "Evidence and priority both check out \u2014 CoS approves."
+        },
+        {
+          "deputy": "Deputy IRM",
           "vote": "DEFER",
-          "rationale": "LOW severity \u2014 acceptable to batch with next scheduled CIT cycle rather than acting now."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "APPROVE",
-          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
-        },
-        {
-          "deputy": "Deputy R&D Leader",
-          "vote": "CLARIFY",
-          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
-        },
-        {
-          "deputy": "Deputy Operations Director",
-          "vote": "CLARIFY",
-          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
-        }
-      ]
-    },
-    {
-      "proposal_id": "CIT-2026-1452",
-      "title": "Replace fixed R&D cadence with event-triggered research cycles",
-      "severity": "MEDIUM",
-      "category": "VISION",
-      "passed": false,
-      "classification": "NEEDS_INFO",
-      "approves": 2,
-      "rejects": 0,
-      "defers": 0,
-      "clarifies": 5,
-      "votes": [
-        {
-          "deputy": "Deputy Manager",
-          "vote": "APPROVE",
-          "rationale": "[MEDIUM/78%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
-        },
-        {
-          "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
-        },
-        {
-          "deputy": "Deputy CIT Director",
-          "vote": "CLARIFY",
-          "rationale": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
-        },
-        {
-          "deputy": "Deputy Chief of Staff",
-          "vote": "CLARIFY",
-          "rationale": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "CLARIFY",
-          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
+          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
         },
         {
           "deputy": "Deputy R&D Leader",
           "vote": "APPROVE",
-          "rationale": "Research pipeline bug with specific evidence [78%] \u2014 fixing will improve signal quality."
+          "rationale": "No research pipeline exposure \u2014 fix is specific and evidence is present."
         },
         {
           "deputy": "Deputy Operations Director",
-          "vote": "CLARIFY",
-          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
+          "vote": "APPROVE",
+          "rationale": "Infrastructure/pipeline fix with verified evidence [80%] \u2014 Operations Director approves."
         }
       ]
     }
   ],
-  "status": "NEEDS_INFO"
+  "status": "PARTIAL"
 }

@@ -1156,5 +1156,12 @@
       "Omissions": 0
     },
     "buffered_at": "2026-06-11T00:11:36.908173"
+  },
+  {
+    "subject": "Apex Capital \u2014 First Eagle Lane 4 Daily | 2026-06-11",
+    "sender_name": "FE Pipeline",
+    "html_body": "Apex Capital \u2014 First Eagle Lane 4 Daily Pipeline\nDate: 2026-06-11T05:32:30.113646+00:00\n\nR&D agents run: 10/10\nTotal picks from R&D agents: 0\nPicks with IV (Intrinsic Value) calculated: 0\nFiltered \u2014 MoS (Margin of Safety) > 25% + BUY verdict: 0\nBoard approved: 0\nBoard rejected/held: 0\n\nPosition sizing: MoS>=40% -> $1,000 | MoS>=30% -> $750 | MoS>=25% -> $500\nGold miners (GLD, GDX etc.): $750 target (15% of lane allocation)\n\nFirst Eagle philosophy: absolute return, margin of safety only.\nLane capital: $5,000 | Max single position: $1,000 (20%) | Gold target: $750 (15%)\n\u2014 Apex Capital First Eagle Pipeline",
+    "key_metrics": {},
+    "buffered_at": "2026-06-11T01:33:13.558104"
   }
 ]

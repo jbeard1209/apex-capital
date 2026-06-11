@@ -3294,5 +3294,15 @@
     "summary": "Unresolved issue for 27h: [HIGH] Agent underperformance: CITStrategyAnalyst rated CONCERN. Reporter: HR Agent. Description: Issues: 9 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeline effective",
     "urgency": "HIGH",
     "status": "PENDING"
+  },
+  {
+    "id": "CMR-712F8A",
+    "ts": "2026-06-11T01:52:40.353487",
+    "from_agent": "Deputy Board",
+    "summary": "DEPUTY BOARD APPROVED [MAJORITY] [MEDIUM] Silent exception in fe_board.py:24 | Fix: Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
+    "urgency": "NORMAL",
+    "status": "PENDING",
+    "proposal_id": "CIT-2026-037",
+    "evidence": "fe_board.py line 24: `except Exception: pass`"
   }
 ]

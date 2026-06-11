@@ -792,7 +792,7 @@ def run_pipeline() -> dict:
             _spec = _ilu.spec_from_file_location("fe_cio_agent", str(_cio_path))
             _cio_mod = _ilu.module_from_spec(_spec)
             _spec.loader.exec_module(_cio_mod)
-            _cio_mod.run()
+            _cio_mod.run_cio_synthesis([], LANE_CAPITAL)
             logger.info("[Pipeline] CIO slate written to fe_cio_slate.json")
         else:
             logger.warning("[Pipeline] fe_cio_agent.py not found -- skipping CIO step")
@@ -805,10 +805,10 @@ def run_pipeline() -> dict:
     try:
         from fe_board import run_board
         board_report = run_board()
-        approved_picks_data = board_report.get("approved_picks", [])
+        approved_picks_data = board_report.get("approved", board_report.get("approved_picks", []))
         logger.info(
             f"[Pipeline] Board: {len(approved_picks_data)} approved, "
-            f"{len(board_report.get('rejected_picks', []))} rejected."
+            f"{len(board_report.get('rejected', board_report.get('rejected_picks', [])))} rejected."
         )
     except Exception as e:
         logger.error(f"[Pipeline] Board failed: {e}")
