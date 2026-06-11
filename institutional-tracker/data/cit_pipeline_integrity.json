@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-06-11T02:50:00.659985",
+  "checked_at": "2026-06-11T14:50:01.130080",
   "issues": [
     {
       "severity": "HIGH",
@@ -10,7 +10,7 @@
     {
       "severity": "MEDIUM",
       "check": "agent_file_freshness",
-      "message": "1 agent output file(s) are >26h old and no recovery appears in progress: research_team_report.json (35h)",
+      "message": "1 agent output file(s) are >26h old and no recovery appears in progress: research_team_report.json (47h)",
       "auto_fixed": false
     }
   ],

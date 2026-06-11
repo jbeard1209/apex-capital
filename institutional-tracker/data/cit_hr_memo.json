@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-11T02:43:06.548599",
+  "generated_at": "2026-06-11T14:36:33.184199",
   "canary_level": "GREEN",
   "cro_level": "ELEVATED",
   "buys_blocked": true,
   "assigned_sectors": [
-    "biotech",
-    "consumer discretionary",
-    "defense & aerospace",
+    "cybersecurity",
     "financials",
     "healthcare",
-    "materials",
+    "industrials",
     "regional banks",
-    "retail"
+    "retail",
+    "semiconductors",
+    "technology"
   ],
   "streak_agents": [
     {

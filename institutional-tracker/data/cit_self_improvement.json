@@ -1,129 +1,129 @@
 {
-  "generated_at": "2026-06-11T02:43:07.945734",
+  "generated_at": "2026-06-11T14:36:34.473939",
   "total_findings": 2,
   "queue_depth": 2,
-  "backlog_depth": 1316,
+  "backlog_depth": 1349,
   "approved_total": 332,
   "agent_stats": {
     "CITCodeInspector": {
-      "total_findings": 35130,
+      "total_findings": 36091,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:06.528550"
+      "last_run": "2026-06-11T14:36:33.120502"
     },
     "CITPipelineMonitor": {
-      "total_findings": 1006,
+      "total_findings": 1022,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:06.548946"
+      "last_run": "2026-06-11T14:36:33.184966"
     },
     "CITStrategyAnalyst": {
-      "total_findings": 303,
+      "total_findings": 311,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:06.557340"
+      "last_run": "2026-06-11T14:36:33.193425"
     },
     "CITArchitectureAdvisor": {
-      "total_findings": 1777,
+      "total_findings": 1825,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:06.558226"
+      "last_run": "2026-06-11T14:36:33.194321"
     },
     "CITThinkTank": {
-      "total_findings": 1282,
+      "total_findings": 1322,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:06.559267"
+      "last_run": "2026-06-11T14:36:33.195642"
     },
     "CITDataQualityAnalyst": {
-      "total_findings": 765,
+      "total_findings": 781,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:07.924376"
+      "last_run": "2026-06-11T14:36:34.462738"
     },
     "CITProposalValidator": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:07.925904"
+      "last_run": "2026-06-11T14:36:34.463451"
     },
     "CITSelfImprovement": {
-      "total_findings": 506,
+      "total_findings": 520,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.496815"
+      "last_run": "2026-06-11T14:03:13.059196"
     },
     "CITSecurityMonitor": {
       "total_findings": 137,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.796147"
+      "last_run": "2026-06-11T14:03:13.376027"
     },
     "CIT Watchdog": {
-      "total_findings": 13530,
+      "total_findings": 13560,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.901366"
+      "last_run": "2026-06-11T14:03:13.606650"
     },
     "CIT Trading Auditor": {
-      "total_findings": 15282,
+      "total_findings": 15765,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.821535"
+      "last_run": "2026-06-11T14:03:13.400390"
     },
     "CIT Risk Auditor": {
-      "total_findings": 7983,
+      "total_findings": 8221,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.851599"
+      "last_run": "2026-06-11T14:03:13.429259"
     },
     "CIT Infra Auditor": {
-      "total_findings": 9835,
+      "total_findings": 10129,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.874446"
+      "last_run": "2026-06-11T14:03:13.451868"
     },
     "CIT Integration Auditor": {
-      "total_findings": 248,
+      "total_findings": 255,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.885378"
+      "last_run": "2026-06-11T14:03:13.502062"
     },
     "CITMLAuditor": {
-      "total_findings": 8,
+      "total_findings": 20,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.920659"
+      "last_run": "2026-06-11T14:03:15.128296"
     },
     "CITPodAuditor": {
-      "total_findings": 4,
+      "total_findings": 10,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.920985"
+      "last_run": "2026-06-11T14:03:15.129660"
     },
     "CITBacklogCurator": {
-      "total_findings": 4,
+      "total_findings": 9,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.957184"
+      "last_run": "2026-06-11T14:03:15.149996"
     },
     "CITPerformanceAnalyst": {
-      "total_findings": 2,
+      "total_findings": 14,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.957888"
+      "last_run": "2026-06-11T14:03:15.152279"
     },
     "CITEmailAuditor": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.964826"
+      "last_run": "2026-06-11T14:03:15.168263"
     },
     "CITAgentQualityAuditor": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-11T02:43:01.966768"
+      "last_run": "2026-06-11T14:03:15.172806"
     }
   },
   "findings": [
@@ -133,8 +133,8 @@
       "severity": "MEDIUM",
       "confidence": 80,
       "title": "95% of CIT bug proposals lack precise evidence \u2014 quality degradation",
-      "description": "545 of 575 BUG_FIX/DATA_QUALITY proposals (95%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
-      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 545/575 bug proposals vague",
+      "description": "549 of 579 BUG_FIX/DATA_QUALITY proposals (95%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
+      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 549/579 bug proposals vague",
       "proposed_fix": "Each CIT agent's analyze() method should be reviewed. BUG_FIX findings must include a specific file:line, metric, or data path. VISION/IMPROVEMENT proposals may be qualitative.",
       "auto_implementable": false
     },

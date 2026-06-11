@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-11T00:00:09.173034",
+  "generated_at": "2026-06-11T18:32:15.390920",
   "pod": "pod3_macro",
   "board_vote": "APPROVED",
   "target_holdings": [
     "XLK",
-    "XLE",
+    "XLV",
     "XLF"
   ],
   "orders": [
@@ -17,45 +17,27 @@
       "reason": "QQQ removed from rotation \u2014 not in board's approved ETF list."
     },
     {
-      "action": "SELL",
-      "ticker": "XLV",
-      "qty": 54,
-      "price": 152.65,
-      "dollar_value": 8243.1,
-      "reason": "XLV removed from rotation \u2014 not in board's approved ETF list."
-    },
-    {
-      "action": "BUY",
-      "ticker": "XLE",
-      "qty": 0,
-      "price": 0.0,
-      "dollar_value": 0.0,
-      "reason": "XLE in target list but price unavailable \u2014 skipped.",
-      "skipped": true
-    },
-    {
       "action": "BUY",
       "ticker": "XLF",
-      "qty": 0,
-      "price": 0.0,
-      "dollar_value": 0.0,
-      "reason": "XLF in target list but price unavailable \u2014 skipped.",
-      "skipped": true
+      "qty": 107,
+      "price": 52.23,
+      "dollar_value": 5588.61,
+      "reason": "XLF added to rotation. momentum_score=1.38, ret_1m=2.1%, RSI=54.4, trend=neutral."
     }
   ],
   "risk_flags": [
-    "No R&D sector confirmation for any proposed ETF."
+    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'XLV']"
   ],
   "risk_officer_acknowledged": true,
   "risk_officer_vote": "APPROVE",
   "risk_officer_note": "Risk Officer flags logged and acknowledged. Execution proceeds per board governance: Director + Strategist majority overrides Risk Officer vote.",
   "regime_context": {
-    "label": "bull",
-    "vix": 22.5,
-    "spy_rsi": 37.2,
-    "spy_1d_return": null,
+    "label": "neutral",
+    "vix": 20.6,
+    "spy_rsi": NaN,
+    "spy_1d_return": -1.5766,
     "overbought": false,
-    "warning_count": 1
+    "warning_count": 0
   },
   "canary_alerts": null,
   "emergency_revote": false

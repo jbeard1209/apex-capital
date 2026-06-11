@@ -1,22 +1,22 @@
 {
-  "fetched_at": "2026-06-11T01:42:16.967830",
+  "fetched_at": "2026-06-11T14:30:01.993451",
   "spreads": {
-    "hy_spread": 200,
-    "ig_spread": 60,
-    "hy_spread_bps": 200,
-    "ig_spread_bps": 60,
-    "treasury_10yr": 4.528,
-    "yield_curve_slope": -0.772,
-    "spread_regime": "TIGHT",
-    "hyg_price": NaN,
-    "lqd_price": NaN
+    "hy_spread": 310.0,
+    "ig_spread": 102.0,
+    "hy_spread_bps": 310.0,
+    "ig_spread_bps": 102.0,
+    "treasury_10yr": 4.475,
+    "yield_curve_slope": -0.825,
+    "spread_regime": "NORMAL",
+    "hyg_price": 79.79499816894531,
+    "lqd_price": 108.91500091552734
   },
   "signals": [
     {
       "type": "INVERTED_CURVE",
-      "message": "Yield curve inverted (-0.77). Favor short duration; avoid long-maturity bonds.",
+      "message": "Yield curve inverted (-0.82). Favor short duration; avoid long-maturity bonds.",
       "direction": "CAUTION"
     }
   ],
-  "regime_context": "Spreads compressed \u2014 reduce risk, avoid long duration HY."
+  "regime_context": "Normal conditions \u2014 selective IG and BB-rated HY acceptable."
 }

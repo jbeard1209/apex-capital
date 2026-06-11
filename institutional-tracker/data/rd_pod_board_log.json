@@ -1,0 +1,12 @@
+{
+  "sessions": [
+    {
+      "ts": "2026-06-11T14:30:00.175298",
+      "type": "ops",
+      "reviewed": 2,
+      "approved": 2,
+      "deferred": 0,
+      "escalated": 0
+    }
+  ]
+}

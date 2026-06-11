@@ -147,5 +147,14 @@
     "completed_at": "2026-06-10T03:55:27.380317",
     "elapsed_minutes": 4.8,
     "status": "COMPLETE"
+  },
+  {
+    "started_at": "2026-06-11T14:33:04.423218",
+    "cleanup": {
+      "auto_closed": 184,
+      "routed_to_implementer": 19,
+      "stale_backlog": 0
+    },
+    "status": "cleanup_only"
   }
 ]

@@ -1,0 +1,19 @@
+[
+  {
+    "id": "LT-120010-fi_never_run",
+    "source": "Logic Team / PodHealthLogicAgent",
+    "category": "IMPROVEMENT",
+    "severity": "HIGH",
+    "confidence": 88,
+    "title": "Fixed Income pipeline has never run",
+    "description": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produced a report.",
+    "evidence": "Logic Team coherence check. Rule=fi_never_run. Agent=PodHealthLogicAgent",
+    "proposed_fix": "Verify fi_pipeline.py is in crontab and can run without errors.",
+    "why": "A pod that never runs never deploys capital. This is infrastructure failure.",
+    "created_at": "2026-06-11T12:00:10.766779",
+    "status": "resolved",
+    "routed_to_pod": "fi",
+    "routed_at": "2026-06-11T12:00:10.930376",
+    "resolution": "FI pipeline ran 2026-06-11, 8 picks approved"
+  }
+]

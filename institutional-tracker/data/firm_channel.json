@@ -1,277 +1,5 @@
 [
   {
-    "ts": "2026-06-07T14:14:17.374739",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T14:43:52.066439",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T15:13:38.793317",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T15:41:20.620106",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T16:04:22.675933",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T16:05:27.660789",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PIPELINE_ALERT",
-    "content": "Stale issue reminder: 1 issue(s) unresolved >48h. Top: [ISS-0732] Stale issue ISS-0690: 38 ERROR lines \u2014 d",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-07T16:05:29.724306",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 101.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T16:05:29.774347",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (116h old, threshold 26h): data/risk_manager_report.json has not been updated in 116h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T16:05:35.281446",
-    "date": "2026-06-07",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T16:12:36.081241",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T16:42:17.877216",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T17:12:11.800638",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T17:42:45.455699",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T18:12:33.278807",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T18:23:28.823143",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 95.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T18:23:29.783793",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (118h old, threshold 26h): data/risk_manager_report.json has not been updated in 118h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T18:23:38.559905",
-    "date": "2026-06-07",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T18:50:17.996406",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T19:15:30.799931",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T19:20:42.995317",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T19:46:00.150199",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T20:17:23.279742",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T20:46:45.568308",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T21:18:40.560646",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T21:31:10.817524",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 102.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T21:31:11.614461",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (121h old, threshold 26h): data/risk_manager_report.json has not been updated in 121h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T21:31:19.690042",
-    "date": "2026-06-07",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T21:57:40.982717",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T22:04:20.642498",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 90.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T22:04:20.919714",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (122h old, threshold 26h): data/risk_manager_report.json has not been updated in 122h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T22:04:26.450121",
-    "date": "2026-06-07",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T22:26:32.657901",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T23:00:50.445573",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T23:26:35.700111",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-07T23:54:08.827170",
     "date": "2026-06-07",
     "agent": "R&D Team Leader",
@@ -3998,5 +3726,277 @@
     "category": "PIPELINE_ALERT",
     "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
     "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T03:07:03.684393",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 97.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T03:07:03.711828",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T03:07:03.719165",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] 16 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 16 ERROR-level entries (1924 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled)",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T03:07:03.785235",
+    "date": "2026-06-11",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T03:08:34.286383",
+    "date": "2026-06-11",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 19 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Technology, Biotech, Defense & Aerospace. Top picks: TENB, GD, CRWD, PANW, USB.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T03:08:34.376908",
+    "date": "2026-06-11",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Technology                     score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Biotech                        score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Defense & Aerospace            score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Consumer Discretionary         score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Materials                      score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Regional Banks                 score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Retail                         score= 2/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%\n  \u2022 Financials                     score= 1/12  trend=bearish   RSI=nan  1M=+nan%  3M=+nan%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T06:14:53.797748",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 98.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T06:14:53.835184",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T06:14:53.842926",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 86 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 86 ERROR-level entries (2267 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled)",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T06:14:53.919925",
+    "date": "2026-06-11",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T10:08:28.022608",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 4 board proposal(s), 92 quick win(s), 2 ThinkTank idea(s). Total new findings: 100.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T10:08:28.612485",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T10:08:28.756138",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 86 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 86 ERROR-level entries (2649 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled)",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T10:08:28.878749",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 82h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunit",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T10:08:29.249961",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T10:08:29.912570",
+    "date": "2026-06-11",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 82h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ear",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T10:08:30.367434",
+    "date": "2026-06-11",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T10:08:32.973257",
+    "date": "2026-06-11",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T12:00:10.942912",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [HIGH] Fixed Income pipeline has never run\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-11T12:00:10.942967",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 6 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML model running but no live picks are being tracked for real-world validation\n  [MEDIUM] ML pod has $30,000 capital but zero live picks logged\n  [MEDIUM] 5 open positions have no review recommendation\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-11T14:03:15.969239",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 4 board proposal(s), 92 quick win(s), 2 ThinkTank idea(s). Total new findings: 130.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:03:15.974568",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T14:03:15.979740",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 86 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 86 ERROR-level entries (2690 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled)",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:03:15.984839",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 86h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunit",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T14:03:15.989936",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T14:03:15.995027",
+    "date": "2026-06-11",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 86h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ear",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:03:16.000160",
+    "date": "2026-06-11",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:03:16.012229",
+    "date": "2026-06-11",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:21:33.297238",
+    "date": "2026-06-11",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 38 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T14:21:33.302955",
+    "date": "2026-06-11",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 38 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T14:36:37.314421",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 190.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:36:37.320351",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T14:36:37.325442",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 113 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 113 ERROR-level entries (2721 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T14:36:37.340687",
+    "date": "2026-06-11",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
   }
 ]

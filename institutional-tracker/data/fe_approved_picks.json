@@ -1,0 +1,306 @@
+{
+  "generated_at": "2026-06-11T14:31:44.552617",
+  "approved": [
+    {
+      "ticker": "KELYA",
+      "source": "iv_opportunity_scan",
+      "conviction": 3,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.7345,
+      "conservative_iv": 44.1,
+      "dcf_iv": 44.1,
+      "epv_iv": null,
+      "current_price": 11.71,
+      "fcf_yield": 0.2976,
+      "roic": null,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=73.5% | IV=$44.1 | Price=$11.71 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": null,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=73.5%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=3"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=73.5% conv=3"
+        }
+      ]
+    },
+    {
+      "ticker": "AMCX",
+      "source": "iv_opportunity_scan",
+      "conviction": 3,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.6529,
+      "conservative_iv": 28.58,
+      "dcf_iv": 92.49,
+      "epv_iv": 28.58,
+      "current_price": 9.92,
+      "fcf_yield": 0.6181,
+      "roic": 0.1252,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=65.3% | IV=$28.58 | Price=$9.92 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": 10.9,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=65.3%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=3"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=65.3% conv=3"
+        }
+      ]
+    },
+    {
+      "ticker": "ASGN",
+      "source": "iv_opportunity_scan",
+      "conviction": 3,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.6454,
+      "conservative_iv": 57.31,
+      "dcf_iv": null,
+      "epv_iv": 57.31,
+      "current_price": 20.32,
+      "fcf_yield": 0.3907,
+      "roic": 0.1312,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=64.5% | IV=$57.31 | Price=$20.32 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": 3.9,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=64.5%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=3"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=64.5% conv=3"
+        }
+      ]
+    },
+    {
+      "ticker": "BBWI",
+      "source": "iv_opportunity_scan",
+      "conviction": 3,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.6201,
+      "conservative_iv": 48.17,
+      "dcf_iv": 67.79,
+      "epv_iv": 48.17,
+      "current_price": 18.3,
+      "fcf_yield": 0.2352,
+      "roic": null,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=62.0% | IV=$48.17 | Price=$18.3 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": 3.18,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=62.0%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=3"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=62.0% conv=3"
+        }
+      ]
+    },
+    {
+      "ticker": "PRGO",
+      "source": "iv_opportunity_scan",
+      "conviction": 3,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.553,
+      "conservative_iv": 25.01,
+      "dcf_iv": 25.01,
+      "epv_iv": null,
+      "current_price": 11.18,
+      "fcf_yield": 0.0943,
+      "roic": -0.0769,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=55.3% | IV=$25.01 | Price=$11.18 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": null,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=55.3%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=3"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=55.3% conv=3"
+        }
+      ]
+    },
+    {
+      "ticker": "HOPE",
+      "source": "iv_opportunity_scan",
+      "conviction": 3,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.5408,
+      "conservative_iv": 27.83,
+      "dcf_iv": 27.83,
+      "epv_iv": null,
+      "current_price": 12.78,
+      "fcf_yield": 0.0924,
+      "roic": null,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=54.1% | IV=$27.83 | Price=$12.78 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": null,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=54.1%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=3"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=54.1% conv=3"
+        }
+      ]
+    }
+  ],
+  "rejected": []
+}

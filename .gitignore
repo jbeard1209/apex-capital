@@ -63,6 +63,8 @@ institutional-tracker/data/cit_approved_proposals.json
 institutional-tracker/data/cit_history.json
 institutional-tracker/data/energy_research_report.json
 institutional-tracker/data/cos_hr_coordination.json
+institutional-tracker/data/rd_ml_history.json
+institutional-tracker/data/performance_ledger.json
 
 # ── Oracle / GCP credentials ─────────────────────────────────────────────────
 institutional-tracker/oracle_setup/oci_key.pem
@@ -90,3 +92,5 @@ Thumbs.db
 institutional-tracker/data/historical_13f.db
 institutional-tracker/data/historical_13f.db-journal
 institutional-tracker/data/filing_tickers.json
+config/llm_config.json
+*.env

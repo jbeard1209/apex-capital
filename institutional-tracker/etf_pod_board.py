@@ -264,6 +264,36 @@ def _momentum_score(etf_entry: dict) -> float:
 
 
 # ---------------------------------------------------------------------------
+# LLM reasoning layer (Fable 5 / any apex_llm model)
+# ---------------------------------------------------------------------------
+
+_ETF_BOARD_SYSTEM = """You are a member of the Apex Capital ETF Pod Board (Pod 3: Macro/ETF Rotation).
+Pod 3 manages a $10k macro ETF rotation strategy. Universe: XLK, XLE, XLF, XLU, XLP, XLV, XLI, GLD, TLT, QQQ, XLY, XLB.
+Defensive ETFs (bear/stress): XLU, XLP, GLD, TLT.
+
+Vote on the proposed rotation: APPROVE | MODIFY | REJECT
+Reply in exactly this JSON format (no other text):
+{"vote": "APPROVE" | "MODIFY" | "REJECT", "reasoning": "one to two concise sentences"}"""
+
+
+def _etf_llm_vote(role: str, context: str) -> "tuple[str, str]":
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("etf_pod_board"):
+            return None, None
+        import json as _j
+        raw = _r(_ETF_BOARD_SYSTEM, f"You are the {role}.\n{context}",
+                 agent_name="etf_pod_board", max_tokens=200)
+        if not raw:
+            return None, None
+        p = _j.loads(raw.strip())
+        v, r = p.get("vote", "").upper(), p.get("reasoning", "")
+        return (v, r) if v in ("APPROVE", "MODIFY", "REJECT") and r else (None, None)
+    except Exception:
+        return None, None
+
+
+# ---------------------------------------------------------------------------
 # Board Member 1: ETF Investment Director
 # ---------------------------------------------------------------------------
 
@@ -354,7 +384,20 @@ def _etf_investment_director(brief: dict) -> dict:
     # Score snapshot for the record
     scores_snapshot = {e: round(s, 4) for (e, s, d) in scored}
 
-    log.info("Director recommendation: %s", recommended)
+    # Try LLM to enhance reasoning / potentially override vote
+    top5 = [(e, round(s, 2)) for e, s, d in scored[:5]]
+    llm_vote, llm_reasoning = _etf_llm_vote(
+        "ETF Investment Director",
+        f"Regime: bull={bull}, VIX={vix:.1f}, SPY_RSI={spy_rsi:.1f}, "
+        f"bear_mode={bear_mode}, overbought={overbought}.\n"
+        f"Top ETFs by momentum: {top5}.\n"
+        f"Rule-based recommendation: {recommended}.\n"
+        "Confirm or improve this ETF rotation decision.",
+    )
+    final_vote      = llm_vote or "APPROVE"
+    final_reasoning = llm_reasoning or " ".join(reasoning_parts)
+
+    log.info("Director recommendation: %s (vote=%s, llm=%s)", recommended, final_vote, bool(llm_vote))
 
     return {
         "member": "ETF Investment Director",
@@ -362,9 +405,9 @@ def _etf_investment_director(brief: dict) -> dict:
         "bear_mode": bear_mode,
         "overbought_mode": overbought,
         "momentum_scores": scores_snapshot,
-        "reasoning": " ".join(reasoning_parts),
-        "risk_flags": [],  # Director doesn't set risk flags
-        "vote": "APPROVE",
+        "reasoning": final_reasoning,
+        "risk_flags": [],
+        "vote": final_vote,
     }
 
 
@@ -463,25 +506,41 @@ def _etf_risk_officer(brief: dict, proposed_etfs: List[str], pod_state: dict) ->
             fallback_suggestion,
         )
 
+    # Try LLM to enhance risk assessment
+    flags_summary = "; ".join(risk_flags) if risk_flags else "No flags"
+    llm_vote, llm_reasoning = _etf_llm_vote(
+        "ETF Risk Officer",
+        f"Proposed ETFs: {proposed_etfs}.\n"
+        f"Risk flags ({n_flags} total, {critical_flags} critical): {flags_summary}.\n"
+        f"VIX={vix:.1f}, SPY_RSI={spy_rsi:.1f}, pod_total=${pod_total:,.0f}.\n"
+        f"Rule-based vote: {vote}.\n"
+        "Note: your vote is advisory — Director + Strategist override if both APPROVE/MODIFY. "
+        "Assess whether these risks warrant changing the rotation decision.",
+    )
+    final_vote      = llm_vote or vote
+    final_reasoning = llm_reasoning
+
     log.info(
-        "Risk Officer: %d flag(s), %d critical — vote=%s",
-        n_flags, critical_flags, vote,
+        "Risk Officer: %d flag(s), %d critical — vote=%s (llm=%s)",
+        n_flags, critical_flags, final_vote, bool(llm_vote),
     )
 
-    return {
+    result = {
         "member": "ETF Risk Officer",
         "recommended_etfs": fallback_suggestion or proposed_etfs,
         "risk_flags": risk_flags,
         "critical_flags": critical_flags,
         "fallback_suggestion": fallback_suggestion,
-        # IMPORTANT: Risk Officer vote is advisory — Director + Strategist override it
-        "vote": vote,
+        "vote": final_vote,
         "vote_note": (
             "Risk Officer vote is ADVISORY ONLY. "
             "If ETF Investment Director AND ETF Strategist both vote APPROVE or MODIFY, "
             "execution proceeds regardless. Risk flags are logged for the record."
         ),
     }
+    if final_reasoning:
+        result["reasoning"] = final_reasoning
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -585,25 +644,41 @@ def _etf_strategist(brief: dict, proposed_etfs: List[str], risk_flags: List[str]
 
     reasoning_parts.append(f"Sizing: {sizing_note}")
 
-    # Determine Strategist vote
+    # Determine Strategist vote (rule-based)
     n_flags = len(strategist_flags)
     if n_flags == 0:
-        vote = "APPROVE"
+        rule_vote = "APPROVE"
     elif n_flags == 1:
-        vote = "MODIFY"
+        rule_vote = "MODIFY"
     else:
-        vote = "REJECT"
+        rule_vote = "REJECT"
 
-    log.info("Strategist: %d flag(s) — vote=%s | sizing=%s", n_flags, vote, sizing_note)
+    # Try LLM to enhance strategic reasoning
+    flags_summary = "; ".join(strategist_flags) if strategist_flags else "None"
+    llm_vote, llm_reasoning = _etf_llm_vote(
+        "ETF Strategist",
+        f"Proposed ETFs: {proposed_etfs}.\n"
+        f"Asset class diversity: {len(unique_classes)} class(es) — {list(unique_classes)}.\n"
+        f"Historical analogue: '{hist_label}', sectors led: {sectors_led}. Analogue match: {analogue_match}.\n"
+        f"R&D aligned: {rd_covered_positive}. Sizing: {sizing_note}.\n"
+        f"Strategy flags: {flags_summary}.\n"
+        f"Rule-based vote: {rule_vote}.\n"
+        "Assess whether this rotation is strategically coherent and well-diversified.",
+    )
+    final_vote      = llm_vote or rule_vote
+    final_reasoning = llm_reasoning or " ".join(reasoning_parts)
+
+    log.info("Strategist: %d flag(s) — vote=%s (llm=%s) | sizing=%s",
+             n_flags, final_vote, bool(llm_vote), sizing_note)
 
     return {
         "member": "ETF Strategist",
         "recommended_etfs": proposed_etfs,
         "risk_flags": strategist_flags,
         "sizing_note": sizing_note,
-        "reasoning": " ".join(reasoning_parts),
+        "reasoning": final_reasoning,
         "analogue_match": analogue_match,
-        "vote": vote,
+        "vote": final_vote,
     }
 
 

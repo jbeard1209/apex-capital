@@ -1018,6 +1018,48 @@ def _build_state() -> dict:
     return state
 
 
+_LT_DIRECTOR_SYSTEM = """You are the Logic Team Director at Apex Capital, an AI-driven paper trading firm.
+Your team runs automated coherence checks across the firm's systems. You synthesize the findings
+into an actionable executive brief for the Chairman and board.
+
+Given a list of logic anomalies, produce a concise executive synthesis:
+- Identify the single most important issue to address first
+- Note any cross-cutting themes (e.g., multiple agents failing simultaneously may indicate a systemic root cause)
+- Flag anything that requires immediate board action vs. routine cleanup
+
+Reply in exactly this JSON format (no other text):
+{"top_priority": "one sentence on the #1 issue", "themes": "one sentence on cross-cutting patterns (or 'No cross-cutting themes')", "board_action_needed": true | false, "synthesis": "2-3 sentence executive summary"}"""
+
+
+def _llm_synthesize_findings(findings: list, state: dict) -> Optional[dict]:
+    if not findings:
+        return None
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("logic_team"):
+            return None
+        import json as _j
+        crit_high = [f for f in findings if f.get("severity") in ("CRITICAL", "HIGH")]
+        med_low   = [f for f in findings if f.get("severity") in ("MEDIUM", "LOW")]
+        lines = []
+        for f in (crit_high + med_low)[:12]:
+            lines.append(f"[{f.get('severity','?')}] {f.get('agent','?')}: {f.get('title','?')}")
+        summary = "\n".join(lines)
+        context = (
+            f"Firm state: portfolio=${state.get('portfolio_value',0):,.0f}, "
+            f"CRO={state.get('cro_level','?')}, canary={state.get('canary_level','?')}, "
+            f"picks_today={state.get('picks_today',0)}, IRM_flags={state.get('irm_flags',0)}\n\n"
+            f"Logic Team findings ({len(findings)} total):\n{summary}"
+        )
+        raw = _r(_LT_DIRECTOR_SYSTEM, context, agent_name="logic_team", max_tokens=300)
+        if not raw:
+            return None
+        return _j.loads(raw.strip())
+    except Exception as e:
+        logger.debug("LLM synthesis failed: %s", e)
+        return None
+
+
 def _post_findings_to_channel(findings: list):
     try:
         fc = _load(FIRM_CHANNEL, [])
@@ -1108,6 +1150,41 @@ def _submit_board_proposals(findings: list) -> int:
         added += 1
 
     return added
+
+
+def _update_chairman_briefing_with_synthesis(findings: list, state: dict, synthesis: Optional[dict]):
+    """Update chairman briefing, optionally enriched with LLM director synthesis."""
+    try:
+        briefing = _load(BRIEFING_PATH, {"entries": []})
+        if not isinstance(briefing, dict):
+            briefing = {"entries": []}
+        entries = briefing.get("entries", [])
+
+        entry = {
+            "ts":           datetime.now().isoformat(),
+            "date":         datetime.now().strftime("%Y-%m-%d"),
+            "source":       "Logic Team",
+            "portfolio":    state.get("portfolio_value", 0),
+            "pnl_vs_start": (state.get("portfolio_value", 0) or 0) - 100000,
+            "canary":       state.get("canary_level", "?"),
+            "cro_level":    state.get("cro_level", "?"),
+            "picks_today":  state.get("picks_today", 0),
+            "anomalies":    len(findings),
+            "items": [
+                {"severity": f.get("severity", "?"), "title": f.get("title", "?"),
+                 "agent": f.get("agent", "?"), "short": f.get("observation", "")[:120]}
+                for f in sorted(findings, key=lambda x: ["CRITICAL","HIGH","MEDIUM","LOW"].index(
+                    x.get("severity","LOW")))
+            ],
+        }
+        if synthesis:
+            entry["llm_synthesis"] = synthesis
+
+        entries.append(entry)
+        briefing["entries"] = entries[-90:]
+        _save(BRIEFING_PATH, briefing)
+    except Exception as e:
+        logger.warning(f"  Briefing update failed: {e}")
 
 
 def _update_chairman_briefing(findings: list, state: dict):
@@ -1285,6 +1362,11 @@ def run_logic_team(agent_name: str = None) -> dict:
     history["latest"]  = findings
     _save(FINDINGS_PATH, history)
 
+    # LLM director synthesis (if Fable 5 available)
+    llm_synthesis = _llm_synthesize_findings(findings, state)
+    if llm_synthesis:
+        logger.info(f"  LLM synthesis: {llm_synthesis.get('top_priority','?')[:70]}")
+
     # Submit serious ones as board proposals
     n_submitted = _submit_board_proposals(findings)
     if n_submitted:
@@ -1297,8 +1379,8 @@ def run_logic_team(agent_name: str = None) -> dict:
     if findings:
         _post_findings_to_channel(findings)
 
-    # Update chairman briefing
-    _update_chairman_briefing(findings, state)
+    # Update chairman briefing (with LLM synthesis if available)
+    _update_chairman_briefing_with_synthesis(findings, state, llm_synthesis)
 
     # Update resolution lifecycle tracker
     _update_resolution_tracker(findings)

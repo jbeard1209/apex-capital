@@ -2,78 +2,78 @@
   "open": {
     "PipelineLogicAgent::fi_pipeline_not_running": {
       "first_seen": "2026-06-11T01:09:18.072388",
-      "last_seen": "2026-06-11T01:53:46.321610",
+      "last_seen": "2026-06-11T12:00:11.087890",
       "severity": "MEDIUM",
       "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
       "agent": "PipelineLogicAgent",
       "rule": "fi_pipeline_not_running",
-      "times_seen": 5,
+      "times_seen": 6,
       "clean_runs": 0,
       "status": "open"
     },
     "CapitalLogicAgent::idle_pod_pod2_ml": {
       "first_seen": "2026-06-11T01:09:18.072390",
-      "last_seen": "2026-06-11T01:53:46.321612",
+      "last_seen": "2026-06-11T12:00:11.087912",
       "severity": "MEDIUM",
       "title": "ML / Quantitative: $30,000 capital, zero positions",
       "agent": "CapitalLogicAgent",
       "rule": "idle_pod_pod2_ml",
-      "times_seen": 5,
+      "times_seen": 6,
       "clean_runs": 0,
       "status": "open"
     },
     "PerformanceLogicAgent::ml_model_not_tracked": {
       "first_seen": "2026-06-11T01:09:18.072392",
-      "last_seen": "2026-06-11T01:53:46.321613",
+      "last_seen": "2026-06-11T12:00:11.087917",
       "severity": "MEDIUM",
       "title": "ML model running but no live picks are being tracked for real-world validation",
       "agent": "PerformanceLogicAgent",
       "rule": "ml_model_not_tracked",
-      "times_seen": 5,
+      "times_seen": 6,
       "clean_runs": 0,
       "status": "open"
     },
     "MLLogicAgent::ml_no_live_validation": {
       "first_seen": "2026-06-11T01:15:47.212147",
-      "last_seen": "2026-06-11T01:53:46.321614",
+      "last_seen": "2026-06-11T12:00:11.087920",
       "severity": "MEDIUM",
       "title": "ML pod has $30,000 capital but zero live picks logged",
       "agent": "MLLogicAgent",
       "rule": "ml_no_live_validation",
-      "times_seen": 4,
+      "times_seen": 5,
       "clean_runs": 0,
       "status": "open"
     },
     "DataIntegrityLogicAgent::positions_without_reviews": {
       "first_seen": "2026-06-11T01:22:10.666142",
-      "last_seen": "2026-06-11T01:53:46.321616",
+      "last_seen": "2026-06-11T12:00:11.087925",
       "severity": "MEDIUM",
       "title": "5 open positions have no review recommendation",
       "agent": "DataIntegrityLogicAgent",
       "rule": "positions_without_reviews",
-      "times_seen": 3,
+      "times_seen": 4,
       "clean_runs": 0,
       "status": "open"
     },
     "CommunicationLogicAgent::agent_communication_silence": {
       "first_seen": "2026-06-11T01:22:10.666145",
-      "last_seen": "2026-06-11T01:53:46.321617",
+      "last_seen": "2026-06-11T12:00:11.087973",
       "severity": "LOW",
       "title": "3 expected agent(s) silent on firm channel >7 days",
       "agent": "CommunicationLogicAgent",
       "rule": "agent_communication_silence",
-      "times_seen": 3,
+      "times_seen": 4,
       "clean_runs": 0,
       "status": "open"
     },
     "PodHealthLogicAgent::fi_never_run": {
       "first_seen": "2026-06-11T01:53:46.321619",
-      "last_seen": "2026-06-11T01:53:46.321619",
+      "last_seen": "2026-06-11T12:00:11.087981",
       "severity": "HIGH",
       "title": "Fixed Income pipeline has never run",
       "agent": "PodHealthLogicAgent",
       "rule": "fi_never_run",
-      "times_seen": 1,
+      "times_seen": 2,
       "clean_runs": 0,
       "status": "open"
     }
@@ -119,6 +119,6 @@
       "resolution": "auto_closed: 3 consecutive clean runs"
     }
   ],
-  "run_count": 5,
-  "last_run": "2026-06-11T01:53:46.321622"
+  "run_count": 6,
+  "last_run": "2026-06-11T12:00:11.087993"
 }
