@@ -87,3 +87,6 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+institutional-tracker/data/historical_13f.db
+institutional-tracker/data/historical_13f.db-journal
+institutional-tracker/data/filing_tickers.json
