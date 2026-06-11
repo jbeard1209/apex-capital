@@ -126,3 +126,9 @@
 # ── WEEKLY POD HEALTH AUDIT — Sunday 2 AM EDT = 06:00 UTC ──
 # CIT deep-dives into all pods: checks for code bugs, stale data, missing modules
 0 6 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 cit_director.py --session morning >> logs/cit_pod_audit_$(date +\%Y\%m\%d).log 2>&1
+
+# ── POD BOARD OPS SESSIONS — daily after each pod pipeline ──
+# R&D pod board: 10:30 AM EDT = 14:30 UTC (after 9:45 AM pipeline)
+30 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 rd_pod_board.py >> logs/rd_board_$(date +\%Y\%m\%d).log 2>&1
+# ML pod board: 10:45 AM EDT = 14:45 UTC
+45 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_pod_board.py >> logs/ml_board_$(date +\%Y\%m\%d).log 2>&1

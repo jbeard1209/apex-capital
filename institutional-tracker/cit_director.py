@@ -123,6 +123,105 @@ LOG_DIR          = BASE_DIR / "logs"
 CIT_MORNING_RPT  = DATA_DIR / "cit_morning_report.json"
 CIT_EVENING_RPT  = DATA_DIR / "cit_evening_report.json"
 CIT_PENDING      = DATA_DIR / "cit_pending_proposals.json"
+
+
+# =============================================================================
+# POD PROPOSAL ROUTER
+# Routes CIT/Logic proposals to the correct pod board instead of dumping
+# everything into the main board queue.
+# =============================================================================
+
+_POD_PENDING_FILES = {
+    "rd":    DATA_DIR / "rd_pod_pending.json",
+    "r&d":   DATA_DIR / "rd_pod_pending.json",
+    "pod1":  DATA_DIR / "rd_pod_pending.json",
+    "ml":    DATA_DIR / "ml_pod_pending.json",
+    "pod2":  DATA_DIR / "ml_pod_pending.json",
+    "fi":    DATA_DIR / "fi_pod_pending.json",   # fi_board reads fi_picks_queue; ops via fi_pod_pending
+    "fixed income": DATA_DIR / "fi_pod_pending.json",
+    "fe":    DATA_DIR / "fe_pod_pending.json",
+    "first eagle": DATA_DIR / "fe_pod_pending.json",
+    "etf":   DATA_DIR / "etf_pod_pending.json",
+    "macro": DATA_DIR / "etf_pod_pending.json",
+    "pod3":  DATA_DIR / "etf_pod_pending.json",
+}
+
+_FIRM_LEVEL_KEYWORDS = [
+    "cross-pod", "firm-wide", "all pods", "budget allocation", "cro",
+    "risk posture", "irm", "governance", "firm policy", "main board",
+    "escalate", "chairman",
+]
+
+
+def route_proposal_to_pod(proposal: dict) -> str:
+    """
+    Determine which pod queue a proposal belongs in.
+    Returns: 'rd' | 'ml' | 'fi' | 'fe' | 'etf' | 'main'
+    
+    Rules (in order):
+    1. Explicit pod tag on proposal → use it
+    2. Title/description contains pod keywords → route there
+    3. Firm-level keywords → main board
+    4. Default → rd (most proposals relate to R&D pipeline)
+    """
+    explicit_pod = proposal.get("pod", proposal.get("target_pod", "")).lower().strip()
+    if explicit_pod and explicit_pod in _POD_PENDING_FILES:
+        return explicit_pod
+    if explicit_pod == "main":
+        return "main"
+
+    text = (proposal.get("title","") + " " + proposal.get("description","") + " " + proposal.get("source","")).lower()
+
+    # Firm-level check first
+    if any(kw in text for kw in _FIRM_LEVEL_KEYWORDS):
+        return "main"
+
+    # Pod-specific routing
+    if any(x in text for x in ["fi_", "fi ", "fixed income", "fi board", "fi pipeline", "fi pod", "bond", "credit spread", "fi agent"]):
+        return "fi"
+    if any(x in text for x in ["fe_", "fe ", "first eagle", "fe board", "intrinsic value", "margin of safety", "fe pipeline", "fe agent"]):
+        return "fe"
+    if any(x in text for x in ["ml ", "ml_", "ml model", "auc", "quantitative", "ml pod", "ml agent", "st model", "lt model"]):
+        return "ml"
+    if any(x in text for x in ["etf", "macro", "pod3", "sector rotation", "etf pod", "etf board"]):
+        return "etf"
+
+    return "rd"  # default
+
+
+def submit_to_pod_queue(proposal: dict) -> str:
+    """Submit a proposal to the correct pod queue. Returns the pod name."""
+    pod = route_proposal_to_pod(proposal)
+
+    if pod == "main":
+        target_path = CIT_PENDING
+    else:
+        target_path = _POD_PENDING_FILES.get(pod, DATA_DIR / "rd_pod_pending.json")
+
+    # Load, dedup, append, save
+    try:
+        existing = []
+        if target_path.exists():
+            with open(target_path) as f:
+                existing = json.load(f)
+        if not isinstance(existing, list):
+            existing = []
+
+        # Dedup by title
+        existing_titles = {p.get("title","") for p in existing}
+        if proposal.get("title","") not in existing_titles:
+            proposal["routed_to_pod"] = pod
+            proposal["routed_at"]     = datetime.now().isoformat()
+            existing.append(proposal)
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(target_path, "w") as f:
+                json.dump(existing, f, indent=2, default=str)
+    except Exception as _re:
+        logger.debug(f"  [PodRouter] Routing to {pod} failed: {_re}")
+
+    return pod
+
+
 CIT_BACKLOG      = DATA_DIR / "cit_backlog.json"
 CIT_SENSITIVE    = DATA_DIR / "cit_sensitive.json"
 CIT_APPROVED     = DATA_DIR / "cit_approved_proposals.json"
@@ -3488,11 +3587,14 @@ class CITDirector:
         # ── 4. Persist to files ──────────────────────────────────────────────
         DATA_DIR.mkdir(exist_ok=True)
 
-        # Board queue: append to pending proposals (board votes at next meeting)
-        existing_pending = _load_json_list_safe(CIT_PENDING)
-        existing_pending.extend(board_queue)
-        with open(CIT_PENDING, "w") as f:
-            json.dump(existing_pending, f, indent=2, default=str)
+        # Board queue: route each proposal to the correct pod board
+        # (pod-specific → pod board queue; firm-wide → main board / CIT_PENDING)
+        _pod_routing_summary = {}
+        for _prop in board_queue:
+            _pod_dest = submit_to_pod_queue(_prop)
+            _pod_routing_summary[_pod_dest] = _pod_routing_summary.get(_pod_dest, 0) + 1
+        if _pod_routing_summary:
+            logger.info(f"  [CIT] Proposal routing: {_pod_routing_summary}")
 
         # Backlog: append
         existing_backlog = _load_json_list_safe(CIT_BACKLOG)

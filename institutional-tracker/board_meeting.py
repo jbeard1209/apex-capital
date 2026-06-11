@@ -1,26 +1,27 @@
 # =============================================================================
-# APEX CAPITAL — BOARD COUNCIL MEETING
+# APEX CAPITAL — MAIN BOARD (Firm Oversight)
 # =============================================================================
-# A multi-agent deliberation module. When called, it:
+# The Main Board governs the firm as a whole. It does NOT manage day-to-day
+# pod operations — each pod has its own board for that.
 #
-#   1. Loads the latest Risk Manager and Chief of Staff reports
-#   2. Anonymises both — all agent names stripped, findings presented
-#      as "Portfolio Audit" and "Strategic Brief" so no agent knows
-#      who wrote what (and crucially, the CoS does not learn they were
-#      graded F by the Independent Risk Manager)
-#   3. Distributes the anonymous briefing package to all four senior agents:
-#        • Manager Agent     — execution & capital allocation lens
-#        • Chief of Staff    — process & strategic lens
-#        • Risk Manager      — risk limits & compliance lens
-#        • Independent Risk Manager — governance & accountability lens
-#   4. Each agent produces a structured Position Paper
-#   5. Agreements and dissents are mapped across all four positions
-#   6. A majority-voted Action Plan is produced
-#   7. Manager Agent implements all actionable decisions immediately
-#   8. A full "Meeting Minutes" report is emailed to Chairman Jack Beard
+# Main Board authority:
+#   - Cross-pod risk posture (CRO level decisions)
+#   - Budget reallocation between pods
+#   - Firm-wide policy and governance
+#   - Proposals escalated from pod boards that exceed pod authority
+#   - Quarterly cross-pod performance reviews
+#   - IRM findings that affect the whole firm
 #
-# The Chairman is the only person who knows all four agents participated
-# and who wrote the original source reports.
+# NOT Main Board authority (handled by pod boards):
+#   - Pod-specific agent tuning (→ rd_pod_board, ml_pod_board, fi_board, etc.)
+#   - Investment pick approval (→ each pod's board)
+#   - Pod-level CIT/Logic proposals (→ pod boards via routing in cit_director.py)
+#
+# Board members:
+#   • Manager Agent     — execution & capital allocation lens
+#   • Chief of Staff    — process & strategic lens
+#   • Risk Manager      — risk limits & compliance lens
+#   • Independent Risk Manager — governance & accountability lens
 #
 # Usage:
 #   python3 board_meeting.py

@@ -1069,16 +1069,9 @@ def _submit_board_proposals(findings: list) -> int:
     if not serious:
         return 0
 
-    pending = _load(CIT_PENDING, [])
-    if not isinstance(pending, list):
-        pending = []
-    existing_titles = {p.get("title","") for p in pending}
     added = 0
-
     for f in serious:
-        if f.get("title","") in existing_titles:
-            continue
-        pending.append({
+        proposal = {
             "id":           f"LT-{datetime.now().strftime('%H%M%S')}-{f['rule']}",
             "source":       f"Logic Team / {f.get('agent','?')}",
             "category":     "IMPROVEMENT",
@@ -1091,12 +1084,26 @@ def _submit_board_proposals(findings: list) -> int:
             "why":          f["why_wrong"],
             "created_at":   datetime.now().isoformat(),
             "status":       "pending",
-        })
-        existing_titles.add(f["title"])
+        }
+        # Route to correct pod board instead of dumping everything into main board
+        try:
+            import sys
+            import os
+            _cit_dir = os.path.dirname(os.path.abspath(__file__))
+            if _cit_dir not in sys.path:
+                sys.path.insert(0, _cit_dir)
+            from cit_director import submit_to_pod_queue, route_proposal_to_pod
+            pod_dest = submit_to_pod_queue(proposal)
+            logger.info(f"  LT proposal routed to pod={pod_dest}: {f.get('title','?')[:50]}")
+        except Exception as _re:
+            # Fallback: write directly to main pending
+            pending = _load(CIT_PENDING, [])
+            if not isinstance(pending, list): pending = []
+            if proposal["title"] not in {p.get("title","") for p in pending}:
+                pending.append(proposal)
+                _save(CIT_PENDING, pending)
         added += 1
 
-    if added:
-        _save(CIT_PENDING, pending)
     return added
 
 
