@@ -232,8 +232,14 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception:
         pass
 
-    # Record start time in state so completion heartbeat can log duration
-    state["_pipeline_start"] = datetime.now().isoformat()
+    # Dead-man's switch needs state for duration logging — load early if not already loaded
+    # (full state load happens later at Step 1, but DMS needs _pipeline_start now)
+    try:
+        _early_state = load_state()
+        _early_state["_pipeline_start"] = datetime.now().isoformat()
+        save_state(_early_state)
+    except Exception:
+        pass
 
     # ── Dead-man's switch ─────────────────────────────────────────────────
     # Checks TWO signals:
