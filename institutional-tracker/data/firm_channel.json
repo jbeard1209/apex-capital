@@ -1,13 +1,5 @@
 [
   {
-    "ts": "2026-06-07T02:41:20.094832",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-07T03:12:38.559672",
     "date": "2026-06-07",
     "agent": "R&D Team Leader",
@@ -3998,5 +3990,13 @@
     "category": "COHERENCE_NOTE",
     "priority": "NORMAL",
     "content": "\u2139\ufe0f LOGIC TEAM \u2014 4 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML model running but no live picks are being tracked for real-world validation\n  [MEDIUM] ML pod has $30,000 capital but zero live picks logged"
+  },
+  {
+    "ts": "2026-06-11T01:22:10.662716",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 6 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML model running but no live picks are being tracked for real-world validation\n  [MEDIUM] ML pod has $30,000 capital but zero live picks logged\n  [MEDIUM] 5 open positions have no review recommendation\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
   }
 ]

@@ -110,3 +110,15 @@
 
 # ── OVERNIGHT ML RUNNER — 11 PM EDT = 03:00 UTC, Mon-Fri ──
 0 3 * * 2-6 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 overnight_ml_runner.py >> logs/ml_overnight_$(date +\%Y\%m\%d).log 2>&1
+
+# ── FIRST EAGLE PIPELINE — 11:00 AM EDT = 15:00 UTC, Mon-Fri ──
+# FE Lane 4: $5,000 capital, deep value / intrinsic value strategy
+0 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 fe_pipeline.py >> logs/fe_$(date +\%Y\%m\%d).log 2>&1
+
+# ── AUTO COMMIT + PUSH — 11 PM EDT = 03:00 UTC, daily ──
+# Saves all pipeline data, findings, and any code changes to GitHub nightly
+0 3 * * * cd "/Users/jackbeard/Claude investment strategy" && git add -A && git diff --cached --quiet || git commit -m "Nightly auto-save: pipeline data + findings $(date +\%Y-\%m-\%d)" && git push origin main >> /tmp/apex_git_$(date +\%Y\%m\%d).log 2>&1
+
+# ── LOGIC TEAM TRAINER — Sunday 1 AM EDT = 05:00 UTC weekly ──
+# Runs adversarial training scenarios, grades agent performance, logs results
+0 5 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team_trainer.py >> logs/lt_trainer_$(date +\%Y\%m\%d).log 2>&1

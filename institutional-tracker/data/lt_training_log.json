@@ -1,0 +1,4835 @@
+{
+  "runs": [
+    {
+      "ts": "2026-06-11T01:20:15.941639",
+      "scenarios_run": 13,
+      "grades": {
+        "PipelineLogicAgent": "F",
+        "CapitalLogicAgent": "F",
+        "GovernanceLogicAgent": "A",
+        "PerformanceLogicAgent": "F",
+        "AgentHealthLogicAgent": "A",
+        "StrategyLogicAgent": "A",
+        "MLLogicAgent": "F"
+      },
+      "scenario_results": [
+        {
+          "scenario": "pipeline_truly_dark",
+          "description": "36 active agents, canary GREEN, CRO LOW, but zero picks for 5 days. This is a genuine pipeline failure \u2014 not CRO blocking.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.929949"
+        },
+        {
+          "scenario": "pipeline_dark_cro_blocked",
+          "description": "CRO=HIGH is blocking buys. Pipeline ran fine. PipelineLogicAgent should NOT fire pipeline dark \u2014 this is expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "FALSE_POSITIVE",
+              "score": -1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.930969"
+        },
+        {
+          "scenario": "fi_pipeline_stale",
+          "description": "FI agents are in the registry but fi_pipeline_report is 10 days old.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.931945"
+        },
+        {
+          "scenario": "capital_totally_idle",
+          "description": "All 3 pods have $30k budget but zero positions and CRO is LOW. No excuse for idle capital \u2014 this is a deployment failure.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 3,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.932896"
+        },
+        {
+          "scenario": "capital_idle_but_cro_justified",
+          "description": "Pods idle because CRO=CRITICAL. This is the right posture.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "FALSE_POSITIVE",
+              "score": -1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.933828"
+        },
+        {
+          "scenario": "board_never_met",
+          "description": "Board meeting report is missing entirely \u2014 governance gap.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.934761"
+        },
+        {
+          "scenario": "cro_high_forever",
+          "description": "CRO=HIGH for 20 cycles (80 days) with no board vote. This should trigger governance finding.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.935724"
+        },
+        {
+          "scenario": "ml_model_below_random",
+          "description": "ST model AUC dropped to 0.47 \u2014 worse than random. Must be flagged.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.936700"
+        },
+        {
+          "scenario": "performance_healthy",
+          "description": "AUC=0.63, portfolio +3%, all systems normal. Clean run.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "FALSE_POSITIVE",
+              "score": -1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "FALSE_POSITIVE",
+              "score": -1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "FALSE_POSITIVE",
+              "score": -1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.937686"
+        },
+        {
+          "scenario": "mass_agent_retirement",
+          "description": "Only 3 active agents remain out of 38. Mass retirement should trigger health alert.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.938660"
+        },
+        {
+          "scenario": "agents_all_on_pip",
+          "description": "15 agents simultaneously on Performance Improvement Plans. Statistically impossible without a system-level cause.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.939588"
+        },
+        {
+          "scenario": "paralysis_genuine",
+          "description": "CRO has blocked all buys for 12+ cycles. No positions opened. This is strategy paralysis.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.940522"
+        },
+        {
+          "scenario": "ml_pod_funded_no_validation",
+          "description": "ML pod has $30k but zero live picks logged. Can't know if model works.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:20:15.941446"
+        }
+      ],
+      "agent_scores": {
+        "PipelineLogicAgent": {
+          "score": 1,
+          "total": 4,
+          "passes": 2,
+          "misses": 0,
+          "fp": 2,
+          "neutral": 8
+        },
+        "CapitalLogicAgent": {
+          "score": 0,
+          "total": 2,
+          "passes": 1,
+          "misses": 0,
+          "fp": 1,
+          "neutral": 11
+        },
+        "GovernanceLogicAgent": {
+          "score": 11,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 2
+        },
+        "PerformanceLogicAgent": {
+          "score": 0,
+          "total": 2,
+          "passes": 1,
+          "misses": 0,
+          "fp": 1,
+          "neutral": 11
+        },
+        "AgentHealthLogicAgent": {
+          "score": 13,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 0
+        },
+        "StrategyLogicAgent": {
+          "score": 10,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 3
+        },
+        "MLLogicAgent": {
+          "score": 1,
+          "total": 3,
+          "passes": 2,
+          "misses": 0,
+          "fp": 1,
+          "neutral": 10
+        }
+      }
+    },
+    {
+      "ts": "2026-06-11T01:21:18.998653",
+      "scenarios_run": 13,
+      "grades": {
+        "PipelineLogicAgent": "A",
+        "CapitalLogicAgent": "A",
+        "GovernanceLogicAgent": "A",
+        "PerformanceLogicAgent": "A",
+        "AgentHealthLogicAgent": "A",
+        "StrategyLogicAgent": "A",
+        "MLLogicAgent": "A"
+      },
+      "scenario_results": [
+        {
+          "scenario": "pipeline_truly_dark",
+          "description": "36 active agents, canary GREEN, CRO LOW, but zero picks for 5 days. This is a genuine pipeline failure \u2014 not CRO blocking.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.986903"
+        },
+        {
+          "scenario": "pipeline_dark_cro_blocked",
+          "description": "CRO=HIGH is blocking buys. Pipeline ran fine. PipelineLogicAgent should NOT fire pipeline dark \u2014 this is expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.987844"
+        },
+        {
+          "scenario": "fi_pipeline_stale",
+          "description": "FI agents are in the registry but fi_pipeline_report is 10 days old.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.988768"
+        },
+        {
+          "scenario": "capital_totally_idle",
+          "description": "All 3 pods have $30k budget but zero positions and CRO is LOW. No excuse for idle capital \u2014 this is a deployment failure.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 3,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.989744"
+        },
+        {
+          "scenario": "capital_idle_but_cro_justified",
+          "description": "Pods idle because CRO=CRITICAL. This is the right posture.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.990657"
+        },
+        {
+          "scenario": "board_never_met",
+          "description": "Board meeting report is missing entirely \u2014 governance gap.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.991537"
+        },
+        {
+          "scenario": "cro_high_forever",
+          "description": "CRO=HIGH for 20 cycles (80 days) with no board vote. This should trigger governance finding.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.992424"
+        },
+        {
+          "scenario": "ml_model_below_random",
+          "description": "ST model AUC dropped to 0.47 \u2014 worse than random. Must be flagged.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.993403"
+        },
+        {
+          "scenario": "performance_healthy",
+          "description": "AUC=0.63, portfolio +3%, all systems normal. Clean run expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:21:18.994522"
+        },
+        {
+          "scenario": "mass_agent_retirement",
+          "description": "Only 3 active agents remain out of 38. Mass retirement should trigger health alert.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.995528"
+        },
+        {
+          "scenario": "agents_all_on_pip",
+          "description": "15 agents simultaneously on Performance Improvement Plans. Statistically impossible without a system-level cause.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.996485"
+        },
+        {
+          "scenario": "paralysis_genuine",
+          "description": "CRO has blocked all buys for 12+ cycles. No positions opened. This is strategy paralysis.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.997420"
+        },
+        {
+          "scenario": "ml_pod_funded_no_validation",
+          "description": "ML pod has $30k but zero live picks logged. Can't know if model works.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:21:18.998303"
+        }
+      ],
+      "agent_scores": {
+        "PipelineLogicAgent": {
+          "score": 3,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 10
+        },
+        "CapitalLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 12
+        },
+        "GovernanceLogicAgent": {
+          "score": 11,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 2
+        },
+        "PerformanceLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 12
+        },
+        "AgentHealthLogicAgent": {
+          "score": 13,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 0
+        },
+        "StrategyLogicAgent": {
+          "score": 10,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 3
+        },
+        "MLLogicAgent": {
+          "score": 2,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 11
+        }
+      }
+    },
+    {
+      "ts": "2026-06-11T01:22:52.978427",
+      "scenarios_run": 19,
+      "grades": {
+        "PipelineLogicAgent": "A",
+        "CapitalLogicAgent": "A",
+        "GovernanceLogicAgent": "A",
+        "PerformanceLogicAgent": "A",
+        "AgentHealthLogicAgent": "A",
+        "StrategyLogicAgent": "A",
+        "MLLogicAgent": "A",
+        "DataIntegrityLogicAgent": "A",
+        "CommunicationLogicAgent": "A",
+        "RiskCoherenceLogicAgent": "A"
+      },
+      "scenario_results": [
+        {
+          "scenario": "pipeline_truly_dark",
+          "description": "36 active agents, canary GREEN, CRO LOW, but zero picks for 5 days. This is a genuine pipeline failure \u2014 not CRO blocking.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.848602"
+        },
+        {
+          "scenario": "pipeline_dark_cro_blocked",
+          "description": "CRO=HIGH is blocking buys. Pipeline ran fine. PipelineLogicAgent should NOT fire pipeline dark \u2014 this is expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:52.856189"
+        },
+        {
+          "scenario": "fi_pipeline_stale",
+          "description": "FI agents are in the registry but fi_pipeline_report is 10 days old.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.863630"
+        },
+        {
+          "scenario": "capital_totally_idle",
+          "description": "All 3 pods have $30k budget but zero positions and CRO is LOW. No excuse for idle capital \u2014 this is a deployment failure.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 3,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.871012"
+        },
+        {
+          "scenario": "capital_idle_but_cro_justified",
+          "description": "Pods idle because CRO=CRITICAL. This is the right posture.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:52.879686"
+        },
+        {
+          "scenario": "board_never_met",
+          "description": "Board meeting report is missing entirely \u2014 governance gap.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.886744"
+        },
+        {
+          "scenario": "cro_high_forever",
+          "description": "CRO=HIGH for 20 cycles (80 days) with no board vote. This should trigger governance finding.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:52.893433"
+        },
+        {
+          "scenario": "ml_model_below_random",
+          "description": "ST model AUC dropped to 0.47 \u2014 worse than random. Must be flagged.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.900906"
+        },
+        {
+          "scenario": "performance_healthy",
+          "description": "AUC=0.63, portfolio +3%, all systems normal. Clean run expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.907454"
+        },
+        {
+          "scenario": "mass_agent_retirement",
+          "description": "Only 3 active agents remain out of 38. Mass retirement should trigger health alert.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.914690"
+        },
+        {
+          "scenario": "agents_all_on_pip",
+          "description": "15 agents simultaneously on Performance Improvement Plans. Statistically impossible without a system-level cause.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.922058"
+        },
+        {
+          "scenario": "paralysis_genuine",
+          "description": "CRO has blocked all buys for 12+ cycles. No positions opened. This is strategy paralysis.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:52.929498"
+        },
+        {
+          "scenario": "ml_pod_funded_no_validation",
+          "description": "ML pod has $30k but zero live picks logged. Can't know if model works.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.936274"
+        },
+        {
+          "scenario": "ghost_positions",
+          "description": "state.json has 8 positions that review_recommendations doesn't know about.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.942916"
+        },
+        {
+          "scenario": "data_all_consistent",
+          "description": "All data files consistent \u2014 no ghost positions, pods match.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.950285"
+        },
+        {
+          "scenario": "email_buffer_overflow",
+          "description": "25 emails queued in buffer \u2014 volume exceeds absorption.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.956891"
+        },
+        {
+          "scenario": "canary_red_positions_open",
+          "description": "Canary=RED but 8 positions still open. Defensive exits not triggered.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            }
+          },
+          "ts": "2026-06-11T01:22:52.964181"
+        },
+        {
+          "scenario": "risk_signals_contradicting",
+          "description": "IRM has 3 red flags but CRO shows LOW. Signals contradict.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:22:52.970915"
+        },
+        {
+          "scenario": "risk_all_coherent",
+          "description": "CRO=ELEVATED, Canary=YELLOW, IRM has 1 flag. All pointing same direction.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:52.977905"
+        }
+      ],
+      "agent_scores": {
+        "PipelineLogicAgent": {
+          "score": 3,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 16
+        },
+        "CapitalLogicAgent": {
+          "score": 3,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 16
+        },
+        "GovernanceLogicAgent": {
+          "score": 16,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 3
+        },
+        "PerformanceLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 18
+        },
+        "AgentHealthLogicAgent": {
+          "score": 19,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 0
+        },
+        "StrategyLogicAgent": {
+          "score": 15,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 4
+        },
+        "MLLogicAgent": {
+          "score": 2,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 17
+        },
+        "DataIntegrityLogicAgent": {
+          "score": 2,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 17
+        },
+        "CommunicationLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 18
+        },
+        "RiskCoherenceLogicAgent": {
+          "score": 14,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 5
+        }
+      }
+    },
+    {
+      "ts": "2026-06-11T01:22:55.917691",
+      "scenarios_run": 19,
+      "grades": {
+        "PipelineLogicAgent": "A",
+        "CapitalLogicAgent": "A",
+        "GovernanceLogicAgent": "A",
+        "PerformanceLogicAgent": "A",
+        "AgentHealthLogicAgent": "A",
+        "StrategyLogicAgent": "A",
+        "MLLogicAgent": "A",
+        "DataIntegrityLogicAgent": "A",
+        "CommunicationLogicAgent": "A",
+        "RiskCoherenceLogicAgent": "A"
+      },
+      "scenario_results": [
+        {
+          "scenario": "pipeline_truly_dark",
+          "description": "36 active agents, canary GREEN, CRO LOW, but zero picks for 5 days. This is a genuine pipeline failure \u2014 not CRO blocking.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.792416"
+        },
+        {
+          "scenario": "pipeline_dark_cro_blocked",
+          "description": "CRO=HIGH is blocking buys. Pipeline ran fine. PipelineLogicAgent should NOT fire pipeline dark \u2014 this is expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:55.799930"
+        },
+        {
+          "scenario": "fi_pipeline_stale",
+          "description": "FI agents are in the registry but fi_pipeline_report is 10 days old.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.806609"
+        },
+        {
+          "scenario": "capital_totally_idle",
+          "description": "All 3 pods have $30k budget but zero positions and CRO is LOW. No excuse for idle capital \u2014 this is a deployment failure.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 3,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.813748"
+        },
+        {
+          "scenario": "capital_idle_but_cro_justified",
+          "description": "Pods idle because CRO=CRITICAL. This is the right posture.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:55.820401"
+        },
+        {
+          "scenario": "board_never_met",
+          "description": "Board meeting report is missing entirely \u2014 governance gap.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.826936"
+        },
+        {
+          "scenario": "cro_high_forever",
+          "description": "CRO=HIGH for 20 cycles (80 days) with no board vote. This should trigger governance finding.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:55.834463"
+        },
+        {
+          "scenario": "ml_model_below_random",
+          "description": "ST model AUC dropped to 0.47 \u2014 worse than random. Must be flagged.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.841217"
+        },
+        {
+          "scenario": "performance_healthy",
+          "description": "AUC=0.63, portfolio +3%, all systems normal. Clean run expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.848137"
+        },
+        {
+          "scenario": "mass_agent_retirement",
+          "description": "Only 3 active agents remain out of 38. Mass retirement should trigger health alert.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.854619"
+        },
+        {
+          "scenario": "agents_all_on_pip",
+          "description": "15 agents simultaneously on Performance Improvement Plans. Statistically impossible without a system-level cause.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.861640"
+        },
+        {
+          "scenario": "paralysis_genuine",
+          "description": "CRO has blocked all buys for 12+ cycles. No positions opened. This is strategy paralysis.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            }
+          },
+          "ts": "2026-06-11T01:22:55.868591"
+        },
+        {
+          "scenario": "ml_pod_funded_no_validation",
+          "description": "ML pod has $30k but zero live picks logged. Can't know if model works.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.875082"
+        },
+        {
+          "scenario": "ghost_positions",
+          "description": "state.json has 8 positions that review_recommendations doesn't know about.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.882500"
+        },
+        {
+          "scenario": "data_all_consistent",
+          "description": "All data files consistent \u2014 no ghost positions, pods match.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.889257"
+        },
+        {
+          "scenario": "email_buffer_overflow",
+          "description": "25 emails queued in buffer \u2014 volume exceeds absorption.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.896361"
+        },
+        {
+          "scenario": "canary_red_positions_open",
+          "description": "Canary=RED but 8 positions still open. Defensive exits not triggered.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            }
+          },
+          "ts": "2026-06-11T01:22:55.903231"
+        },
+        {
+          "scenario": "risk_signals_contradicting",
+          "description": "IRM has 3 red flags but CRO shows LOW. Signals contradict.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            }
+          },
+          "ts": "2026-06-11T01:22:55.909852"
+        },
+        {
+          "scenario": "risk_all_coherent",
+          "description": "CRO=ELEVATED, Canary=YELLOW, IRM has 1 flag. All pointing same direction.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-11T01:22:55.917098"
+        }
+      ],
+      "agent_scores": {
+        "PipelineLogicAgent": {
+          "score": 3,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 16
+        },
+        "CapitalLogicAgent": {
+          "score": 3,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 16
+        },
+        "GovernanceLogicAgent": {
+          "score": 16,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 3
+        },
+        "PerformanceLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 18
+        },
+        "AgentHealthLogicAgent": {
+          "score": 19,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 0
+        },
+        "StrategyLogicAgent": {
+          "score": 15,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 4
+        },
+        "MLLogicAgent": {
+          "score": 2,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 17
+        },
+        "DataIntegrityLogicAgent": {
+          "score": 2,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 17
+        },
+        "CommunicationLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 18
+        },
+        "RiskCoherenceLogicAgent": {
+          "score": 14,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 5
+        }
+      }
+    }
+  ],
+  "agent_lifetime_scores": {
+    "PipelineLogicAgent": {
+      "score": 10,
+      "total": 10,
+      "passes": 8,
+      "misses": 0,
+      "fp": 2,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917674"
+    },
+    "CapitalLogicAgent": {
+      "score": 7,
+      "total": 5,
+      "passes": 4,
+      "misses": 0,
+      "fp": 1,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917676"
+    },
+    "GovernanceLogicAgent": {
+      "score": 54,
+      "total": 8,
+      "passes": 8,
+      "misses": 0,
+      "fp": 0,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917678"
+    },
+    "PerformanceLogicAgent": {
+      "score": 3,
+      "total": 5,
+      "passes": 4,
+      "misses": 0,
+      "fp": 1,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917680"
+    },
+    "AgentHealthLogicAgent": {
+      "score": 64,
+      "total": 8,
+      "passes": 8,
+      "misses": 0,
+      "fp": 0,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917681"
+    },
+    "StrategyLogicAgent": {
+      "score": 50,
+      "total": 8,
+      "passes": 8,
+      "misses": 0,
+      "fp": 0,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917683"
+    },
+    "MLLogicAgent": {
+      "score": 7,
+      "total": 9,
+      "passes": 8,
+      "misses": 0,
+      "fp": 1,
+      "runs": 4,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917685"
+    },
+    "DataIntegrityLogicAgent": {
+      "score": 4,
+      "total": 2,
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "runs": 2,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917687"
+    },
+    "CommunicationLogicAgent": {
+      "score": 2,
+      "total": 2,
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "runs": 2,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917688"
+    },
+    "RiskCoherenceLogicAgent": {
+      "score": 28,
+      "total": 4,
+      "passes": 4,
+      "misses": 0,
+      "fp": 0,
+      "runs": 2,
+      "last_grade": "A",
+      "last_run": "2026-06-11T01:22:55.917690"
+    }
+  },
+  "last_run": "2026-06-11T01:22:55.917692"
+}

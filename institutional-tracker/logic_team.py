@@ -205,10 +205,11 @@ class CapitalLogicAgent:
             n_pos    = len(pod.get("positions", {}))
             total_v  = pod.get("total_value", 0) or 0
 
-            if budget >= 20000 and n_pos == 0:
+            cro_blocking_buys = cro in ("CRITICAL",)  # CRITICAL = systemically blocked, expected idle
+            if budget >= 20000 and n_pos == 0 and not cro_blocking_buys:
                 total_idle += total_v
 
-                # R4: Large pod completely idle
+                # R4: Large pod completely idle (not due to CRO=CRITICAL — that's expected)
                 findings.append(_finding(
                     rule=f"idle_pod_{pod_id}",
                     severity="MEDIUM",
@@ -592,6 +593,208 @@ class MLLogicAgent:
 
         return findings
 
+
+# =============================================================================
+# SUB-AGENT 8 — DATA INTEGRITY LOGIC
+# Are the data files internally consistent with each other?
+# Cross-checks that state.json, pod_allocations, review_recommendations,
+# and performance_ledger all tell the same story.
+# =============================================================================
+
+class DataIntegrityLogicAgent:
+    name = "DataIntegrityLogicAgent"
+
+    def run(self, state: dict) -> list:
+        findings = []
+        entry_dates = state.get("entry_dates", {}) or {}
+        pods        = state.get("pod_allocations", {}).get("pods", {}) or {}
+        review      = _load(DATA_DIR / "review_recommendations.json", {})
+        recs        = review.get("recommendations", []) if isinstance(review, dict) else []
+
+        # R18: entry_dates has positions that review_recommendations doesn't know about
+        recs_tickers = {r.get("ticker","") for r in recs}
+        unknown_positions = [t for t in entry_dates if t and t not in recs_tickers]
+        if len(unknown_positions) >= 3:
+            findings.append(_finding(
+                rule="positions_without_reviews",
+                severity="MEDIUM",
+                title=f"{len(unknown_positions)} open positions have no review recommendation",
+                observation=(
+                    f"state.json shows {len(unknown_positions)} position(s) that don't appear "
+                    f"in review_recommendations.json: {unknown_positions[:5]}. "
+                    f"These positions are unmonitored — no stop-loss or exit signal."
+                ),
+                why="The review agent can only manage positions it knows about. Ghost positions "
+                    "accumulate losses silently with no exit trigger.",
+                suggestion="Reconcile: run review_agent.py manually, or check if positions "
+                           "were opened outside the normal pipeline flow.",
+                agent=self.name,
+            ))
+
+        # R19: Pod positions_value doesn't match sum of individual pod positions
+        for pod_id, pod in pods.items():
+            pod_positions = pod.get("positions", {})
+            pod_pos_value = pod.get("positions_value", 0) or 0
+            if pod_positions and pod_pos_value == 0:
+                findings.append(_finding(
+                    rule=f"pod_value_mismatch_{pod_id}",
+                    severity="LOW",
+                    title=f"Pod {pod_id}: has {len(pod_positions)} position(s) but positions_value=0",
+                    observation=f"Pod '{pod_id}' has {len(pod_positions)} tracked position(s) "
+                                f"but pod_allocations.positions_value shows $0. "
+                                f"P&L and capital efficiency tracking is broken for this pod.",
+                    why="Incorrect positions_value means portfolio reporting is wrong, "
+                        "pod-level P&L is unstated, and capital deployment looks worse than it is.",
+                    suggestion="Run pod_ledger.reconcile() or let main.py recalculate on next cycle.",
+                    agent=self.name,
+                ))
+
+        return findings
+
+
+# =============================================================================
+# SUB-AGENT 9 — COMMUNICATION LOGIC
+# Are all agents properly reporting? Are there agents generating noise vs. signal?
+# =============================================================================
+
+class CommunicationLogicAgent:
+    name = "CommunicationLogicAgent"
+
+    def run(self, state: dict) -> list:
+        findings = []
+        from datetime import timedelta
+
+        # Check firm channel for agent silence
+        fc = _load(DATA_DIR / "firm_channel.json", [])
+        if not isinstance(fc, list):
+            fc = []
+
+        if fc:
+            # Find agents that haven't posted in >7 days
+            cutoff = datetime.now() - timedelta(days=7)
+            recent_posters = set()
+            for msg in fc:
+                ts = msg.get("ts","") or msg.get("date","")
+                agent = msg.get("agent","")
+                if ts and agent:
+                    try:
+                        msg_dt = datetime.fromisoformat(ts[:19])
+                        if msg_dt > cutoff:
+                            recent_posters.add(agent)
+                    except Exception:
+                        pass
+
+            expected_agents = {
+                "Chief of Staff", "IRM Director", "Canary Agent", "CIT Director",
+                "Logic Team Director", "Operations Director",
+            }
+            silent = expected_agents - recent_posters
+            if silent:
+                findings.append(_finding(
+                    rule="agent_communication_silence",
+                    severity="LOW",
+                    title=f"{len(silent)} expected agent(s) silent on firm channel >7 days",
+                    observation=f"These agents have not posted to the firm channel in 7+ days: "
+                                f"{', '.join(sorted(silent))}. Either they're not running or "
+                                f"their output isn't reaching the channel.",
+                    why="Silent agents are invisible agents. If an agent stops communicating, "
+                        "nobody knows whether it's healthy or broken.",
+                    suggestion="Check crontab and most recent logs for each silent agent.",
+                    agent=self.name,
+                ))
+
+        # Check email buffer for excessive volume
+        eb = _load(DATA_DIR / "email_buffer.json", {})
+        buffered = eb.get("buffered", []) if isinstance(eb, dict) else []
+        if len(buffered) > 20:
+            findings.append(_finding(
+                rule="email_buffer_overflow",
+                severity="MEDIUM",
+                title=f"Email buffer has {len(buffered)} unsent emails — Chairman not reading them",
+                observation=f"The email buffer currently holds {len(buffered)} emails awaiting "
+                            f"the daily digest. If this number keeps growing, emails are being "
+                            f"generated faster than they're being consumed.",
+                why="An overflowing email buffer is a signal that communication volume has "
+                    "exceeded what the Chairman can absorb. Quality should replace quantity.",
+                suggestion="Review email_buffer.py flush schedule. Consider suppressing "
+                           "lower-priority senders or increasing digest frequency.",
+                agent=self.name,
+            ))
+
+        return findings
+
+
+# =============================================================================
+# SUB-AGENT 10 — RISK COHERENCE LOGIC
+# Is the risk posture coherent across all signals?
+# CRO, IRM, Canary, and portfolio positions should tell a consistent story.
+# =============================================================================
+
+class RiskCoherenceLogicAgent:
+    name = "RiskCoherenceLogicAgent"
+
+    def run(self, state: dict) -> list:
+        findings = []
+
+        cro_level  = state.get("cro_level", "LOW")
+        canary     = state.get("canary_level", "GREEN")
+        irm_flags  = state.get("irm_flags", 0)
+        entry_dates = state.get("entry_dates", {}) or {}
+        pods        = state.get("pod_allocations", {}).get("pods", {}) or {}
+
+        # R22: Canary=RED but no positions being closed
+        if canary in ("RED", "ORANGE"):
+            total_positions = sum(len(p.get("positions",{})) for p in pods.values())
+            if total_positions > 5:
+                findings.append(_finding(
+                    rule="canary_red_positions_open",
+                    severity="HIGH",
+                    title=f"Canary={canary} but {total_positions} positions still open",
+                    observation=f"The canary is at {canary}, indicating market distress or "
+                                f"system risk. Yet {total_positions} position(s) remain open "
+                                f"with no emergency exit in progress.",
+                    why="Canary RED/ORANGE is supposed to trigger defensive action. "
+                        "Open positions during a distress signal means the risk framework "
+                        "is not connected to position management.",
+                    suggestion="Review canary_agent.py exit triggers. Ensure enforce_canary_exits() "
+                               "is being called and that its thresholds are appropriate.",
+                    agent=self.name,
+                ))
+
+        # R23: IRM has flags but CRO is LOW — signals are contradicting each other
+        if irm_flags >= 2 and cro_level == "LOW":
+            findings.append(_finding(
+                rule="irm_cro_contradiction",
+                severity="MEDIUM",
+                title=f"IRM has {irm_flags} red flag(s) but CRO=LOW — risk signals contradict",
+                observation=f"The Independent Risk Manager is flagging {irm_flags} red flag(s) "
+                            f"while the CRO risk bulletin shows level=LOW. These two risk "
+                            f"monitors should not be pointing in opposite directions.",
+                why="When IRM and CRO disagree, the board doesn't know which signal to trust. "
+                    "This undermines the entire risk governance framework.",
+                suggestion="Board should review both assessments and determine which is correct. "
+                           "One of these agents may have stale data or incorrect thresholds.",
+                agent=self.name,
+            ))
+
+        # R24: CRO=HIGH/CRITICAL but canary is GREEN — another contradiction
+        if cro_level in ("HIGH", "CRITICAL") and canary == "GREEN" and irm_flags == 0:
+            findings.append(_finding(
+                rule="cro_canary_contradiction",
+                severity="LOW",
+                title=f"CRO={cro_level} but Canary=GREEN and IRM has 0 flags",
+                observation=f"The CRO is at {cro_level} (blocking buys) but the canary shows "
+                            f"GREEN and the IRM has no red flags. The CRO may be using stale "
+                            f"data or overly conservative thresholds.",
+                why="If only one of three risk monitors is elevated, it's either catching "
+                    "something the others missed — or it's miscalibrated.",
+                suggestion="Board should review CRO risk_bulletin.json to understand what "
+                           "specific metrics are driving the HIGH rating.",
+                agent=self.name,
+            ))
+
+        return findings
+
 # =============================================================================
 # LOGIC TEAM DIRECTOR
 # =============================================================================
@@ -604,6 +807,9 @@ SUB_AGENTS = [
     AgentHealthLogicAgent(),
     StrategyLogicAgent(),
     MLLogicAgent(),
+    DataIntegrityLogicAgent(),
+    CommunicationLogicAgent(),
+    RiskCoherenceLogicAgent(),
 ]
 
 

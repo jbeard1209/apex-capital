@@ -1,0 +1,102 @@
+{
+  "last_training": "2026-06-11T01:22:55.922406",
+  "scenarios_run": 19,
+  "grades": {
+    "PipelineLogicAgent": "A",
+    "CapitalLogicAgent": "A",
+    "GovernanceLogicAgent": "A",
+    "PerformanceLogicAgent": "A",
+    "AgentHealthLogicAgent": "A",
+    "StrategyLogicAgent": "A",
+    "MLLogicAgent": "A",
+    "DataIntegrityLogicAgent": "A",
+    "CommunicationLogicAgent": "A",
+    "RiskCoherenceLogicAgent": "A"
+  },
+  "agent_detail": {
+    "PipelineLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 3
+    },
+    "CapitalLogicAgent": {
+      "grade": "A",
+      "passes": 1,
+      "misses": 0,
+      "fp": 0,
+      "score": 3
+    },
+    "GovernanceLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 16
+    },
+    "PerformanceLogicAgent": {
+      "grade": "A",
+      "passes": 1,
+      "misses": 0,
+      "fp": 0,
+      "score": 1
+    },
+    "AgentHealthLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 19
+    },
+    "StrategyLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 15
+    },
+    "MLLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 2
+    },
+    "DataIntegrityLogicAgent": {
+      "grade": "A",
+      "passes": 1,
+      "misses": 0,
+      "fp": 0,
+      "score": 2
+    },
+    "CommunicationLogicAgent": {
+      "grade": "A",
+      "passes": 1,
+      "misses": 0,
+      "fp": 0,
+      "score": 1
+    },
+    "RiskCoherenceLogicAgent": {
+      "grade": "A",
+      "passes": 2,
+      "misses": 0,
+      "fp": 0,
+      "score": 14
+    }
+  },
+  "weakest_agents": [
+    [
+      "PipelineLogicAgent",
+      "A"
+    ],
+    [
+      "CapitalLogicAgent",
+      "A"
+    ],
+    [
+      "GovernanceLogicAgent",
+      "A"
+    ]
+  ]
+}
