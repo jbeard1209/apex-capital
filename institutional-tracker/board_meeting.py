@@ -2271,6 +2271,45 @@ def _ops_director_position(briefing: dict) -> dict:
 # next scheduled full board cycle.
 # =============================================================================
 
+_BOARD_VOTE_SYSTEM = """You are a member of the Apex Capital Main Board.
+Apex Capital is an AI paper trading firm with $100k AUM. The CIT (Continuous Improvement Team)
+proposes improvements. You vote to APPROVE or REJECT each proposal.
+
+Key governance rules:
+- CRITICAL/HIGH severity: approve unless it would disrupt live positions without justification
+- MEDIUM: approve if clearly beneficial and low implementation risk
+- LOW: approve only if high confidence and minimal effort
+- STRATEGY/NEW_FEATURE/VISION proposals require 4/4 unanimous approval
+
+Reply in exactly this JSON format (no other text):
+{"vote": "APPROVE" | "REJECT", "reason": "one concise sentence"}"""
+
+
+def _llm_board_vote(prop: dict) -> "tuple[str, str]":
+    """Try LLM vote on a CIT proposal; return (vote, reason) or (None, None)."""
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("board_meeting"):
+            return None, None
+        import json as _j
+        text = (
+            f"Category: {prop.get('category','?')} | Severity: {prop.get('severity','LOW')} | "
+            f"Confidence: {prop.get('confidence',70)}%\n"
+            f"Title: {prop.get('title','?')}\n"
+            f"Description: {prop.get('description','')[:300]}\n"
+            f"Proposed fix: {prop.get('proposed_fix','')[:200]}"
+        )
+        raw = _r(_BOARD_VOTE_SYSTEM, f"Vote on this CIT proposal:\n{text}",
+                 agent_name="board_meeting", max_tokens=150)
+        if not raw:
+            return None, None
+        p = _j.loads(raw.strip())
+        v, r = p.get("vote", "").upper(), p.get("reason", "")
+        return (v, r) if v in ("APPROVE", "REJECT") and r else (None, None)
+    except Exception:
+        return None, None
+
+
 def _run_cit_proposal_vote(proposals: list) -> dict:
     """
     Shared vote logic used by both the full board meeting (Step 4c) and the
@@ -2288,6 +2327,7 @@ def _run_cit_proposal_vote(proposals: list) -> dict:
 
         requires_unanimous = cat in ("STRATEGY", "NEW_FEATURE", "VISION")
 
+        # Rule-based vote count
         vote_yes = 0
         if sev in ("CRITICAL", "HIGH"):
             vote_yes = 4
@@ -2301,16 +2341,31 @@ def _run_cit_proposal_vote(proposals: list) -> dict:
             vote_yes = 2
 
         threshold = 4 if requires_unanimous else 3
-        approved  = vote_yes >= threshold
+
+        # LLM tie-breaker for borderline proposals (vote_yes within 1 of threshold)
+        llm_vote, llm_reason = None, None
+        if abs(vote_yes - threshold) <= 1:
+            llm_vote, llm_reason = _llm_board_vote(prop)
+            if llm_vote == "APPROVE" and vote_yes < threshold:
+                vote_yes = threshold      # LLM tips it over the line
+            elif llm_vote == "REJECT" and vote_yes >= threshold:
+                vote_yes = threshold - 1  # LLM tips it below the line
+
+        approved = vote_yes >= threshold
         voted_ids.append(prop.get("id", ""))
+
+        if llm_reason:
+            prop["board_llm_reason"] = llm_reason
 
         if approved:
             approved_ids.append(prop.get("id", ""))
             n_approved += 1
-            logger.info(f"  ✅ CIT APPROVED [{cat}|{sev}]: {prop.get('title','')[:65]}")
+            _suffix = f" [LLM: {llm_reason[:50]}]" if llm_reason else ""
+            logger.info(f"  ✅ CIT APPROVED [{cat}|{sev}]: {prop.get('title','')[:65]}{_suffix}")
         else:
             n_rejected += 1
-            logger.info(f"  ✗  CIT REJECTED [{cat}|{sev}]: {prop.get('title','')[:65]}")
+            _suffix = f" [LLM: {llm_reason[:50]}]" if llm_reason else ""
+            logger.info(f"  ✗  CIT REJECTED [{cat}|{sev}]: {prop.get('title','')[:65]}{_suffix}")
 
     return {
         "voted":        len(voted_ids),

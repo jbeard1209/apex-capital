@@ -11,6 +11,12 @@
     "fi_board",
     "fe_board",
     "etf_pod_board",
-    "logic_team"
+    "logic_team",
+    "manager_agent",
+    "review_agent",
+    "irm_review",
+    "morning_briefing",
+    "canary_agent",
+    "board_meeting"
   ]
 }

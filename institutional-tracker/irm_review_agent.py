@@ -1175,6 +1175,15 @@ def _build_review_html(sender_name: str, original_subject: str,
     </div>
   </div>
 
+  {(
+    '<div style="background:#0d2137;border:1px solid #58a6ff;border-radius:8px;'
+    'padding:14px 18px;margin-bottom:20px;">'
+    '<div style="color:#58a6ff;font-size:11px;text-transform:uppercase;'
+    'margin-bottom:6px;font-weight:bold;">⬡ Fable 5 IRM Verdict</div>'
+    f'<div style="color:#e6edf3;font-size:14px;line-height:1.7;">{review["llm_verdict"]}</div>'
+    '</div>'
+  ) if review.get("llm_verdict") else ""}
+
   <!-- Findings -->
   <h2 style="color:#e6edf3;font-size:15px;margin-bottom:10px;">IRM Findings</h2>
   <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;
@@ -1364,6 +1373,32 @@ def trigger_irm_review(subject: str, sender_name: str,
         )
         if not meaningful:
             return False
+
+        # Fable 5 LLM verdict synthesis
+        try:
+            from apex_llm import reason as _llm_r, is_available as _llm_ok
+            if _llm_ok("irm_review"):
+                _flags  = "; ".join(review["red_flags"][:3]) or "None"
+                _finds  = "; ".join(review["findings"][:3]) or "None"
+                _board  = "; ".join(board_panel.get("combined_red_flags", [])[:2]) or "None"
+                _raw = _llm_r(
+                    "You are the Apex Capital Independent Risk Manager (IRM). "
+                    "You provide second-opinion risk reviews of agent reports. "
+                    "Write crisp, direct verdict paragraphs — no hedging.",
+                    f"Reviewing: {sender_name} report — '{subject}'\n"
+                    f"IRM confidence: {review['confidence']}\n"
+                    f"Red flags: {_flags}\n"
+                    f"Findings: {_finds}\n"
+                    f"Board panel flags: {_board}\n\n"
+                    "Write a 2-sentence IRM verdict: what is the most significant concern "
+                    "and what specific action the board should consider.",
+                    agent_name="irm_review",
+                    max_tokens=180,
+                )
+                if _raw:
+                    review["llm_verdict"] = _raw.strip()
+        except Exception:
+            pass
 
         html     = _build_review_html(sender_name, subject, review, board_panel)
         irm_subj = f"[IRM REVIEW] {subject}"

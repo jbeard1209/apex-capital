@@ -500,6 +500,39 @@ class ReviewTeamLeader:
         risk_insights      = self._compile_risk_insights(analytics, trades)
         cos_summary        = self._compile_cos_summary(analytics)
 
+        # Fable 5 LLM post-mortem synthesis
+        llm_postmortem = None
+        try:
+            from apex_llm import reason as _llm_r, is_available as _llm_ok
+            if _llm_ok("morning_briefing") and analytics["total_trades"] >= 3:
+                _lessons = "; ".join(analytics.get("lessons", [])[:3]) or "None yet"
+                _patterns = "; ".join(
+                    f"{p.get('pattern','?')}({p.get('count',0)}x)"
+                    for p in analytics.get("pattern_flags", [])[:4]
+                ) or "None"
+                _dir_text = "; ".join(
+                    d.get("rule","?") for d in manager_directives
+                ) or "None"
+                _raw = _llm_r(
+                    "You are the Apex Capital Trade Review Director. You analyse historical "
+                    "trade performance and identify actionable lessons for the Manager Agent.",
+                    f"Closed trades: {analytics['total_trades']} | "
+                    f"Win rate: {analytics.get('win_rate','?')}% | "
+                    f"Avg P&L: {analytics.get('avg_pnl_pct',0):+.1f}% | "
+                    f"vs SPY: {analytics.get('benchmark_delta',0):+.1f}pp\n"
+                    f"Top lessons: {_lessons}\n"
+                    f"Patterns: {_patterns}\n"
+                    f"Directives: {_dir_text}\n\n"
+                    "Write 2-3 sentences: what is the single most important pattern in "
+                    "our trade history and what specific change will improve performance most?",
+                    agent_name="morning_briefing",
+                    max_tokens=200,
+                )
+                if _raw:
+                    llm_postmortem = _raw.strip()
+        except Exception:
+            pass
+
         report = {
             "generated_at":        datetime.now().isoformat(),
             "team":                "Historical Trade Review Team",
@@ -509,6 +542,8 @@ class ReviewTeamLeader:
             "risk_insights":       risk_insights,
             "cos_summary":         cos_summary,
         }
+        if llm_postmortem:
+            report["llm_postmortem"] = llm_postmortem
 
         os.makedirs("data", exist_ok=True)
         with open(REVIEW_RPT_PATH, "w") as f:

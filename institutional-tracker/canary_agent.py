@@ -803,6 +803,47 @@ def _send_alert_email(assessment: dict, state: dict):
   </p>
 </body></html>"""
 
+        # Fable 5 LLM market analysis for ORANGE/RED alerts
+        llm_analysis = None
+        if level in ("RED", "ORANGE"):
+            try:
+                from apex_llm import reason as _llm_r, is_available as _llm_ok
+                if _llm_ok("canary_agent"):
+                    _triggers_text = "; ".join(triggers[:5])
+                    _analysis = _llm_r(
+                        "You are the Apex Capital Canary Agent — a market stress monitor. "
+                        "Write sharp, actionable market commentary for urgent alerts. "
+                        "Be specific about what the readings mean and what to watch.",
+                        f"Alert level: {level}\n"
+                        f"SPY/Futures: {spy_chg:+.2f}% | VIX: {vix:.1f} | "
+                        f"Negative sectors: {neg_sec}/{len(SECTOR_ETFS)} | Market: {mkt}\n"
+                        f"Triggers: {_triggers_text}\n\n"
+                        "Write 2-3 sentences: what is driving this move, what it means for "
+                        "the portfolio, and the single most important thing to watch.",
+                        agent_name="canary_agent",
+                        max_tokens=200,
+                    )
+                    if _analysis:
+                        llm_analysis = _analysis.strip()
+            except Exception:
+                pass
+
+        if llm_analysis:
+            html = html.replace(
+                '<div style="background:#21262d;border-radius:8px;padding:14px 18px;margin-bottom:24px;">'
+                f'\n    <p style="color:#58a6ff;font-weight:bold;margin:0 0 6px 0;">Action Taken</p>'
+                f'\n    <p style="color:#c9d1d9;margin:0;">{action_taken}</p>'
+                '\n  </div>',
+                f'<div style="background:#21262d;border-radius:8px;padding:14px 18px;margin-bottom:16px;">'
+                f'\n    <p style="color:#58a6ff;font-weight:bold;margin:0 0 6px 0;">Market Analysis (Fable 5)</p>'
+                f'\n    <p style="color:#c9d1d9;margin:0;">{llm_analysis}</p>'
+                f'\n  </div>'
+                f'\n  <div style="background:#21262d;border-radius:8px;padding:14px 18px;margin-bottom:24px;">'
+                f'\n    <p style="color:#58a6ff;font-weight:bold;margin:0 0 6px 0;">Action Taken</p>'
+                f'\n    <p style="color:#c9d1d9;margin:0;">{action_taken}</p>'
+                f'\n  </div>',
+            )
+
         subject = (
             f"⚑ CANARY {level} — "
             + (f"SPY {spy_chg:+.1f}% " if spy_chg else "")

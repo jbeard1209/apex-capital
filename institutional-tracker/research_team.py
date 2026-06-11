@@ -245,6 +245,42 @@ class SectorResearchAgent:
             f"| Conviction: {'★'*conviction}"
         )
 
+        # Fable 5 investment thesis
+        llm_thesis = None
+        try:
+            from apex_llm import reason as _r, is_available
+            if conviction >= 3 and is_available("review_agent"):
+                _ctx = (
+                    f"Ticker: {ticker} | Sector: {self.sector_name}\n"
+                    f"Price: ${price:.2f} | Fwd P/E: {fpe:.1f}x | "
+                    f"Rev growth: {rev*100:+.0f}% YoY\n" if (fpe and rev) else
+                    f"Ticker: {ticker} | Sector: {self.sector_name} | Price: ${price:.2f}\n"
+                )
+                _ctx += (
+                    f"Momentum: {mom.get('trend','?')}, RSI={mom.get('rsi_14','?')}, "
+                    f"vs 50MA: {mom.get('pct_from_50ma',0):+.1f}%, "
+                    f"vs 200MA: {mom.get('pct_from_200ma',0):+.1f}%\n"
+                    f"Conviction: {conviction}★\n\n"
+                    "Write a 1-2 sentence investment thesis for this pick. "
+                    "Be specific about WHY this stock is interesting right now."
+                )
+                raw = _r(
+                    f"You are an Apex Capital research analyst covering {self.sector_name}. "
+                    "Write precise, specific investment theses for stock picks. "
+                    "Lead with the most compelling catalyst or signal.",
+                    _ctx,
+                    agent_name="review_agent",
+                    max_tokens=150,
+                )
+                if raw:
+                    llm_thesis = raw.strip()
+        except Exception:
+            pass
+
+        reasons = [full_reason]
+        if llm_thesis:
+            reasons.append(f"[THESIS] {llm_thesis}")
+
         return {
             "ticker":             ticker,
             "short_name":         fund.get("short_name", ticker),
@@ -255,7 +291,7 @@ class SectorResearchAgent:
             "beta":               fund.get("beta"),
             "momentum":           mom,
             "conviction":         conviction,
-            "reasons":            [full_reason],
+            "reasons":            reasons,
         }
 
     # ------------------------------------------------------------------

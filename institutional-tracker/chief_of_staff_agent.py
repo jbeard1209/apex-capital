@@ -2608,6 +2608,36 @@ def _generate_strategic_advice(intel: dict, health: dict,
     if advice_history:
         advice = _check_escalations(advice, advice_history)
 
+    # ── Fable 5 LLM strategic synthesis ───────────────────────────────────
+    # The CoS synthesises all rule-based advice into a single strategic priority
+    try:
+        from apex_llm import reason as _llm_r, is_available as _llm_ok
+        if _llm_ok("morning_briefing"):
+            _advice_lines = "\n".join(
+                f"[{a.get('category','?')}] {a.get('advice','')[:120]}"
+                for a in advice[:8]
+            )
+            _raw = _llm_r(
+                "You are the Apex Capital Chief of Staff. You synthesise intelligence "
+                "from all agents into a single strategic priority for the Chairman. "
+                "Be direct, specific, and action-oriented.",
+                f"Current state: regime={regime}, PDO={pdo_signal}, risk={risk_level}, "
+                f"manager_grade={manager_grade}, deployed={deployed_pct:.0f}%, picks={total_picks}\n\n"
+                f"Rule-based advice items this cycle:\n{_advice_lines}\n\n"
+                "In 2 sentences, give the #1 strategic priority the firm should focus on "
+                "this cycle and why it outweighs everything else.",
+                agent_name="morning_briefing",
+                max_tokens=160,
+            )
+            if _raw:
+                advice.append({
+                    "category": "SYNTHESIS",
+                    "horizon":  "This cycle",
+                    "advice":   f"[CoS Strategic Synthesis] {_raw.strip()}",
+                })
+    except Exception:
+        pass
+
     return advice
 
 

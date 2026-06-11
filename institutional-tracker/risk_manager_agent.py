@@ -573,12 +573,38 @@ def assess_overall_risk(var_metrics: dict, concentration: dict,
         "LOW"
     )
 
-    return {
+    # Fable 5 LLM risk narrative
+    llm_narrative = None
+    try:
+        from apex_llm import reason as _llm_r, is_available as _llm_ok
+        if _llm_ok("morning_briefing") and (flags or risk_score > 0):
+            _flags_text = "; ".join(flags[:4]) or "No flags"
+            _raw = _llm_r(
+                "You are the Apex Capital Chief Risk Officer. You write crisp, specific "
+                "risk narratives that tell the Chairman what actually matters.",
+                f"Risk level: {risk_level} (score={risk_score})\n"
+                f"VaR (1d 95%): {var_pct:.1f}% of portfolio\n"
+                f"Portfolio: ${portfolio_value:,.0f} | Cash: {cash_pct:.0f}%\n"
+                f"Risk flags: {_flags_text}\n\n"
+                "Write 2 sentences: what is the most significant risk right now and "
+                "what specific action should the board take about it?",
+                agent_name="morning_briefing",
+                max_tokens=160,
+            )
+            if _raw:
+                llm_narrative = _raw.strip()
+    except Exception:
+        pass
+
+    result = {
         "risk_level":  risk_level,
         "risk_score":  risk_score,
         "risk_flags":  flags,
         "var_pct_1d":  round(var_pct, 2),
     }
+    if llm_narrative:
+        result["llm_risk_narrative"] = llm_narrative
+    return result
 
 
 # =============================================================================

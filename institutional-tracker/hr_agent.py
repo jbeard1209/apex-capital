@@ -1257,12 +1257,37 @@ def run_hr_review(send_email: bool = False) -> dict:
                         f"Top picks: {', '.join(_ctx.get('top_picks',[])[:3])}. "
                         f"Review conviction calibration against outcomes."
                     )
-                _note = (
+                _base_note = (
                     f"HR coaching ({datetime.now().strftime('%Y-%m-%d')}): "
                     f"Performance rating {_rating}. Issues: {_issues}."
                     + (f" Development plan: {_dev_plan}." if _dev_plan else "")
                     + _ctx_note
                 )
+                # Fable 5 LLM coaching note enrichment
+                _note = _base_note
+                try:
+                    from apex_llm import reason as _llm_r, is_available as _llm_ok
+                    if _llm_ok("morning_briefing"):
+                        _raw = _llm_r(
+                            "You are the Apex Capital HR Development Officer. You write "
+                            "specific, actionable coaching notes for AI agents to improve "
+                            "their performance. Be direct and concrete.",
+                            f"Agent: {_cn} | Rating: {_rating}\n"
+                            f"Issues: {_issues}\n"
+                            f"Dev plan: {_dev_plan}\n"
+                            f"Context: {_ctx_note or 'none'}\n\n"
+                            "Write a 2-sentence coaching note: what specific behavior "
+                            "needs to change and what metric will show improvement.",
+                            agent_name="morning_briefing",
+                            max_tokens=150,
+                        )
+                        if _raw:
+                            _note = (
+                                f"HR coaching ({datetime.now().strftime('%Y-%m-%d')}): "
+                                f"Rating: {_rating}. {_raw.strip()}"
+                            )
+                except Exception:
+                    pass
                 write_coaching_note(_cn, _note)
                 logger.info(f"  [HR] Coaching note written for {_cn} ({_rating})")
                 # Log to issue tracker so underperformance gets tracked to resolution

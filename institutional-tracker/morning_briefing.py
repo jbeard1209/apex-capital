@@ -663,6 +663,47 @@ def run_morning_briefing() -> dict:
     except Exception as _lt_e:
         logger.debug(f"Logic Team injection skipped: {_lt_e}")
 
+    # ── Fable 5 LLM executive summary ─────────────────────────────────────
+    # Generates a crisp "what to watch today" narrative for the Chairman.
+    try:
+        from apex_llm import reason as _llm_r, is_available as _llm_ok
+        if _llm_ok("morning_briefing"):
+            _port = briefing["sections"].get("portfolio", {})
+            _rd   = briefing["sections"].get("rd", {})
+            _alerts_text = "; ".join(
+                a.get("message", str(a)) if isinstance(a, dict) else str(a)
+                for a in briefing.get("alerts", [])[:5]
+            ) or "None"
+            _positions = ", ".join(
+                f"{p['ticker']} {p.get('pnl_pct',0):+.1f}%"
+                for p in _port.get("positions", [])[:8]
+            ) or "none"
+            _ctx = (
+                f"Date: {today}\n"
+                f"Market: {market_status} | Canary: {canary_level} | CRO: {risk_level} | IRM score: {irm_score}/10\n"
+                f"Portfolio: ${_port.get('portfolio_value',0):,.0f} | "
+                f"Deployed: {_port.get('deployed_pct',0):.1f}% | "
+                f"P&L today: {_port.get('pnl_today_pct',0):+.2f}%\n"
+                f"Open positions: {_positions}\n"
+                f"R&D picks available: {_rd.get('pick_count', 0)}\n"
+                f"Alerts: {_alerts_text}\n\n"
+                "Write a crisp 3-sentence 'what to watch today' executive summary for the Chairman. "
+                "Lead with the most important thing, note any risk or opportunity, end with today's priority action."
+            )
+            _summary = _llm_r(
+                "You are the Apex Capital Morning Briefing Agent. You write sharp, "
+                "specific morning summaries for the firm's Chairman. Be direct, concrete, "
+                "and actionable — no filler.",
+                _ctx,
+                agent_name="morning_briefing",
+                max_tokens=220,
+            )
+            if _summary:
+                briefing["llm_executive_summary"] = _summary.strip()
+                logger.info(f"  LLM executive summary generated ({len(_summary)} chars)")
+    except Exception as _llm_e:
+        logger.debug(f"LLM morning summary skipped: {_llm_e}")
+
     return briefing
 
 
