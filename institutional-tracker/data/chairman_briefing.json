@@ -689,6 +689,141 @@
           "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
         }
       ]
+    },
+    {
+      "ts": "2026-06-11T01:08:56.009950",
+      "date": "2026-06-11",
+      "source": "Logic Team",
+      "portfolio": 97547.06,
+      "pnl_vs_start": -2452.9400000000023,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 6,
+      "items": [
+        {
+          "severity": "HIGH",
+          "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
+          "agent": "PipelineLogicAgent",
+          "short": "36 agents active, canary=GREEN, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "agent": "PipelineLogicAgent",
+          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "agent": "PerformanceLogicAgent",
+          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Firm completely inactive \u2014 no positions, no picks, no sells in 14 days",
+          "agent": "StrategyLogicAgent",
+          "short": "The firm has zero open positions, zero picks today, and no sell activity in the past 14 days. It is running but not oper"
+        },
+        {
+          "severity": "LOW",
+          "title": "Key sectors with no active research agent: Energy",
+          "agent": "AgentHealthLogicAgent",
+          "short": "The following important sectors have no active research agent: Energy."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-11T01:09:18.071512",
+      "date": "2026-06-11",
+      "source": "Logic Team",
+      "portfolio": 97547.06,
+      "pnl_vs_start": -2452.9400000000023,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 6,
+      "items": [
+        {
+          "severity": "HIGH",
+          "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
+          "agent": "PipelineLogicAgent",
+          "short": "36 agents active, canary=GREEN, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "agent": "PipelineLogicAgent",
+          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "agent": "PerformanceLogicAgent",
+          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Firm completely inactive \u2014 no positions, no picks, no sells in 14 days",
+          "agent": "StrategyLogicAgent",
+          "short": "The firm has zero open positions, zero picks today, and no sell activity in the past 14 days. It is running but not oper"
+        },
+        {
+          "severity": "LOW",
+          "title": "Key sectors with no active research agent: Energy",
+          "agent": "AgentHealthLogicAgent",
+          "short": "The following important sectors have no active research agent: Energy."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-11T01:15:47.211381",
+      "date": "2026-06-11",
+      "source": "Logic Team",
+      "portfolio": 97547.06,
+      "pnl_vs_start": -2452.9400000000023,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 4,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "agent": "PipelineLogicAgent",
+          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "agent": "PerformanceLogicAgent",
+          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML pod has $30,000 capital but zero live picks logged",
+          "agent": "MLLogicAgent",
+          "short": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated ag"
+        }
+      ]
     }
   ]
 }

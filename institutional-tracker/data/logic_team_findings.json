@@ -594,19 +594,184 @@
           "ts": "2026-06-10T16:37:16.137421"
         }
       ]
+    },
+    {
+      "ts": "2026-06-11T01:08:56.005317",
+      "findings": [
+        {
+          "rule": "zero_picks",
+          "agent": "PipelineLogicAgent",
+          "severity": "HIGH",
+          "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
+          "observation": "36 agents active, canary=GREEN, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days.",
+          "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
+          "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
+          "ts": "2026-06-11T01:08:56.004681"
+        },
+        {
+          "rule": "fi_pipeline_not_running",
+          "agent": "PipelineLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
+          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
+          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
+          "ts": "2026-06-11T01:08:56.004690"
+        },
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
+          "ts": "2026-06-11T01:08:56.004758"
+        },
+        {
+          "rule": "ml_model_not_tracked",
+          "agent": "PerformanceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
+          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
+          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
+          "ts": "2026-06-11T01:08:56.004790"
+        },
+        {
+          "rule": "sector_coverage_gap",
+          "agent": "AgentHealthLogicAgent",
+          "severity": "LOW",
+          "title": "Key sectors with no active research agent: Energy",
+          "observation": "The following important sectors have no active research agent: Energy.",
+          "why_wrong": "Sectors without active agents produce zero picks from those areas. Missing Technology or Financials in particular is a major research blind spot.",
+          "suggestion": "Chief of Staff should spawn new agents for: Energy. Use the Agent Factory in chief_of_staff_agent.py.",
+          "ts": "2026-06-11T01:08:56.004837"
+        },
+        {
+          "rule": "complete_inactivity",
+          "agent": "StrategyLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Firm completely inactive \u2014 no positions, no picks, no sells in 14 days",
+          "observation": "The firm has zero open positions, zero picks today, and no sell activity in the past 14 days. It is running but not operating.",
+          "why_wrong": "A paper trading firm that never trades cannot demonstrate whether its strategy works. Complete inactivity produces no learning signal.",
+          "suggestion": "Board should review: is this intentional (market conditions), a pipeline failure (CIT should investigate), or an ML/research gap?",
+          "ts": "2026-06-11T01:08:56.004855"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-11T01:09:18.068193",
+      "findings": [
+        {
+          "rule": "zero_picks",
+          "agent": "PipelineLogicAgent",
+          "severity": "HIGH",
+          "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
+          "observation": "36 agents active, canary=GREEN, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days.",
+          "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
+          "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
+          "ts": "2026-06-11T01:09:18.067803"
+        },
+        {
+          "rule": "fi_pipeline_not_running",
+          "agent": "PipelineLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
+          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
+          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
+          "ts": "2026-06-11T01:09:18.067810"
+        },
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
+          "ts": "2026-06-11T01:09:18.067877"
+        },
+        {
+          "rule": "ml_model_not_tracked",
+          "agent": "PerformanceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
+          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
+          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
+          "ts": "2026-06-11T01:09:18.067918"
+        },
+        {
+          "rule": "sector_coverage_gap",
+          "agent": "AgentHealthLogicAgent",
+          "severity": "LOW",
+          "title": "Key sectors with no active research agent: Energy",
+          "observation": "The following important sectors have no active research agent: Energy.",
+          "why_wrong": "Sectors without active agents produce zero picks from those areas. Missing Technology or Financials in particular is a major research blind spot.",
+          "suggestion": "Chief of Staff should spawn new agents for: Energy. Use the Agent Factory in chief_of_staff_agent.py.",
+          "ts": "2026-06-11T01:09:18.067973"
+        },
+        {
+          "rule": "complete_inactivity",
+          "agent": "StrategyLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Firm completely inactive \u2014 no positions, no picks, no sells in 14 days",
+          "observation": "The firm has zero open positions, zero picks today, and no sell activity in the past 14 days. It is running but not operating.",
+          "why_wrong": "A paper trading firm that never trades cannot demonstrate whether its strategy works. Complete inactivity produces no learning signal.",
+          "suggestion": "Board should review: is this intentional (market conditions), a pipeline failure (CIT should investigate), or an ML/research gap?",
+          "ts": "2026-06-11T01:09:18.067991"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-11T01:15:47.208045",
+      "findings": [
+        {
+          "rule": "fi_pipeline_not_running",
+          "agent": "PipelineLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
+          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
+          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
+          "ts": "2026-06-11T01:15:47.207656"
+        },
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
+          "ts": "2026-06-11T01:15:47.207727"
+        },
+        {
+          "rule": "ml_model_not_tracked",
+          "agent": "PerformanceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
+          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
+          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
+          "ts": "2026-06-11T01:15:47.207771"
+        },
+        {
+          "rule": "ml_no_live_validation",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML pod has $30,000 capital but zero live picks logged",
+          "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
+          "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
+          "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
+          "ts": "2026-06-11T01:15:47.207826"
+        }
+      ]
     }
   ],
   "latest": [
-    {
-      "rule": "zero_picks",
-      "agent": "PipelineLogicAgent",
-      "severity": "HIGH",
-      "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
-      "observation": "36 agents active, canary=YELLOW, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days.",
-      "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
-      "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
-      "ts": "2026-06-10T16:37:16.105751"
-    },
     {
       "rule": "fi_pipeline_not_running",
       "agent": "PipelineLogicAgent",
@@ -615,7 +780,7 @@
       "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
       "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
       "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-      "ts": "2026-06-10T16:37:16.106218"
+      "ts": "2026-06-11T01:15:47.207656"
     },
     {
       "rule": "idle_pod_pod2_ml",
@@ -625,17 +790,7 @@
       "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
       "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
       "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-      "ts": "2026-06-10T16:37:16.133843"
-    },
-    {
-      "rule": "board_overdue",
-      "agent": "GovernanceLogicAgent",
-      "severity": "MEDIUM",
-      "title": "Board has not met in 999 days despite 2 IRM flags",
-      "observation": "Last board meeting was 999 days ago. The IRM has 2 active red flag(s). These should have triggered a board session.",
-      "why_wrong": "IRM flags that sit unaddressed for >7 days represent a governance failure. The board exists to act on them.",
-      "suggestion": "Trigger a board meeting: `python3 board_meeting.py`. IRM and CRO should be primary agenda items.",
-      "ts": "2026-06-10T16:37:16.134875"
+      "ts": "2026-06-11T01:15:47.207727"
     },
     {
       "rule": "ml_model_not_tracked",
@@ -645,17 +800,17 @@
       "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
       "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
       "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-      "ts": "2026-06-10T16:37:16.135926"
+      "ts": "2026-06-11T01:15:47.207771"
     },
     {
-      "rule": "sector_coverage_gap",
-      "agent": "AgentHealthLogicAgent",
-      "severity": "LOW",
-      "title": "Key sectors with no active research agent: Energy",
-      "observation": "The following important sectors have no active research agent: Energy.",
-      "why_wrong": "Sectors without active agents produce zero picks from those areas. Missing Technology or Financials in particular is a major research blind spot.",
-      "suggestion": "Chief of Staff should spawn new agents for: Energy. Use the Agent Factory in chief_of_staff_agent.py.",
-      "ts": "2026-06-10T16:37:16.137421"
+      "rule": "ml_no_live_validation",
+      "agent": "MLLogicAgent",
+      "severity": "MEDIUM",
+      "title": "ML pod has $30,000 capital but zero live picks logged",
+      "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
+      "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
+      "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
+      "ts": "2026-06-11T01:15:47.207826"
     }
   ]
 }

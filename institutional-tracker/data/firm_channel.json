@@ -1,61 +1,5 @@
 [
   {
-    "ts": "2026-06-07T00:47:34.403148",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T01:05:46.715224",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 109.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T01:05:47.166119",
-    "date": "2026-06-07",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (101h old, threshold 26h): data/risk_manager_report.json has not been updated in 101h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T01:05:53.516929",
-    "date": "2026-06-07",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T01:15:07.842334",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T01:39:56.332578",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-07T02:12:01.455823",
-    "date": "2026-06-07",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-07T02:41:20.094832",
     "date": "2026-06-07",
     "agent": "R&D Team Leader",
@@ -3998,5 +3942,61 @@
     "category": "SECTOR_OBS",
     "content": "Research cycle complete: 19 picks across 0 sectors (17 high-conviction 4\u2605+). Top sectors: . Top picks: TENB, GD, CRWD, PANW, USB.",
     "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-11T01:00:05.372312",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 0 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 97.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T01:08:56.007480",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [HIGH] Research pipeline DARK: 2 days without picks despite 36 active agents\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-11T01:08:56.007488",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML model running but no live picks are being tracked for real-world validation\n  [MEDIUM] Firm completely inactive \u2014 no positions, no picks, no sells in 14 days\n  [LOW] Key sectors with no active research agent: Energy"
+  },
+  {
+    "ts": "2026-06-11T01:09:18.069462",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [HIGH] Research pipeline DARK: 2 days without picks despite 36 active agents\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-11T01:09:18.069472",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML model running but no live picks are being tracked for real-world validation\n  [MEDIUM] Firm completely inactive \u2014 no positions, no picks, no sells in 14 days\n  [LOW] Key sectors with no active research agent: Energy"
+  },
+  {
+    "ts": "2026-06-11T01:10:01.916478",
+    "date": "2026-06-11",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 0 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 105.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-11T01:15:47.209246",
+    "date": "2026-06-11",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 4 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML model running but no live picks are being tracked for real-world validation\n  [MEDIUM] ML pod has $30,000 capital but zero live picks logged"
   }
 ]

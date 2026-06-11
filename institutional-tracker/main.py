@@ -232,6 +232,9 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception:
         pass
 
+    # Record start time in state so completion heartbeat can log duration
+    state["_pipeline_start"] = datetime.now().isoformat()
+
     # ── Dead-man's switch ─────────────────────────────────────────────────
     # Checks TWO signals:
     #   1. pipeline_heartbeat.json  — did the pipeline even start recently?
@@ -1683,6 +1686,21 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # ── Flush log health stats ────────────────────────────────────────────
     try:
         _flush_log_health()
+    except Exception:
+        pass
+
+    # ── Pipeline completion heartbeat ────────────────────────────────────
+    try:
+        import json as _chb_json
+        _chb_path = Path(__file__).parent / "data" / "pipeline_heartbeat.json"
+        with open(_chb_path, "w") as _chb_f:
+            _chb_json.dump({
+                "last_started":   state.get("_pipeline_start", datetime.now().isoformat()),
+                "last_completed": datetime.now().isoformat(),
+                "status":         "completed",
+                "paper_day":      state.get("paper_day", 0),
+                "pid":            os.getpid() if hasattr(os, "getpid") else None,
+            }, _chb_f, indent=2)
     except Exception:
         pass
 

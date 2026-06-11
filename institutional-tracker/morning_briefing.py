@@ -639,6 +639,26 @@ def run_morning_briefing() -> dict:
     except Exception as e:
         logger.debug(f"Morning briefing email error (non-fatal): {e}")
 
+    # ── Inject Logic Team open findings into morning briefing ─────────────
+    try:
+        from logic_team import get_open_findings_summary
+        lt_open = get_open_findings_summary()
+        if lt_open:
+            briefing["logic_team_open"] = lt_open
+            critical_high = [f for f in lt_open if f["severity"] in ("CRITICAL","HIGH")]
+            if critical_high:
+                for cf in critical_high:
+                    briefing["alerts"].append({
+                        "source": "Logic Team",
+                        "severity": cf["severity"],
+                        "message": cf["title"],
+                        "days_open": cf.get("days_open", 0),
+                    })
+        else:
+            briefing["logic_team_open"] = []
+    except Exception as _lt_e:
+        logger.debug(f"Logic Team injection skipped: {_lt_e}")
+
     return briefing
 
 

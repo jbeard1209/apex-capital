@@ -124,8 +124,10 @@ class PipelineLogicAgent:
         days_dark   = state.get("days_since_last_pick", 0) or 0
 
         # R1: Zero picks despite active agents + non-emergency conditions
+        # Only fire if CRO is NOT the reason picks are blocked (CRO is a valid posture, not a bug)
+        cro_is_blocking = cro in ("HIGH", "CRITICAL", "ELEVATED")
         if len(active) >= 5 and canary not in ("RED","ORANGE") and cro != "CRITICAL":
-            if days_dark >= 2 and picks_today == 0:
+            if days_dark >= 2 and picks_today == 0 and not cro_is_blocking:
                 findings.append(_finding(
                     rule="zero_picks",
                     severity="CRITICAL" if days_dark > 5 else "HIGH",
@@ -453,9 +455,10 @@ class AgentHealthLogicAgent:
             ))
 
         # R13: Sector coverage gaps (key sectors with no active agent)
+        # Energy handled by energy_research_team.py (8 dedicated sub-agents, separate from main registry)
         key_sectors = {
             "Technology", "Financials", "Healthcare", "Industrials",
-            "Consumer Discretionary", "Materials", "Energy",
+            "Consumer Discretionary", "Materials",
         }
         covered = {a.get("sector","").strip() for a in active}
         gaps    = [s for s in key_sectors if not any(s.lower() in c.lower() for c in covered)]
@@ -489,7 +492,9 @@ class StrategyLogicAgent:
         cro_level     = state.get("cro_level", "LOW")
         cro_streak    = state.get("cro_streak", 0)
         portfolio_val = state.get("portfolio_value", 0) or 0
-        positions     = state.get("positions", [])
+        # Use entry_dates from state.json (authoritative) not review_recommendations positions
+        entry_dates   = state.get("entry_dates", {}) or {}
+        positions     = state.get("positions", []) or list(entry_dates.keys())
 
         # R14: CRO blocking buys for >30 days — strategy incoherence
         if cro_level in ("HIGH", "CRITICAL") and cro_streak >= 8:
@@ -698,10 +703,13 @@ def _build_state() -> dict:
     except Exception:
         state["ml_auc_st"] = 0
 
-    # Sell log (for StrategyLogicAgent)
+    # Sell log and positions (for StrategyLogicAgent)
     review_data = _load(DATA_DIR / "review_recommendations.json", {})
     state["sell_log"]  = review_data.get("sell_log", []) if isinstance(review_data, dict) else []
     state["positions"] = review_data.get("positions", []) if isinstance(review_data, dict) else []
+    # entry_dates from state.json is authoritative for open positions
+    _main_state = _load(DATA_DIR / "state.json", {})
+    state["entry_dates"] = _main_state.get("entry_dates", {})
 
     return state
 

@@ -94,3 +94,19 @@
 # 8:15 AM EDT = 12:15 UTC, 8:15 PM EDT = 00:15 UTC
 15 12 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team_implementation_agent.py >> logs/lt_impl_$(date +\%Y\%m\%d).log 2>&1
 15 0 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 logic_team_implementation_agent.py >> logs/lt_impl_$(date +\%Y\%m\%d).log 2>&1
+
+# ── FIXED INCOME PIPELINE — 10:30 AM EDT = 14:30 UTC, Mon-Fri ──
+# Runs after morning briefing and pipeline. FI pod: $30k, bond/credit strategy.
+30 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 fi_pipeline.py >> logs/fi_$(date +\%Y\%m\%d).log 2>&1
+
+# ── WAKEUP RECOVERY — at reboot + every 6h ──
+# Detects if the pipeline missed a cycle (e.g. Mac was asleep) and catches up.
+@reboot cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 wakeup_recovery.py >> logs/wakeup_$(date +\%Y\%m\%d).log 2>&1
+0 */6 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 wakeup_recovery.py >> logs/wakeup_$(date +\%Y\%m\%d).log 2>&1
+
+# ── ML LIVE TEST RUNNER — nightly 2 AM EDT = 06:00 UTC ──
+# Standalone run: enters new picks + evaluates any 20-day-old picks
+0 6 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_live_test_runner.py >> logs/ml_live_$(date +\%Y\%m\%d).log 2>&1
+
+# ── OVERNIGHT ML RUNNER — 11 PM EDT = 03:00 UTC, Mon-Fri ──
+0 3 * * 2-6 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 overnight_ml_runner.py >> logs/ml_overnight_$(date +\%Y\%m\%d).log 2>&1

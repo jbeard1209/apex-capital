@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-10T22:00:18.830227",
-  "files_scanned": 84,
-  "total_findings": 110,
+  "generated_at": "2026-06-11T01:09:59.418786",
+  "files_scanned": 85,
+  "total_findings": 111,
   "findings": [
     {
       "agent": "CITCodeInspector",
@@ -242,6 +242,17 @@
       "title": "Possible missing makedirs before file write in fi_pipeline.py:239",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
       "evidence": "fi_pipeline.py line 239: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
+      "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
+      "auto_implementable": false
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
+      "confidence": 55,
+      "title": "Possible missing makedirs before file write in logic_team_implementation_agent.py:70",
+      "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
+      "evidence": "logic_team_implementation_agent.py line 70: `with open(path, \"w\") as f:`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -1217,7 +1228,7 @@
   "severity_counts": {
     "CRITICAL": 0,
     "HIGH": 0,
-    "MEDIUM": 18,
+    "MEDIUM": 19,
     "LOW": 92
   }
 }

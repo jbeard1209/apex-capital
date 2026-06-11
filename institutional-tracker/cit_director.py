@@ -3644,9 +3644,8 @@ class CITDirector:
                     if not _fiid:
                         continue
 
-                    # Code bugs → Chairman (Claude) via CoS meeting request
-                    # "Engineering" is not an agent — code fixes require Claude's intervention.
-                    # Route HIGH/CRITICAL bugs as CoS meeting requests so they surface at next check-in.
+                    # Code bugs → CIT Implementation Agent (LOW/MEDIUM) or Chairman (HIGH/CRITICAL only)
+                    # LOW/MEDIUM code issues are owned by CIT — Chairman only sees critical items.
                     if _fcat in ("BUG_FIX", "QUICK_WIN", "CODE_BUG") or _f.get("proposed_fix"):
                         _fix = _f.get("proposed_fix", _fdesc[:100])
                         if _fsev in ("CRITICAL", "HIGH"):
@@ -3654,12 +3653,15 @@ class CITDirector:
                                 from firm_channel import request_cos_meeting as _rcm
                                 _rcm(
                                     from_agent="CIT Director",
-                                    summary=f"CODE BUG requires Chairman fix: {_ftitle}. Proposed fix: {_fix[:200]}",
+                                    summary=f"HIGH/CRITICAL code bug: {_ftitle}. Fix: {_fix[:200]}",
                                     urgency="HIGH",
                                 )
                             except Exception:
                                 pass
-                        _it.update_issue(_fiid, "ASSIGNED", assigned_to="Chairman (Claude)")
+                            _it.update_issue(_fiid, "ASSIGNED", assigned_to="Chairman (Claude)")
+                        else:
+                            # LOW/MEDIUM → CIT Implementation Agent owns these
+                            _it.update_issue(_fiid, "ASSIGNED", assigned_to="CIT Implementation Agent")
 
                     # Pipeline issues → Chief of Staff for coordination
                     elif _fcat == "PIPELINE":

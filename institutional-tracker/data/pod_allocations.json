@@ -114,7 +114,8 @@
           "signal_source": "Agent 1",
           "opened_at": "2026-06-02T00:15:37.132111"
         }
-      }
+      },
+      "budget": 30000.0
     },
     "pod2_ml": {
       "name": "ML / Quantitative",
@@ -125,7 +126,8 @@
       "total_value": 30000.0,
       "pnl_today": 0.0,
       "pnl_lifetime": 0.0,
-      "positions": {}
+      "positions": {},
+      "budget": 30000.0
     },
     "pod3_macro": {
       "name": "Macro / ETF Rotation",
@@ -161,7 +163,8 @@
           "signal_source": "etf_pod_board",
           "opened_at": "2026-06-09T20:51:17.334576"
         }
-      }
+      },
+      "budget": 30000.0
     }
   }
 }

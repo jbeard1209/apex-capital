@@ -1,9 +1,18 @@
 {
-  "generated_at": "2026-06-10T22:00:25.997753",
+  "generated_at": "2026-06-11T01:09:59.465659",
   "canary_level": "GREEN",
   "cro_level": "ELEVATED",
   "buys_blocked": true,
-  "assigned_sectors": [],
+  "assigned_sectors": [
+    "biotech",
+    "consumer discretionary",
+    "defense & aerospace",
+    "financials",
+    "materials",
+    "regional banks",
+    "retail",
+    "technology"
+  ],
   "streak_agents": [
     {
       "class_name": "SmallCapGrowthAgent",

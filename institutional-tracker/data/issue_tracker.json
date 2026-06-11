@@ -7,13 +7,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.680747",
-    "updated_at": "2026-06-10T22:04:00.218367",
+    "updated_at": "2026-06-11T01:10:01.738277",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0002",
@@ -23,13 +24,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.733080",
-    "updated_at": "2026-06-10T22:04:00.375874",
+    "updated_at": "2026-06-11T01:10:01.740493",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0003",
@@ -39,13 +41,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.769304",
-    "updated_at": "2026-06-10T22:04:00.454456",
+    "updated_at": "2026-06-11T01:10:01.741816",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0004",
@@ -55,13 +58,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.821126",
-    "updated_at": "2026-06-10T22:04:00.557284",
+    "updated_at": "2026-06-11T01:10:01.743169",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0005",
@@ -71,13 +75,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.860714",
-    "updated_at": "2026-06-10T22:04:00.611717",
+    "updated_at": "2026-06-11T01:10:01.744518",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0006",
@@ -87,13 +92,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.874816",
-    "updated_at": "2026-06-10T22:04:00.695999",
+    "updated_at": "2026-06-11T01:10:01.745843",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0007",
@@ -103,13 +109,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.910166",
-    "updated_at": "2026-06-10T22:04:00.717245",
+    "updated_at": "2026-06-11T01:10:01.747390",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0008",
@@ -119,13 +126,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.929293",
-    "updated_at": "2026-06-10T22:04:00.751213",
+    "updated_at": "2026-06-11T01:10:01.748770",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0009",
@@ -135,13 +143,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.934569",
-    "updated_at": "2026-06-10T22:04:00.786367",
+    "updated_at": "2026-06-11T01:10:01.750073",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0010",
@@ -151,13 +160,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.976077",
-    "updated_at": "2026-06-10T22:04:00.861523",
+    "updated_at": "2026-06-11T01:10:01.751409",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0011",
@@ -167,13 +177,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.991453",
-    "updated_at": "2026-06-10T22:04:00.907383",
+    "updated_at": "2026-06-11T01:10:01.752741",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0012",
@@ -183,13 +194,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:09.998597",
-    "updated_at": "2026-06-10T22:04:00.967816",
+    "updated_at": "2026-06-11T01:10:01.754506",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0013",
@@ -199,13 +211,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.032717",
-    "updated_at": "2026-06-10T22:04:01.007878",
+    "updated_at": "2026-06-11T01:10:01.755929",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0014",
@@ -215,13 +228,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.070080",
-    "updated_at": "2026-06-10T22:04:01.066370",
+    "updated_at": "2026-06-11T01:10:01.757248",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0015",
@@ -231,13 +245,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.082599",
-    "updated_at": "2026-06-10T22:04:01.099054",
+    "updated_at": "2026-06-11T01:10:01.759846",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0016",
@@ -247,13 +262,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.089971",
-    "updated_at": "2026-06-10T22:04:01.151577",
+    "updated_at": "2026-06-11T01:10:01.761423",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0017",
@@ -263,13 +279,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.098645",
-    "updated_at": "2026-06-10T22:04:01.229904",
+    "updated_at": "2026-06-11T01:10:01.762863",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0018",
@@ -279,13 +296,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.101857",
-    "updated_at": "2026-06-10T22:04:01.255907",
+    "updated_at": "2026-06-11T01:10:01.764336",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Convert to `logger.info('message %s', var)` style.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0019",
@@ -295,13 +313,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.136302",
-    "updated_at": "2026-06-10T22:04:01.286263",
+    "updated_at": "2026-06-11T01:10:01.766067",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Convert to `logger.info('message %s', var)` style.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0020",
@@ -311,13 +330,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.160790",
-    "updated_at": "2026-06-10T22:04:01.327421",
+    "updated_at": "2026-06-11T01:10:01.767727",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0021",
@@ -327,13 +347,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.187328",
-    "updated_at": "2026-06-10T22:04:01.341937",
+    "updated_at": "2026-06-11T01:10:01.769090",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Convert to `logger.info('message %s', var)` style.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0022",
@@ -343,13 +364,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.229405",
-    "updated_at": "2026-06-10T22:04:01.380617",
+    "updated_at": "2026-06-11T01:10:01.770378",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0023",
@@ -359,13 +381,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.252012",
-    "updated_at": "2026-06-10T22:04:01.421006",
+    "updated_at": "2026-06-11T01:10:01.771736",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0024",
@@ -375,13 +398,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.278425",
-    "updated_at": "2026-06-10T22:04:01.462336",
+    "updated_at": "2026-06-11T01:10:01.773502",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0025",
@@ -391,13 +415,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.290796",
-    "updated_at": "2026-06-10T22:04:01.475277",
+    "updated_at": "2026-06-11T01:10:01.774808",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0026",
@@ -407,13 +432,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.332184",
-    "updated_at": "2026-06-10T22:04:01.518134",
+    "updated_at": "2026-06-11T01:10:01.776104",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0027",
@@ -423,13 +449,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.342464",
-    "updated_at": "2026-06-10T22:04:01.556765",
+    "updated_at": "2026-06-11T01:10:01.777460",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0028",
@@ -439,13 +466,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.404472",
-    "updated_at": "2026-06-10T22:04:01.569383",
+    "updated_at": "2026-06-11T01:10:01.778772",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0029",
@@ -455,13 +483,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.409850",
-    "updated_at": "2026-06-10T22:04:01.610384",
+    "updated_at": "2026-06-11T01:10:01.780651",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0030",
@@ -471,13 +500,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.437940",
-    "updated_at": "2026-06-10T22:04:01.648446",
+    "updated_at": "2026-06-11T01:10:01.782244",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0031",
@@ -487,13 +517,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.476206",
-    "updated_at": "2026-06-10T22:04:01.705724",
+    "updated_at": "2026-06-11T01:10:01.783594",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0032",
@@ -503,13 +534,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.494876",
-    "updated_at": "2026-06-10T22:04:01.748232",
+    "updated_at": "2026-06-11T01:10:01.785003",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0033",
@@ -519,13 +551,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.505987",
-    "updated_at": "2026-06-10T22:04:01.828320",
+    "updated_at": "2026-06-11T01:10:01.786636",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0034",
@@ -535,13 +568,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.531154",
-    "updated_at": "2026-06-10T22:04:01.871204",
+    "updated_at": "2026-06-11T01:10:01.787938",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0035",
@@ -551,13 +585,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.570585",
-    "updated_at": "2026-06-10T22:04:01.884164",
+    "updated_at": "2026-06-11T01:10:01.789211",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0036",
@@ -567,13 +602,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.578060",
-    "updated_at": "2026-06-10T22:04:01.930439",
+    "updated_at": "2026-06-11T01:10:01.790526",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0037",
@@ -583,13 +619,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.598280",
-    "updated_at": "2026-06-10T22:04:01.971369",
+    "updated_at": "2026-06-11T01:10:01.792203",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0038",
@@ -599,13 +636,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.613946",
-    "updated_at": "2026-06-10T22:04:01.986469",
+    "updated_at": "2026-06-11T01:10:01.793521",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0039",
@@ -615,13 +653,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.626578",
-    "updated_at": "2026-06-10T22:04:02.009024",
+    "updated_at": "2026-06-11T01:10:01.794819",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0040",
@@ -631,13 +670,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.651876",
-    "updated_at": "2026-06-10T22:04:02.128077",
+    "updated_at": "2026-06-11T01:10:01.796192",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0041",
@@ -647,13 +687,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.681737",
-    "updated_at": "2026-06-10T22:04:02.154550",
+    "updated_at": "2026-06-11T01:10:01.797806",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0042",
@@ -663,13 +704,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.719839",
-    "updated_at": "2026-06-10T22:04:02.189926",
+    "updated_at": "2026-06-11T01:10:01.799551",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0043",
@@ -679,13 +721,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.757935",
-    "updated_at": "2026-06-10T22:04:02.228772",
+    "updated_at": "2026-06-11T01:10:01.800914",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0044",
@@ -695,13 +738,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.772810",
-    "updated_at": "2026-06-10T22:04:02.319082",
+    "updated_at": "2026-06-11T01:10:01.802190",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0045",
@@ -711,13 +755,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.805816",
-    "updated_at": "2026-06-10T22:04:02.360875",
+    "updated_at": "2026-06-11T01:10:01.803754",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0046",
@@ -727,13 +772,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.847726",
-    "updated_at": "2026-06-10T22:04:02.383090",
+    "updated_at": "2026-06-11T01:10:01.805036",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0047",
@@ -743,13 +789,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.859136",
-    "updated_at": "2026-06-10T22:04:02.408460",
+    "updated_at": "2026-06-11T01:10:01.806316",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0048",
@@ -759,13 +806,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.897905",
-    "updated_at": "2026-06-10T22:04:02.423871",
+    "updated_at": "2026-06-11T01:10:01.807655",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0049",
@@ -775,13 +823,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.937574",
-    "updated_at": "2026-06-10T22:04:02.462536",
+    "updated_at": "2026-06-11T01:10:01.809003",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0050",
@@ -791,13 +840,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.950517",
-    "updated_at": "2026-06-10T22:04:02.482823",
+    "updated_at": "2026-06-11T01:10:01.810718",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0051",
@@ -807,13 +857,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:10.989139",
-    "updated_at": "2026-06-10T22:04:02.518443",
+    "updated_at": "2026-06-11T01:10:01.812004",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0052",
@@ -823,13 +874,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.052941",
-    "updated_at": "2026-06-10T22:04:02.626101",
+    "updated_at": "2026-06-11T01:10:01.813531",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0053",
@@ -839,13 +891,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.081357",
-    "updated_at": "2026-06-10T22:04:02.666986",
+    "updated_at": "2026-06-11T01:10:01.814905",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0054",
@@ -855,13 +908,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.121688",
-    "updated_at": "2026-06-10T22:04:02.713482",
+    "updated_at": "2026-06-11T01:10:01.816249",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0055",
@@ -871,13 +925,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.152302",
-    "updated_at": "2026-06-10T22:04:02.741592",
+    "updated_at": "2026-06-11T01:10:01.817621",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0056",
@@ -887,13 +942,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.175814",
-    "updated_at": "2026-06-10T22:04:02.759260",
+    "updated_at": "2026-06-11T01:10:01.818901",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0057",
@@ -903,13 +959,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.212868",
-    "updated_at": "2026-06-10T22:04:02.782088",
+    "updated_at": "2026-06-11T01:10:01.820220",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0058",
@@ -919,13 +976,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.227552",
-    "updated_at": "2026-06-10T22:04:02.824577",
+    "updated_at": "2026-06-11T01:10:01.821476",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0059",
@@ -935,13 +993,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.269935",
-    "updated_at": "2026-06-10T22:04:02.834935",
+    "updated_at": "2026-06-11T01:10:01.822748",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0060",
@@ -951,13 +1010,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.310074",
-    "updated_at": "2026-06-10T22:04:02.841909",
+    "updated_at": "2026-06-11T01:10:01.824472",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0061",
@@ -967,13 +1027,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.319636",
-    "updated_at": "2026-06-10T22:04:02.880930",
+    "updated_at": "2026-06-11T01:10:01.825864",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0062",
@@ -983,13 +1044,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.356563",
-    "updated_at": "2026-06-10T22:04:02.910329",
+    "updated_at": "2026-06-11T01:10:01.827144",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0063",
@@ -999,13 +1061,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.372035",
-    "updated_at": "2026-06-10T22:04:02.938055",
+    "updated_at": "2026-06-11T01:10:01.828415",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0064",
@@ -1015,13 +1078,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.424204",
-    "updated_at": "2026-06-10T22:04:02.982173",
+    "updated_at": "2026-06-11T01:10:01.829821",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0065",
@@ -1031,13 +1095,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.462846",
-    "updated_at": "2026-06-10T22:04:03.036096",
+    "updated_at": "2026-06-11T01:10:01.831254",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0066",
@@ -1047,13 +1112,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.486081",
-    "updated_at": "2026-06-10T22:04:03.074469",
+    "updated_at": "2026-06-11T01:10:01.832652",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0067",
@@ -1063,13 +1129,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.520645",
-    "updated_at": "2026-06-10T22:04:03.091806",
+    "updated_at": "2026-06-11T01:10:01.833963",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0068",
@@ -1079,13 +1146,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.561224",
-    "updated_at": "2026-06-10T22:04:03.110832",
+    "updated_at": "2026-06-11T01:10:01.835236",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0069",
@@ -1095,13 +1163,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.578277",
-    "updated_at": "2026-06-10T22:04:03.125438",
+    "updated_at": "2026-06-11T01:10:01.836513",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0070",
@@ -1111,13 +1180,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.617410",
-    "updated_at": "2026-06-10T22:04:03.139140",
+    "updated_at": "2026-06-11T01:10:01.837844",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0071",
@@ -1127,13 +1197,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.631167",
-    "updated_at": "2026-06-10T22:04:03.152513",
+    "updated_at": "2026-06-11T01:10:01.839126",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0072",
@@ -1143,13 +1214,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.670822",
-    "updated_at": "2026-06-10T22:04:03.174178",
+    "updated_at": "2026-06-11T01:10:01.840452",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0073",
@@ -1159,13 +1231,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.690701",
-    "updated_at": "2026-06-10T22:04:03.201694",
+    "updated_at": "2026-06-11T01:10:01.841900",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0074",
@@ -1175,13 +1248,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.727932",
-    "updated_at": "2026-06-10T22:04:03.264332",
+    "updated_at": "2026-06-11T01:10:01.843239",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0075",
@@ -1191,13 +1265,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.786223",
-    "updated_at": "2026-06-10T22:04:03.295346",
+    "updated_at": "2026-06-11T01:10:01.844541",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0076",
@@ -1207,13 +1282,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.826525",
-    "updated_at": "2026-06-10T22:04:03.332651",
+    "updated_at": "2026-06-11T01:10:01.845851",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0077",
@@ -1223,13 +1299,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.851466",
-    "updated_at": "2026-06-10T22:04:03.350709",
+    "updated_at": "2026-06-11T01:10:01.847301",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0078",
@@ -1239,13 +1316,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:11.919313",
-    "updated_at": "2026-06-10T22:04:03.370737",
+    "updated_at": "2026-06-11T01:10:01.848970",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0079",
@@ -1255,13 +1333,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.014266",
-    "updated_at": "2026-06-10T22:04:03.446786",
+    "updated_at": "2026-06-11T01:10:01.850563",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0080",
@@ -1271,13 +1350,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.057606",
-    "updated_at": "2026-06-10T22:04:03.478861",
+    "updated_at": "2026-06-11T01:10:01.851879",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0081",
@@ -1287,13 +1367,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.158611",
-    "updated_at": "2026-06-10T22:04:03.497892",
+    "updated_at": "2026-06-11T01:10:01.853157",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0082",
@@ -1303,13 +1384,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.169201",
-    "updated_at": "2026-06-10T22:04:03.517115",
+    "updated_at": "2026-06-11T01:10:01.854684",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0083",
@@ -1319,13 +1401,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.184171",
-    "updated_at": "2026-06-10T22:04:03.555490",
+    "updated_at": "2026-06-11T01:10:01.855991",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0084",
@@ -1335,13 +1418,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.222186",
-    "updated_at": "2026-06-10T22:04:03.562508",
+    "updated_at": "2026-06-11T01:10:01.857270",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0085",
@@ -1351,13 +1435,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.254890",
-    "updated_at": "2026-06-10T22:04:03.600294",
+    "updated_at": "2026-06-11T01:10:01.858998",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0086",
@@ -1367,13 +1452,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.285202",
-    "updated_at": "2026-06-10T22:04:03.640283",
+    "updated_at": "2026-06-11T01:10:01.860331",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0087",
@@ -1383,13 +1469,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.319317",
-    "updated_at": "2026-06-10T22:04:03.694743",
+    "updated_at": "2026-06-11T01:10:01.861650",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0088",
@@ -1399,13 +1486,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.415448",
-    "updated_at": "2026-06-10T22:04:03.722742",
+    "updated_at": "2026-06-11T01:10:01.862936",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0089",
@@ -1415,13 +1503,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.436873",
-    "updated_at": "2026-06-10T22:04:03.750891",
+    "updated_at": "2026-06-11T01:10:01.864364",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0090",
@@ -1431,13 +1520,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.448439",
-    "updated_at": "2026-06-10T22:04:03.793915",
+    "updated_at": "2026-06-11T01:10:01.865749",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0091",
@@ -1447,13 +1537,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.471630",
-    "updated_at": "2026-06-10T22:04:03.880798",
+    "updated_at": "2026-06-11T01:10:01.867058",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0092",
@@ -1463,13 +1554,14 @@
     "severity": "LOW",
     "category": "CODE_BUG",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "CIT Implementation Agent",
     "created_at": "2026-06-10T19:34:12.527828",
-    "updated_at": "2026-06-10T22:04:03.905794",
+    "updated_at": "2026-06-11T01:10:01.868417",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Convert to `logger.info('message %s', var)` style.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: LOW severity items owned by CIT"
   },
   {
     "issue_id": "ISS-0093",
@@ -1479,12 +1571,285 @@
     "severity": "MEDIUM",
     "category": "STRATEGY",
     "status": "ASSIGNED",
-    "assigned_to": "Chairman (Claude)",
+    "assigned_to": "Board + Logic Team",
     "created_at": "2026-06-10T19:34:12.536060",
-    "updated_at": "2026-06-10T22:04:03.934305",
+    "updated_at": "2026-06-11T01:10:01.869719",
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 termination condition. Report generator shows trailing 30/63-day Sharpe vs. benchmark instead of 'Day X/30'.",
-    "escalation_count": 0
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM strategy items go to Board"
+  },
+  {
+    "issue_id": "ISS-0094",
+    "reporter": "CIT",
+    "title": "chief_of_staff_agent.py:2558 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:00:04.930304",
+    "updated_at": "2026-06-11T01:00:05.291476",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0095",
+    "reporter": "CIT",
+    "title": "chief_of_staff_agent.py:2604 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:00:04.935011",
+    "updated_at": "2026-06-11T01:00:05.294405",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0096",
+    "reporter": "CIT",
+    "title": "chief_of_staff_agent.py:3059 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:00:04.938428",
+    "updated_at": "2026-06-11T01:00:05.298008",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0097",
+    "reporter": "CIT",
+    "title": "chief_of_staff_agent.py:3100 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:00:04.941446",
+    "updated_at": "2026-06-11T01:00:05.303739",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0098",
+    "reporter": "CITCodeInspector",
+    "title": "Possible missing makedirs before file write in logic_team_implementation_agent.py:70",
+    "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.702194",
+    "updated_at": "2026-06-11T01:10:01.758575",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0099",
+    "reporter": "CIT",
+    "title": "main.py:1722 \u2014 open() without 'with' statement (file handle leak)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.720936",
+    "updated_at": "2026-06-11T01:10:01.871013",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "Use 'with open(...) as f:' to ensure file handle is always closed.",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0100",
+    "reporter": "CIT",
+    "title": "main.py:920 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.722436",
+    "updated_at": "2026-06-11T01:10:01.872269",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0101",
+    "reporter": "CIT",
+    "title": "main.py:951 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.723677",
+    "updated_at": "2026-06-11T01:10:01.873606",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0102",
+    "reporter": "CIT",
+    "title": "main.py:965 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.725381",
+    "updated_at": "2026-06-11T01:10:01.874893",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0103",
+    "reporter": "CIT",
+    "title": "main.py:994 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.726693",
+    "updated_at": "2026-06-11T01:10:01.876236",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0104",
+    "reporter": "CIT",
+    "title": "main.py:1014 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.728016",
+    "updated_at": "2026-06-11T01:10:01.877503",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0105",
+    "reporter": "CIT",
+    "title": "main.py:1544 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.729341",
+    "updated_at": "2026-06-11T01:10:01.878800",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0106",
+    "reporter": "CIT",
+    "title": "main.py:1626 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.730827",
+    "updated_at": "2026-06-11T01:10:01.880409",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0107",
+    "reporter": "CIT",
+    "title": "main.py:1686 \u2014 silent exception swallowed (except: pass)",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.732449",
+    "updated_at": "2026-06-11T01:10:01.881779",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0108",
+    "reporter": "CIT",
+    "title": "main.py:1297 \u2014 int/float() on .get() result without None guard",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.733820",
+    "updated_at": "2026-06-11T01:10:01.883116",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "Use: x = obj.get('key'); val = float(x) if x is not None else 0.0",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
+  },
+  {
+    "issue_id": "ISS-0109",
+    "reporter": "CIT",
+    "title": "main.py:1298 \u2014 int/float() on .get() result without None guard",
+    "description": "",
+    "severity": "MEDIUM",
+    "category": "CODE_BUG",
+    "status": "ASSIGNED",
+    "assigned_to": "CIT Implementation Agent",
+    "created_at": "2026-06-11T01:10:01.735138",
+    "updated_at": "2026-06-11T01:10:01.884465",
+    "resolved_at": null,
+    "resolution": null,
+    "auto_fix_hint": "Use: x = obj.get('key'); val = float(x) if x is not None else 0.0",
+    "escalation_count": 0,
+    "routing_note": "Auto-routed from Chairman: MEDIUM code bugs owned by CIT"
   }
 ]

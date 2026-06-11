@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-10T22:03:39.126843",
-  "proposals_reviewed": 2,
+  "generated_at": "2026-06-11T01:10:01.191678",
+  "proposals_reviewed": 3,
   "backtester_available": true,
   "validation_log": [
     {
@@ -14,6 +14,13 @@
       "id": "CIT-2026-1452",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LT-010856-zero_picks",
+      "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
+      "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }
