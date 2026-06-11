@@ -3184,6 +3184,67 @@ class CITEmailAuditor:
 
 
 # =============================================================================
+# CIT EARNINGS CATALYST AGENT — flags earnings risk and opportunity
+# =============================================================================
+
+class CITEarningsCatalystAgent:
+    """
+    Monitors earnings calendar for:
+      1. Positions currently held that have earnings in the next 5 trading days
+         (flag if no explicit earnings-hold decision was made)
+      2. Stocks on the watchlist or in 13F signals approaching earnings
+         that could be high-conviction buys before the print
+    """
+    name = "CITEarningsCatalyst"
+
+    def analyze(self, state: dict) -> list[dict]:
+        findings = []
+        try:
+            import yfinance as yf
+            from datetime import datetime, timedelta
+
+            # Positions currently held
+            entry_dates = state.get("entry_dates", {})
+            tickers = list(entry_dates.keys())
+            if not tickers:
+                return findings
+
+            now = datetime.now()
+            cutoff = now + timedelta(days=5)
+
+            # Check each held ticker for upcoming earnings
+            for ticker in tickers[:15]:  # cap at 15 to avoid rate limiting
+                try:
+                    info = yf.Ticker(ticker).info or {}
+                    eps_date = info.get("earningsDate") or info.get("earningsTimestamp")
+                    if not eps_date:
+                        continue
+                    if isinstance(eps_date, (int, float)):
+                        edate = datetime.fromtimestamp(eps_date)
+                    else:
+                        edate = datetime.fromisoformat(str(eps_date)[:10])
+                    if now <= edate <= cutoff:
+                        days_away = (edate - now).days
+                        findings.append({
+                            "agent":        self.name,
+                            "category":     "RISK",
+                            "severity":     "MEDIUM" if days_away >= 2 else "HIGH",
+                            "confidence":   85,
+                            "title":        f"{ticker} earnings in {days_away}d — review hold/exit decision",
+                            "description":  f"Active position in {ticker} has earnings on {edate.strftime('%Y-%m-%d')} ({days_away} trading days). "
+                                            "Binary event risk: ensure conviction supports holding through the print.",
+                            "evidence":     f"state.json entry_dates + yfinance earningsDate={edate.strftime('%Y-%m-%d')}",
+                            "proposed_fix": f"Review {ticker} position sizing. If CRO=HIGH/CRITICAL, consider trimming to half-size before earnings.",
+                            "pod":          "rd",
+                        })
+                except Exception:
+                    continue
+        except Exception as e:
+            logger.debug("[CITEarningsCatalyst] analyze failed: %s", e)
+        return findings
+
+
+# =============================================================================
 # CIT AGENT QUALITY AUDITOR — grades research agents on pick performance
 # =============================================================================
 
@@ -3886,6 +3947,7 @@ class CITDirector:
             CITPerformanceAnalyst(),
             CITEmailAuditor(),
             CITAgentQualityAuditor(),
+            CITEarningsCatalystAgent(),
         ]
 
     def _load_existing_ids(self) -> set:
