@@ -1032,6 +1032,61 @@
           "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
         }
       ]
+    },
+    {
+      "ts": "2026-06-12T00:00:11.732401",
+      "date": "2026-06-12",
+      "source": "Logic Team",
+      "portfolio": 98120.62,
+      "pnl_vs_start": -1879.3800000000047,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 7,
+      "items": [
+        {
+          "severity": "HIGH",
+          "title": "Fixed Income pipeline has never run",
+          "agent": "PodHealthLogicAgent",
+          "short": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produce"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "agent": "PipelineLogicAgent",
+          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML model running but no live picks are being tracked for real-world validation",
+          "agent": "PerformanceLogicAgent",
+          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML pod has $30,000 capital but zero live picks logged",
+          "agent": "MLLogicAgent",
+          "short": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated ag"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "5 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. Th"
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
     }
   ]
 }

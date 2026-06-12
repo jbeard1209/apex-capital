@@ -193,5 +193,200 @@
       "short_interest",
       "momentum"
     ]
+  },
+  {
+    "ts": "2026-06-11T16:07:02.715035",
+    "ticker": "FSLR",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "up 38% in 30d \u2014 momentum exhaustion risk"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:02.992059",
+    "ticker": "RIO",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:03.323950",
+    "ticker": "ORA",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "P/E 66 \u2014 stretched valuation"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:03.563103",
+    "ticker": "CWEN",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 377 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:03.977025",
+    "ticker": "PSX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:04.391012",
+    "ticker": "MPC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:04.710482",
+    "ticker": "LNG",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:05.077474",
+    "ticker": "PCG",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:05.432704",
+    "ticker": "EIX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:05.772852",
+    "ticker": "EVRG",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:05.885988",
+    "ticker": "ENLT",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 230 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:06.121687",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-11T16:07:06.444851",
+    "ticker": "LIN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
   }
 ]

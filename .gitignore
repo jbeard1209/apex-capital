@@ -94,3 +94,6 @@ institutional-tracker/data/historical_13f.db-journal
 institutional-tracker/data/filing_tickers.json
 config/llm_config.json
 *.env
+institutional-tracker/data/historical_13f.db-wal
+institutional-tracker/data/historical_13f.db-shm
+institutional-tracker/data/historical_13f.db-journal

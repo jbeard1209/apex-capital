@@ -1,16 +1,10 @@
 {
-  "checked_at": "2026-06-11T14:50:01.130080",
+  "checked_at": "2026-06-12T02:50:09.050383",
   "issues": [
-    {
-      "severity": "HIGH",
-      "check": "email_loop_detection",
-      "message": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 R&D Team Briefing | Jun 10, 2026\" \u00d711",
-      "auto_fixed": false
-    },
     {
       "severity": "MEDIUM",
       "check": "agent_file_freshness",
-      "message": "1 agent output file(s) are >26h old and no recovery appears in progress: research_team_report.json (47h)",
+      "message": "1 agent output file(s) are >26h old and no recovery appears in progress: research_team_report.json (59h)",
       "auto_fixed": false
     }
   ],

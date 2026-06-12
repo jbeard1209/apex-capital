@@ -1,14 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260610-12-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d76",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-10T12:50:08.693009",
-    "status": "resolved",
-    "resolution_note": "auto-resolved: malformed entry (no title)"
-  },
-  {
     "id": "pip-integrity-20260610-14-email_loop_detection",
     "severity": "HIGH",
     "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d76",
@@ -172,6 +163,14 @@
     "description": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 R&D Team Briefing | Jun 10, 2026\" \u00d711",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-11T14:50:01.130080",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260611-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (4 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:D | Jun 10, 2026\" \u00d77; \"Apex Capital \u2014 R&D Team Briefing | Jun 10, 2026\" \u00d711",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-11T16:50:01.523626",
     "status": "awaiting_chairman"
   }
 ]

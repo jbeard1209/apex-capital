@@ -329,6 +329,24 @@ def run() -> None:
     # ------------------------------------------------------------------
     # 8. Write drift report
     # ------------------------------------------------------------------
+    # ── Fable 5 drift interpretation — gated to WARNING/ALERT ─────────────
+    llm_read = None
+    if status != "OK":
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("ml_improvement"):
+                llm_read = _r(
+                    "You diagnose model drift for a 13F-based stock selection model.",
+                    f"Recent AUC {recent_auc:.3f} vs historical {historical_auc:.3f} "
+                    f"(drift {drift:+.3f}, status {status}). "
+                    f"Samples: {len(recent_df)} recent / {len(historical_df)} historical.\n"
+                    "2 sentences: most likely cause (regime shift vs data issue vs decay), "
+                    "and should the model keep serving picks?",
+                    agent_name="ml_improvement", max_tokens=110,
+                )
+        except Exception:
+            pass
+
     report = {
         "timestamp":       datetime.now(timezone.utc).isoformat(),
         "recent_auc":      round(recent_auc,     4),
@@ -338,6 +356,7 @@ def run() -> None:
         "historical_n":    int(len(historical_df)),
         "status":          status,
         "baseline_auc":    round(baseline_auc, 4),
+        **({"llm_drift_read": llm_read.strip()} if llm_read else {}),
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(REPORT_PATH, "w", encoding="utf-8") as fh:

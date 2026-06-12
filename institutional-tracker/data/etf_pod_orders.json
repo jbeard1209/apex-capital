@@ -1,41 +1,24 @@
 {
-  "generated_at": "2026-06-11T18:32:15.390920",
+  "generated_at": "2026-06-12T00:00:01.149160",
   "pod": "pod3_macro",
   "board_vote": "APPROVED",
   "target_holdings": [
     "XLK",
-    "XLV",
-    "XLF"
+    "QQQ",
+    "XLV"
   ],
-  "orders": [
-    {
-      "action": "SELL",
-      "ticker": "QQQ",
-      "qty": 7,
-      "price": 707.83,
-      "dollar_value": 4954.81,
-      "reason": "QQQ removed from rotation \u2014 not in board's approved ETF list."
-    },
-    {
-      "action": "BUY",
-      "ticker": "XLF",
-      "qty": 107,
-      "price": 52.23,
-      "dollar_value": 5588.61,
-      "reason": "XLF added to rotation. momentum_score=1.38, ret_1m=2.1%, RSI=54.4, trend=neutral."
-    }
-  ],
+  "orders": [],
   "risk_flags": [
-    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'XLV']"
+    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ', 'XLV']"
   ],
   "risk_officer_acknowledged": true,
   "risk_officer_vote": "APPROVE",
   "risk_officer_note": "Risk Officer flags logged and acknowledged. Execution proceeds per board governance: Director + Strategist majority overrides Risk Officer vote.",
   "regime_context": {
-    "label": "neutral",
-    "vix": 20.6,
-    "spy_rsi": NaN,
-    "spy_1d_return": -1.5766,
+    "label": "bull",
+    "vix": 19.4,
+    "spy_rsi": 46.6,
+    "spy_1d_return": 1.6997,
     "overbought": false,
     "warning_count": 0
   },

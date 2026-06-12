@@ -218,6 +218,32 @@ def build_html_report(
     ret_start  = snapshot.get("return_vs_start", 0)
     ret_color  = GREEN if ret_start >= 0 else RED
 
+    # ── Fable 5 daily performance commentary (one call per daily report) ──
+    llm_commentary_html = ""
+    if report_type == "daily":
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("morning_briefing"):
+                pos_txt = ", ".join(
+                    f"{p['ticker']} {p.get('unrealized_pct',0):+.1f}%"
+                    for p in snapshot.get("positions", [])[:8]) or "none"
+                raw = _r(
+                    "You write the daily P&L commentary for an investment firm's Chairman, "
+                    "who is still learning finance. Plain English, no jargon.",
+                    f"Portfolio ${port_val:,.0f} | today {pnl_sign}{pnl_today:.2f}% | "
+                    f"since inception {ret_start:+.1f}%\nPositions: {pos_txt}\n"
+                    "2-3 sentences: what drove today's result and what it means.",
+                    agent_name="morning_briefing", max_tokens=150,
+                )
+                if raw:
+                    llm_commentary_html = (
+                        f'<div style="background:{CARD_BG};border-left:3px solid {GOLD};'
+                        f'padding:12px 18px;margin:16px 0;border-radius:6px;'
+                        f'color:{TEXT_COL};font-size:14px;">🧠 <i>{raw.strip()}</i></div>'
+                    )
+        except Exception:
+            pass
+
     positions_html = ""
     positions = snapshot.get("positions", [])
     if positions:
@@ -345,6 +371,8 @@ def build_html_report(
         {_metric_card("Cash Available",   f"${snapshot.get('cash',0):,.2f}",          GOLD)}
         {_metric_card("Open Positions",   f"{snapshot.get('n_positions',0)}",         BLUE)}
     </div>
+
+    {llm_commentary_html}
 
     {positions_html}
 

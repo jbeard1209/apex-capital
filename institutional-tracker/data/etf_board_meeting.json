@@ -1,23 +1,23 @@
 {
-  "generated_at": "2026-06-11T18:32:15.390920",
+  "generated_at": "2026-06-12T00:00:01.149160",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
   "target_etfs": [
     "XLK",
-    "XLV",
-    "XLF"
+    "QQQ",
+    "XLV"
   ],
   "regime": {
-    "regime_label": "neutral",
-    "bull": false,
-    "bear": true,
-    "vix": 20.6,
-    "spy_rsi": NaN,
+    "regime_label": "bull",
+    "bull": true,
+    "bear": false,
+    "vix": 19.4,
+    "spy_rsi": 46.6,
     "overbought": false,
     "warning_count": 0,
     "rising_rates": false,
-    "momentum_phase": "bear/recovery",
+    "momentum_phase": "early-bull",
     "defensive_rotation_advised": false,
     "historical_analogue": "Post-GFC Bull (2013\u20132015)",
     "analogue_lesson": "Momentum and institutional-follow both fired together. High conviction tech picks significantly outperformed. Following the biggest institutional buyers was highly profitable.",
@@ -26,7 +26,7 @@
       "Healthcare",
       "Consumer Discretionary"
     ],
-    "spy_1d_return": -1.5766,
+    "spy_1d_return": 1.6997,
     "canary_warning": null
   },
   "canary_alerts": null,
@@ -41,26 +41,26 @@
         "member": "ETF Investment Director",
         "recommended_etfs": [
           "XLK",
-          "XLV",
-          "XLF"
+          "QQQ",
+          "XLV"
         ],
         "bear_mode": false,
         "overbought_mode": false,
         "momentum_scores": {
-          "XLK": 5.225,
-          "XLV": 1.9368,
-          "XLF": 1.3768,
-          "QQQ": 1.3489,
-          "XLP": 0.4802,
-          "XLE": -0.6589,
-          "TLT": -1.5691,
-          "XLI": -3.1903,
-          "XLY": -4.5805,
-          "XLB": -4.6812,
-          "XLU": -4.7479,
-          "GLD": -16.5795
+          "XLK": 9.9322,
+          "QQQ": 5.1334,
+          "XLV": 2.3809,
+          "XLF": 2.3076,
+          "XLI": 0.2769,
+          "XLP": -0.1695,
+          "TLT": -0.1829,
+          "XLY": -1.5681,
+          "XLB": -1.9785,
+          "XLE": -3.066,
+          "XLU": -4.8458,
+          "GLD": -13.8837
         },
-        "reasoning": "BULL regime (VIX=20.6, SPY_RSI=nan). Picking top 3 by momentum score. Top 3: [('XLK', 5.22), ('XLV', 1.94), ('XLF', 1.38)]",
+        "reasoning": "BULL regime (VIX=19.4, SPY_RSI=46.6). Picking top 3 by momentum score. Top 3: [('XLK', 9.93), ('QQQ', 5.13), ('XLV', 2.38)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },
@@ -68,11 +68,11 @@
         "member": "ETF Risk Officer",
         "recommended_etfs": [
           "XLK",
-          "XLV",
-          "XLF"
+          "QQQ",
+          "XLV"
         ],
         "risk_flags": [
-          "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'XLV']"
+          "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ', 'XLV']"
         ],
         "critical_flags": 0,
         "fallback_suggestion": null,
@@ -83,12 +83,12 @@
         "member": "ETF Strategist",
         "recommended_etfs": [
           "XLK",
-          "XLV",
-          "XLF"
+          "QQQ",
+          "XLV"
         ],
         "risk_flags": [],
         "sizing_note": "Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
-        "reasoning": "Diversification OK: 3 distinct asset classes across 3 ETFs. R&D alignment: ['XLK', 'XLV', 'XLF'] have strong R&D sector scores (>=7/10). Historical analogue 'Post-GFC Bull (2013\u20132015)' confirms rotation: sectors ['Technology', 'Healthcare', 'Consumer Discretionary'] led in that regime \u2014 overlap with our picks. Sizing: Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
+        "reasoning": "Diversification OK: 2 distinct asset classes across 3 ETFs. R&D alignment: ['XLK', 'XLV'] have strong R&D sector scores (>=7/10). Historical analogue 'Post-GFC Bull (2013\u20132015)' confirms rotation: sectors ['Technology', 'Healthcare', 'Consumer Discretionary'] led in that regime \u2014 overlap with our picks. Sizing: Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
         "analogue_match": true,
         "vote": "APPROVE"
       },
@@ -96,26 +96,26 @@
         "vote": "APPROVED",
         "target_etfs": [
           "XLK",
-          "XLV",
-          "XLF"
+          "QQQ",
+          "XLV"
         ],
         "notes": [
-          "Director + Strategist majority: ETF list = ['XLK', 'XLV', 'XLF']"
+          "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLV']"
         ]
       }
     }
   },
   "reconciliation_notes": [
-    "Director + Strategist majority: ETF list = ['XLK', 'XLV', 'XLF']"
+    "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLV']"
   ],
   "risk_flags": [
-    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'XLV']"
+    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ', 'XLV']"
   ],
   "orders_summary": {
-    "n_buys": 1,
-    "n_sells": 1,
+    "n_buys": 0,
+    "n_sells": 0,
     "n_skipped": 0,
-    "total_buy_value": 5588.61,
-    "total_sell_value": 4954.81
+    "total_buy_value": 0,
+    "total_sell_value": 0
   }
 }
