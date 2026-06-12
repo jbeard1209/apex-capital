@@ -577,6 +577,27 @@ class RDTeamLeader:
                 "assigned_at":        datetime.now().isoformat(),
             })
 
+        # ── Missed-winners coverage injection (Chairman directive 2026-06-12)
+        # Winners the firm never saw get force-added to research coverage so
+        # the same blind spot can't persist two cycles in a row.
+        try:
+            _mw = json.load(open("data/missed_winners_watchlist.json")) \
+                if os.path.exists("data/missed_winners_watchlist.json") else {}
+            _mw_tickers = [t for t in _mw.get("tickers", []) if t]
+            if _mw_tickers and assignments:
+                existing = {t for a in assignments for t in a["watchlist"]}
+                to_add = [t for t in _mw_tickers if t not in existing][:15]
+                if to_add:
+                    # Spread across agents round-robin so no single agent is overloaded
+                    for i, t in enumerate(to_add):
+                        assignments[i % len(assignments)]["watchlist"].append(t)
+                    logger.info(
+                        f"  [R&D Leader] Missed-winners coverage: injected {len(to_add)} "
+                        f"previously-unseen winners into research watchlists: {to_add}"
+                    )
+        except Exception as _mw_e:
+            logger.debug(f"  Missed-winners injection skipped: {_mw_e}")
+
         # ── Fable 5 sector-allocation review (one call per R&D cycle) ─────
         try:
             from apex_llm import reason as _llm_r, is_available as _llm_ok

@@ -156,9 +156,9 @@ def reason(
         return None
 
     model     = cfg.get("model", "claude-sonnet-4-6")
-    # Floor of 300: Fable 5's thinking tokens count against max_tokens, so a
-    # tight cap can truncate before any text is emitted (worst case ~1.5¢).
-    n_tokens  = max(max_tokens or cfg.get("max_tokens", 1024), 300)
+    # Floor of 600: Fable 5's thinking tokens count against max_tokens, so a
+    # tight cap can truncate before any text is emitted (worst case ~3¢).
+    n_tokens  = max(max_tokens or cfg.get("max_tokens", 1024), 600)
     timeout   = cfg.get("timeout_seconds", 30)
 
     try:

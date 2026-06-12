@@ -1,0 +1,137 @@
+{
+  "generated_at": "2026-06-12T19:36:11.924006",
+  "agent": "Missed Winners Agent (R&D)",
+  "lookback_months": 6,
+  "universe_size": 117,
+  "top_n": 20,
+  "capture_rate_pct": 10.0,
+  "status_counts": {
+    "NEVER_SEEN": 6,
+    "PICKED_REJECTED": 7,
+    "TRADED": 2,
+    "SEEN_NO_PICK": 5
+  },
+  "winners": [
+    {
+      "ticker": "MRVL",
+      "return_pct": 294.8,
+      "status": "NEVER_SEEN",
+      "detail": "not in any watchlist or research output"
+    },
+    {
+      "ticker": "AMD",
+      "return_pct": 221.4,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in AMD (via Agent 4) declined \u2014 at max positions (297.6% BP, 16/15). Will revisit when capacity o"
+    },
+    {
+      "ticker": "ARM",
+      "return_pct": 148.3,
+      "status": "TRADED",
+      "detail": "closed WIN +20.7%"
+    },
+    {
+      "ticker": "VRT",
+      "return_pct": 121.5,
+      "status": "NEVER_SEEN",
+      "detail": "not in any watchlist or research output"
+    },
+    {
+      "ticker": "RKLB",
+      "return_pct": 113.0,
+      "status": "NEVER_SEEN",
+      "detail": "not in any watchlist or research output"
+    },
+    {
+      "ticker": "CAT",
+      "return_pct": 103.5,
+      "status": "SEEN_NO_PICK",
+      "detail": "covered by Sector watchlists but no pick generated"
+    },
+    {
+      "ticker": "NUE",
+      "return_pct": 88.6,
+      "status": "NEVER_SEEN",
+      "detail": "not in any watchlist or research output"
+    },
+    {
+      "ticker": "DDOG",
+      "return_pct": 71.3,
+      "status": "PICKED_REJECTED",
+      "detail": "[CANARY ORANGE] DEFENSIVE MODE: All new capital deployment blocked. Canary detected: QQQ down -2.71% intraday; VIX at 22"
+    },
+    {
+      "ticker": "SLB",
+      "return_pct": 64.6,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in SLB (via USFossilFuelsAgent) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit when"
+    },
+    {
+      "ticker": "TSM",
+      "return_pct": 62.6,
+      "status": "NEVER_SEEN",
+      "detail": "not in any watchlist or research output"
+    },
+    {
+      "ticker": "TGT",
+      "return_pct": 57.0,
+      "status": "SEEN_NO_PICK",
+      "detail": "covered by Sector watchlists but no pick generated"
+    },
+    {
+      "ticker": "CRWD",
+      "return_pct": 53.3,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in CRWD (via Agent 1) declined \u2014 at max positions (297.6% BP, 16/15). Will revisit when capacity "
+    },
+    {
+      "ticker": "FCX",
+      "return_pct": 53.0,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in FCX (via EnergyTransitionAgent) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit w"
+    },
+    {
+      "ticker": "LLY",
+      "return_pct": 49.8,
+      "status": "TRADED",
+      "detail": "currently held"
+    },
+    {
+      "ticker": "MRK",
+      "return_pct": 49.1,
+      "status": "SEEN_NO_PICK",
+      "detail": "covered by Sector watchlists but no pick generated"
+    },
+    {
+      "ticker": "MPC",
+      "return_pct": 44.7,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in MPC (via USFossilFuelsAgent) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit when"
+    },
+    {
+      "ticker": "GOOGL",
+      "return_pct": 44.4,
+      "status": "SEEN_NO_PICK",
+      "detail": "covered by Sector watchlists but no pick generated"
+    },
+    {
+      "ticker": "C",
+      "return_pct": 39.6,
+      "status": "NEVER_SEEN",
+      "detail": "not in any watchlist or research output"
+    },
+    {
+      "ticker": "JNJ",
+      "return_pct": 38.3,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in JNJ (via Agent 8) declined \u2014 at max positions (289.0% BP, 18/15). Will revisit when capacity o"
+    },
+    {
+      "ticker": "MS",
+      "return_pct": 38.3,
+      "status": "SEEN_NO_PICK",
+      "detail": "covered by Sector watchlists but no pick generated"
+    }
+  ],
+  "llm_pattern_read": "**Pattern:** The misses cluster around the AI-infrastructure \"picks and shovels\" supply chain (MRVL chips, VRT data-center power/cooling, TSM fabrication, NUE steel, RKLB space hardware) \u2014 second-derivative industrial and mid-cap beneficiaries that sit outside the obvious mega-cap tech names your coverage universe defaults to, and notably your rejected picks (AMD, DDOG, CRWD, SLB) show the committee also kills the theme even when sourcing works.\n\n**Process change:** Replace analyst-sourced idea flow with a systematic weekly screen of all liquid US/ADR names making new 52-week highs on rising volume, regardless of sector or market cap \u2014 this single filter would have surfaced MRVL, VRT, RKLB, NUE, and TSM months before their runs, fixing the \"never-seen\" bucket that accounts for 6 of your 15 misses.\n\n**Priority coverage:** VRT \u2014 data-center power and thermal management is the structural bottleneck of the AI buildout with multi-year visibility, it's less crowded and less cy"
+}
