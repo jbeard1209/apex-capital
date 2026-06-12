@@ -48,9 +48,13 @@ result = reason(
 )
 if result and "FABLE" in result:
     print(f"  ✓ {get_model()} is working!")
+elif result:
+    print(f"  ✓ API connected (unexpected reply: {result[:60]})")
 else:
-    print(f"  Response: {result}")
-    print("  ✓ Key works (response format unexpected but API connected)")
+    print("  ✗ TEST FAILED — key did not authenticate or has no credits.")
+    print("    Common causes: key pasted with extra characters, or no usage")
+    print("    credits purchased (console.anthropic.com → Plans & Billing).")
+    sys.exit(1)
 EOF
 
 echo ""
