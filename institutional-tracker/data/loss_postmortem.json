@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-06-12T19:39:56.903535",
+  "title": "Loss Post-Mortem: -$1,600 absolute / large relative underperformance vs SPY",
+  "portfolio_value": 98397.07,
+  "cash": 86280.31,
+  "cash_pct": 87.7,
+  "short_positions": [
+    "QQQ",
+    "BA",
+    "DIS",
+    "XLE",
+    "XLY"
+  ],
+  "gross_short_exposure_pct": 35.3,
+  "closed_trades": 8,
+  "stop_loss_drag_pp": -11.1,
+  "missed_winners_capture_rate_pct": 10.0,
+  "narrative": "# Loss Post-Mortem: Q-Period Review\n\n**To the Chairman \u2014 written plainly, as requested.**\n\n## (a) Executive Summary\n\nWe lost money in a great market for one core reason: we refused to participate in it. Nearly 90% of our capital sat in cash while stocks rallied, and the small portion we did deploy was largely bet *against* the market through short positions. Our actual stock-picking was fine \u2014 when we traded, we won more than we lost \u2014 but we made almost no trades. In short: we weren't beaten by bad decisions on trades; we were beaten by the decision not to trade at all, plus actively fighting the rally.\n\n## (b) The Three Mechanisms, Ranked by Damage\n\n**1. Cash paralysis (biggest cost).** $86,280 \u2014 88% of the firm \u2014 sat idle for months because our risk officer kept the risk rating at HIGH, blocking purchases for 8+ cycles. In a market rising double digits, doing nothing was the most expensive choice we made. This was opportunity cost, but on this scale it's the whole story.\n\n**2. Shorting a bull market.** Five short positions plus an inverse S&P fund \u2014 35% of our invested money betting on declines while the market climbed. These produced real, direct losses.\n\n**3. Stops too tight + winners rejected.** Tight 5% stop-losses chopped us out of APD and SBUX for -11.1 points. Worse, research correctly identified AMD (+221%), CRWD, and SLB \u2014 and management gates rejected them.\n\n## (c) Three Fixes\n\n1. **Cap idle cash at 30%** absent a documented, time-limited crisis thesis; risk ratings must auto-expire and be re-justified each cycle.\n2. **Cap gross short exposure at 10%** unless the market itself confirms a downtrend (e.g., index below its 200-day average).\n3. **Require written justification when overriding research picks**, reviewed monthly against what those picks actually did.\n\n**Bottom line:** the engine worked; we never put it in gear."
+}

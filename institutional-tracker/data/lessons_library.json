@@ -1,0 +1,154 @@
+{
+  "1": {
+    "day": 1,
+    "topic": "The Three Financial Statements",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "revenue recognition",
+      "accrual vs. cash accounting",
+      "retained earnings link"
+    ],
+    "content": "# Day 1 of 90: The Three Financial Statements\n**Teacher: FinanceFundamentals**\n\nWelcome to Day 1, Jack. Every company you'll ever analyze tells its story through three documents.\n\n**The Income Statement** answers: *Did we make money this period?* It starts with revenue, subtracts costs, and ends with net income. Here's the subtle part \u2014 **revenue recognition**. Revenue is recorded when it's *earned*, not when cash arrives. If a software company signs a $12,000 annual contract in January, it recognizes $1,000 per month, even if the customer paid everything upfront.\n\nThat's **accrual accounting**: matching revenue and expenses to *when value is delivered*, not when cash moves. **Cash accounting** (only counting money in/out) is simpler but misleading \u2014 a company could look rich today because customers prepaid for work it hasn't done yet.\n\n**The Balance Sheet** answers: *What do we own and owe right now?* It's a snapshot: Assets = Liabilities + Equity. Always balances, by definition.\n\n**The Cash Flow Statement** answers: *Where did actual cash go?* It undoes the accrual adjustments so you can see real money movement. Profitable companies have died because cash ran out \u2014 this statement catches that.\n\n**The link that ties them together: retained earnings.** Net income from the income statement (minus dividends) flows into retained earnings on the balance sheet. That's the bridge. Profit isn't a separate thing floating in space \u2014 it accumulates into the company's equity, period after period.\n\nThink of it like a bathtub: the income statement is the water flowing in this month, the balance sheet is the water level right now, and the cash flow statement tells you whether the \"water\" is real liquid or an IOU.\n\n---\n\n## Worked Example\n\n**GadgetCo, Q1:**\n- Signs a contract Jan 1: customer pays **$9,000 cash upfront** for 9 months of service\n- Q1 covers 3 months \u2192 recognized revenue = $9,000 \u00d7 (3/9) = **$3,000**\n- Q1 expenses: **$1,800**\n\n**Income statement (accrual):** $3,000 \u2212 $1,800 = **$1,200 net income**\n\n**Cash view:** $9,000 in \u2212 $1,800 out = **$7,200 cash gained**\n\n**Balance sheet effects:**\n- Cash up $7,200\n- *Deferred revenue* (a liability \u2014 services still owed) = $6,000\n- Retained earnings up $1,200 \u2713 (Assets +$7,200 = Liabilities +$6,000 + Equity +$1,200 \u2014 it balances",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:37:41.929332"
+  },
+  "2": {
+    "day": 2,
+    "topic": "Reading a P&L Like a Banker",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "gross margin",
+      "EBITDA",
+      "operating leverage",
+      "margin expansion"
+    ],
+    "content": "# Day 2 of 90: Reading a P&L Like a Banker\n**Teacher: FinanceFundamentals**\n\n---\n\n## Core Lesson\n\nGood morning, Jack. Yesterday we covered what a stock *is*. Today we learn how to read the document that tells you whether a company actually makes money: the income statement, or P&L (Profit & Loss).\n\nThink of a P&L as water flowing through a series of filters. Revenue pours in at the top. Each filter removes a cost, and what drips out the bottom is profit.\n\n**Gross margin** is the first filter. Take revenue, subtract the direct cost of making the product (cost of goods sold, or COGS), and divide by revenue. A bakery selling a $5 loaf that costs $2 in flour, yeast, and oven time has a 60% gross margin. Software companies often run 80%+ because copying code costs almost nothing. Gross margin tells you how good the *product itself* is at making money.\n\n**EBITDA** \u2014 Earnings Before Interest, Taxes, Depreciation, and Amortization \u2014 is profit before financing decisions and accounting adjustments. Bankers love it because it approximates raw operating cash generation, letting you compare a debt-heavy company to a debt-free one on equal footing. It's imperfect (depreciation is a real cost eventually), but it's the industry's common language.\n\n**Operating leverage** is the magic \u2014 and the danger. If a company's costs are mostly *fixed* (rent, salaries, servers), then each extra dollar of revenue flows heavily to profit. Sales up 10% can mean profits up 30%. But it cuts both ways: revenue *down* 10% can crush profits.\n\n**Margin expansion** is when profitability percentages rise over time \u2014 the holy grail for investors, because the market often rewards it more than revenue growth alone.\n\n---\n\n## Worked Example\n\n**SteadyServe Software, two years:**\n\n| | Year 1 | Year 2 |\n|---|---|---|\n| Revenue | $100M | $120M |\n| COGS | $25M | $28M |\n| **Gross profit** | $75M (75%) | $92M (76.7%) |\n| Operating expenses | $55M | $58M |\n| **EBITDA** | $20M (20%) | $34M (28.3%) |\n\nRevenue grew **20%**, but EBITDA grew **70%**. Why? OpEx barely moved ($55M \u2192 $58M) because salaries and rent are fixed. That's operating leverage in action \u2014 and EBITDA margin expanded from 20% to 28.3%. A banker sees this table and says: \"this business scales.\"\n\n---\n\n## How",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:37:57.778365"
+  },
+  "3": {
+    "day": 3,
+    "topic": "The Balance Sheet Deep Dive",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "working capital",
+      "net debt",
+      "enterprise value",
+      "book value"
+    ],
+    "content": "# Day 3 of 90: The Balance Sheet Deep Dive\n*FinanceFundamentals \u2014 Daily Mini-Lesson for Jack Beard*\n\n---\n\n## Core Teaching\n\nYesterday you learned the balance sheet is a snapshot: what a company **owns** (assets), what it **owes** (liabilities), and what's left over (equity). Today we extract four numbers investors actually use.\n\n**1. Working Capital = Current Assets \u2212 Current Liabilities**\n\nThis is the company's short-term breathing room. \"Current\" means convertible to cash (or due) within a year. A lemonade stand with $500 in cash and lemons, owing $200 to the grocery store next week, has $300 of working capital. Positive working capital means the company can pay its near-term bills without scrambling. Negative isn't always fatal\u2014Walmart runs lean because it sells inventory *before* paying suppliers\u2014but for most companies, it's a warning light.\n\n**2. Net Debt = Total Debt \u2212 Cash**\n\nCompanies often hold both debt and cash simultaneously. Net debt asks: *if the company used all its cash to pay down debt today, what would remain?* A company with $10B in debt and $12B in cash has net debt of **\u2212$2B**\u2014it's effectively debt-free. Apple has carried negative net debt for years.\n\n**3. Enterprise Value (EV) = Market Cap + Net Debt**\n\nMarket cap is the sticker price of the equity. But buying a whole company means inheriting its debt and pocketing its cash. EV is the *true takeover price*. Think of buying a $300k house with a $200k mortgage attached and $50k cash in the safe: you really pay $450k of value ($300k + $200k \u2212 $50k).\n\n**4. Book Value = Total Assets \u2212 Total Liabilities (i.e., shareholders' equity)**\n\nThe accounting value of what shareholders own. Comparing it to market cap gives price-to-book\u2014useful for banks and industrials, less meaningful for software companies whose real assets (code, brands) barely appear on the balance sheet.\n\n---\n\n## Worked Example\n\n**Riverside Robotics** reports:\n\n| Item | Amount |\n|---|---|\n| Cash | $40M |\n| Inventory + receivables | $60M |\n| Factories & equipment | $200M |\n| Current liabilities | $70M |\n| Long-term debt | $120M |\n| Shares outstanding | 50M @ $8/share |\n\n- **Working capital** = ($40M + $60M) \u2212 $70M = **$30M** \u2705",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:38:13.297255"
+  },
+  "4": {
+    "day": 4,
+    "topic": "Cash Flow Statement & Free Cash Flow",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "UFCF",
+      "CapEx",
+      "D&A add-back",
+      "working capital changes"
+    ],
+    "content": "# Day 4 of 90: The Cash Flow Statement & Free Cash Flow\n\n*FinanceFundamentals \u2014 your daily mini-lesson*\n\n---\n\n## Core Teaching\n\nJack, here's the most important sentence of the week: **profit is an opinion; cash is a fact.**\n\nThe income statement (Day 3) shows accounting profit \u2014 but accounting includes non-cash items and estimates. The **cash flow statement** strips all that away and answers one question: *how much actual money moved in and out?*\n\nIt has three sections:\n\n1. **Operating activities** \u2014 cash from running the business\n2. **Investing activities** \u2014 cash spent on (or received from) long-term assets\n3. **Financing activities** \u2014 debt, dividends, buybacks, share issuance\n\nThe number serious investors care most about is **Free Cash Flow (FCF)** \u2014 the cash left over after the business pays for everything it needs to keep running and growing. That's the money available to reward owners. We'll focus on **Unlevered Free Cash Flow (UFCF)**, which ignores debt payments so you can compare companies regardless of how they're financed:\n\n**UFCF = EBIT \u00d7 (1 \u2212 tax rate) + D&A \u2212 CapEx \u2212 Increase in Working Capital**\n\nThree pieces deserve explanation:\n\n- **D&A add-back:** Depreciation & amortization reduced profit on the income statement, but no cash actually left the building. A truck bought three years ago gets \"expensed\" a bit each year \u2014 but the cash went out three years ago. So we add D&A back.\n- **CapEx (capital expenditures):** This is real cash leaving *now* \u2014 new factories, servers, trucks. It doesn't hit the income statement immediately, so we must subtract it.\n- **Working capital changes:** If inventory piles up or customers haven't paid yet, your cash is trapped in the business. An *increase* in working capital is cash you can't touch \u2014 subtract it.\n\nA company can show beautiful net income while bleeding cash. FCF catches that.\n\n---\n\n## Worked Example: \"Beard's Burgers Inc.\"\n\n| Item | Amount |\n|---|---|\n| EBIT (operating profit) | $500,000 |\n| Tax rate | 25% |\n| D&A | $80,000 |\n| CapEx | $150,000 |\n| Working capital change | +$30,000 (increase) |\n\n**Step 1:** After-tax EBIT = $500,000 \u00d7 (1 \u2212 0.25) = **$375,000**\n**Step 2:** Add back D&A: $375,000 + $80,000 = **$455,000**\n**Step 3:** Subtract CapEx: $455,000 \u2212 $150,000",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:38:29.375687"
+  },
+  "5": {
+    "day": 5,
+    "topic": "Time Value of Money",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "NPV",
+      "IRR",
+      "discount factor",
+      "perpetuity formula"
+    ],
+    "content": "# Day 5 of 90: Time Value of Money\n*FinanceFundamentals \u2014 your daily mini-lesson*\n\nGood morning, Jack. Today's idea underpins almost everything else we'll cover: **a dollar today is worth more than a dollar tomorrow.**\n\nWhy? Because a dollar today can be invested and grow. If you can earn 5% per year, $100 today becomes $105 in a year. Flip that around: $105 arriving *one year from now* is only worth $100 *today*. That flipping-around process is called **discounting**, and the number you multiply by is the **discount factor**.\n\nThe discount factor for one year at rate *r* is **1 / (1 + r)**. For year two, it's 1 / (1 + r)\u00b2, and so on. The further out the cash, the smaller its present value.\n\n**NPV (Net Present Value)** is just: take every future cash flow, discount each one back to today, add them up, then subtract what you paid. If NPV is positive, the deal creates value at your chosen rate. If negative, you'd be better off doing something else with the money.\n\n**IRR (Internal Rate of Return)** asks the question backwards: \"What discount rate would make this NPV exactly zero?\" It's the deal's built-in annual return. Compare IRR to your hurdle rate \u2014 if IRR beats it, the project clears the bar.\n\nOne elegant shortcut: a **perpetuity** \u2014 a cash flow that pays forever \u2014 has present value of simply **C / r**. A promise of $50 a year forever, discounted at 5%, is worth $50 / 0.05 = $1,000. This little formula is the skeleton inside dividend discount models and terminal values in DCF analysis. You'll meet it again and again.\n\nThe core skill: never compare dollars from different time periods directly. Translate everything to *today's dollars* first.\n\n---\n\n## Worked Example\n\nYou're offered an investment: pay **$1,000 today**, receive **$400 at the end of each of the next 3 years**. Your discount rate is 8%.\n\n| Year | Cash Flow | Discount Factor | Present Value |\n|------|-----------|----------------|---------------|\n| 1 | $400 | 1/1.08 = 0.926 | $370.37 |\n| 2 | $400 | 1/1.08\u00b2 = 0.857 | $342.94 |\n| 3 | $400 | 1/1.08\u00b3 = 0.794 | $317.53 |\n\nTotal PV of inflows = **$1,030.84**\nNPV = $1,030.84 \u2212 $1,000 = **+$30.84** \u2192 take the deal.\n\nThe IRR here works out to roughly **9.7%**",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:38:45.064750"
+  },
+  "6": {
+    "day": 6,
+    "topic": "WACC \u2014 Weighted Average Cost of Capital",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "CAPM",
+      "beta",
+      "equity risk premium",
+      "tax shield on debt"
+    ],
+    "content": "# Day 6 of 90: WACC \u2014 Weighted Average Cost of Capital\n\n**FinanceFundamentals**\n\n---\n\n## Core Teaching\n\nImagine a company is a lemonade stand that needed $100 to start. It borrowed $40 from a neighbor (debt) and got $60 from friends who want a share of profits (equity). Both groups expect to be paid for their money. WACC answers one question: **what's the blended \"rent\" this company pays for all the money it uses?**\n\nThat rent has two ingredients:\n\n**Cost of debt** is easy \u2014 it's roughly the interest rate the company pays, *minus* a discount. Why a discount? Interest payments are tax-deductible. If a company pays 6% interest but has a 25% tax rate, the real cost is 6% \u00d7 (1 \u2212 0.25) = 4.5%. This discount is called the **tax shield**, and it's why debt is \"cheap\" capital.\n\n**Cost of equity** is trickier \u2014 shareholders don't get a stated interest rate. We estimate what return they *demand* using **CAPM** (Capital Asset Pricing Model):\n\n> Cost of equity = Risk-free rate + Beta \u00d7 Equity Risk Premium\n\n- **Risk-free rate**: what you'd earn doing nothing risky (e.g., a 10-year Treasury, say 4%).\n- **Equity risk premium (ERP)**: the extra reward investors demand for stocks over Treasuries \u2014 historically around 5%.\n- **Beta**: how jumpy this stock is versus the market. Beta of 1 = moves with the market. Beta of 1.5 = swings 50% harder, so investors demand more.\n\nThen you blend the two costs by their weights in the company's capital structure. **Why care?** WACC is the hurdle rate. If a company earns returns above its WACC, it creates value. Below it, the company is destroying value even if it's \"profitable.\" It's also the discount rate in DCF valuations \u2014 get WACC wrong, and your valuation is fiction.\n\n---\n\n## Worked Example\n\n**Acme Robotics** has $600M of equity and $400M of debt ($1B total).\n\n- Risk-free rate: 4%\n- Beta: 1.2\n- ERP: 5%\n- Pre-tax cost of debt: 6%\n- Tax rate: 25%\n\n**Step 1 \u2014 Cost of equity (CAPM):**\n4% + 1.2 \u00d7 5% = 4% + 6% = **10%**\n\n**Step 2 \u2014 After-tax cost of debt:**\n6% \u00d7 (1 \u2212 0.25) = **4.5%**\n\n**Step 3 \u2014 Weight and blend:**\n- Equity weight: 600/1,000 = 60%\n- Debt weight: 400/1,000 = 40%\n\nWACC = (0.60 \u00d7",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:39:00.764904"
+  },
+  "7": {
+    "day": 7,
+    "topic": "DCF Valuation \u2014 Build it From Scratch",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "terminal value",
+      "Gordon Growth Model",
+      "sensitivity table",
+      "equity bridge"
+    ],
+    "content": "# Day 7 of 90: DCF Valuation \u2014 Build It From Scratch\n*FinanceFundamentals*\n\n---\n\n## Core Lesson\n\nGood morning, Jack. Today we build the machine that powers most serious valuation work: the **Discounted Cash Flow (DCF)** model.\n\nThe core idea is simple: a business is worth the cash it will generate in the future, translated into today's dollars. You already know from Day 6 that $100 next year is worth less than $100 today. A DCF just applies that logic to every future year of a company's life.\n\n**The four building blocks:**\n\n**1. Forecast free cash flows.** Project the cash the business actually throws off (after reinvestment) for an explicit period \u2014 usually 5 years. This is the part requiring judgment, not math.\n\n**2. Terminal value.** Companies don't stop existing in Year 5, but you can't forecast forever. So you bundle \"everything after Year 5\" into one number. The most common tool is the **Gordon Growth Model**:\n\n> Terminal Value = Final Year Cash Flow \u00d7 (1 + g) \u00f7 (r \u2212 g)\n\nwhere *g* is a modest perpetual growth rate (think 2\u20133%, roughly GDP) and *r* is your discount rate. Warning: terminal value often makes up 60\u201380% of the total. Small changes in *g* swing the answer wildly.\n\n**3. Discount everything back.** Every cash flow, including terminal value, gets divided by (1 + r) raised to the year it arrives.\n\n**4. The equity bridge.** Your DCF gives you **enterprise value** \u2014 the worth of the whole business. To get what *shareholders* own, subtract debt and add cash: **Equity Value = Enterprise Value \u2212 Net Debt**. Divide by shares outstanding for a per-share target.\n\nBecause the model is so sensitive to assumptions, professionals never report one number. They build a **sensitivity table** \u2014 a grid showing value across different *r* and *g* combinations \u2014 to see the *range* of reasonable outcomes.\n\n---\n\n## Worked Example\n\n**\"SteadyCo\"** generates $10M in free cash flow, growing 5% annually for 5 years. Discount rate (r) = 9%, terminal growth (g) = 2.5%. Net debt = $20M, 10M shares outstanding.\n\n**Step 1 \u2014 Forecast cash flows:**\n\n| Year | 1 | 2 | 3 | 4 | 5 |\n|---|---|---|---|---|---|\n| FCF ($M) | 10.50 |",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:39:16.210010"
+  },
+  "8": {
+    "day": 8,
+    "topic": "Comparable Company Analysis (Comps)",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "NTM multiples",
+      "LTM multiples",
+      "normalisation",
+      "trading comps vs. transaction comps"
+    ],
+    "content": "# Day 8 of 90: Comparable Company Analysis (Comps)\n*FinanceFundamentals \u2014 Daily Mini-Lesson for Jack Beard, Co-Chairman, Apex Capital*\n\n---\n\n## Core Teaching\n\nWhen you want to know if a house is fairly priced, you don't build a spreadsheet of its future rental income \u2014 you look at what similar houses on the street sold for. **Comparable company analysis** is exactly that, applied to stocks.\n\nThe mechanics: pick a group of similar companies (same industry, similar size, similar growth), compute a valuation **multiple** for each (like EV/EBITDA or P/E), and see where your target company sits. If peers trade at 12x EBITDA and your target trades at 8x, it's either cheap \u2014 or there's a reason it deserves a discount. Your job is figuring out which.\n\n**LTM vs. NTM multiples.** LTM means \"last twelve months\" \u2014 the multiple uses actual, reported earnings. NTM means \"next twelve months\" \u2014 it uses analyst forecasts. LTM is factual but backward-looking; NTM is forward-looking but depends on estimates being right. Fast-growing companies look expensive on LTM and reasonable on NTM, because the denominator is growing. Most practitioners prefer NTM, since markets price the future.\n\n**Normalisation.** Before comparing, clean the numbers. If a company sold a factory last year for a one-time $50M gain, strip it out \u2014 it won't repeat. Same with restructuring charges, lawsuit settlements, or pandemic-distorted quarters. You want each company's *sustainable* earnings, or the comparison is apples to oranges.\n\n**Trading comps vs. transaction comps.** Trading comps use the multiples at which public companies *currently trade*. Transaction comps use multiples paid in actual *acquisitions*. Transaction comps run higher because buyers pay a **control premium** \u2014 typically 20\u201340% extra to own the whole company. For valuing a stock you'd buy shares of, use trading comps. Transaction comps matter when you suspect a company might get acquired.\n\n---\n\n## Worked Example\n\nYou're evaluating **MidCo**, a software company.\n\n| Company | EV ($M) | NTM EBITDA ($M) | EV/EBITDA (NTM) |\n|---|---|---|---|\n| Peer A | 2,400 | 200 | 12.0x |\n| Peer B | 3,300 | 250 | 13.2x |\n| Peer C | 1,540 | 140 | 11.0x |\n| **Peer median** | | | **12.0x** |\n\nMid",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:39:34.809134"
+  },
+  "9": {
+    "day": 9,
+    "topic": "Precedent Transaction Analysis",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "control premium",
+      "synergies in multiples",
+      "deal value vs. equity value"
+    ],
+    "content": "# Day 9 of 90: Precedent Transaction Analysis\n*FinanceFundamentals \u2014 Daily Mini-Lesson for Jack Beard*\n\n---\n\n## Core Teaching\n\nYesterday-ish you learned comparable company analysis: valuing a company by looking at what *similar public companies trade at*. Precedent transaction analysis (\"precedents\" or \"deal comps\") is its sibling: valuing a company by looking at what *acquirers actually paid* for similar companies in real M&A deals.\n\nThe key insight: **acquisition prices are almost always higher than trading prices.** Three reasons drive this.\n\n**1. Control premium.** When you buy a single share of Coca-Cola, you get a sliver of cash flows but zero say in how the company runs. When you buy the *whole* company, you can replace management, sell divisions, change strategy. That control is worth paying extra for \u2014 historically 20\u201340% above the pre-announcement stock price.\n\n**2. Synergies baked into multiples.** Acquirers often pay up because they expect cost savings or revenue gains from combining businesses (one HQ instead of two, cross-selling products). Those expected synergies get embedded in the price paid \u2014 which means precedent transaction multiples reflect value the *standalone* company never had. This is why precedents typically give you a **higher valuation range** than trading comps.\n\n**3. Deal value vs. equity value.** Headlines say \"Company X acquired for $5 billion\" \u2014 but *which* $5 billion? **Equity value** is what shareholders receive for their shares. **Enterprise (deal) value** = equity value + debt assumed \u2212 cash acquired. When you compute multiples, match consistently: EV/EBITDA uses enterprise value; P/E uses equity value. Mixing them is the #1 rookie error.\n\nThe practical mechanics: find 5\u201310 deals in the same industry from recent years (older deals reflect stale market conditions), compute multiples paid, and apply the median to your target. Caveat: every deal has a story \u2014 a bidding war inflates multiples; a distressed sale deflates them. Read the context, not just the numbers.\n\n---\n\n## Worked Example\n\n**TargetCo** is acquired. Here's the deal:\n\n- Acquirer pays **$40/share** for all 50 million shares (stock traded at $32 before announcement)\n- TargetCo has **$300M debt** and **$100M cash**\n- TargetCo's EBITDA: **$200M**\n\n**Step 1 \u2014 Equity value:** $40 \u00d7 50M shares = **$2,000M**\n\n**Step 2 \u2014 Control premium:** ($40 \u2212 $32)",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:39:50.532019"
+  },
+  "10": {
+    "day": 10,
+    "topic": "Accounting Adjustments Bankers Make",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "adjusted EBITDA",
+      "non-recurring items",
+      "SBC treatment",
+      "lease obligations"
+    ],
+    "content": "# Day 10 of 90: Accounting Adjustments Bankers Make\n*FinanceFundamentals*\n\n---\n\n## Core Lesson\n\nYesterday you learned EBITDA. Today you learn why almost nobody uses *plain* EBITDA. Companies and bankers \"adjust\" it \u2014 sometimes legitimately, sometimes creatively.\n\n**Adjusted EBITDA** starts with EBITDA and adds back costs the company claims don't reflect the ongoing business. The honest question is always: *will this cost actually stop?*\n\n**Non-recurring items** are the classic add-back. A one-time lawsuit settlement, a factory fire, restructuring costs from closing a division \u2014 fair enough. But watch out: some companies have \"one-time\" restructuring charges *every single year*. If it recurs, it's not non-recurring. It's just a cost wearing a disguise.\n\n**Stock-based compensation (SBC)** is the most controversial add-back. Companies pay employees with shares instead of cash, then add SBC back because \"it's non-cash.\" But it's absolutely a real cost \u2014 it dilutes you, the shareholder. A tech company adding back $500M of SBC is saying \"ignore that we paid employees half a billion dollars.\" You shouldn't ignore it.\n\n**Lease obligations** got messy after a 2019 accounting rule change. Rent payments now partly show up as depreciation and interest \u2014 which EBITDA excludes. So a retailer with 500 leased stores can show inflated EBITDA simply because its rent is reclassified. When comparing companies, check whether their leases are treated the same way.\n\nThe skill here isn't memorizing rules. It's reading a company's \"Adjusted EBITDA reconciliation\" (it's in every earnings release) and asking of each line: *real one-off, or recurring cost in costume?*\n\n---\n\n## Worked Example\n\n**RetailCo reports:**\n- Net income: $40M\n- Interest: $10M, Taxes: $15M, D&A: $25M\n- \u2192 **EBITDA = $90M**\n\nManagement's adjustments:\n- + $12M \"restructuring\" (they've done this 4 years running)\n- + $8M lawsuit settlement (genuinely one-time)\n- + $20M stock-based compensation\n\n**Management's Adjusted EBITDA = $130M**\n\nYour skeptical version: accept only the lawsuit. $90M + $8M = **$98M**. That's a 25% gap \u2014 and if a buyer pays 10x EBITDA, that's a $320M difference in valuation from add-backs alone.\n\n---\n\n## How Apex Capital Uses This\n\nWhen Apex's pods scre",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:40:06.930733"
+  },
+  "11": {
+    "day": 11,
+    "topic": "Debt & Credit Concepts",
+    "teacher": "FinanceFundamentals",
+    "key_concepts": [
+      "leverage ratio",
+      "DSCR",
+      "covenants",
+      "credit ratings"
+    ],
+    "content": "# Day 11 of 90: Debt & Credit Concepts\n\nGood morning, Jack. Today we're learning how to read a company's debt \u2014 because debt is what kills companies, not bad quarters.\n\n## Core Teaching\n\n**Leverage ratio** measures how much debt a company carries relative to its earnings power. The most common version is **Debt-to-EBITDA**: total debt divided by earnings before interest, taxes, depreciation, and amortization. Think of it as \"how many years of earnings would it take to pay off all debt?\" Below 2x is conservative. 3\u20134x is moderate. Above 5x and lenders start sweating. A utility with steady cash flows can safely carry more leverage than a trendy restaurant chain \u2014 stability matters as much as the number.\n\n**DSCR (Debt Service Coverage Ratio)** answers a simpler question: can the company make this year's payments? It's cash flow available for debt payments divided by required debt payments (principal + interest). A DSCR of 1.0 means the company earns *exactly* enough to cover payments \u2014 zero cushion. Lenders typically want 1.25x or higher.\n\n**Covenants** are the rules attached to a loan \u2014 promises the borrower makes. Example: \"Maintain Debt-to-EBITDA below 4.0x\" or \"Keep DSCR above 1.2x.\" Break a covenant and the lender can demand immediate repayment, renegotiate at worse terms, or seize collateral. Covenant breaches often appear in filings *before* a company's stock collapses \u2014 they're early smoke detectors.\n\n**Credit ratings** are third-party grades (Moody's, S&P, Fitch) on a borrower's ability to repay. AAA is pristine; BBB- is the last rung of \"investment grade\"; below that is \"junk\" (high yield). A downgrade from BBB- to BB+ is a big deal \u2014 many funds are *forbidden* from holding junk, forcing selling.\n\n## Worked Example\n\n**RoadRunner Logistics** has:\n- Total debt: $600M\n- EBITDA: $150M\n- Annual debt payments (principal + interest): $80M\n- Cash flow available for debt service: $120M\n\n**Leverage ratio** = $600M \u00f7 $150M = **4.0x** (moderate-to-high)\n\n**DSCR** = $120M \u00f7 $80M = **1.5x** (covers payments with 50% cushion)\n\nNow suppose a recession cuts EBITDA to $110M and cash flow to $90M. Leverage jumps to 5.45x and DSCR falls to 1.125x. If RoadRunner's loan covenant requires DSCR above 1.2x \u2014 **breach**. The lender can now force renegotiation. Same company, same debt, very different risk picture.\n\n## How",
+    "model": "claude-fable-5",
+    "generated_at": "2026-06-12T19:40:22.983486"
+  }
+}
