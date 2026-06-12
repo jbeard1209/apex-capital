@@ -1,165 +1,5 @@
 [
   {
-    "ts": "2026-06-08T09:18:24.786646",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T09:58:18.620450",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T10:08:27.792908",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 1 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 104.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T10:08:28.133324",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (134h old, threshold 26h): data/risk_manager_report.json has not been updated in 134h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T10:08:33.803694",
-    "date": "2026-06-08",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T10:35:52.862776",
-    "date": "2026-06-08",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-08T11:00:59.087845",
-    "date": "2026-06-08",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-08T11:01:38.307617",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T11:22:53.297216",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 0 sectors (14 high-conviction 4\u2605+). Top sectors: . Top picks: PNC, ZION, FITB, FCX, NVDA.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T12:24:28.146660",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 8 sectors (16 high-conviction 4\u2605+). Top sectors: Technology, Cybersecurity, Regional Banks. Top picks: ORCL, TENB, KEY, CFG, TXN.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T12:24:28.165953",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 11/12 | trend=bullish | RSI=61 | 1M=+6.0% | 3M=+33.2%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:24:28.383031",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 11/12 | trend=bullish | RSI=60 | 1M=+14.8% | 3M=+31.7%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:24:28.578721",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=63 | 1M=+1.2% | 3M=+9.9%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:24:28.618677",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Semiconductors: score 10/12 | trend=bullish | RSI=63 | 1M=+6.5% | 3M=+51.9%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.274761",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 4 board proposal(s), 86 quick win(s), 2 ThinkTank idea(s). Total new findings: 105.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.359565",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[MEDIUM] Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 180h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportuni",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.407857",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.444734",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] Stale data file: data/risk_manager_report.json (136h old, threshold 26h): data/risk_manager_report.json has not been updated in 136h. Expected refresh interval: 26h. Data from this file may be l",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.461942",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.562206",
-    "date": "2026-06-08",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 180h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-08T12:25:04.606780",
     "date": "2026-06-08",
     "agent": "CIT ThinkTank",
@@ -3998,5 +3838,165 @@
     "category": "PIPELINE_ALERT",
     "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
     "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T17:41:40.236404",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 266.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T17:41:40.248079",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T17:41:40.254213",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 152 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 152 ERROR-level entries (1729 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T17:41:40.297064",
+    "date": "2026-06-12",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T17:43:36.035365",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 105.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T17:43:36.052788",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T17:43:36.066904",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 152 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 152 ERROR-level entries (1752 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T17:43:36.137624",
+    "date": "2026-06-12",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T17:45:28.206271",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 106.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T17:45:28.211419",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T17:45:28.216516",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 152 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 152 ERROR-level entries (1776 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T17:45:28.244745",
+    "date": "2026-06-12",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.321187",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 4 board proposal(s), 92 quick win(s), 2 ThinkTank idea(s). Total new findings: 111.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.334619",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.347071",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 212 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 212 ERROR-level entries (2076 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.358837",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 114h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportuni",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.370393",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.382483",
+    "date": "2026-06-12",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 114h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.393973",
+    "date": "2026-06-12",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T18:01:37.423244",
+    "date": "2026-06-12",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T13:30:11.134559",
+  "generated_at": "2026-06-12T18:01:21.542009",
   "supervised_agents": [
     "Trade Review Team",
     "Creative Agent",
@@ -11,7 +11,7 @@
   "agent_status": {
     "Trade Review Team": {
       "status": "STALE",
-      "note": "Last updated 73h ago",
+      "note": "Last updated 102h ago",
       "data_keys": [
         "generated_at",
         "team",
@@ -32,7 +32,7 @@
     },
     "Capital Efficiency Agent": {
       "status": "OK",
-      "note": "Last updated 3h ago",
+      "note": "Last updated 0h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -45,8 +45,8 @@
       ]
     },
     "Report Generator": {
-      "status": "OK",
-      "note": "Last updated 21h ago",
+      "status": "STALE",
+      "note": "Last updated 49h ago",
       "data_keys": [
         "timestamp",
         "company_health",
@@ -58,8 +58,8 @@
       ]
     },
     "Premarket Check": {
-      "status": "OK",
-      "note": "Last updated 1h ago",
+      "status": "STALE",
+      "note": "Last updated 29h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -72,8 +72,8 @@
       ]
     },
     "Earnings Predictor": {
-      "status": "OK",
-      "note": "Last updated 10h ago",
+      "status": "STALE",
+      "note": "Last updated 39h ago",
       "data_keys": [
         "generated_at",
         "lookahead_days",
@@ -84,7 +84,10 @@
     }
   },
   "flags": [
-    "Trade Review Team: report stale (73h old)"
+    "Trade Review Team: report stale (102h old)",
+    "Report Generator: report stale (49h old)",
+    "Premarket Check: report stale (29h old)",
+    "Earnings Predictor: report stale (39h old)"
   ],
-  "summary": "Floor status: 5 OK, 1 stale, 0 missing. 1 flag(s)."
+  "summary": "Floor status: 2 OK, 4 stale, 0 missing. 4 flag(s)."
 }

@@ -1,20 +1,20 @@
 {
-  "fetched_at": "2026-06-11T14:30:01.993451",
+  "fetched_at": "2026-06-12T18:00:39.303871",
   "spreads": {
-    "hy_spread": 310.0,
-    "ig_spread": 102.0,
-    "hy_spread_bps": 310.0,
-    "ig_spread_bps": 102.0,
-    "treasury_10yr": 4.475,
-    "yield_curve_slope": -0.825,
+    "hy_spread": 303.0,
+    "ig_spread": 100.0,
+    "hy_spread_bps": 303.0,
+    "ig_spread_bps": 100.0,
+    "treasury_10yr": 4.487,
+    "yield_curve_slope": -0.813,
     "spread_regime": "NORMAL",
-    "hyg_price": 79.79499816894531,
-    "lqd_price": 108.91500091552734
+    "hyg_price": 79.94000244140625,
+    "lqd_price": 109.01000213623047
   },
   "signals": [
     {
       "type": "INVERTED_CURVE",
-      "message": "Yield curve inverted (-0.82). Favor short duration; avoid long-maturity bonds.",
+      "message": "Yield curve inverted (-0.81). Favor short duration; avoid long-maturity bonds.",
       "direction": "CAUTION"
     }
   ],

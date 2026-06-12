@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T23:30:02.302334",
+  "generated_at": "2026-06-12T12:15:22.786330",
   "agent": "ETF Research Agent",
   "etf_universe": [
     "XLK",
@@ -24,7 +24,7 @@
     "regime_label": "bull",
     "bull": true,
     "bear": false,
-    "vix": 19.4,
+    "vix": 18.9,
     "spy_rsi": 46.6,
     "overbought": false,
     "warning_count": 0,
@@ -118,7 +118,7 @@
       "trend": "bullish",
       "geo_risk": false,
       "rd_covered": true,
-      "rd_score": 9,
+      "rd_score": 8,
       "data_source": "yfinance"
     },
     "XLV": {
@@ -134,7 +134,7 @@
       "trend": "bullish",
       "geo_risk": true,
       "rd_covered": true,
-      "rd_score": 11,
+      "rd_score": 10,
       "data_source": "yfinance"
     },
     "XLI": {

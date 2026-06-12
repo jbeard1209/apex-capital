@@ -3624,5 +3624,2061 @@
     "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-570. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
     "urgency": "HIGH",
     "status": "PENDING"
+  },
+  {
+    "id": "CMR-72754B",
+    "ts": "2026-06-12T07:57:56.213511",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [LOW] print() in production code: manager_agent.py:1632. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FEFB12",
+    "ts": "2026-06-12T07:57:56.625716",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [LOW] print() in production code: manager_agent.py:1694. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3BCEB6",
+    "ts": "2026-06-12T07:57:56.737033",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [LOW] print() in production code: manager_agent.py:1697. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FE8E2A",
+    "ts": "2026-06-12T07:57:56.885683",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [LOW] Long f-string in logger.debug/info: morning_briefing.py:304. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E922A4",
+    "ts": "2026-06-12T07:57:57.121516",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [LOW] print() in production code: rd_team_leader.py:1300. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-71BD76",
+    "ts": "2026-06-12T07:57:57.231711",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] Possible missing makedirs before file write in logic_team_implementation_agent.py:70. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BBD1B9",
+    "ts": "2026-06-12T07:57:57.416271",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1722 \u2014 open() without 'with' statement (file handle leak). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0FDF2E",
+    "ts": "2026-06-12T07:57:57.593117",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:920 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-037BA1",
+    "ts": "2026-06-12T07:57:57.775528",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:951 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-331765",
+    "ts": "2026-06-12T07:57:57.988681",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:965 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0A0FE0",
+    "ts": "2026-06-12T07:57:58.148878",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:994 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-46FB4B",
+    "ts": "2026-06-12T07:57:58.313991",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1014 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-675944",
+    "ts": "2026-06-12T07:57:58.492983",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1544 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6EA978",
+    "ts": "2026-06-12T07:57:58.622043",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1626 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1827D6",
+    "ts": "2026-06-12T07:57:58.816340",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1686 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F42C49",
+    "ts": "2026-06-12T07:57:59.035698",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1297 \u2014 int/float() on .get() result without None guard. Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C58BA9",
+    "ts": "2026-06-12T07:57:59.255088",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 31h: [MEDIUM] main.py:1298 \u2014 int/float() on .get() result without None guard. Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B5078B",
+    "ts": "2026-06-12T07:57:59.448081",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Silent exception in fe_board.py:24. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7DCC4F",
+    "ts": "2026-06-12T07:57:59.608993",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in fe_board.py:59. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-94CF49",
+    "ts": "2026-06-12T07:57:59.812789",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in fe_cio_agent.py:48. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D3CD6C",
+    "ts": "2026-06-12T07:57:59.958601",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in fe_edgar_fundamentals.py:56. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-06BB8F",
+    "ts": "2026-06-12T07:58:00.139307",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in fi_board.py:141. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D547E7",
+    "ts": "2026-06-12T07:58:00.311077",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in fi_credit_monitor.py:191. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A4AD16",
+    "ts": "2026-06-12T07:58:00.517315",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in logic_team_trainer.py:64. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1FBECD",
+    "ts": "2026-06-12T07:58:00.651718",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1740 \u2014 open() without 'with' statement (file handle leak). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6F9452",
+    "ts": "2026-06-12T07:58:00.830930",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:923 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3364EF",
+    "ts": "2026-06-12T07:58:01.031740",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:942 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-775B29",
+    "ts": "2026-06-12T07:58:01.275653",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:954 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CAB0CC",
+    "ts": "2026-06-12T07:58:01.559496",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1017 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F7E88B",
+    "ts": "2026-06-12T07:58:01.984283",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1547 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4BD3DA",
+    "ts": "2026-06-12T07:58:02.236703",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1629 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6A1F92",
+    "ts": "2026-06-12T07:58:02.478357",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1689 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-817B54",
+    "ts": "2026-06-12T07:58:02.694606",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1704 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-45E796",
+    "ts": "2026-06-12T07:58:02.966836",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1300 \u2014 int/float() on .get() result without None guard. Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D37D36",
+    "ts": "2026-06-12T07:58:03.255348",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] main.py:1301 \u2014 int/float() on .get() result without None guard. Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-84354B",
+    "ts": "2026-06-12T07:58:03.423888",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3659 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B30597",
+    "ts": "2026-06-12T07:58:03.660677",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3765 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8FC6B0",
+    "ts": "2026-06-12T07:58:03.897784",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in ml_pod_board.py:48. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8AA90C",
+    "ts": "2026-06-12T07:58:04.094437",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Possible missing makedirs before file write in rd_pod_board.py:69. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F19353",
+    "ts": "2026-06-12T07:58:04.344506",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:124 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EAFC4F",
+    "ts": "2026-06-12T07:58:04.543927",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:163 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EDF939",
+    "ts": "2026-06-12T07:58:04.806930",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:170 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-90AEC1",
+    "ts": "2026-06-12T07:58:05.383367",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:177 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A2A318",
+    "ts": "2026-06-12T07:58:05.616660",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:758 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F5CE84",
+    "ts": "2026-06-12T07:58:05.873309",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:773 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-35ADBA",
+    "ts": "2026-06-12T07:58:06.072731",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:883 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-19E626",
+    "ts": "2026-06-12T07:58:06.251187",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:900 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9AB931",
+    "ts": "2026-06-12T07:58:06.532584",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:918 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-552967",
+    "ts": "2026-06-12T07:58:06.747776",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:934 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2A525D",
+    "ts": "2026-06-12T07:58:07.473918",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:954 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C474BE",
+    "ts": "2026-06-12T07:58:07.732489",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:982 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-23254F",
+    "ts": "2026-06-12T07:58:07.867688",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:1187 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4CC760",
+    "ts": "2026-06-12T07:58:08.161346",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:1300 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8BBBE3",
+    "ts": "2026-06-12T07:58:08.409165",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:1311 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E4FDE3",
+    "ts": "2026-06-12T07:58:08.594572",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:1414 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9AD6AE",
+    "ts": "2026-06-12T07:58:08.797105",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:1442 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-14343E",
+    "ts": "2026-06-12T07:58:08.977147",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:2342 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EE2FE6",
+    "ts": "2026-06-12T07:58:09.209669",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:2360 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D05CC3",
+    "ts": "2026-06-12T07:58:09.442612",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:2412 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-060C6C",
+    "ts": "2026-06-12T07:58:09.632890",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:2424 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FFFF2C",
+    "ts": "2026-06-12T07:58:09.828770",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:2484 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0EB56F",
+    "ts": "2026-06-12T07:58:10.056361",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:2697 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-534866",
+    "ts": "2026-06-12T07:58:10.265321",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] board_meeting.py:1686 \u2014 DataFrame column access without .empty check. Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FF6800",
+    "ts": "2026-06-12T07:58:10.512796",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [HIGH] cit_director.py:2452 \u2014 fcntl lock not released in try/finally. Reporter: CIT. Description: ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5E06DA",
+    "ts": "2026-06-12T07:58:10.791367",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:727 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F60E49",
+    "ts": "2026-06-12T07:58:10.896724",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:1002 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-88F346",
+    "ts": "2026-06-12T07:58:11.088103",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:1327 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2842D0",
+    "ts": "2026-06-12T07:58:11.266833",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:1507 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6D0590",
+    "ts": "2026-06-12T07:58:11.567875",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:1855 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-50EE11",
+    "ts": "2026-06-12T07:58:11.782347",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:1998 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EA6EAF",
+    "ts": "2026-06-12T07:58:11.944172",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:2278 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DD58D9",
+    "ts": "2026-06-12T07:58:12.135962",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:2812 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E35987",
+    "ts": "2026-06-12T07:58:12.322375",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:2837 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DCFAFA",
+    "ts": "2026-06-12T07:58:12.553271",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:2972 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F3BEFA",
+    "ts": "2026-06-12T07:58:12.759751",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:2984 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DE7EB3",
+    "ts": "2026-06-12T07:58:12.871533",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:2998 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FC1039",
+    "ts": "2026-06-12T07:58:13.057298",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3006 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-548098",
+    "ts": "2026-06-12T07:58:13.344905",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3169 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4089F4",
+    "ts": "2026-06-12T07:58:13.539891",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3719 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-930BC7",
+    "ts": "2026-06-12T07:58:13.707098",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3761 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3C6921",
+    "ts": "2026-06-12T07:58:13.887188",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] cit_director.py:3867 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7ECED1",
+    "ts": "2026-06-12T07:58:14.123665",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in etf_research_agent.py:83. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3B634B",
+    "ts": "2026-06-12T07:58:14.332339",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in fe_pipeline.py:763. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1CEBB4",
+    "ts": "2026-06-12T07:58:14.599792",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in main.py:125. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-18E539",
+    "ts": "2026-06-12T07:58:14.765139",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in ml_alt_data_agent.py:439. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D1718E",
+    "ts": "2026-06-12T07:58:14.896884",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in ml_improvement_agent.py:121. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C4278A",
+    "ts": "2026-06-12T07:58:15.118645",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in ml_rd_bridge_agent.py:72. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E6BC2A",
+    "ts": "2026-06-12T07:58:15.339372",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in ml_regime_trainer.py:288. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8FA84E",
+    "ts": "2026-06-12T07:58:15.476743",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in ml_research_team_leader.py:270. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8C8DFD",
+    "ts": "2026-06-12T07:58:15.663660",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in ml_validate_v2s.py:1083. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D6E5D2",
+    "ts": "2026-06-12T07:58:15.848524",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Possible missing makedirs before file write in pod_macro_agent.py:64. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D94C93",
+    "ts": "2026-06-12T07:58:16.063051",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Replace fixed R&D cadence with event-triggered research cycles. Reporter: CITThinkTank. Description: R&D last ran 75h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunit",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-170F93",
+    "ts": "2026-06-12T07:58:16.243935",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys. Reporter: CITThinkTank. Description: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0A2EE4",
+    "ts": "2026-06-12T07:58:16.506443",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] chief_of_staff_agent.py:2563 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-88177B",
+    "ts": "2026-06-12T07:58:16.719024",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] chief_of_staff_agent.py:2609 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-17642C",
+    "ts": "2026-06-12T07:58:16.857667",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] chief_of_staff_agent.py:3064 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3EA27D",
+    "ts": "2026-06-12T07:58:17.062116",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] chief_of_staff_agent.py:3105 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0954E8",
+    "ts": "2026-06-12T07:58:17.190047",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:2955 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1C828B",
+    "ts": "2026-06-12T07:58:17.379315",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3043 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AE57F9",
+    "ts": "2026-06-12T07:58:17.617388",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3068 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D20A1E",
+    "ts": "2026-06-12T07:58:17.845866",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3203 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C15EB0",
+    "ts": "2026-06-12T07:58:18.048735",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3215 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0590EC",
+    "ts": "2026-06-12T07:58:18.368439",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3229 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4CCCEE",
+    "ts": "2026-06-12T07:58:18.528906",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3237 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2F9096",
+    "ts": "2026-06-12T07:58:18.723561",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3400 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-32ECD6",
+    "ts": "2026-06-12T07:58:18.885320",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3953 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2638F0",
+    "ts": "2026-06-12T07:58:19.206979",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3995 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0A9BFA",
+    "ts": "2026-06-12T07:58:19.391551",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:4101 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C464B2",
+    "ts": "2026-06-12T07:58:19.622302",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:2964 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-549278",
+    "ts": "2026-06-12T07:58:19.800966",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3052 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EDA382",
+    "ts": "2026-06-12T07:58:20.006821",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3077 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-33636A",
+    "ts": "2026-06-12T07:58:20.176880",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3212 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F3BE9E",
+    "ts": "2026-06-12T07:58:20.355489",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3224 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BFA007",
+    "ts": "2026-06-12T07:58:20.540341",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3238 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-367FA2",
+    "ts": "2026-06-12T07:58:20.707151",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3246 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B81FDF",
+    "ts": "2026-06-12T07:58:20.889465",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3409 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5541C4",
+    "ts": "2026-06-12T07:58:21.056631",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3962 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0617D4",
+    "ts": "2026-06-12T07:58:21.273120",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:4004 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-174ED7",
+    "ts": "2026-06-12T07:58:21.461508",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:4110 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7F67F2",
+    "ts": "2026-06-12T07:58:21.671355",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [HIGH] ML model not trained \u2014 predictions returning neutral multiplier. Reporter: CIT. Description: get_model_status() returns NO_MODEL. All signals get multiplier=1.0 (no ML uplift). The historical_13f.db needs to be po",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-38FB65",
+    "ts": "2026-06-12T07:58:21.828162",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] ML live picks log empty \u2014 ST model not being validated. Reporter: CIT. Description: ml_live_picks_log.json has 0 picks. The ST model's real-world performance cannot be measured without live pick tracking.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-49EC08",
+    "ts": "2026-06-12T07:58:22.023279",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Pod RD: pipeline report is 35h old. Reporter: CIT. Description: data/research_team_report.json last updated 35h ago.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-82B2CA",
+    "ts": "2026-06-12T07:58:22.180940",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [LOW] Backlog curated: 5 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 1292 to 1287 items by removing duplicates, noise patterns, and items >30 days old with no actio",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3483D0",
+    "ts": "2026-06-12T07:58:22.400143",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [LOW] Backlog curated: 2 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 1304 to 1302 items by removing duplicates, noise patterns, and items >30 days old with no actio",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9E97E8",
+    "ts": "2026-06-12T07:58:22.597372",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3316 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B8D5EF",
+    "ts": "2026-06-12T07:58:22.715479",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3341 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CE621B",
+    "ts": "2026-06-12T07:58:22.988178",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3476 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3BF2A3",
+    "ts": "2026-06-12T07:58:23.171443",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3488 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2F5ACD",
+    "ts": "2026-06-12T07:58:23.414145",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3510 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F9D410",
+    "ts": "2026-06-12T07:58:23.699806",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:3673 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-42D695",
+    "ts": "2026-06-12T07:58:23.946760",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:4229 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-45691D",
+    "ts": "2026-06-12T07:58:24.138425",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:4271 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-917C25",
+    "ts": "2026-06-12T07:58:24.343097",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] cit_director.py:4377 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-491AE3",
+    "ts": "2026-06-12T07:58:24.536248",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] Signal source 'Manager' dragging P&L (-6.1% cumulative). Reporter: CIT. Description: Source 'Manager': 0 wins, 1 losses, -6.1% total P&L.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-67E7BE",
+    "ts": "2026-06-12T07:58:24.749282",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 29h: [MEDIUM] 16 ERROR lines \u2014 dominant: `v1`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 16 ERROR-level entries (1924 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-74EF1C",
+    "ts": "2026-06-12T07:58:24.939989",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 26h: [HIGH] 86 ERROR lines \u2014 dominant: `v1`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 86 ERROR-level entries (2267 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled)",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-224284",
+    "ts": "2026-06-12T17:41:20.886561",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:104. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1B69FA",
+    "ts": "2026-06-12T17:41:20.902781",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:112. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2E81A5",
+    "ts": "2026-06-12T17:41:20.914530",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:115. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F988CA",
+    "ts": "2026-06-12T17:41:20.926491",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:116. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EB4187",
+    "ts": "2026-06-12T17:41:20.938465",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:127. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-44ED46",
+    "ts": "2026-06-12T17:41:20.950277",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:128. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8FE7D2",
+    "ts": "2026-06-12T17:41:20.962423",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:136. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B590D5",
+    "ts": "2026-06-12T17:41:20.974166",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:142. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AA6685",
+    "ts": "2026-06-12T17:41:20.985992",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:145. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-42CE78",
+    "ts": "2026-06-12T17:41:20.997696",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:147. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2A86ED",
+    "ts": "2026-06-12T17:41:21.009448",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:148. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-027ABF",
+    "ts": "2026-06-12T17:41:21.021699",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:152. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6B3A8E",
+    "ts": "2026-06-12T17:41:21.033402",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:155. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8F2128",
+    "ts": "2026-06-12T17:41:21.045268",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: backup_data.py:173. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1C78E7",
+    "ts": "2026-06-12T17:41:21.057321",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] Long f-string in logger.debug/info: premarket_check.py:252. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2F25B8",
+    "ts": "2026-06-12T17:41:21.069044",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] Long f-string in logger.debug/info: reconciliation_check.py:86. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-125BD7",
+    "ts": "2026-06-12T17:41:21.080873",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:23. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8B0394",
+    "ts": "2026-06-12T17:41:21.092547",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:24. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-931D48",
+    "ts": "2026-06-12T17:41:21.104497",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:25. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-913AC0",
+    "ts": "2026-06-12T17:41:21.116334",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:26. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6C5F7F",
+    "ts": "2026-06-12T17:41:21.129435",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:27. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0CC3C1",
+    "ts": "2026-06-12T17:41:21.142221",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:28. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ED887B",
+    "ts": "2026-06-12T17:41:21.155397",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:41. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E3F687",
+    "ts": "2026-06-12T17:41:21.168241",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:42. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-160E23",
+    "ts": "2026-06-12T17:41:21.180543",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:43. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0C8A13",
+    "ts": "2026-06-12T17:41:21.192395",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:44. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B890F2",
+    "ts": "2026-06-12T17:41:21.204624",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:45. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D433EE",
+    "ts": "2026-06-12T17:41:21.217442",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:46. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4AC90A",
+    "ts": "2026-06-12T17:41:21.230176",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:47. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-11A508",
+    "ts": "2026-06-12T17:41:21.242632",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:48. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-22A134",
+    "ts": "2026-06-12T17:41:21.255207",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:49. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CF1596",
+    "ts": "2026-06-12T17:41:21.268373",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:50. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-87252A",
+    "ts": "2026-06-12T17:41:21.280936",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:51. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0F0127",
+    "ts": "2026-06-12T17:41:21.293269",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:52. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-13096C",
+    "ts": "2026-06-12T17:41:21.305813",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:53. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-87BF16",
+    "ts": "2026-06-12T17:41:21.319171",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:54. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-43C775",
+    "ts": "2026-06-12T17:41:21.332471",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:55. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-343050",
+    "ts": "2026-06-12T17:41:21.345375",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:56. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5A4FC0",
+    "ts": "2026-06-12T17:41:21.358673",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:57. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3F253C",
+    "ts": "2026-06-12T17:41:21.372099",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:58. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C3AD7B",
+    "ts": "2026-06-12T17:41:21.384995",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:59. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-18605B",
+    "ts": "2026-06-12T17:41:21.397483",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:60. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0D3B1B",
+    "ts": "2026-06-12T17:41:21.410148",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:61. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E82372",
+    "ts": "2026-06-12T17:41:21.424841",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:64. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4FB93E",
+    "ts": "2026-06-12T17:41:21.438782",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:65. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D94C7B",
+    "ts": "2026-06-12T17:41:21.452547",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:68. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-03F366",
+    "ts": "2026-06-12T17:41:21.465706",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:69. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-12680E",
+    "ts": "2026-06-12T17:41:21.479348",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:70. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-234453",
+    "ts": "2026-06-12T17:41:21.492229",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:72. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-839B5E",
+    "ts": "2026-06-12T17:41:21.505279",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:75. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D5F9B2",
+    "ts": "2026-06-12T17:41:21.517988",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:76. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-92D9F9",
+    "ts": "2026-06-12T17:41:21.530684",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:77. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E734B7",
+    "ts": "2026-06-12T17:41:21.543173",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:79. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3A12C2",
+    "ts": "2026-06-12T17:41:21.555942",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:84. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9FDDD8",
+    "ts": "2026-06-12T17:41:21.568462",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:85. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-09B06A",
+    "ts": "2026-06-12T17:41:21.580681",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:86. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A056A0",
+    "ts": "2026-06-12T17:41:21.592834",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:87. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F37F5E",
+    "ts": "2026-06-12T17:41:21.604907",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:88. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CE282C",
+    "ts": "2026-06-12T17:41:21.617468",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:94. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-449FAD",
+    "ts": "2026-06-12T17:41:21.629906",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:95. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3DD8BF",
+    "ts": "2026-06-12T17:41:21.642324",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:100. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7DD5F8",
+    "ts": "2026-06-12T17:41:21.659841",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:101. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-765024",
+    "ts": "2026-06-12T17:41:21.672835",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:102. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7B3EE6",
+    "ts": "2026-06-12T17:41:21.686070",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:103. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-79D097",
+    "ts": "2026-06-12T17:41:21.699437",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:104. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2EB506",
+    "ts": "2026-06-12T17:41:21.713466",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:110. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FF7F34",
+    "ts": "2026-06-12T17:41:21.726844",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:111. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CFC58B",
+    "ts": "2026-06-12T17:41:21.740065",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:119. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-445101",
+    "ts": "2026-06-12T17:41:21.752897",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:120. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0023DF",
+    "ts": "2026-06-12T17:41:21.766050",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:121. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-83F76E",
+    "ts": "2026-06-12T17:41:21.778662",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:122. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F24B06",
+    "ts": "2026-06-12T17:41:21.794050",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:124. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A96207",
+    "ts": "2026-06-12T17:41:21.806963",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:128. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3FF557",
+    "ts": "2026-06-12T17:41:21.819712",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:135. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-867B1F",
+    "ts": "2026-06-12T17:41:21.832509",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:140. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DDBEBC",
+    "ts": "2026-06-12T17:41:21.845734",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:169. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BC7C21",
+    "ts": "2026-06-12T17:41:21.858231",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:170. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C1D1D6",
+    "ts": "2026-06-12T17:41:21.883301",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:173. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AC9782",
+    "ts": "2026-06-12T17:41:21.900999",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:174. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-138286",
+    "ts": "2026-06-12T17:41:21.913284",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: run_backtest.py:176. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B9B6F7",
+    "ts": "2026-06-12T17:41:21.925701",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: teaching_division.py:690. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D5A63D",
+    "ts": "2026-06-12T17:41:21.939813",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: teaching_division.py:691. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0C0529",
+    "ts": "2026-06-12T17:41:21.953716",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: teaching_division.py:692. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2A03F3",
+    "ts": "2026-06-12T17:41:21.967253",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: teaching_division.py:696. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DA65FA",
+    "ts": "2026-06-12T17:41:21.980144",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: teaching_division.py:698. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D0CF11",
+    "ts": "2026-06-12T17:41:21.993067",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] print() in production code: teaching_division.py:708. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-72C90E",
+    "ts": "2026-06-12T17:41:22.006357",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [LOW] Long f-string in logger.debug/info: wakeup_recovery.py:203. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6729CF",
+    "ts": "2026-06-12T17:41:22.021648",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 46h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 187/30). Reporter: CITThinkTank. Description: The firm is on day 187/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-213D35",
+    "ts": "2026-06-12T17:41:22.034840",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 41h: [MEDIUM] chief_of_staff_agent.py:2558 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9D391B",
+    "ts": "2026-06-12T17:41:22.047928",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 41h: [MEDIUM] chief_of_staff_agent.py:2604 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1A487E",
+    "ts": "2026-06-12T17:41:22.060818",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 41h: [MEDIUM] chief_of_staff_agent.py:3059 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AC59E9",
+    "ts": "2026-06-12T17:41:22.074398",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 41h: [MEDIUM] chief_of_staff_agent.py:3100 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-51589E",
+    "ts": "2026-06-12T17:41:22.088228",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 40h: [MEDIUM] Silent exception in ml_pod_board.py:42. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3F33C2",
+    "ts": "2026-06-12T17:41:22.101228",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 39h: [MEDIUM] Possible missing makedirs before file write in fi_pipeline.py:239. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A7F9F6",
+    "ts": "2026-06-12T17:41:22.113678",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 39h: [MEDIUM] Possible missing makedirs before file write in fe_pipeline.py:770. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0907F4",
+    "ts": "2026-06-12T17:41:22.126150",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 35h: [MEDIUM] Pod RD: pipeline report is 38h old. Reporter: CIT. Description: data/research_team_report.json last updated 38h ago.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3EF343",
+    "ts": "2026-06-12T17:41:22.138855",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 32h: [MEDIUM] Pod RD: pipeline report is 42h old. Reporter: CIT. Description: data/research_team_report.json last updated 42h ago.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FAD076",
+    "ts": "2026-06-12T17:41:22.151366",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 27h: [LOW] Long f-string in logger.debug/info: morning_briefing.py:308. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3ACE6E",
+    "ts": "2026-06-12T17:41:22.163855",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 27h: [LOW] print() in production code: rd_team_leader.py:1301. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6A5E38",
+    "ts": "2026-06-12T17:41:22.176385",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 26h: [MEDIUM] Possible missing makedirs before file write in fi_board.py:175. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D49272",
+    "ts": "2026-06-12T17:41:22.189011",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 26h: [HIGH] 147 ERROR lines \u2014 dominant: `v1`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 147 ERROR-level entries (2862 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F1DBB6",
+    "ts": "2026-06-12T17:41:38.515425",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-27B482",
+    "ts": "2026-06-12T17:41:38.530792",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/irm_daily_check.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5A5C1D",
+    "ts": "2026-06-12T17:41:38.544997",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: 152 ERROR lines \u2014 dominant: `v1`. Fix: Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logg",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F5CE80",
+    "ts": "2026-06-12T17:41:39.341903",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0367: 147 ERROR lines \u2014 dominant: `v1`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FD8E24",
+    "ts": "2026-06-12T17:41:40.280877",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-401. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8BD1C0",
+    "ts": "2026-06-12T17:41:40.289031",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-570. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FDB461",
+    "ts": "2026-06-12T17:43:35.192472",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E85BEA",
+    "ts": "2026-06-12T17:43:35.254016",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/irm_daily_check.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FE2805",
+    "ts": "2026-06-12T17:43:35.307233",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: 152 ERROR lines \u2014 dominant: `v1`. Fix: Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logg",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-61062D",
+    "ts": "2026-06-12T17:43:36.089742",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-401. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-46C8E1",
+    "ts": "2026-06-12T17:43:36.110567",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-570. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-35BFDE",
+    "ts": "2026-06-12T17:45:27.997920",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2B3E5C",
+    "ts": "2026-06-12T17:45:28.012937",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/irm_daily_check.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-50FE83",
+    "ts": "2026-06-12T17:45:28.027347",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: 152 ERROR lines \u2014 dominant: `v1`. Fix: Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logg",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CD42DC",
+    "ts": "2026-06-12T17:45:28.225620",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-401. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AFCBC6",
+    "ts": "2026-06-12T17:45:28.233335",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-570. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B37F2D",
+    "ts": "2026-06-12T18:01:23.293541",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BD1454",
+    "ts": "2026-06-12T18:01:36.686500",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C3998C",
+    "ts": "2026-06-12T18:01:36.726109",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/irm_daily_check.json (49h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2D07D6",
+    "ts": "2026-06-12T18:01:36.764435",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: 212 ERROR lines \u2014 dominant: `v1`. Fix: Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logg",
+    "urgency": "HIGH",
+    "status": "PENDING"
   }
 ]

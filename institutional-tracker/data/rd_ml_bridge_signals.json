@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-06-11T23:45:01.505664+00:00",
+  "updated_at": "2026-06-12T12:30:12.927382+00:00",
   "rd_run_at": "2026-06-09T16:00:48.281735",
   "n_tickers": 19,
   "regime": {
     "rd_regime_bull": 1,
     "rd_regime_bear": 0,
-    "rd_vix": 19.4,
+    "rd_vix": 18.9,
     "rd_vix_high": 0,
     "rd_spy_rsi": 46.6,
     "rd_spy_overbought": 0,

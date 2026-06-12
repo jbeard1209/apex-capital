@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T14:32:03.202659",
+  "generated_at": "2026-06-12T18:01:16.086106",
   "regime": "NORMAL",
   "approved": [
     {
@@ -22,7 +22,7 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Acceptable score 78 for regime NORMAL"
+          "reason": "Acceptable score 78"
         },
         {
           "member": "Portfolio Manager",
@@ -31,13 +31,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202532"
+      "board_ts": "2026-06-12T18:01:16.085266"
     },
     {
       "ticker": "VCSH",
       "conviction": 4,
       "action": "BUY",
-      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=310.0bps IG spread=102.0bps | thesis=spread compression play",
+      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=303.0bps IG spread=100.0bps | thesis=spread compression play",
       "credit_tier": "IG",
       "segment": "credit_spread",
       "opportunity_score": 77,
@@ -53,7 +53,7 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Credit quality score 77, conviction 4"
+          "reason": "Score 77, conviction 4"
         },
         {
           "member": "Portfolio Manager",
@@ -62,13 +62,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202542"
+      "board_ts": "2026-06-12T18:01:16.085336"
     },
     {
       "ticker": "IGSB",
-      "conviction": 4,
+      "conviction": 3,
       "action": "BUY",
-      "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=102.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
+      "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=100.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
       "credit_tier": "IG",
       "segment": "investment_grade",
       "opportunity_score": 76,
@@ -84,7 +84,7 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Credit quality score 76, conviction 4"
+          "reason": "Score 76, conviction 3"
         },
         {
           "member": "Portfolio Manager",
@@ -93,13 +93,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202547"
+      "board_ts": "2026-06-12T18:01:16.085396"
     },
     {
       "ticker": "SLQD",
-      "conviction": 4,
+      "conviction": 3,
       "action": "BUY",
-      "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=102.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
+      "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=100.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
       "credit_tier": "IG",
       "segment": "investment_grade",
       "opportunity_score": 76,
@@ -115,7 +115,7 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Credit quality score 76, conviction 4"
+          "reason": "Score 76, conviction 3"
         },
         {
           "member": "Portfolio Manager",
@@ -124,13 +124,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202550"
+      "board_ts": "2026-06-12T18:01:16.085454"
     },
     {
       "ticker": "VCIT",
       "conviction": 4,
       "action": "BUY",
-      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=310.0bps IG spread=102.0bps | thesis=spread compression play",
+      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=303.0bps IG spread=100.0bps | thesis=spread compression play",
       "credit_tier": "IG",
       "segment": "credit_spread",
       "opportunity_score": 75,
@@ -146,16 +146,16 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Credit quality score 75, conviction 4"
+          "reason": "Score 75, conviction 4"
         },
         {
           "member": "Portfolio Manager",
           "vote": "REJECT",
-          "reason": "Already at max 3 positions in IG tier"
+          "reason": "Max 3 positions in IG tier reached"
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202554"
+      "board_ts": "2026-06-12T18:01:16.085509"
     },
     {
       "ticker": "BIL",
@@ -177,7 +177,7 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Acceptable score 74 for regime NORMAL"
+          "reason": "Acceptable score 74"
         },
         {
           "member": "Portfolio Manager",
@@ -186,7 +186,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202558"
+      "board_ts": "2026-06-12T18:01:16.085565"
     },
     {
       "ticker": "IEF",
@@ -208,7 +208,7 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Credit quality score 73, conviction 3"
+          "reason": "Score 73, conviction 3"
         },
         {
           "member": "Portfolio Manager",
@@ -217,13 +217,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202562"
+      "board_ts": "2026-06-12T18:01:16.085621"
     },
     {
       "ticker": "IGIB",
       "conviction": 4,
       "action": "BUY",
-      "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=310.0bps IG spread=102.0bps | thesis=spread compression play",
+      "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=303.0bps IG spread=100.0bps | thesis=spread compression play",
       "credit_tier": "IG",
       "segment": "credit_spread",
       "opportunity_score": 71,
@@ -239,16 +239,16 @@
         {
           "member": "Credit Analyst",
           "vote": "APPROVE",
-          "reason": "Credit quality score 71, conviction 4"
+          "reason": "Score 71, conviction 4"
         },
         {
           "member": "Portfolio Manager",
           "vote": "REJECT",
-          "reason": "Already at max 3 positions in IG tier"
+          "reason": "Max 3 positions in IG tier reached"
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-11T14:32:03.202565"
+      "board_ts": "2026-06-12T18:01:16.085679"
     }
   ],
   "rejected": []

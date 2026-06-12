@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T00:00:01.149160",
+  "generated_at": "2026-06-12T12:45:28.898455",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
@@ -12,7 +12,7 @@
     "regime_label": "bull",
     "bull": true,
     "bear": false,
-    "vix": 19.4,
+    "vix": 18.9,
     "spy_rsi": 46.6,
     "overbought": false,
     "warning_count": 0,
@@ -60,7 +60,7 @@
           "XLU": -4.8458,
           "GLD": -13.8837
         },
-        "reasoning": "BULL regime (VIX=19.4, SPY_RSI=46.6). Picking top 3 by momentum score. Top 3: [('XLK', 9.93), ('QQQ', 5.13), ('XLV', 2.38)]",
+        "reasoning": "BULL regime (VIX=18.9, SPY_RSI=46.6). Picking top 3 by momentum score. Top 3: [('XLK', 9.93), ('QQQ', 5.13), ('XLV', 2.38)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },

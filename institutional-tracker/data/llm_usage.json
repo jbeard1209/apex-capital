@@ -1,0 +1,18 @@
+{
+  "date": "2026-06-12",
+  "calls": 4,
+  "input_tokens": 344,
+  "output_tokens": 311,
+  "by_agent": {
+    "rd_pod_board": {
+      "calls": 3,
+      "in": 206,
+      "out": 155
+    },
+    "manager_agent": {
+      "calls": 1,
+      "in": 138,
+      "out": 156
+    }
+  }
+}

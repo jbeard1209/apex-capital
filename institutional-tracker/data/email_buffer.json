@@ -1,9 +1,1 @@
-[
-  {
-    "subject": "wakeup_recovery",
-    "sender_name": "Apex Capital \u2014 Auto-Recovery Report | June 12, 2026 00:34 ET\n\nThe GCP VM detected missed pipeline jobs and ran automatic recovery.\n\n\u2705 Jobs recovered (2):\n  \u2022 rd_team_leader.py\n  \u2022 main.py\n\n\u23ed Jobs skipped \u2014 already fresh (8):\n  \u2022 morning_briefing.py (9.5h old, ok)\n  \u2022 canary_agent.py (0.0h old, ok)\n  \u2022 fe_pipeline.py (18.6h old, ok)\n  \u2022 fi_pipeline.py (18.5h old, ok)\n  \u2022 board_meeting.py (11.0h old, ok)\n  \u2022 cit_director.py (2.3h old, ok)\n  \u2022 overnight_ml_runner.py (18.5h old, ok)\n  \u2022 email_buffer.py (2.6h old, ok)",
-    "html_body": "[Auto-Recovery] Apex Capital Pipeline Restored | June 12, 2026",
-    "key_metrics": {},
-    "buffered_at": "2026-06-12T00:34:18.576037"
-  }
-]
+[]
