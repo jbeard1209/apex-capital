@@ -156,7 +156,9 @@ def reason(
         return None
 
     model     = cfg.get("model", "claude-sonnet-4-6")
-    n_tokens  = max_tokens or cfg.get("max_tokens", 1024)
+    # Floor of 300: Fable 5's thinking tokens count against max_tokens, so a
+    # tight cap can truncate before any text is emitted (worst case ~1.5¢).
+    n_tokens  = max(max_tokens or cfg.get("max_tokens", 1024), 300)
     timeout   = cfg.get("timeout_seconds", 30)
 
     try:
@@ -168,7 +170,8 @@ def reason(
             system=system,
             messages=[{"role": "user", "content": user}],
         )
-        text = msg.content[0].text if msg.content else ""
+        # Fable 5 may prepend thinking blocks — take the first text block
+        text = next((b.text for b in msg.content if getattr(b, "type", "") == "text"), "")
         _record_usage(agent_name,
                       getattr(msg.usage, "input_tokens", 0),
                       getattr(msg.usage, "output_tokens", 0))
