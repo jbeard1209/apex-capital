@@ -409,6 +409,29 @@ class TeachingCurriculumDirector:
             "director_notes": self._generate_director_notes(day, struggles),
         }
 
+        # ── Fable 5 writes the actual lesson content (one call/day) ───────
+        # The curriculum defines topics; the LLM writes the real teaching
+        # material, tailored to Jack and to how Apex Capital uses the concept.
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("teaching"):
+                raw = _r(
+                    "You are a patient finance teacher writing a daily mini-lesson for "
+                    "Jack Beard, Co-Chairman of Apex Capital (an AI paper-trading firm), "
+                    "who is learning investing from scratch. Concrete examples over jargon. "
+                    "Where natural, connect the concept to how his own firm uses it.",
+                    f"Day {day} topic: {lesson['topic']}\n"
+                    f"Key concepts: {', '.join(lesson['key_concepts'][:4])}\n"
+                    f"{'Reinforce: ' + struggles[0] if struggles else ''}\n"
+                    "Write the core lesson: ~250 words, then one worked numerical example, "
+                    "then one 'how Apex uses this' connection.",
+                    agent_name="teaching", max_tokens=600,
+                )
+                if raw:
+                    session["llm_lesson_content"] = raw.strip()
+        except Exception:
+            pass
+
         LESSON_FILE.write_text(json.dumps(session, indent=2))
         logger.info(f"Session prepared — Day {day}: '{lesson['topic']}' (teacher: {lesson['teacher']})")
         return session

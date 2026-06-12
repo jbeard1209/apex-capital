@@ -291,6 +291,27 @@ def run_reconciliation() -> dict:
         "status":          "CLEAN" if not flags else ("CRITICAL" if n_critical else "WARNING"),
     }
 
+    # ── Fable 5 discrepancy diagnosis — gated to CRITICAL/HIGH flags ──────
+    if n_critical or n_high:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("reconciliation"):
+                flag_txt = "; ".join(
+                    f"[{f['severity']}] {f['check']}: {f['detail'][:70]}"
+                    for f in flags[:4])
+                raw = _r(
+                    "You diagnose data-reconciliation failures in a trading system.",
+                    f"Portfolio ${portfolio_value:,.0f}, {n_positions} positions.\n"
+                    f"Flags: {flag_txt}\n"
+                    "2 sentences: most likely root cause, and is capital actually at "
+                    "risk or is this a bookkeeping lag?",
+                    agent_name="reconciliation", max_tokens=110,
+                )
+                if raw:
+                    report["llm_diagnosis"] = raw.strip()
+        except Exception:
+            pass
+
     os.makedirs("data", exist_ok=True)
     with open(REPORT_PATH, "w") as f:
         json.dump(report, f, indent=2, default=str)

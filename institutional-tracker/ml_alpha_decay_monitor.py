@@ -271,6 +271,28 @@ def write_report(
         "stable_features": _clean_for_json(stable),
     }
 
+    # ── Fable 5 decay interpretation — gated to actual decay ──────────────
+    if decaying or dead:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("ml_improvement"):
+                feats = ", ".join(
+                    f"{r['feature']}({r.get('decay_ratio','?')})"
+                    for r in (decaying + dead)[:6])
+                raw = _r(
+                    "You are a quant researcher diagnosing feature alpha decay in a "
+                    "13F-based stock-selection model.",
+                    f"{len(decaying)} decaying, {len(dead)} dead of {len(results)} features.\n"
+                    f"Affected: {feats}\n"
+                    "2 sentences: the most likely market-structural reason these signals "
+                    "are fading, and whether to retrain, drop, or wait.",
+                    agent_name="ml_improvement", max_tokens=120,
+                )
+                if raw:
+                    report["llm_decay_read"] = raw.strip()
+        except Exception:
+            pass
+
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
     with open(REPORT_PATH, "w") as fh:
         json.dump(report, fh, indent=2, default=str)
