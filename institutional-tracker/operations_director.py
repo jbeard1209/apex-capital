@@ -144,6 +144,28 @@ def run() -> dict:
     for flag in brief["flags"]:
         logger.warning(f"  ⚠ {flag}")
 
+    # ── Fable 5 ops triage — gated to 2+ flags ────────────────────────────
+    if len(brief["flags"]) >= 2:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("operations"):
+                raw = _r(
+                    "You are Apex Capital's Operations Director triaging floor issues.",
+                    f"Flags: {'; '.join(f[:80] for f in brief['flags'][:5])}\n"
+                    "2 sentences: which flag is the real problem (vs noise), and what "
+                    "single action fixes it fastest?",
+                    agent_name="operations", max_tokens=110,
+                )
+                if raw:
+                    brief["llm_triage"] = raw.strip()
+                    try:
+                        with open(OPS_REPORT_PATH, "w") as _f:
+                            json.dump(brief, _f, indent=2, default=str)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
     # Post to firm channel
     try:
         from firm_channel import post as _fc_post

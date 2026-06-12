@@ -5,6 +5,7 @@
   "api_key_env": "ANTHROPIC_API_KEY",
   "max_tokens": 1024,
   "timeout_seconds": 30,
+  "max_daily_calls": 400,
   "enabled_agents": [
     "rd_pod_board",
     "ml_pod_board",
@@ -17,6 +18,19 @@
     "irm_review",
     "morning_briefing",
     "canary_agent",
-    "board_meeting"
+    "board_meeting",
+    "pre_trade_challenge",
+    "trade_review",
+    "earnings_predictor",
+    "capital_efficiency",
+    "rd_team_leader",
+    "rd_historical",
+    "rd_geopolitical",
+    "fi_credit",
+    "pod_macro",
+    "premarket",
+    "operations",
+    "international",
+    "energy_research"
   ]
 }

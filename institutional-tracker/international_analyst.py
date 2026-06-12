@@ -369,6 +369,27 @@ def run(universe: list | None = None) -> dict:
         "watch_tickers":       watch,
     }
 
+    # ── Fable 5 overnight read — gated to risk-off or notable moves ───────
+    if sentiment == "risk-off" or len(notable_indices) + len(notable_commodities) >= 2:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("international"):
+                moves = "; ".join(
+                    f"{m['name']} {m['pct']:+.1f}%"
+                    for m in (notable_indices + notable_commodities)[:5]) or "none"
+                raw = _r(
+                    "You are an overnight-markets analyst for a US equity fund.",
+                    f"Session {session} | Sentiment {sentiment} ({score:+d})\n"
+                    f"Notable moves: {moves}\n"
+                    f"US tickers flagged: {', '.join(watch[:6]) or 'none'}\n"
+                    "2 sentences: what is the overnight tape telling us about today's US open?",
+                    agent_name="international", max_tokens=120,
+                )
+                if raw:
+                    report["llm_overnight_read"] = raw.strip()
+        except Exception:
+            pass
+
     with open(REPORT_PATH, "w") as f:
         json.dump(report, f, indent=2)
 

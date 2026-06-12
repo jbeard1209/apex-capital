@@ -242,6 +242,29 @@ class BaseEnergyResearchAgent(ABC):
                 },
             })
 
+        # ── Fable 5 thesis check — gated to 4★+ picks only ────────────────
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("energy_research"):
+                for rec in recommendations:
+                    if rec["conviction"] < 4:
+                        continue
+                    f = rec["fundamentals"]
+                    raw = _r(
+                        f"You are an energy-sector analyst ({self.specialty}).",
+                        f"BUY {rec['ticker']} {rec['conviction']}★ | "
+                        f"fwd P/E {f['forward_pe']} | rev growth {f['revenue_growth_pct']}% | "
+                        f"margin {f['profit_margin_pct']}%\n"
+                        f"Thesis: {rec['reasons'][0][:200]}\n"
+                        "2 sentences: does the thesis hold given current energy-sector "
+                        "dynamics, and what would invalidate it?",
+                        agent_name="energy_research", max_tokens=120,
+                    )
+                    if raw:
+                        rec["reasons"].append(f"[LLM CHECK] {raw.strip()}")
+        except Exception:
+            pass
+
         logger.info(
             f"  [{self.name}] → {len(recommendations)} actionable pick(s) "
             f"from {len(scored_list)} analysed"

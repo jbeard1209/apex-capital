@@ -280,9 +280,30 @@ def run_premarket_check(send_email: bool = True, quiet: bool = False) -> dict:
         "CLEAR"
     )
 
+    # ── Fable 5 pre-open game plan — gated to CRITICAL/HIGH mornings ──────
+    llm_gameplan = None
+    if overall_status in ("CRITICAL", "HIGH"):
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("premarket"):
+                top_alerts = "; ".join(
+                    f"[{a['severity']}] {a['ticker']}: {a['message'][:70]}"
+                    for a in alerts[:4])
+                llm_gameplan = _r(
+                    "You are Apex Capital's pre-market strategist. Markets open in ~1 hour.",
+                    f"Status {overall_status} | VIX {vix_check.get('vix','?')} | "
+                    f"SPY gap {spy_check.get('spy_gap_pct','?')}%\n"
+                    f"Alerts: {top_alerts}\n"
+                    "2-3 sentences: the game plan for the open — what to do first and what to avoid.",
+                    agent_name="premarket", max_tokens=140,
+                )
+        except Exception:
+            pass
+
     report = {
         "generated_at":    datetime.now().isoformat(),
         "agent":           "Pre-Market Check",
+        **({"llm_gameplan": llm_gameplan.strip()} if llm_gameplan else {}),
         "overall_status":  overall_status,
         "portfolio_value": portfolio_value,
         "n_positions":     n_positions,

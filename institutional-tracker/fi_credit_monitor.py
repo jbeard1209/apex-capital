@@ -186,6 +186,25 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
         }.get(spread_regime, ""),
     }
 
+    # ── Fable 5 credit read — gated to non-NORMAL regimes or 2+ signals ───
+    try:
+        from apex_llm import reason as _r, is_available
+        if is_available("fi_credit") and (spread_regime != "NORMAL" or len(signals) >= 2):
+            sigs = "; ".join(s["message"][:80] for s in signals[:3]) or "none"
+            raw = _r(
+                "You are a fixed-income strategist for a $30k bond ETF pod.",
+                f"Regime {spread_regime} | HY {hy_spread_bps:.0f}bps, IG {ig_spread_bps:.0f}bps, "
+                f"10yr {treasury_10yr:.2f}%, curve slope {yield_curve_slope:+.2f}\n"
+                f"Signals: {sigs}\n"
+                "2 sentences: what is the credit market actually telling us, and the "
+                "single best FI positioning move right now?",
+                agent_name="fi_credit", max_tokens=120,
+            )
+            if raw:
+                result["llm_credit_read"] = raw.strip()
+    except Exception:
+        pass
+
     # Cache result
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(CACHE_PATH, "w") as f:

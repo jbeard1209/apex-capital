@@ -296,6 +296,28 @@ def run() -> dict:
             "bear_mode": bear_mode,
         })
 
+    # ── Fable 5 rotation review — gated to runs with actual turnover ──────
+    llm_rotation_note = None
+    if to_buy or to_sell:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("pod_macro"):
+                raw = _r(
+                    "You are the macro strategist for a sector-ETF rotation pod.",
+                    f"Regime: bull={regime.get('rd_regime_bull')}, "
+                    f"VIX {regime.get('rd_vix',0):.0f}, bear_mode={bear_mode}\n"
+                    f"BUY {sorted(to_buy) or 'none'} | SELL {sorted(to_sell) or 'none'} | "
+                    f"HOLD {sorted(to_hold) or 'none'}\n"
+                    "2 sentences: does this rotation make macro sense right now, "
+                    "and what's the main risk of executing it?",
+                    agent_name="pod_macro", max_tokens=120,
+                )
+                if raw:
+                    llm_rotation_note = raw.strip()
+                    log.info("LLM rotation review: %s", llm_rotation_note[:100])
+        except Exception:
+            pass
+
     hold_signals = []
     for entry in top_etfs:
         etf = entry["etf"]
@@ -319,6 +341,7 @@ def run() -> dict:
         "agent": "Pod 3 Macro Agent",
         "regime": regime,
         "bear_mode": bear_mode,
+        **({"llm_rotation_note": llm_rotation_note} if llm_rotation_note else {}),
         "scoring_method": (
             "score = (ret_1m*0.4) + (ret_3m*0.3) + (pct_from_50ma*0.2) - (vol*0.1) "
             "+2 if bullish, -2 if bearish"

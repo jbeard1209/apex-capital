@@ -637,7 +637,28 @@ class HistoricalContextAnalyst:
         bull_analogues = analogues.get("most_relevant_bull_analogues", [])
         bear_analogues = analogues.get("most_relevant_bear_analogues", [])
 
+        # ── Fable 5 analogue interpretation (one call/run) ────────────────
+        llm_read = None
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("rd_historical"):
+                bull_l = bull_analogues[0]["label"] if bull_analogues else "none"
+                bear_l = bear_analogues[0]["label"] if bear_analogues else "none"
+                warns  = "; ".join(s["signal"][:70] for s in warnings[:3]) or "none"
+                llm_read = _r(
+                    "You are a market historian advising a momentum strategy.",
+                    f"Regime: SPY {spy_trend}, VIX {vix_cat}, momentum {momentum}, rates {rates}.\n"
+                    f"Rule stance: {stance}. Bull analogue: {bull_l}. Bear risk: {bear_l}.\n"
+                    f"Warnings: {warns}\n"
+                    "2 sentences: what happened next in the closest analogue, and does "
+                    "that support or contradict the rule-based stance?",
+                    agent_name="rd_historical", max_tokens=130,
+                )
+        except Exception:
+            pass
+
         return {
+            **({"llm_analogue_read": llm_read.strip()} if llm_read else {}),
             "historical_stance": stance,
             "stance_rationale":  stance_rationale,
             "best_match_bull_period": bull_analogues[0]["label"] if bull_analogues else "None identified",

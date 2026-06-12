@@ -505,6 +505,27 @@ class GeopoliticalResearchTeam:
             ),
         }
 
+        # ── Fable 5 geopolitical read (one call/run) ──────────────────────
+        # The LLM has actual world knowledge the keyword-based analysts lack.
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("rd_geopolitical"):
+                raw = _r(
+                    "You are a geopolitical risk analyst for a US equity momentum fund.",
+                    f"Sectors under research: {', '.join(assigned_sectors)}.\n"
+                    f"Double-flagged risky: {double_flagged or 'none'}. "
+                    f"Confirmed clean: {double_confirmed or 'none'}.\n"
+                    f"Policy analogue: {policy_analysis.get('current_policy_analogue','N/A')}\n"
+                    "2 sentences: the single most relevant current geopolitical/policy risk "
+                    "for these sectors, and which sector it most affects.",
+                    agent_name="rd_geopolitical", max_tokens=130,
+                )
+                if raw:
+                    combined["llm_geo_read"] = raw.strip()
+                    synthesis_notes.append(f"[LLM] {raw.strip()}")
+        except Exception:
+            pass
+
         logger.info(
             f"  [Geopolitical Team] Complete — "
             f"{len(double_confirmed)} confirmed | {len(double_flagged)} double-flagged"
