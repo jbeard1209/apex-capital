@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T19:35:05.235626",
+  "generated_at": "2026-06-12T19:55:41.910338",
   "leader": "R&D Team Leader",
   "cro_risk_level": "ELEVATED",
   "sectors_scanned": 16,
@@ -19,7 +19,8 @@
         "CRM",
         "ADBE",
         "NOW",
-        "INTU"
+        "INTU",
+        "MRVL"
       ],
       "score_data": {
         "etf": "XLK",
@@ -57,7 +58,8 @@
         "V",
         "MA",
         "AXP",
-        "SPGI"
+        "SPGI",
+        "VRT"
       ],
       "score_data": {
         "etf": "XLF",
@@ -95,7 +97,8 @@
         "CYBR",
         "TENB",
         "RPM",
-        "SAIL"
+        "SAIL",
+        "RKLB"
       ],
       "score_data": {
         "etf": "CIBR",
@@ -133,7 +136,8 @@
         "CFG",
         "KEY",
         "MTB",
-        "ZION"
+        "ZION",
+        "NUE"
       ],
       "score_data": {
         "etf": "KRE",
@@ -171,7 +175,8 @@
         "DG",
         "DLTR",
         "KSS",
-        "M"
+        "M",
+        "TSM"
       ],
       "score_data": {
         "etf": "XRT",
@@ -209,7 +214,8 @@
         "LRCX",
         "KLAC",
         "MU",
-        "ARM"
+        "ARM",
+        "C"
       ],
       "score_data": {
         "etf": "SMH",
@@ -630,7 +636,8 @@
         "CRM",
         "ADBE",
         "NOW",
-        "INTU"
+        "INTU",
+        "MRVL"
       ],
       "momentum_score": 11,
       "momentum_data": {
@@ -656,7 +663,7 @@
       },
       "investment_horizon": "long_term",
       "leader_rationale": "Technology is in a confirmed uptrend (+10.0% above 50MA, +24.9% above 200MA). RSI at 54 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +3.0% (1M) / +33.3% (3M) with 38% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229183",
+      "assigned_at": "2026-06-12T19:55:41.902439",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -675,7 +682,8 @@
         "V",
         "MA",
         "AXP",
-        "SPGI"
+        "SPGI",
+        "VRT"
       ],
       "momentum_score": 11,
       "momentum_data": {
@@ -701,7 +709,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Financials is in a confirmed uptrend (+3.3% above 50MA, +2.0% above 200MA). RSI at 63 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +4.0% (1M) / +8.8% (3M) with 15% annualised volatility \u2014 lower volatility; focus on high-conviction individual names.",
-      "assigned_at": "2026-06-12T19:35:05.229203",
+      "assigned_at": "2026-06-12T19:55:41.902450",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -720,7 +728,8 @@
         "CYBR",
         "TENB",
         "RPM",
-        "SAIL"
+        "SAIL",
+        "RKLB"
       ],
       "momentum_score": 11,
       "momentum_data": {
@@ -746,7 +755,7 @@
       },
       "investment_horizon": "long_term",
       "leader_rationale": "Cybersecurity is in a confirmed uptrend (+13.6% above 50MA, +17.9% above 200MA). RSI at 52 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +8.9% (1M) / +32.5% (3M) with 43% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229213",
+      "assigned_at": "2026-06-12T19:55:41.902457",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -765,7 +774,8 @@
         "CFG",
         "KEY",
         "MTB",
-        "ZION"
+        "ZION",
+        "NUE"
       ],
       "momentum_score": 11,
       "momentum_data": {
@@ -791,7 +801,7 @@
       },
       "investment_horizon": "long_term",
       "leader_rationale": "Regional Banks is in a confirmed uptrend (+5.9% above 50MA, +11.7% above 200MA). RSI at 68 \u2014 overbought territory; research should focus on pullback entry candidates. Sector returned +8.4% (1M) / +16.4% (3M) with 22% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229221",
+      "assigned_at": "2026-06-12T19:55:41.902461",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -810,7 +820,8 @@
         "DG",
         "DLTR",
         "KSS",
-        "M"
+        "M",
+        "TSM"
       ],
       "momentum_score": 11,
       "momentum_data": {
@@ -836,7 +847,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Retail is in a confirmed uptrend (+4.8% above 50MA, +3.8% above 200MA). RSI at 71 \u2014 overbought territory; research should focus on pullback entry candidates. Sector returned +9.1% (1M) / +9.7% (3M) with 20% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229229",
+      "assigned_at": "2026-06-12T19:55:41.902465",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -855,7 +866,8 @@
         "LRCX",
         "KLAC",
         "MU",
-        "ARM"
+        "ARM",
+        "C"
       ],
       "momentum_score": 10,
       "momentum_data": {
@@ -881,7 +893,7 @@
       },
       "investment_horizon": "long_term",
       "leader_rationale": "Semiconductors is in a confirmed uptrend (+17.2% above 50MA, +53.5% above 200MA). RSI at 59 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +7.2% (1M) / +57.4% (3M) with 57% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229237",
+      "assigned_at": "2026-06-12T19:55:41.902468",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -926,7 +938,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Industrials is in a confirmed uptrend (+2.2% above 50MA, +8.8% above 200MA). RSI at 59 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +1.0% (1M) / +6.4% (3M) with 22% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229245",
+      "assigned_at": "2026-06-12T19:55:41.902472",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     },
@@ -971,7 +983,7 @@
       },
       "investment_horizon": "both",
       "leader_rationale": "Defense & Aerospace is in a confirmed uptrend (+3.7% above 50MA, +6.3% above 200MA). RSI at 58 indicates momentum is building without being overbought \u2014 ideal capture-the-momentum entry zone. Sector returned +4.2% (1M) / +0.5% (3M) with 32% annualised volatility \u2014 sufficient movement to capture momentum.",
-      "assigned_at": "2026-06-12T19:35:05.229252",
+      "assigned_at": "2026-06-12T19:55:41.902475",
       "cro_risk_level": "ELEVATED",
       "cro_advisory": "ELEVATED RISK: Restrict new buys to 4\u2605+ conviction only. Maintain at least 20% cash. No speculative adds."
     }

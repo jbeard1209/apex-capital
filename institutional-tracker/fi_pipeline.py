@@ -252,8 +252,11 @@ def run_fi_pipeline():
         log.error("FI board failed: %s", exc)
         board_result = {"error": str(exc)}
 
-    # Step 8: Send daily email
-    _send_daily_email(spreads, regime, signals, qualified, board_result)
+    # Step 8: Send daily email (never let email formatting kill the pipeline)
+    try:
+        _send_daily_email(spreads, regime, signals, qualified, board_result)
+    except Exception as _em_exc:
+        log.error("FI daily email failed (non-fatal): %s", _em_exc)
 
     # Write pipeline log
     pipeline_log = {
@@ -267,6 +270,10 @@ def run_fi_pipeline():
         "board_result":  board_result,
     }
     with open(PIPELINE_LOG_FILE, "w") as f:
+        json.dump(pipeline_log, f, indent=2, default=str)
+    # Logic Team and PodHealth monitors check fi_pipeline_report.json —
+    # write the same payload there so health checks see the run.
+    with open(DATA_DIR / "fi_pipeline_report.json", "w") as f:
         json.dump(pipeline_log, f, indent=2, default=str)
 
     log.info("FI pipeline complete.")
@@ -310,9 +317,9 @@ def _send_daily_email(spreads, regime, signals, picks, board_result):
         f"                    that high-yield/junk bonds pay over safe US Treasuries)",
         f"  IG Spread:        {spreads['ig_spread']:.0f} bps  (investment-grade corporate bond spread)",
         f"  10yr Treasury:    {spreads['treasury_10yr']:.2f}%",
-        f"  2yr Treasury:     {spreads['treasury_2yr']:.2f}%",
+        f"  2yr Treasury:     {spreads.get('treasury_2yr', 0) or 0:.2f}%",
         f"  Yield Curve:      {spreads['yield_curve_slope']:.3f}% ({'INVERTED — short rates > long rates, historically a recession signal' if spreads['yield_curve_slope'] < 0 else 'NORMAL'})",
-        f"  Fed Funds:        {spreads['fed_funds']:.2f}%  (overnight lending rate set by the Federal Reserve)",
+        f"  Fed Funds:        {spreads.get('fed_funds', 0) or 0:.2f}%  (overnight lending rate set by the Federal Reserve)",
         "",
         "REGIME ALLOCATION TARGETS",
         "-" * 40,
@@ -325,7 +332,7 @@ def _send_daily_email(spreads, regime, signals, picks, board_result):
     if signals:
         lines += ["MARKET SIGNALS", "-" * 40]
         for s in signals:
-            lines.append(f"  [{s['type']}] {s.get('instrument','')}: {s['reason']}")
+            lines.append(f"  [{s['type']}] {s.get('instrument','')}: {s.get('reason', s.get('message',''))}")
         lines.append("")
 
     if picks:

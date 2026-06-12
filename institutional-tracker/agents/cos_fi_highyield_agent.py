@@ -48,8 +48,6 @@ class FIHighYieldAgent(FIBaseAgent):
         "PHB",   # Invesco Fundamental HY — quality-screened HY subset
 
         # ── Single-name HY (BB/B rated, operationally viable) ────────────────
-        "WBA",   # Walgreens B+: pharmacy network, HY since 2024 downgrade, spread extreme
-        "PARA",  # Paramount BB-: streaming losses create spread vs. content library asset
         "DISH",  # DISH Network B: spectrum asset vs. debt load, spread wide vs. spectrum value
         "AMC",   # AMC Networks BB-: legacy media, cash generative despite decline
         "UAL",   # United Airlines BB: travel recovery, spread vs. IG-quality cash generation
@@ -62,7 +60,6 @@ class FIHighYieldAgent(FIBaseAgent):
         "RCL",   # Royal Caribbean BB+: cruise sector recovery, near-IG spread
         "CZR",   # Caesars Entertainment B+: gaming REIT + operations, spread vs. asset value
         "F",     # Ford Motor BB+: auto cycle spread, genuine cash generator
-        "HBI",   # Hanesbrands BB: consumer staples under margin pressure, durable brand
         "KHC",   # Kraft Heinz BBB-: investment grade but watches closely for HY transition
         "ARCC",  # Ares Capital: BDC, credit-risk vehicle with HY-like yield
         "GBDC",  # Golub Capital BDC: quality middle-market lender, consistent dividend
@@ -93,7 +90,7 @@ class FIHighYieldAgent(FIBaseAgent):
             conviction = min(conviction + 1, 5)
 
         # Fallen angels get +1 — historically best HY subset
-        if ticker in ("FALN", "ANGL", "WBA", "PARA"):
+        if ticker in ("FALN", "ANGL"):
             conviction = min(conviction + 1, 5)
 
         return {

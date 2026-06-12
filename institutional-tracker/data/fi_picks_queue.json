@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T22:01:16.081151+00:00",
+  "generated_at": "2026-06-12T23:54:09.012359+00:00",
   "capital": 30000.0,
   "regime": "NORMAL",
   "spreads": {
@@ -192,7 +192,7 @@
     },
     {
       "agent": "FIHighYieldAgent",
-      "picks": 36,
+      "picks": 33,
       "status": "ok"
     },
     {

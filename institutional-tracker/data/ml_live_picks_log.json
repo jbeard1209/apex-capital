@@ -2,5 +2,14 @@
   "description": "Real-world live pick tracking for the ST model. Each pick is entered on the pick date and evaluated after 20 days. Results feed back into model improvement.",
   "model": "shortterm",
   "horizon_days": 20,
-  "picks": []
+  "picks": [
+    {
+      "model": "shortterm",
+      "pick_date": "2026-06-12",
+      "evaluate_after": "2026-07-02",
+      "status": "no_picks_today",
+      "note": "Predictor unavailable or returned no scores.",
+      "picks": []
+    }
+  ]
 }

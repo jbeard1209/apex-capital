@@ -1,129 +1,129 @@
 {
-  "generated_at": "2026-06-12T18:01:31.759388",
+  "generated_at": "2026-06-12T19:54:21.649312",
   "total_findings": 2,
-  "queue_depth": 0,
-  "backlog_depth": 677,
+  "queue_depth": 5,
+  "backlog_depth": 682,
   "approved_total": 332,
   "agent_stats": {
     "CITCodeInspector": {
-      "total_findings": 38027,
-      "board_proposals": 9,
+      "total_findings": 38148,
+      "board_proposals": 10,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:29.416766"
+      "last_run": "2026-06-12T19:54:19.669811"
     },
     "CITPipelineMonitor": {
-      "total_findings": 1068,
-      "board_proposals": 9,
+      "total_findings": 1070,
+      "board_proposals": 10,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:29.510131"
+      "last_run": "2026-06-12T19:54:19.748594"
     },
     "CITStrategyAnalyst": {
-      "total_findings": 327,
+      "total_findings": 328,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:29.529157"
+      "last_run": "2026-06-12T19:54:19.756909"
     },
     "CITArchitectureAdvisor": {
-      "total_findings": 1921,
+      "total_findings": 1927,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:29.531906"
+      "last_run": "2026-06-12T19:54:19.757672"
     },
     "CITThinkTank": {
-      "total_findings": 1402,
-      "board_proposals": 0,
+      "total_findings": 1407,
+      "board_proposals": 2,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:29.534491"
+      "last_run": "2026-06-12T19:54:19.758765"
     },
     "CITDataQualityAnalyst": {
-      "total_findings": 825,
+      "total_findings": 829,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:31.741647"
+      "last_run": "2026-06-12T19:54:21.637984"
     },
     "CITProposalValidator": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T18:01:31.742638"
+      "last_run": "2026-06-12T19:54:21.638937"
     },
     "CITSelfImprovement": {
-      "total_findings": 546,
+      "total_findings": 548,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.173358"
+      "last_run": "2026-06-12T18:01:31.762340"
     },
     "CITSecurityMonitor": {
       "total_findings": 137,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.445520"
+      "last_run": "2026-06-12T18:01:32.321838"
     },
     "CIT Watchdog": {
       "total_findings": 13825,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.552062"
+      "last_run": "2026-06-12T18:01:32.550415"
     },
     "CIT Trading Auditor": {
-      "total_findings": 16693,
+      "total_findings": 16765,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.471721"
+      "last_run": "2026-06-12T18:01:32.377027"
     },
     "CIT Risk Auditor": {
-      "total_findings": 8723,
+      "total_findings": 8762,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.502432"
+      "last_run": "2026-06-12T18:01:32.440768"
     },
     "CIT Infra Auditor": {
-      "total_findings": 10726,
+      "total_findings": 10775,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.526593"
+      "last_run": "2026-06-12T18:01:32.491087"
     },
     "CIT Integration Auditor": {
-      "total_findings": 268,
+      "total_findings": 269,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:25.538127"
+      "last_run": "2026-06-12T18:01:32.511709"
     },
     "CITMLAuditor": {
-      "total_findings": 42,
+      "total_findings": 44,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:26.842077"
+      "last_run": "2026-06-12T18:01:33.495104"
     },
     "CITPodAuditor": {
-      "total_findings": 32,
+      "total_findings": 35,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:26.843504"
+      "last_run": "2026-06-12T18:01:33.496235"
     },
     "CITBacklogCurator": {
-      "total_findings": 18,
+      "total_findings": 19,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:26.893664"
+      "last_run": "2026-06-12T18:01:33.546047"
     },
     "CITPerformanceAnalyst": {
-      "total_findings": 36,
+      "total_findings": 38,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:26.894959"
+      "last_run": "2026-06-12T18:01:33.547801"
     },
     "CITEmailAuditor": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:26.896237"
+      "last_run": "2026-06-12T18:01:33.550179"
     },
     "CITAgentQualityAuditor": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-12T17:45:26.896850"
+      "last_run": "2026-06-12T18:01:33.551198"
     }
   },
   "findings": [
@@ -133,8 +133,8 @@
       "severity": "MEDIUM",
       "confidence": 80,
       "title": "94% of CIT bug proposals lack precise evidence \u2014 quality degradation",
-      "description": "591 of 630 BUG_FIX/DATA_QUALITY proposals (94%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
-      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 591/630 bug proposals vague",
+      "description": "596 of 635 BUG_FIX/DATA_QUALITY proposals (94%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
+      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 596/635 bug proposals vague",
       "proposed_fix": "Each CIT agent's analyze() method should be reviewed. BUG_FIX findings must include a specific file:line, metric, or data path. VISION/IMPROVEMENT proposals may be qualitative.",
       "auto_implementable": false
     },

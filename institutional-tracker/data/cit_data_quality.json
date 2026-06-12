@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T18:01:31.740641",
+  "generated_at": "2026-06-12T19:54:21.637280",
   "total_findings": 4,
   "findings": [
     {
@@ -29,9 +29,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 88,
-      "title": "Stale data file: data/earnings_predictions.json (39h old, threshold 26h)",
-      "description": "data/earnings_predictions.json has not been updated in 39h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-      "evidence": "data/earnings_predictions.json: file age 39h. Max acceptable: 26h.",
+      "title": "Stale data file: data/earnings_predictions.json (41h old, threshold 26h)",
+      "description": "data/earnings_predictions.json has not been updated in 41h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
+      "evidence": "data/earnings_predictions.json: file age 41h. Max acceptable: 26h.",
       "proposed_fix": "Check that the agent producing data/earnings_predictions.json ran successfully in recent logs. Verify its cron schedule is active.",
       "auto_implementable": false
     },

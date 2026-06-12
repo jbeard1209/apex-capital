@@ -3199,11 +3199,19 @@ class CITEarningsCatalystAgent:
     """
     name = "CITEarningsCatalyst"
 
-    def analyze(self, state: dict) -> list[dict]:
+    def analyze(self, state: dict = None) -> list[dict]:
         findings = []
         try:
             import yfinance as yf
             from datetime import datetime, timedelta
+
+            # The CIT runner calls analyze() with no args — load state ourselves
+            if state is None:
+                try:
+                    with open(DATA_DIR / "state.json") as _f:
+                        state = json.load(_f)
+                except Exception:
+                    state = {}
 
             # Positions currently held
             entry_dates = state.get("entry_dates", {})

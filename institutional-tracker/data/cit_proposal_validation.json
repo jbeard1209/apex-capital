@@ -1,6 +1,42 @@
 {
-  "generated_at": "2026-06-12T18:01:31.742408",
-  "proposals_reviewed": 0,
+  "generated_at": "2026-06-12T19:54:21.638669",
+  "proposals_reviewed": 5,
   "backtester_available": true,
-  "validation_log": []
+  "validation_log": [
+    {
+      "id": "CIT-2026-479",
+      "title": "Replace fixed R&D cadence with event-triggered research cycles",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "CIT-2026-480",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "PM-194016-0",
+      "title": "Cap idle cash at 30% \u2014 CRO ratings must auto-expire",
+      "category": "STRATEGY",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "PM-194016-1",
+      "title": "Cap gross short exposure at 10% unless index confirms downtrend",
+      "category": "STRATEGY",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "PM-194016-2",
+      "title": "Written override log when manager rejects research picks",
+      "category": "STRATEGY",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    }
+  ]
 }

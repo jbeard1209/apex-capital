@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T18:01:16.086106",
+  "generated_at": "2026-06-12T19:54:09.017068",
   "regime": "NORMAL",
   "approved": [
     {
@@ -31,7 +31,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085266"
+      "board_ts": "2026-06-12T19:54:09.016437"
     },
     {
       "ticker": "VCSH",
@@ -62,7 +62,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085336"
+      "board_ts": "2026-06-12T19:54:09.016484"
     },
     {
       "ticker": "IGSB",
@@ -93,7 +93,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085396"
+      "board_ts": "2026-06-12T19:54:09.016527"
     },
     {
       "ticker": "SLQD",
@@ -124,7 +124,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085454"
+      "board_ts": "2026-06-12T19:54:09.016585"
     },
     {
       "ticker": "VCIT",
@@ -155,7 +155,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085509"
+      "board_ts": "2026-06-12T19:54:09.016657"
     },
     {
       "ticker": "BIL",
@@ -186,7 +186,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085565"
+      "board_ts": "2026-06-12T19:54:09.016755"
     },
     {
       "ticker": "IEF",
@@ -217,7 +217,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085621"
+      "board_ts": "2026-06-12T19:54:09.016904"
     },
     {
       "ticker": "IGIB",
@@ -248,7 +248,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-12T18:01:16.085679"
+      "board_ts": "2026-06-12T19:54:09.016942"
     }
   ],
   "rejected": []

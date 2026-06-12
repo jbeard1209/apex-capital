@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "subject": "Apex Capital \u2014 Fixed Income Daily | 2026-06-12",
+    "sender_name": "FI Pipeline",
+    "html_body": "APEX CAPITAL \u2014 FIXED INCOME DAILY REPORT\n=======================================================\nDate:   2026-06-12\nCapital: $30,000\n\nCREDIT MARKET CONDITIONS\n----------------------------------------\n  Regime:           NORMAL\n  HY Spread:        303 bps  (basis points \u2014 the extra yield premium\n                    that high-yield/junk bonds pay over safe US Treasuries)\n  IG Spread:        100 bps  (investment-grade corporate bond spread)\n  10yr Treasury:    4.49%\n  2yr Treasury:     0.00%\n  Yield Curve:      -0.813% (INVERTED \u2014 short rates > long rates, historically a recession signal)\n  Fed Funds:        0.00%  (overnight lending rate set by the Federal Reserve)\n\nREGIME ALLOCATION TARGETS\n----------------------------------------\n  High Yield:  40%  ($12,000)\n  Inv Grade:   40%  ($12,000)\n  Treasuries:  20%  ($6,000)\n\nMARKET SIGNALS\n----------------------------------------\n  [INVERTED_CURVE] : Yield curve inverted (-0.81). Favor short duration; avoid long-maturity bonds.\n\nPICKS SUBMITTED TO BOARD (13 total)\n----------------------------------------\n  SHY    | Score:  78 | BUY        | $5,000\n  VCSH   | Score:  77 | BUY        | $5,000\n  IGSB   | Score:  76 | BUY        | $5,000\n  SLQD   | Score:  76 | BUY        | $5,000\n  VCIT   | Score:  75 | BUY        | $5,000\n  BIL    | Score:  74 | BUY        | $3,750\n  IEF    | Score:  73 | BUY        | $3,750\n  IGIB   | Score:  71 | BUY        | $3,750\n  USIG   | Score:  71 | BUY        | $3,750\n  IGLB   | Score:  71 | BUY        | $3,750\n\nBOARD RESULT\n----------------------------------------\n  Approved: 8\n  Rejected: 0\n\nApex Capital Fixed Income Pod",
+    "key_metrics": {},
+    "buffered_at": "2026-06-12T19:54:09.020406"
+  }
+]

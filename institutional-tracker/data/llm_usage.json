@@ -1,8 +1,8 @@
 {
   "date": "2026-06-12",
-  "calls": 21,
-  "input_tokens": 5469,
-  "output_tokens": 13876,
+  "calls": 28,
+  "input_tokens": 7642,
+  "output_tokens": 19063,
   "by_agent": {
     "rd_pod_board": {
       "calls": 3,
@@ -20,14 +20,24 @@
       "out": 1200
     },
     "teaching": {
-      "calls": 13,
-      "in": 3651,
-      "out": 11700
+      "calls": 18,
+      "in": 5062,
+      "out": 16200
     },
     "irm_review": {
       "calls": 1,
       "in": 550,
       "out": 665
+    },
+    "logic_team": {
+      "calls": 1,
+      "in": 627,
+      "out": 494
+    },
+    "cit_director": {
+      "calls": 1,
+      "in": 135,
+      "out": 193
     }
   }
 }

@@ -82,7 +82,8 @@ class SectorResearchAgent:
     def __init__(self, assignment: dict):
         self.agent_id           = assignment["agent_id"]
         self.sector_name        = assignment["sector_name"]
-        self.sector_etf         = assignment["sector_etf"]
+        # FE pipeline agents pass 'etf_symbol'; R&D assignments pass 'sector_etf'
+        self.sector_etf         = assignment.get("sector_etf") or assignment.get("etf_symbol", "")
         self.description        = assignment["description"]
         self.watchlist          = [
             t for t in assignment["watchlist"]
@@ -463,7 +464,10 @@ class ResearchTeamCoordinator:
                 active_agents = [
                     a for a in registry.get("agents", [])
                     if a.get("status") in ("active", "reassigned")
-                    and a.get("status") != "retired"
+                    # CIT/governance agents live in the registry for HR
+                    # visibility but are not research agents — don't run them
+                    # here (they have .analyze(), not .run(), and crash).
+                    and a.get("division", "research") == "research"
                 ]
                 if active_agents:
                     logger.info(

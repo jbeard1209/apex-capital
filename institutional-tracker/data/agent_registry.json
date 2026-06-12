@@ -18,7 +18,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "BiotechResearchAgent",
@@ -38,7 +39,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "FinancialSectorAgent",
@@ -58,7 +60,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "ConsumerDiscretionaryAgent",
@@ -78,7 +81,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "GlobalTechAgent",
@@ -98,7 +102,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "IndustrialsDefenseAgent",
@@ -118,7 +123,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "HealthcarePharmaAgent",
@@ -138,7 +144,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "MaterialsMiningAgent",
@@ -158,7 +165,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "CryptoEquitiesAgent",
@@ -178,7 +186,8 @@
       "reassigned_at": "2026-05-06",
       "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry."
+      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+      "division": "research"
     },
     {
       "class_name": "CommunicationsMediaAgent",
@@ -194,7 +203,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "HistoricalContextAnalyst",
@@ -210,7 +220,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "SystemPerformanceAnalyst",
@@ -226,7 +237,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "GeopoliticalRiskAnalyst",
@@ -242,7 +254,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "CITDirector",
@@ -258,7 +271,8 @@
       "last_checked": "2026-06-09",
       "notes": "Runs twice daily (6 AM + 6 PM EDT). Overseen by IRM and HR.",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "cit"
     },
     {
       "class_name": "CITCodeInspector",
@@ -273,7 +287,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "cit"
     },
     {
       "class_name": "CITPipelineMonitor",
@@ -288,7 +303,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "cit"
     },
     {
       "class_name": "CITStrategyAnalyst",
@@ -303,7 +319,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "cit"
     },
     {
       "class_name": "CITArchitectureAdvisor",
@@ -318,7 +335,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "cit"
     },
     {
       "class_name": "MacroPolicyHistorian",
@@ -334,7 +352,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "HRPerformanceOfficer",
@@ -350,7 +369,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "HRDevelopmentOfficer",
@@ -366,7 +386,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "DividendYieldAgent",
@@ -382,7 +403,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "IPOMomentumAgent",
@@ -398,7 +420,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "ValueOpportunityAgent",
@@ -414,7 +437,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "InternationalEmergingAgent",
@@ -430,7 +454,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "MacroRatesSensitivityAgent",
@@ -446,7 +471,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "QuantFactorScreenerAgent",
@@ -462,7 +488,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "EarningsCatalystAgent",
@@ -478,7 +505,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "ShortInterestMonitorAgent",
@@ -494,7 +522,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "OptionsFlowMonitorAgent",
@@ -510,7 +539,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "ExecutionAuditorAgent",
@@ -526,7 +556,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "SmallCapGrowthAgent",
@@ -542,7 +573,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "BiotechResearchAgent",
@@ -558,7 +590,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "MacroRegimeMonitorAgent",
@@ -574,7 +607,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "TechnicalPatternAgent",
@@ -590,7 +624,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "DividendDefensiveAgent",
@@ -606,7 +641,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "MicroCapAlphaAgent",
@@ -622,7 +658,8 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
     },
     {
       "class_name": "GlobalMacroETFAgent",
@@ -638,7 +675,18 @@
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
-      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today."
+      "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
+      "division": "research"
+    },
+    {
+      "class_name": "MissedWinnersAgent",
+      "file": "missed_winners_agent.py",
+      "sector": "Market Coverage Analytics",
+      "division": "analytics",
+      "status": "active",
+      "specialty": "Weekly missed-winners audit: capture rate of top market performers, watchlist gap detection, learning-loop feedback to R&D and ML",
+      "created_at": "2026-06-12T19:43:28.097336",
+      "created_by": "Chairman directive 2026-06-12"
     }
   ],
   "last_updated": "2026-06-09T16:51:22.450494",

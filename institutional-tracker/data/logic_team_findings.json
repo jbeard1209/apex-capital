@@ -1124,19 +1124,129 @@
           "ts": "2026-06-12T00:00:11.340994"
         }
       ]
+    },
+    {
+      "ts": "2026-06-12T19:51:20.059932",
+      "findings": [
+        {
+          "rule": "fi_pipeline_not_running",
+          "agent": "PipelineLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
+          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
+          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
+          "ts": "2026-06-12T19:51:20.057325"
+        },
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
+          "ts": "2026-06-12T19:51:20.057393"
+        },
+        {
+          "rule": "board_overdue",
+          "agent": "GovernanceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Board has not met in 999 days despite 2 IRM flags",
+          "observation": "Last board meeting was 999 days ago. The IRM has 2 active red flag(s). These should have triggered a board session.",
+          "why_wrong": "IRM flags that sit unaddressed for >7 days represent a governance failure. The board exists to act on them.",
+          "suggestion": "Trigger a board meeting: `python3 board_meeting.py`. IRM and CRO should be primary agenda items.",
+          "ts": "2026-06-12T19:51:20.057423"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-12T19:51:20.057593"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-12T19:51:20.058690"
+        },
+        {
+          "rule": "fi_never_run",
+          "agent": "PodHealthLogicAgent",
+          "severity": "HIGH",
+          "title": "Fixed Income pipeline has never run",
+          "observation": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produced a report.",
+          "why_wrong": "A pod that never runs never deploys capital. This is infrastructure failure.",
+          "suggestion": "Verify fi_pipeline.py is in crontab and can run without errors.",
+          "ts": "2026-06-12T19:51:20.059187"
+        },
+        {
+          "rule": "fe_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "First Eagle pipeline report is 42h old",
+          "observation": "fe_pipeline_log.json last updated 42h ago. The First Eagle pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
+          "ts": "2026-06-12T19:51:20.059202"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-12T19:55:25.117107",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
+          "ts": "2026-06-12T19:55:25.114825"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-12T19:55:25.115015"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-12T19:55:25.115990"
+        },
+        {
+          "rule": "fe_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "First Eagle pipeline report is 42h old",
+          "observation": "fe_pipeline_log.json last updated 42h ago. The First Eagle pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
+          "ts": "2026-06-12T19:55:25.116395"
+        }
+      ]
     }
   ],
   "latest": [
-    {
-      "rule": "fi_pipeline_not_running",
-      "agent": "PipelineLogicAgent",
-      "severity": "MEDIUM",
-      "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-      "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-      "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-      "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-      "ts": "2026-06-12T00:00:11.205305"
-    },
     {
       "rule": "idle_pod_pod2_ml",
       "agent": "CapitalLogicAgent",
@@ -1145,37 +1255,17 @@
       "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
       "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
       "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-      "ts": "2026-06-12T00:00:11.208614"
-    },
-    {
-      "rule": "ml_model_not_tracked",
-      "agent": "PerformanceLogicAgent",
-      "severity": "MEDIUM",
-      "title": "ML model running but no live picks are being tracked for real-world validation",
-      "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-      "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-      "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-      "ts": "2026-06-12T00:00:11.209127"
-    },
-    {
-      "rule": "ml_no_live_validation",
-      "agent": "MLLogicAgent",
-      "severity": "MEDIUM",
-      "title": "ML pod has $30,000 capital but zero live picks logged",
-      "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
-      "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
-      "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
-      "ts": "2026-06-12T00:00:11.209453"
+      "ts": "2026-06-12T19:55:25.114825"
     },
     {
       "rule": "positions_without_reviews",
       "agent": "DataIntegrityLogicAgent",
       "severity": "MEDIUM",
-      "title": "5 open positions have no review recommendation",
-      "observation": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+      "title": "6 open positions have no review recommendation",
+      "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
       "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
       "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-      "ts": "2026-06-12T00:00:11.210686"
+      "ts": "2026-06-12T19:55:25.115015"
     },
     {
       "rule": "agent_communication_silence",
@@ -1185,17 +1275,17 @@
       "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
       "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
       "suggestion": "Check crontab and most recent logs for each silent agent.",
-      "ts": "2026-06-12T00:00:11.256694"
+      "ts": "2026-06-12T19:55:25.115990"
     },
     {
-      "rule": "fi_never_run",
+      "rule": "fe_pipeline_stale",
       "agent": "PodHealthLogicAgent",
-      "severity": "HIGH",
-      "title": "Fixed Income pipeline has never run",
-      "observation": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produced a report.",
-      "why_wrong": "A pod that never runs never deploys capital. This is infrastructure failure.",
-      "suggestion": "Verify fi_pipeline.py is in crontab and can run without errors.",
-      "ts": "2026-06-12T00:00:11.340994"
+      "severity": "MEDIUM",
+      "title": "First Eagle pipeline report is 42h old",
+      "observation": "fe_pipeline_log.json last updated 42h ago. The First Eagle pipeline should run daily.",
+      "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+      "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
+      "ts": "2026-06-12T19:55:25.116395"
     }
   ]
 }

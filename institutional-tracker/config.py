@@ -100,11 +100,8 @@ SHORT_CANDIDATES = [
     "PFE",    # Pfizer — post-COVID revenue cliff, pipeline disappointments
     "CSCO",   # Cisco — hardware commoditization, slowing enterprise spend
     # Extended short book — activated in HIGH/CRITICAL regime only
-    "WBA",    # Walgreens — HY downgrade, secular pharmacy decline
     "MO",     # Altria — long-run secular decline, FDA pressure
-    "PARA",   # Paramount — streaming cash burn, M&A uncertainty
     "INTC",   # Intel (already above) — AI era loser
-    "MPW",    # Medical Properties — tenant defaults, REIT stress
     "VFC",    # VF Corp — brand portfolio restructuring, dividend cut
     "KHC",    # Kraft Heinz — CPG secular decline, private label pressure
 ]

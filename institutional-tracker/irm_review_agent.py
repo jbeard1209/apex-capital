@@ -1882,3 +1882,11 @@ def run_irm_daily(send_email: bool = True) -> dict:
         logger.warning(f"  [IRM Daily] Board consultation error: {e}")
 
     return irm_output
+
+
+if __name__ == "__main__":
+    import argparse
+    _ap = argparse.ArgumentParser()
+    _ap.add_argument("--no-email", action="store_true")
+    _args = _ap.parse_args()
+    run_irm_daily(send_email=not _args.no_email)

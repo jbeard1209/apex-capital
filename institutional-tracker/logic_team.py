@@ -263,7 +263,10 @@ class GovernanceLogicAgent:
         cro_streak = state.get("cro_streak", 0)
         board_rpt  = state.get("board_meeting", {}) or {}
         last_board = board_rpt.get("generated_at", "") or board_rpt.get("timestamp", "")
-        days_since_board = _days_since(last_board) or 999
+        # NB: `or 999` would turn a same-day meeting (0 days) into 999 days
+        days_since_board = _days_since(last_board)
+        if days_since_board is None:
+            days_since_board = 999
 
         # R6: Extended CRO HIGH with no board vote
         if cro_level in ("HIGH","CRITICAL") and cro_streak >= 5:

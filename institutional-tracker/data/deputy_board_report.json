@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T18:01:37.408479",
+  "generated_at": "2026-06-12T19:54:34.468205",
   "dry_run": false,
   "proposals_reviewed": 2,
   "approved_count": 0,
@@ -17,8 +17,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 0,
-      "clarifies": 5,
+      "defers": 2,
+      "clarifies": 3,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -27,8 +27,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
+          "vote": "DEFER",
+          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
         },
         {
           "deputy": "Deputy CIT Director",
@@ -42,8 +42,8 @@
         },
         {
           "deputy": "Deputy IRM",
-          "vote": "CLARIFY",
-          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
+          "vote": "DEFER",
+          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
         },
         {
           "deputy": "Deputy R&D Leader",
@@ -66,8 +66,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 2,
-      "clarifies": 3,
+      "defers": 3,
+      "clarifies": 2,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -76,8 +76,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
+          "vote": "DEFER",
+          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
         },
         {
           "deputy": "Deputy CIT Director",

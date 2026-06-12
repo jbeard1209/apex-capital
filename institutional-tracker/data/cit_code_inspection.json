@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-12T18:01:29.411564",
-  "files_scanned": 97,
+  "generated_at": "2026-06-12T19:54:19.665913",
+  "files_scanned": 99,
   "total_findings": 121,
   "findings": [
     {
@@ -536,9 +536,9 @@
       "category": "QUICK_WIN",
       "severity": "LOW",
       "confidence": 75,
-      "title": "print() in production code: rd_team_leader.py:1323",
+      "title": "print() in production code: rd_team_leader.py:1344",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "rd_team_leader.py line 1323: `print(\"\\n\" + text_brief)`",
+      "evidence": "rd_team_leader.py line 1344: `print(\"\\n\" + text_brief)`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },
@@ -1262,9 +1262,9 @@
       "category": "QUICK_WIN",
       "severity": "LOW",
       "confidence": 75,
-      "title": "print() in production code: teaching_division.py:713",
+      "title": "print() in production code: teaching_division.py:723",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "teaching_division.py line 713: `print(\"\\n\" + \"=\"*60)`",
+      "evidence": "teaching_division.py line 723: `print(\"\\n\" + \"=\"*60)`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },
@@ -1273,9 +1273,9 @@
       "category": "QUICK_WIN",
       "severity": "LOW",
       "confidence": 75,
-      "title": "print() in production code: teaching_division.py:714",
+      "title": "print() in production code: teaching_division.py:724",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "teaching_division.py line 714: `print(\"QUIZ TIME \u2014 Day\", day)`",
+      "evidence": "teaching_division.py line 724: `print(\"QUIZ TIME \u2014 Day\", day)`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },
@@ -1284,9 +1284,9 @@
       "category": "QUICK_WIN",
       "severity": "LOW",
       "confidence": 75,
-      "title": "print() in production code: teaching_division.py:715",
+      "title": "print() in production code: teaching_division.py:725",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "teaching_division.py line 715: `print(\"=\"*60)`",
+      "evidence": "teaching_division.py line 725: `print(\"=\"*60)`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },
@@ -1295,20 +1295,9 @@
       "category": "QUICK_WIN",
       "severity": "LOW",
       "confidence": 75,
-      "title": "print() in production code: teaching_division.py:719",
+      "title": "print() in production code: teaching_division.py:729",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "teaching_division.py line 719: `print(f\"\\nQ{i}: {q_item['q']}\")`",
-      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-      "auto_implementable": true
-    },
-    {
-      "agent": "CITCodeInspector",
-      "category": "QUICK_WIN",
-      "severity": "LOW",
-      "confidence": 75,
-      "title": "print() in production code: teaching_division.py:721",
-      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "teaching_division.py line 721: `print(f\"A:  {q_item['a']}\")`",
+      "evidence": "teaching_division.py line 729: `print(f\"\\nQ{i}: {q_item['q']}\")`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },
@@ -1319,7 +1308,18 @@
       "confidence": 75,
       "title": "print() in production code: teaching_division.py:731",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "teaching_division.py line 731: `print(\"\\n\" + director.progress_report())`",
+      "evidence": "teaching_division.py line 731: `print(f\"A:  {q_item['a']}\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: teaching_division.py:741",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "teaching_division.py line 741: `print(\"\\n\" + director.progress_report())`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },

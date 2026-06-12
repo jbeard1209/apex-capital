@@ -1,77 +1,5 @@
 [
   {
-    "ts": "2026-06-08T12:33:00.433864",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:33:00.441493",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 38 agents evaluated. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:53:35.673830",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T12:53:35.681884",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 38 agents evaluated. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T13:14:06.853134",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T13:14:06.860336",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 38 agents evaluated. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T13:34:37.667591",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T13:34:37.676286",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 38 agents evaluated. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T13:35:04.774196",
-    "date": "2026-06-08",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 Wide sector weakness: 7/11 sectors negative. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
     "ts": "2026-06-08T13:45:29.624939",
     "date": "2026-06-08",
     "agent": "HR Agent",
@@ -3998,5 +3926,77 @@
     "category": "RESEARCH_NOTE",
     "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: MRVL, VRT, RKLB, NUE, TSM, C. **Pattern:** The misses cluster around the AI-infrastructure \"picks and shovels\" supply chain (MRVL chips, VRT data-center power/cooling, TSM fabrication, NUE steel, RKLB space hardware) \u2014 second-deri",
     "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T19:50:52.688356",
+    "date": "2026-06-12",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T19:50:52.694759",
+    "date": "2026-06-12",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 39 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T19:51:30.142450",
+    "date": "2026-06-12",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [HIGH] Fixed Income pipeline has never run\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-12T19:51:30.142466",
+    "date": "2026-06-12",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 6 MEDIUM/LOW note(s):\n  [MEDIUM] Fixed Income agents exist but FI pipeline hasn't run recently\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] Board has not met in 999 days despite 2 IRM flags\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] First Eagle pipeline report is 42h old\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-12T19:54:34.450971",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 2 board proposal(s), 92 quick win(s), 0 ThinkTank idea(s). Total new findings: 128.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T19:54:34.456438",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-12T19:54:34.461477",
+    "date": "2026-06-12",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 227 ERROR lines \u2014 dominant: `v1`: The last 24-48h of logs contain 227 ERROR-level entries (2135 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T19:54:34.476678",
+    "date": "2026-06-12",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T19:55:25.119732",
+    "date": "2026-06-12",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 4 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] First Eagle pipeline report is 42h old\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
   }
 ]
