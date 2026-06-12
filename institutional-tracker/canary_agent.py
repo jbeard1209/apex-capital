@@ -441,6 +441,26 @@ def assess_alert_level() -> dict:
 # ACTIONS
 # =============================================================================
 
+def _llm_stress_assessment(assessment: dict) -> Optional[str]:
+    """Fable 5 market-stress read — only called on YELLOW/ORANGE/RED alerts."""
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("canary_agent"):
+            return None
+        triggers = "; ".join(assessment.get("triggers", [])[:4])
+        readings = assessment.get("readings", {})
+        ctx = (
+            f"Canary {assessment['level']} | Triggers: {triggers}\n"
+            f"Readings: SPY {readings.get('spy_change','?')}%, VIX {readings.get('vix','?')}\n"
+            "2 sentences: is this transient noise or the start of real stress? "
+            "What should a defensive paper-trading firm do in the next 24h?"
+        )
+        return _r("You are a market-stress analyst for Apex Capital.",
+                  ctx, agent_name="canary_agent", max_tokens=120)
+    except Exception:
+        return None
+
+
 def _write_alert_file(assessment: dict):
     """Save active alert so main.py picks it up on next scheduled run."""
     alert = {
@@ -450,6 +470,9 @@ def _write_alert_file(assessment: dict):
         "triggers":     assessment["triggers"],
         "readings":     assessment["readings"],
     }
+    llm_read = _llm_stress_assessment(assessment)
+    if llm_read:
+        alert["llm_assessment"] = llm_read.strip()
     os.makedirs("data", exist_ok=True)
     with open(ALERT_PATH, "w") as f:
         json.dump(alert, f, indent=2, default=str)

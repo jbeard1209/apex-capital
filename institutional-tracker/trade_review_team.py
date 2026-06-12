@@ -355,6 +355,27 @@ class PerformanceAnalystAgent:
                    "Consider reducing active bets and letting more capital track momentum ETFs.")
             )
 
+        # ── Fable 5 deeper pattern read (one call per review run) ───────────
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("trade_review"):
+                fm = ", ".join(f"{k}×{v}" for k, v in list(failure_modes.items())[:5]) or "none"
+                raw = _r(
+                    "You are Apex Capital's trade post-mortem analyst. Find the one "
+                    "non-obvious pattern in the data and state it as an actionable lesson.",
+                    f"{len(trades)} closed trades | win rate {win_rate:.0f}% | "
+                    f"avg win +{avg_win:.1f}% vs avg loss {avg_loss:.1f}% | "
+                    f"avg hold {avg_hold:.0f}d | vs SPY {benchmark_delta:+.1f}pp\n"
+                    f"Failure modes: {fm}\n"
+                    f"Win rate by hold-period: {win_by_hold}\n"
+                    "2 sentences: the most important lesson the rule-based analysis missed.",
+                    agent_name="trade_review", max_tokens=130,
+                )
+                if raw:
+                    lessons.append(f"[LLM INSIGHT] {raw.strip()}")
+        except Exception:
+            pass
+
         logger.info(
             f"  [Performance Analyst] Win rate: {win_rate:.0f}% | "
             f"Avg P&L: {avg_pnl:+.2f}% | vs SPY: {benchmark_delta:+.1f}pp"

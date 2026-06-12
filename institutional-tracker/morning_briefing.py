@@ -700,6 +700,8 @@ def run_morning_briefing() -> dict:
             )
             if _summary:
                 briefing["llm_executive_summary"] = _summary.strip()
+                with open(BRIEFING_PATH, "w") as f:
+                    json.dump(briefing, f, indent=2, default=str)
                 logger.info(f"  LLM executive summary generated ({len(_summary)} chars)")
     except Exception as _llm_e:
         logger.debug(f"LLM morning summary skipped: {_llm_e}")

@@ -250,6 +250,33 @@ def run(universe: list[str] = None) -> list[dict]:
         except Exception as e:
             logger.warning(f"  [EarningsPredictor] {sym}: {e}")
 
+    # ── Fable 5 sanity check — gated to high-confidence MISS calls on
+    #    positions the firm actually holds (≤ a few calls per week) ─────────
+    try:
+        from apex_llm import reason as _r, is_available
+        if is_available("earnings_predictor"):
+            import json as _j
+            from pathlib import Path as _P
+            _state = {}
+            _sp = _P(__file__).parent / "data" / "state.json"
+            if _sp.exists():
+                _state = _j.loads(_sp.read_text())
+            held = set(_state.get("entry_dates", {}).keys())
+            for p in predictions:
+                if p["ticker"] in held and p["prediction"] == "MISS" and p["confidence"] >= 4:
+                    raw = _r(
+                        "You are an earnings analyst. Sanity-check a mechanical MISS prediction.",
+                        f"{p['ticker']} ({p['sector']}) reports in {p['days_until']}d. "
+                        f"Mechanical model: MISS {p['confidence']}★ — {p['reasoning'][:150]}. "
+                        f"EPS trend {p['eps_trend']}, beat rate {p['beat_rate']}.\n"
+                        "We HOLD this stock. 2 sentences: agree with MISS, and trim before earnings?",
+                        agent_name="earnings_predictor", max_tokens=110,
+                    )
+                    if raw:
+                        p["llm_check"] = raw.strip()
+    except Exception:
+        pass
+
     # Sort by earnings date
     predictions.sort(key=lambda x: x["days_until"])
 

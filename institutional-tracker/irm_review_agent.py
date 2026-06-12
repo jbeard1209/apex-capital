@@ -810,6 +810,16 @@ def _review_generic(subject: str, sender_name: str, key_metrics: dict, ctx: dict
 def _dispatch_review(sender_name: str, subject: str,
                      key_metrics: dict, ctx: dict) -> dict:
     """Route to the correct sender-specific reviewer."""
+    review = _dispatch_review_inner(sender_name, subject, key_metrics, ctx)
+    synthesis = _llm_red_flag_synthesis(sender_name, review, ctx)
+    if synthesis:
+        review["llm_synthesis"] = synthesis.strip()
+        review["findings"] = review.get("findings", []) + [f"[IRM LLM] {synthesis.strip()}"]
+    return review
+
+
+def _dispatch_review_inner(sender_name: str, subject: str,
+                           key_metrics: dict, ctx: dict) -> dict:
     s = sender_name.lower().replace(" ", "_").replace("-", "_")
     if s in ("manager_agent", "manager"):
         return _review_manager_agent(subject, key_metrics, ctx)
@@ -832,6 +842,28 @@ def _dispatch_review(sender_name: str, subject: str,
         return _review_cit(subject, key_metrics, ctx)
     else:
         return _review_generic(subject, sender_name, key_metrics, ctx)
+
+
+def _llm_red_flag_synthesis(sender_name: str, review: dict, ctx: dict) -> Optional[str]:
+    """Fable 5 second opinion — gated to reviews that found red flags."""
+    flags = review.get("red_flags", [])
+    if not flags:
+        return None
+    try:
+        from apex_llm import reason as _r, is_available
+        if not is_available("irm_review"):
+            return None
+        ra = ctx.get("risk_assessment", {})
+        return _r(
+            "You are Apex Capital's Independent Risk Manager. You audit agent "
+            "reports and flag governance risk for the Chairman.",
+            f"Agent reviewed: {sender_name} | Risk level: {ra.get('risk_level','?')}\n"
+            f"Red flags found: {'; '.join(f[:100] for f in flags[:4])}\n"
+            "2 sentences: which flag matters most and does the Chairman need to act today?",
+            agent_name="irm_review", max_tokens=120,
+        )
+    except Exception:
+        return None
 
 
 # =============================================================================

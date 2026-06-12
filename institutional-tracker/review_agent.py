@@ -336,32 +336,31 @@ def analyze_position(pos: dict, portfolio_value: float, entry_dates: dict) -> di
         )
 
     # ── Fable 5 LLM position commentary ───────────────────────────────────
+    # Token-gated: only fires for actionable positions (SELL/TRIM/ADD/WATCH),
+    # never plain HOLDs — most positions most days need no commentary.
     llm_commentary = None
-    try:
-        from apex_llm import reason as _r, is_available
-        if is_available("review_agent"):
-            _ctx = (
-                f"Position: {ticker} ({'short' if is_short else 'long'})\n"
-                f"P&L: {pnl_pct:+.1f}%, entry ${avg_entry:.2f} → current ${cur_price:.2f}\n"
-                f"Held {hold_days} days, weight {weight_pct:.1f}% of portfolio\n"
-                f"Momentum: {mom.get('trend','?')}, RSI={mom.get('rsi_14','?')}, "
-                f"vs 50MA: {mom.get('pct_from_50ma',0):+.1f}%\n"
-                f"Rule-based recommendation: {action}\n"
-                f"Reasons: {'; '.join(reasons)}\n\n"
-                "In 1-2 sentences, give a sharp analyst commentary on this position's "
-                "situation and whether the rule-based recommendation is the right call."
-            )
-            _raw = _r(
-                "You are the Apex Capital Review Agent. You assess open positions and "
-                "give sharp, specific commentary on each one. Be concise and direct.",
-                _ctx,
-                agent_name="review_agent",
-                max_tokens=150,
-            )
-            if _raw:
-                llm_commentary = _raw.strip()
-    except Exception:
-        pass
+    if action != "HOLD":
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("review_agent"):
+                _ctx = (
+                    f"{ticker} ({'short' if is_short else 'long'}) | P&L {pnl_pct:+.1f}% | "
+                    f"${avg_entry:.2f}→${cur_price:.2f} | {hold_days}d | {weight_pct:.1f}% wt | "
+                    f"{mom.get('trend','?')}, RSI {mom.get('rsi_14','?')}, "
+                    f"{mom.get('pct_from_50ma',0):+.1f}% vs 50MA\n"
+                    f"Rule says: {action} — {'; '.join(r[:80] for r in reasons[:3])}\n"
+                    "1-2 sentences: is this call right? Be sharp and specific."
+                )
+                _raw = _r(
+                    "You are the Apex Capital Review Agent assessing an open position.",
+                    _ctx,
+                    agent_name="review_agent",
+                    max_tokens=100,
+                )
+                if _raw:
+                    llm_commentary = _raw.strip()
+        except Exception:
+            pass
 
     result = {
         "ticker":           ticker,

@@ -577,6 +577,28 @@ class RDTeamLeader:
                 "assigned_at":        datetime.now().isoformat(),
             })
 
+        # ── Fable 5 sector-allocation review (one call per R&D cycle) ─────
+        try:
+            from apex_llm import reason as _llm_r, is_available as _llm_ok
+            if _llm_ok("rd_team_leader") and assignments:
+                chosen = ", ".join(
+                    f"{a['sector_name']}({a['momentum_score']}/12)" for a in assignments)
+                skipped = ", ".join(s["sector_name"] for s in dropped[:5]) or "none"
+                raw = _llm_r(
+                    "You are Apex Capital's R&D Team Leader reviewing sector assignments "
+                    "before dispatching research agents.",
+                    f"Regime: {_regime}. Chosen sectors: {chosen}. Skipped: {skipped}.\n"
+                    "2 sentences: is this allocation right for the regime, and which "
+                    "single skipped sector (if any) deserves a second look?",
+                    agent_name="rd_team_leader", max_tokens=120,
+                )
+                if raw:
+                    logger.info(f"  [R&D Leader LLM] {raw.strip()}")
+                    for a in assignments:
+                        a["llm_allocation_note"] = raw.strip()
+        except Exception:
+            pass
+
         # ── CRO Risk Overlay ─────────────────────────────────────────────
         # Read the Chief Risk Officer's public bulletin and annotate each
         # assignment with the current risk context so research agents can

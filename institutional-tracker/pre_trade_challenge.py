@@ -221,6 +221,35 @@ def challenge(
     if mom_warn:
         result.warnings.append(mom_warn)
 
+    # ── Fable 5 adversarial bear case ────────────────────────────────────────
+    # Already gated: this function fast-returns above for conviction < 4,
+    # so the LLM only fires on the few high-conviction buys per week.
+    try:
+        from apex_llm import reason as _r, is_available
+        if is_available("pre_trade_challenge"):
+            bull = "; ".join((reasons or [])[:3]) or "high-conviction 13F signal"
+            warns = "; ".join(result.warnings) or "none"
+            raw = _r(
+                "You are Apex Capital's devil's advocate. Your only job is to find "
+                "the strongest reason this trade fails. Reply JSON only: "
+                '{"bear_case": "1-2 sentences", "severity": "LOW"|"MEDIUM"|"HIGH"}',
+                f"BUY {ticker}, conviction {conviction:.0f}/5.\n"
+                f"Bull case: {bull}\nMechanical warnings: {warns}\n"
+                "What's the strongest bear case the research team is missing?",
+                agent_name="pre_trade_challenge", max_tokens=140,
+            )
+            if raw:
+                p = json.loads(raw.strip())
+                bc, sev = p.get("bear_case", ""), p.get("severity", "LOW").upper()
+                if bc:
+                    result.checks_run.append("llm_bear_case")
+                    result.warnings.append(f"[LLM {sev}] {bc}")
+                    if sev == "HIGH":
+                        logger.warning("[Devil's Advocate] LLM HIGH-severity bear case on %s: %s",
+                                       ticker, bc)
+    except Exception:
+        pass
+
     if result.warnings:
         logger.info("[Devil's Advocate] %s PASSED with warnings: %s", ticker, "; ".join(result.warnings))
     else:

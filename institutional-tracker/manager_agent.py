@@ -777,34 +777,30 @@ def evaluate_recommendation(rec: dict, account: dict,
         pass   # knowledge base is advisory — never block a trade decision
 
     # ── Fable 5 LLM decision narrative ────────────────────────────────────
-    # Synthesises all rule-based rationale into a coherent manager narrative
-    # that appears in the email report and manager_decisions.json.
-    try:
-        from apex_llm import reason as _llm_r, is_available as _llm_ok
-        if _llm_ok("manager_agent"):
-            _rule_summary = "\n".join(f"- {r}" for r in rationale[:6])
-            _ctx = (
-                f"Decision: {decision} → execute as {exec_action} on {ticker}\n"
-                f"P&L: {pnl_pct:+.1f}%, held {hold_days} days, weight {weight_pct:.1f}% of portfolio\n"
-                f"Conviction: {rec.get('conviction', 3)}★, source: {source_agent}\n"
-                f"Buying power: {buying_power_pct:.1f}%, positions: {n_positions}, PDO: {pdo_signal or 'neutral'}\n"
-                f"CRO: {cro_risk_level}\n\n"
-                f"Rule-based factors:\n{_rule_summary}\n\n"
-                "Write a 2-sentence manager narrative explaining WHY this specific decision "
-                "is right for the portfolio right now. Be direct and specific, not generic."
-            )
-            _narrative = _llm_r(
-                "You are the Apex Capital Manager Agent. Your job is to make and explain "
-                "investment decisions. Write concise, specific narratives that explain the "
-                "reasoning behind each trade decision. Never hedge — state the reasoning clearly.",
-                _ctx,
-                agent_name="manager_agent",
-                max_tokens=180,
-            )
-            if _narrative:
-                rationale.append(f"[MANAGER NARRATIVE] {_narrative.strip()}")
-    except Exception:
-        pass
+    # Token-gated: only fires on material actions (BUY/SELL/TRIM/ADD), never
+    # on routine HOLD/WATCH — saves ~90% of potential calls per cycle.
+    if exec_action in ("BUY_NEW", "ADD", "SELL", "TRIM"):
+        try:
+            from apex_llm import reason as _llm_r, is_available as _llm_ok
+            if _llm_ok("manager_agent"):
+                _rule_summary = "; ".join(r[:90] for r in rationale[:4])
+                _ctx = (
+                    f"{decision}→{exec_action} {ticker} | P&L {pnl_pct:+.1f}% | "
+                    f"{hold_days}d held | {weight_pct:.1f}% wt | conv {rec.get('conviction', 3)}★ | "
+                    f"BP {buying_power_pct:.0f}% | CRO {cro_risk_level} | PDO {pdo_signal or 'neutral'}\n"
+                    f"Factors: {_rule_summary}\n"
+                    "2 sentences: why is this the right call now? Specific, no hedging."
+                )
+                _narrative = _llm_r(
+                    "You are the Apex Capital Manager Agent explaining a trade decision.",
+                    _ctx,
+                    agent_name="manager_agent",
+                    max_tokens=120,
+                )
+                if _narrative:
+                    rationale.append(f"[MANAGER NARRATIVE] {_narrative.strip()}")
+        except Exception:
+            pass
 
     return {
         **rec,

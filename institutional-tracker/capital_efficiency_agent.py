@@ -380,6 +380,26 @@ def run_analysis(account: Optional[dict] = None) -> dict:
             "Enforce stop-loss rules aggressively to reduce risk further."
         )
 
+    # ── Fable 5 deployment sanity check (one call/run, signal-changes only) ─
+    llm_view = None
+    try:
+        from apex_llm import reason as _r, is_available
+        if is_available("capital_efficiency") and (cro_constrained or recommendation != "NEAR_OPTIMAL"):
+            raw = _r(
+                "You are Apex Capital's Portfolio Deployment Officer reviewing a capital signal.",
+                f"Signal: {recommendation}{' (CRO-capped from ' + uncapped_signal + ')' if cro_constrained else ''} | "
+                f"Deployed {deploy_ratio*100:.0f}% | Cash ${cash:,.0f} | "
+                f"CRO {cro_risk} | {opportunities} high-conviction picks available\n"
+                "2 sentences: is this signal right, and what's the single biggest "
+                "risk of following it?",
+                agent_name="capital_efficiency", max_tokens=110,
+            )
+            if raw:
+                llm_view = raw.strip()
+                reasoning.append(f"[LLM PDO] {llm_view}")
+    except Exception:
+        pass
+
     result = {
         "generated_at":        datetime.now().isoformat(),
         "agent":               "Portfolio Deployment Officer",

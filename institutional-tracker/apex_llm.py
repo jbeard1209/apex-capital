@@ -74,6 +74,62 @@ def get_model() -> str:
     return _load_config().get("model", "claude-sonnet-4-6")
 
 
+_USAGE_PATH = Path(__file__).parent / "data" / "llm_usage.json"
+
+
+def _load_usage() -> dict:
+    try:
+        if _USAGE_PATH.exists():
+            return json.loads(_USAGE_PATH.read_text())
+    except Exception:
+        pass
+    return {}
+
+
+def _record_usage(agent_name: str, in_tok: int, out_tok: int) -> None:
+    """Track daily call counts and token spend per agent (data/llm_usage.json)."""
+    try:
+        from datetime import date
+        usage = _load_usage()
+        today = str(date.today())
+        if usage.get("date") != today:
+            usage = {"date": today, "calls": 0, "input_tokens": 0,
+                     "output_tokens": 0, "by_agent": {}}
+        usage["calls"] += 1
+        usage["input_tokens"]  += in_tok
+        usage["output_tokens"] += out_tok
+        agent = agent_name or "unknown"
+        a = usage["by_agent"].setdefault(agent, {"calls": 0, "in": 0, "out": 0})
+        a["calls"] += 1
+        a["in"]  += in_tok
+        a["out"] += out_tok
+        _USAGE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _USAGE_PATH.write_text(json.dumps(usage, indent=2))
+    except Exception as e:
+        logger.debug("[LLM] Usage tracking failed: %s", e)
+
+
+def _budget_exceeded(cfg: dict) -> bool:
+    """Daily call cap — protects the credit balance from runaway loops."""
+    cap = cfg.get("max_daily_calls", 500)
+    try:
+        from datetime import date
+        usage = _load_usage()
+        return usage.get("date") == str(date.today()) and usage.get("calls", 0) >= cap
+    except Exception:
+        return False
+
+
+def get_usage_today() -> dict:
+    """Return today's usage stats for dashboards/reports."""
+    from datetime import date
+    usage = _load_usage()
+    if usage.get("date") != str(date.today()):
+        return {"date": str(date.today()), "calls": 0, "input_tokens": 0,
+                "output_tokens": 0, "by_agent": {}}
+    return usage
+
+
 def reason(
     system: str,
     user: str,
@@ -95,6 +151,10 @@ def reason(
         logger.debug("[LLM] No API key set — falling back to rule-based logic")
         return None
 
+    if _budget_exceeded(cfg):
+        logger.warning("[LLM] Daily call budget reached — falling back to rules")
+        return None
+
     model     = cfg.get("model", "claude-sonnet-4-6")
     n_tokens  = max_tokens or cfg.get("max_tokens", 1024)
     timeout   = cfg.get("timeout_seconds", 30)
@@ -109,6 +169,9 @@ def reason(
             messages=[{"role": "user", "content": user}],
         )
         text = msg.content[0].text if msg.content else ""
+        _record_usage(agent_name,
+                      getattr(msg.usage, "input_tokens", 0),
+                      getattr(msg.usage, "output_tokens", 0))
         logger.debug("[LLM] %s (%s) → %d chars", agent_name or "?", model, len(text))
         return text
     except anthropic.AuthenticationError:
