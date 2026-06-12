@@ -1,21 +1,5 @@
 [
   {
-    "ts": "2026-06-08T12:25:04.606780",
-    "date": "2026-06-08",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T12:25:04.850905",
-    "date": "2026-06-08",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred out of 1 proposal(s).",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-08T12:33:00.433864",
     "date": "2026-06-08",
     "agent": "HR Agent",
@@ -3997,6 +3981,22 @@
     "agent": "Deputy Board",
     "category": "PIPELINE_ALERT",
     "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T19:35:19.805748",
+    "date": "2026-06-12",
+    "agent": "Missed Winners Agent",
+    "category": "RESEARCH_NOTE",
+    "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: MRVL, VRT, RKLB, NUE, TSM, C. ",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-12T19:36:24.043489",
+    "date": "2026-06-12",
+    "agent": "Missed Winners Agent",
+    "category": "RESEARCH_NOTE",
+    "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: MRVL, VRT, RKLB, NUE, TSM, C. **Pattern:** The misses cluster around the AI-infrastructure \"picks and shovels\" supply chain (MRVL chips, VRT data-center power/cooling, TSM fabrication, NUE steel, RKLB space hardware) \u2014 second-deri",
     "priority": "HIGH"
   }
 ]

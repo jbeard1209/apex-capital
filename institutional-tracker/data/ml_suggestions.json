@@ -9,5 +9,15 @@
     "description": "Current regime: SPY RSI=82.0, 3 warnings. Historical analyst is flagging overbought conditions. These regime signals are in rd_ml_bridge_signals.json but not fed to the model.",
     "proposed_fix": "Add 'rd_spy_overbought' and 'rd_warning_count' to FEATURE_COLS in feature_engineer.py. Read from rd_ml_bridge_signals.json['regime'] in _get_rd_features(ticker). These are ticker-independent (market-wide) features.",
     "status": "PENDING"
+  },
+  {
+    "id": "missed_winners_20260612",
+    "source": "missed_winners_agent",
+    "date": "2026-06-12",
+    "category": "DATA",
+    "priority": "REVIEW",
+    "title": "Label and study 6 never-seen winners",
+    "description": "Top-20 performers absent from all pipelines: ['MRVL', 'VRT', 'RKLB', 'NUE', 'TSM', 'C']. Add these as positive examples to the label set and check which model features they share \u2014 the model can learn the profile of winners our watchlists structurally exclude.",
+    "status": "PENDING"
   }
 ]

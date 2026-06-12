@@ -1,8 +1,8 @@
 {
   "date": "2026-06-12",
-  "calls": 4,
-  "input_tokens": 344,
-  "output_tokens": 311,
+  "calls": 21,
+  "input_tokens": 5469,
+  "output_tokens": 13876,
   "by_agent": {
     "rd_pod_board": {
       "calls": 3,
@@ -13,6 +13,21 @@
       "calls": 1,
       "in": 138,
       "out": 156
+    },
+    "missed_winners": {
+      "calls": 3,
+      "in": 924,
+      "out": 1200
+    },
+    "teaching": {
+      "calls": 13,
+      "in": 3651,
+      "out": 11700
+    },
+    "irm_review": {
+      "calls": 1,
+      "in": 550,
+      "out": 665
     }
   }
 }
