@@ -560,9 +560,29 @@ def run() -> None:
     # ------------------------------------------------------------------
     # Write full report
     # ------------------------------------------------------------------
+    # ── Fable 5 triage — gated to CRITICAL/WARNING runs ───────────────────
+    llm_triage = None
+    if overall_status != "OK":
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("ml_improvement"):
+                bad = [c for c in checks if c["status"] != "OK"]
+                txt = "; ".join(f"[{c['status']}] {c['check_name']}: {c['detail'][:70]}"
+                                for c in bad[:4])
+                llm_triage = _r(
+                    "You triage ML data-pipeline failures for a 13F prediction model.",
+                    f"{txt}\n"
+                    "2 sentences: do these failures share a root cause, and can the "
+                    "model safely keep training/serving until fixed?",
+                    agent_name="ml_improvement", max_tokens=110,
+                )
+        except Exception:
+            pass
+
     report = {
         "timestamp":      datetime.now(timezone.utc).isoformat(),
         "overall_status": overall_status,
+        **({"llm_triage": llm_triage.strip()} if llm_triage else {}),
         "checks":         list(checks),
     }
     DATA_DIR.mkdir(parents=True, exist_ok=True)

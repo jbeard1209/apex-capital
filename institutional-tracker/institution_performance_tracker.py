@@ -239,10 +239,36 @@ def run(lookback_days: int = 365, recent_days: int = 90) -> dict:
     if ranked_by_conviction:
         log.info("Rankings by conv. AUC:  %s", " > ".join(ranked_by_conviction[:5]))
 
+    # ── Fable 5 institution read (one call/run) ───────────────────────────
+    # The LLM knows these institutions' actual strategies — it can explain
+    # WHY a manager's 13F signals work or don't in the current market.
+    llm_read = None
+    if institutions:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("institution_tracker"):
+                top = ranked_by_sharpe[:3]
+                bottom = ranked_by_sharpe[-2:] if len(ranked_by_sharpe) > 3 else []
+                stats_txt = "; ".join(
+                    f"{k}: win {institutions[k]['win_rate']*100:.0f}%, "
+                    f"sharpe {institutions[k]['sharpe_like']:.2f}"
+                    for k in (top + bottom))
+                llm_read = _r(
+                    "You analyze which institutional 13F filers produce tradeable signals.",
+                    f"Baseline win rate {overall['win_rate']*100:.0f}%.\n"
+                    f"Best/worst by Sharpe: {stats_txt}\n"
+                    "2 sentences: given these managers' known strategies, why might the "
+                    "leaders' filings predict well now, and whom should we weight up or down?",
+                    agent_name="institution_tracker", max_tokens=140,
+                )
+        except Exception:
+            pass
+
     # ------------------------------------------------------------------
     # 4. Save report
     # ------------------------------------------------------------------
     report = {
+        **({"llm_institution_read": llm_read.strip()} if llm_read else {}),
         "timestamp":             datetime.now(timezone.utc).isoformat(),
         "lookback_days":         lookback_days,
         "recent_days":           recent_days,
