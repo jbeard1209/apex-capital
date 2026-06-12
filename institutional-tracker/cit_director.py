@@ -4486,9 +4486,31 @@ class CITDirector:
             if _sk:
                 _agent_findings_breakdown[_sk].append(_raw_finding)
 
+        # ── Fable 5 session synthesis — gated to sessions with proposals ─────
+        _llm_priority = None
+        if board_queue:
+            try:
+                from apex_llm import reason as _llm_r, is_available as _llm_ok
+                if _llm_ok("cit_director"):
+                    _titles = "\n".join(
+                        f"- [{p.get('severity','?')}] {p.get('title','')[:80]}"
+                        for p in board_queue[:8])
+                    _llm_priority = _llm_r(
+                        "You are the CIT Director prioritising improvement proposals for the boards.",
+                        f"Session {session}, {len(board_queue)} proposal(s):\n{_titles}\n"
+                        "2 sentences: which single proposal matters most and why, "
+                        "and is anything here a symptom of a deeper shared root cause?",
+                        agent_name="cit_director", max_tokens=130,
+                    )
+                    if _llm_priority:
+                        logger.info(f"  [CIT LLM] {_llm_priority.strip()[:100]}")
+            except Exception:
+                pass
+
         report = {
             "generated_at":    datetime.now().isoformat(),
             "session":          session,
+            **({"llm_priority_read": _llm_priority.strip()} if _llm_priority else {}),
             "total_findings":   len(findings),
             "board_proposals":  len(board_queue),
             "quick_wins":       len(quick_wins),

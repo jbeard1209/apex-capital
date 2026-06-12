@@ -536,6 +536,35 @@ def _vote_on_proposal(proposal: dict) -> dict:
     # Any CLARIFY or REJECT prevents approval — proposal is held for CIT response
     passed = approves >= APPROVAL_THRESHOLD and rejects == 0 and clarifies == 0
 
+    # ── Fable 5 deputy tie-breaker — gated to split votes only ────────────
+    # When deputies disagree (some approve, some reject/defer), an LLM read
+    # of the proposal often resolves what keyword rules can't.
+    if not passed and approves >= 1 and clarifies == 0:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("deputy_board"):
+                import json as _j
+                raw = _r(
+                    "You are a senior deputy on Apex Capital's operations board. "
+                    'Reply JSON only: {"vote": "APPROVE"|"REJECT", "reason": "one sentence"}',
+                    f"Split vote ({approves} approve, {rejects} reject, {defers} defer) on:\n"
+                    f"[{proposal.get('severity','?')}|{proposal.get('category','?')}] "
+                    f"{proposal.get('title','')}\n"
+                    f"{proposal.get('description','')[:250]}\n"
+                    f"Fix: {proposal.get('proposed_fix','')[:200]}",
+                    agent_name="deputy_board", max_tokens=100,
+                )
+                if raw:
+                    p = _j.loads(raw.strip())
+                    llm_v = p.get("vote", "").upper()
+                    votes.append({"deputy": "LLM Tie-Breaker", "vote": llm_v,
+                                  "rationale": p.get("reason", "")})
+                    if llm_v == "APPROVE" and rejects == 0:
+                        approves += 1
+                        passed = approves >= APPROVAL_THRESHOLD
+        except Exception:
+            pass
+
     # Write ALL clarification questions at once so CIT Director gets them simultaneously
     if clarifies > 0:
         all_questions = [

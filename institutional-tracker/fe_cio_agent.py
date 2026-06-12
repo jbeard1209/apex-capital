@@ -44,9 +44,33 @@ def run_cio_synthesis(picks: list, lane_capital: float = 5000.0) -> list:
     # Gold goes first (always allocated)
     slate = gold + final
 
+    # ── Fable 5 CIO review — gated to slates with 3+ picks ────────────────
+    llm_note = None
+    if len(slate) >= 3:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("fe_cio"):
+                names = ", ".join(
+                    f"{p.get('ticker','?')}({(p.get('margin_of_safety',0) or 0)*100:.0f}%MoS)"
+                    for p in slate[:8])
+                llm_note = _r(
+                    "You are the First Eagle CIO reviewing a deep-value slate "
+                    "(Jean-Marie Eveillard style: margin of safety, hard money, patience).",
+                    f"Slate: {names}. Gold picks: {len(gold)} (target {GOLD_TARGET:.0%}).\n"
+                    "2 sentences: is this slate coherent as a value portfolio, and "
+                    "what's the biggest value-trap risk in it?",
+                    agent_name="fe_cio", max_tokens=120,
+                )
+                if llm_note:
+                    logger.info("[CIO LLM] %s", llm_note.strip()[:100])
+        except Exception:
+            pass
+
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     with open(CIO_SLATE, "w") as f:
-        json.dump({"generated_at": datetime.now().isoformat(), "slate": slate}, f, indent=2, default=str)
+        json.dump({"generated_at": datetime.now().isoformat(),
+                   **({"llm_cio_note": llm_note.strip()} if llm_note else {}),
+                   "slate": slate}, f, indent=2, default=str)
 
     logger.info("[CIO] Slate: %d picks (%d gold, %d equity)", len(slate), len(gold), len(final))
     return slate
