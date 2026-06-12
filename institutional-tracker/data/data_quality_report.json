@@ -1,0 +1,41 @@
+{
+  "timestamp": "2026-06-12T23:58:38.776226+00:00",
+  "overall_status": "CRITICAL",
+  "checks": [
+    {
+      "check_name": "label_balance",
+      "status": "OK",
+      "detail": "Positive rate 40.7% is within bounds (total=10,555, positives=4,301)."
+    },
+    {
+      "check_name": "feature_null_rates",
+      "status": "WARNING",
+      "detail": "High null rates detected (>40%): price_momentum_20d=96.6%, price_momentum_5d=96.6%, volatility_20d=96.6%, price_vs_52w_high=96.6%.  All rates (last 30d, n=17,654): price_momentum_20d: 96.6%  |  price_momentum_5d: 96.6%  |  volatility_20d: 96.6%  |  price_vs_52w_high: 96.6%  |  conviction_score: 0.0%"
+    },
+    {
+      "check_name": "macro_cache_freshness",
+      "status": "CRITICAL",
+      "detail": "macro_cache.parquet not found at /Users/jackbeard/Claude investment strategy/institutional-tracker/data/macro_cache.parquet."
+    },
+    {
+      "check_name": "vix_sanity",
+      "status": "CRITICAL",
+      "detail": "macro_cache.parquet missing \u2014 cannot check VIX values."
+    },
+    {
+      "check_name": "date_continuity",
+      "status": "WARNING",
+      "detail": "Largest date gap is 86 days (2026-02-17 \u2192 2026-05-14), exceeding threshold of 45d. Possible missing quarter of SEC filings."
+    },
+    {
+      "check_name": "rd_ml_history_freshness",
+      "status": "OK",
+      "detail": "rd_ml_history.json is current (0.0h old, last modified 2026-06-12T23:56:30.867612+00:00)."
+    },
+    {
+      "check_name": "label_count_trend",
+      "status": "WARNING",
+      "detail": "0 new labeled rows in the last 7 days (prior 7d: 0). Label builder pipeline may have stopped."
+    }
+  ]
+}

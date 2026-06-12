@@ -1,0 +1,71 @@
+{
+  "data/manager_decisions.json": {
+    "status": "OK"
+  },
+  "data/review_recommendations.json": {
+    "status": "OK"
+  },
+  "data/state.json": {
+    "status": "OK"
+  },
+  "data/risk_bulletin.json": {
+    "status": "OK"
+  },
+  "data/canary_state.json": {
+    "status": "OK"
+  },
+  "data/irm_daily_check.json": {
+    "status": "OK"
+  },
+  "data/premarket_alerts.json": {
+    "status": "STALE",
+    "last_action": "2026-06-12T19:58:10.251101"
+  },
+  "data/hr_report.json": {
+    "status": "OK"
+  },
+  "data/chief_of_staff_report.json": {
+    "status": "OK"
+  },
+  "data/logic_team_findings.json": {
+    "status": "OK"
+  },
+  "data/cit_pending_proposals.json": {
+    "status": "OK"
+  },
+  "data/morning_briefing.json": {
+    "status": "OK"
+  },
+  "data/fi_pipeline_report.json": {
+    "status": "OK"
+  },
+  "data/fe_pipeline_log.json": {
+    "status": "STALE",
+    "last_action": "2026-06-12T19:58:10.251101"
+  },
+  "data/etf_research_brief.json": {
+    "status": "OK"
+  },
+  "data/etf_pod_orders.json": {
+    "status": "OK"
+  },
+  "data/research_team_report.json": {
+    "status": "OK"
+  },
+  "data/sector_assignments.json": {
+    "status": "OK"
+  },
+  "data/missed_winners_report.json": {
+    "status": "OK"
+  },
+  "data/ml_live_picks_log.json": {
+    "status": "OK"
+  },
+  "data/data_quality_report.json": {
+    "status": "OK"
+  },
+  "heartbeat": {
+    "status": "DEAD",
+    "last_action": "2026-06-12T19:58:10.251101"
+  }
+}

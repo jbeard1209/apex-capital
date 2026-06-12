@@ -663,6 +663,24 @@ def run_morning_briefing() -> dict:
     except Exception as _lt_e:
         logger.debug(f"Logic Team injection skipped: {_lt_e}")
 
+    # ── Freshness Sentinel — surface stale-data issues prominently ────────
+    try:
+        fresh = _safe_load("data/freshness_report.json")
+        if fresh:
+            briefing["freshness"] = {
+                "overall": fresh.get("overall", "?"),
+                "stale":   fresh.get("stale", 0),
+                "auto_fixed": fresh.get("auto_fixed", []),
+            }
+            for i in fresh.get("issues", []):
+                if i.get("critical"):
+                    briefing["alerts"].append({
+                        "source": "Freshness Sentinel", "severity": "HIGH",
+                        "message": f"STALE DATA: {i.get('item','?')} — {i.get('detail','')}",
+                    })
+    except Exception as _fs_e:
+        logger.debug(f"Freshness injection skipped: {_fs_e}")
+
     # ── Fable 5 LLM executive summary ─────────────────────────────────────
     # Generates a crisp "what to watch today" narrative for the Chairman.
     try:
