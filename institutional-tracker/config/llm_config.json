@@ -35,6 +35,9 @@
     "cit_director",
     "fe_cio",
     "fe_fraud",
-    "deputy_board"
+    "deputy_board",
+    "ml_improvement",
+    "creative",
+    "position_sizer"
   ]
 }

@@ -312,6 +312,28 @@ def polish_email(
 
     tldr_block = _build_tldr(subject, sender_name, key_metrics or {})
 
+    # ── Fable 5 one-line summary — gated to urgent emails only ────────────
+    if priority == "urgent":
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("creative"):
+                metrics_txt = ", ".join(f"{k}: {v}" for k, v in (key_metrics or {}).items())
+                raw = _r(
+                    "You write one-line email summaries for a busy investment-firm chairman.",
+                    f"Subject: {subject}\nFrom: {sender_name}\nMetrics: {metrics_txt}\n"
+                    "One sentence, max 20 words: what does the Chairman need to know?",
+                    agent_name="creative", max_tokens=50,
+                )
+                if raw:
+                    tldr_block = (
+                        f'<div style="background:{APEX_COLORS["surface"]};border-left:3px solid '
+                        f'{APEX_COLORS["accent_orange"]};padding:10px 16px;margin-bottom:12px;'
+                        f'color:{APEX_COLORS["text_primary"]};font-size:14px;font-style:italic;">'
+                        f'🧠 {raw.strip()}</div>'
+                    ) + tldr_block
+        except Exception:
+            pass
+
     # Priority banner
     priority_banner = ""
     if priority == "urgent":

@@ -983,6 +983,41 @@ def run() -> None:
     raw_suggestions = generate_rule_based_suggestions(context)
     logger.info(f"Rule engine produced {len(raw_suggestions)} candidate suggestions")
 
+    # ── Fable 5 ML research ideas (one call/run) ──────────────────────────
+    # The LLM knows the quant-ML literature — it can suggest experiments the
+    # rule engine's fixed playbook never will.
+    try:
+        from apex_llm import reason as _r, is_available
+        if is_available("ml_improvement"):
+            import json as _j
+            raw = _r(
+                "You are a quant ML researcher improving a LightGBM model that predicts "
+                "which 13F institutional holdings will outperform. Reply JSON only: "
+                '[{"title": "...", "rationale": "one sentence", "effort": "low"|"medium"|"high"}] '
+                "(max 2 ideas).",
+                f"Current: AUC={model_info.get('auc')}, val_auc={model_info.get('val_auc')}, "
+                f"wf_cv_auc={model_info.get('wf_cv_auc')}, {model_info.get('n_features')} features.\n"
+                f"Data: {db_info.get('labeled_samples')} labeled samples, "
+                f"positive rate {db_info.get('positive_rate')}.\n"
+                f"Recent ML warnings: {'; '.join(log_warnings[:2]) or 'none'}\n"
+                "Suggest the 2 highest-value experiments not already obvious from the metrics.",
+                agent_name="ml_improvement", max_tokens=250,
+            )
+            if raw:
+                ideas = _j.loads(raw.strip())
+                for idea in ideas[:2]:
+                    if isinstance(idea, dict) and idea.get("title"):
+                        raw_suggestions.append({
+                            "title": f"[LLM] {idea['title']}",
+                            "rationale": idea.get("rationale", ""),
+                            "category": "REVIEW",
+                            "estimated_auc_delta": "unknown",
+                            "effort": idea.get("effort", "medium"),
+                        })
+                logger.info(f"LLM contributed {min(len(ideas),2)} research idea(s)")
+    except Exception as _llm_e:
+        logger.debug(f"LLM ideas skipped: {_llm_e}")
+
     # --- Assemble and deduplicate ---------------------------------------------
     new_entries = assemble_suggestions(raw_suggestions, existing_suggestions)
     n_implement = sum(1 for s in new_entries if s["category"] == "IMPLEMENT")

@@ -388,10 +388,34 @@ def run(regime: Optional[str] = None) -> list[dict]:
     log.info("  HOLD positions:%d", len(holds))
     log.info("  SKIP signals:  %d", len(skips))
 
+    # ── Fable 5 sizing sanity check — gated to runs with BUY signals ──────
+    llm_sizing_note = None
+    if buys:
+        try:
+            from apex_llm import reason as _r, is_available
+            if is_available("position_sizer"):
+                buy_txt = "; ".join(
+                    f"{b['ticker']} {b['pct_portfolio']:.1f}% (p={b['ml_score']:.2f})"
+                    for b in buys[:5])
+                llm_sizing_note = _r(
+                    "You are a risk-sizing reviewer for a half-Kelly position sizer.",
+                    f"Regime {regime or '?'} (cap {regime_cap:.0%}) | "
+                    f"Total new deployment {total_new_deployment:.1%} of portfolio\n"
+                    f"Buys: {buy_txt}\n"
+                    "2 sentences: are these sizes prudent given the regime, and is any "
+                    "single position oversized relative to its model confidence?",
+                    agent_name="position_sizer", max_tokens=110,
+                )
+                if llm_sizing_note:
+                    log.info("LLM sizing review: %s", llm_sizing_note.strip()[:100])
+        except Exception:
+            pass
+
     # ------------------------------------------------------------------
     # 6. Save output
     # ------------------------------------------------------------------
     output = {
+        **({"llm_sizing_note": llm_sizing_note.strip()} if llm_sizing_note else {}),
         "timestamp":          datetime.now(timezone.utc).isoformat(),
         "portfolio_value":    portfolio,
         "regime":             regime,
