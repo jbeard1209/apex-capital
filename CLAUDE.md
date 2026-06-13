@@ -15,9 +15,22 @@ cd institutional-tracker
 python3 main.py                     # full daily pipeline
 python3 test_pipeline_smoke.py      # smoke + wiring-contract tests (run before committing)
 python3 wiring_audit.py             # sweep for dead integrations (see below)
-python3 logic_team.py               # coherence checks
+python3 logic_team.py               # coherence checks (incl. WiringContractLogicAgent self-check)
+python3 model_test_harness.py       # reproducible, no-leakage model AUC (weekly cron)
 python3 <agent>.py --report         # most agents support --report
 ```
+
+**Install the pre-push gate** (blocks pushes that fail tests/audit; `.git/hooks` isn't cloned):
+```bash
+cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+```
+
+## Model metrics — single source of truth
+Never hardcode or guess an AUC. `model_metrics.get_model_metrics()` reads the real values
+from `data/model_meta.json` (written by `predictive_model/ml_model.py`); it returns
+`trained=False, auc=None` when no model exists — callers must show "N/A", never a number.
+The honest, reproducible evaluation is `model_test_harness.py` (walk-forward / TimeSeriesSplit,
+seeded). Plain KFold on this time-ordered data leaks the future and inflates AUC — don't use it.
 
 ## Architecture (subsystems)
 

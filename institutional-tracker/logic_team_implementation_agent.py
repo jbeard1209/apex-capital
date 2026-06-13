@@ -278,6 +278,23 @@ def _auto_reconcile_pod_ledger(entry: dict) -> str:
     return f"pod_ledger_rerun_failed:{detail}"
 
 
+def _auto_train_model(entry: dict) -> str:
+    """No trained model exists — train and persist one (model.pkl + model_meta.json)."""
+    if _within_cooldown("train_model", hours=24):
+        return "skipped:cooldown_24h"
+    logger.info("  → Training ML model (predictive_model/ml_model.py)...")
+    ok, detail = _run_script("predictive_model/ml_model.py", timeout=600)
+    _mark_cooldown("train_model")
+    if ok:
+        _post_to_channel(
+            f"🔧 LT auto-action: no trained model existed "
+            f"('{entry.get('title','?')[:50]}') — ran ml_model.py to train + persist "
+            f"model.pkl/model_meta.json. Real AUC now available to monitors.",
+            priority="HIGH")
+        return "auto_trained_model"
+    return f"model_train_failed:{detail}"
+
+
 def _auto_start_ml_tracking(entry: dict) -> str:
     """ML pod live picks not tracked — start the live test runner so AUC can be validated."""
     if _within_cooldown("start_ml_tracking", hours=24):
@@ -402,6 +419,20 @@ def _board_ml_suspend(entry: dict) -> str:
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
+def _board_wiring_fix(entry: dict) -> str:
+    """A producer/consumer wiring contract is broken — route to CIT to fix the code."""
+    title = f"[LTIA] Wiring contract broken — code fix needed: {entry.get('title','?')[:40]}"
+    submitted = _escalate_to_board(
+        title,
+        f"Self-detected wiring violation: '{entry.get('title','?')}'. Something is produced but "
+        f"no consumer handles it (dead-letter / blind monitor).",
+        recommended_owner="CIT",
+        severity="HIGH",
+        proposed_fix="CIT: align the producer and consumer identifiers (rule/queue/category/file), "
+                     "then add a TestWiringContracts case. Reproduce with `python3 wiring_audit.py`.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
 def _board_email_overflow(entry: dict) -> str:
     title = "[LTIA] Email buffer overflowing — tighten sender volume"
     submitted = _escalate_to_board(
@@ -446,6 +477,7 @@ RESOLUTION_HANDLERS = {
     "pod_value_mismatch":      _auto_reconcile_pod_ledger,
     "ml_model_not_tracked":    _auto_start_ml_tracking,
     "ml_no_live_validation":   _auto_start_ml_tracking,
+    "ml_model_never_trained":  _auto_train_model,
 
     # --- needs a human/board decision ---
     "idle_pod":                _board_idle_capital,
@@ -463,8 +495,10 @@ RESOLUTION_HANDLERS = {
     "loss_no_attribution":     _board_loss_action,
     "loss_attribution_no_fixes": _board_loss_action,
     "ml_below_random":         _board_ml_suspend,
+    "ml_auc_mediocre":         _board_ml_suspend,
     "email_buffer_overflow":   _board_email_overflow,
     "agent_communication_silence": _board_communication_silence,
+    "wiring_contract_violation": _board_wiring_fix,
 }
 
 

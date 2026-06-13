@@ -1,0 +1,8 @@
+#!/bin/bash
+# Apex Capital — pre-push gate. Blocks push if contract tests or wiring audit fail.
+# Catches the silent producer/consumer bug class before it ships.
+cd "$(git rev-parse --show-toplevel)/institutional-tracker" || exit 0
+echo "[pre-push] wiring audit + smoke tests..."
+python3 wiring_audit.py --quiet || { echo "[pre-push] BLOCKED: wiring contract violation. Run: python3 wiring_audit.py"; exit 1; }
+python3 test_pipeline_smoke.py >/tmp/apex_smoke.out 2>&1 || { echo "[pre-push] BLOCKED: smoke tests failed:"; tail -15 /tmp/apex_smoke.out; exit 1; }
+echo "[pre-push] OK"

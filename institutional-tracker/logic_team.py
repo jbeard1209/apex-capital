@@ -401,9 +401,13 @@ class PerformanceLogicAgent:
                 rule="ml_model_not_tracked",
                 severity="MEDIUM",
                 title="ML model running but no live picks are being tracked for real-world validation",
-                observation="ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
+                observation=(
+                    f"ml_live_picks_log.json has zero real picks. "
+                    f"Model AUC (holdout) = {state.get('ml_auc_label','N/A')} — "
+                    f"scoring picks but results aren't being captured."
+                ),
                 why="Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-                suggestion="Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
+                suggestion="Run `python3 ml_live_test_runner.py --enter` to begin tracking. Evaluation after 20 days.",
                 agent=self.name,
             ))
 
@@ -574,12 +578,16 @@ class MLLogicAgent:
         findings = []
         ml_picks  = state.get("ml_live_picks", {})
         picks_arr = ml_picks.get("picks", []) if isinstance(ml_picks, dict) else []
+        # Only count REAL picks (entries with a ticker), not "no_picks_today" markers.
+        real_picks = [p for p in picks_arr if isinstance(p, dict) and p.get("ticker")]
         ml_pod    = next((p for p in state.get("pods", []) if "ml" in p.get("name","").lower() or
                           "quantitative" in p.get("name","").lower()), None)
-        auc_st    = state.get("ml_auc_st", 0) or 0
+        auc_st    = state.get("ml_auc_st")          # None when untrained — do NOT coerce to 0
+        trained   = state.get("ml_model_trained", False)
+        auc_label = state.get("ml_auc_label", "N/A")
 
-        # R16: ML pod has capital but zero live picks tracked
-        if ml_pod and len(picks_arr) == 0:
+        # R16: ML pod has capital but zero live picks tracked (real picks only)
+        if ml_pod and len(real_picks) == 0:
             pod_budget = ml_pod.get("budget", 0) or 0
             if pod_budget > 0:
                 findings.append(_finding(
@@ -598,19 +606,59 @@ class MLLogicAgent:
                     agent=self.name,
                 ))
 
-        # R17: AUC below random — model is worse than a coin flip
-        if 0 < auc_st < 0.50:
+        # R17: Model never trained — meta/pkl absent while ML pod holds capital.
+        # This is the case that used to be invisible (monitor read a file that
+        # never existed, so AUC silently defaulted to 0 and nothing fired).
+        pod_budget = (ml_pod.get("budget", 0) or 0) if ml_pod else 0
+        if ml_pod and pod_budget > 0 and not trained:
+            findings.append(_finding(
+                rule="ml_model_never_trained",
+                severity="CRITICAL",
+                title=f"ML pod has ${pod_budget:,.0f} but NO trained model exists",
+                observation=(
+                    f"data/model_meta.json reports no trained model "
+                    f"(model.pkl present={state.get('ml_model_pkl_present')}). The ML / Quantitative "
+                    f"pod has ${pod_budget:,.0f} allocated but there is no model to generate or "
+                    f"validate signals. Any AUC shown elsewhere is not coming from a real model."
+                ),
+                why="A pod allocated capital against a model that was never trained is operating on "
+                    "nothing. This also means every downstream 'model AUC' display is meaningless.",
+                suggestion="Run `python3 predictive_model/ml_model.py` (or overnight_ml_runner.py) to "
+                           "train and persist data/model.pkl + model_meta.json. Until then, the ML "
+                           "pod should hold cash, not deploy on phantom signals.",
+                agent=self.name,
+            ))
+
+        # R18: AUC below random — model is worse than a coin flip (real value only)
+        elif trained and isinstance(auc_st, (int, float)) and 0 < auc_st < 0.50:
             findings.append(_finding(
                 rule="ml_below_random",
                 severity="HIGH",
                 title=f"ST model AUC {auc_st:.3f} — worse than random. Capital at risk.",
-                observation=f"The Short-Term model has AUC={auc_st:.3f}, below the 0.50 "
+                observation=f"The model's holdout ensemble AUC is {auc_label}, below the 0.50 "
                             f"random baseline. Any capital deployed on these signals is "
                             f"expected to lose money vs. a coin flip.",
                 why="An AUC below 0.50 means the model is systematically wrong — worse than "
                     "guessing. This is a governance failure if the model is live.",
                 suggestion="Immediately suspend ML-driven buy recommendations until the model "
                            "is retrained. Board should vote on suspension.",
+                agent=self.name,
+            ))
+
+        # R19: AUC present but mediocre (barely above coin-flip) — don't tolerate silently
+        elif trained and isinstance(auc_st, (int, float)) and 0.50 <= auc_st < 0.55:
+            findings.append(_finding(
+                rule="ml_auc_mediocre",
+                severity="MEDIUM",
+                title=f"ST model AUC {auc_st:.3f} — barely above random; weak edge",
+                observation=f"The model's holdout ensemble AUC is {auc_label} (CV mean "
+                            f"{state.get('ml_cv_auc_mean')}). That is only marginally better than "
+                            f"a coin flip and well below the {0.57} live-trading gate.",
+                why="A model this weak provides little real edge. Sizing capital to it implies more "
+                    "confidence than the evidence supports.",
+                suggestion="Keep the model out of live buys until AUC clears the gate. Pursue feature "
+                           "expansion / retraining (see model_test_harness.py weekly report) before "
+                           "raising its capital weight.",
                 agent=self.name,
             ))
 
@@ -917,6 +965,43 @@ class PodHealthLogicAgent:
 
         return findings
 
+
+# =============================================================================
+# SUB-AGENT 12 — WIRING CONTRACT LOGIC
+# Self-detects the firm's recurring bug class: a producer emits something
+# (a rule, a routed proposal, a metric file) that no consumer handles, failing
+# silently. This is what let the handler-mismatch and blind-AUC-monitor bugs
+# hide for so long — now the firm catches them itself each cycle.
+# =============================================================================
+
+class WiringContractLogicAgent:
+    name = "WiringContractLogicAgent"
+
+    def run(self, state: dict) -> list:
+        findings = []
+        try:
+            import wiring_audit
+            result = wiring_audit.run_checks()
+        except Exception as e:
+            logger.debug(f"  wiring_audit unavailable: {e}")
+            return findings
+
+        for problem in result.get("problems", []):
+            findings.append(_finding(
+                rule="wiring_contract_violation",
+                severity="HIGH",
+                title=f"Wiring contract violation — {problem[:60]}",
+                observation=problem,
+                why=("A producer emits something no consumer handles (dead-letter or blind "
+                     "monitor). Output is generated but silently never acted on — the firm's "
+                     "recurring failure mode. It looks healthy because nothing errors."),
+                suggestion=("Fix the producer/consumer mismatch, then add a TestWiringContracts "
+                            "case so it can't regress. Run `python3 wiring_audit.py` for full detail."),
+                agent=self.name,
+            ))
+        return findings
+
+
 # =============================================================================
 # LOGIC TEAM DIRECTOR
 # =============================================================================
@@ -933,6 +1018,7 @@ SUB_AGENTS = [
     CommunicationLogicAgent(),
     RiskCoherenceLogicAgent(),
     PodHealthLogicAgent(),
+    WiringContractLogicAgent(),
 ]
 
 
@@ -1020,17 +1106,26 @@ def _build_state() -> dict:
     raw_pods  = pod_alloc.get("pods", {}) if isinstance(pod_alloc, dict) else {}
     state["pods"] = [{"name": k, **v} for k, v in raw_pods.items()] if isinstance(raw_pods, dict) else []
 
-    # ML AUC scores
+    # ML model metrics — read the REAL value from the single source of truth.
+    # (Previously globbed ml_model_report*.json which NEVER existed, so ml_auc_st
+    #  always defaulted to 0 and the below-random alarm could never fire. The real
+    #  metrics live in data/model_meta.json, surfaced via model_metrics.py.)
     try:
-        import glob, os as _os
-        auc_files = sorted(glob.glob(str(DATA_DIR / "ml_model_report*.json")))
-        if auc_files:
-            ml_rpt = _load(Path(auc_files[-1]), {})
-            state["ml_auc_st"] = ml_rpt.get("shortterm", {}).get("auc", 0) or                                   ml_rpt.get("auc_roc", 0) or 0
-        else:
-            state["ml_auc_st"] = 0
+        from model_metrics import get_model_metrics
+        _mm = get_model_metrics()
+        state["ml_model_trained"] = _mm.get("trained", False)
+        state["ml_auc_st"]        = _mm.get("auc")          # None if untrained — NOT 0
+        state["ml_auc_label"]     = _mm.get("auc_label", "N/A")
+        state["ml_cv_auc_mean"]   = _mm.get("cv_auc_mean")
+        state["ml_model_pkl_present"] = _mm.get("model_pkl_present", False)
+        state["ml_model_age_days"]   = _mm.get("age_days")
     except Exception:
-        state["ml_auc_st"] = 0
+        state["ml_model_trained"]  = False
+        state["ml_auc_st"]         = None
+        state["ml_auc_label"]      = "N/A"
+        state["ml_cv_auc_mean"]    = None
+        state["ml_model_pkl_present"] = False
+        state["ml_model_age_days"]   = None
 
     # Sell log and positions (for StrategyLogicAgent)
     review_data = _load(DATA_DIR / "review_recommendations.json", {})

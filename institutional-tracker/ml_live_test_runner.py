@@ -40,8 +40,9 @@ DATA_DIR  = BASE_DIR / "data"
 
 LIVE_PICKS_FILE   = DATA_DIR / "ml_live_picks_log.json"
 IMPROVEMENT_LOG   = DATA_DIR / "ml_improvement_log.json"
-ST_QUEUE_FILE     = DATA_DIR / "ml_shortterm_experiment_queue.json"
-LT_QUEUE_FILE     = DATA_DIR / "ml_longterm_experiment_queue.json"
+# (Removed unused ST_QUEUE_FILE / LT_QUEUE_FILE — an "experiment queue" feature
+#  that was never implemented; the constants were declared but read/written
+#  nowhere, leaving two permanently-empty orphan files. See wiring_audit.py.)
 LT_LIVE_AUC_GATE  = 0.57   # LT model must clear this before live picks begin
 
 HORIZON_DAYS_ST   = 20

@@ -105,24 +105,21 @@ def _load_ml_intelligence() -> dict:
                 })
 
     # Model health
-    model_version = "v3"
-    model_auc     = 0.5914
+    # Model health — read REAL metrics from the single source of truth.
+    # (This previously used a hardcoded AUC constant and read nonexistent
+    #  model_v3/v4.pkl, so the board saw a fabricated number. Never again —
+    #  model_metrics.py reads data/model_meta.json written by ml_model.py;
+    #  None means untrained and must display as "N/A".)
     try:
-        import pickle, sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path("predictive_model").absolute()))
-        model_path = Path("data/model_v4.pkl")
-        if not model_path.exists():
-            model_path = Path("data/model_v3.pkl")
-            model_version = "v3"
-        else:
-            model_version = "v4"
-        with open(model_path, "rb") as f:
-            model_obj = pickle.load(f)
-        if isinstance(model_obj, dict):
-            model_auc = model_obj.get("val_auc", model_obj.get("auc", model_auc))
+        from model_metrics import get_model_metrics
+        _mm = get_model_metrics()
     except Exception:
-        pass
+        _mm = {"trained": False, "auc": None, "auc_label": "N/A — metrics unavailable",
+               "cv_auc_mean": None}
+    model_version   = "ensemble" if _mm.get("trained") else "untrained"
+    model_auc       = _mm.get("auc")          # None when untrained — display must handle
+    model_auc_label = _mm.get("auc_label", "N/A")
+    model_cv_auc    = _mm.get("cv_auc_mean")
 
     drift_status   = drift.get("status", "UNKNOWN") if drift else "UNKNOWN"
     quality_status = quality.get("overall_status", "UNKNOWN") if quality else "UNKNOWN"
@@ -132,6 +129,9 @@ def _load_ml_intelligence() -> dict:
         "updated_at":       bridge.get("updated_at", "unknown"),
         "model_version":    model_version,
         "model_auc":        model_auc,
+        "model_auc_label":  model_auc_label,
+        "model_cv_auc":     model_cv_auc,
+        "model_trained":    _mm.get("trained", False),
         "n_features":       38,
         "regime":           regime,
         "buy_signals":      buy_signals,
@@ -1878,8 +1878,12 @@ def _build_ml_intel_html(ml: dict) -> str:
     overbought = regime.get("rd_spy_overbought", 0)
     rising_r  = regime.get("rd_rising_rates", 0)
 
-    auc       = ml.get("model_auc", 0)
-    auc_color = "#3fb950" if auc >= 0.60 else ("#58a6ff" if auc >= 0.58 else "#f0883e")
+    auc       = ml.get("model_auc")  # None when untrained — do NOT default to a number
+    auc_text  = ml.get("model_auc_label") or ("N/A" if auc is None else f"{auc:.4f}")
+    if auc is None:
+        auc_color = "#8b949e"  # grey: no real metric to show
+    else:
+        auc_color = "#3fb950" if auc >= 0.60 else ("#58a6ff" if auc >= 0.58 else "#f0883e")
     drift_color = "#f85149" if "ALERT" in ml.get("drift_status","") else (
                   "#f0883e" if "WARN" in ml.get("drift_status","") else "#3fb950")
     qual_color  = "#f85149" if "FAIL" in ml.get("quality_status","") else (
@@ -1960,7 +1964,7 @@ def _build_ml_intel_html(ml: dict) -> str:
     <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
       <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
         <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Model AUC</div>
-        <div style="font-size:20px;font-weight:bold;color:{auc_color};">{auc:.4f}</div>
+        <div style="font-size:20px;font-weight:bold;color:{auc_color};">{auc_text}</div>
       </div>
       <div style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:10px 14px;">
         <div style="color:#8b949e;font-size:10px;text-transform:uppercase;">Regime</div>

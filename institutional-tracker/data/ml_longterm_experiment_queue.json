@@ -1,9 +1,0 @@
-{
-  "description": "Queue of ML experiments to run on the long-term (365-day) model. Processes when LT model AUC >= 0.57 before live picks begin.",
-  "target_model": "longterm",
-  "target_horizon_days": 365,
-  "baseline_auc": 0.5214,
-  "threshold_auc": 0.53,
-  "live_picks_threshold_auc": 0.57,
-  "queue": []
-}

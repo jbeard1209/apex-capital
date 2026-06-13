@@ -175,11 +175,20 @@ def train(force: bool = False) -> dict:
     results["ensemble_auc_val"] = round(ens_auc, 4)
     results["ensemble_acc_val"] = round(ens_acc, 4)
 
-    # ── Cross-validation ─────────────────────────────────────────────────────
+    # ── Cross-validation (walk-forward, NO look-ahead leakage) ───────────────
+    # Financial data is time-ordered. Plain KFold/StratifiedKFold trains on
+    # future rows to predict past rows → leakage → inflated, fake-looking AUC
+    # (this is why CV numbers used to look better than live results). TimeSeriesSplit
+    # only ever trains on the past and tests on the future, which is honest.
+    from sklearn.model_selection import TimeSeriesSplit
     cv_model = lgb_model if HAS_LGB else rf
-    cv_scores = cross_val_score(cv_model, X_all_s, y_bin, cv=5, scoring="roc_auc")
-    results["cv_auc_mean"] = round(float(cv_scores.mean()), 4)
-    results["cv_auc_std"]  = round(float(cv_scores.std()),  4)
+    n_splits = min(5, max(2, len(X) // 30))   # need enough rows per fold
+    tscv = TimeSeriesSplit(n_splits=n_splits)
+    cv_scores = cross_val_score(cv_model, X_all_s, y_bin, cv=tscv, scoring="roc_auc")
+    results["cv_auc_mean"]   = round(float(cv_scores.mean()), 4)
+    results["cv_auc_std"]    = round(float(cv_scores.std()),  4)
+    results["cv_method"]     = f"TimeSeriesSplit(n_splits={n_splits})"
+    results["cv_n_splits"]   = n_splits
 
     # ── Risk-adjusted regressor ──────────────────────────────────────────────
     ra_model = None

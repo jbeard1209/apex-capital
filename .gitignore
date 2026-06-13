@@ -30,6 +30,12 @@ institutional-tracker/logs/
 # ── Backups ───────────────────────────────────────────────────────────────────
 institutional-tracker/data/backups/
 
+# ── Transient lock / run markers (must never be committed) ───────────────────
+*.lock
+institutional-tracker/data/.*.lock
+institutional-tracker/data/.*_running
+institutional-tracker/data/.catch_up_running
+
 # ── Runtime data (live trade state, PII, agent evaluations) ──────────────────
 # These are pushed directly to the cloud server via sync_to_cloud.py,
 # never stored in git.

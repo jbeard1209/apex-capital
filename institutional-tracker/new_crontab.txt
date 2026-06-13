@@ -132,3 +132,9 @@
 30 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 rd_pod_board.py >> logs/rd_board_$(date +\%Y\%m\%d).log 2>&1
 # ML pod board: 10:45 AM EDT = 14:45 UTC
 45 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_pod_board.py >> logs/ml_board_$(date +\%Y\%m\%d).log 2>&1
+
+# ── WEEKLY MODEL TEST HARNESS — Sunday 3 AM EDT = 07:00 UTC ──
+# Reproducible, seeded, walk-forward (no-leakage) evaluation of BOTH models.
+# Writes data/model_test_report.json + posts honest AUC to the firm channel.
+# This is the trustworthy answer to "how good is the model, really?"
+0 7 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 model_test_harness.py >> logs/model_test_$(date +\%Y\%m\%d).log 2>&1

@@ -131,16 +131,53 @@ def check_orphan_queues(sources: dict):
                              f"(producer but maybe no consumer — verify)")
 
 
+def check_glob_consumers_have_producers(sources: dict):
+    """A consumer that globs/loads a data file pattern nothing produces is blind.
+
+    This is the exact class of the blind AUC monitor: logic_team.py globbed
+    `ml_model_report*.json`, a file no code ever writes and that never existed,
+    so the metric silently defaulted to 0 and the alarm could never fire.
+    """
+    # Find glob.glob(... "<stem>*.json") read sites
+    glob_pat = re.compile(r'glob\.glob\([^)]*?"([A-Za-z0-9_]+)\*\.json"')
+    for name, txt in sources.items():
+        for stem in glob_pat.findall(txt):
+            # Is there a producer? i.e. any .py that writes a file starting with stem
+            produced = any(
+                re.search(rf'"{stem}[A-Za-z0-9_]*\.json"', wtxt) and
+                re.search(r'open\([^)]*"w"|json\.dump|\.write_text|_save', wtxt)
+                for wtxt in sources.values())
+            # Or any matching file already on disk
+            on_disk = bool(list(DATA_DIR.glob(f"{stem}*.json")))
+            if not produced and not on_disk:
+                problems.append(
+                    f"[blind-read] {name} globs '{stem}*.json' but NO code produces it "
+                    f"and none exist on disk — this consumer is blind (silent default)")
+
+
+def run_checks() -> dict:
+    """Run all wiring checks and return {problems, notes} without exiting.
+
+    Reusable by both the CLI (main) and the Logic Team's WiringContractLogicAgent
+    so the firm self-detects this bug class.
+    """
+    global problems, notes
+    problems, notes = [], []
+    sources = _py_sources()
+    check_logic_rule_handlers()
+    check_pod_routing()
+    check_proposal_categories()
+    check_glob_consumers_have_producers(sources)
+    check_orphan_queues(sources)
+    return {"problems": list(problems), "notes": list(notes)}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--quiet", action="store_true", help="only print problems")
     args = ap.parse_args()
 
-    sources = _py_sources()
-    check_logic_rule_handlers()
-    check_pod_routing()
-    check_proposal_categories()
-    check_orphan_queues(sources)
+    run_checks()
 
     print("=" * 60)
     print("  APEX CAPITAL — WIRING AUDIT")

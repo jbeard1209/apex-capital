@@ -482,6 +482,35 @@ class TestWiringContracts(unittest.TestCase):
                          f"LTIA escalates with categories no board scope recognizes: {unknown}")
 
 
+class TestModelMetricsContract(unittest.TestCase):
+    """Guards against the fake/hardcoded-AUC regression."""
+
+    def test_model_metrics_reads_the_file_ml_model_writes(self):
+        """model_metrics must read the same file predictive_model/ml_model.py writes."""
+        import model_metrics
+        src = open(Path(__file__).parent / "predictive_model" / "ml_model.py").read()
+        import re
+        m = re.search(r'META_PATH\s*=\s*DATA_DIR\s*/\s*"([^"]+)"', src)
+        self.assertIsNotNone(m, "ml_model.py META_PATH not found")
+        self.assertEqual(model_metrics.META_PATH.name, m.group(1),
+                         "model_metrics reads a different file than ml_model writes")
+
+    def test_untrained_returns_none_not_a_number(self):
+        """When no model exists, metrics must be None — never a fabricated default."""
+        import model_metrics
+        if not model_metrics.META_PATH.exists():
+            self.assertIsNone(model_metrics.headline_auc())
+
+    def test_no_hardcoded_auc_literals_in_reports(self):
+        """board_meeting/logic_team must not carry hardcoded AUC numbers."""
+        import re
+        for fn in ("board_meeting.py", "logic_team.py"):
+            txt = open(Path(__file__).parent / fn).read()
+            # a float literal 0.5x–0.6x assigned to something auc-ish
+            hits = re.findall(r'(?:model_)?auc\w*\s*=\s*0\.[56]\d+', txt)
+            self.assertEqual(hits, [], f"{fn} has hardcoded AUC literal(s): {hits}")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -498,6 +527,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
     suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
     suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))
+    suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)
