@@ -404,6 +404,85 @@ class TestAgentRegistry(unittest.TestCase):
 
 
 # =============================================================================
+# Producer/consumer wiring contracts
+# These guard the class of bug where one component emits an identifier
+# (a rule name, a pod name, a category) that no downstream consumer handles —
+# the failure is silent because .get()/try-except swallow the mismatch.
+# =============================================================================
+class TestWiringContracts(unittest.TestCase):
+
+    def test_every_logic_rule_has_a_handler(self):
+        """Every rule the Logic Team can emit must resolve to an implementation handler.
+
+        Regression guard: the handler map once keyed on rule names the Logic
+        Team never emitted (pipeline_dark/idle_capital), so 25 of 28 findings
+        were never acted on and the implementation log stayed empty.
+        """
+        import re
+        import logic_team_implementation_agent as ltia
+
+        src = open(Path(__file__).parent / "logic_team.py").read()
+        # Static rules: rule="..."   Dynamic rules: rule=f"...{var}"
+        static  = set(re.findall(r'rule="([a-z_]+)"', src))
+        dynamic = re.findall(r'rule=f"([^"]+)"', src)
+        # Turn f-string templates into concrete sample rule names
+        samples = []
+        for tmpl in dynamic:
+            if "{pod_id}" in tmpl:
+                samples.append(tmpl.replace("{pod_id}", "fi"))
+                samples.append(tmpl.replace("{pod_id}", "fe"))
+            else:
+                samples.append(re.sub(r"\{[^}]+\}", "x", tmpl))
+
+        unmatched = []
+        for rule in sorted(static) + samples:
+            if ltia._normalize_rule(rule) not in ltia.RESOLUTION_HANDLERS:
+                unmatched.append(rule)
+        self.assertEqual(unmatched, [],
+                         f"Logic Team emits rules with no handler: {unmatched}")
+
+    def test_pod_router_only_targets_live_consumers(self):
+        """Every pod the router can send a proposal to must have a real consumer.
+
+        Regression guard: proposals routed to fi/fe/etf landed in *_pod_pending
+        files that no board reads — silent dead letters. submit_to_pod_queue
+        must redirect those to the main board.
+        """
+        import cit_director as cd
+        # Pods that route_proposal_to_pod() can return
+        routable = {"rd", "ml", "fi", "fe", "etf", "main"}
+        for pod in routable:
+            proposal = {"title": f"wiring-test-{pod}", "pod": pod,
+                        "description": "x", "source": "test"}
+            # _effective_pod applies the dead-letter redirect (pure, no side effects)
+            dest = cd._effective_pod(proposal)
+            self.assertTrue(
+                dest == "main" or dest in cd._LIVE_POD_QUEUES,
+                f"_effective_pod returned dead queue '{dest}' for pod '{pod}'")
+
+    def test_ltia_category_is_board_recognized(self):
+        """The LT Implementation Agent's escalation category must be in board scope.
+
+        Regression guard: it emitted OPERATIONAL_FIX, which is in none of
+        deputy_board's category sets, so escalations skipped the deputy path.
+        """
+        import re
+        import deputy_board as db
+        src = open(Path(__file__).parent / "logic_team_implementation_agent.py").read()
+        # Scope to the _escalate_to_board function body — that's the only place
+        # a *board proposal* category is set (firm-channel categories elsewhere
+        # like LT_RESOLUTION are not board categories and must not be checked).
+        m = re.search(r'def _escalate_to_board\(.*?\n(?=def )', src, re.DOTALL)
+        body = m.group(0) if m else src
+        cats = set(re.findall(r'"category":\s*"([A-Z_]+)"', body))
+        known = (db.DEPUTY_CATEGORIES | db.FULL_BOARD_ONLY_CATEGORIES
+                 | db.AUTO_IMPLEMENT_CATEGORIES)
+        unknown = cats - known
+        self.assertEqual(unknown, set(),
+                         f"LTIA escalates with categories no board scope recognizes: {unknown}")
+
+
+# =============================================================================
 # Runner
 # =============================================================================
 if __name__ == "__main__":
@@ -418,6 +497,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestDeputyBoardRouting))
     suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
     suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
+    suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

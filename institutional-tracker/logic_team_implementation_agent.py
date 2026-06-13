@@ -120,7 +120,12 @@ def _escalate_to_board(title: str, description: str, recommended_owner: str,
         pending.append({
             "id":           f"LTIA-{datetime.now().strftime('%Y%m%d%H%M%S')}",
             "source":       "LT Implementation Agent",
-            "category":     "OPERATIONAL_FIX",
+            # Must be a category the deputy/full board recognizes. "OPERATIONAL_FIX"
+            # is in none of deputy_board's scope sets, so it skipped the deputy
+            # fast-path and only the (often-stalled) full board would pick it up.
+            # "IMPROVEMENT" is in DEPUTY_CATEGORIES; HIGH/CRITICAL still escalate
+            # to the full board per deputy_board._should_deputy_vote().
+            "category":     "IMPROVEMENT",
             "severity":     severity,
             "confidence":   85,
             "title":        title,

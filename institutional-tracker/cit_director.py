@@ -131,6 +131,13 @@ CIT_PENDING      = DATA_DIR / "cit_pending_proposals.json"
 # everything into the main board queue.
 # =============================================================================
 
+# Only pods whose board actually READS its pending queue have a live consumer.
+# rd_pod_board.py reads rd_pod_pending.json; ml_pod_board.py reads ml_pod_pending.json.
+# fi/fe/etf boards do NOT read their *_pod_pending files — anything routed there is
+# a dead letter (silently never acted on). submit_to_pod_queue() redirects those to
+# the main board queue, which board_meeting.py + deputy_board.py both consume.
+_LIVE_POD_QUEUES = {"rd", "r&d", "pod1", "ml", "pod2"}
+
 _POD_PENDING_FILES = {
     "rd":    DATA_DIR / "rd_pod_pending.json",
     "r&d":   DATA_DIR / "rd_pod_pending.json",
@@ -205,9 +212,25 @@ def route_proposal_to_pod(proposal: dict) -> str:
     return "rd"  # default
 
 
+def _effective_pod(proposal: dict) -> str:
+    """Final routing destination after dead-letter redirect.
+
+    route_proposal_to_pod() decides where a proposal *belongs* semantically;
+    this collapses any pod without a live consumer (fi/fe/etf) onto the main
+    board queue, which board_meeting.py + deputy_board.py actually read.
+    """
+    pod = route_proposal_to_pod(proposal)
+    if pod != "main" and pod not in _LIVE_POD_QUEUES:
+        return "main"
+    return pod
+
+
 def submit_to_pod_queue(proposal: dict) -> str:
     """Submit a proposal to the correct pod queue. Returns the pod name."""
-    pod = route_proposal_to_pod(proposal)
+    semantic_pod = route_proposal_to_pod(proposal)
+    pod = _effective_pod(proposal)
+    if pod != semantic_pod:
+        logger.debug(f"  [PodRouter] '{semantic_pod}' has no live consumer — redirecting to main board.")
 
     if pod == "main":
         target_path = CIT_PENDING
