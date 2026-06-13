@@ -433,6 +433,20 @@ def _board_wiring_fix(entry: dict) -> str:
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
+def _board_backlog_bloat(entry: dict) -> str:
+    title = "[LTIA] CIT backlog bloat — tighten proposal quality or action path"
+    submitted = _escalate_to_board(
+        title,
+        f"Backlog finding: '{entry.get('title','?')}'. Proposals are accumulating faster than "
+        f"the boards act on them.",
+        recommended_owner="CIT Director + Deputy Board",
+        severity="MEDIUM",
+        proposed_fix="Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT "
+                     "confidence/precision gate; if valuable, widen deputy-board auto-implement so "
+                     "they actually get done. Write site now caps cit_backlog.json at 500.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
 def _board_email_overflow(entry: dict) -> str:
     title = "[LTIA] Email buffer overflowing — tighten sender volume"
     submitted = _escalate_to_board(
@@ -499,6 +513,7 @@ RESOLUTION_HANDLERS = {
     "email_buffer_overflow":   _board_email_overflow,
     "agent_communication_silence": _board_communication_silence,
     "wiring_contract_violation": _board_wiring_fix,
+    "cit_backlog_bloat":         _board_backlog_bloat,
 }
 
 

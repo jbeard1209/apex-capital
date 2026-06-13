@@ -30,7 +30,21 @@ Never hardcode or guess an AUC. `model_metrics.get_model_metrics()` reads the re
 from `data/model_meta.json` (written by `predictive_model/ml_model.py`); it returns
 `trained=False, auc=None` when no model exists — callers must show "N/A", never a number.
 The honest, reproducible evaluation is `model_test_harness.py` (walk-forward / TimeSeriesSplit,
-seeded). Plain KFold on this time-ordered data leaks the future and inflates AUC — don't use it.
+seeded, with a 20-day **embargo gap** so the label window can't leak across folds). Plain KFold on
+this time-ordered data leaks the future and inflates AUC — don't use it. The harness reports the
+model AUC **against a naive momentum baseline** (it must beat that to add value), a **Brier score**
+(calibration), and a **sample-size confidence** flag.
+
+### Adding model features — do it the disciplined way
+`feature_engineer.py::FEATURE_COLS` carries empirical notes: commodity momentum and bridge
+features were tried and **regressed AUC** (0.6057→0.5842) — they're intentionally excluded. So:
+1. Never add a feature straight into `FEATURE_COLS` and assume it helps.
+2. Add the column, then run `model_test_harness.py` and compare `walk_forward_auc_mean` +
+   `edge_over_baseline` against the prior report (`data/model_test_report.json`).
+3. Keep it only if it improves the embargoed walk-forward AUC. Record the result in a code comment
+   next to the feature (matching the existing notes). Watch for `SUSPICIOUS_HIGH` (leakage).
+4. More labeled data beats more features — small samples make AUC swing run-to-run. Backfill
+   history (EDGAR scraper / label builder) before trusting a new number.
 
 ## Architecture (subsystems)
 

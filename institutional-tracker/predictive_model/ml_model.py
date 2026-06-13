@@ -183,12 +183,17 @@ def train(force: bool = False) -> dict:
     from sklearn.model_selection import TimeSeriesSplit
     cv_model = lgb_model if HAS_LGB else rf
     n_splits = min(5, max(2, len(X) // 30))   # need enough rows per fold
-    tscv = TimeSeriesSplit(n_splits=n_splits)
+    # Embargo (purge): the 20-day label means a training row's outcome overlaps the
+    # next ~20 rows. Without a gap, the fold boundary leaks that overlap into the test
+    # set and inflates AUC. Gap them out. Only apply when there's room for it.
+    embargo = 20 if len(X) >= (n_splits + 1) * 40 else 0
+    tscv = TimeSeriesSplit(n_splits=n_splits, gap=embargo)
     cv_scores = cross_val_score(cv_model, X_all_s, y_bin, cv=tscv, scoring="roc_auc")
     results["cv_auc_mean"]   = round(float(cv_scores.mean()), 4)
     results["cv_auc_std"]    = round(float(cv_scores.std()),  4)
-    results["cv_method"]     = f"TimeSeriesSplit(n_splits={n_splits})"
+    results["cv_method"]     = f"TimeSeriesSplit(n_splits={n_splits}, gap={embargo})"
     results["cv_n_splits"]   = n_splits
+    results["cv_embargo"]    = embargo
 
     # ── Risk-adjusted regressor ──────────────────────────────────────────────
     ra_model = None

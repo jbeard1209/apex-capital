@@ -4226,11 +4226,26 @@ class CITDirector:
         for _aname, _n in _agent_board_counts.items():
             self._update_history(_aname, 0, n_board=_n)
 
-        # Backlog: append
+        # Backlog: append with dedup-by-title + hard cap so it can't grow unbounded.
+        # (It had reached 939 entries because this site appended blindly. Keep the
+        #  most recent BACKLOG_MAX unique-title items — open ones first.)
+        BACKLOG_MAX = 500
         existing_backlog = _load_json_list_safe(CIT_BACKLOG)
-        existing_backlog.extend(backlog)
+        merged = existing_backlog + list(backlog)
+        seen, deduped = set(), []
+        for item in merged:
+            key = (item.get("title", "") or "").strip().lower()
+            if key and key in seen:
+                continue
+            seen.add(key)
+            deduped.append(item)
+        # Prefer keeping open items; drop oldest closed/stale beyond the cap.
+        if len(deduped) > BACKLOG_MAX:
+            open_items   = [i for i in deduped if i.get("status", "open") == "open"]
+            closed_items = [i for i in deduped if i.get("status", "open") != "open"]
+            deduped = (open_items + closed_items)[:BACKLOG_MAX]
         with open(CIT_BACKLOG, "w") as f:
-            json.dump(existing_backlog, f, indent=2, default=str)
+            json.dump(deduped, f, indent=2, default=str)
 
         # Sensitive: append (never logged to console beyond count)
         existing_sensitive = _load_json_list_safe(CIT_SENSITIVE)

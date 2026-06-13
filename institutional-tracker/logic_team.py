@@ -792,6 +792,31 @@ class CommunicationLogicAgent:
                 agent=self.name,
             ))
 
+        # CIT backlog bloat — proposals piling up unactioned (the "useless CIT" pattern)
+        backlog = _load(DATA_DIR / "cit_backlog.json", [])
+        if isinstance(backlog, list) and backlog:
+            open_items = [i for i in backlog if isinstance(i, dict)
+                          and i.get("status", "open") == "open"]
+            if len(open_items) > 300:
+                findings.append(_finding(
+                    rule="cit_backlog_bloat",
+                    severity="MEDIUM",
+                    title=f"CIT backlog has {len(open_items)} open items — proposals not being actioned",
+                    observation=(
+                        f"data/cit_backlog.json holds {len(backlog)} entries, {len(open_items)} open. "
+                        f"A backlog this deep means the CIT is generating proposals far faster than "
+                        f"the boards act on them — volume without throughput."
+                    ),
+                    why="A perpetually-growing backlog is the 'useless solutions' failure mode: effort "
+                        "is spent producing proposals nobody implements. Either the proposals lack value "
+                        "or the action path is broken.",
+                    suggestion="Triage: sample 20 open BUG_FIX items — if most are low-value/duplicate, "
+                               "raise the CIT confidence/precision gate. If they're valuable, the board "
+                               "action path is the bottleneck — route more to the deputy board for "
+                               "auto-implement. The write site now caps the file at 500.",
+                    agent=self.name,
+                ))
+
         return findings
 
 

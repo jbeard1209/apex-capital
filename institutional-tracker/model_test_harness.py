@@ -64,14 +64,18 @@ def _post_channel(content: str, priority: str = "NORMAL"):
         logger.warning(f"  channel post failed: {e}")
 
 
-def _walk_forward_auc(X, y, make_model, n_splits: int):
-    """Return (per-fold AUCs, mean, std) using TimeSeriesSplit — no leakage."""
+def _walk_forward_auc(X, y, make_model, n_splits: int, embargo: int = 0):
+    """Walk-forward AUC + Brier with an embargo gap (purged CV) — no leakage.
+
+    Returns (fold_aucs, auc_mean, auc_std, brier_mean). The embargo gaps train and
+    test folds so the 20-day label window can't bleed across the boundary.
+    """
     from sklearn.model_selection import TimeSeriesSplit
     from sklearn.preprocessing import StandardScaler
-    from sklearn.metrics import roc_auc_score
+    from sklearn.metrics import roc_auc_score, brier_score_loss
 
-    tscv = TimeSeriesSplit(n_splits=n_splits)
-    aucs = []
+    tscv = TimeSeriesSplit(n_splits=n_splits, gap=embargo)
+    aucs, briers = [], []
     for tr_idx, te_idx in tscv.split(X):
         if len(set(y[te_idx])) < 2 or len(set(y[tr_idx])) < 2:
             continue  # a fold with one class can't yield a meaningful AUC
@@ -82,9 +86,35 @@ def _walk_forward_auc(X, y, make_model, n_splits: int):
         model.fit(Xtr, y[tr_idx])
         proba = model.predict_proba(Xte)[:, 1]
         aucs.append(float(roc_auc_score(y[te_idx], proba)))
+        briers.append(float(brier_score_loss(y[te_idx], proba)))
     if not aucs:
-        return [], None, None
-    return aucs, round(float(np.mean(aucs)), 4), round(float(np.std(aucs)), 4)
+        return [], None, None, None
+    return (aucs,
+            round(float(np.mean(aucs)), 4),
+            round(float(np.std(aucs)), 4),
+            round(float(np.mean(briers)), 4))
+
+
+def _baseline_momentum_auc(X, y, feature_cols, n_splits: int, embargo: int):
+    """Naive baseline: rank by price_momentum_20d. Contextualizes the model's AUC —
+    if the model can't beat 'buy what went up', it isn't adding value."""
+    from sklearn.model_selection import TimeSeriesSplit
+    from sklearn.metrics import roc_auc_score
+    try:
+        col = feature_cols.index("price_momentum_20d")
+    except (ValueError, AttributeError):
+        return None
+    tscv = TimeSeriesSplit(n_splits=n_splits, gap=embargo)
+    aucs = []
+    for _tr, te in tscv.split(X):
+        if len(set(y[te])) < 2:
+            continue
+        score = X[te][:, col]
+        try:
+            aucs.append(float(roc_auc_score(y[te], score)))
+        except Exception:
+            pass
+    return round(float(np.mean(aucs)), 4) if aucs else None
 
 
 def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
@@ -120,7 +150,17 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
         return out
 
     n_splits = min(5, max(2, len(X) // 30))
-    out["cv_method"] = f"TimeSeriesSplit(n_splits={n_splits})"
+    embargo  = 20 if len(X) >= (n_splits + 1) * 40 else 0
+    out["cv_method"] = f"TimeSeriesSplit(n_splits={n_splits}, gap={embargo})"
+    out["embargo"]   = embargo
+
+    # Sample-size confidence — small data => unstable AUC ("random numbers")
+    if len(X) < 200:
+        out["confidence"] = "LOW — small sample, AUC will be noisy run-to-run"
+    elif len(X) < 1000:
+        out["confidence"] = "MODERATE"
+    else:
+        out["confidence"] = "HIGH"
 
     def make_lgb():
         try:
@@ -133,10 +173,21 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
             return RandomForestClassifier(n_estimators=300, max_depth=6, min_samples_leaf=5,
                                           class_weight="balanced", random_state=SEED, n_jobs=-1)
 
-    aucs, mean, std = _walk_forward_auc(X, y, make_lgb, n_splits)
+    aucs, mean, std, brier = _walk_forward_auc(X, y, make_lgb, n_splits, embargo)
     out["fold_aucs"] = [round(a, 4) for a in aucs]
     out["walk_forward_auc_mean"] = mean
     out["walk_forward_auc_std"]  = std
+    out["brier_score"]           = brier   # calibration: lower is better, 0.25 = uninformative
+
+    # Naive momentum baseline — the model must beat this to add value
+    try:
+        from predictive_model.ml_model import FEATURE_COLS
+        base = _baseline_momentum_auc(X, y, list(FEATURE_COLS), n_splits, embargo)
+    except Exception:
+        base = None
+    out["baseline_momentum_auc"] = base
+    if isinstance(mean, (int, float)) and isinstance(base, (int, float)):
+        out["edge_over_baseline"] = round(mean - base, 4)
 
     if mean is None:
         out["status"] = "NO_VALID_FOLDS"
@@ -208,7 +259,9 @@ def run(quiet: bool = False) -> dict:
         st = report["models"].get("shortterm", {})
         summary = (f"📊 Weekly model test — ST: {st.get('status')} "
                    f"walk-forward AUC={st.get('walk_forward_auc_mean')} "
-                   f"(n={st.get('n_samples')}, {st.get('cv_method','')}). "
+                   f"(vs momentum baseline {st.get('baseline_momentum_auc')}, "
+                   f"edge {st.get('edge_over_baseline')}; Brier {st.get('brier_score')}; "
+                   f"n={st.get('n_samples')}, conf={st.get('confidence')}). "
                    + (report.get("discrepancy_warning", "")))
         _post_channel(summary, priority="HIGH" if alarming else "NORMAL")
 
