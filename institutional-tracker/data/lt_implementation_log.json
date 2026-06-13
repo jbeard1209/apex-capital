@@ -1,0 +1,186 @@
+{
+  "actions": [
+    {
+      "ts": "2026-06-12T22:49:07.248734",
+      "finding_key": "PodHealthLogicAgent::fi_never_run",
+      "action": "handler:fi_never_run",
+      "result": "auto_reran_fi_pipeline.py",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T22:49:07.249040",
+      "finding_key": "PipelineLogicAgent::fi_pipeline_not_running",
+      "action": "handler:fi_pipeline_not_running",
+      "result": "auto_reran_fi_pipeline.py",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T22:49:07.249683",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T22:49:07.249865",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "auto_reconciled_reviews",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T22:49:07.250028",
+      "finding_key": "GovernanceLogicAgent::board_overdue",
+      "action": "handler:board_overdue",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T22:49:07.250203",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "auto_reran_fe_pipeline.py",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T22:49:07.250365",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T23:39:30.213561",
+      "finding_key": "MLLogicAgent::ml_model_never_trained",
+      "action": "handler:ml_model_never_trained",
+      "result": "model_train_failed:timeout",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T23:39:30.215403",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T23:39:36.007617",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "auto_reconciled_reviews",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T23:41:13.720426",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "auto_reran_fe_pipeline.py",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T23:41:13.820661",
+      "finding_key": "MLLogicAgent::ml_no_live_validation",
+      "action": "handler:ml_no_live_validation",
+      "result": "auto_started_ml_tracking",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-12T23:41:13.822143",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:00:02.014486",
+      "finding_key": "MLLogicAgent::ml_model_never_trained",
+      "action": "handler:ml_model_never_trained",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:00:02.015463",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:00:02.016058",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "skipped:cooldown_12h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:00:02.016684",
+      "finding_key": "MLLogicAgent::ml_no_live_validation",
+      "action": "handler:ml_no_live_validation",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:00:02.018407",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:00:02.019646",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:15:00.711548",
+      "finding_key": "MLLogicAgent::ml_model_never_trained",
+      "action": "handler:ml_model_never_trained",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:15:00.713307",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:15:00.714449",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "skipped:cooldown_12h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:15:00.715466",
+      "finding_key": "MLLogicAgent::ml_no_live_validation",
+      "action": "handler:ml_no_live_validation",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:15:00.716520",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-13T00:15:00.717961",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    }
+  ],
+  "last_run": "2026-06-13T00:15:00.717968",
+  "cooldowns": {
+    "train_model": "2026-06-12T23:39:30.212726",
+    "reconcile_reviews": "2026-06-12T23:39:36.003387",
+    "rerun_fe_pipeline": "2026-06-12T23:41:13.715451",
+    "start_ml_tracking": "2026-06-12T23:41:13.816606"
+  }
+}

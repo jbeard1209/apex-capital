@@ -55,5 +55,21 @@
       }
     ],
     "status": "approved"
+  },
+  {
+    "id": "LT-232928-ml_model_never_trained",
+    "source": "Logic Team / MLLogicAgent",
+    "category": "IMPROVEMENT",
+    "severity": "CRITICAL",
+    "confidence": 88,
+    "title": "ML pod has $30,000 but NO trained model exists",
+    "description": "data/model_meta.json reports no trained model (model.pkl present=False). The ML / Quantitative pod has $30,000 allocated but there is no model to generate or validate signals. Any AUC shown elsewhere is not coming from a real model.",
+    "evidence": "Logic Team coherence check. Rule=ml_model_never_trained. Agent=MLLogicAgent",
+    "proposed_fix": "Run `python3 predictive_model/ml_model.py` (or overnight_ml_runner.py) to train and persist data/model.pkl + model_meta.json. Until then, the ML pod should hold cash, not deploy on phantom signals.",
+    "why": "A pod allocated capital against a model that was never trained is operating on nothing. This also means every downstream 'model AUC' display is meaningless.",
+    "created_at": "2026-06-12T23:29:28.810648",
+    "status": "pending",
+    "routed_to_pod": "ml",
+    "routed_at": "2026-06-12T23:29:28.814755"
   }
 ]

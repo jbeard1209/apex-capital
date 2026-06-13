@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-12T19:54:19.665913",
-  "files_scanned": 99,
-  "total_findings": 121,
+  "generated_at": "2026-06-13T01:00:01.416365",
+  "files_scanned": 103,
+  "total_findings": 131,
   "findings": [
     {
       "agent": "CITCodeInspector",
@@ -1325,6 +1325,17 @@
     },
     {
       "agent": "CITCodeInspector",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
+      "confidence": 55,
+      "title": "Possible missing makedirs before file write in test_pipeline_smoke.py:339",
+      "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
+      "evidence": "test_pipeline_smoke.py line 339: `with os.fdopen(fd, \"w\") as f:`",
+      "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
+      "auto_implementable": false
+    },
+    {
+      "agent": "CITCodeInspector",
       "category": "QUICK_WIN",
       "severity": "LOW",
       "confidence": 60,
@@ -1333,12 +1344,111 @@
       "evidence": "wakeup_recovery.py line 203: `logger.info(f\"[Recovery] VM uptime: {uptime_min:.1f} min | Weekday: {is_weekday}...`",
       "proposed_fix": "Convert to `logger.info('message %s', var)` style.",
       "auto_implementable": false
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:182",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 182: `print(\"=\" * 60)`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:183",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 183: `print(\"  APEX CAPITAL \u2014 WIRING AUDIT\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:184",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 184: `print(\"=\" * 60)`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:186",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 186: `print(f\"\\n  \u274c {len(problems)} CONTRACT VIOLATION(S):\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:188",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 188: `print(f\"     {p}\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:190",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 190: `print(\"\\n  \u2705 No hard contract violations.\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:192",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 192: `print(f\"\\n  Notes ({len(notes)}):\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:194",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 194: `print(f\"     {n}\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: wiring_audit.py:195",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "wiring_audit.py line 195: `print()`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
     }
   ],
   "severity_counts": {
     "CRITICAL": 0,
     "HIGH": 0,
-    "MEDIUM": 29,
-    "LOW": 92
+    "MEDIUM": 30,
+    "LOW": 101
   }
 }

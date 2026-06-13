@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-06-12T12:45:28.898455",
+  "generated_at": "2026-06-13T00:00:00.718419",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
   "target_etfs": [
     "XLK",
     "QQQ",
-    "XLV"
+    "XLF"
   ],
   "regime": {
     "regime_label": "bull",
@@ -26,7 +26,7 @@
       "Healthcare",
       "Consumer Discretionary"
     ],
-    "spy_1d_return": 1.6997,
+    "spy_1d_return": 0.5408,
     "canary_warning": null
   },
   "canary_alerts": null,
@@ -42,25 +42,25 @@
         "recommended_etfs": [
           "XLK",
           "QQQ",
-          "XLV"
+          "XLF"
         ],
         "bear_mode": false,
         "overbought_mode": false,
         "momentum_scores": {
-          "XLK": 9.9322,
-          "QQQ": 5.1334,
-          "XLV": 2.3809,
-          "XLF": 2.3076,
-          "XLI": 0.2769,
-          "XLP": -0.1695,
-          "TLT": -0.1829,
-          "XLY": -1.5681,
-          "XLB": -1.9785,
-          "XLE": -3.066,
-          "XLU": -4.8458,
-          "GLD": -13.8837
+          "XLK": 10.6352,
+          "QQQ": 5.4161,
+          "XLF": 3.9428,
+          "XLV": 2.0187,
+          "XLI": 1.0755,
+          "XLP": 0.0743,
+          "XLB": 0.0004,
+          "TLT": -0.1719,
+          "XLY": -1.3163,
+          "XLE": -2.5241,
+          "XLU": -3.7401,
+          "GLD": -13.2732
         },
-        "reasoning": "BULL regime (VIX=18.9, SPY_RSI=46.6). Picking top 3 by momentum score. Top 3: [('XLK', 9.93), ('QQQ', 5.13), ('XLV', 2.38)]",
+        "reasoning": "BULL regime (VIX=18.9, SPY_RSI=46.6). Picking top 3 by momentum score. Top 3: [('XLK', 10.64), ('QQQ', 5.42), ('XLF', 3.94)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },
@@ -69,10 +69,10 @@
         "recommended_etfs": [
           "XLK",
           "QQQ",
-          "XLV"
+          "XLF"
         ],
         "risk_flags": [
-          "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ', 'XLV']"
+          "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"
         ],
         "critical_flags": 0,
         "fallback_suggestion": null,
@@ -84,11 +84,11 @@
         "recommended_etfs": [
           "XLK",
           "QQQ",
-          "XLV"
+          "XLF"
         ],
         "risk_flags": [],
         "sizing_note": "Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
-        "reasoning": "Diversification OK: 2 distinct asset classes across 3 ETFs. R&D alignment: ['XLK', 'XLV'] have strong R&D sector scores (>=7/10). Historical analogue 'Post-GFC Bull (2013\u20132015)' confirms rotation: sectors ['Technology', 'Healthcare', 'Consumer Discretionary'] led in that regime \u2014 overlap with our picks. Sizing: Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
+        "reasoning": "Diversification OK: 2 distinct asset classes across 3 ETFs. R&D alignment: ['XLK', 'XLF'] have strong R&D sector scores (>=7/10). Historical analogue 'Post-GFC Bull (2013\u20132015)' confirms rotation: sectors ['Technology', 'Healthcare', 'Consumer Discretionary'] led in that regime \u2014 overlap with our picks. Sizing: Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
         "analogue_match": true,
         "vote": "APPROVE"
       },
@@ -97,25 +97,25 @@
         "target_etfs": [
           "XLK",
           "QQQ",
-          "XLV"
+          "XLF"
         ],
         "notes": [
-          "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLV']"
+          "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLF']"
         ]
       }
     }
   },
   "reconciliation_notes": [
-    "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLV']"
+    "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLF']"
   ],
   "risk_flags": [
-    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ', 'XLV']"
+    "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"
   ],
   "orders_summary": {
-    "n_buys": 0,
-    "n_sells": 0,
+    "n_buys": 1,
+    "n_sells": 1,
     "n_skipped": 0,
-    "total_buy_value": 0,
-    "total_sell_value": 0
+    "total_buy_value": 6667.5,
+    "total_sell_value": 8243.1
   }
 }

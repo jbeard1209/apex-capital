@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-12T19:54:21.638669",
-  "proposals_reviewed": 5,
+  "generated_at": "2026-06-13T01:00:03.868342",
+  "proposals_reviewed": 9,
   "backtester_available": true,
   "validation_log": [
     {
@@ -35,6 +35,34 @@
       "id": "PM-194016-2",
       "title": "Written override log when manager rejects research picks",
       "category": "STRATEGY",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LT-120010-fi_never_run",
+      "title": "Fixed Income pipeline has never run",
+      "category": "IMPROVEMENT",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LTIA-20260612233930",
+      "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+      "category": "IMPROVEMENT",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LTIA-20260612234113",
+      "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+      "category": "IMPROVEMENT",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LTIA-20260613000002",
+      "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+      "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }

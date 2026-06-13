@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-12T19:54:21.637280",
-  "total_findings": 4,
+  "generated_at": "2026-06-13T01:00:03.864712",
+  "total_findings": 3,
   "findings": [
     {
       "agent": "CITDataQualityAnalyst",
@@ -22,17 +22,6 @@
       "description": "yfinance failed to return data for SPY/VIX indicators: ['spy_pct']. The canary uses these to gate all trading \u2014 a None VIX or SPY means the canary may have defaulted to GREEN when the market was actually stressed.",
       "evidence": "data/canary_state.json last_readings: ['spy_pct'] are None",
       "proposed_fix": "If SPY or VIX is None, default canary to ORANGE (fail-safe) and log the data gap rather than silently defaulting to GREEN.",
-      "auto_implementable": false
-    },
-    {
-      "agent": "CITDataQualityAnalyst",
-      "category": "BUG_FIX",
-      "severity": "MEDIUM",
-      "confidence": 88,
-      "title": "Stale data file: data/earnings_predictions.json (41h old, threshold 26h)",
-      "description": "data/earnings_predictions.json has not been updated in 41h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-      "evidence": "data/earnings_predictions.json: file age 41h. Max acceptable: 26h.",
-      "proposed_fix": "Check that the agent producing data/earnings_predictions.json ran successfully in recent logs. Verify its cron schedule is active.",
       "auto_implementable": false
     },
     {
