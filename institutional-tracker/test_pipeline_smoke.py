@@ -323,6 +323,47 @@ class TestCITSpecificityGate(unittest.TestCase):
         self.assertFalse(self.gate("Fix main.py line 100"))
 
 
+class TestCITScannerPrecision(unittest.TestCase):
+    """`_audit_files` pattern scanners must not flag known-good code.
+
+    The CIT backlog had filled with false-positive lint: documented `pass`
+    statements and `.get(k, default)` calls flagged as bugs. These guard the
+    precision fixes so the noise can't silently return.
+    """
+
+    def _scan(self, source: str):
+        import tempfile, os
+        from cit_director import _audit_files, BASE_DIR
+        fd, path = tempfile.mkstemp(suffix=".py", dir=str(BASE_DIR))
+        try:
+            with os.fdopen(fd, "w") as f:
+                f.write(source)
+            return _audit_files("test", [os.path.basename(path)])
+        finally:
+            os.remove(path)
+
+    def test_documented_pass_not_flagged(self):
+        src = ("try:\n    risky()\nexcept Exception:\n"
+               "    pass  # advisory — never block a trade\n")
+        titles = " ".join(f["title"] for f in self._scan(src))
+        self.assertNotIn("silent exception", titles)
+
+    def test_bare_except_pass_still_flagged(self):
+        src = "try:\n    risky()\nexcept Exception:\n    pass\n"
+        titles = " ".join(f["title"] for f in self._scan(src))
+        self.assertIn("silent exception", titles)
+
+    def test_get_with_default_not_flagged(self):
+        src = 'v = float(obj.get("k", 0))\n'
+        titles = " ".join(f["title"] for f in self._scan(src))
+        self.assertNotIn("None guard", titles)
+
+    def test_get_without_default_still_flagged(self):
+        src = 'v = float(obj.get("k"))\n'
+        titles = " ".join(f["title"] for f in self._scan(src))
+        self.assertIn("None guard", titles)
+
+
 # =============================================================================
 # 6. Deputy board routing
 # =============================================================================
@@ -523,6 +564,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestStateRoundTrip))
     suite.addTests(loader.loadTestsFromTestCase(TestSignalSourceHelpers))
     suite.addTests(loader.loadTestsFromTestCase(TestCITSpecificityGate))
+    suite.addTests(loader.loadTestsFromTestCase(TestCITScannerPrecision))
     suite.addTests(loader.loadTestsFromTestCase(TestDeputyBoardRouting))
     suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
     suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))

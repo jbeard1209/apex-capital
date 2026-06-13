@@ -2536,12 +2536,20 @@ def _audit_files(agent_name: str, filenames: list) -> list[dict]:
                         })
 
         # ── Pattern 3: bare except: pass (silent failure) ───────────────
+        # PRECISION: only flag the canonical bare `except:` / `except Exception:`
+        # forms. Skip when the except OR the pass line carries an inline comment —
+        # a documented `pass  # advisory, never block` is intentional, not a bug.
+        # (The named `except Exception as e:` form at least binds the error and was
+        # a large source of false positives, so it's no longer flagged here.)
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
-            if stripped in ("except:", "except Exception:") or stripped == "except Exception as e:":
+            if stripped in ("except:", "except Exception:"):
+                if "#" in line:
+                    continue  # intentional / documented
                 # Check if the very next non-empty line is just 'pass'
                 for j in range(i, min(i + 3, len(lines))):
-                    next_stripped = lines[j].strip() if j < len(lines) else ""
+                    raw = lines[j] if j < len(lines) else ""
+                    next_stripped = raw.strip()
                     if next_stripped == "pass":
                         findings.append({
                             "source":   agent_name,
@@ -2552,6 +2560,8 @@ def _audit_files(agent_name: str, filenames: list) -> list[dict]:
                             "proposed_fix": "At minimum: except Exception as e: logger.debug(f'non-fatal: {e}')",
                         })
                         break
+                    elif next_stripped.startswith("pass") and "#" in raw:
+                        break  # `pass  # reason` — documented intent, skip
                     elif next_stripped:
                         break
 
@@ -2574,11 +2584,28 @@ def _audit_files(agent_name: str, filenames: list) -> list[dict]:
                         })
 
         # ── Pattern 5: int() or float() on value that could be None ─────
+        # PRECISION: only flag int/float(obj.get(k)) when .get() has NO default
+        # argument. `obj.get('k', 0)` can never return None, so flagging it is a
+        # false positive (this was ~all of the noise this rule produced). We scan
+        # the .get(...) argument list for a top-level comma to detect a default.
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
-            # Look for int(x) or float(x) where x is a .get() return (can be None)
-            matches = _re.findall(r'\b(?:int|float)\s*\(\s*(\w+)\.get\s*\(', stripped)
-            if matches:
+            flagged = False
+            for m in _re.finditer(r'\b(?:int|float)\s*\(\s*\w+\.get\s*\(', stripped):
+                j, depth, has_default = m.end(), 1, False
+                while j < len(stripped) and depth:
+                    c = stripped[j]
+                    if c == '(':
+                        depth += 1
+                    elif c == ')':
+                        depth -= 1
+                    elif c == ',' and depth == 1:
+                        has_default = True
+                    j += 1
+                if not has_default:
+                    flagged = True
+                    break
+            if flagged:
                 findings.append({
                     "source":   agent_name,
                     "severity": "MEDIUM",
