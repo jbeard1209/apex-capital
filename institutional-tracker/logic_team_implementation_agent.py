@@ -138,85 +138,355 @@ def _escalate_to_board(title: str, description: str, recommended_owner: str,
 
 
 # =============================================================================
-# RESOLUTION HANDLERS — one per rule type
+# COOLDOWN — stop auto-actions from re-firing every cycle (the "noise" trap)
+# =============================================================================
+# An auto-action (re-running a pipeline, reconciling a ledger) is only useful
+# the first time. Re-running it every 15 minutes is exactly the kind of useless
+# churn the CIT used to produce. We persist a per-rule cooldown clock and skip
+# subprocess actions that ran inside the window.
+
+def _cooldowns() -> dict:
+    log = _load(IMPL_LOG, {})
+    cd = log.get("cooldowns", {})
+    return cd if isinstance(cd, dict) else {}
+
+
+def _within_cooldown(rule: str, hours: float) -> bool:
+    last = _cooldowns().get(rule)
+    if not last:
+        return False
+    try:
+        return (datetime.now() - datetime.fromisoformat(last)) < timedelta(hours=hours)
+    except Exception:
+        return False
+
+
+def _mark_cooldown(rule: str):
+    log = _load(IMPL_LOG, {"actions": []})
+    if not isinstance(log, dict):
+        log = {"actions": []}
+    cd = log.get("cooldowns", {})
+    if not isinstance(cd, dict):
+        cd = {}
+    cd[rule] = datetime.now().isoformat()
+    log["cooldowns"] = cd
+    _save(IMPL_LOG, log)
+
+
+def _run_script(script: str, args: list = None, timeout: int = 180) -> tuple:
+    """Run a project script as a subprocess. Returns (ok, detail)."""
+    args = args or []
+    path = BASE_DIR / script
+    if not path.exists():
+        return False, f"missing_script:{script}"
+    try:
+        r = subprocess.run([sys.executable, str(path), *args],
+                           capture_output=True, text=True, timeout=timeout)
+        if r.returncode == 0:
+            return True, "ok"
+        return False, f"exit{r.returncode}:{(r.stderr or r.stdout)[:120].strip()}"
+    except subprocess.TimeoutExpired:
+        return False, "timeout"
+    except Exception as e:
+        return False, f"error:{e}"
+
+
+# =============================================================================
+# RESOLUTION HANDLERS
+# Two kinds:
+#   AUTO  — the agent fixes it directly (rerun a dark pipeline, reconcile a
+#           broken ledger). These actually resolve the finding.
+#   BOARD — the agent cannot fix it alone (governance votes, capital policy,
+#           risk-signal contradictions). These escalate with a *specific*
+#           recommended action and owner — never a vague "review this".
+# Each handler returns a short result string for the action log.
 # =============================================================================
 
-def _handle_pipeline_dark(entry: dict) -> str:
-    """Pipeline hasn't produced picks — attempt to trigger R&D run."""
-    try:
-        logger.info("  → Triggering rd_team_leader.py to break research dark window...")
-        result = subprocess.run(
-            [sys.executable, str(BASE_DIR / "rd_team_leader.py")],
-            capture_output=True, text=True, timeout=120
-        )
-        if result.returncode == 0:
-            _log_action("triggered_rd_team_leader", "pipeline::pipeline_dark",
-                        "R&D run triggered successfully", auto_resolved=False)
-            return "triggered_rd_team_leader"
-        else:
-            return f"rd_run_failed: {result.stderr[:100]}"
-    except subprocess.TimeoutExpired:
-        return "rd_run_timeout"
-    except Exception as e:
-        return f"error: {e}"
+# ---- AUTO-ACTION HANDLERS ----------------------------------------------------
+
+def _auto_rerun_research(entry: dict) -> str:
+    """Dark/stale research pipeline — rerun the R&D team leader to produce picks."""
+    if _within_cooldown("rerun_research", hours=24):
+        return "skipped:cooldown_24h"
+    logger.info("  → Re-running rd_team_leader.py to break the research dark window...")
+    ok, detail = _run_script("rd_team_leader.py", timeout=240)
+    _mark_cooldown("rerun_research")
+    if ok:
+        _post_to_channel(
+            f"🔧 LT auto-action: research pipeline was dark/stale "
+            f"('{entry.get('title','?')[:50]}') — re-ran rd_team_leader.py to regenerate picks.",
+            priority="HIGH")
+        return "auto_reran_research_pipeline"
+    return f"research_rerun_failed:{detail}"
 
 
-def _handle_idle_capital(entry: dict) -> str:
-    """Capital sitting idle — escalate with deployment plan."""
-    title = f"[LTIA] Idle capital review required: {entry.get('title','?')[:50]}"
-    description = (
-        f"Logic Team found idle capital (finding: '{entry.get('title','?')}'). "
-        f"First detected {entry.get('first_seen','?')[:10]}, seen {entry.get('times_seen',1)} times. "
-        f"Board should vote: (1) is the idle capital intentional? (2) if CRO is the cause, "
-        f"is that still warranted? (3) assign CIT to investigate if pipeline failure."
-    )
-    submitted = _escalate_to_board(title, description,
-                                    recommended_owner="Board + CIT",
-                                    severity="MEDIUM",
-                                    proposed_fix="Board votes on capital deployment plan within 2 sessions.")
+def _auto_rerun_pod_pipeline(entry: dict) -> str:
+    """Pod pipeline stale / never run / zero picks — rerun that pod's pipeline."""
+    rule = entry.get("rule", "")
+    pod = "fi" if rule.startswith("fi") else "fe" if rule.startswith("fe") else None
+    if not pod:
+        return "no_pod_match"
+    script = f"{pod}_pipeline.py"
+    cd_key = f"rerun_{pod}_pipeline"
+    if _within_cooldown(cd_key, hours=24):
+        return "skipped:cooldown_24h"
+    logger.info(f"  → Re-running {script} to refresh {pod.upper()} pod picks...")
+    ok, detail = _run_script(script, timeout=300)
+    _mark_cooldown(cd_key)
+    if ok:
+        _post_to_channel(
+            f"🔧 LT auto-action: {pod.upper()} pipeline was stale/empty "
+            f"('{entry.get('title','?')[:50]}') — re-ran {script}.", priority="NORMAL")
+        return f"auto_reran_{script}"
+    return f"{pod}_rerun_failed:{detail}"
+
+
+def _auto_reconcile_positions(entry: dict) -> str:
+    """Open positions missing review coverage — rerun review_agent to re-sync."""
+    if _within_cooldown("reconcile_reviews", hours=12):
+        return "skipped:cooldown_12h"
+    logger.info("  → Re-running review_agent.py to re-sync position coverage...")
+    ok, detail = _run_script("review_agent.py", args=["--quiet"], timeout=180)
+    _mark_cooldown("reconcile_reviews")
+    if ok:
+        _post_to_channel(
+            f"🔧 LT auto-action: positions lacked review coverage "
+            f"('{entry.get('title','?')[:50]}') — re-ran review_agent.py to restore "
+            f"stop-loss / exit monitoring.", priority="HIGH")
+        return "auto_reconciled_reviews"
+    return f"review_rerun_failed:{detail}"
+
+
+def _auto_reconcile_pod_ledger(entry: dict) -> str:
+    """Pod positions_value=0 despite holdings — rerun pod_ledger to recompute."""
+    if _within_cooldown("reconcile_pod_ledger", hours=12):
+        return "skipped:cooldown_12h"
+    logger.info("  → Re-running pod_ledger.py to recompute pod values...")
+    ok, detail = _run_script("pod_ledger.py", timeout=120)
+    _mark_cooldown("reconcile_pod_ledger")
+    if ok:
+        _post_to_channel(
+            f"🔧 LT auto-action: pod value tracking was broken "
+            f"('{entry.get('title','?')[:50]}') — re-ran pod_ledger.py to recompute "
+            f"positions_value and pod P&L.", priority="NORMAL")
+        return "auto_reconciled_pod_ledger"
+    return f"pod_ledger_rerun_failed:{detail}"
+
+
+def _auto_start_ml_tracking(entry: dict) -> str:
+    """ML pod live picks not tracked — start the live test runner so AUC can be validated."""
+    if _within_cooldown("start_ml_tracking", hours=24):
+        return "skipped:cooldown_24h"
+    logger.info("  → Running ml_live_test_runner.py --enter to begin live ML validation...")
+    ok, detail = _run_script("ml_live_test_runner.py", args=["--enter"], timeout=180)
+    _mark_cooldown("start_ml_tracking")
+    if ok:
+        _post_to_channel(
+            f"🔧 LT auto-action: ML pod had no live picks tracked "
+            f"('{entry.get('title','?')[:50]}') — started ml_live_test_runner --enter. "
+            f"Evaluate after 20 trading days.", priority="NORMAL")
+        return "auto_started_ml_tracking"
+    return f"ml_tracking_failed:{detail}"
+
+
+# ---- BOARD-ESCALATION HANDLERS ----------------------------------------------
+
+def _board_idle_capital(entry: dict) -> str:
+    title = f"[LTIA] Decide on idle pod capital: {entry.get('title','?')[:45]}"
+    submitted = _escalate_to_board(
+        title,
+        f"Logic Team flagged idle capital: '{entry.get('title','?')}' "
+        f"(first seen {entry.get('first_seen','?')[:10]}, {entry.get('times_seen',1)}x). "
+        f"This needs a decision, not a rerun.",
+        recommended_owner="Board + relevant pod CIO",
+        severity="MEDIUM",
+        proposed_fix="Vote one of: (a) document an explicit reason the pod is held flat "
+                     "and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT "
+                     "to fix the pod pipeline this week.")
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
-def _handle_governance_gap(entry: dict) -> str:
-    """Board hasn't met or CRO overdue for review — trigger board meeting."""
-    title = f"[LTIA] Governance gap requires board action: {entry.get('title','?')[:50]}"
-    description = (
-        f"Logic Team governance check failed: '{entry.get('title','?')}'. "
-        f"Days open: {entry.get('days_open', 0)}. Times flagged: {entry.get('times_seen', 1)}. "
-        f"Recommended action: schedule board meeting with governance as primary agenda item."
-    )
-    submitted = _escalate_to_board(title, description,
-                                    recommended_owner="Chairman + Board",
-                                    severity="HIGH",
-                                    proposed_fix="Trigger board_meeting.py. Agenda: governance review.")
+def _board_governance(entry: dict) -> str:
+    title = f"[LTIA] Governance action: {entry.get('title','?')[:50]}"
+    submitted = _escalate_to_board(
+        title,
+        f"Governance check failed: '{entry.get('title','?')}' "
+        f"(open {entry.get('days_open',0)}d, {entry.get('times_seen',1)}x).",
+        recommended_owner="Chairman + Board",
+        severity="HIGH",
+        proposed_fix="Run `python3 board_meeting.py` with this item as the lead agenda line; "
+                     "record the vote in board_meeting_report.json so this finding can auto-close.")
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
-def _handle_cro_paralysis(entry: dict) -> str:
-    """CRO blocking buys for too long — escalate with explicit exit criteria."""
-    title = "[LTIA] CRO extended block requires board vote with exit criteria"
-    description = (
-        f"Logic Team flagged CRO paralysis: '{entry.get('title','?')}'. "
-        f"The board must vote on explicit exit criteria for the CRO block — "
-        f"not just 'review it' but define the exact condition that would move CRO to ELEVATED."
-    )
-    submitted = _escalate_to_board(title, description,
-                                    recommended_owner="Board + CRO + IRM",
-                                    severity="HIGH",
-                                    proposed_fix="Board votes: define exit criteria for CRO=HIGH status.")
+def _board_cro_paralysis(entry: dict) -> str:
+    title = "[LTIA] CRO extended block needs a vote with explicit exit criteria"
+    submitted = _escalate_to_board(
+        title,
+        f"CRO paralysis: '{entry.get('title','?')}'. A perpetual buy-block with no "
+        f"exit condition is a strategy vacuum.",
+        recommended_owner="Board + CRO + IRM",
+        severity="HIGH",
+        proposed_fix="Board must define the exact metric+threshold that steps CRO down to "
+                     "ELEVATED (e.g. 'VIX < 22 for 3 sessions AND IRM flags == 0'), or accept "
+                     "the posture with a named review date. 'Keep reviewing' is not an answer.")
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
-# Rule → handler mapping
+def _board_risk_contradiction(entry: dict) -> str:
+    title = f"[LTIA] Reconcile contradicting risk signals: {entry.get('title','?')[:40]}"
+    submitted = _escalate_to_board(
+        title,
+        f"Risk monitors disagree: '{entry.get('title','?')}'. The board cannot act on "
+        f"signals that point opposite directions.",
+        recommended_owner="IRM + CRO",
+        severity=entry.get("severity", "MEDIUM"),
+        proposed_fix="IRM and CRO each confirm their inputs are fresh (check timestamps on "
+                     "irm_daily_check.json and risk_bulletin.json). Whichever is running on "
+                     "stale data gets re-run; if both are fresh, board picks the governing signal.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
+def _board_agent_health(entry: dict) -> str:
+    rule = entry.get("rule", "")
+    if rule == "sector_coverage_gap":
+        owner, fix = ("Chief of Staff",
+                      "Spawn a research agent for each uncovered sector via the Agent Factory in "
+                      "chief_of_staff_agent.py, then confirm it registers as 'active'.")
+    elif rule in ("suspicious_mass_retirement",):
+        owner, fix = ("HR + Chairman",
+                      "Cross-check each retirement date against CRO=HIGH windows; restore agents "
+                      "whose zero-pick streaks fell entirely inside a firm-wide buy block (amnesty).")
+    elif rule == "pip_during_cro_high":
+        owner, fix = ("HR",
+                      "Pause PIP timers while CRO is HIGH/CRITICAL — an agent can't clear a PIP that "
+                      "requires approved picks when all buys are blocked. Resume when CRO <= ELEVATED.")
+    else:
+        owner, fix = ("HR", "Review agent-health finding and act.")
+    title = f"[LTIA] Agent-health fix: {entry.get('title','?')[:48]}"
+    submitted = _escalate_to_board(title,
+                                   f"Agent-health finding: '{entry.get('title','?')}'.",
+                                   recommended_owner=owner, severity="MEDIUM", proposed_fix=fix)
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
+def _board_loss_action(entry: dict) -> str:
+    title = f"[LTIA] Loss needs corrective action, not just documentation"
+    submitted = _escalate_to_board(
+        title,
+        f"Performance finding: '{entry.get('title','?')}'. Attribution without action is "
+        f"just paperwork.",
+        recommended_owner="Board + Review Agent",
+        severity="HIGH",
+        proposed_fix="Board approves specific recovery trades (e.g. cover the QQQ short per the "
+                     "Review Agent, deploy idle pod capital when CRO permits) and logs them under "
+                     "loss_attribution.fixes_applied_today so this finding closes.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
+def _board_ml_suspend(entry: dict) -> str:
+    title = "[LTIA] Suspend ML-driven buys — model AUC below random"
+    submitted = _escalate_to_board(
+        title,
+        f"ML finding: '{entry.get('title','?')}'. An AUC below 0.50 means the model loses to "
+        f"a coin flip; any capital on its signals has negative expectancy.",
+        recommended_owner="Board + ML pod",
+        severity="HIGH",
+        proposed_fix="Vote to suspend ML-sourced buy recommendations immediately and assign the "
+                     "ML pod to retrain before re-enabling. Document the suspension in the board log.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
+def _board_email_overflow(entry: dict) -> str:
+    title = "[LTIA] Email buffer overflowing — tighten sender volume"
+    submitted = _escalate_to_board(
+        title,
+        f"Communication finding: '{entry.get('title','?')}'. The Chairman can't absorb this volume.",
+        recommended_owner="Operations Director",
+        severity="MEDIUM",
+        proposed_fix="In email_buffer.py, suppress LOW-priority senders from the digest and/or "
+                     "raise digest frequency. Target < 20 buffered emails between flushes.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
+def _board_communication_silence(entry: dict) -> str:
+    title = "[LTIA] Expected agents silent — check they're still running"
+    submitted = _escalate_to_board(
+        title,
+        f"Communication finding: '{entry.get('title','?')}'. Silent agents are invisible agents.",
+        recommended_owner="Operations Director",
+        severity="LOW",
+        proposed_fix="Check crontab and the latest log for each silent agent; restart any that "
+                     "have stopped, or wire its output to the firm channel if it's running mute.")
+    return "board_proposal_submitted" if submitted else "already_in_queue"
+
+
+# =============================================================================
+# RULE → HANDLER MAPPING
+# Keys are CANONICAL rule names. Dynamic rules (idle_pod_<id>,
+# pod_value_mismatch_<id>, <pod>_pipeline_stale, <pod>_never_run,
+# <pod>_zero_picks) are folded onto these keys by _normalize_rule().
+# =============================================================================
+
 RESOLUTION_HANDLERS = {
-    "pipeline_dark":         _handle_pipeline_dark,
-    "no_picks_agents_exist": _handle_pipeline_dark,
-    "idle_capital":          _handle_idle_capital,
-    "cro_extended_no_review": _handle_governance_gap,
-    "cro_paralysis":          _handle_cro_paralysis,
-    "extended_cro_high_no_review": _handle_governance_gap,
-    "stale_chairman_actions": _handle_governance_gap,
+    # --- auto-fixable operational findings ---
+    "zero_picks":              _auto_rerun_research,
+    "stale_research_report":   _auto_rerun_research,
+    "complete_inactivity":     _auto_rerun_research,
+    "fi_pipeline_not_running": _auto_rerun_pod_pipeline,
+    "pod_pipeline_stale":      _auto_rerun_pod_pipeline,
+    "pod_never_run":           _auto_rerun_pod_pipeline,
+    "pod_zero_picks":          _auto_rerun_pod_pipeline,
+    "positions_without_reviews": _auto_reconcile_positions,
+    "pod_value_mismatch":      _auto_reconcile_pod_ledger,
+    "ml_model_not_tracked":    _auto_start_ml_tracking,
+    "ml_no_live_validation":   _auto_start_ml_tracking,
+
+    # --- needs a human/board decision ---
+    "idle_pod":                _board_idle_capital,
+    "cro_extended_no_review":  _board_governance,
+    "board_overdue":           _board_governance,
+    "stale_chairman_actions":  _board_governance,
+    "cro_paralysis":           _board_cro_paralysis,
+    "cro_high_fully_deployed": _board_cro_paralysis,
+    "irm_cro_contradiction":   _board_risk_contradiction,
+    "cro_canary_contradiction": _board_risk_contradiction,
+    "canary_red_positions_open": _board_risk_contradiction,
+    "sector_coverage_gap":     _board_agent_health,
+    "suspicious_mass_retirement": _board_agent_health,
+    "pip_during_cro_high":     _board_agent_health,
+    "loss_no_attribution":     _board_loss_action,
+    "loss_attribution_no_fixes": _board_loss_action,
+    "ml_below_random":         _board_ml_suspend,
+    "email_buffer_overflow":   _board_email_overflow,
+    "agent_communication_silence": _board_communication_silence,
 }
+
+
+def _normalize_rule(rule: str) -> str:
+    """Fold dynamic, instance-suffixed rule names onto their canonical handler key.
+
+    The Logic Team emits per-instance rules like 'idle_pod_pod3_ml',
+    'pod_value_mismatch_fi', 'fe_pipeline_stale', 'fi_never_run', 'fe_zero_picks'.
+    Without this mapping those never match a handler — the bug that left the
+    implementation log empty.
+    """
+    if not rule:
+        return rule
+    if rule in RESOLUTION_HANDLERS:
+        return rule
+    if rule.startswith("idle_pod_"):
+        return "idle_pod"
+    if rule.startswith("pod_value_mismatch_"):
+        return "pod_value_mismatch"
+    for pod in ("fi", "fe"):
+        if rule == f"{pod}_pipeline_stale":
+            return "pod_pipeline_stale"
+        if rule == f"{pod}_never_run":
+            return "pod_never_run"
+        if rule == f"{pod}_zero_picks":
+            return "pod_zero_picks"
+    return rule
 
 
 # =============================================================================
@@ -253,7 +523,12 @@ def run_triage() -> dict:
 
         logger.info(f"  [{severity}] {title[:55]} (open {days_open}d)")
 
-        handler = RESOLUTION_HANDLERS.get(rule)
+        # Make sure the entry carries its own rule so handlers can branch on it
+        # (the resolution tracker stores 'rule'; fall back to the key tail).
+        entry.setdefault("rule", rule)
+        entry.setdefault("days_open", days_open)
+        canonical = _normalize_rule(rule)
+        handler = RESOLUTION_HANDLERS.get(canonical)
         if handler:
             result = handler(entry)
             logger.info(f"    → {result}")

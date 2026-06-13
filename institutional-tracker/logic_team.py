@@ -223,8 +223,11 @@ class CapitalLogicAgent:
                         f"idle capital earns zero return and represents a failure to execute on the pod's mandate."
                     ),
                     suggestion=(
-                        f"Board should confirm: is this pod intentionally idle (CRO/model readiness) "
-                        f"or is it a pipeline failure? If intentional, document why."
+                        f"Distinguish the cause, then act: (1) run `python3 {pod_id.split('_')[-1] if '_' in pod_id else pod_id}_pipeline.py` "
+                        f"— if it produces picks, this was a pipeline stall, not a policy choice; "
+                        f"(2) if it produces nothing and CRO isn't blocking, lower the pod's conviction "
+                        f"threshold or widen its watchlist; (3) if the pod is intentionally flat, write the "
+                        f"reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing."
                     ),
                     agent=self.name,
                 ))
@@ -242,7 +245,13 @@ class CapitalLogicAgent:
                     f"the portfolio has {n_positions} positions with only {cash_pct:.0f}% cash."
                 ),
                 why="CRO HIGH should mean reduced deployment. Being fully invested during HIGH regime is inconsistent with the firm's stated risk policy.",
-                suggestion="Board should either step down CRO to MEDIUM/ELEVATED (if conditions warrant) or trim positions to reach the 25% cash floor required at HIGH.",
+                suggestion=(
+                    f"Resolve the contradiction this cycle: either (a) trim the {n_positions} positions "
+                    f"down to the 25% cash floor HIGH requires (the Review Agent can rank lowest-conviction "
+                    f"holdings to cut), or (b) if exposure is actually justified, step CRO down to ELEVATED "
+                    f"in risk_bulletin.json with a one-line rationale. Leaving CRO=HIGH while {100-cash_pct:.0f}% "
+                    f"deployed means the risk label is fiction."
+                ),
                 agent=self.name,
             ))
 
@@ -360,7 +369,13 @@ class PerformanceLogicAgent:
                 title=f"Portfolio {pnl_pct:.1f}% below start with no written loss attribution",
                 observation=f"Portfolio is at ${portfolio_value:,.0f} (-${abs(portfolio_value - starting_capital):,.0f} from $100k start). No loss attribution is documented.",
                 why="Jack explicitly said he wants to know why the firm is down. Undocumented losses mean we can't learn from them or prevent recurrence.",
-                suggestion="Logic Officer will write a loss attribution based on available trade history. Board should review and ratify it.",
+                suggestion=(
+                    "Run `python3 logic_officer.py` to generate a loss attribution from trade history, "
+                    "then write the top 1-2 drivers (which positions, which decisions) into "
+                    "performance_history.snapshots[].loss_attribution. The board ratifies it at the next "
+                    "session and assigns one concrete corrective action per driver — attribution that "
+                    "names no fix is just paperwork."
+                ),
                 agent=self.name,
             ))
         elif pnl_pct < -3 and has_attribution:
@@ -435,9 +450,11 @@ class AgentHealthLogicAgent:
                         "retirements, but agents already retired can't be automatically restored."
                     ),
                     suggestion=(
-                        "Board should review the {len(recent_retirements)} recently retired agents. "
-                        "If their zero-pick cycles coincide with CRO HIGH periods, they should be "
-                        "restored (Chairman amnesty) and their specializations re-evaluated."
+                        f"HR should pull retired_at for the {len(recent_retirements)} recently retired "
+                        f"agents and overlay it on CRO=HIGH windows. Any agent whose zero-pick streak fell "
+                        f"entirely inside a firm-wide buy block was penalized for a closed store — restore it "
+                        f"(Chairman amnesty) and re-evaluate its specialization. Retirements that span normal "
+                        f"buying periods stand."
                     ),
                     agent=self.name,
                 ))
@@ -534,8 +551,11 @@ class StrategyLogicAgent:
                             "activity in the past 14 days. It is running but not operating.",
                 why="A paper trading firm that never trades cannot demonstrate whether its "
                     "strategy works. Complete inactivity produces no learning signal.",
-                suggestion="Board should review: is this intentional (market conditions), "
-                           "a pipeline failure (CIT should investigate), or an ML/research gap?",
+                suggestion="Bisect the cause: run `python3 research_team.py` — no candidates means a "
+                           "research/watchlist gap; candidates that the Manager then rejects means the "
+                           "BUY gates in manager_agent.py are too tight; candidates approved but unfilled "
+                           "means an execution break. Fix the stage that's actually empty rather than "
+                           "restarting everything.",
                 agent=self.name,
             ))
 
@@ -775,8 +795,10 @@ class RiskCoherenceLogicAgent:
                             f"monitors should not be pointing in opposite directions.",
                 why="When IRM and CRO disagree, the board doesn't know which signal to trust. "
                     "This undermines the entire risk governance framework.",
-                suggestion="Board should review both assessments and determine which is correct. "
-                           "One of these agents may have stale data or incorrect thresholds.",
+                suggestion="First check freshness: compare the timestamps on irm_daily_check.json and "
+                           "risk_bulletin.json. Re-run whichever is stale (`python3 irm_review_agent.py` "
+                           "or the CRO job) and see if the contradiction clears. If both are current, the "
+                           "board names the governing signal and records why the other is overridden.",
                 agent=self.name,
             ))
 
