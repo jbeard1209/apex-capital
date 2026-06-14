@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-12T23:30:00.458924",
+  "generated_at": "2026-06-13T23:30:09.436683",
   "agent": "ETF Research Agent",
   "etf_universe": [
     "XLK",
@@ -24,10 +24,10 @@
     "regime_label": "bull",
     "bull": true,
     "bear": false,
-    "vix": 18.9,
-    "spy_rsi": 46.6,
+    "vix": 17.7,
+    "spy_rsi": 47.4,
     "overbought": false,
-    "warning_count": 0,
+    "warning_count": 1,
     "rising_rates": false,
     "momentum_phase": "early-bull",
     "defensive_rotation_advised": false,

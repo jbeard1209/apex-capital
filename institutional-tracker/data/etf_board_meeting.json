@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-13T00:00:00.718419",
+  "generated_at": "2026-06-14T00:00:08.905200",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
@@ -12,10 +12,10 @@
     "regime_label": "bull",
     "bull": true,
     "bear": false,
-    "vix": 18.9,
-    "spy_rsi": 46.6,
+    "vix": 17.7,
+    "spy_rsi": 47.4,
     "overbought": false,
-    "warning_count": 0,
+    "warning_count": 1,
     "rising_rates": false,
     "momentum_phase": "early-bull",
     "defensive_rotation_advised": false,
@@ -31,9 +31,9 @@
   },
   "canary_alerts": null,
   "pod_state_at_meeting": {
-    "cash_balance": 11866.81,
+    "cash_balance": 5199.31,
     "total_value": 30000.0,
-    "n_positions": 3
+    "n_positions": 4
   },
   "deliberations": {
     "round_1": {
@@ -60,7 +60,7 @@
           "XLU": -3.7401,
           "GLD": -13.2732
         },
-        "reasoning": "BULL regime (VIX=18.9, SPY_RSI=46.6). Picking top 3 by momentum score. Top 3: [('XLK', 10.64), ('QQQ', 5.42), ('XLF', 3.94)]",
+        "reasoning": "BULL regime (VIX=17.7, SPY_RSI=47.4). Picking top 3 by momentum score. Top 3: [('XLK', 10.64), ('QQQ', 5.42), ('XLF', 3.94)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },
@@ -112,10 +112,10 @@
     "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"
   ],
   "orders_summary": {
-    "n_buys": 1,
+    "n_buys": 0,
     "n_sells": 1,
     "n_skipped": 0,
-    "total_buy_value": 6667.5,
+    "total_buy_value": 0,
     "total_sell_value": 8243.1
   }
 }

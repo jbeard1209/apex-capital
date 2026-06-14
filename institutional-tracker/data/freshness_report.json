@@ -1,27 +1,15 @@
 {
-  "generated_at": "2026-06-12T19:58:40.011602",
+  "generated_at": "2026-06-13T21:15:09.970484",
   "agent": "Freshness Sentinel",
   "checked": 21,
-  "ok": 19,
-  "stale": 3,
+  "ok": 10,
+  "stale": 1,
   "auto_fixed": [],
   "issues": [
     {
-      "item": "data/premarket_alerts.json",
-      "status": "STALE",
-      "detail": "31h old (budget 30h)",
-      "critical": false
-    },
-    {
-      "item": "data/fe_pipeline_log.json",
-      "status": "STALE",
-      "detail": "42h old (budget 30h)",
-      "critical": false
-    },
-    {
       "item": "pipeline_heartbeat (mid-run death)",
       "status": "DEAD_MID_RUN",
-      "detail": "main.py started 2026-06-12T17:42:39.799217 (pid 1278) but never wrote a completion marker and the process is gone. The pipeline crashed mid-run \u2014 agents scheduled after the crash point did NOT run this cycle.",
+      "detail": "main.py started 2026-06-12T19:58:52.295644 (pid 6903) but never wrote a completion marker and the process is gone. The pipeline crashed mid-run \u2014 agents scheduled after the crash point did NOT run this cycle.",
       "critical": true
     }
   ],

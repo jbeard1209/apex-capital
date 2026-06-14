@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-13T01:00:03.868342",
-  "proposals_reviewed": 9,
+  "generated_at": "2026-06-14T01:02:35.696692",
+  "proposals_reviewed": 10,
   "backtester_available": true,
   "validation_log": [
     {
@@ -65,6 +65,13 @@
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "CIT-2026-166",
+      "title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+      "category": "BUG_FIX",
+      "pre_validated": true,
+      "validation_note": "Technical/code fix \u2014 no backtest required"
     }
   ]
 }

@@ -1543,7 +1543,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
   },
   {
     "id": "CLR-A4AD08",
@@ -1554,7 +1556,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
   },
   {
     "id": "CLR-D9FDDC",
@@ -1565,7 +1569,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
   },
   {
     "id": "CLR-100AA6",
@@ -1576,7 +1582,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
   },
   {
     "id": "CLR-6B096F",
@@ -1587,7 +1595,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
   },
   {
     "id": "CLR-642224",
@@ -1598,7 +1608,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
   },
   {
     "id": "CLR-E67CE9",
@@ -1609,7 +1621,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
   },
   {
     "id": "CLR-B6141C",
@@ -1620,7 +1634,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
   },
   {
     "id": "CLR-4236B4",
@@ -1631,7 +1647,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Full proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
   },
   {
     "id": "CLR-F0F1A6",
@@ -1642,7 +1660,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
   },
   {
     "id": "CLR-F8C2B1",
@@ -1653,7 +1673,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
   },
   {
     "id": "CLR-A54CD4",
@@ -1664,7 +1686,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
   },
   {
     "id": "CLR-A869EF",
@@ -1675,7 +1699,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
   },
   {
     "id": "CLR-A3A43B",
@@ -1686,7 +1712,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
   },
   {
     "id": "CLR-72E352",
@@ -1697,7 +1725,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in l'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
   },
   {
     "id": "CLR-AAE797",
@@ -1708,7 +1738,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
   },
   {
     "id": "CLR-B79AB0",
@@ -1719,7 +1751,9 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nConcrete metrics from description: 24, 48h, 91 , 701 , 3 \nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
   },
   {
     "id": "CLR-950E9F",
@@ -1730,6 +1764,398 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T06:14:42.474189",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-B40301",
+    "ts": "2026-06-13T06:14:57.978768",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-D3571A",
+    "ts": "2026-06-13T06:14:57.978768",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-F902D3",
+    "ts": "2026-06-13T06:14:57.978768",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-7A1AE3",
+    "ts": "2026-06-13T06:14:57.978768",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-622D30",
+    "ts": "2026-06-13T06:14:57.983568",
+    "proposal_id": "LTIA-20260612234113",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-186EF5",
+    "ts": "2026-06-13T06:14:57.983568",
+    "proposal_id": "LTIA-20260612234113",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-2C984F",
+    "ts": "2026-06-13T06:14:57.990710",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Full proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-D6917D",
+    "ts": "2026-06-13T06:14:57.990710",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-5074FC",
+    "ts": "2026-06-13T06:14:57.990710",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-9F0D5B",
+    "ts": "2026-06-13T06:14:57.990710",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-587B20",
+    "ts": "2026-06-13T06:14:57.990710",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-E75D6A",
+    "ts": "2026-06-13T06:14:57.996924",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in l'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-7C9B48",
+    "ts": "2026-06-13T06:14:57.996924",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-4D6B01",
+    "ts": "2026-06-13T06:14:57.996924",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nConcrete metrics from description: 24, 48h, 91 , 701 , 3 \nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-4DE661",
+    "ts": "2026-06-13T06:14:57.996924",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T10:00:01.383328",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-62E826",
+    "ts": "2026-06-13T10:00:23.748810",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-E5479B",
+    "ts": "2026-06-13T10:00:23.748810",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-7E9F26",
+    "ts": "2026-06-13T10:00:23.748810",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 10\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-A5D36F",
+    "ts": "2026-06-13T10:00:23.748810",
+    "proposal_id": "LTIA-20260612233930",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+  },
+  {
+    "id": "CLR-2B6590",
+    "ts": "2026-06-13T10:00:23.764746",
+    "proposal_id": "LTIA-20260612234113",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-3EB976",
+    "ts": "2026-06-13T10:00:23.764746",
+    "proposal_id": "LTIA-20260612234113",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-CE4F85",
+    "ts": "2026-06-13T10:00:23.791382",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Full proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-220C34",
+    "ts": "2026-06-13T10:00:23.791382",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-654C5D",
+    "ts": "2026-06-13T10:00:23.791382",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-8DC23A",
+    "ts": "2026-06-13T10:00:23.791382",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-DB30E7",
+    "ts": "2026-06-13T10:00:23.791382",
+    "proposal_id": "LTIA-20260613000002",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "Concrete metrics from description: 500 \nFull proposed fix: Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500."
+  },
+  {
+    "id": "CLR-E601CA",
+    "ts": "2026-06-13T10:00:23.824872",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in l'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-FDB812",
+    "ts": "2026-06-13T10:00:23.824872",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-E01C88",
+    "ts": "2026-06-13T10:00:23.824872",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nConcrete metrics from description: 24, 48h, 91 , 701 , 3 \nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
+  },
+  {
+    "id": "CLR-D7568F",
+    "ts": "2026-06-13T10:00:23.824872",
+    "proposal_id": "CIT-2026-166",
+    "proposal_title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-13T12:07:02.305975",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITPipelineMonitor] 91 ERROR lines \u2014 dominant: `fe_pipeline`: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent | fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` a\nRelevant functions/methods: fe_pipeline, fe_pipeline, 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age, except fe_pipeline, logger.warning()\nFull evidence: Recent log samples:\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEQualityCompoundersAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Agent FEHardMoneyAgent failed: 'sector_etf'\n  \u2022 2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] \nFull proposed fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-12 18:00:02  ERROR     fe_pipeline -- [Pipeline] Age`, wrap it in `except fe_pipeline` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising."
   }
 ]

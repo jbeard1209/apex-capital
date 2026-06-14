@@ -489,70 +489,77 @@ def _compute_holdings_features(conn: sqlite3.Connection) -> pd.DataFrame:
 
     df["filing_date"] = pd.to_datetime(df["filing_date"])
 
-    records = []
-    for (ticker, filing_date), grp in df.groupby(["ticker", "filing_date"]):
-        n_inst      = len(grp["institution"].unique())
-        herding     = 1 if n_inst >= 3 else 0
-        quant_count = len(set(grp["institution"]) & _QUANT_FUNDS)
-        quant_cons  = 1 if quant_count >= 2 else 0
+    # ── Vectorized rewrite ────────────────────────────────────────────────────
+    # The original computed these features in a per-group Python loop over every
+    # (ticker, filing_date) pair — ~278k groups, each re-scanning the full ~1.2M
+    # row holdings frame three times (quarter consensus, prior-quarter, hold
+    # streak). That is O(groups * rows) and never finished in practice, which is
+    # why no model could train. Everything below is the same set of features
+    # computed with vectorized groupby/merge operations (seconds, not minutes).
+    df["is_amend"] = (df["form"] == "13F-HR/A").astype(int)
 
-        # Filing quarter consensus — fraction of all tracked funds that hold it this quarter
-        all_funds_this_quarter = df[
-            (df["filing_date"].between(filing_date - pd.Timedelta(days=95), filing_date + pd.Timedelta(days=5)))
-        ]["institution"].nunique()
-        q_consensus = n_inst / max(all_funds_this_quarter, 1)
+    g = df.groupby(["ticker", "filing_date"], sort=False)
+    feats = g.agg(
+        n_institutions=("institution", "nunique"),
+        amendment_flag=("is_amend", "max"),
+        max_value=("value_usd", "max"),
+        max_aum=("fund_total_value", "max"),
+        curr_shares=("shares", "sum"),
+    ).reset_index()
 
-        # Amendment flag (any fund filed amendment for this ticker)
-        amend = 1 if (grp["form"] == "13F-HR/A").any() else 0
+    # Quant consensus — count DISTINCT quant funds per group (>=2 ⇒ consensus).
+    dq = (df[df["institution"].isin(_QUANT_FUNDS)]
+          .drop_duplicates(["ticker", "filing_date", "institution"])
+          .groupby(["ticker", "filing_date"]).size().rename("quant_count").reset_index())
+    feats = feats.merge(dq, on=["ticker", "filing_date"], how="left")
+    feats["quant_count"] = feats["quant_count"].fillna(0)
 
-        # Position size as % of AUM (largest single-fund position)
-        total_aum = grp["fund_total_value"].max() or 1
-        pos_pct   = float(grp["value_usd"].max()) / max(total_aum, 1)
+    feats["herding_flag"]     = (feats["n_institutions"] >= 3).astype(int)
+    feats["quant_consensus"]  = (feats["quant_count"] >= 2).astype(int)
+    feats["position_size_pct_aum"] = (
+        feats["max_value"] / feats["max_aum"].clip(lower=1)
+    ).round(6)
 
-        # Prior quarter comparison
-        prior = df[
-            (df["ticker"] == ticker) &
-            (df["filing_date"] < filing_date)
-        ].sort_values("filing_date")
+    # Prior-quarter comparison — within each ticker, the immediately preceding
+    # filing's summed shares (groupby shift over date-sorted groups).
+    feats = feats.sort_values(["ticker", "filing_date"]).reset_index(drop=True)
+    feats["prior_shares"] = feats.groupby("ticker")["curr_shares"].shift(1)
+    _has_prior = feats["prior_shares"].notna() & (feats["prior_shares"] > 0)
+    feats["pct_change_shares"] = 0.0
+    feats.loc[_has_prior, "pct_change_shares"] = (
+        (feats.loc[_has_prior, "curr_shares"] - feats.loc[_has_prior, "prior_shares"])
+        / feats.loc[_has_prior, "prior_shares"]
+    )
+    feats["new_position_flag"]   = (~_has_prior).astype(int)
+    feats["large_increase_flag"] = ((feats["pct_change_shares"] > 0.5) & _has_prior).astype(int)
 
-        pct_change   = 0.0
-        new_flag     = 1
-        large_flag   = 0
+    # Hold streak — count of the ticker's distinct filing dates up to and
+    # including this one (dense rank). NOTE: the old loop was buggy here (it
+    # iterated dates descending and broke on the first date > filing_date, so it
+    # returned 0 for every filing except the latest); this is the intended
+    # "quarters held" semantics the column name implies.
+    feats["hold_streak_quarters"] = (
+        feats.groupby("ticker")["filing_date"].rank(method="dense").astype(int)
+    )
 
-        if not prior.empty:
-            last_filing   = prior["filing_date"].max()
-            prior_shares  = prior[prior["filing_date"] == last_filing]["shares"].sum()
-            curr_shares   = grp["shares"].sum()
-            if prior_shares > 0:
-                pct_change = (curr_shares - prior_shares) / prior_shares
-                new_flag   = 0
-                large_flag = 1 if pct_change > 0.5 else 0
+    # Filing-quarter consensus — fraction of all tracked funds holding *anything*
+    # in the ~quarter window around each filing date. Only 155 distinct filing
+    # dates exist, so compute per unique date (not per group).
+    inst_dates = df[["filing_date", "institution"]].drop_duplicates()
+    _fd_counts = {}
+    for _fd in feats["filing_date"].unique():
+        _m = inst_dates["filing_date"].between(
+            _fd - pd.Timedelta(days=95), _fd + pd.Timedelta(days=5))
+        _fd_counts[_fd] = inst_dates.loc[_m, "institution"].nunique() or 1
+    _qfunds = feats["filing_date"].map(_fd_counts).clip(lower=1)
+    feats["filing_quarter_consensus"] = (feats["n_institutions"] / _qfunds).round(4)
 
-        # Hold streak
-        all_dates = sorted(df[df["ticker"] == ticker]["filing_date"].unique())
-        streak = 0
-        for d in reversed(all_dates):
-            if d <= filing_date:
-                streak += 1
-            else:
-                break
-
-        records.append({
-            "ticker":                  ticker,
-            "filing_date":             filing_date,
-            "n_institutions":          n_inst,
-            "herding_flag":            herding,
-            "quant_consensus":         quant_cons,
-            "filing_quarter_consensus": round(q_consensus, 4),
-            "amendment_flag":          amend,
-            "position_size_pct_aum":   round(pos_pct, 6),
-            "pct_change_shares":       pct_change,
-            "new_position_flag":       new_flag,
-            "large_increase_flag":     large_flag,
-            "hold_streak_quarters":    streak,
-        })
-
-    return pd.DataFrame(records)
+    return feats[[
+        "ticker", "filing_date", "n_institutions", "herding_flag", "quant_consensus",
+        "filing_quarter_consensus", "amendment_flag", "position_size_pct_aum",
+        "pct_change_shares", "new_position_flag", "large_increase_flag",
+        "hold_streak_quarters",
+    ]]
 
 
 def _compute_institution_hit_rates(conn: sqlite3.Connection) -> pd.DataFrame:

@@ -1,237 +1,5 @@
 [
   {
-    "ts": "2026-06-08T15:59:43.646521",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 8.8/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T15:59:43.658903",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T15:59:43.673136",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T15:59:43.690403",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T15:59:43.704455",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.8/10. 38 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:00:33.577713",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 3 board proposal(s), 86 quick win(s), 2 ThinkTank idea(s). Total new findings: 102.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:00:33.591088",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:33.606904",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:33.618214",
-    "date": "2026-06-08",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:33.630180",
-    "date": "2026-06-08",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-le",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:00:33.645065",
-    "date": "2026-06-08",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:00:46.777884",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 8.8/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:46.791518",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:46.807655",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:46.821810",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:00:46.834072",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.8/10. 38 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.705949",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 8 sectors (18 high-conviction 4\u2605+). Top sectors: Technology, Cybersecurity, Regional Banks. Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.720509",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 12/12 | trend=bullish | RSI=60 | 1M=+5.0% | 3M=+32.0%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.732267",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 11/12 | trend=bullish | RSI=60 | 1M=+14.4% | 3M=+31.2%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.743629",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=62 | 1M=+0.8% | 3M=+9.4%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.755247",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Semiconductors: score 10/12 | trend=bullish | RSI=62 | 1M=+5.5% | 3M=+50.5%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.768347",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "EARNINGS",
-    "content": "EARNINGS ALERT: PEP \u2014 predicted MISS (confidence 5\u2605) in 30d. EPS decelerating for 3+ quarters; last Q missed estimate by >5%",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:01:40.788368",
-    "date": "2026-06-08",
-    "agent": "R&D Team Leader",
-    "category": "EARNINGS",
-    "content": "EARNINGS ALERT: JPM \u2014 predicted MISS (confidence 5\u2605) in 35d. EPS decelerating for 3+ quarters; last Q missed estimate by >5%",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:20:21.052292",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 8.8/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:20:21.073255",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:20:21.087479",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:20:21.100772",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-08T16:20:21.121431",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.8/10. 38 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-08T16:41:00.271613",
-    "date": "2026-06-08",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 8.8/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
-    "priority": "NORMAL"
-  },
-  {
     "ts": "2026-06-08T16:41:00.302386",
     "date": "2026-06-08",
     "agent": "HR Agent",
@@ -3998,5 +3766,237 @@
     "category": "PIPELINE_ALERT",
     "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 6 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
     "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T06:14:57.934376",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 171.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T06:14:57.939914",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T06:14:58.000457",
+    "date": "2026-06-13",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 6 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T08:15:01.406766",
+    "date": "2026-06-13",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-06-12T19:)",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-13T10:00:23.599628",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 129.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T10:00:23.617473",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T10:00:23.848272",
+    "date": "2026-06-13",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 6 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T12:00:02.823025",
+    "date": "2026-06-13",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [CRITICAL] ML pod has $30,000 but NO trained model exists\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-13T12:00:02.823104",
+    "date": "2026-06-13",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 4 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML pod has $30,000 capital but zero live picks logged\n  [MEDIUM] 6 open positions have no review recommendation\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-13T12:00:12.775284",
+    "date": "2026-06-13",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "HIGH",
+    "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
+  },
+  {
+    "ts": "2026-06-13T12:00:12.826109",
+    "date": "2026-06-13",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: ml_model_never_trained\u2192skipped:cooldown_24h; idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192auto_reconciled_reviews"
+  },
+  {
+    "ts": "2026-06-13T12:07:31.130674",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 316.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T12:07:31.137629",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T12:07:31.267177",
+    "date": "2026-06-13",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 6 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T12:15:01.405792",
+    "date": "2026-06-13",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: ml_model_never_trained\u2192skipped:cooldown_24h; idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h"
+  },
+  {
+    "ts": "2026-06-13T16:11:12.348702",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 203.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T16:11:12.541070",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T16:11:17.110723",
+    "date": "2026-06-13",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 6 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T20:15:09.194409",
+    "date": "2026-06-13",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-06-12T19:)",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-13T22:14:25.787693",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 112.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-13T22:14:26.484144",
+    "date": "2026-06-13",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-13T22:14:37.464883",
+    "date": "2026-06-13",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 6 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-14T00:00:33.563073",
+    "date": "2026-06-14",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [CRITICAL] ML pod has $30,000 but NO trained model exists\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-14T00:00:33.566390",
+    "date": "2026-06-14",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 4 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ML pod has $30,000 capital but zero live picks logged\n  [MEDIUM] 6 open positions have no review recommendation\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-14T00:16:57.333160",
+    "date": "2026-06-14",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: ml_model_never_trained\u2192model_train_failed:timeout; idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192review_rerun_failed:timeout"
+  },
+  {
+    "ts": "2026-06-14T00:18:14.521146",
+    "date": "2026-06-14",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: ml_model_never_trained\u2192skipped:cooldown_24h; idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h"
+  },
+  {
+    "ts": "2026-06-14T01:14:06.974787",
+    "date": "2026-06-14",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 318.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-14T01:14:07.601437",
+    "date": "2026-06-14",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-14T01:14:12.411252",
+    "date": "2026-06-14",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 6 proposal(s).",
+    "priority": "NORMAL"
   }
 ]

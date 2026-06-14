@@ -1308,6 +1308,92 @@
           "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
         }
       ]
+    },
+    {
+      "ts": "2026-06-13T12:00:02.832552",
+      "date": "2026-06-13",
+      "source": "Logic Team",
+      "portfolio": 98442.68,
+      "pnl_vs_start": -1557.320000000007,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "CRITICAL",
+          "title": "ML pod has $30,000 but NO trained model exists",
+          "agent": "MLLogicAgent",
+          "short": "data/model_meta.json reports no trained model (model.pkl present=False). The ML / Quantitative pod has $30,000 allocated"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML pod has $30,000 capital but zero live picks logged",
+          "agent": "MLLogicAgent",
+          "short": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated ag"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-14T00:00:34.038210",
+      "date": "2026-06-14",
+      "source": "Logic Team",
+      "portfolio": 98442.66,
+      "pnl_vs_start": -1557.3399999999965,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "CRITICAL",
+          "title": "ML pod has $30,000 but NO trained model exists",
+          "agent": "MLLogicAgent",
+          "short": "data/model_meta.json reports no trained model (model.pkl present=False). The ML / Quantitative pod has $30,000 allocated"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML pod has $30,000 capital but zero live picks logged",
+          "agent": "MLLogicAgent",
+          "short": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated ag"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
     }
   ]
 }
