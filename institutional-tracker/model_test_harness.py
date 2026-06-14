@@ -136,6 +136,16 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
     out["n_samples"] = int(len(X))
     out["n_features"] = int(X.shape[1]) if X.ndim == 2 else 0
 
+    # This harness measures classification/ranking AUC. Continuous targets
+    # (risk_adjusted_*) come back as floats from build_feature_matrix; binarize
+    # them at 0 — "will the risk-adjusted return be positive" — so the same
+    # walk-forward AUC machinery applies. Without this the classifier raises
+    # "Unknown label type: continuous" and the whole run aborts.
+    _uniq = np.unique(y)
+    if not set(_uniq.tolist()).issubset({0, 1}):
+        y = (y > 0).astype(int)
+        out["target_binarized_at_zero"] = True
+
     if len(X) < MIN_SAMPLES:
         out["status"] = "INSUFFICIENT_DATA"
         out["note"] = f"{len(X)} samples < MIN_SAMPLES={MIN_SAMPLES}. Cannot evaluate honestly."
@@ -222,7 +232,12 @@ def run(quiet: bool = False) -> dict:
     targets = [("outcome_20d", "shortterm"), ("risk_adjusted_20d", "risk_adjusted")]
     for target, label in targets:
         logger.info(f"  Evaluating {label} ({target})...")
-        res = evaluate(target, label)
+        try:
+            res = evaluate(target, label)
+        except Exception as e:
+            # One target failing must not lose the other's result or the report.
+            res = {"label": label, "target": target, "status": "ERROR", "error": repr(e)}
+            logger.warning(f"    {label} evaluation errored: {e}")
         report["models"][label] = res
         logger.info(f"    status={res.get('status')} "
                     f"AUC={res.get('walk_forward_auc_mean')} "

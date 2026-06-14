@@ -615,11 +615,20 @@ def _compute_rolling_avg_conviction(conn: sqlite3.Connection) -> pd.DataFrame:
         return pd.DataFrame(columns=["ticker", "snapshot_date", "avg_conviction_3q"])
     df = pd.DataFrame(rows, columns=["ticker", "snapshot_date", "conviction_score"])
     df["snapshot_date"] = pd.to_datetime(df["snapshot_date"])
-    df["avg_conviction_3q"] = (
-        df.groupby("ticker")["conviction_score"]
-          .transform(lambda x: x.rolling(3, min_periods=1).mean())
+    # Collapse to ONE conviction per (ticker, snapshot_date) before the rolling
+    # window. pipeline_snapshots has multiple rows per ticker/date (one per
+    # institution); without this the result carries duplicate (ticker,
+    # snapshot_date) keys, and the left-merge in build_feature_matrix multiplies
+    # the training set ~3x with duplicated rows — which also leaks identical rows
+    # across walk-forward CV folds. Dedup here keeps the matrix 1:1 with snapshots.
+    per = (df.groupby(["ticker", "snapshot_date"], as_index=False)["conviction_score"]
+             .mean()
+             .sort_values(["ticker", "snapshot_date"]))
+    per["avg_conviction_3q"] = (
+        per.groupby("ticker")["conviction_score"]
+           .transform(lambda x: x.rolling(3, min_periods=1).mean())
     )
-    return df[["ticker", "snapshot_date", "avg_conviction_3q"]]
+    return per[["ticker", "snapshot_date", "avg_conviction_3q"]]
 
 
 # =============================================================================
@@ -708,7 +717,7 @@ def build_feature_matrix(target: str = "outcome_20d") -> tuple:
         }
         for _c, _d in _no_match_defaults.items():
             if _c in snaps.columns:
-                snaps[_c] = snaps[_c].fillna(_d)
+                snaps[_c] = pd.to_numeric(snaps[_c], errors="coerce").fillna(_d)
     else:
         for c in ["pct_change_shares", "new_position_flag", "large_increase_flag",
                   "hold_streak_quarters", "amendment_flag", "position_size_pct_aum",
