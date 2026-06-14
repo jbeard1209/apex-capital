@@ -43,10 +43,27 @@ IMPROVEMENT_LOG   = DATA_DIR / "ml_improvement_log.json"
 # (Removed unused ST_QUEUE_FILE / LT_QUEUE_FILE — an "experiment queue" feature
 #  that was never implemented; the constants were declared but read/written
 #  nowhere, leaving two permanently-empty orphan files. See wiring_audit.py.)
+ST_LIVE_AUC_GATE  = 0.57   # ST model must clear this before live picks begin
 LT_LIVE_AUC_GATE  = 0.57   # LT model must clear this before live picks begin
 
 HORIZON_DAYS_ST   = 20
 HORIZON_DAYS_LT   = 365
+
+
+def _model_clears_gate(model: str):
+    """Honest gate: a model only enters live testing once its walk-forward AUC
+    clears the gate. Reads the single source of truth (model_metrics), so it tracks
+    whatever was actually trained — no hardcoded numbers. Returns (ok, auc, gate)."""
+    try:
+        from model_metrics import get_model_metrics
+        m = get_model_metrics()
+    except Exception:
+        return False, None, (LT_LIVE_AUC_GATE if model == "longterm" else ST_LIVE_AUC_GATE)
+    if model == "longterm":
+        auc = m.get("lt_auc")
+        return bool(auc is not None and auc >= LT_LIVE_AUC_GATE), auc, LT_LIVE_AUC_GATE
+    auc = m.get("auc")   # ST walk-forward headline
+    return bool(auc is not None and auc >= ST_LIVE_AUC_GATE), auc, ST_LIVE_AUC_GATE
 
 
 def _load_json(path: Path, default=None):
@@ -79,12 +96,26 @@ def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
 
     picks_log = _load_json(LIVE_PICKS_FILE, {"picks": []})
     today = date.today().isoformat()
+    horizon = HORIZON_DAYS_LT if model == "longterm" else HORIZON_DAYS_ST
 
     # Check we haven't already entered picks today for this model
     todays_picks = [p for p in picks_log["picks"] if p.get("pick_date") == today and p.get("model") == model]
     if todays_picks:
         logger.info(f"  Picks already entered today for {model} model ({len(todays_picks)} picks). Skipping.")
         return todays_picks
+
+    # AUC gate — a model only enters live testing once it clears its gate. This is
+    # the enforcement the module always documented but never actually applied.
+    clears, auc, gate = _model_clears_gate(model)
+    if not clears:
+        logger.info(f"  {model} model AUC={auc} < gate {gate} — NOT entering live picks "
+                    f"(model held in validation until it clears the gate).")
+        picks_log["picks"].append({
+            "model": model, "pick_date": today, "status": "model_below_gate",
+            "auc": auc, "gate": gate, "horizon_days": horizon, "picks": [],
+        })
+        _save_json(LIVE_PICKS_FILE, picks_log)
+        return []
 
     try:
         sys.path.insert(0, str(BASE_DIR))
@@ -117,7 +148,7 @@ def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
         entry = {
             "model": model,
             "pick_date": today,
-            "evaluate_after": (date.today() + timedelta(days=HORIZON_DAYS_ST)).isoformat(),
+            "evaluate_after": (date.today() + timedelta(days=horizon)).isoformat(),
             "status": "no_picks_today",
             "note": "Predictor unavailable or returned no scores.",
             "picks": [],
@@ -133,7 +164,7 @@ def enter_new_picks(model: str = "shortterm", top_n: int = 10) -> list:
         new_picks.append({
             "model": model,
             "pick_date": today,
-            "evaluate_after": (date.today() + timedelta(days=HORIZON_DAYS_ST)).isoformat(),
+            "evaluate_after": (date.today() + timedelta(days=horizon)).isoformat(),
             "status": "pending",
             "ticker": ticker,
             "ml_score": pick.get("ml_score"),
@@ -262,10 +293,12 @@ if __name__ == "__main__":
     if args.report:
         print_full_report()
     elif args.enter:
-        enter_new_picks()
+        enter_new_picks("shortterm")
+        enter_new_picks("longterm")   # gated off until LT clears 0.57
     elif args.evaluate:
         evaluate_expired_picks()
     else:
-        enter_new_picks()
+        enter_new_picks("shortterm")
+        enter_new_picks("longterm")   # gated off until LT clears 0.57
         evaluate_expired_picks()
         print_full_report()
