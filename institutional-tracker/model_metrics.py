@@ -34,13 +34,19 @@ MODEL_PKL = DATA_DIR / "model.pkl"
 def get_model_metrics() -> dict:
     """Return the real model metrics, or a clearly-untrained sentinel.
 
-    Never fabricates a number. The headline AUC is the time-ordered holdout
-    `ensemble_auc_val` (honest, no look-ahead). cv_auc_* is reported separately.
+    Never fabricates a number. The headline AUC is the embargoed walk-forward
+    `cv_auc_mean` — the robust, reproducible estimate averaged over multiple
+    time folds. We deliberately do NOT headline `ensemble_auc_val` (a single
+    80/20 holdout): that one window can land on an easy period and read high
+    (it showed ~0.67 while walk-forward was ~0.58), which is exactly the kind
+    of optimistic single-split number that misled the board before. The holdout
+    is still returned as `holdout_auc` for transparency.
     """
     result = {
         "trained":        False,
-        "auc":            None,   # headline = time-ordered holdout ensemble AUC
+        "auc":            None,   # headline = embargoed walk-forward cv_auc_mean
         "auc_label":      "N/A — model not trained",
+        "holdout_auc":    None,   # single 80/20 holdout (ensemble_auc_val) — optimistic
         "cv_auc_mean":    None,
         "cv_auc_std":     None,
         "accuracy":       None,
@@ -61,11 +67,23 @@ def get_model_metrics() -> dict:
         result["auc_label"] = "N/A — model_meta.json unreadable"
         return result
 
-    auc = meta.get("ensemble_auc_val")
+    # Headline = embargoed walk-forward AUC. Fall back to the holdout only if a
+    # walk-forward number isn't present (older meta files).
+    holdout = meta.get("ensemble_auc_val")
+    auc = meta.get("cv_auc_mean")
+    if auc is None:
+        auc = holdout
+    cv_std = meta.get("cv_auc_std")
+    if isinstance(auc, (int, float)):
+        label = f"{auc:.4f} (walk-forward"
+        label += f" ±{cv_std:.3f})" if isinstance(cv_std, (int, float)) else ")"
+    else:
+        label = "N/A"
     result.update({
         "trained":       auc is not None,
         "auc":           auc,
-        "auc_label":     f"{auc:.4f}" if isinstance(auc, (int, float)) else "N/A",
+        "auc_label":     label,
+        "holdout_auc":   holdout,
         "cv_auc_mean":   meta.get("cv_auc_mean"),
         "cv_auc_std":    meta.get("cv_auc_std"),
         "accuracy":      meta.get("ensemble_acc_val"),

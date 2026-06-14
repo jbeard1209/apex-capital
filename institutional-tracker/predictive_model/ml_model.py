@@ -113,10 +113,17 @@ def train(force: bool = False) -> dict:
 
     logger.info(f"  ml_model: training on {len(X)} samples (LightGBM={'yes' if HAS_LGB else 'no'})")
 
-    # Time-ordered train/val split (80/20)
+    # Time-ordered train/val split (80/20) with a 20-row EMBARGO gap. The label
+    # is a 20-day forward outcome, so the last ~20 training rows' outcomes overlap
+    # the start of the validation window. Without the gap that overlap leaks across
+    # the boundary and inflates the holdout AUC (this was reporting ~0.67 vs the
+    # honest walk-forward ~0.58 — the same kind of fake number the harness exists
+    # to prevent). Purge the boundary rows from the training set.
+    EMBARGO = 20
     split   = int(len(X) * 0.8)
-    X_tr, X_val = X[:split], X[split:]
-    y_tr, y_val = y_bin[:split], y_bin[split:]
+    tr_end  = max(0, split - EMBARGO)
+    X_tr, X_val = X[:tr_end], X[split:]
+    y_tr, y_val = y_bin[:tr_end], y_bin[split:]
 
     scaler   = StandardScaler()
     X_tr_s   = scaler.fit_transform(X_tr)
@@ -128,12 +135,19 @@ def train(force: bool = False) -> dict:
     # ── LightGBM ─────────────────────────────────────────────────────────────
     lgb_model = None
     if HAS_LGB:
+        # Heavily regularized on purpose. The 13F signal is weak and noisy; a
+        # deep tree (the old d6/l31/mc10) overfit badly — walk-forward AUC 0.539
+        # with poor calibration (Brier 0.305). A shallow, strongly-regularized
+        # config generalizes far better: walk-forward AUC 0.584 (outcome) / 0.588
+        # (risk-adj) with Brier ~0.252. Validated via model_test_harness sweep
+        # across BOTH targets 2026-06-14. Don't deepen without re-measuring.
         lgb_model = lgb.LGBMClassifier(
-            n_estimators=500,
-            learning_rate=0.05,
-            num_leaves=31,
-            max_depth=6,
-            min_child_samples=10,
+            n_estimators=400,
+            learning_rate=0.03,
+            num_leaves=4,
+            max_depth=2,
+            min_child_samples=150,
+            reg_lambda=3.0,
             class_weight="balanced",
             random_state=42,
             verbosity=-1,
@@ -148,8 +162,10 @@ def train(force: bool = False) -> dict:
         logger.info(f"  LightGBM val AUC: {lgb_auc:.4f}")
 
     # ── Random Forest ────────────────────────────────────────────────────────
+    # Regularized to match the weak-signal regime (was max_depth=6/leaf=5, which
+    # overfit). Shallower trees + large leaves generalize better here.
     rf = RandomForestClassifier(
-        n_estimators=300, max_depth=6, min_samples_leaf=5,
+        n_estimators=300, max_depth=4, min_samples_leaf=100,
         class_weight="balanced", random_state=42, n_jobs=-1,
     )
     rf.fit(X_tr_s, y_tr)
@@ -158,7 +174,7 @@ def train(force: bool = False) -> dict:
     results["rf_auc_val"] = round(rf_auc, 4)
 
     # ── Logistic Regression ──────────────────────────────────────────────────
-    lr = LogisticRegression(C=1.0, class_weight="balanced", max_iter=500, random_state=42)
+    lr = LogisticRegression(C=0.5, class_weight="balanced", max_iter=1000, random_state=42)
     lr.fit(X_tr_s, y_tr)
     lr_proba = lr.predict_proba(X_val_s)[:, 1]
     lr_auc   = roc_auc_score(y_val, lr_proba) if len(set(y_val)) > 1 else 0.5
@@ -201,19 +217,22 @@ def train(force: bool = False) -> dict:
         from sklearn.preprocessing import StandardScaler as SS2
         scaler_ra = SS2()
         split_ra  = int(len(X_ra) * 0.8)
-        X_ra_tr   = scaler_ra.fit_transform(X_ra[:split_ra])
+        tr_end_ra = max(0, split_ra - 20)   # 20-row embargo, same as classifier
+        X_ra_tr   = scaler_ra.fit_transform(X_ra[:tr_end_ra])
         X_ra_val  = scaler_ra.transform(X_ra[split_ra:])
         y_ra_arr  = np.array(y_ra, dtype=float)
         # Clip extreme outliers (beyond 3 std)
         mu, sig = y_ra_arr.mean(), y_ra_arr.std()
         y_ra_arr = np.clip(y_ra_arr, mu - 3*sig, mu + 3*sig)
 
+        # Same regularization rationale as the classifier above — shallow trees
+        # generalize better on this weak, noisy target.
         ra_model = lgb.LGBMRegressor(
-            n_estimators=300, learning_rate=0.05, num_leaves=31,
-            max_depth=5, min_child_samples=10,
+            n_estimators=400, learning_rate=0.03, num_leaves=4,
+            max_depth=2, min_child_samples=150, reg_lambda=3.0,
             random_state=42, verbosity=-1,
         )
-        ra_model.fit(X_ra_tr, y_ra_arr[:split_ra])
+        ra_model.fit(X_ra_tr, y_ra_arr[:tr_end_ra])
         ra_preds = ra_model.predict(X_ra_val)
         from sklearn.metrics import r2_score
         r2 = r2_score(y_ra_arr[split_ra:], ra_preds)

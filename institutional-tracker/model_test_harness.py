@@ -172,15 +172,18 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
     else:
         out["confidence"] = "HIGH"
 
+    # Keep this in lockstep with predictive_model/ml_model.py's classifier so the
+    # report measures what's actually deployed. Regularized config (validated
+    # 2026-06-14): walk-forward AUC ~0.58 vs ~0.54 for the old d6/l31.
     def make_lgb():
         try:
             import lightgbm as lgb
-            return lgb.LGBMClassifier(n_estimators=300, learning_rate=0.05, num_leaves=31,
-                                      max_depth=6, min_child_samples=10, class_weight="balanced",
-                                      random_state=SEED, verbosity=-1)
+            return lgb.LGBMClassifier(n_estimators=400, learning_rate=0.03, num_leaves=4,
+                                      max_depth=2, min_child_samples=150, reg_lambda=3.0,
+                                      class_weight="balanced", random_state=SEED, verbosity=-1)
         except Exception:
             from sklearn.ensemble import RandomForestClassifier
-            return RandomForestClassifier(n_estimators=300, max_depth=6, min_samples_leaf=5,
+            return RandomForestClassifier(n_estimators=300, max_depth=4, min_samples_leaf=100,
                                           class_weight="balanced", random_state=SEED, n_jobs=-1)
 
     aucs, mean, std, brier = _walk_forward_auc(X, y, make_lgb, n_splits, embargo)
