@@ -34,6 +34,7 @@ import json
 import pickle
 import logging
 import numpy as np
+import pandas as pd
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -197,19 +198,34 @@ def train(force: bool = False) -> dict:
     # (this is why CV numbers used to look better than live results). TimeSeriesSplit
     # only ever trains on the past and tests on the future, which is honest.
     from sklearn.model_selection import TimeSeriesSplit
+    from sklearn.base import clone
     cv_model = lgb_model if HAS_LGB else rf
     n_splits = min(5, max(2, len(X) // 30))   # need enough rows per fold
-    # Embargo (purge): the 20-day label means a training row's outcome overlaps the
-    # next ~20 rows. Without a gap, the fold boundary leaks that overlap into the test
-    # set and inflates AUC. Gap them out. Only apply when there's room for it.
-    embargo = 20 if len(X) >= (n_splits + 1) * 40 else 0
-    tscv = TimeSeriesSplit(n_splits=n_splits, gap=embargo)
-    cv_scores = cross_val_score(cv_model, X_all_s, y_bin, cv=tscv, scoring="roc_auc")
-    results["cv_auc_mean"]   = round(float(cv_scores.mean()), 4)
-    results["cv_auc_std"]    = round(float(cv_scores.std()),  4)
-    results["cv_method"]     = f"TimeSeriesSplit(n_splits={n_splits}, gap={embargo})"
+    # Embargo (purge) by DAYS, not rows. The label is a 20-day forward return, so a
+    # training row dated within 20 days of the test window has a label that overlaps
+    # the test period — that's the leak. There are ~100 rows per snapshot date here,
+    # so a row-count gap purges a fraction of one day and leaves the leak in place
+    # (it inflated CV AUC by ~0.01). Purge by calendar days using snapshot_date.
+    EMBARGO_DAYS = 20
+    _dates = pd.to_datetime(meta_df["snapshot_date"]).values
+    _order = np.argsort(_dates, kind="mergesort")
+    _Xs, _ys, _ds = X_all_s[_order], np.asarray(y_bin)[_order], _dates[_order]
+    _tscv = TimeSeriesSplit(n_splits=n_splits, gap=0)
+    _cv = []
+    for _tr, _te in _tscv.split(_Xs):
+        _cut = _ds[_te].min() - np.timedelta64(EMBARGO_DAYS, "D")
+        _tr = _tr[_ds[_tr] < _cut]
+        if len(set(_ys[_te])) < 2 or len(set(_ys[_tr])) < 2:
+            continue
+        _mdl = clone(cv_model)
+        _mdl.fit(_Xs[_tr], _ys[_tr])
+        _cv.append(roc_auc_score(_ys[_te], _mdl.predict_proba(_Xs[_te])[:, 1]))
+    import numpy as _np
+    results["cv_auc_mean"]   = round(float(_np.mean(_cv)), 4) if _cv else None
+    results["cv_auc_std"]    = round(float(_np.std(_cv)),  4) if _cv else None
+    results["cv_method"]     = f"TimeSeriesSplit(n_splits={n_splits}, time-embargo={EMBARGO_DAYS}d)"
     results["cv_n_splits"]   = n_splits
-    results["cv_embargo"]    = embargo
+    results["cv_embargo_days"] = EMBARGO_DAYS
 
     # ── Risk-adjusted regressor ──────────────────────────────────────────────
     ra_model = None

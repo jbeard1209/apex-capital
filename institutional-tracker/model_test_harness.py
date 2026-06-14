@@ -64,19 +64,36 @@ def _post_channel(content: str, priority: str = "NORMAL"):
         logger.warning(f"  channel post failed: {e}")
 
 
-def _walk_forward_auc(X, y, make_model, n_splits: int, embargo: int = 0):
-    """Walk-forward AUC + Brier with an embargo gap (purged CV) — no leakage.
+def _purge_train_idx(tr_idx, te_idx, dates, embargo_days):
+    """Drop training rows whose snapshot date is within `embargo_days` BEFORE the
+    test fold starts. The label is a forward return over the horizon, so a train
+    row dated within one horizon of the test window has a label that overlaps the
+    test period — that's the leak. Critically this purges by DAYS, not rows: there
+    are ~100 rows per snapshot date here, so a row-count gap (the old approach)
+    purged a fraction of a single day and left the leak in place (inflated AUC by
+    ~0.01). If no dates are supplied, falls back to returning tr_idx unchanged."""
+    if dates is None or embargo_days <= 0:
+        return tr_idx
+    test_start = dates[te_idx].min()
+    cutoff = test_start - np.timedelta64(int(embargo_days), "D")
+    return tr_idx[dates[tr_idx] < cutoff]
 
-    Returns (fold_aucs, auc_mean, auc_std, brier_mean). The embargo gaps train and
-    test folds so the 20-day label window can't bleed across the boundary.
+
+def _walk_forward_auc(X, y, make_model, n_splits: int, embargo_days: int = 0, dates=None):
+    """Walk-forward AUC + Brier with a TIME-based embargo (purged CV) — no leakage.
+
+    Returns (fold_aucs, auc_mean, auc_std, brier_mean). Train rows within
+    `embargo_days` of the test fold start are purged so the forward-return label
+    can't bleed across the boundary. See _purge_train_idx for why this is in days.
     """
     from sklearn.model_selection import TimeSeriesSplit
     from sklearn.preprocessing import StandardScaler
     from sklearn.metrics import roc_auc_score, brier_score_loss
 
-    tscv = TimeSeriesSplit(n_splits=n_splits, gap=embargo)
+    tscv = TimeSeriesSplit(n_splits=n_splits, gap=0)
     aucs, briers = [], []
     for tr_idx, te_idx in tscv.split(X):
+        tr_idx = _purge_train_idx(tr_idx, te_idx, dates, embargo_days)
         if len(set(y[te_idx])) < 2 or len(set(y[tr_idx])) < 2:
             continue  # a fold with one class can't yield a meaningful AUC
         scaler = StandardScaler()
@@ -95,18 +112,19 @@ def _walk_forward_auc(X, y, make_model, n_splits: int, embargo: int = 0):
             round(float(np.mean(briers)), 4))
 
 
-def _baseline_momentum_auc(X, y, feature_cols, n_splits: int, embargo: int):
+def _baseline_momentum_auc(X, y, feature_cols, n_splits: int, embargo_days: int, dates=None):
     """Naive baseline: rank by price_momentum_20d. Contextualizes the model's AUC —
-    if the model can't beat 'buy what went up', it isn't adding value."""
+    if the model can't beat 'buy what went up', it isn't adding value. Uses the same
+    time-based embargo as the model eval so the comparison is apples-to-apples."""
     from sklearn.model_selection import TimeSeriesSplit
     from sklearn.metrics import roc_auc_score
     try:
         col = feature_cols.index("price_momentum_20d")
     except (ValueError, AttributeError):
         return None
-    tscv = TimeSeriesSplit(n_splits=n_splits, gap=embargo)
+    tscv = TimeSeriesSplit(n_splits=n_splits, gap=0)
     aucs = []
-    for _tr, te in tscv.split(X):
+    for tr_idx, te in tscv.split(X):
         if len(set(y[te])) < 2:
             continue
         score = X[te][:, col]
@@ -125,7 +143,7 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
            "seed": SEED, "status": "UNKNOWN"}
 
     try:
-        X, y, _meta = build_feature_matrix(target=target)
+        X, y, meta = build_feature_matrix(target=target)
     except Exception as e:
         out["status"] = "ERROR"
         out["error"] = f"build_feature_matrix failed: {e}"
@@ -133,6 +151,16 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
 
     X = np.asarray(X, dtype=float)
     y = np.asarray(y)
+
+    # Snapshot dates drive the TIME-based embargo. Sort everything chronologically
+    # so the walk-forward folds are genuinely past→future (build_feature_matrix
+    # already sorts, but we don't rely on that here).
+    import pandas as _pd
+    dates = _pd.to_datetime(meta["snapshot_date"]).values if meta is not None and "snapshot_date" in getattr(meta, "columns", []) else None
+    if dates is not None:
+        _order = np.argsort(dates, kind="mergesort")
+        X, y, dates = X[_order], y[_order], dates[_order]
+
     out["n_samples"] = int(len(X))
     out["n_features"] = int(X.shape[1]) if X.ndim == 2 else 0
 
@@ -160,9 +188,14 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
         return out
 
     n_splits = min(5, max(2, len(X) // 30))
-    embargo  = 20 if len(X) >= (n_splits + 1) * 40 else 0
-    out["cv_method"] = f"TimeSeriesSplit(n_splits={n_splits}, gap={embargo})"
-    out["embargo"]   = embargo
+    # Embargo = the label's forward horizon, in DAYS, parsed from the target name
+    # (outcome_20d -> 20, outcome_252d -> 252, risk_adjusted_20d -> 20). This is the
+    # window over which a training row's forward-return label overlaps the future.
+    import re as _re2
+    _m = _re2.search(r"(\d+)d?$", target)
+    embargo_days = int(_m.group(1)) if _m else 20
+    out["cv_method"] = f"TimeSeriesSplit(n_splits={n_splits}, time-embargo={embargo_days}d)"
+    out["embargo_days"] = embargo_days
 
     # Sample-size confidence — small data => unstable AUC ("random numbers")
     if len(X) < 200:
@@ -186,7 +219,7 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
             return RandomForestClassifier(n_estimators=300, max_depth=4, min_samples_leaf=100,
                                           class_weight="balanced", random_state=SEED, n_jobs=-1)
 
-    aucs, mean, std, brier = _walk_forward_auc(X, y, make_lgb, n_splits, embargo)
+    aucs, mean, std, brier = _walk_forward_auc(X, y, make_lgb, n_splits, embargo_days, dates)
     out["fold_aucs"] = [round(a, 4) for a in aucs]
     out["walk_forward_auc_mean"] = mean
     out["walk_forward_auc_std"]  = std
@@ -195,7 +228,7 @@ def evaluate(target: str = "outcome_20d", label: str = "shortterm") -> dict:
     # Naive momentum baseline — the model must beat this to add value
     try:
         from predictive_model.ml_model import FEATURE_COLS
-        base = _baseline_momentum_auc(X, y, list(FEATURE_COLS), n_splits, embargo)
+        base = _baseline_momentum_auc(X, y, list(FEATURE_COLS), n_splits, embargo_days, dates)
     except Exception:
         base = None
     out["baseline_momentum_auc"] = base
