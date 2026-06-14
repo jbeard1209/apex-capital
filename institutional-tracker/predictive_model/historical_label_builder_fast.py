@@ -97,6 +97,11 @@ def _migrate_schema(conn):
         ("insider_net_shares_30d",  "INTEGER"),
         ("risk_adjusted_20d",       "REAL"),
         ("risk_adjusted_5d",        "REAL"),
+        # Long-term (LT) label — 252 trading days ≈ 1 year forward return. The firm
+        # runs a long-horizon model (ml_live_test_runner.HORIZON_DAYS_LT=365); this
+        # is the target it trains on.
+        ("outcome_252d",            "REAL"),
+        ("risk_adjusted_252d",      "REAL"),
         ("volatility_20d",          "REAL"),
         # Market context at filing date (backfilled from price cache)
         ("rd_regime_bull",          "INTEGER"),   # 1=bull, 0=neutral, -1=bear (SPY vs 200MA)
@@ -1315,6 +1320,69 @@ def backfill_sector_momentum(conn, batch_size: int = 500) -> int:
 _T0 = datetime.now()
 
 
+def backfill_long_term_outcomes(horizon_cal_days: int = 365) -> dict:
+    """Backfill the long-term label (outcome_252d / risk_adjusted_252d) onto EXISTING
+    pipeline_snapshots rows using the already-warmed price cache.
+
+    Why a separate UPDATE pass: the normal labeler INSERT-OR-IGNOREs and skips rows
+    that already exist, so it never adds a new column to the 383k rows already in the
+    DB. This pass fills the LT label for every row whose ticker is in the cache and
+    whose full 252-day forward window is actually realizable.
+
+    Critical correctness guard: _px() returns the last price <= a target date, so for
+    a snapshot < 1 year old `base + 365d` would silently resolve to the latest price
+    and yield a TRUNCATED (look-ahead-incomplete) return. We therefore only label a
+    row when the ticker's price history extends at least `horizon_cal_days - 5` days
+    past the snapshot date — otherwise the 1-year outcome doesn't exist yet.
+    """
+    global _price_cache
+    conn = get_db()
+    _migrate_schema(conn)
+    if not _price_cache:
+        if PRICE_CACHE_PATH.exists():
+            with open(PRICE_CACHE_PATH, "rb") as f:
+                _price_cache = pickle.load(f)
+            logger.info(f"  LT backfill: loaded {len(_price_cache):,} tickers from price cache")
+        else:
+            logger.warning("  LT backfill: no price cache — run the labeler's prewarm first")
+            return {"status": "NO_CACHE", "updated": 0}
+
+    rows = conn.execute(
+        "SELECT ROWID, ticker, snapshot_date FROM pipeline_snapshots "
+        "WHERE outcome_252d IS NULL AND ticker != ''"
+    ).fetchall()
+    logger.info(f"  LT backfill: {len(rows):,} rows missing outcome_252d")
+
+    updates, skipped_horizon, skipped_nocache = [], 0, 0
+    for rowid, ticker, snap_date in rows:
+        s = _price_cache.get(ticker)
+        if s is None or len(s) == 0:
+            skipped_nocache += 1
+            continue
+        base = pd.to_datetime(snap_date).date()
+        # Full 1-year window must be realizable (guard against truncated returns).
+        if pd.Timestamp(s.index.max()) < pd.Timestamp(base) + pd.Timedelta(days=horizon_cal_days - 5):
+            skipped_horizon += 1
+            continue
+        ret = _fwd_ret(ticker, base, horizon_cal_days)
+        if ret is None:
+            continue
+        vol_ann = _vol20(ticker, base)   # annualized 20d vol
+        risk_adj = (ret / vol_ann) if (vol_ann and vol_ann > 0) else None
+        updates.append((ret, risk_adj, rowid))
+
+    for i in range(0, len(updates), 500):
+        conn.executemany(
+            "UPDATE pipeline_snapshots SET outcome_252d=?, risk_adjusted_252d=? WHERE ROWID=?",
+            updates[i:i + 500],
+        )
+        conn.commit()
+    logger.info(f"  LT backfill: updated {len(updates):,} rows "
+                f"(skipped {skipped_horizon:,} too-recent, {skipped_nocache:,} no-cache)")
+    return {"status": "DONE", "updated": len(updates),
+            "skipped_horizon": skipped_horizon, "skipped_nocache": skipped_nocache}
+
+
 def run(limit: int = None, fund_filter: str = None,
         n_workers: int = 4, skip_prewarm: bool = False) -> dict:
 
@@ -1435,6 +1503,8 @@ if __name__ == "__main__":
                         help="Only backfill earnings_surprise_flag on existing rows (needs price cache)")
     parser.add_argument("--backfill-form4", action="store_true",
                         help="Only backfill insider_buy_dollars + insider_is_ceo_cfo on existing rows")
+    parser.add_argument("--backfill-lt", action="store_true",
+                        help="Backfill long-term label outcome_252d on existing rows")
     parser.add_argument("--backfill-sector-momentum", action="store_true",
                         help="Only backfill sector_momentum_vs_spy on existing rows (needs price cache)")
     args = parser.parse_args()
@@ -1516,6 +1586,10 @@ if __name__ == "__main__":
             phase2_prewarm_prices(set(missing_etfs) | {"SPY"}, filings)
         n = backfill_sector_momentum(conn)
         print(json.dumps({"status": "SECTOR_MOMENTUM_BACKFILL_DONE", "rows_updated": n}, indent=2))
+    elif args.backfill_lt:
+        # Long-term label backfill — fills outcome_252d / risk_adjusted_252d on
+        # existing rows from the warmed price cache (no re-download, no INSERT).
+        print(json.dumps(backfill_long_term_outcomes(), indent=2, default=str))
     else:
         result = run(
             limit=args.limit,
