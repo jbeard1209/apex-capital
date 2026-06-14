@@ -47,6 +47,8 @@ def get_model_metrics() -> dict:
         "auc":            None,   # headline = embargoed walk-forward cv_auc_mean
         "auc_label":      "N/A — model not trained",
         "holdout_auc":    None,   # single 80/20 holdout (ensemble_auc_val) — optimistic
+        "lt_auc":         None,   # long-term (252d) walk-forward AUC
+        "lt_meets_gate":  False,
         "cv_auc_mean":    None,
         "cv_auc_std":     None,
         "accuracy":       None,
@@ -79,13 +81,22 @@ def get_model_metrics() -> dict:
         label += f" ±{cv_std:.3f})" if isinstance(cv_std, (int, float)) else ")"
     else:
         label = "N/A"
+    # Long-term model (252-day) — reported separately. It is held out of live
+    # trading until lt_auc clears the live gate (0.57); lt_meets_gate says whether
+    # it does. Both are surfaced so the board sees each model's true status.
+    lt_auc = meta.get("lt_cv_auc_mean")
     result.update({
         "trained":       auc is not None,
-        "auc":           auc,
+        "auc":           auc,            # SHORT-TERM headline (walk-forward)
         "auc_label":     label,
         "holdout_auc":   holdout,
         "cv_auc_mean":   meta.get("cv_auc_mean"),
         "cv_auc_std":    meta.get("cv_auc_std"),
+        "lt_auc":        lt_auc,         # LONG-TERM walk-forward AUC (None if not trained)
+        "lt_auc_label":  (f"{lt_auc:.4f} (walk-forward)" if isinstance(lt_auc, (int, float))
+                          else "N/A — LT not trained"),
+        "lt_meets_gate": meta.get("lt_meets_gate", False),
+        "lt_n_samples":  meta.get("lt_n_samples"),
         "accuracy":      meta.get("ensemble_acc_val"),
         "n_samples":     meta.get("n_samples"),
         "positive_rate": meta.get("positive_rate"),

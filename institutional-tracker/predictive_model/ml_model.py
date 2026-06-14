@@ -258,6 +258,60 @@ def train(force: bool = False) -> dict:
         scaler_ra = None
         results["risk_adj_r2_val"] = None
 
+    # ── Long-term (LT) model — 252-day (≈1yr) horizon ────────────────────────
+    # Trained and measured alongside the short-term model so both get equal
+    # treatment. The LT model only goes LIVE once it clears LT_LIVE_AUC_GATE
+    # (0.57). Today it doesn't (~0.54 honest walk-forward), so it trains and is
+    # reported but the live runner's gate keeps it out of live picks.
+    lt_model = lt_scaler = None
+    try:
+        X_lt, y_lt_raw, meta_lt = build_feature_matrix(target="outcome_252d")
+        X_lt = np.asarray(X_lt, dtype=float)
+        y_lt = (np.asarray(y_lt_raw) > 0).astype(int)
+        if len(X_lt) >= MIN_SAMPLES and len(set(y_lt)) > 1:
+            from sklearn.model_selection import TimeSeriesSplit as _TSS
+            from sklearn.base import clone as _clone
+
+            def _make_lt():
+                if HAS_LGB:
+                    return lgb.LGBMClassifier(n_estimators=400, learning_rate=0.03,
+                        num_leaves=4, max_depth=2, min_child_samples=150, reg_lambda=3.0,
+                        class_weight="balanced", random_state=42, verbosity=-1)
+                return RandomForestClassifier(n_estimators=300, max_depth=4,
+                        min_samples_leaf=100, class_weight="balanced", random_state=42, n_jobs=-1)
+
+            # Honest 252-day time-embargoed walk-forward CV (same method as ST).
+            _ld = pd.to_datetime(meta_lt["snapshot_date"]).values
+            _lo = np.argsort(_ld, kind="mergesort")
+            _Xo, _yo, _do = X_lt[_lo], y_lt[_lo], _ld[_lo]
+            _sc = StandardScaler(); _Xo_s = _sc.fit_transform(_Xo)
+            _ns = min(5, max(2, len(_Xo) // 30))
+            _cv_lt = []
+            for _tr, _te in _TSS(n_splits=_ns, gap=0).split(_Xo_s):
+                _cut = _do[_te].min() - np.timedelta64(252, "D")
+                _tr = _tr[_do[_tr] < _cut]
+                if len(set(_yo[_te])) < 2 or len(set(_yo[_tr])) < 2:
+                    continue
+                _m = _make_lt(); _m.fit(_Xo_s[_tr], _yo[_tr])
+                _cv_lt.append(roc_auc_score(_yo[_te], _m.predict_proba(_Xo_s[_te])[:, 1]))
+            results["lt_cv_auc_mean"] = round(float(np.mean(_cv_lt)), 4) if _cv_lt else None
+            results["lt_cv_auc_std"]  = round(float(np.std(_cv_lt)), 4) if _cv_lt else None
+            results["lt_n_samples"]   = int(len(X_lt))
+            results["lt_meets_gate"]  = bool(results["lt_cv_auc_mean"] and results["lt_cv_auc_mean"] >= 0.57)
+
+            # Final LT model fit on all rows (used only when it clears the gate).
+            lt_scaler = StandardScaler()
+            lt_model = _make_lt()
+            lt_model.fit(lt_scaler.fit_transform(X_lt), y_lt)
+            logger.info(f"  LT model: walk-forward AUC {results['lt_cv_auc_mean']} "
+                        f"(n={len(X_lt)}, meets 0.57 gate: {results['lt_meets_gate']})")
+        else:
+            results["lt_cv_auc_mean"] = None
+            logger.info("  LT model: insufficient outcome_252d labels — skipped")
+    except Exception as e:
+        results["lt_cv_auc_mean"] = None
+        logger.warning(f"  LT model training skipped: {e}")
+
     # ── Feature importances ──────────────────────────────────────────────────
     if HAS_LGB and lgb_model:
         importances = {col: round(float(imp), 4)
@@ -284,6 +338,8 @@ def train(force: bool = False) -> dict:
         "lgb":         lgb_model,
         "ra_model":    ra_model,
         "scaler_ra":   scaler_ra,
+        "lt_model":    lt_model,
+        "lt_scaler":   lt_scaler,
         "feature_cols": FEATURE_COLS,
         "has_lgb":     HAS_LGB,
         "has_ra":      ra_model is not None,
@@ -306,7 +362,8 @@ def train(force: bool = False) -> dict:
     _save_model(bundle, model_meta)
 
     logger.info(
-        f"  Ensemble AUC={ens_auc:.3f}  CV={cv_scores.mean():.3f}±{cv_scores.std():.3f}  "
+        f"  Ensemble AUC={ens_auc:.3f}  "
+        f"CV={results.get('cv_auc_mean')}±{results.get('cv_auc_std')}  "
         f"Top features: {[f for f, _ in top_features[:3]]}"
     )
     return {**model_meta, "status": "TRAINED"}
