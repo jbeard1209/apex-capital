@@ -674,26 +674,34 @@ def build_feature_matrix(target: str = "outcome_20d") -> tuple:
     holdings_feats = _compute_holdings_features(conn)
     if not holdings_feats.empty:
         holdings_feats["filing_date"] = pd.to_datetime(holdings_feats["filing_date"])
-        merged = []
-        for _, row in snaps.sort_values("snapshot_date").iterrows():
-            hf = holdings_feats[
-                (holdings_feats["ticker"] == row["ticker"]) &
-                (holdings_feats["filing_date"] <= row["snapshot_date"])
-            ].sort_values("filing_date")
-            if not hf.empty:
-                latest = hf.iloc[-1].to_dict()
-                latest.update(row.to_dict())
-                merged.append(latest)
-            else:
-                r = row.to_dict()
-                r.update({
-                    "pct_change_shares": 0.0, "new_position_flag": 1,
-                    "large_increase_flag": 0, "hold_streak_quarters": 1,
-                    "amendment_flag": 0, "position_size_pct_aum": 0.0,
-                    "filing_quarter_consensus": 0.0,
-                })
-                merged.append(r)
-        snaps = pd.DataFrame(merged)
+        # As-of join: for each snapshot, attach the latest holdings_feat for the same
+        # ticker with filing_date <= snapshot_date. This was a per-row Python loop
+        # (O(n_snaps * n_holdings) — minutes on ~10k snapshots); pd.merge_asof does it
+        # vectorized in one pass. Behaviour preserved: the old loop did
+        # `latest.update(row)`, so snapshot columns win on any name collision — we
+        # replicate that by only bringing holdings columns snaps doesn't already own.
+        hf_cols = [c for c in holdings_feats.columns
+                   if c in ("ticker", "filing_date") or c not in snaps.columns]
+        hf = holdings_feats[hf_cols].sort_values("filing_date")
+        snaps = pd.merge_asof(
+            snaps.sort_values("snapshot_date"),
+            hf,
+            left_on="snapshot_date",
+            right_on="filing_date",
+            by="ticker",
+            direction="backward",
+        )
+        # Snapshots with no prior matching filing get the same defaults the old
+        # else-branch applied (only fills NaNs, so real snapshot values are untouched).
+        _no_match_defaults = {
+            "pct_change_shares": 0.0, "new_position_flag": 1,
+            "large_increase_flag": 0, "hold_streak_quarters": 1,
+            "amendment_flag": 0, "position_size_pct_aum": 0.0,
+            "filing_quarter_consensus": 0.0,
+        }
+        for _c, _d in _no_match_defaults.items():
+            if _c in snaps.columns:
+                snaps[_c] = snaps[_c].fillna(_d)
     else:
         for c in ["pct_change_shares", "new_position_flag", "large_increase_flag",
                   "hold_streak_quarters", "amendment_flag", "position_size_pct_aum",
