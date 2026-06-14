@@ -108,8 +108,6 @@ FEATURE_COLS = [
     "price_momentum_5d",   # short-term 5-day momentum (mlsugg-2026-003)
     "price_vs_52w_high",
     "volatility_20d",
-    "days_since_ipo",
-    "short_interest_pct",
     # Portfolio
     "portfolio_weight",
     # Institution × market regime (how well does THIS institution pick stocks in THIS regime)
@@ -121,14 +119,13 @@ FEATURE_COLS = [
     "rd_spy_rsi",
     # Earnings surprise (price-reaction proxy at nearest earnings date before filing)
     "earnings_surprise_flag",
-    # Form 4 enrichment: dollar amount + officer type (replaces binary insider_buy_flag)
-    "insider_buy_dollars",
-    "insider_is_ceo_cfo",
-    # Sector rotation signal: sector ETF 20d return minus SPY 20d return at filing date.
-    # Positive = sector outperforming market (tailwind for institutional picks in that sector).
-    # Negative = sector lagging (headwind). Historically backfillable via label builder.
-    # Expected: 2-4% AUC lift based on sector-rotation literature (Lou & Polk 2022).
-    "sector_momentum_vs_spy",
+    # NOTE: days_since_ipo, short_interest_pct, insider_buy_dollars, insider_is_ceo_cfo,
+    # and sector_momentum_vs_spy were REMOVED 2026-06-14. A coverage audit found all five
+    # are 0% non-zero across the 10,555-row training set — their backfill (label builder /
+    # Form 4 / sector-rotation enrichment) never actually populated the DB columns, so they
+    # were zero-variance noise. Same rationale as the bridge/commodity exclusions below.
+    # Removing them improved walk-forward AUC (see model_test_report.json). Re-add ONLY after
+    # confirming the backfill writes non-zero values AND it lifts embargoed walk-forward AUC.
     # NOTE: Commodity momentum (oil_momentum_20d, gold_momentum_20d, dxy_momentum_20d) are
     # intentionally EXCLUDED from training features. 100% fill confirmed (532k rows), but AUC
     # regressed from 0.6057 → 0.5842 when included — these macro signals are collinear with the
@@ -696,6 +693,13 @@ def build_feature_matrix(target: str = "outcome_20d") -> tuple:
         # vectorized in one pass. Behaviour preserved: the old loop did
         # `latest.update(row)`, so snapshot columns win on any name collision — we
         # replicate that by only bringing holdings columns snaps doesn't already own.
+        # These holdings-derived features are stored EMPTY (all-zero) in
+        # pipeline_snapshots, so without intervention the empty snapshot copies
+        # shadow the real values computed in _compute_holdings_features (verified
+        # non-zero: herding 34%, quant_consensus 26%, filing_quarter_consensus
+        # 100%). Drop the empty copies so the merge sources them from holdings.
+        _resurrect = ["herding_flag", "quant_consensus", "filing_quarter_consensus"]
+        snaps = snaps.drop(columns=[c for c in _resurrect if c in snaps.columns])
         hf_cols = [c for c in holdings_feats.columns
                    if c in ("ticker", "filing_date") or c not in snaps.columns]
         hf = holdings_feats[hf_cols].sort_values("filing_date")
