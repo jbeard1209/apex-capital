@@ -152,6 +152,14 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
         available = [v for v in available if v >= 0.30 * _hi] or available
 
     conservative_iv = min(available)
+
+    # Same sanity guard as the EDGAR path — reject implausible >5x-price IVs that
+    # are almost certainly data/units errors rather than real deep value.
+    if conservative_iv > 5 * current_price:
+        logger.warning(f"[IV] {ticker}: IV ${conservative_iv:,.0f} > 5x price "
+                       f"${current_price:.2f} — implausible, likely a data error; skipping")
+        return None
+
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
 
     verdict = "BUY" if mos >= MOS_BUY_THRESHOLD else ("HOLD" if mos >= MOS_HOLD_THRESHOLD else "OVERVALUED")
@@ -287,6 +295,18 @@ def calculate_iv(ticker: str) -> Optional[dict]:
         available = [v for v in available if v >= 0.30 * _hi] or available
 
     conservative_iv = min(available)
+
+    # Sanity guard: an IV more than 5x the market price implies a >80% margin of
+    # safety, which for a liquid large-cap is virtually always a data/units error
+    # (e.g. total $ not divided by shares, or a shares-in-thousands mismatch) — not
+    # a real opportunity. Such a bug would manufacture a FALSE deep-value BUY and
+    # deploy capital on garbage, so we reject rather than trust it. Real deep value
+    # tops out well under this. (Caught VTRS @ $313M/sh, RTX @ $37k/sh.)
+    if conservative_iv > 5 * current_price:
+        logger.warning(f"[IV] {ticker}: IV ${conservative_iv:,.0f} > 5x price "
+                       f"${current_price:.2f} — implausible, likely a data error; skipping")
+        return None
+
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
 
     if mos >= MOS_BUY_THRESHOLD:

@@ -499,11 +499,41 @@ def _run_multi_factor_analysis(picks: list) -> list:
     return enriched
 
 
+# Broad value/quality candidate universe — the FE bar is deliberately HIGH (25%
+# margin of safety), so the way to find qualifying picks is to scan WIDER, not to
+# lower the bar. These are liquid, EDGAR-covered US large/mid-caps concentrated in
+# the value-rich sectors (financials, energy, healthcare, staples, industrials,
+# materials, telecom, utilities, cyclical consumer) where deep value actually lives
+# — deliberately NOT growth/tech, which a DCF/EPV value model will always reject.
+# The IV scan runs the same 25%-MoS standard over all of these; most are rejected,
+# and that's the point — we want the rare few that clear it (e.g. KHC at ~41%).
+FE_VALUE_UNIVERSE = [
+    # Financials
+    "JPM","BAC","C","WFC","GS","MS","USB","PNC","TFC","COF","AIG","MET","PRU","ALL",
+    "TRV","AFL","HIG","CINF","BEN","TROW","STT","BK","SCHW","CFG","KEY","RF","FITB","HBAN","MTB",
+    # Energy
+    "XOM","CVX","COP","EOG","SLB","MPC","VLO","PSX","OXY","HES","DVN","FANG","KMI","WMB","OKE","BKR","HAL",
+    # Healthcare
+    "JNJ","PFE","MRK","ABBV","BMY","CVS","CI","ELV","HUM","GILD","AMGN","MDT","BDX","CAH","MCK","COR","LH","DGX","VTRS","ZBH",
+    # Consumer staples
+    "KO","PEP","PG","MO","PM","KHC","GIS","K","HSY","KMB","CL","CLX","SYY","ADM","KR","STZ","TAP","CAG","CPB","HRL",
+    # Industrials
+    "MMM","GE","HON","CAT","DE","EMR","ETN","ITW","GD","LMT","NOC","RTX","BA","UPS","FDX","CSX","NSC","UNP","PCAR","DOV","PH","ROK","CMI","JCI","SWK",
+    # Materials
+    "LIN","SHW","FCX","NEM","NUE","DOW","DD","PPG","ECL","APD","MLM","VMC","IP","CF","MOS",
+    # Telecom / Media
+    "T","VZ","CMCSA","DIS","CHTR","FOXA","PARA","WBD","IPG","OMC",
+    # Utilities
+    "NEE","DUK","SO","D","AEP","EXC","XEL","ED","WEC","ES","PEG","SRE","PCG",
+    # Cyclical consumer (value)
+    "F","GM","HD","LOW","TGT","BBY","GPC","AAP","WHR","LEN","DHI","PHM","MGM","LVS",
+]
+
+
 def prescreen_universe():
     """
-    Pre-compute fraud scores for all tickers in all agent watchlists.
-    Returns a set of HIGH-risk tickers to exclude from agent analysis.
-    Caches results for 7 days so it is fast on repeat runs.
+    Pre-compute fraud scores for all tickers in all agent watchlists PLUS the broad
+    FE_VALUE_UNIVERSE. Returns (blocked_set, full_universe). Caches 7 days.
     """
     import glob
     import re as _re
@@ -532,6 +562,10 @@ def prescreen_universe():
             all_tickers.update(tickers)
         except Exception:
             pass
+
+    # Widen the net: union the broad value/quality universe so the IV scan has many
+    # more chances to surface a name that clears the high 25%-MoS bar.
+    all_tickers.update(FE_VALUE_UNIVERSE)
 
     blocked = set()
     for ticker in all_tickers:
