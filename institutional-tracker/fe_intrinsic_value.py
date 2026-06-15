@@ -139,9 +139,17 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
         book_iv = book * 1.2   # slight premium to book for franchise value
 
     available = [v for v in [dcf_iv, epv_iv] if v and v > 0]
+    # Book value as a fallback for financials (DCF/EPV don't apply to banks).
+    if not available and book_iv and book_iv > 0:
+        available = [book_iv]
     if not available:
         logger.warning(f"[IV] yfinance fallback: could not compute any IV for {ticker}")
         return None
+
+    # Drop degenerate methods (<30% of best) so a collapsed DCF can't define IV.
+    if len(available) >= 2:
+        _hi = max(available)
+        available = [v for v in available if v >= 0.30 * _hi] or available
 
     conservative_iv = min(available)
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
@@ -256,9 +264,27 @@ def calculate_iv(ticker: str) -> Optional[dict]:
 
     # ── Conservative IV ───────────────────────────────────────────────────────
     available = [v for v in [dcf_iv, epv_iv] if v and v > 0]
+
+    # Book value (net assets / share) — the right anchor for financials (banks,
+    # insurers) where operating-cash-flow DCF/EPV don't apply. Used ONLY as a
+    # fallback when DCF+EPV are both unavailable, so it never drags down the IV of
+    # ordinary operating companies. (Previously assets/liabilities were fetched but
+    # never used → financials like C/BAC returned no IV at all.)
+    _a = next((v for v in reversed(assets_list) if v), None)
+    _l = next((v for v in reversed(liab_list) if v), None)
+    if not available and _a and _l and _a > _l and shares:
+        available = [((_a - _l) / shares) * 1.1]   # slight premium for franchise value
+
     if not available:
         logger.warning(f"[IV] Could not compute IV for {ticker}")
         return None
+
+    # Drop degenerate methods (<30% of the best credible estimate) before taking the
+    # conservative (min). A DCF that collapses on volatile/near-zero FCF shouldn't
+    # DEFINE intrinsic value — that produced absurd $1 IVs for names like F / KHC.
+    if len(available) >= 2:
+        _hi = max(available)
+        available = [v for v in available if v >= 0.30 * _hi] or available
 
     conservative_iv = min(available)
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
