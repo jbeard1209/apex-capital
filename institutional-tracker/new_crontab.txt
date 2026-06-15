@@ -115,6 +115,12 @@
 # FE Lane 4: $5,000 capital, deep value / intrinsic value strategy
 0 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 fe_pipeline.py >> logs/fe_$(date +\%Y\%m\%d).log 2>&1
 
+# ── POD HEALTH MONITOR — 11:30 AM EDT = 15:30 UTC, Mon-Fri ──
+# Runs AFTER the FI (14:30) and FE (15:00) pipelines. Uniform all-pod health check
+# (stale / zero-picks / error-flood); auto-files board proposals + Chairman action
+# items with a fix plan so a broken or idle pod surfaces itself immediately.
+30 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 pod_health_monitor.py >> logs/pod_health_$(date +\%Y\%m\%d).log 2>&1
+
 # ── AUTO COMMIT + PUSH — 11 PM EDT = 03:00 UTC, daily ──
 # Saves all pipeline data, findings, and any code changes to GitHub nightly
 0 3 * * * cd "/Users/jackbeard/Claude investment strategy" && git add -A && git diff --cached --quiet || git commit -m "Nightly auto-save: pipeline data + findings $(date +\%Y-\%m-\%d)" && git push origin main >> /tmp/apex_git_$(date +\%Y\%m\%d).log 2>&1
