@@ -22,6 +22,14 @@ from datetime import datetime
 
 logger = logging.getLogger("fi_data_layer")
 
+# yfinance logs every failed symbol lookup at ERROR level via its OWN logger.
+# The FI universe includes individual preferred shares (e.g. MET-A, PRU-B) that
+# Yahoo can't resolve, so each run produced 800-2500 "HTTP Error 404" ERROR lines
+# — flooding the logs, tripping the log-error alarm, and spawning board proposals
+# that were approved 4x but never fixable (the noise WAS the bug). Silence
+# yfinance's logger; we already handle missing data gracefully (yield is optional).
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+
 # ── Credit tier classification ────────────────────────────────────────────────
 # Known ETFs and their credit characteristics
 CREDIT_PROFILE = {
@@ -185,8 +193,11 @@ def get_bond_opportunity_score(ticker: str, spreads: dict) -> dict:
     else:
         verdict = "AVOID"
 
-    # Try to get live yield
-    yield_est = _get_live_yield(ticker)
+    # Try to get live yield — but only for tickers in CREDIT_PROFILE (the ETFs
+    # Yahoo can actually price). Individual preferreds/bonds aren't resolvable on
+    # yfinance and the yield is optional enrichment, so we skip the doomed lookup
+    # (avoids 404s and a slow per-ticker network round-trip).
+    yield_est = _get_live_yield(ticker) if ticker.upper() in CREDIT_PROFILE else None
 
     rationale_parts = [
         f"regime={regime}",
