@@ -1,77 +1,35 @@
 {
-  "generated_at": "2026-06-14T01:02:35.696692",
-  "proposals_reviewed": 10,
+  "generated_at": "2026-06-15T01:00:06.313859",
+  "proposals_reviewed": 4,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "CIT-2026-479",
-      "title": "Replace fixed R&D cadence with event-triggered research cycles",
-      "category": "VISION",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "CIT-2026-480",
-      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
-      "category": "VISION",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "PM-194016-0",
-      "title": "Cap idle cash at 30% \u2014 CRO ratings must auto-expire",
-      "category": "STRATEGY",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "PM-194016-1",
-      "title": "Cap gross short exposure at 10% unless index confirms downtrend",
-      "category": "STRATEGY",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "PM-194016-2",
-      "title": "Written override log when manager rejects research picks",
-      "category": "STRATEGY",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LT-120010-fi_never_run",
-      "title": "Fixed Income pipeline has never run",
-      "category": "IMPROVEMENT",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LTIA-20260612233930",
+      "id": "LTIA-20260615001500",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260612234113",
-      "title": "[LTIA] Expected agents silent \u2014 check they're still running",
-      "category": "IMPROVEMENT",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LTIA-20260613000002",
+      "id": "LTIA-20260615001500",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "CIT-2026-166",
-      "title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
-      "category": "BUG_FIX",
-      "pre_validated": true,
-      "validation_note": "Technical/code fix \u2014 no backtest required"
+      "id": "LTIA-20260615001500",
+      "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+      "category": "IMPROVEMENT",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "PHM-20260615004327-FE",
+      "title": "[FE] ZERO_PICKS: First Eagle Value pod health",
+      "category": "INTEGRATION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }
   ]
 }

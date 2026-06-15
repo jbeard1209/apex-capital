@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-06-14T07:15:25.927517",
+  "source": "anonymous",
+  "urgency": "CRITICAL",
+  "risk_score": 10,
+  "alert_summary": "Anonymous risk assessment: 5 concern(s) identified at severity 10/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+  "concerns": [
+    "Manager Agent \u2014 output is 35h old (threshold: 26h). Agent may have missed a cycle.",
+    "Portfolio Deployment Officer \u2014 output is 35h old (threshold: 26h). Agent may have missed a cycle.",
+    "IRM Daily Board \u2014 output is 35h old (threshold: 26h). Agent may have missed a cycle.",
+    "DEPENDENCY VIOLATION: risk_bulletin is 10.1h old but capital_efficiency_report is 35.3h old \u2014 capital_efficiency_report ran BEFORE risk_bulletin and used a stale signal.",
+    "DEPENDENCY VIOLATION: review_recommendations is 19.3h old but manager_decisions is 35.2h old \u2014 manager_decisions ran BEFORE review_recommendations and used a stale signal."
+  ],
+  "findings": [
+    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-67,099) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,046) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+    "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
+  ]
+}

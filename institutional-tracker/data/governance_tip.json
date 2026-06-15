@@ -1,7 +1,7 @@
 {
-  "concern": "Independent risk assessment (anonymous): 7 serious concern(s) at severity 10/10. Board verdict: ELEVATED RISK \u2014 IRM Board recommends Chairman review flagged items closely.. Top concern: Stress scenario 'Global Financial Crisis (2008-09)': estimated portfolio loss -68.2% (\u2248$-65,460). Key lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+  "concern": "Independent risk assessment (anonymous): 5 serious concern(s) at severity 10/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Top concern: Manager Agent \u2014 output is 35h old (threshold: 26h). Agent may have missed a cycle.",
   "trigger_emergency": true,
-  "written_at": "2026-05-20T20:16:26.922873",
+  "written_at": "2026-06-14T07:15:25.808146",
   "read": true,
-  "consumed_at": "2026-05-21T10:04:44.465772"
+  "consumed_at": "2026-06-14T21:00:02.521919"
 }

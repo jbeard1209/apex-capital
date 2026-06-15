@@ -1,0 +1,72 @@
+{
+  "trained_at": "2026-06-15T00:57:15.697006",
+  "n_samples": 21775,
+  "has_lightgbm": true,
+  "has_risk_adj": true,
+  "positive_rate": 0.4945,
+  "top_features": [
+    [
+      "rd_spy_rsi",
+      220.0
+    ],
+    [
+      "rd_vix",
+      209.0
+    ],
+    [
+      "quarter_of_year",
+      120.0
+    ],
+    [
+      "days_since_filing",
+      114.0
+    ],
+    [
+      "filing_quarter_consensus",
+      88.0
+    ]
+  ],
+  "feature_cols": [
+    "days_since_filing",
+    "filing_delay_days",
+    "quarter_of_year",
+    "amendment_flag",
+    "conviction_score",
+    "n_institutions",
+    "herding_flag",
+    "quant_consensus",
+    "filing_quarter_consensus",
+    "pct_change_shares",
+    "new_position_flag",
+    "large_increase_flag",
+    "position_size_pct_aum",
+    "hold_streak_quarters",
+    "avg_conviction_3q",
+    "institution_hit_rate",
+    "price_momentum_20d",
+    "price_momentum_5d",
+    "price_vs_52w_high",
+    "volatility_20d",
+    "portfolio_weight",
+    "institution_regime_hit_rate",
+    "rd_regime_bull",
+    "rd_vix",
+    "rd_spy_rsi",
+    "earnings_surprise_flag"
+  ],
+  "lgb_auc_val": 0.6426,
+  "rf_auc_val": 0.6516,
+  "lr_auc_val": 0.5879,
+  "ensemble_auc_val": 0.6468,
+  "ensemble_acc_val": 0.6057,
+  "cv_auc_mean": 0.5448,
+  "cv_auc_std": 0.0656,
+  "cv_method": "TimeSeriesSplit(n_splits=5, time-embargo=20d)",
+  "cv_n_splits": 5,
+  "cv_embargo_days": 20,
+  "risk_adj_r2_val": 0.0518,
+  "lt_cv_auc_mean": 0.5361,
+  "lt_cv_auc_std": 0.0263,
+  "lt_n_samples": 17652,
+  "lt_meets_gate": false
+}

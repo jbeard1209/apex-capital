@@ -1,0 +1,413 @@
+{
+  "generated_at": "2026-06-15T00:08:55.213760",
+  "model_active": true,
+  "n_signals": 45,
+  "n_boosted": 44,
+  "signals": [
+    {
+      "ticker": "AAPL",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7224,
+      "predictive_multiplier": 1.1916,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "MSFT",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6676,
+      "predictive_multiplier": 1.1306,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "NVDA",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7057,
+      "predictive_multiplier": 1.173,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "GOOGL",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7084,
+      "predictive_multiplier": 1.176,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "AMZN",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7228,
+      "predictive_multiplier": 1.192,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "META",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7073,
+      "predictive_multiplier": 1.1748,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "TSLA",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.704,
+      "predictive_multiplier": 1.1711,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "AVGO",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7161,
+      "predictive_multiplier": 1.1845,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "JPM",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6204,
+      "predictive_multiplier": 1.0783,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "V",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7247,
+      "predictive_multiplier": 1.1942,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "MA",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7266,
+      "predictive_multiplier": 1.1962,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "UNH",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6181,
+      "predictive_multiplier": 1.0757,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "LLY",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7108,
+      "predictive_multiplier": 1.1787,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "JNJ",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7238,
+      "predictive_multiplier": 1.1931,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "WMT",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6886,
+      "predictive_multiplier": 1.154,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "HD",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6165,
+      "predictive_multiplier": 1.0739,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "PG",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7243,
+      "predictive_multiplier": 1.1937,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "MRK",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6162,
+      "predictive_multiplier": 1.0736,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "XOM",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.525,
+      "predictive_multiplier": 1.0,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "CVX",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7208,
+      "predictive_multiplier": 1.1897,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "BAC",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5905,
+      "predictive_multiplier": 1.045,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "KO",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.716,
+      "predictive_multiplier": 1.1844,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "PEP",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7237,
+      "predictive_multiplier": 1.193,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "ABBV",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7246,
+      "predictive_multiplier": 1.194,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "TMO",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.722,
+      "predictive_multiplier": 1.1911,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "COST",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7095,
+      "predictive_multiplier": 1.1772,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "ACN",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6213,
+      "predictive_multiplier": 1.0792,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "CRM",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6197,
+      "predictive_multiplier": 1.0774,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "AMD",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7084,
+      "predictive_multiplier": 1.176,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "NFLX",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6271,
+      "predictive_multiplier": 1.0857,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "ADBE",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7209,
+      "predictive_multiplier": 1.1899,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "TXN",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5756,
+      "predictive_multiplier": 1.0284,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "QCOM",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7269,
+      "predictive_multiplier": 1.1966,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "INTC",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6114,
+      "predictive_multiplier": 1.0682,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "MU",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7226,
+      "predictive_multiplier": 1.1918,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "AMAT",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5857,
+      "predictive_multiplier": 1.0397,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "LRCX",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.684,
+      "predictive_multiplier": 1.1489,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "KLAC",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7249,
+      "predictive_multiplier": 1.1944,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "MRVL",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7168,
+      "predictive_multiplier": 1.1853,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "ON",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.7248,
+      "predictive_multiplier": 1.1942,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "SPY",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.6148,
+      "predictive_multiplier": 1.072,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "QQQ",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5857,
+      "predictive_multiplier": 1.0397,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "IWM",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5857,
+      "predictive_multiplier": 1.0397,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "GLD",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5594,
+      "predictive_multiplier": 1.0105,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    },
+    {
+      "ticker": "TLT",
+      "action": "BUY",
+      "conviction": 0.5,
+      "ml_score": 0.5857,
+      "predictive_multiplier": 1.0397,
+      "ml_enhanced_conviction": 0.0,
+      "model_active": true
+    }
+  ]
+}

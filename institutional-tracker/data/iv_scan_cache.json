@@ -1,494 +1,4418 @@
 {
-  "ABM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:43.103788"
+  "AAP": {
+    "iv_result": {
+      "ticker": "AAP",
+      "current_price": 60.8,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 40.3,
+      "margin_of_safety": -0.5088,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0817,
+      "roic": -0.0859,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -111000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:42.815307"
   },
-  "ADUS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:50.954937"
+  "ABBV": {
+    "iv_result": {
+      "ticker": "ABBV",
+      "current_price": 227.73,
+      "dcf_iv": 162.55,
+      "epv_iv": 55.03,
+      "conservative_iv": 55.03,
+      "margin_of_safety": -3.1381,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0442,
+      "roic": null,
+      "net_debt_ebitda": 5.23,
+      "growth_rate_used": 0.037,
+      "avg_fcf_used": 19652000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:42.883445"
+  },
+  "ABM": {
+    "iv_result": {
+      "ticker": "ABM",
+      "current_price": 45.93,
+      "dcf_iv": 53.27,
+      "epv_iv": 40.84,
+      "conservative_iv": 40.84,
+      "margin_of_safety": -0.1247,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0561,
+      "roic": 0.1376,
+      "net_debt_ebitda": 4.94,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 171033333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:42.988769"
+  },
+  "ADM": {
+    "iv_result": {
+      "ticker": "ADM",
+      "current_price": 80.24,
+      "dcf_iv": 108.39,
+      "epv_iv": null,
+      "conservative_iv": 108.39,
+      "margin_of_safety": 0.2597,
+      "verdict": "BUY",
+      "fcf_yield": 0.1082,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2799000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:43.175527"
   },
   "AEM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:51.617394"
+    "iv_result": {
+      "ticker": "AEM",
+      "current_price": 162.64,
+      "dcf_iv": null,
+      "epv_iv": 2.33,
+      "conservative_iv": 2.33,
+      "margin_of_safety": -68.763,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0172,
+      "roic": null,
+      "net_debt_ebitda": 19.6,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:43.702814"
+  },
+  "AEP": {
+    "iv_result": {
+      "ticker": "AEP",
+      "current_price": 129.23,
+      "dcf_iv": 144.66,
+      "epv_iv": 64.92,
+      "conservative_iv": 64.92,
+      "margin_of_safety": -0.9905,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1005,
+      "roic": 0.1076,
+      "net_debt_ebitda": 10.77,
+      "growth_rate_used": 0.0796,
+      "avg_fcf_used": 4135933333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:43.965079"
+  },
+  "AFL": {
+    "iv_result": {
+      "ticker": "AFL",
+      "current_price": 117.8,
+      "dcf_iv": null,
+      "epv_iv": 68.57,
+      "conservative_iv": 68.57,
+      "margin_of_safety": -0.7179,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0418,
+      "roic": 0.1206,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:44.055351"
+  },
+  "AIG": {
+    "iv_result": {
+      "ticker": "AIG",
+      "current_price": 75.74,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 84.13,
+      "margin_of_safety": 0.0997,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0813,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:44.151026"
   },
   "ALIZY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:52.181796"
+    "iv_result": {
+      "ticker": "ALIZY",
+      "current_price": 44.71,
+      "dcf_iv": null,
+      "epv_iv": 30.0,
+      "conservative_iv": 30.0,
+      "margin_of_safety": -0.4904,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1958,
+      "roic": 0.1715,
+      "net_debt_ebitda": 2.28,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:45.078868"
+  },
+  "ALL": {
+    "iv_result": {
+      "ticker": "ALL",
+      "current_price": 221.63,
+      "dcf_iv": 542.19,
+      "epv_iv": null,
+      "conservative_iv": 542.19,
+      "margin_of_safety": 0.5912,
+      "verdict": "BUY",
+      "fcf_yield": 0.1715,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 7521333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:45.265739"
   },
   "AMCX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:52.523595"
+    "iv_result": {
+      "ticker": "AMCX",
+      "current_price": 10.08,
+      "dcf_iv": 92.49,
+      "epv_iv": 28.58,
+      "conservative_iv": 28.58,
+      "margin_of_safety": 0.6473,
+      "verdict": "BUY",
+      "fcf_yield": 0.6083,
+      "roic": 0.1252,
+      "net_debt_ebitda": 10.9,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 219204667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:46.161418"
+  },
+  "AMGN": {
+    "iv_result": {
+      "ticker": "AMGN",
+      "current_price": 355.2,
+      "dcf_iv": 228.1,
+      "epv_iv": 118.45,
+      "conservative_iv": 118.45,
+      "margin_of_safety": -1.9988,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0423,
+      "roic": null,
+      "net_debt_ebitda": 6.76,
+      "growth_rate_used": 0.0325,
+      "avg_fcf_used": 8617666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:46.220633"
   },
   "ANSS": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:52.945063"
+    "scanned_at": "2026-06-15T04:45:47.554682"
+  },
+  "APD": {
+    "iv_result": {
+      "ticker": "APD",
+      "current_price": 281.62,
+      "dcf_iv": 31.66,
+      "epv_iv": 71.97,
+      "conservative_iv": 31.66,
+      "margin_of_safety": -7.8959,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0841,
+      "roic": 0.0923,
+      "net_debt_ebitda": 2.61,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 375966667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:47.801735"
   },
   "ASGN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:53.164097"
+    "iv_result": {
+      "ticker": "ASGN",
+      "current_price": 21.02,
+      "dcf_iv": null,
+      "epv_iv": 57.31,
+      "conservative_iv": 57.31,
+      "margin_of_safety": 0.6332,
+      "verdict": "BUY",
+      "fcf_yield": 0.3777,
+      "roic": 0.1312,
+      "net_debt_ebitda": 3.9,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:48.875266"
+  },
+  "BA": {
+    "iv_result": {
+      "ticker": "BA",
+      "current_price": 219.05,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 5.93,
+      "margin_of_safety": -35.9393,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0085,
+      "roic": -0.3474,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -3918000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:48.975795"
+  },
+  "BAC": {
+    "iv_result": {
+      "ticker": "BAC",
+      "current_price": 56.02,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 46.25,
+      "margin_of_safety": -0.2113,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0312,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0575,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:49.060851"
   },
   "BAH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:53.258882"
+    "iv_result": {
+      "ticker": "BAH",
+      "current_price": 77.41,
+      "dcf_iv": 41.62,
+      "epv_iv": 74.77,
+      "conservative_iv": 41.62,
+      "margin_of_safety": -0.86,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1033,
+      "roic": 0.8143,
+      "net_debt_ebitda": 3.46,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 267221000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:49.730761"
   },
   "BALY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:53.357781"
+    "iv_result": {
+      "ticker": "BALY",
+      "current_price": 14.95,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 57.69,
+      "margin_of_safety": 0.7408,
+      "verdict": "BUY",
+      "fcf_yield": -0.2466,
+      "roic": -0.0447,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -129193333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:50.928483"
   },
   "BAX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:53.544996"
+    "iv_result": {
+      "ticker": "BAX",
+      "current_price": 20.86,
+      "dcf_iv": null,
+      "epv_iv": 2.12,
+      "conservative_iv": 2.12,
+      "margin_of_safety": -8.8396,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.079,
+      "roic": 0.0178,
+      "net_debt_ebitda": 68.56,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:51.651245"
   },
   "BBWI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:53.585979"
+    "iv_result": {
+      "ticker": "BBWI",
+      "current_price": 19.4,
+      "dcf_iv": 67.79,
+      "epv_iv": 48.17,
+      "conservative_iv": 48.17,
+      "margin_of_safety": 0.5973,
+      "verdict": "BUY",
+      "fcf_yield": 0.2218,
+      "roic": null,
+      "net_debt_ebitda": 3.18,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 727000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:52.850903"
   },
-  "BMRC": {
+  "BBY": {
+    "iv_result": {
+      "ticker": "BBY",
+      "current_price": 78.53,
+      "dcf_iv": 66.36,
+      "epv_iv": 53.21,
+      "conservative_iv": 53.21,
+      "margin_of_safety": -0.4759,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0766,
+      "roic": null,
+      "net_debt_ebitda": 0.82,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1108333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:52.985166"
+  },
+  "BDX": {
+    "iv_result": {
+      "ticker": "BDX",
+      "current_price": 146.24,
+      "dcf_iv": 215.35,
+      "epv_iv": 64.88,
+      "conservative_iv": 64.88,
+      "margin_of_safety": -1.254,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0924,
+      "roic": null,
+      "net_debt_ebitda": 7.46,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3305000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:53.307109"
+  },
+  "BK": {
+    "iv_result": {
+      "ticker": "BK",
+      "current_price": 143.98,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 71.81,
+      "margin_of_safety": -1.005,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0681,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0687,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:53.503581"
+  },
+  "BKR": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:53.856639"
+    "scanned_at": "2026-06-15T04:45:53.694831"
+  },
+  "BMY": {
+    "iv_result": {
+      "ticker": "BMY",
+      "current_price": 57.13,
+      "dcf_iv": 121.14,
+      "epv_iv": null,
+      "conservative_iv": 121.14,
+      "margin_of_safety": 0.5284,
+      "verdict": "BUY",
+      "fcf_yield": 0.1105,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 13146000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:53.849107"
   },
   "BRKR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.022970"
+    "iv_result": {
+      "ticker": "BRKR",
+      "current_price": 54.23,
+      "dcf_iv": 15.62,
+      "epv_iv": 13.12,
+      "conservative_iv": 13.12,
+      "margin_of_safety": -3.1324,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0052,
+      "roic": 0.0795,
+      "net_debt_ebitda": 7.4,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 189866667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:54.532614"
   },
   "BSVN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.083330"
+    "iv_result": {
+      "ticker": "BSVN",
+      "current_price": 46.48,
+      "dcf_iv": 72.66,
+      "epv_iv": null,
+      "conservative_iv": 72.66,
+      "margin_of_safety": 0.3603,
+      "verdict": "BUY",
+      "fcf_yield": 0.0941,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 46178667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:55.067772"
   },
   "BTI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.132156"
+    "iv_result": {
+      "ticker": "BTI",
+      "current_price": 62.32,
+      "dcf_iv": null,
+      "epv_iv": 2.4,
+      "conservative_iv": 2.4,
+      "margin_of_safety": -24.9326,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0471,
+      "roic": 0.0108,
+      "net_debt_ebitda": 47.67,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:56.657765"
   },
   "BWFG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.236332"
+    "iv_result": {
+      "ticker": "BWFG",
+      "current_price": 55.64,
+      "dcf_iv": 65.23,
+      "epv_iv": null,
+      "conservative_iv": 65.23,
+      "margin_of_safety": 0.1471,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0617,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 27496000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:57.376131"
+  },
+  "C": {
+    "iv_result": {
+      "ticker": "C",
+      "current_price": 139.83,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 128.39,
+      "margin_of_safety": -0.0891,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.2895,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -57065666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:57.456957"
   },
   "CACI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.288636"
+    "iv_result": {
+      "ticker": "CACI",
+      "current_price": 519.4,
+      "dcf_iv": 408.19,
+      "epv_iv": 237.25,
+      "conservative_iv": 237.25,
+      "margin_of_safety": -1.1892,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0475,
+      "roic": 0.134,
+      "net_debt_ebitda": 4.42,
+      "growth_rate_used": 0.0553,
+      "avg_fcf_used": 552194000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:58.269183"
+  },
+  "CAG": {
+    "iv_result": {
+      "ticker": "CAG",
+      "current_price": 13.74,
+      "dcf_iv": 31.09,
+      "epv_iv": 18.13,
+      "conservative_iv": 18.13,
+      "margin_of_safety": 0.2421,
+      "verdict": "HOLD",
+      "fcf_yield": 0.1982,
+      "roic": 0.0971,
+      "net_debt_ebitda": 6.61,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1187766667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:58.451567"
+  },
+  "CAH": {
+    "iv_result": {
+      "ticker": "CAH",
+      "current_price": 223.85,
+      "dcf_iv": 193.49,
+      "epv_iv": 43.96,
+      "conservative_iv": 193.49,
+      "margin_of_safety": -0.1569,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0343,
+      "roic": null,
+      "net_debt_ebitda": 1.87,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2488000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:58.652169"
+  },
+  "CAT": {
+    "iv_result": {
+      "ticker": "CAT",
+      "current_price": 910.57,
+      "dcf_iv": 179.8,
+      "epv_iv": 210.47,
+      "conservative_iv": 179.8,
+      "margin_of_safety": -4.0644,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.021,
+      "roic": 0.4594,
+      "net_debt_ebitda": 2.48,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 4463666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:58.758354"
   },
   "CATY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.343232"
+    "iv_result": {
+      "ticker": "CATY",
+      "current_price": 60.98,
+      "dcf_iv": 79.06,
+      "epv_iv": null,
+      "conservative_iv": 79.06,
+      "margin_of_safety": 0.2287,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0887,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 356839333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:45:59.736790"
   },
   "CBOE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.396795"
-  },
-  "CC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.467811"
+    "iv_result": {
+      "ticker": "CBOE",
+      "current_price": 294.91,
+      "dcf_iv": 149.94,
+      "epv_iv": 91.18,
+      "conservative_iv": 91.18,
+      "margin_of_safety": -2.2344,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0545,
+      "roic": 0.1857,
+      "net_debt_ebitda": 1.19,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 837166667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:00.315828"
   },
   "CDNS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.538658"
+    "iv_result": {
+      "ticker": "CDNS",
+      "current_price": 384.96,
+      "dcf_iv": 90.83,
+      "epv_iv": 39.67,
+      "conservative_iv": 39.67,
+      "margin_of_safety": -8.7052,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0152,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1317252667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:00.908208"
   },
   "CE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.651950"
+    "iv_result": {
+      "ticker": "CE",
+      "current_price": 53.48,
+      "dcf_iv": 152.29,
+      "epv_iv": 3.83,
+      "conservative_iv": 152.29,
+      "margin_of_safety": 0.6488,
+      "verdict": "BUY",
+      "fcf_yield": 0.1373,
+      "roic": null,
+      "net_debt_ebitda": 238.0,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 888333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:01.633505"
+  },
+  "CF": {
+    "iv_result": {
+      "ticker": "CF",
+      "current_price": 109.48,
+      "dcf_iv": 264.63,
+      "epv_iv": 107.63,
+      "conservative_iv": 107.63,
+      "margin_of_safety": -0.0172,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1072,
+      "roic": null,
+      "net_debt_ebitda": 1.54,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2168000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:01.700804"
+  },
+  "CFG": {
+    "iv_result": {
+      "ticker": "CFG",
+      "current_price": 67.65,
+      "dcf_iv": 58.15,
+      "epv_iv": null,
+      "conservative_iv": 58.15,
+      "margin_of_safety": -0.1634,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0718,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0362,
+      "avg_fcf_used": 1714000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:01.754809"
   },
   "CHMG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.723844"
+    "iv_result": {
+      "ticker": "CHMG",
+      "current_price": 72.51,
+      "dcf_iv": 108.41,
+      "epv_iv": null,
+      "conservative_iv": 108.41,
+      "margin_of_safety": 0.3311,
+      "verdict": "BUY",
+      "fcf_yield": 0.1258,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 34980000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:02.449370"
+  },
+  "CHTR": {
+    "iv_result": {
+      "ticker": "CHTR",
+      "current_price": 145.82,
+      "dcf_iv": 503.71,
+      "epv_iv": 751.78,
+      "conservative_iv": 503.71,
+      "margin_of_safety": 0.7105,
+      "verdict": "BUY",
+      "fcf_yield": 0.2242,
+      "roic": null,
+      "net_debt_ebitda": 7.37,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3632333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:02.491880"
+  },
+  "CI": {
+    "iv_result": {
+      "ticker": "CI",
+      "current_price": 298.0,
+      "dcf_iv": 362.62,
+      "epv_iv": 271.4,
+      "conservative_iv": 271.4,
+      "margin_of_safety": -0.098,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1089,
+      "roic": 0.1708,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 5097333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:02.618889"
+  },
+  "CINF": {
+    "iv_result": {
+      "ticker": "CINF",
+      "current_price": 169.01,
+      "dcf_iv": 244.26,
+      "epv_iv": null,
+      "conservative_iv": 244.26,
+      "margin_of_safety": 0.3081,
+      "verdict": "BUY",
+      "fcf_yield": 0.0923,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2584333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:02.885133"
+  },
+  "CL": {
+    "iv_result": {
+      "ticker": "CL",
+      "current_price": 89.45,
+      "dcf_iv": 39.48,
+      "epv_iv": 37.99,
+      "conservative_iv": 37.99,
+      "margin_of_safety": -1.3548,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0489,
+      "roic": 8.3386,
+      "net_debt_ebitda": 2.03,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2526333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:03.006747"
+  },
+  "CLX": {
+    "iv_result": {
+      "ticker": "CLX",
+      "current_price": 96.82,
+      "dcf_iv": 73.95,
+      "epv_iv": null,
+      "conservative_iv": 73.95,
+      "margin_of_safety": -0.3093,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0641,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 724666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:03.150391"
+  },
+  "CMCSA": {
+    "iv_result": {
+      "ticker": "CMCSA",
+      "current_price": 24.5,
+      "dcf_iv": 90.6,
+      "epv_iv": 47.9,
+      "conservative_iv": 47.9,
+      "margin_of_safety": 0.4885,
+      "verdict": "BUY",
+      "fcf_yield": 0.2416,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 17881333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:03.256527"
   },
   "CME": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.779237"
+    "iv_result": {
+      "ticker": "CME",
+      "current_price": 269.53,
+      "dcf_iv": 193.99,
+      "epv_iv": 84.91,
+      "conservative_iv": 84.91,
+      "margin_of_safety": -2.1743,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0433,
+      "roic": 0.1063,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3722500000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:03.956136"
+  },
+  "CMI": {
+    "iv_result": {
+      "ticker": "CMI",
+      "current_price": 659.58,
+      "dcf_iv": 312.42,
+      "epv_iv": 182.1,
+      "conservative_iv": 182.1,
+      "margin_of_safety": -2.6221,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0262,
+      "roic": 0.1873,
+      "net_debt_ebitda": 0.51,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2298666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:04.180538"
+  },
+  "COF": {
+    "iv_result": {
+      "ticker": "COF",
+      "current_price": 184.73,
+      "dcf_iv": 626.74,
+      "epv_iv": null,
+      "conservative_iv": 626.74,
+      "margin_of_safety": 0.7053,
+      "verdict": "BUY",
+      "fcf_yield": 0.2264,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 20903000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:04.360097"
+  },
+  "COP": {
+    "iv_result": {
+      "ticker": "COP",
+      "current_price": 116.98,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 56.66,
+      "margin_of_safety": -1.0647,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1352,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:04.537522"
+  },
+  "COR": {
+    "iv_result": {
+      "ticker": "COR",
+      "current_price": 281.67,
+      "dcf_iv": 311.11,
+      "epv_iv": 97.01,
+      "conservative_iv": 97.01,
+      "margin_of_safety": -1.9035,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0587,
+      "roic": null,
+      "net_debt_ebitda": 3.22,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3219208667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:04.690652"
   },
   "COTY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:54.848048"
+    "iv_result": {
+      "ticker": "COTY",
+      "current_price": 2.07,
+      "dcf_iv": 8.4,
+      "epv_iv": 4.02,
+      "conservative_iv": 4.02,
+      "margin_of_safety": 0.485,
+      "verdict": "BUY",
+      "fcf_yield": 0.2251,
+      "roic": 0.0886,
+      "net_debt_ebitda": 5.88,
+      "growth_rate_used": 0.0455,
+      "avg_fcf_used": 476966667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:05.457526"
+  },
+  "CPB": {
+    "iv_result": {
+      "ticker": "CPB",
+      "current_price": 22.81,
+      "dcf_iv": 44.99,
+      "epv_iv": 30.36,
+      "conservative_iv": 30.36,
+      "margin_of_safety": 0.2488,
+      "verdict": "HOLD",
+      "fcf_yield": 0.1037,
+      "roic": 0.2318,
+      "net_debt_ebitda": 7.5,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 715333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:05.689326"
   },
   "CPRI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.244535"
+    "iv_result": {
+      "ticker": "CPRI",
+      "current_price": 21.33,
+      "dcf_iv": 6.34,
+      "epv_iv": 1.28,
+      "conservative_iv": 6.34,
+      "margin_of_safety": -2.3637,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0057,
+      "roic": 0.1756,
+      "net_debt_ebitda": 19.12,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 58333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:06.519347"
   },
   "CSGP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.311327"
+    "iv_result": {
+      "ticker": "CSGP",
+      "current_price": 32.84,
+      "dcf_iv": null,
+      "epv_iv": 1.35,
+      "conservative_iv": 1.35,
+      "margin_of_safety": -23.2399,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.009,
+      "roic": 0.0068,
+      "net_debt_ebitda": 1.95,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": -204006667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:07.233579"
   },
   "CSWC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.381030"
+    "iv_result": {
+      "ticker": "CSWC",
+      "current_price": 23.54,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 18.36,
+      "margin_of_safety": -0.2823,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.1359,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -52850000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:07.727827"
+  },
+  "CSX": {
+    "iv_result": {
+      "ticker": "CSX",
+      "current_price": 47.57,
+      "dcf_iv": 17.25,
+      "epv_iv": 15.69,
+      "conservative_iv": 15.69,
+      "margin_of_safety": -2.0322,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0193,
+      "roic": 0.2217,
+      "net_debt_ebitda": 2.66,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2562000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:08.023124"
   },
   "CVS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.495210"
+    "iv_result": {
+      "ticker": "CVS",
+      "current_price": 101.96,
+      "dcf_iv": 120.57,
+      "epv_iv": 55.77,
+      "conservative_iv": 55.77,
+      "margin_of_safety": -0.8281,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0602,
+      "roic": 0.094,
+      "net_debt_ebitda": 8.18,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 8176000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:08.125425"
+  },
+  "CVX": {
+    "iv_result": {
+      "ticker": "CVX",
+      "current_price": 187.22,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 114.33,
+      "margin_of_safety": -0.6376,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.098,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:08.425678"
   },
   "CXW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.571175"
+    "iv_result": {
+      "ticker": "CXW",
+      "current_price": 27.1,
+      "dcf_iv": null,
+      "epv_iv": 7.73,
+      "conservative_iv": 7.73,
+      "margin_of_safety": -2.5074,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0718,
+      "roic": 0.055,
+      "net_debt_ebitda": 12.26,
+      "growth_rate_used": 0.0302,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:09.061473"
+  },
+  "D": {
+    "iv_result": {
+      "ticker": "D",
+      "current_price": 67.91,
+      "dcf_iv": null,
+      "epv_iv": 5.57,
+      "conservative_iv": 5.57,
+      "margin_of_safety": -11.1938,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0064,
+      "roic": 0.0146,
+      "net_debt_ebitda": 74.77,
+      "growth_rate_used": 0.0306,
+      "avg_fcf_used": -86333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:09.154168"
+  },
+  "DD": {
+    "iv_result": {
+      "ticker": "DD",
+      "current_price": 48.26,
+      "dcf_iv": 20.41,
+      "epv_iv": null,
+      "conservative_iv": 20.41,
+      "margin_of_safety": -1.3642,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0124,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1197000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:09.434417"
+  },
+  "DE": {
+    "iv_result": {
+      "ticker": "DE",
+      "current_price": 577.48,
+      "dcf_iv": 519.32,
+      "epv_iv": 306.82,
+      "conservative_iv": 306.82,
+      "margin_of_safety": -0.8822,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0391,
+      "roic": 0.319,
+      "net_debt_ebitda": 3.13,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 7492333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:09.551901"
   },
   "DG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.639221"
+    "iv_result": {
+      "ticker": "DG",
+      "current_price": 114.8,
+      "dcf_iv": 249.23,
+      "epv_iv": 76.1,
+      "conservative_iv": 76.1,
+      "margin_of_safety": -0.5086,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1389,
+      "roic": 0.1969,
+      "net_debt_ebitda": 1.97,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2928424667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:10.062297"
+  },
+  "DGX": {
+    "iv_result": {
+      "ticker": "DGX",
+      "current_price": 203.06,
+      "dcf_iv": 176.28,
+      "epv_iv": 98.79,
+      "conservative_iv": 98.79,
+      "margin_of_safety": -1.0556,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0603,
+      "roic": null,
+      "net_debt_ebitda": 4.09,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1044000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:10.219689"
+  },
+  "DHI": {
+    "iv_result": {
+      "ticker": "DHI",
+      "current_price": 154.09,
+      "dcf_iv": 200.78,
+      "epv_iv": null,
+      "conservative_iv": 200.78,
+      "margin_of_safety": 0.2325,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0724,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3154500000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:10.316373"
+  },
+  "DIS": {
+    "iv_result": {
+      "ticker": "DIS",
+      "current_price": 100.04,
+      "dcf_iv": 95.27,
+      "epv_iv": 63.78,
+      "conservative_iv": 63.78,
+      "margin_of_safety": -0.5686,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.053,
+      "roic": null,
+      "net_debt_ebitda": 2.74,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 9658000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:10.438130"
   },
   "DLTR": {
+    "iv_result": {
+      "ticker": "DLTR",
+      "current_price": 114.0,
+      "dcf_iv": 61.72,
+      "epv_iv": 64.86,
+      "conservative_iv": 61.72,
+      "margin_of_safety": -0.8471,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0825,
+      "roic": 0.3429,
+      "net_debt_ebitda": 1.49,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 978500000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:10.973550"
+  },
+  "DOV": {
+    "iv_result": {
+      "ticker": "DOV",
+      "current_price": 217.43,
+      "dcf_iv": 82.69,
+      "epv_iv": 73.06,
+      "conservative_iv": 73.06,
+      "margin_of_safety": -1.9761,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0375,
+      "roic": null,
+      "net_debt_ebitda": 2.63,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 904329667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:11.312908"
+  },
+  "DOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.783097"
+    "scanned_at": "2026-06-15T04:46:11.416149"
+  },
+  "DUK": {
+    "iv_result": {
+      "ticker": "DUK",
+      "current_price": 124.97,
+      "dcf_iv": null,
+      "epv_iv": 62.3,
+      "conservative_iv": 62.3,
+      "margin_of_safety": -1.0058,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0174,
+      "roic": null,
+      "net_debt_ebitda": 14.21,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": -1457333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:11.680554"
+  },
+  "DVN": {
+    "iv_result": {
+      "ticker": "DVN",
+      "current_price": 45.31,
+      "dcf_iv": 90.72,
+      "epv_iv": null,
+      "conservative_iv": 90.72,
+      "margin_of_safety": 0.5005,
+      "verdict": "BUY",
+      "fcf_yield": 0.2333,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3059000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:11.908149"
+  },
+  "ECL": {
+    "iv_result": {
+      "ticker": "ECL",
+      "current_price": 265.41,
+      "dcf_iv": 139.9,
+      "epv_iv": 36.52,
+      "conservative_iv": 139.9,
+      "margin_of_safety": -0.8971,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0254,
+      "roic": 0.105,
+      "net_debt_ebitda": 5.83,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2105000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:11.996201"
+  },
+  "ED": {
+    "iv_result": {
+      "ticker": "ED",
+      "current_price": 107.74,
+      "dcf_iv": null,
+      "epv_iv": 64.18,
+      "conservative_iv": 64.18,
+      "margin_of_safety": -0.6788,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0086,
+      "roic": null,
+      "net_debt_ebitda": 8.79,
+      "growth_rate_used": 0.0668,
+      "avg_fcf_used": -1216000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:12.285973"
   },
   "EMN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.837303"
+    "iv_result": {
+      "ticker": "EMN",
+      "current_price": 75.22,
+      "dcf_iv": 46.26,
+      "epv_iv": 50.55,
+      "conservative_iv": 46.26,
+      "margin_of_safety": -0.6262,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0252,
+      "roic": 0.1875,
+      "net_debt_ebitda": 2.97,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 552666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:12.991161"
+  },
+  "EMR": {
+    "iv_result": {
+      "ticker": "EMR",
+      "current_price": 143.07,
+      "dcf_iv": 62.02,
+      "epv_iv": null,
+      "conservative_iv": 62.02,
+      "margin_of_safety": -1.3069,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0331,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0772,
+      "avg_fcf_used": 1892666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:13.102876"
   },
   "ENR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:55.965043"
+    "iv_result": {
+      "ticker": "ENR",
+      "current_price": 20.25,
+      "dcf_iv": 38.29,
+      "epv_iv": null,
+      "conservative_iv": 38.29,
+      "margin_of_safety": 0.4712,
+      "verdict": "BUY",
+      "fcf_yield": 0.0502,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 127066667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:13.918033"
   },
   "ENSG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:56.056409"
+    "iv_result": {
+      "ticker": "ENSG",
+      "current_price": 149.37,
+      "dcf_iv": 32.86,
+      "epv_iv": 47.1,
+      "conservative_iv": 32.86,
+      "margin_of_safety": -3.545,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0568,
+      "roic": 0.1224,
+      "net_debt_ebitda": 0.42,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 101851333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:14.719011"
   },
-  "ERIE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:56.210969"
+  "EOG": {
+    "iv_result": {
+      "ticker": "EOG",
+      "current_price": 136.65,
+      "dcf_iv": 666.77,
+      "epv_iv": 233.35,
+      "conservative_iv": 233.35,
+      "margin_of_safety": 0.4144,
+      "verdict": "BUY",
+      "fcf_yield": 0.2469,
+      "roic": null,
+      "net_debt_ebitda": 0.99,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 9663333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:14.899050"
+  },
+  "ES": {
+    "iv_result": {
+      "ticker": "ES",
+      "current_price": 68.69,
+      "dcf_iv": null,
+      "epv_iv": 54.69,
+      "conservative_iv": 54.69,
+      "margin_of_safety": -0.256,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0017,
+      "roic": null,
+      "net_debt_ebitda": 10.34,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -1685525667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:15.249124"
   },
   "ESSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:56.819512"
+    "scanned_at": "2026-06-15T04:46:16.612036"
+  },
+  "ETN": {
+    "iv_result": {
+      "ticker": "ETN",
+      "current_price": 391.39,
+      "dcf_iv": 127.16,
+      "epv_iv": 71.41,
+      "conservative_iv": 71.41,
+      "margin_of_safety": -4.4809,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0234,
+      "roic": null,
+      "net_debt_ebitda": 2.82,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 3313000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:16.750642"
+  },
+  "EXC": {
+    "iv_result": {
+      "ticker": "EXC",
+      "current_price": 46.21,
+      "dcf_iv": null,
+      "epv_iv": 34.72,
+      "conservative_iv": 34.72,
+      "margin_of_safety": -0.3307,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0481,
+      "roic": 0.1234,
+      "net_debt_ebitda": 10.99,
+      "growth_rate_used": 0.078,
+      "avg_fcf_used": -2169333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:16.990076"
+  },
+  "F": {
+    "iv_result": {
+      "ticker": "F",
+      "current_price": 14.84,
+      "dcf_iv": null,
+      "epv_iv": 1.0,
+      "conservative_iv": 1.0,
+      "margin_of_safety": -13.8696,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.3604,
+      "roic": 0.011,
+      "net_debt_ebitda": 0.58,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:17.134525"
+  },
+  "FANG": {
+    "iv_result": {
+      "ticker": "FANG",
+      "current_price": 192.13,
+      "dcf_iv": 420.74,
+      "epv_iv": 94.68,
+      "conservative_iv": 420.74,
+      "margin_of_safety": 0.5433,
+      "verdict": "BUY",
+      "fcf_yield": 0.1425,
+      "roic": 0.0627,
+      "net_debt_ebitda": 4.02,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 6388666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:17.235519"
   },
   "FBIZ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:56.944945"
+    "iv_result": {
+      "ticker": "FBIZ",
+      "current_price": 60.62,
+      "dcf_iv": 27.29,
+      "epv_iv": null,
+      "conservative_iv": 27.29,
+      "margin_of_safety": -1.2216,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1211,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 15258333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:18.126447"
+  },
+  "FCX": {
+    "iv_result": {
+      "ticker": "FCX",
+      "current_price": 68.41,
+      "dcf_iv": null,
+      "epv_iv": 54.64,
+      "conservative_iv": 54.64,
+      "margin_of_safety": -0.2521,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0868,
+      "roic": 0.1678,
+      "net_debt_ebitda": 1.44,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:18.206497"
+  },
+  "FDX": {
+    "iv_result": {
+      "ticker": "FDX",
+      "current_price": 338.31,
+      "dcf_iv": null,
+      "epv_iv": 171.42,
+      "conservative_iv": 171.42,
+      "margin_of_safety": -0.9736,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0863,
+      "roic": null,
+      "net_debt_ebitda": 3.81,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:18.280574"
   },
   "FFIN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.017770"
+    "iv_result": {
+      "ticker": "FFIN",
+      "current_price": 33.65,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 14.74,
+      "margin_of_safety": -1.2826,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0622,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:19.451148"
   },
   "FICO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.148617"
+    "iv_result": {
+      "ticker": "FICO",
+      "current_price": 1179.19,
+      "dcf_iv": 485.07,
+      "epv_iv": 255.01,
+      "conservative_iv": 255.01,
+      "margin_of_safety": -3.6241,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0275,
+      "roic": null,
+      "net_debt_ebitda": 3.98,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 615033000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:20.141049"
+  },
+  "FITB": {
+    "iv_result": {
+      "ticker": "FITB",
+      "current_price": 54.73,
+      "dcf_iv": 82.49,
+      "epv_iv": null,
+      "conservative_iv": 82.49,
+      "margin_of_safety": 0.3365,
+      "verdict": "BUY",
+      "fcf_yield": 0.1086,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 3663333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:20.235646"
   },
   "FNF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.191797"
+    "iv_result": {
+      "ticker": "FNF",
+      "current_price": 47.92,
+      "dcf_iv": 26.02,
+      "epv_iv": null,
+      "conservative_iv": 26.02,
+      "margin_of_safety": -0.8415,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.4326,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0603,
+      "avg_fcf_used": 421333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:21.347362"
   },
   "FNV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.251500"
+    "iv_result": {
+      "ticker": "FNV",
+      "current_price": 209.46,
+      "dcf_iv": null,
+      "epv_iv": 24.8,
+      "conservative_iv": 24.8,
+      "margin_of_safety": -7.4462,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.037,
+      "roic": 0.0626,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:22.520692"
   },
   "FOXA": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.300614"
+    "scanned_at": "2026-06-15T04:46:22.566329"
   },
   "FRPH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.379087"
+    "iv_result": {
+      "ticker": "FRPH",
+      "current_price": 23.79,
+      "dcf_iv": null,
+      "epv_iv": 4.19,
+      "conservative_iv": 4.19,
+      "margin_of_safety": -4.6729,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0472,
+      "roic": 0.0176,
+      "net_debt_ebitda": 18.98,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -7304667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:23.255784"
   },
   "GBDC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.512125"
+    "iv_result": {
+      "ticker": "GBDC",
+      "current_price": 13.29,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 16.47,
+      "margin_of_safety": 0.193,
+      "verdict": "HOLD",
+      "fcf_yield": -0.0321,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:23.721590"
+  },
+  "GD": {
+    "iv_result": {
+      "ticker": "GD",
+      "current_price": 360.22,
+      "dcf_iv": 236.59,
+      "epv_iv": 140.21,
+      "conservative_iv": 140.21,
+      "margin_of_safety": -1.5691,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0406,
+      "roic": null,
+      "net_debt_ebitda": 1.68,
+      "growth_rate_used": 0.0674,
+      "avg_fcf_used": 3669333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:23.847173"
   },
   "GDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.628050"
+    "scanned_at": "2026-06-15T04:46:24.771236"
   },
   "GDXJ": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.732964"
+    "scanned_at": "2026-06-15T04:46:25.684892"
+  },
+  "GE": {
+    "iv_result": {
+      "ticker": "GE",
+      "current_price": 335.3,
+      "dcf_iv": 52.22,
+      "epv_iv": 152.42,
+      "conservative_iv": 52.22,
+      "margin_of_safety": -5.421,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0204,
+      "roic": 0.8459,
+      "net_debt_ebitda": 1.01,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2922000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:25.804718"
   },
   "GEO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.836545"
+    "iv_result": {
+      "ticker": "GEO",
+      "current_price": 28.44,
+      "dcf_iv": 30.41,
+      "epv_iv": 17.78,
+      "conservative_iv": 17.78,
+      "margin_of_safety": -0.5996,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0322,
+      "roic": null,
+      "net_debt_ebitda": 5.45,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 221047333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:26.723889"
+  },
+  "GILD": {
+    "iv_result": {
+      "ticker": "GILD",
+      "current_price": 125.59,
+      "dcf_iv": 178.73,
+      "epv_iv": 40.93,
+      "conservative_iv": 178.73,
+      "margin_of_safety": 0.2973,
+      "verdict": "BUY",
+      "fcf_yield": 0.0607,
+      "roic": null,
+      "net_debt_ebitda": 3.88,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 11834000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:26.778585"
+  },
+  "GIS": {
+    "iv_result": {
+      "ticker": "GIS",
+      "current_price": 34.51,
+      "dcf_iv": 52.01,
+      "epv_iv": 48.3,
+      "conservative_iv": 48.3,
+      "margin_of_safety": 0.2855,
+      "verdict": "BUY",
+      "fcf_yield": 0.1198,
+      "roic": 0.2908,
+      "net_debt_ebitda": 1.94,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2303500000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:26.874483"
+  },
+  "GM": {
+    "iv_result": {
+      "ticker": "GM",
+      "current_price": 81.5,
+      "dcf_iv": 277.88,
+      "epv_iv": 72.8,
+      "conservative_iv": 277.88,
+      "margin_of_safety": 0.7067,
+      "verdict": "BUY",
+      "fcf_yield": 0.2384,
+      "roic": 0.1042,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 13403000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:26.926150"
   },
   "GMED": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:57.900278"
+    "iv_result": {
+      "ticker": "GMED",
+      "current_price": 80.39,
+      "dcf_iv": 72.55,
+      "epv_iv": 20.55,
+      "conservative_iv": 72.55,
+      "margin_of_safety": -0.1081,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0734,
+      "roic": 0.0449,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 386400667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:27.434599"
+  },
+  "GPC": {
+    "iv_result": {
+      "ticker": "GPC",
+      "current_price": 103.75,
+      "dcf_iv": 130.75,
+      "epv_iv": 75.0,
+      "conservative_iv": 75.0,
+      "margin_of_safety": -0.3833,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0295,
+      "roic": null,
+      "net_debt_ebitda": 3.67,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 960037333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:27.632053"
+  },
+  "GS": {
+    "iv_result": {
+      "ticker": "GS",
+      "current_price": 1062.75,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 463.68,
+      "margin_of_safety": -1.292,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.1499,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": -31229000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:27.723078"
   },
   "GSBC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.005416"
+    "iv_result": {
+      "ticker": "GSBC",
+      "current_price": 75.86,
+      "dcf_iv": 81.92,
+      "epv_iv": null,
+      "conservative_iv": 81.92,
+      "margin_of_safety": 0.0739,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0835,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 60865333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:28.450549"
   },
   "HAFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.156747"
+    "iv_result": {
+      "ticker": "HAFC",
+      "current_price": 31.75,
+      "dcf_iv": 29.65,
+      "epv_iv": 19.23,
+      "conservative_iv": 19.23,
+      "margin_of_safety": -0.6509,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.2131,
+      "roic": 0.0722,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 70791667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:29.305463"
+  },
+  "HAL": {
+    "iv_result": {
+      "ticker": "HAL",
+      "current_price": 39.6,
+      "dcf_iv": null,
+      "epv_iv": 32.06,
+      "conservative_iv": 32.06,
+      "margin_of_safety": -0.2353,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0885,
+      "roic": 0.2548,
+      "net_debt_ebitda": 2.11,
+      "growth_rate_used": 0.056,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:29.514389"
+  },
+  "HBAN": {
+    "iv_result": {
+      "ticker": "HBAN",
+      "current_price": 17.52,
+      "dcf_iv": 25.6,
+      "epv_iv": null,
+      "conservative_iv": 25.6,
+      "margin_of_safety": 0.3157,
+      "verdict": "BUY",
+      "fcf_yield": 0.0806,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2141666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:29.600757"
   },
   "HBI": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.212114"
+    "scanned_at": "2026-06-15T04:46:30.904150"
   },
   "HBT": {
+    "iv_result": {
+      "ticker": "HBT",
+      "current_price": 30.59,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 21.54,
+      "margin_of_safety": -0.4201,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0885,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:31.445429"
+  },
+  "HD": {
+    "iv_result": {
+      "ticker": "HD",
+      "current_price": 328.39,
+      "dcf_iv": null,
+      "epv_iv": 169.49,
+      "conservative_iv": 169.49,
+      "margin_of_safety": -0.9375,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0499,
+      "roic": 1.3175,
+      "net_debt_ebitda": 2.31,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:31.533598"
+  },
+  "HES": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.290313"
+    "scanned_at": "2026-06-15T04:46:31.978183"
+  },
+  "HIG": {
+    "iv_result": {
+      "ticker": "HIG",
+      "current_price": 129.62,
+      "dcf_iv": 214.02,
+      "epv_iv": null,
+      "conservative_iv": 214.02,
+      "margin_of_safety": 0.3943,
+      "verdict": "BUY",
+      "fcf_yield": 0.1572,
+      "roic": -0.0321,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3224666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:32.069153"
   },
   "HII": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.404463"
+    "iv_result": {
+      "ticker": "HII",
+      "current_price": 297.68,
+      "dcf_iv": 238.49,
+      "epv_iv": 132.4,
+      "conservative_iv": 132.4,
+      "margin_of_safety": -1.2483,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.068,
+      "roic": 0.1024,
+      "net_debt_ebitda": 4.42,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 499333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:32.580771"
   },
   "HMNF": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.489202"
+    "scanned_at": "2026-06-15T04:46:33.566800"
+  },
+  "HON": {
+    "iv_result": {
+      "ticker": "HON",
+      "current_price": 220.31,
+      "dcf_iv": 101.45,
+      "epv_iv": 96.82,
+      "conservative_iv": 96.82,
+      "margin_of_safety": -1.2756,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0387,
+      "roic": null,
+      "net_debt_ebitda": 3.73,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 5147666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:33.703561"
   },
   "HOPE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.628594"
+    "iv_result": {
+      "ticker": "HOPE",
+      "current_price": 13.19,
+      "dcf_iv": 27.83,
+      "epv_iv": null,
+      "conservative_iv": 27.83,
+      "margin_of_safety": 0.5261,
+      "verdict": "BUY",
+      "fcf_yield": 0.0896,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 239673000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:34.495666"
+  },
+  "HRL": {
+    "iv_result": {
+      "ticker": "HRL",
+      "current_price": 24.75,
+      "dcf_iv": 19.08,
+      "epv_iv": 13.68,
+      "conservative_iv": 13.68,
+      "margin_of_safety": -0.8089,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0392,
+      "roic": null,
+      "net_debt_ebitda": 2.99,
+      "growth_rate_used": 0.0281,
+      "avg_fcf_used": 755360333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:34.667626"
+  },
+  "HSY": {
+    "iv_result": {
+      "ticker": "HSY",
+      "current_price": 181.66,
+      "dcf_iv": 129.35,
+      "epv_iv": 89.59,
+      "conservative_iv": 89.59,
+      "margin_of_safety": -1.0278,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0495,
+      "roic": 0.3919,
+      "net_debt_ebitda": 1.97,
+      "growth_rate_used": 0.0396,
+      "avg_fcf_used": 1766826667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:34.867396"
   },
   "HTLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:58.926628"
+    "scanned_at": "2026-06-15T04:46:35.934039"
+  },
+  "HUM": {
+    "iv_result": {
+      "ticker": "HUM",
+      "current_price": 379.22,
+      "dcf_iv": 297.87,
+      "epv_iv": 202.86,
+      "conservative_iv": 202.86,
+      "margin_of_safety": -0.8694,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0082,
+      "roic": 0.1378,
+      "net_debt_ebitda": 0.84,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1914333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:36.034627"
   },
   "HWBK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.420966"
+    "iv_result": {
+      "ticker": "HWBK",
+      "current_price": 37.7,
+      "dcf_iv": 46.84,
+      "epv_iv": null,
+      "conservative_iv": 46.84,
+      "margin_of_safety": 0.1952,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0878,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 21712000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:36.831078"
   },
   "ICE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.496089"
+    "iv_result": {
+      "ticker": "ICE",
+      "current_price": 140.53,
+      "dcf_iv": 130.5,
+      "epv_iv": 60.06,
+      "conservative_iv": 60.06,
+      "margin_of_safety": -1.3398,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0538,
+      "roic": 0.1175,
+      "net_debt_ebitda": 4.2,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3948000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:37.410024"
   },
   "IFF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.581128"
+    "iv_result": {
+      "ticker": "IFF",
+      "current_price": 78.27,
+      "dcf_iv": 44.35,
+      "epv_iv": null,
+      "conservative_iv": 44.35,
+      "margin_of_safety": -0.765,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0128,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 605000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:38.343265"
   },
   "INTC": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.657558"
+    "scanned_at": "2026-06-15T04:46:40.136999"
+  },
+  "IP": {
+    "iv_result": {
+      "ticker": "IP",
+      "current_price": 36.15,
+      "dcf_iv": 42.51,
+      "epv_iv": 27.94,
+      "conservative_iv": 27.94,
+      "margin_of_safety": -0.294,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0514,
+      "roic": null,
+      "net_debt_ebitda": 3.91,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2129000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:40.397231"
   },
   "IPG": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.766098"
+    "scanned_at": "2026-06-15T04:46:40.833530"
   },
   "ITIC": {
+    "iv_result": {
+      "ticker": "ITIC",
+      "current_price": 253.71,
+      "dcf_iv": 113.59,
+      "epv_iv": null,
+      "conservative_iv": 113.59,
+      "margin_of_safety": -1.2336,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.053,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.029,
+      "avg_fcf_used": 15346667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:42.023084"
+  },
+  "ITW": {
+    "iv_result": {
+      "ticker": "ITW",
+      "current_price": 257.43,
+      "dcf_iv": 124.87,
+      "epv_iv": 114.24,
+      "conservative_iv": 114.24,
+      "margin_of_safety": -1.2534,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0364,
+      "roic": null,
+      "net_debt_ebitda": 1.84,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2878333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:42.113911"
+  },
+  "JCI": {
+    "iv_result": {
+      "ticker": "JCI",
+      "current_price": 144.96,
+      "dcf_iv": null,
+      "epv_iv": 6.46,
+      "conservative_iv": 6.46,
+      "margin_of_safety": -21.4292,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0188,
+      "roic": 0.0204,
+      "net_debt_ebitda": 12.01,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:42.198082"
+  },
+  "JNJ": {
+    "iv_result": {
+      "ticker": "JNJ",
+      "current_price": 240.87,
+      "dcf_iv": 149.97,
+      "epv_iv": 57.93,
+      "conservative_iv": 57.93,
+      "margin_of_safety": -3.1582,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.034,
+      "roic": 0.171,
+      "net_debt_ebitda": 2.35,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 19262666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:42.345206"
+  },
+  "JPM": {
+    "iv_result": {
+      "ticker": "JPM",
+      "current_price": 320.72,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 147.87,
+      "margin_of_safety": -1.169,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.1709,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:42.447742"
+  },
+  "K": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.822124"
+    "scanned_at": "2026-06-15T04:46:42.898058"
   },
   "KELYA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.908786"
+    "iv_result": {
+      "ticker": "KELYA",
+      "current_price": 12.04,
+      "dcf_iv": 44.1,
+      "epv_iv": null,
+      "conservative_iv": 44.1,
+      "margin_of_safety": 0.727,
+      "verdict": "BUY",
+      "fcf_yield": 0.2894,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 123633333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:43.522704"
+  },
+  "KEY": {
+    "iv_result": {
+      "ticker": "KEY",
+      "current_price": 22.7,
+      "dcf_iv": 21.87,
+      "epv_iv": null,
+      "conservative_iv": 21.87,
+      "margin_of_safety": -0.0378,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0824,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0227,
+      "avg_fcf_used": 1783333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:43.625000"
   },
   "KHC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:05:59.962824"
+    "iv_result": {
+      "ticker": "KHC",
+      "current_price": 24.39,
+      "dcf_iv": 41.01,
+      "epv_iv": 3.53,
+      "conservative_iv": 41.01,
+      "margin_of_safety": 0.4053,
+      "verdict": "BUY",
+      "fcf_yield": 0.1268,
+      "roic": 0.01,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 3261333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:43.679047"
+  },
+  "KMB": {
+    "iv_result": {
+      "ticker": "KMB",
+      "current_price": 102.29,
+      "dcf_iv": null,
+      "epv_iv": 55.37,
+      "conservative_iv": 55.37,
+      "margin_of_safety": -0.8473,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0818,
+      "roic": null,
+      "net_debt_ebitda": 3.18,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:43.779128"
+  },
+  "KMI": {
+    "iv_result": {
+      "ticker": "KMI",
+      "current_price": 31.94,
+      "dcf_iv": 27.76,
+      "epv_iv": 15.83,
+      "conservative_iv": 15.83,
+      "margin_of_safety": -1.0181,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0407,
+      "roic": 0.1085,
+      "net_debt_ebitda": 6.58,
+      "growth_rate_used": 0.0768,
+      "avg_fcf_used": 3357000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:43.889760"
   },
   "KMPR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.089995"
+    "iv_result": {
+      "ticker": "KMPR",
+      "current_price": 25.02,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 50.05,
+      "margin_of_safety": 0.5001,
+      "verdict": "BUY",
+      "fcf_yield": 0.3982,
+      "roic": -0.0562,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:45.222583"
+  },
+  "KO": {
+    "iv_result": {
+      "ticker": "KO",
+      "current_price": 82.62,
+      "dcf_iv": 28.31,
+      "epv_iv": 21.46,
+      "conservative_iv": 21.46,
+      "margin_of_safety": -2.8501,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0149,
+      "roic": null,
+      "net_debt_ebitda": 3.21,
+      "growth_rate_used": 0.0775,
+      "avg_fcf_used": 6594666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:45.375586"
+  },
+  "KR": {
+    "iv_result": {
+      "ticker": "KR",
+      "current_price": 64.71,
+      "dcf_iv": null,
+      "epv_iv": 35.68,
+      "conservative_iv": 35.68,
+      "margin_of_safety": -0.8135,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1733,
+      "roic": 0.3919,
+      "net_debt_ebitda": 5.39,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:45.603027"
   },
   "LADR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.165290"
+    "iv_result": {
+      "ticker": "LADR",
+      "current_price": 10.13,
+      "dcf_iv": 12.32,
+      "epv_iv": null,
+      "conservative_iv": 12.32,
+      "margin_of_safety": 0.1778,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0684,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 103917986.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:46.274579"
   },
   "LDOS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.222438"
+    "iv_result": {
+      "ticker": "LDOS",
+      "current_price": 122.16,
+      "dcf_iv": 165.06,
+      "epv_iv": 94.95,
+      "conservative_iv": 94.95,
+      "margin_of_safety": -0.2865,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1055,
+      "roic": 0.2418,
+      "net_debt_ebitda": 0.88,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1113000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:46.971401"
+  },
+  "LEN": {
+    "iv_result": {
+      "ticker": "LEN",
+      "current_price": 90.3,
+      "dcf_iv": 89.6,
+      "epv_iv": 89.1,
+      "conservative_iv": 89.1,
+      "margin_of_safety": -0.0135,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0012,
+      "roic": 0.1037,
+      "net_debt_ebitda": 2.02,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1232177667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:47.067235"
+  },
+  "LH": {
+    "iv_result": {
+      "ticker": "LH",
+      "current_price": 266.16,
+      "dcf_iv": 161.25,
+      "epv_iv": 102.42,
+      "conservative_iv": 102.42,
+      "margin_of_safety": -1.5988,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0551,
+      "roic": 0.0975,
+      "net_debt_ebitda": 5.82,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1058666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:47.278677"
   },
   "LHCG": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.271683"
+    "scanned_at": "2026-06-15T04:46:48.368496"
+  },
+  "LIN": {
+    "iv_result": {
+      "ticker": "LIN",
+      "current_price": 523.57,
+      "dcf_iv": 195.25,
+      "epv_iv": 132.43,
+      "conservative_iv": 132.43,
+      "margin_of_safety": -2.9535,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0191,
+      "roic": 0.1695,
+      "net_debt_ebitda": 2.64,
+      "growth_rate_used": 0.0452,
+      "avg_fcf_used": 6473000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:48.536658"
   },
   "LKQ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.359344"
+    "iv_result": {
+      "ticker": "LKQ",
+      "current_price": 26.2,
+      "dcf_iv": 74.79,
+      "epv_iv": 35.75,
+      "conservative_iv": 35.75,
+      "margin_of_safety": 0.2672,
+      "verdict": "BUY",
+      "fcf_yield": 0.1566,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0326,
+      "avg_fcf_used": 1337000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:49.105137"
   },
   "LNSTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.466177"
+    "scanned_at": "2026-06-15T04:46:50.333199"
+  },
+  "LOW": {
+    "iv_result": {
+      "ticker": "LOW",
+      "current_price": 220.78,
+      "dcf_iv": 163.54,
+      "epv_iv": 151.03,
+      "conservative_iv": 151.03,
+      "margin_of_safety": -0.4618,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0618,
+      "roic": null,
+      "net_debt_ebitda": 3.71,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 7327666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:50.421229"
+  },
+  "LVS": {
+    "iv_result": {
+      "ticker": "LVS",
+      "current_price": 50.67,
+      "dcf_iv": 59.06,
+      "epv_iv": 7.83,
+      "conservative_iv": 59.06,
+      "margin_of_safety": 0.1421,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0542,
+      "roic": 0.2733,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2127000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:50.523903"
   },
   "MAIN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.562939"
+    "iv_result": {
+      "ticker": "MAIN",
+      "current_price": 52.02,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 36.66,
+      "margin_of_safety": -0.419,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0098,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:51.002295"
   },
   "MAN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.625989"
+    "iv_result": {
+      "ticker": "MAN",
+      "current_price": 34.0,
+      "dcf_iv": null,
+      "epv_iv": 40.23,
+      "conservative_iv": 40.23,
+      "margin_of_safety": 0.1548,
+      "verdict": "HOLD",
+      "fcf_yield": -0.0657,
+      "roic": null,
+      "net_debt_ebitda": 6.92,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:51.879300"
   },
   "MANH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.677859"
+    "iv_result": {
+      "ticker": "MANH",
+      "current_price": 142.92,
+      "dcf_iv": 95.56,
+      "epv_iv": 33.06,
+      "conservative_iv": 33.06,
+      "margin_of_safety": -3.3233,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0437,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 305119333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:52.438525"
+  },
+  "MCK": {
+    "iv_result": {
+      "ticker": "MCK",
+      "current_price": 784.05,
+      "dcf_iv": 511.55,
+      "epv_iv": 309.84,
+      "conservative_iv": 309.84,
+      "margin_of_safety": -1.5305,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.059,
+      "roic": null,
+      "net_debt_ebitda": 1.35,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 5050000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:52.588389"
   },
   "MCO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.754515"
+    "iv_result": {
+      "ticker": "MCO",
+      "current_price": 447.85,
+      "dcf_iv": 243.34,
+      "epv_iv": 122.96,
+      "conservative_iv": 122.96,
+      "margin_of_safety": -2.6422,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0321,
+      "roic": 0.5237,
+      "net_debt_ebitda": 2.51,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2325333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:53.284840"
+  },
+  "MDT": {
+    "iv_result": {
+      "ticker": "MDT",
+      "current_price": 80.2,
+      "dcf_iv": 75.32,
+      "epv_iv": 34.07,
+      "conservative_iv": 34.07,
+      "margin_of_safety": -1.3542,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0504,
+      "roic": 0.0905,
+      "net_debt_ebitda": 4.01,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 5152000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:53.374463"
+  },
+  "MET": {
+    "iv_result": {
+      "ticker": "MET",
+      "current_price": 88.84,
+      "dcf_iv": null,
+      "epv_iv": 71.75,
+      "conservative_iv": 71.75,
+      "margin_of_safety": -0.2382,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.2936,
+      "roic": 0.1626,
+      "net_debt_ebitda": 3.98,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:53.447883"
+  },
+  "MGM": {
+    "iv_result": {
+      "ticker": "MGM",
+      "current_price": 48.97,
+      "dcf_iv": 82.17,
+      "epv_iv": 44.69,
+      "conservative_iv": 44.69,
+      "margin_of_safety": -0.0958,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1154,
+      "roic": 0.3523,
+      "net_debt_ebitda": 4.26,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1695407333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:53.581009"
   },
   "MGRC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.802809"
+    "iv_result": {
+      "ticker": "MGRC",
+      "current_price": 115.09,
+      "dcf_iv": 167.82,
+      "epv_iv": 72.5,
+      "conservative_iv": 72.5,
+      "margin_of_safety": -0.5875,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0746,
+      "roic": 0.1442,
+      "net_debt_ebitda": 1.34,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 220371667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:54.134496"
   },
   "MKL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.854453"
+    "iv_result": {
+      "ticker": "MKL",
+      "current_price": 1846.0,
+      "dcf_iv": 3361.3,
+      "epv_iv": 1877.76,
+      "conservative_iv": 1877.76,
+      "margin_of_safety": 0.0169,
+      "verdict": "HOLD",
+      "fcf_yield": 0.1003,
+      "roic": 0.1356,
+      "net_debt_ebitda": 1.31,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2473855000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:54.818686"
+  },
+  "MLM": {
+    "iv_result": {
+      "ticker": "MLM",
+      "current_price": 577.33,
+      "dcf_iv": 170.23,
+      "epv_iv": 229.19,
+      "conservative_iv": 170.23,
+      "margin_of_safety": -2.3914,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0281,
+      "roic": 0.1378,
+      "net_debt_ebitda": 3.04,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 820000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:54.907083"
+  },
+  "MMM": {
+    "iv_result": {
+      "ticker": "MMM",
+      "current_price": 158.32,
+      "dcf_iv": 47.24,
+      "epv_iv": null,
+      "conservative_iv": 47.24,
+      "margin_of_safety": -2.3516,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0166,
+      "roic": -0.0687,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2000666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:55.046105"
   },
   "MO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.906480"
+    "iv_result": {
+      "ticker": "MO",
+      "current_price": 71.94,
+      "dcf_iv": 99.91,
+      "epv_iv": 51.41,
+      "conservative_iv": 51.41,
+      "margin_of_safety": -0.3994,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0753,
+      "roic": null,
+      "net_debt_ebitda": 2.36,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 8925333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:55.189226"
   },
   "MORN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:00.962438"
+    "iv_result": {
+      "ticker": "MORN",
+      "current_price": 175.22,
+      "dcf_iv": 125.28,
+      "epv_iv": 82.3,
+      "conservative_iv": 82.3,
+      "margin_of_safety": -1.1291,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0636,
+      "roic": 0.2677,
+      "net_debt_ebitda": 1.08,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 265633333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:55.867918"
+  },
+  "MOS": {
+    "iv_result": {
+      "ticker": "MOS",
+      "current_price": 22.69,
+      "dcf_iv": 11.56,
+      "epv_iv": 23.07,
+      "conservative_iv": 11.56,
+      "margin_of_safety": -0.9635,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0742,
+      "roic": null,
+      "net_debt_ebitda": 4.14,
+      "growth_rate_used": 0.0678,
+      "avg_fcf_used": 209900000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:55.953909"
+  },
+  "MPC": {
+    "iv_result": {
+      "ticker": "MPC",
+      "current_price": 263.58,
+      "dcf_iv": 380.38,
+      "epv_iv": 218.35,
+      "conservative_iv": 218.35,
+      "margin_of_safety": -0.2072,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0507,
+      "roic": 0.3236,
+      "net_debt_ebitda": 0.33,
+      "growth_rate_used": 0.0692,
+      "avg_fcf_used": 7708666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:56.055485"
   },
   "MPW": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.022905"
+    "scanned_at": "2026-06-15T04:46:57.291937"
+  },
+  "MRK": {
+    "iv_result": {
+      "ticker": "MRK",
+      "current_price": 119.05,
+      "dcf_iv": 38.08,
+      "epv_iv": null,
+      "conservative_iv": 38.08,
+      "margin_of_safety": -2.1264,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0415,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 5083333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:57.504045"
+  },
+  "MS": {
+    "iv_result": {
+      "ticker": "MS",
+      "current_price": 214.04,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 78.29,
+      "margin_of_safety": -1.734,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0528,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0258,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:57.583162"
+  },
+  "MTB": {
+    "iv_result": {
+      "ticker": "MTB",
+      "current_price": 231.88,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 203.29,
+      "margin_of_safety": -0.1406,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.082,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:57.665002"
   },
   "NBTB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.105625"
+    "iv_result": {
+      "ticker": "NBTB",
+      "current_price": 48.18,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 41.18,
+      "margin_of_safety": -0.17,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0964,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0536,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:58.505109"
   },
   "NDAQ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.160386"
+    "iv_result": {
+      "ticker": "NDAQ",
+      "current_price": 88.98,
+      "dcf_iv": 52.63,
+      "epv_iv": 26.37,
+      "conservative_iv": 26.37,
+      "margin_of_safety": -2.3742,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0392,
+      "roic": 0.1229,
+      "net_debt_ebitda": 4.51,
+      "growth_rate_used": 0.059,
+      "avg_fcf_used": 1805666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:59.236987"
+  },
+  "NEE": {
+    "iv_result": {
+      "ticker": "NEE",
+      "current_price": 85.99,
+      "dcf_iv": 11.08,
+      "epv_iv": 32.86,
+      "conservative_iv": 11.08,
+      "margin_of_safety": -6.7581,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.027,
+      "roic": 0.103,
+      "net_debt_ebitda": 10.33,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1844000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:59.456043"
   },
   "NEM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.215829"
+    "iv_result": {
+      "ticker": "NEM",
+      "current_price": 100.23,
+      "dcf_iv": 27.78,
+      "epv_iv": null,
+      "conservative_iv": 27.78,
+      "margin_of_safety": -2.6074,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0946,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2416666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:46:59.548311"
   },
   "NFBK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.275375"
+    "iv_result": {
+      "ticker": "NFBK",
+      "current_price": 14.78,
+      "dcf_iv": 18.61,
+      "epv_iv": null,
+      "conservative_iv": 18.61,
+      "margin_of_safety": 0.2058,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0828,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 41508000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:00.332950"
+  },
+  "NOC": {
+    "iv_result": {
+      "ticker": "NOC",
+      "current_price": 550.33,
+      "dcf_iv": 353.21,
+      "epv_iv": 211.75,
+      "conservative_iv": 211.75,
+      "margin_of_safety": -1.599,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0423,
+      "roic": 0.1803,
+      "net_debt_ebitda": 4.12,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2676000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:00.433280"
+  },
+  "NSC": {
+    "iv_result": {
+      "ticker": "NSC",
+      "current_price": 313.91,
+      "dcf_iv": 91.79,
+      "epv_iv": 132.34,
+      "conservative_iv": 91.79,
+      "margin_of_safety": -2.4198,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0306,
+      "roic": 0.191,
+      "net_debt_ebitda": 2.59,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 1645333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:00.627079"
+  },
+  "NUE": {
+    "iv_result": {
+      "ticker": "NUE",
+      "current_price": 266.35,
+      "dcf_iv": 183.73,
+      "epv_iv": null,
+      "conservative_iv": 183.73,
+      "margin_of_safety": -0.4497,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0031,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 2847003667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:00.753593"
   },
   "NVR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.321686"
+    "iv_result": {
+      "ticker": "NVR",
+      "current_price": 6374.93,
+      "dcf_iv": 8067.42,
+      "epv_iv": null,
+      "conservative_iv": 8067.42,
+      "margin_of_safety": 0.2098,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0615,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.065,
+      "avg_fcf_used": 1313784333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:01.222997"
   },
   "NWFL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.371634"
+    "iv_result": {
+      "ticker": "NWFL",
+      "current_price": 32.14,
+      "dcf_iv": 47.1,
+      "epv_iv": null,
+      "conservative_iv": 47.1,
+      "margin_of_safety": 0.3177,
+      "verdict": "BUY",
+      "fcf_yield": 0.0986,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.052,
+      "avg_fcf_used": 27258333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:02.160344"
   },
   "NYT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.416052"
+    "iv_result": {
+      "ticker": "NYT",
+      "current_price": 73.38,
+      "dcf_iv": 35.94,
+      "epv_iv": 17.09,
+      "conservative_iv": 17.09,
+      "margin_of_safety": -3.2935,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.046,
+      "roic": null,
+      "net_debt_ebitda": 0.7,
+      "growth_rate_used": 0.0275,
+      "avg_fcf_used": 423264333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:02.881004"
   },
   "ODP": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.474425"
+    "scanned_at": "2026-06-15T04:47:04.050920"
+  },
+  "OKE": {
+    "iv_result": {
+      "ticker": "OKE",
+      "current_price": 90.59,
+      "dcf_iv": 80.76,
+      "epv_iv": 61.9,
+      "conservative_iv": 61.9,
+      "margin_of_safety": -0.4635,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0429,
+      "roic": null,
+      "net_debt_ebitda": 6.51,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 2713333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:04.263606"
   },
   "OLN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.517438"
+    "iv_result": {
+      "ticker": "OLN",
+      "current_price": 25.13,
+      "dcf_iv": 71.18,
+      "epv_iv": 23.5,
+      "conservative_iv": 23.5,
+      "margin_of_safety": -0.0692,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0868,
+      "roic": 0.1427,
+      "net_debt_ebitda": 8.42,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 431433333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:05.065489"
   },
-  "OMC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.566631"
+  "OXY": {
+    "iv_result": {
+      "ticker": "OXY",
+      "current_price": 56.54,
+      "dcf_iv": 79.66,
+      "epv_iv": null,
+      "conservative_iv": 79.66,
+      "margin_of_safety": 0.2902,
+      "verdict": "BUY",
+      "fcf_yield": 0.0736,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0393,
+      "avg_fcf_used": 5297666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:05.283315"
   },
   "PARA": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.630844"
+    "scanned_at": "2026-06-15T04:47:05.769666"
   },
   "PATK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.711663"
+    "iv_result": {
+      "ticker": "PATK",
+      "current_price": 86.7,
+      "dcf_iv": 159.33,
+      "epv_iv": 62.95,
+      "conservative_iv": 62.95,
+      "margin_of_safety": -0.3773,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0856,
+      "roic": 0.1766,
+      "net_debt_ebitda": 4.91,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 282445667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:06.671057"
   },
-  "PFE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.854106"
+  "PCAR": {
+    "iv_result": {
+      "ticker": "PCAR",
+      "current_price": 118.52,
+      "dcf_iv": 136.23,
+      "epv_iv": null,
+      "conservative_iv": 136.23,
+      "margin_of_safety": 0.13,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0589,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3822533333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:06.830739"
+  },
+  "PCG": {
+    "iv_result": {
+      "ticker": "PCG",
+      "current_price": 16.95,
+      "dcf_iv": null,
+      "epv_iv": 14.23,
+      "conservative_iv": 14.23,
+      "margin_of_safety": -0.191,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0824,
+      "roic": null,
+      "net_debt_ebitda": 14.49,
+      "growth_rate_used": 0.0619,
+      "avg_fcf_used": -5122333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:07.024617"
+  },
+  "PEG": {
+    "iv_result": {
+      "ticker": "PEG",
+      "current_price": 79.7,
+      "dcf_iv": null,
+      "epv_iv": 47.69,
+      "conservative_iv": 47.69,
+      "margin_of_safety": -0.6714,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0007,
+      "roic": null,
+      "net_debt_ebitda": 7.5,
+      "growth_rate_used": 0.0485,
+      "avg_fcf_used": -246666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:07.235230"
+  },
+  "PEP": {
+    "iv_result": {
+      "ticker": "PEP",
+      "current_price": 144.27,
+      "dcf_iv": null,
+      "epv_iv": 69.96,
+      "conservative_iv": 69.96,
+      "margin_of_safety": -1.0621,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0612,
+      "roic": 0.4661,
+      "net_debt_ebitda": 3.82,
+      "growth_rate_used": 0.0594,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:07.336564"
   },
   "PFIS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.909435"
+    "iv_result": {
+      "ticker": "PFIS",
+      "current_price": 63.52,
+      "dcf_iv": 52.59,
+      "epv_iv": null,
+      "conservative_iv": 52.59,
+      "margin_of_safety": -0.2077,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0683,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 35307000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:08.107131"
+  },
+  "PG": {
+    "iv_result": {
+      "ticker": "PG",
+      "current_price": 149.61,
+      "dcf_iv": 117.91,
+      "epv_iv": 64.02,
+      "conservative_iv": 64.02,
+      "margin_of_safety": -1.3371,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0399,
+      "roic": 0.2877,
+      "net_debt_ebitda": 1.21,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 14784666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:08.231293"
   },
   "PGTI": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:01.989250"
+    "scanned_at": "2026-06-15T04:47:09.279766"
+  },
+  "PH": {
+    "iv_result": {
+      "ticker": "PH",
+      "current_price": 903.48,
+      "dcf_iv": 290.29,
+      "epv_iv": 242.6,
+      "conservative_iv": 242.6,
+      "margin_of_safety": -2.7241,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0288,
+      "roic": 0.2273,
+      "net_debt_ebitda": 1.9,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 2974666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:09.367029"
+  },
+  "PHM": {
+    "iv_result": {
+      "ticker": "PHM",
+      "current_price": 123.17,
+      "dcf_iv": 175.55,
+      "epv_iv": null,
+      "conservative_iv": 175.55,
+      "margin_of_safety": 0.2984,
+      "verdict": "BUY",
+      "fcf_yield": 0.0737,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1805114333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:09.452307"
+  },
+  "PM": {
+    "iv_result": {
+      "ticker": "PM",
+      "current_price": 184.3,
+      "dcf_iv": 101.66,
+      "epv_iv": 58.24,
+      "conservative_iv": 58.24,
+      "margin_of_safety": -2.1644,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0321,
+      "roic": null,
+      "net_debt_ebitda": 1.28,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 9773333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:09.525523"
+  },
+  "PNC": {
+    "iv_result": {
+      "ticker": "PNC",
+      "current_price": 237.66,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 127.53,
+      "margin_of_safety": -0.8635,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0353,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0645,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:09.613294"
   },
   "PNTG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.059948"
+    "iv_result": {
+      "ticker": "PNTG",
+      "current_price": 32.85,
+      "dcf_iv": 16.52,
+      "epv_iv": 8.76,
+      "conservative_iv": 8.76,
+      "margin_of_safety": -2.7505,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0319,
+      "roic": 0.081,
+      "net_debt_ebitda": 4.4,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 30515333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:10.006169"
+  },
+  "PPG": {
+    "iv_result": {
+      "ticker": "PPG",
+      "current_price": 119.34,
+      "dcf_iv": 90.49,
+      "epv_iv": 81.18,
+      "conservative_iv": 81.18,
+      "margin_of_safety": -0.47,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0436,
+      "roic": 0.224,
+      "net_debt_ebitda": 3.18,
+      "growth_rate_used": 0.0541,
+      "avg_fcf_used": 1252333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:10.103490"
   },
   "PRGO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.117629"
+    "iv_result": {
+      "ticker": "PRGO",
+      "current_price": 10.99,
+      "dcf_iv": 25.01,
+      "epv_iv": null,
+      "conservative_iv": 25.01,
+      "margin_of_safety": 0.5606,
+      "verdict": "BUY",
+      "fcf_yield": 0.096,
+      "roic": -0.0769,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 231166667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:10.775991"
+  },
+  "PRU": {
+    "iv_result": {
+      "ticker": "PRU",
+      "current_price": 108.5,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 111.25,
+      "margin_of_safety": 0.0248,
+      "verdict": "HOLD",
+      "fcf_yield": 0.1643,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:10.840910"
+  },
+  "PSX": {
+    "iv_result": {
+      "ticker": "PSX",
+      "current_price": 179.45,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 81.93,
+      "margin_of_safety": -1.1902,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0681,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:10.970091"
   },
   "PTC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.179825"
+    "iv_result": {
+      "ticker": "PTC",
+      "current_price": 113.68,
+      "dcf_iv": 113.9,
+      "epv_iv": 44.7,
+      "conservative_iv": 44.7,
+      "margin_of_safety": -1.5434,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.063,
+      "roic": 0.1396,
+      "net_debt_ebitda": 1.73,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 726447000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:11.530411"
   },
   "REVG": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.231732"
+    "scanned_at": "2026-06-15T04:47:12.759986"
+  },
+  "RF": {
+    "iv_result": {
+      "ticker": "RF",
+      "current_price": 29.27,
+      "dcf_iv": null,
+      "epv_iv": 1.06,
+      "conservative_iv": 1.06,
+      "margin_of_safety": -26.541,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0835,
+      "roic": 0.005,
+      "net_debt_ebitda": 34.45,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:12.844596"
   },
   "RLI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.286029"
+    "iv_result": {
+      "ticker": "RLI",
+      "current_price": 54.35,
+      "dcf_iv": 110.0,
+      "epv_iv": null,
+      "conservative_iv": 110.0,
+      "margin_of_safety": 0.5059,
+      "verdict": "BUY",
+      "fcf_yield": 0.1219,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 539221333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:13.584370"
+  },
+  "ROK": {
+    "iv_result": {
+      "ticker": "ROK",
+      "current_price": 459.34,
+      "dcf_iv": 184.5,
+      "epv_iv": 122.46,
+      "conservative_iv": 122.46,
+      "margin_of_safety": -2.751,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0268,
+      "roic": null,
+      "net_debt_ebitda": 1.13,
+      "growth_rate_used": 0.0773,
+      "avg_fcf_used": 1123966667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:13.671631"
   },
   "RRR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.344329"
+    "iv_result": {
+      "ticker": "RRR",
+      "current_price": 63.11,
+      "dcf_iv": 149.15,
+      "epv_iv": 77.03,
+      "conservative_iv": 77.03,
+      "margin_of_safety": 0.1807,
+      "verdict": "HOLD",
+      "fcf_yield": 0.1359,
+      "roic": 1.3669,
+      "net_debt_ebitda": 5.91,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 469240000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:14.252367"
   },
   "SAIC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.400702"
+    "iv_result": {
+      "ticker": "SAIC",
+      "current_price": 113.81,
+      "dcf_iv": 198.22,
+      "epv_iv": 109.22,
+      "conservative_iv": 109.22,
+      "margin_of_safety": -0.042,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1152,
+      "roic": null,
+      "net_debt_ebitda": 4.09,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 465333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:14.849675"
+  },
+  "SCHW": {
+    "iv_result": {
+      "ticker": "SCHW",
+      "current_price": 91.1,
+      "dcf_iv": 100.6,
+      "epv_iv": null,
+      "conservative_iv": 100.6,
+      "margin_of_safety": 0.0945,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0533,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 9683333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:15.019018"
+  },
+  "SLB": {
+    "iv_result": {
+      "ticker": "SLB",
+      "current_price": 56.18,
+      "dcf_iv": 41.95,
+      "epv_iv": 26.24,
+      "conservative_iv": 26.24,
+      "margin_of_safety": -1.1412,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0571,
+      "roic": 0.1438,
+      "net_debt_ebitda": 1.96,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 5010000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:15.192876"
   },
   "SMBC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.472925"
+    "iv_result": {
+      "ticker": "SMBC",
+      "current_price": 72.34,
+      "dcf_iv": 85.03,
+      "epv_iv": null,
+      "conservative_iv": 85.03,
+      "margin_of_safety": 0.1493,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0926,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 64166333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:16.064665"
   },
   "SMPL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.522753"
+    "iv_result": {
+      "ticker": "SMPL",
+      "current_price": 12.57,
+      "dcf_iv": 33.04,
+      "epv_iv": 15.01,
+      "conservative_iv": 15.01,
+      "margin_of_safety": 0.1624,
+      "verdict": "HOLD",
+      "fcf_yield": 0.126,
+      "roic": 0.0828,
+      "net_debt_ebitda": 2.1,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 175802667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:16.611316"
   },
   "SNPS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.573561"
+    "iv_result": {
+      "ticker": "SNPS",
+      "current_price": 453.89,
+      "dcf_iv": 141.38,
+      "epv_iv": 50.17,
+      "conservative_iv": 50.17,
+      "margin_of_safety": -8.0462,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.016,
+      "roic": 0.0329,
+      "net_debt_ebitda": 11.42,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1402980000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:17.266956"
+  },
+  "SO": {
+    "iv_result": {
+      "ticker": "SO",
+      "current_price": 94.0,
+      "dcf_iv": null,
+      "epv_iv": 48.18,
+      "conservative_iv": 48.18,
+      "margin_of_safety": -0.9512,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0283,
+      "roic": 0.1367,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0772,
+      "avg_fcf_used": -1214666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:17.467148"
   },
   "SPGI": {
+    "iv_result": {
+      "ticker": "SPGI",
+      "current_price": 418.91,
+      "dcf_iv": 68.49,
+      "epv_iv": 141.7,
+      "conservative_iv": 68.49,
+      "margin_of_safety": -5.1161,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0446,
+      "roic": 0.1171,
+      "net_debt_ebitda": 2.44,
+      "growth_rate_used": 0.0532,
+      "avg_fcf_used": 1273629333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:18.263402"
+  },
+  "SRE": {
+    "iv_result": {
+      "ticker": "SRE",
+      "current_price": 92.29,
+      "dcf_iv": 63.0,
+      "epv_iv": null,
+      "conservative_iv": 63.0,
+      "margin_of_safety": -0.465,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0483,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.038,
+      "avg_fcf_used": 2793666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:18.396491"
+  },
+  "STT": {
+    "iv_result": {
+      "ticker": "STT",
+      "current_price": 167.63,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 109.74,
+      "margin_of_safety": -0.5276,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.2318,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0357,
+      "avg_fcf_used": -1139666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:18.624948"
+  },
+  "STZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.632671"
+    "scanned_at": "2026-06-15T04:47:18.722044"
   },
   "SWBI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.738319"
+    "iv_result": {
+      "ticker": "SWBI",
+      "current_price": 14.76,
+      "dcf_iv": null,
+      "epv_iv": 7.13,
+      "conservative_iv": 7.13,
+      "margin_of_safety": -1.0709,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0443,
+      "roic": 0.0844,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -28560333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:19.351004"
+  },
+  "SWK": {
+    "iv_result": {
+      "ticker": "SWK",
+      "current_price": 83.62,
+      "dcf_iv": 92.42,
+      "epv_iv": 102.8,
+      "conservative_iv": 92.42,
+      "margin_of_safety": 0.0952,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0531,
+      "roic": null,
+      "net_debt_ebitda": 2.61,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 764500000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:19.528390"
+  },
+  "SYY": {
+    "iv_result": {
+      "ticker": "SYY",
+      "current_price": 79.19,
+      "dcf_iv": null,
+      "epv_iv": 39.16,
+      "conservative_iv": 39.16,
+      "margin_of_safety": -1.0221,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0649,
+      "roic": null,
+      "net_debt_ebitda": 4.38,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:19.608147"
+  },
+  "T": {
+    "iv_result": {
+      "ticker": "T",
+      "current_price": 23.58,
+      "dcf_iv": 27.56,
+      "epv_iv": 17.81,
+      "conservative_iv": 17.81,
+      "margin_of_safety": -0.3241,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1162,
+      "roic": 0.0904,
+      "net_debt_ebitda": 8.34,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 15778000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:19.707198"
+  },
+  "TAP": {
+    "iv_result": {
+      "ticker": "TAP",
+      "current_price": 41.58,
+      "dcf_iv": 91.44,
+      "epv_iv": 11.3,
+      "conservative_iv": 91.44,
+      "margin_of_safety": 0.5453,
+      "verdict": "BUY",
+      "fcf_yield": 0.1863,
+      "roic": 0.0213,
+      "net_debt_ebitda": 21.98,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 971366667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:19.884370"
   },
   "TCBK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.861786"
+    "iv_result": {
+      "ticker": "TCBK",
+      "current_price": 52.64,
+      "dcf_iv": 54.56,
+      "epv_iv": null,
+      "conservative_iv": 54.56,
+      "margin_of_safety": 0.0351,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0752,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.033,
+      "avg_fcf_used": 123394000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:20.658127"
+  },
+  "TFC": {
+    "iv_result": {
+      "ticker": "TFC",
+      "current_price": 51.66,
+      "dcf_iv": 35.61,
+      "epv_iv": null,
+      "conservative_iv": 35.61,
+      "margin_of_safety": -0.4505,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0793,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 3020000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:20.742232"
+  },
+  "TGT": {
+    "iv_result": {
+      "ticker": "TGT",
+      "current_price": 135.23,
+      "dcf_iv": 128.65,
+      "epv_iv": 95.31,
+      "conservative_iv": 95.31,
+      "margin_of_safety": -0.4188,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0463,
+      "roic": null,
+      "net_debt_ebitda": 2.64,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 3108333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:20.830207"
   },
   "TPR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:02.925949"
+    "iv_result": {
+      "ticker": "TPR",
+      "current_price": 147.42,
+      "dcf_iv": 77.55,
+      "epv_iv": 34.51,
+      "conservative_iv": 34.51,
+      "margin_of_safety": -3.2713,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0357,
+      "roic": 0.8373,
+      "net_debt_ebitda": 2.62,
+      "growth_rate_used": 0.0522,
+      "avg_fcf_used": 1010533333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:21.485067"
   },
   "TRMK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.047013"
+    "iv_result": {
+      "ticker": "TRMK",
+      "current_price": 45.91,
+      "dcf_iv": 38.99,
+      "epv_iv": null,
+      "conservative_iv": 38.99,
+      "margin_of_safety": -0.1774,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0856,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 154550667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:22.409561"
   },
-  "TROX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.113501"
+  "TROW": {
+    "iv_result": {
+      "ticker": "TROW",
+      "current_price": 109.64,
+      "dcf_iv": 73.95,
+      "epv_iv": 78.41,
+      "conservative_iv": 73.95,
+      "margin_of_safety": -0.4826,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0617,
+      "roic": 0.1422,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0201,
+      "avg_fcf_used": 1217533333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:22.517900"
+  },
+  "TRV": {
+    "iv_result": {
+      "ticker": "TRV",
+      "current_price": 304.46,
+      "dcf_iv": null,
+      "epv_iv": 116.82,
+      "conservative_iv": 116.82,
+      "margin_of_safety": -1.6062,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.1602,
+      "roic": 0.0772,
+      "net_debt_ebitda": 1.82,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:22.720713"
   },
   "UFPI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.210179"
+    "iv_result": {
+      "ticker": "UFPI",
+      "current_price": 84.56,
+      "dcf_iv": 161.86,
+      "epv_iv": 69.92,
+      "conservative_iv": 69.92,
+      "margin_of_safety": -0.2093,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0578,
+      "roic": 0.1281,
+      "net_debt_ebitda": 0.46,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 488721667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:23.445394"
+  },
+  "UNP": {
+    "iv_result": {
+      "ticker": "UNP",
+      "current_price": 272.7,
+      "dcf_iv": 124.51,
+      "epv_iv": 127.13,
+      "conservative_iv": 124.51,
+      "margin_of_safety": -1.1901,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.034,
+      "roic": 0.4084,
+      "net_debt_ebitda": 3.33,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 5899666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:23.637223"
+  },
+  "UPS": {
+    "iv_result": {
+      "ticker": "UPS",
+      "current_price": 108.1,
+      "dcf_iv": 100.94,
+      "epv_iv": 79.02,
+      "conservative_iv": 79.02,
+      "margin_of_safety": -0.368,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0519,
+      "roic": null,
+      "net_debt_ebitda": 2.78,
+      "growth_rate_used": 0.0526,
+      "avg_fcf_used": 5352666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:23.708647"
+  },
+  "USB": {
+    "iv_result": {
+      "ticker": "USB",
+      "current_price": 58.94,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 45.14,
+      "margin_of_safety": -0.3059,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0845,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0552,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:23.801331"
   },
   "USNA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.278368"
+    "iv_result": {
+      "ticker": "USNA",
+      "current_price": 19.91,
+      "dcf_iv": 26.39,
+      "epv_iv": 28.35,
+      "conservative_iv": 26.39,
+      "margin_of_safety": 0.2455,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0234,
+      "roic": 0.0884,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 38530667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:24.382231"
   },
   "UVSP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.347101"
+    "iv_result": {
+      "ticker": "UVSP",
+      "current_price": 42.58,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 36.85,
+      "margin_of_safety": -0.1554,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0847,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.0347,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:25.527917"
   },
   "VFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.422906"
+    "iv_result": {
+      "ticker": "VFC",
+      "current_price": 17.64,
+      "dcf_iv": 23.07,
+      "epv_iv": 4.95,
+      "conservative_iv": 23.07,
+      "margin_of_safety": 0.2353,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0923,
+      "roic": 0.1048,
+      "net_debt_ebitda": 14.34,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": 721373500.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:26.239227"
+  },
+  "VLO": {
+    "iv_result": {
+      "ticker": "VLO",
+      "current_price": 258.67,
+      "dcf_iv": 170.61,
+      "epv_iv": 160.16,
+      "conservative_iv": 160.16,
+      "margin_of_safety": -0.615,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.056,
+      "roic": null,
+      "net_debt_ebitda": 1.32,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 3541000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:26.427876"
+  },
+  "VMC": {
+    "iv_result": {
+      "ticker": "VMC",
+      "current_price": 286.47,
+      "dcf_iv": 124.64,
+      "epv_iv": 88.95,
+      "conservative_iv": 88.95,
+      "margin_of_safety": -2.2206,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0303,
+      "roic": 0.1359,
+      "net_debt_ebitda": 2.97,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 868533333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:26.518443"
   },
   "VRSK": {
+    "iv_result": {
+      "ticker": "VRSK",
+      "current_price": 183.8,
+      "dcf_iv": 120.11,
+      "epv_iv": 70.96,
+      "conservative_iv": 70.96,
+      "margin_of_safety": -1.5901,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0469,
+      "roic": 3.1701,
+      "net_debt_ebitda": 3.84,
+      "growth_rate_used": 0.0625,
+      "avg_fcf_used": 980900000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:27.134133"
+  },
+  "VTRS": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.529700"
+    "scanned_at": "2026-06-15T04:47:27.295596"
+  },
+  "VZ": {
+    "iv_result": {
+      "ticker": "VZ",
+      "current_price": 48.11,
+      "dcf_iv": 85.1,
+      "epv_iv": 50.36,
+      "conservative_iv": 50.36,
+      "margin_of_safety": 0.0447,
+      "verdict": "HOLD",
+      "fcf_yield": 0.164,
+      "roic": null,
+      "net_debt_ebitda": 3.46,
+      "growth_rate_used": 0.015,
+      "avg_fcf_used": 27909666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:27.389521"
   },
   "WBA": {
     "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.615636"
+    "scanned_at": "2026-06-15T04:47:28.595748"
   },
   "WBD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.682902"
+    "iv_result": {
+      "ticker": "WBD",
+      "current_price": 26.98,
+      "dcf_iv": 38.82,
+      "epv_iv": null,
+      "conservative_iv": 38.82,
+      "margin_of_safety": 0.305,
+      "verdict": "BUY",
+      "fcf_yield": 0.0462,
+      "roic": -0.0768,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 5136333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:28.647966"
   },
   "WDFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.755305"
+    "iv_result": {
+      "ticker": "WDFC",
+      "current_price": 223.01,
+      "dcf_iv": 101.21,
+      "epv_iv": 56.43,
+      "conservative_iv": 56.43,
+      "margin_of_safety": -2.9522,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0276,
+      "roic": 0.2847,
+      "net_debt_ebitda": 0.89,
+      "growth_rate_used": 0.051,
+      "avg_fcf_used": 86323333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:29.297241"
+  },
+  "WEC": {
+    "iv_result": {
+      "ticker": "WEC",
+      "current_price": 113.44,
+      "dcf_iv": null,
+      "epv_iv": 51.02,
+      "conservative_iv": 51.02,
+      "margin_of_safety": -1.2234,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0185,
+      "roic": null,
+      "net_debt_ebitda": 9.52,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": -358100000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:29.472708"
+  },
+  "WFC": {
+    "iv_result": {
+      "ticker": "WFC",
+      "current_price": 83.73,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "conservative_iv": 65.1,
+      "margin_of_safety": -0.2861,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0734,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.01,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:29.814213"
+  },
+  "WHR": {
+    "iv_result": {
+      "ticker": "WHR",
+      "current_price": 42.89,
+      "dcf_iv": 70.38,
+      "epv_iv": 93.86,
+      "conservative_iv": 70.38,
+      "margin_of_safety": 0.3906,
+      "verdict": "BUY",
+      "fcf_yield": 0.0337,
+      "roic": null,
+      "net_debt_ebitda": 9.27,
+      "growth_rate_used": 0.0321,
+      "avg_fcf_used": 277000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:30.016784"
   },
   "WLK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.818507"
+    "iv_result": {
+      "ticker": "WLK",
+      "current_price": 88.5,
+      "dcf_iv": 52.51,
+      "epv_iv": 0.53,
+      "conservative_iv": 52.51,
+      "margin_of_safety": -0.6854,
+      "verdict": "OVERVALUED",
+      "fcf_yield": -0.0467,
+      "roic": 0.0007,
+      "net_debt_ebitda": 644.31,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 359333333.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:30.810174"
+  },
+  "WMB": {
+    "iv_result": {
+      "ticker": "WMB",
+      "current_price": 72.08,
+      "dcf_iv": 5.89,
+      "epv_iv": 25.55,
+      "conservative_iv": 25.55,
+      "margin_of_safety": -1.8213,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0114,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 384000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:31.079288"
   },
   "WPM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.882597"
+    "iv_result": {
+      "ticker": "WPM",
+      "current_price": 116.1,
+      "dcf_iv": null,
+      "epv_iv": 16.71,
+      "conservative_iv": 16.71,
+      "margin_of_safety": -5.9462,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0361,
+      "roic": 0.0873,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": null,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:32.334439"
   },
   "WTW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:03.946649"
+    "iv_result": {
+      "ticker": "WTW",
+      "current_price": 262.63,
+      "dcf_iv": 58.08,
+      "epv_iv": 113.56,
+      "conservative_iv": 58.08,
+      "margin_of_safety": -3.5221,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0633,
+      "roic": 0.1382,
+      "net_debt_ebitda": 6.88,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 303666667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:33.080287"
+  },
+  "XEL": {
+    "iv_result": {
+      "ticker": "XEL",
+      "current_price": 79.22,
+      "dcf_iv": 36.86,
+      "epv_iv": 31.46,
+      "conservative_iv": 31.46,
+      "margin_of_safety": -1.5181,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.0826,
+      "roic": null,
+      "net_debt_ebitda": 12.82,
+      "growth_rate_used": 0.0107,
+      "avg_fcf_used": 1828477667.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:33.300043"
+  },
+  "XOM": {
+    "iv_result": {
+      "ticker": "XOM",
+      "current_price": 147.01,
+      "dcf_iv": 164.39,
+      "epv_iv": null,
+      "conservative_iv": 164.39,
+      "margin_of_safety": 0.1057,
+      "verdict": "HOLD",
+      "fcf_yield": 0.0384,
+      "roic": null,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 36653000000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:33.536296"
   },
   "XRAY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-14T05:06:04.010703"
+    "iv_result": {
+      "ticker": "XRAY",
+      "current_price": 10.09,
+      "dcf_iv": 18.96,
+      "epv_iv": null,
+      "conservative_iv": 18.96,
+      "margin_of_safety": 0.4679,
+      "verdict": "BUY",
+      "fcf_yield": 0.0427,
+      "roic": -0.2724,
+      "net_debt_ebitda": null,
+      "growth_rate_used": 0.04,
+      "avg_fcf_used": 254205000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:34.371278"
+  },
+  "ZBH": {
+    "iv_result": {
+      "ticker": "ZBH",
+      "current_price": 88.57,
+      "dcf_iv": 136.77,
+      "epv_iv": 48.7,
+      "conservative_iv": 48.7,
+      "margin_of_safety": -0.8188,
+      "verdict": "OVERVALUED",
+      "fcf_yield": 0.084,
+      "roic": 0.0759,
+      "net_debt_ebitda": 0.82,
+      "growth_rate_used": 0.08,
+      "avg_fcf_used": 1444900000.0,
+      "data_source": "EDGAR_XBRL"
+    },
+    "scanned_at": "2026-06-15T04:47:34.483828"
   }
 }

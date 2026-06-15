@@ -14008,119 +14008,2249 @@
           "neutral": 18
         }
       }
+    },
+    {
+      "ts": "2026-06-14T05:03:43.709765",
+      "scenarios_run": 22,
+      "grades": {
+        "PipelineLogicAgent": "A",
+        "CapitalLogicAgent": "A",
+        "GovernanceLogicAgent": "A",
+        "PerformanceLogicAgent": "A",
+        "AgentHealthLogicAgent": "A",
+        "StrategyLogicAgent": "A",
+        "MLLogicAgent": "F",
+        "DataIntegrityLogicAgent": "A",
+        "CommunicationLogicAgent": "A",
+        "RiskCoherenceLogicAgent": "A",
+        "PodHealthLogicAgent": "A",
+        "WiringContractLogicAgent": "N/A"
+      },
+      "scenario_results": [
+        {
+          "scenario": "pipeline_truly_dark",
+          "description": "36 active agents, canary GREEN, CRO LOW, but zero picks for 5 days. This is a genuine pipeline failure \u2014 not CRO blocking.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:00:21.122564"
+        },
+        {
+          "scenario": "pipeline_dark_cro_blocked",
+          "description": "CRO=HIGH is blocking buys. Pipeline ran fine. PipelineLogicAgent should NOT fire pipeline dark \u2014 this is expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:00:29.951938"
+        },
+        {
+          "scenario": "fi_pipeline_stale",
+          "description": "FI agents are in the registry but fi_pipeline_report is 10 days old.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:00:36.465780"
+        },
+        {
+          "scenario": "capital_totally_idle",
+          "description": "All 3 pods have $30k budget but zero positions and CRO is LOW. No excuse for idle capital \u2014 this is a deployment failure.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "CRITICAL"
+            },
+            "CapitalLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 3,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:00:45.440364"
+        },
+        {
+          "scenario": "capital_idle_but_cro_justified",
+          "description": "Pods idle because CRO=CRITICAL. This is the right posture.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:00:50.667422"
+        },
+        {
+          "scenario": "board_never_met",
+          "description": "Board meeting report is missing entirely \u2014 governance gap.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:01:03.184700"
+        },
+        {
+          "scenario": "cro_high_forever",
+          "description": "CRO=HIGH for 20 cycles (80 days) with no board vote. This should trigger governance finding.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:01:09.032995"
+        },
+        {
+          "scenario": "ml_model_below_random",
+          "description": "ST model AUC dropped to 0.47 \u2014 worse than random. Must be flagged.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "MISS",
+              "score": -2,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:01:23.775153"
+        },
+        {
+          "scenario": "performance_healthy",
+          "description": "AUC=0.63, portfolio +3%, all systems normal. Clean run expected.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "FALSE_POSITIVE",
+              "score": -1,
+              "fired": true,
+              "findings": 1,
+              "severity": "CRITICAL"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:01:37.140003"
+        },
+        {
+          "scenario": "mass_agent_retirement",
+          "description": "Only 3 active agents remain out of 38. Mass retirement should trigger health alert.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:01:43.063927"
+        },
+        {
+          "scenario": "agents_all_on_pip",
+          "description": "15 agents simultaneously on Performance Improvement Plans. Statistically impossible without a system-level cause.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:02:13.633835"
+        },
+        {
+          "scenario": "paralysis_genuine",
+          "description": "CRO has blocked all buys for 12+ cycles. No positions opened. This is strategy paralysis.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "LOW"
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:02:24.995872"
+        },
+        {
+          "scenario": "ml_pod_funded_no_validation",
+          "description": "ML pod has $30k but zero live picks logged. Can't know if model works.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:02:34.078835"
+        },
+        {
+          "scenario": "ghost_positions",
+          "description": "state.json has 8 positions that review_recommendations doesn't know about.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:02:40.445605"
+        },
+        {
+          "scenario": "data_all_consistent",
+          "description": "All data files consistent \u2014 no ghost positions, pods match.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:02:50.518394"
+        },
+        {
+          "scenario": "email_buffer_overflow",
+          "description": "25 emails queued in buffer \u2014 volume exceeds absorption.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:02:55.677412"
+        },
+        {
+          "scenario": "canary_red_positions_open",
+          "description": "Canary=RED but 8 positions still open. Defensive exits not triggered.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "HIGH"
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:03:12.445351"
+        },
+        {
+          "scenario": "risk_signals_contradicting",
+          "description": "IRM has 3 red flags but CRO shows LOW. Signals contradict.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "CRITICAL"
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:03:20.144686"
+        },
+        {
+          "scenario": "risk_all_coherent",
+          "description": "CRO=ELEVATED, Canary=YELLOW, IRM has 1 flag. All pointing same direction.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:03:26.609049"
+        },
+        {
+          "scenario": "pod_never_run",
+          "description": "FI pipeline has never produced a report \u2014 pod has capital but never ran.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "MISS",
+              "score": -2,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:03:32.561792"
+        },
+        {
+          "scenario": "pod_pipeline_stale",
+          "description": "FE pipeline report is 40 hours old \u2014 well past daily threshold.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "PASS",
+              "score": 1,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:03:37.163354"
+        },
+        {
+          "scenario": "pods_all_healthy",
+          "description": "Both pod pipelines ran within the last 24h. Pod health is fine.",
+          "results": {
+            "PipelineLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "CapitalLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "GovernanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PerformanceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "AgentHealthLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "StrategyLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "MLLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "MEDIUM"
+            },
+            "DataIntegrityLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 1,
+              "severity": "MEDIUM"
+            },
+            "CommunicationLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": true,
+              "findings": 2,
+              "severity": "LOW"
+            },
+            "RiskCoherenceLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "PodHealthLogicAgent": {
+              "grade": "NEUTRAL",
+              "score": 0,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            },
+            "WiringContractLogicAgent": {
+              "grade": "CLEAN",
+              "score": 1,
+              "fired": false,
+              "findings": 0,
+              "severity": null
+            }
+          },
+          "ts": "2026-06-14T05:03:43.632290"
+        }
+      ],
+      "agent_scores": {
+        "PipelineLogicAgent": {
+          "score": 18,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 4
+        },
+        "CapitalLogicAgent": {
+          "score": 3,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 19
+        },
+        "GovernanceLogicAgent": {
+          "score": 20,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 2
+        },
+        "PerformanceLogicAgent": {
+          "score": 17,
+          "total": 1,
+          "passes": 0,
+          "misses": 1,
+          "fp": 0,
+          "neutral": 2
+        },
+        "AgentHealthLogicAgent": {
+          "score": 22,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 0
+        },
+        "StrategyLogicAgent": {
+          "score": 18,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 4
+        },
+        "MLLogicAgent": {
+          "score": 1,
+          "total": 3,
+          "passes": 2,
+          "misses": 0,
+          "fp": 1,
+          "neutral": 19
+        },
+        "DataIntegrityLogicAgent": {
+          "score": 2,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 20
+        },
+        "CommunicationLogicAgent": {
+          "score": 1,
+          "total": 1,
+          "passes": 1,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 21
+        },
+        "RiskCoherenceLogicAgent": {
+          "score": 17,
+          "total": 2,
+          "passes": 2,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 5
+        },
+        "PodHealthLogicAgent": {
+          "score": 17,
+          "total": 2,
+          "passes": 1,
+          "misses": 1,
+          "fp": 0,
+          "neutral": 2
+        },
+        "WiringContractLogicAgent": {
+          "score": 22,
+          "total": 0,
+          "passes": 0,
+          "misses": 0,
+          "fp": 0,
+          "neutral": 0
+        }
+      }
     }
   ],
   "agent_lifetime_scores": {
     "PipelineLogicAgent": {
-      "score": 31,
-      "total": 20,
-      "passes": 18,
+      "score": 49,
+      "total": 22,
+      "passes": 20,
       "misses": 0,
       "fp": 2,
-      "runs": 9,
+      "runs": 10,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026383"
+      "last_run": "2026-06-14T05:03:43.709694"
     },
     "CapitalLogicAgent": {
-      "score": 22,
-      "total": 10,
-      "passes": 9,
+      "score": 25,
+      "total": 11,
+      "passes": 10,
       "misses": 0,
       "fp": 1,
-      "runs": 9,
+      "runs": 10,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026385"
+      "last_run": "2026-06-14T05:03:43.709716"
     },
     "GovernanceLogicAgent": {
-      "score": 143,
-      "total": 18,
-      "passes": 18,
+      "score": 163,
+      "total": 20,
+      "passes": 20,
       "misses": 0,
       "fp": 0,
-      "runs": 9,
+      "runs": 10,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026387"
+      "last_run": "2026-06-14T05:03:43.709721"
     },
     "PerformanceLogicAgent": {
-      "score": 8,
-      "total": 10,
+      "score": 25,
+      "total": 11,
       "passes": 9,
-      "misses": 0,
+      "misses": 1,
       "fp": 1,
-      "runs": 9,
+      "runs": 10,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026388"
+      "last_run": "2026-06-14T05:03:43.709725"
     },
     "AgentHealthLogicAgent": {
-      "score": 168,
-      "total": 18,
-      "passes": 18,
+      "score": 190,
+      "total": 20,
+      "passes": 20,
       "misses": 0,
       "fp": 0,
-      "runs": 9,
+      "runs": 10,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026390"
+      "last_run": "2026-06-14T05:03:43.709730"
     },
     "StrategyLogicAgent": {
-      "score": 134,
-      "total": 18,
-      "passes": 18,
+      "score": 152,
+      "total": 20,
+      "passes": 20,
       "misses": 0,
       "fp": 0,
-      "runs": 9,
+      "runs": 10,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026392"
+      "last_run": "2026-06-14T05:03:43.709735"
     },
     "MLLogicAgent": {
-      "score": 17,
-      "total": 19,
-      "passes": 18,
+      "score": 18,
+      "total": 22,
+      "passes": 20,
       "misses": 0,
-      "fp": 1,
-      "runs": 9,
-      "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026394"
+      "fp": 2,
+      "runs": 10,
+      "last_grade": "F",
+      "last_run": "2026-06-14T05:03:43.709740"
     },
     "DataIntegrityLogicAgent": {
-      "score": 14,
-      "total": 7,
-      "passes": 7,
+      "score": 16,
+      "total": 8,
+      "passes": 8,
       "misses": 0,
       "fp": 0,
-      "runs": 7,
+      "runs": 8,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026395"
+      "last_run": "2026-06-14T05:03:43.709744"
     },
     "CommunicationLogicAgent": {
-      "score": 7,
-      "total": 7,
-      "passes": 7,
+      "score": 8,
+      "total": 8,
+      "passes": 8,
       "misses": 0,
       "fp": 0,
-      "runs": 7,
+      "runs": 8,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026397"
+      "last_run": "2026-06-14T05:03:43.709748"
     },
     "RiskCoherenceLogicAgent": {
-      "score": 107,
-      "total": 14,
-      "passes": 14,
+      "score": 124,
+      "total": 16,
+      "passes": 16,
       "misses": 0,
       "fp": 0,
-      "runs": 7,
+      "runs": 8,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026398"
+      "last_run": "2026-06-14T05:03:43.709753"
     },
     "PodHealthLogicAgent": {
-      "score": 9,
-      "total": 7,
-      "passes": 6,
-      "misses": 0,
+      "score": 26,
+      "total": 9,
+      "passes": 7,
+      "misses": 1,
       "fp": 1,
-      "runs": 5,
+      "runs": 6,
       "last_grade": "A",
-      "last_run": "2026-06-11T02:13:08.026400"
+      "last_run": "2026-06-14T05:03:43.709757"
+    },
+    "WiringContractLogicAgent": {
+      "score": 22,
+      "total": 0,
+      "passes": 0,
+      "misses": 0,
+      "fp": 0,
+      "runs": 1,
+      "last_grade": "N/A",
+      "last_run": "2026-06-14T05:03:43.709763"
     }
   },
-  "last_run": "2026-06-11T02:13:08.026402"
+  "last_run": "2026-06-14T05:03:43.709774"
 }

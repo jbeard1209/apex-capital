@@ -1,122 +1,22 @@
 {
-  "generated_at": "2026-06-12T23:41:13.643881",
+  "generated_at": "2026-06-15T00:47:55.868175",
   "approved": [
     {
-      "ticker": "RTX",
-      "side": "long",
-      "qty": null,
-      "avg_entry": null,
-      "current_price": 183.53,
-      "unrealized_pnl_pct": 0.0,
-      "hold_days": 0,
-      "weight_pct": 0.0,
-      "momentum": {
-        "trend": "bullish",
-        "rsi_14": 58.2,
-        "pct_from_50ma": 0.89,
-        "pct_from_200ma": 1.6,
-        "above_50ma": true,
-        "above_200ma": true
-      },
-      "action": "BUY_NEW",
-      "priority": 4,
+      "ticker": "BALY",
+      "source": "iv_opportunity_scan",
       "conviction": 5,
-      "investment_horizon": "long",
-      "source_agent": "Agent fe_capitalallocation",
-      "specialty": "FE-CapitalAllocation",
-      "reasons": [
-        "[FE-CapitalAllocation] RTX Corporation: Bullish trend (+0.9% vs 50MA, +1.6% vs 200MA) | RSI 58 \u2014 momentum sweet spot | Fwd P/E 24.2x | Rev growth +9% YoY | Conviction: \u2605\u2605\u2605"
-      ],
-      "fundamentals": {
-        "forward_pe": 24.212626,
-        "revenue_growth_pct": 8.7,
-        "market_cap": 247156801536
-      },
-      "source_agent_class": "FECapitalAllocationAgent",
-      "dcf_iv": 58342.36,
-      "epv_iv": 36971.87,
-      "conservative_iv": 36971.87,
-      "margin_of_safety": 0.995,
+      "verdict": "BUY",
       "iv_verdict": "BUY",
-      "fcf_yield": 31.3112,
-      "roic": 0.0761,
-      "net_debt_ebitda": 6.35,
-      "source": "quick_screen",
-      "conviction_score": 68,
-      "conviction_position": 750,
-      "fraud_result": {
-        "risk_level": "LOW",
-        "recommendation": "CLEAR"
-      },
-      "mgmt_result": {
-        "category": "FAIR",
-        "score": 50
-      },
-      "moat_result": {
-        "moat_width": "NONE",
-        "score": 0
-      },
-      "blocked_by_fraud": false,
-      "board_decision": "APPROVED",
-      "board_votes": [
-        {
-          "member": "Value Officer",
-          "vote": "APPROVE",
-          "reason": "MoS=99.5%"
-        },
-        {
-          "member": "Quality Officer",
-          "vote": "APPROVE",
-          "reason": "conviction=5"
-        },
-        {
-          "member": "Risk Officer",
-          "vote": "APPROVE",
-          "reason": "MoS=99.5% conv=5"
-        }
-      ]
-    },
-    {
-      "ticker": "BRK-B",
-      "side": "long",
-      "qty": null,
-      "avg_entry": null,
-      "current_price": 489.25,
-      "unrealized_pnl_pct": 0.0,
-      "hold_days": 0,
-      "weight_pct": 0.0,
-      "momentum": {
-        "trend": "neutral",
-        "rsi_14": 53.2,
-        "pct_from_50ma": 2.36,
-        "pct_from_200ma": -0.23,
-        "above_50ma": true,
-        "above_200ma": false
-      },
-      "action": "BUY_NEW",
-      "priority": 4,
-      "conviction": 5,
-      "investment_horizon": "long",
-      "source_agent": "Agent fe_familybusiness",
-      "specialty": "FE-FamilyBusiness",
-      "reasons": [
-        "[FE-FamilyBusiness] Berkshire Hathaway Inc. New: At trend inflection \u2014 momentum building | RSI 53 \u2014 momentum sweet spot | Fwd P/E 22.8x | Rev growth +4% YoY | Conviction: \u2605\u2605\u2605"
-      ],
-      "fundamentals": {
-        "forward_pe": 22.783737,
-        "revenue_growth_pct": 4.4,
-        "market_cap": 1055240683520
-      },
-      "source_agent_class": "FEFamilyBusinessAgent",
-      "dcf_iv": 317382.86,
-      "epv_iv": 87380.62,
-      "conservative_iv": 87380.62,
-      "margin_of_safety": 0.9944,
-      "iv_verdict": "BUY",
-      "fcf_yield": 31.1444,
-      "roic": 0.02,
+      "margin_of_safety": 0.7408,
+      "conservative_iv": 57.69,
+      "dcf_iv": null,
+      "epv_iv": null,
+      "current_price": 14.95,
+      "fcf_yield": -0.2466,
+      "roic": -0.0447,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=74.1% | IV=$57.69 | Price=$14.95 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
       "net_debt_ebitda": null,
-      "source": "quick_screen",
       "conviction_score": 68,
       "conviction_position": 750,
       "fraud_result": {
@@ -137,7 +37,7 @@
         {
           "member": "Value Officer",
           "vote": "APPROVE",
-          "reason": "MoS=99.4%"
+          "reason": "MoS=74.1%"
         },
         {
           "member": "Quality Officer",
@@ -147,7 +47,7 @@
         {
           "member": "Risk Officer",
           "vote": "APPROVE",
-          "reason": "MoS=99.4% conv=5"
+          "reason": "MoS=74.1% conv=5"
         }
       ]
     },
@@ -277,21 +177,21 @@
       ]
     },
     {
-      "ticker": "AMCX",
+      "ticker": "CHTR",
       "source": "iv_opportunity_scan",
       "conviction": 5,
       "verdict": "BUY",
       "iv_verdict": "BUY",
-      "margin_of_safety": 0.6473,
-      "conservative_iv": 28.58,
-      "dcf_iv": 92.49,
-      "epv_iv": 28.58,
-      "current_price": 10.08,
-      "fcf_yield": 0.6083,
-      "roic": 0.1252,
+      "margin_of_safety": 0.7105,
+      "conservative_iv": 503.71,
+      "dcf_iv": 503.71,
+      "epv_iv": 751.78,
+      "current_price": 145.82,
+      "fcf_yield": 0.2242,
+      "roic": null,
       "data_source": "EDGAR_XBRL",
-      "notes": "IV-scan direct pick: MoS=64.7% | IV=$28.58 | Price=$10.08 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
-      "net_debt_ebitda": 10.9,
+      "notes": "IV-scan direct pick: MoS=71.0% | IV=$503.71 | Price=$145.82 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": 7.37,
       "conviction_score": 68,
       "conviction_position": 750,
       "fraud_result": {
@@ -312,7 +212,7 @@
         {
           "member": "Value Officer",
           "vote": "APPROVE",
-          "reason": "MoS=64.7%"
+          "reason": "MoS=71.0%"
         },
         {
           "member": "Quality Officer",
@@ -322,26 +222,26 @@
         {
           "member": "Risk Officer",
           "vote": "APPROVE",
-          "reason": "MoS=64.7% conv=5"
+          "reason": "MoS=71.0% conv=5"
         }
       ]
     },
     {
-      "ticker": "ASGN",
+      "ticker": "GM",
       "source": "iv_opportunity_scan",
       "conviction": 5,
       "verdict": "BUY",
       "iv_verdict": "BUY",
-      "margin_of_safety": 0.6332,
-      "conservative_iv": 57.31,
-      "dcf_iv": null,
-      "epv_iv": 57.31,
-      "current_price": 21.02,
-      "fcf_yield": 0.3777,
-      "roic": 0.1312,
+      "margin_of_safety": 0.7067,
+      "conservative_iv": 277.88,
+      "dcf_iv": 277.88,
+      "epv_iv": 72.8,
+      "current_price": 81.5,
+      "fcf_yield": 0.2384,
+      "roic": 0.1042,
       "data_source": "EDGAR_XBRL",
-      "notes": "IV-scan direct pick: MoS=63.3% | IV=$57.31 | Price=$21.02 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
-      "net_debt_ebitda": 3.9,
+      "notes": "IV-scan direct pick: MoS=70.7% | IV=$277.88 | Price=$81.5 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": null,
       "conviction_score": 68,
       "conviction_position": 750,
       "fraud_result": {
@@ -362,7 +262,7 @@
         {
           "member": "Value Officer",
           "vote": "APPROVE",
-          "reason": "MoS=63.3%"
+          "reason": "MoS=70.7%"
         },
         {
           "member": "Quality Officer",
@@ -372,7 +272,57 @@
         {
           "member": "Risk Officer",
           "vote": "APPROVE",
-          "reason": "MoS=63.3% conv=5"
+          "reason": "MoS=70.7% conv=5"
+        }
+      ]
+    },
+    {
+      "ticker": "COF",
+      "source": "iv_opportunity_scan",
+      "conviction": 5,
+      "verdict": "BUY",
+      "iv_verdict": "BUY",
+      "margin_of_safety": 0.7053,
+      "conservative_iv": 626.74,
+      "dcf_iv": 626.74,
+      "epv_iv": null,
+      "current_price": 184.73,
+      "fcf_yield": 0.2264,
+      "roic": null,
+      "data_source": "EDGAR_XBRL",
+      "notes": "IV-scan direct pick: MoS=70.5% | IV=$626.74 | Price=$184.73 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
+      "net_debt_ebitda": null,
+      "conviction_score": 68,
+      "conviction_position": 750,
+      "fraud_result": {
+        "risk_level": "LOW",
+        "recommendation": "CLEAR"
+      },
+      "mgmt_result": {
+        "category": "FAIR",
+        "score": 50
+      },
+      "moat_result": {
+        "moat_width": "NONE",
+        "score": 0
+      },
+      "blocked_by_fraud": false,
+      "board_decision": "APPROVED",
+      "board_votes": [
+        {
+          "member": "Value Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=70.5%"
+        },
+        {
+          "member": "Quality Officer",
+          "vote": "APPROVE",
+          "reason": "conviction=5"
+        },
+        {
+          "member": "Risk Officer",
+          "vote": "APPROVE",
+          "reason": "MoS=70.5% conv=5"
         }
       ]
     }

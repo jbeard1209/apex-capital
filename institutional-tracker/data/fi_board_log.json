@@ -69,6 +69,13 @@
       "reviewed": 13,
       "approved_count": 8,
       "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-15T00:30:23.868066",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
     }
   ]
 }

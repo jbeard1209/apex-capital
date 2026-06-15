@@ -1,0 +1,79 @@
+{
+  "version": "v2",
+  "trained_at": "2026-06-14T11:45:23.249482",
+  "n_samples": 31864,
+  "has_lightgbm": true,
+  "has_xgboost": true,
+  "has_risk_adj": true,
+  "positive_rate": 0.5138,
+  "top_features": [
+    [
+      "volatility_20d",
+      2972.0
+    ],
+    [
+      "price_momentum_5d",
+      2969.0
+    ],
+    [
+      "hold_streak_quarters",
+      2906.0
+    ],
+    [
+      "pct_change_shares",
+      2888.0
+    ],
+    [
+      "price_momentum_20d",
+      2881.0
+    ]
+  ],
+  "feature_cols": [
+    "days_since_filing",
+    "filing_delay_days",
+    "quarter_of_year",
+    "amendment_flag",
+    "conviction_score",
+    "n_institutions",
+    "herding_flag",
+    "quant_consensus",
+    "filing_quarter_consensus",
+    "pct_change_shares",
+    "new_position_flag",
+    "large_increase_flag",
+    "position_size_pct_aum",
+    "hold_streak_quarters",
+    "avg_conviction_3q",
+    "institution_hit_rate",
+    "price_momentum_20d",
+    "price_momentum_5d",
+    "price_vs_52w_high",
+    "volatility_20d",
+    "days_since_ipo",
+    "short_interest_pct",
+    "portfolio_weight",
+    "institution_regime_hit_rate",
+    "rd_regime_bull",
+    "rd_vix",
+    "rd_spy_rsi",
+    "earnings_surprise_flag",
+    "insider_buy_dollars",
+    "insider_is_ceo_cfo",
+    "sector_momentum_vs_spy"
+  ],
+  "lgb_auc_val": 0.6028,
+  "xgb_auc_val": 0.6157,
+  "rf_auc_val": 0.6554,
+  "lr_auc_val": 0.6746,
+  "ensemble_auc_val": 0.6762,
+  "ensemble_acc_val": 0.5721,
+  "ensemble_weights": {
+    "lgb": 0.0,
+    "xgb": 0.0,
+    "rf": 0.3,
+    "lr": 0.7
+  },
+  "cv_auc_mean": 0.565,
+  "cv_auc_std": 0.0569,
+  "risk_adj_r2_val": -0.0938
+}

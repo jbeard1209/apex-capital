@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-06-14T19:12:52.828818",
+  "seed": 42,
+  "live_auc_gate": 0.57,
+  "models": {
+    "shortterm": {
+      "label": "shortterm",
+      "target": "outcome_20d",
+      "evaluated_at": "2026-06-14T19:12:53.421261",
+      "seed": 42,
+      "status": "PASS",
+      "n_samples": 10555,
+      "n_features": 26,
+      "positive_rate": 0.4964,
+      "cv_method": "TimeSeriesSplit(n_splits=5, time-embargo=20d)",
+      "embargo_days": 20,
+      "confidence": "HIGH",
+      "fold_aucs": [
+        0.5476,
+        0.5561,
+        0.4507,
+        0.6309,
+        0.6795
+      ],
+      "walk_forward_auc_mean": 0.5729,
+      "walk_forward_auc_std": 0.0782,
+      "brier_score": 0.2523,
+      "baseline_momentum_auc": 0.4924,
+      "edge_over_baseline": 0.0805
+    },
+    "risk_adjusted": {
+      "label": "risk_adjusted",
+      "target": "risk_adjusted_20d",
+      "evaluated_at": "2026-06-14T19:13:20.058087",
+      "seed": 42,
+      "status": "PASS",
+      "n_samples": 10537,
+      "n_features": 26,
+      "target_binarized_at_zero": true,
+      "positive_rate": 0.497,
+      "cv_method": "TimeSeriesSplit(n_splits=5, time-embargo=20d)",
+      "embargo_days": 20,
+      "confidence": "HIGH",
+      "fold_aucs": [
+        0.5456,
+        0.5546,
+        0.4512,
+        0.6373,
+        0.6806
+      ],
+      "walk_forward_auc_mean": 0.5739,
+      "walk_forward_auc_std": 0.0795,
+      "brier_score": 0.2524,
+      "baseline_momentum_auc": 0.4918,
+      "edge_over_baseline": 0.0821
+    }
+  },
+  "persisted_metrics": {
+    "trained": true,
+    "displayed_auc": 0.5837,
+    "cv_auc_mean": 0.5837
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-14T01:02:34.118812",
+  "generated_at": "2026-06-15T01:00:06.308848",
   "total_findings": 4,
   "findings": [
     {
@@ -27,11 +27,11 @@
     {
       "agent": "CITDataQualityAnalyst",
       "category": "BUG_FIX",
-      "severity": "MEDIUM",
+      "severity": "HIGH",
       "confidence": 88,
-      "title": "Stale data file: data/earnings_predictions.json (29h old, threshold 26h)",
-      "description": "data/earnings_predictions.json has not been updated in 29h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-      "evidence": "data/earnings_predictions.json: file age 29h. Max acceptable: 26h.",
+      "title": "Stale data file: data/earnings_predictions.json (53h old, threshold 26h)",
+      "description": "data/earnings_predictions.json has not been updated in 53h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
+      "evidence": "data/earnings_predictions.json: file age 53h. Max acceptable: 26h.",
       "proposed_fix": "Check that the agent producing data/earnings_predictions.json ran successfully in recent logs. Verify its cron schedule is active.",
       "auto_implementable": false
     },
@@ -41,7 +41,7 @@
       "severity": "HIGH",
       "confidence": 90,
       "title": "yfinance beat_rate coverage restored: 100% of sample tickers",
-      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 37 day(s).",
+      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 38 day(s).",
       "proposed_fix": "Re-enable beat_rate in earnings_predictor.py and remove the MEDIUM known-gap finding.",
       "auto_implementable": false
     }

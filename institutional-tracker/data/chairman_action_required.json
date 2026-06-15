@@ -172,5 +172,84 @@
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-11T16:50:01.523626",
     "status": "awaiting_chairman"
+  },
+  {
+    "id": "PM-194016-0",
+    "title": "Cap idle cash at 30% \u2014 CRO ratings must auto-expire",
+    "category": "STRATEGY",
+    "description": "88% of capital sat uninvested for months while SPY rallied; CRO held HIGH for 8+ cycles with no exit criteria. Loss post-mortem ranks this the #1 damage mechanism.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "PM-194016-1",
+    "title": "Cap gross short exposure at 10% unless index confirms downtrend",
+    "category": "STRATEGY",
+    "description": "Firm carried ~35% gross short exposure (XLE, XLY, QQQ, BA, DIS, SH) during a bull market \u2014 direct losses fighting the tape.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "PM-194016-2",
+    "title": "Written override log when manager rejects research picks",
+    "category": "STRATEGY",
+    "description": "Research correctly picked AMD (+221%), CRWD (+53%), SLB (+65%); manager gates rejected all three. No feedback loop exists to grade these overrides.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "LTIA-20260612233930",
+    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "category": "IMPROVEMENT",
+    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 10x). This needs a decision, not a rerun.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "LTIA-20260612234113",
+    "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "category": "IMPROVEMENT",
+    "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "LTIA-20260613000002",
+    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "category": "IMPROVEMENT",
+    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "CIT-2026-166",
+    "title": "91 ERROR lines \u2014 dominant: `fe_pipeline`",
+    "category": "BUG_FIX",
+    "root_cause": "yfinance download failures logged as ERROR (fixed: logging suppressed in research_team.py + rd_team_leader.py)",
+    "resolution": "Fixed \u2014 yfinance errors now suppressed. Error count should drop to near-zero after next R&D run.",
+    "status": "fixed",
+    "times_approved": 2,
+    "queued_at": "2026-06-15T00:13:36.805922"
+  },
+  {
+    "id": "PHM-20260615004327-FE",
+    "source": "Pod Health Monitor",
+    "severity": "HIGH",
+    "description": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report 24h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-06-15T00:43:27.278124"
   }
 ]
