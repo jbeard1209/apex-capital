@@ -103,6 +103,11 @@ def _irm_risk_level() -> str:
 # Per-period base return bands on deployed capital (assumption-driven; graded later).
 _BASE_BANDS = {"1w": (-1.5, 2.0), "1m": (-4.0, 6.0), "1y": (-15.0, 25.0)}
 _OUT_TARGET = {"1w": 1, "1m": 4, "1y": 50}
+# Per-pod output OKRs — a pod is accountable for sustaining a live pick pipeline.
+# Keys map to _firm_snapshot()['output']. FE's bar is deliberately low (elite picks
+# are rare); ML pods are exempt until they clear the 0.57 gate (cash is valid).
+_POD_OUT_MIN = {"fi_picks": 3, "fe_picks": 1, "etf_picks": 1}
+_POD_LABEL = {"fi_picks": "Fixed Income", "fe_picks": "First Eagle", "etf_picks": "Macro/ETF"}
 
 
 class GrowthStrategist:
@@ -231,19 +236,39 @@ def _route_to_board(goals, base, bull, bear):
             })
             added += 1
 
-    # 3) Output-accountability -> HR (HR reads the board queue)
+    # 3) Per-pod output OKRs -> HR (HR reads the board queue). Each pod below its
+    #    minimum is flagged individually so HR can review THAT pod — not a vague
+    #    firm-wide note. ML pods are intentionally exempt (gated, cash is valid).
     out = _firm_snapshot()["output"]
-    if sum(out.values()) == 0:
-        htitle = f"[HR] Pods produced zero new picks this period ({ts.strftime('%Y-%m-%d')})"
-        if htitle not in existing:
-            pend.append({
-                "id": f"COUNCIL-HR-{ts.strftime('%Y%m%d%H%M%S')}", "source": "Strategy Council",
-                "category": CAT_ACTION, "severity": "MEDIUM", "confidence": 70, "title": htitle,
-                "description": "No new picks across pods this period — output goal at risk.",
-                "proposed_fix": "HR: review pod productivity; confirm pipelines ran and standards aren't starving output.",
-                "owner": "HR Director", "created_at": ts.isoformat(), "status": "pending",
+    for key, minimum in _POD_OUT_MIN.items():
+        if out.get(key, 0) < minimum:
+            pod = _POD_LABEL[key]
+            htitle = f"[HR] {pod} pod below output OKR ({out.get(key,0)}/{minimum}) ({ts.strftime('%Y-%m-%d')})"
+            if htitle not in existing:
+                pend.append({
+                    "id": f"COUNCIL-HR-{key}-{ts.strftime('%Y%m%d%H%M%S')}", "source": "Strategy Council",
+                    "category": CAT_ACTION, "severity": "MEDIUM", "confidence": 70, "title": htitle,
+                    "description": f"{pod} produced {out.get(key,0)} picks vs OKR minimum {minimum} this period.",
+                    "proposed_fix": (f"HR: review {pod} pod productivity — confirm its pipeline ran and that "
+                                     "the elite standard isn't starving output (widen the search, don't lower the bar)."),
+                    "owner": "HR Director", "created_at": ts.isoformat(), "status": "pending",
+                })
+                added += 1
+
+    # 4) Extreme bull/bear dissent -> Chairman (the committee can't agree; needs a human call)
+    if base.get("dissent_spread_pct", 0) >= 80:
+        actions = _load(CHAIRMAN, [])
+        if isinstance(actions, list) and not any(
+            (a.get("description", "").startswith("[Council] Extreme dissent")) for a in actions
+            if a.get("status") not in ("resolved", "dismissed")):
+            actions.append({
+                "id": f"COUNCIL-DISSENT-{ts.strftime('%Y%m%d%H%M%S')}", "source": "Strategy Council",
+                "severity": "HIGH", "status": "open", "resolution_note": "",
+                "description": (f"[Council] Extreme dissent {base['dissent_spread_pct']}pp between bull and bear "
+                                f"({base['consensus']}). The committee can't converge — Chairman steers."),
+                "ts": ts.isoformat(),
             })
-            added += 1
+            _save(CHAIRMAN, actions)
 
     if added:
         _save(CIT_PENDING, pend)
