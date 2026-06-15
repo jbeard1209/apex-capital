@@ -86,6 +86,47 @@ def _calibration_widen() -> float:
     return 1.0
 
 
+SEAT_RECORD = DATA / "council_seat_record.json"
+DIGEST = DATA / "council_digest.md"
+EMAIL_BUFFER = DATA / "email_buffer.json"
+_REGIME_TILT = {"BULL": +0.10, "GREEN": +0.05, "NEUTRAL": 0.0, "ORANGE": -0.08,
+                "BEAR": -0.15, "RED": -0.20, "YELLOW": -0.05}
+
+
+def _grade_seats(snap):
+    """Track which seat called direction right. For each matured goal, compare the
+    realized equity move to each seat's lean (bull=up, bear=down, macro=regime tilt
+    sign) and update the hit/total record — so we can trust the better forecaster."""
+    rec = _load(SEAT_RECORD, {"bull": {"hit": 0, "n": 0}, "bear": {"hit": 0, "n": 0},
+                              "macro": {"hit": 0, "n": 0}})
+    goals = _load(GOALS, {"active": [], "history": []})
+    today = datetime.now().strftime("%Y-%m-%d")
+    for g in goals.get("active", []):
+        if g.get("target_date", "9999") > today or g.get("_seats_graded"):
+            continue
+        ret = snap["equity"] - (g.get("baseline_equity") or snap["equity"])
+        up = ret >= 0
+        rec["bull"]["n"] += 1; rec["bull"]["hit"] += int(up)
+        rec["bear"]["n"] += 1; rec["bear"]["hit"] += int(not up)
+        tilt = _REGIME_TILT.get((g.get("council") or {}).get("macro_regime", ""), 0.0)
+        rec["macro"]["n"] += 1
+        rec["macro"]["hit"] += int((tilt >= 0) == up)   # macro right if its tilt matched direction
+        g["_seats_graded"] = True
+    _save(GOALS, goals); _save(SEAT_RECORD, rec)
+    return rec
+
+
+def _seat_weights():
+    """Hit-rate per seat (default 0.5 until >=3 samples) — used to trust the better
+    forecaster more when blending the band."""
+    rec = _load(SEAT_RECORD, {})
+    w = {}
+    for seat in ("bull", "bear", "macro"):
+        s = rec.get(seat, {})
+        w[seat] = round(s["hit"] / s["n"], 3) if s.get("n", 0) >= 3 else 0.5
+    return w
+
+
 def _irm_risk_level() -> str:
     """Read the firm's current risk level from IRM / CRO outputs (contact with IRM)."""
     for p, keys in ((RISK_BULLETIN, ("risk_level", "level", "severity", "status")),
@@ -170,13 +211,16 @@ class ChiefStrategist:
         else:
             conf = "LOW — no realized track record yet; ranges are assumption-based"
         tilt = macro["tilt"]
+        w = _seat_weights()   # trust the seat that's been right more often
         goals = []
         for h, days in HORIZONS:
             bhi = bull["bands"][h][1]
             rlo = bear["bands"][h][0]
             base_lo, base_hi = _BASE_BANDS[h]
-            lo = round(((rlo + base_lo) / 2 + base_lo * abs(tilt) if tilt < 0 else (rlo + base_lo) / 2) * widen, 1)
-            hi = round(((bhi + base_hi) / 2 * (1 + tilt)) * widen, 1)
+            # Lean the upside toward bull / downside toward bear, each scaled by that
+            # seat's historical accuracy; macro tilt scaled by macro's accuracy.
+            hi = round((base_hi + (bhi - base_hi) * w["bull"]) * (1 + tilt * w["macro"]) * widen, 1)
+            lo = round((base_lo + (rlo - base_lo) * w["bear"]) * widen, 1)
             lo_eq = round(eq * (1 + lo / 100 * dep))
             hi_eq = round(eq * (1 + hi / 100 * dep))
             goals.append({
@@ -286,6 +330,76 @@ def _post_channel(base, bull, bear):
     _save(FIRM_CHANNEL, fc[-500:])
 
 
+def _calibration_report(force=False):
+    """Quarterly: report how good our forecasts have been (range hit-rate + seat
+    accuracy) to the board — not just the silent auto-widen. Fires every ~90 days."""
+    rec = _load(RECORD, {"graded": []})
+    graded = rec.get("graded", [])
+    last = rec.get("last_calibration_report", "")
+    due = force or (not last) or (
+        (datetime.now() - datetime.fromisoformat(last[:19])).days >= 90 if last else True)
+    if not due or len(graded) < 1:
+        return None
+    hit = sum(1 for g in graded if g.get("within_range"))
+    rate = round(hit / len(graded) * 100) if graded else 0
+    seats = _load(SEAT_RECORD, {})
+    seat_txt = ", ".join(f"{s}: {(v.get('hit',0)/v['n']*100):.0f}% ({v.get('hit',0)}/{v['n']})"
+                         for s, v in seats.items() if v.get("n"))
+    pend = _load(CIT_PENDING, [])
+    title = f"Strategy Council quarterly calibration ({datetime.now().strftime('%Y-%m-%d')})"
+    if isinstance(pend, list) and title not in {p.get("title", "") for p in pend}:
+        pend.append({
+            "id": f"COUNCIL-CAL-{datetime.now().strftime('%Y%m%d%H%M%S')}", "source": "Strategy Council",
+            "category": CAT_GOALS, "severity": "LOW", "confidence": 80, "title": title,
+            "description": (f"Forecast calibration over {len(graded)} graded goals: {rate}% landed in range. "
+                            f"Seat accuracy — {seat_txt or 'insufficient samples'}. "
+                            f"{'Bands auto-widened due to overconfidence.' if rate < 50 else 'Calibration acceptable.'}"),
+            "proposed_fix": "Board: note calibration; the council auto-widens bands when range hit-rate < ~70%.",
+            "owner": "Full Board", "created_at": datetime.now().isoformat(), "status": "pending",
+        })
+        _save(CIT_PENDING, pend)
+    rec["last_calibration_report"] = datetime.now().isoformat()
+    _save(RECORD, rec)
+    return {"range_hit_pct": rate, "n": len(graded), "seats": seat_txt}
+
+
+def _write_digest(snap, base, bull, bear, macro, irm_risk):
+    """Human-readable council digest (markdown) + buffered to the Chairman email."""
+    g = {x["horizon"]: x["financial_target"] for x in base["goals"]}
+    seats = _load(SEAT_RECORD, {})
+    seat_txt = " | ".join(f"{s} {(v.get('hit',0)/v['n']*100):.0f}%" for s, v in seats.items() if v.get("n")) or "no track record yet"
+    md = f"""# Strategy Council Digest — {datetime.now().strftime('%Y-%m-%d')}
+
+**Firm equity:** ${snap['equity']:,.0f} ({snap['return_vs_budget_pct']}% vs budget) | deployed {snap['deployed_pct']*100:.0f}% | {snap['positions']} positions
+**IRM risk:** {irm_risk} | **Market regime:** {macro['regime']}
+
+## Committee view
+- 🐂 **Bull (Growth):** {bull['stance']} — {bull['notes'][0]}
+- 🐻 **Bear (Risk):** {bear['stance']} — {bear['notes'][0]}
+- 🌐 **Macro:** regime {macro['regime']}, tilt {macro['tilt']:+.0%}
+- 🪑 **Chief (Base):** {base['consensus']} Dissent {base['dissent_spread_pct']}pp.
+
+## Goals (board ratification pending)
+| Horizon | Equity range |
+|---|---|
+| 1 week  | ${g['1w']['equity_low']:,.0f} – ${g['1w']['equity_high']:,.0f} |
+| 1 month | ${g['1m']['equity_low']:,.0f} – ${g['1m']['equity_high']:,.0f} |
+| 1 year  | ${g['1y']['equity_low']:,.0f} – ${g['1y']['equity_high']:,.0f} |
+
+**Seat accuracy (trust-weighting):** {seat_txt}
+**Guardrail:** {base['guardrail']}
+"""
+    DIGEST.write_text(md)
+    # buffer into the Chairman email digest
+    eb = _load(EMAIL_BUFFER, [])
+    if isinstance(eb, list):
+        eb.append({"ts": datetime.now().isoformat(), "agent": "Strategy Council",
+                   "subject": f"Apex — Strategy Council Digest {datetime.now().strftime('%b %d')}",
+                   "body": md, "priority": "NORMAL"})
+        _save(EMAIL_BUFFER, eb[-200:])
+    return md
+
+
 def _sync_ratifications() -> int:
     """Close the loop: when the board APPROVES the council's goal proposal, flip the
     matching active goals from 'proposed' to 'ratified' so they aren't proposed forever."""
@@ -328,7 +442,10 @@ def run(report_only: bool = False) -> dict:
     rat = _sync_ratifications()
     if rat:
         logger.info(f"  Board ratified {rat} prior goal(s) -> status=ratified.")
-    _grade(snap)  # grade matured goals
+    _grade_seats(snap)   # score which seat called direction right (before _grade archives them)
+    _grade(snap)         # grade matured goals vs range
+    w = _seat_weights()
+    logger.info(f"  Seat accuracy weights: bull {w['bull']} | bear {w['bear']} | macro {w['macro']}")
     goals = _load(GOALS, {"active": [], "history": []})
     if not any(g.get("set_date") == datetime.now().strftime("%Y-%m-%d") and g.get("source") == "council"
                for g in goals.get("active", [])):
@@ -340,7 +457,15 @@ def run(report_only: bool = False) -> dict:
             n = _route_to_board(base["goals"], base, bull, bear)
             _post_channel(base, bull, bear)
             logger.info(f"  Routed {n} item(s) to board/IRM/HR queues + firm channel.")
-    return {"snapshot": snap, "irm_risk": irm_risk, "base": base, "bull": bull, "bear": bear}
+    # Digest + quarterly calibration run every invocation (they report the current
+    # view, independent of whether fresh goals were set today).
+    if not report_only:
+        cal = _calibration_report()
+        _write_digest(snap, base, bull, bear, macro, irm_risk)
+        logger.info("  Council digest written (data/council_digest.md) + buffered to Chairman email"
+                    + (f"; quarterly calibration filed ({cal['range_hit_pct']}% in range)" if cal else ""))
+    return {"snapshot": snap, "irm_risk": irm_risk, "base": base, "bull": bull, "bear": bear,
+            "macro": macro, "seat_weights": w}
 
 
 if __name__ == "__main__":
