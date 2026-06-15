@@ -103,3 +103,6 @@ config/llm_config.json
 institutional-tracker/data/historical_13f.db-wal
 institutional-tracker/data/historical_13f.db-shm
 institutional-tracker/data/historical_13f.db-journal
+
+# Claude scratch/diagnostic scripts (never commit)
+institutional-tracker/_*.py
