@@ -47,12 +47,17 @@ Append a dated line to `STATUS_LOG.md` each run so progress is auditable.
   every pick deployed + outcome, model AUC trajectory, goals-vs-actuals, all commits, open issues.
 
 ## STANDING BACKLOG (pull from when a focus day is light)
-- Per-pod OKRs: extend strategy_council to set per-pod output goals and route per-pod misses to HR
-  (firm-wide zero-output → HR hook already exists).
-- Weight council perspectives by past accuracy (track which seat was right).
-- Build the inference-consistent rank features (the validated +0.01 ST direction).
+- Build the inference-consistent rank features (the validated +0.01 ST direction) — Mon focus.
 - Investigate whether restricting ML live picks to a liquid sub-universe legitimately clears 0.57.
 - Expand FE_VALUE_UNIVERSE / 13F funnel breadth if the elite scan yields too few names.
+- Once a goal track record exists, confirm seat accuracy-weighting + quarterly calibration are firing.
+
+## STRATEGY COUNCIL — feature-complete as of 2026-06-15
+4 seats (bull/bear/macro/chief), board-ratified goals (ratification loop closes the
+status), calibration auto-widen + quarterly board report, per-pod output OKRs → HR,
+seat accuracy-weighting (council_seat_record.json), cash-is-valid guardrail, extreme-
+dissent → Chairman, and a human-readable digest (data/council_digest.md + Chairman
+email). Weekly cron (Mon). Reads IRM risk + canary regime. See memory: strategy_council.
 
 ## DO NOT
 - Do not lower the FE 25% MoS bar or the 0.57 ML gate.
