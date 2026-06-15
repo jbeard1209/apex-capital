@@ -567,6 +567,25 @@ def prescreen_universe():
     # more chances to surface a name that clears the high 25%-MoS bar.
     all_tickers.update(FE_VALUE_UNIVERSE)
 
+    # Bigger funnel — the strict elite bar (corroborated, debt-adjusted, 25-50% MoS)
+    # passes very few names, so we feed it a large, institutionally-vetted candidate
+    # set: the most widely-held tickers from the 13F holdings DB (each held by >=5
+    # institutions). These are liquid, real businesses — exactly where to hunt value.
+    try:
+        import sqlite3 as _sql
+        _db = BASE_DIR / "data" / "historical_13f.db"
+        if _db.exists():
+            _c = _sql.connect(str(_db))
+            held = _c.execute(
+                "SELECT ticker FROM holdings WHERE ticker!='' "
+                "GROUP BY ticker HAVING COUNT(DISTINCT institution) >= 5 "
+                "ORDER BY COUNT(DISTINCT institution) DESC LIMIT 600"
+            ).fetchall()
+            _c.close()
+            all_tickers.update(t[0] for t in held if t[0])
+    except Exception as _he:
+        logger.warning(f"[Prescreen] 13F funnel unavailable: {_he}")
+
     blocked = set()
     for ticker in all_tickers:
         if ticker in cache:
