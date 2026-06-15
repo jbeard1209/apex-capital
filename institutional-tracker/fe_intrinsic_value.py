@@ -155,10 +155,14 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
         logger.warning(f"[IV] yfinance fallback: could not compute any IV for {ticker}")
         return None
 
-    conservative_iv = min(methods.values())   # cautious anchor
     _d, _e = methods.get("dcf"), methods.get("epv")
-    have_two = _d is not None and _e is not None
-    agree = have_two and min(_d, _e) >= 0.60 * max(_d, _e)
+    # EPV anchor + DCF-confirms (same elite rule as the EDGAR path).
+    if _e is not None:
+        conservative_iv = _e
+        dcf_confirms = (_d is not None and _d >= 0.90 * _e)
+    else:
+        conservative_iv = min(methods.values())
+        dcf_confirms = False
 
     if conservative_iv > 5 * current_price:
         logger.warning(f"[IV] {ticker}: IV ${conservative_iv:,.0f} > 5x price "
@@ -167,7 +171,7 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
 
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
 
-    if agree and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
+    if dcf_confirms and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
         verdict = "BUY"
     elif mos >= MOS_BUY_THRESHOLD:
         verdict = "REVIEW"
@@ -306,17 +310,20 @@ def calculate_iv(ticker: str) -> Optional[dict]:
         return None
 
     dcf_iv = methods.get("dcf"); epv_iv = methods.get("epv")
-    # Anchor on the CAUTIOUS estimate (lowest credible method).
-    conservative_iv = min(methods.values())
 
-    # CORROBORATION — the heart of the elite standard. The two earnings-based methods
-    # (DCF = with growth, EPV = no-growth) must AGREE within a sane band. If they
-    # disagree wildly we genuinely don't know the value — that's not a buy, it's a
-    # question mark. This single rule rejects both failure modes seen in testing:
-    #   GM  dcf $278 vs epv $73  (peak-cycle DCF fantasy)   -> disagree -> no buy
-    #   KHC dcf $41  vs epv $3.5 (debt-crushed EPV artifact) -> disagree -> no buy
-    have_two = dcf_iv is not None and epv_iv is not None
-    agree = have_two and min(dcf_iv, epv_iv) >= 0.60 * max(dcf_iv, epv_iv)
+    # ELITE anchor = EPV (debt-adjusted, NO-growth earnings power). The deep-value
+    # test (Greenwald) is: "is the price below what the business is worth assuming
+    # ZERO growth?" If so the margin of safety is real and you get growth for free.
+    # DCF (with growth) is used only to CONFIRM the business isn't shrinking — it
+    # should sit at or above EPV. A DCF far ABOVE EPV (GM: $278 vs $73) is just
+    # peak-cycle growth fantasy and is ignored; a DCF BELOW EPV means a declining
+    # business — disqualifying. When EPV is missing we can't run the test -> not a BUY.
+    if epv_iv is not None:
+        conservative_iv = epv_iv
+        dcf_confirms = (dcf_iv is not None and dcf_iv >= 0.90 * epv_iv)
+    else:
+        conservative_iv = min(methods.values())
+        dcf_confirms = False
 
     # Upper sanity guard — >5x price is almost always a units/data error.
     if conservative_iv > 5 * current_price:
@@ -327,13 +334,12 @@ def calculate_iv(ticker: str) -> Optional[dict]:
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
 
     # ── ELITE verdict tiers ───────────────────────────────────────────────────
-    # BUY only when DCF & EPV corroborate AND the discount is a believable 25-50%.
-    # Anything cheap-but-uncorroborated, single-method, or implausibly deep is REVIEW
-    # (a human decides), never auto-bought. Few names pass — that's the point.
-    if agree and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
+    # BUY: cheap on no-growth earnings (25-50% MoS) AND DCF confirms it's not
+    # declining. Cheap but uncorroborated / no-EPV / >50% deep -> REVIEW (human).
+    if dcf_confirms and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
         verdict = "BUY"
     elif mos >= MOS_BUY_THRESHOLD:
-        verdict = "REVIEW"      # cheap, but methods disagree / single-method / too deep
+        verdict = "REVIEW"
     elif mos >= MOS_HOLD_THRESHOLD:
         verdict = "HOLD"
     else:
