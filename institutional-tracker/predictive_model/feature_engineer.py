@@ -144,11 +144,17 @@ FEATURE_COLS = [
     # FEATURE EXPERIMENTS (2026-06-15, time-embargoed walk-forward, n≈21.8k, base AUC 0.540):
     #   - conviction_score × institution_hit_rate interaction: +0.0003 (noise) — REJECTED.
     #   - cross-sectional rank of price_momentum_20d within each snapshot_date: +0.0054
-    #     (0.540→0.546). A real but small lift, and the most promising DIRECTION (relative/
-    #     rank features). NOT yet wired: the training cross-section (all tickers on a date)
-    #     differs from the live inference cross-section (only that day's signals), so a naive
-    #     implementation would behave differently in production. To adopt: compute the rank
-    #     against a fixed reference universe at BOTH train and inference time, then re-measure.
+    #     (0.540→0.546). A real but small lift, and the most promising DIRECTION.
+    #   - FOUR compounded xsec ranks (price_momentum_20d, conviction_score, n_institutions,
+    #     avg_conviction_3q) within each snapshot_date: +0.0103 (0.540→0.551) — the rank
+    #     direction COMPOUNDS. Biggest validated lift to date (still < 0.57 gate).
+    #   NOT yet wired: a per-date / per-live-batch rank isn't inference-safe — the training
+    #   cross-section (hundreds of tickers per date) differs from the live batch (~10-45
+    #   signals), so percentile ranks wouldn't match in production. DEPLOYABLE FORM: replace
+    #   the per-batch rank with a quantile/CDF transform against a FIXED reference distribution
+    #   computed once from training data and persisted (e.g. data/feature_quantiles.json);
+    #   apply the same reference in build_feature_matrix AND get_inference_features, add the
+    #   *_pctile columns to FEATURE_COLS, retrain, and re-measure. Expected ~+0.01 AUC.
 ]
 
 _QUANT_FUNDS = {"Renaissance Tech", "Two Sigma", "D.E. Shaw", "AQR Capital"}
