@@ -276,7 +276,13 @@ def calculate_iv(ticker: str) -> Optional[dict]:
     # ── Net debt — equity owners are paid after creditors ─────────────────────
     # Subtract what the company owes in every method, else a heavily-indebted firm
     # (cable, casinos) looks far cheaper than the equity is actually worth.
-    net_debt = next((v for v in reversed(debt_list) if v is not None), 0.0) or 0.0
+    # HARDENING: if long_term_debt is missing we CANNOT certify equity value (a big
+    # debt load could be hidden) — record debt_known=False so this can't auto-BUY.
+    # (Caught CMCSA: no debt field -> net_debt defaulted to 0 -> ~$95B debt ignored
+    # -> a false 50% "bargain". Without the data it's REVIEW, not BUY.)
+    _raw_debt = next((v for v in reversed(debt_list) if v is not None), None)
+    debt_known = _raw_debt is not None
+    net_debt = _raw_debt or 0.0
 
     # ── DCF IV (debt-adjusted) ────────────────────────────────────────────────
     dcf_iv = None
@@ -284,9 +290,18 @@ def calculate_iv(ticker: str) -> Optional[dict]:
         dcf_iv = _dcf_iv(avg_fcf, growth_rate, shares, net_debt)
 
     # ── EPV IV (debt-adjusted, no-growth earnings power) ──────────────────────
+    # HARDENING: EPV assumes STABLE, normalized earnings. If the most recent year's
+    # EBIT is negative or has collapsed (< 50% of the 3yr average), earnings power is
+    # not stable and EPV is unreliable -> earnings_stable=False -> can't auto-BUY.
+    # (Caught BIDU: latest EBIT -$0.83B after a decline.)
     epv_iv = None
     recent_ebit = [v for v in ebit_list[-3:] if v is not None]
     avg_ebit = sum(recent_ebit) / len(recent_ebit) if recent_ebit else None
+    latest_ebit = next((v for v in reversed(ebit_list) if v is not None), None)
+    earnings_stable = bool(
+        avg_ebit and avg_ebit > 0 and latest_ebit is not None
+        and latest_ebit > 0 and latest_ebit >= 0.50 * avg_ebit
+    )
     if avg_ebit and avg_ebit > 0:
         epv_iv = _epv_iv(avg_ebit, 0.21, DISCOUNT_RATE, shares, net_debt)
 
@@ -335,8 +350,9 @@ def calculate_iv(ticker: str) -> Optional[dict]:
 
     # ── ELITE verdict tiers ───────────────────────────────────────────────────
     # BUY: cheap on no-growth earnings (25-50% MoS) AND DCF confirms it's not
-    # declining. Cheap but uncorroborated / no-EPV / >50% deep -> REVIEW (human).
-    if dcf_confirms and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
+    # declining AND debt is verified AND earnings are stable. Any gap -> REVIEW.
+    if (dcf_confirms and debt_known and earnings_stable
+            and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING):
         verdict = "BUY"
     elif mos >= MOS_BUY_THRESHOLD:
         verdict = "REVIEW"
