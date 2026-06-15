@@ -1383,6 +1383,80 @@ def backfill_long_term_outcomes(horizon_cal_days: int = 365) -> dict:
             "skipped_horizon": skipped_horizon, "skipped_nocache": skipped_nocache}
 
 
+def backfill_outcomes(max_tickers: int = None) -> dict:
+    """Expand the labeled set: prewarm prices for tickers that have UNLABELED
+    snapshots, then UPDATE outcome_1d/5d/20d/252d on those existing rows.
+
+    The normal labeler INSERT-OR-IGNOREs and skips existing rows, so the ~368k
+    snapshots with NULL outcomes (their tickers were never in the price cache) stay
+    unlabeled forever. This pass closes that gap — it's the single biggest lever on
+    model quality (10,555 labeled -> potentially 10x), which shrinks the walk-forward
+    fold variance. Same horizon guard as the LT backfill: a window is only labeled
+    when the ticker's price history actually extends past it (no truncated returns).
+    """
+    global _price_cache
+    conn = get_db(); _migrate_schema(conn)
+    filings = conn.execute("SELECT * FROM filings ORDER BY filing_date").fetchall()
+
+    need = conn.execute(
+        "SELECT DISTINCT ticker FROM pipeline_snapshots "
+        "WHERE outcome_20d IS NULL AND ticker != ''"
+    ).fetchall()
+    tickers = {r[0] for r in need}
+    if max_tickers:
+        tickers = set(list(tickers)[:max_tickers])
+    logger.info(f"  Outcome backfill: {len(tickers):,} tickers have unlabeled snapshots")
+
+    # Prewarm prices (downloads only the ones not already cached).
+    try:
+        phase2_prewarm_prices(tickers, filings)
+    except Exception as e:
+        logger.warning(f"  Outcome backfill: prewarm partial/failed: {e}")
+        if PRICE_CACHE_PATH.exists() and not _price_cache:
+            with open(PRICE_CACHE_PATH, "rb") as f:
+                _price_cache = pickle.load(f)
+
+    rows = conn.execute(
+        "SELECT ROWID, ticker, snapshot_date FROM pipeline_snapshots "
+        "WHERE outcome_20d IS NULL AND ticker != ''"
+    ).fetchall()
+
+    HORIZONS = [("outcome_1d", 2), ("outcome_5d", 8),
+                ("outcome_20d", 29), ("outcome_252d", 365)]
+    updates, labeled = [], 0
+    for rowid, ticker, snap_date in rows:
+        s = _price_cache.get(ticker)
+        if s is None or len(s) == 0:
+            continue
+        base = pd.to_datetime(snap_date).date()
+        last = pd.Timestamp(s.index.max())
+        vals = {}
+        for col, cal in HORIZONS:
+            # only label horizons whose full forward window exists
+            if last < pd.Timestamp(base) + pd.Timedelta(days=cal - 3):
+                continue
+            r = _fwd_ret(ticker, base, cal)
+            if r is not None:
+                vals[col] = r
+        if "outcome_20d" not in vals:
+            continue  # the core label must be realizable to count this row
+        vol = _vol20(ticker, base)
+        ra20 = (vals["outcome_20d"] / vol) if (vol and vol > 0) else None
+        ra252 = (vals.get("outcome_252d") / vol) if (vol and vol > 0 and "outcome_252d" in vals) else None
+        updates.append((vals.get("outcome_1d"), vals.get("outcome_5d"), vals.get("outcome_20d"),
+                        vals.get("outcome_252d"), ra20, ra252, 1, rowid))
+        labeled += 1
+
+    for i in range(0, len(updates), 500):
+        conn.executemany(
+            "UPDATE pipeline_snapshots SET outcome_1d=?, outcome_5d=?, outcome_20d=?, "
+            "outcome_252d=?, risk_adjusted_20d=?, risk_adjusted_252d=?, outcome_filled=? "
+            "WHERE ROWID=?", updates[i:i + 500])
+        conn.commit()
+    logger.info(f"  Outcome backfill: newly labeled {labeled:,} rows")
+    return {"status": "DONE", "newly_labeled": labeled, "tickers": len(tickers)}
+
+
 def run(limit: int = None, fund_filter: str = None,
         n_workers: int = 4, skip_prewarm: bool = False) -> dict:
 
@@ -1505,6 +1579,10 @@ if __name__ == "__main__":
                         help="Only backfill insider_buy_dollars + insider_is_ceo_cfo on existing rows")
     parser.add_argument("--backfill-lt", action="store_true",
                         help="Backfill long-term label outcome_252d on existing rows")
+    parser.add_argument("--backfill-outcomes", action="store_true",
+                        help="Prewarm missing prices + backfill ALL outcomes on existing NULL rows")
+    parser.add_argument("--max-tickers", type=int, default=None,
+                        help="Cap tickers to prewarm (for a bounded first pass)")
     parser.add_argument("--backfill-sector-momentum", action="store_true",
                         help="Only backfill sector_momentum_vs_spy on existing rows (needs price cache)")
     args = parser.parse_args()
@@ -1590,6 +1668,10 @@ if __name__ == "__main__":
         # Long-term label backfill — fills outcome_252d / risk_adjusted_252d on
         # existing rows from the warmed price cache (no re-download, no INSERT).
         print(json.dumps(backfill_long_term_outcomes(), indent=2, default=str))
+    elif args.backfill_outcomes:
+        # Expand the labeled set: prewarm missing-ticker prices, then UPDATE all
+        # outcomes on existing NULL rows. The big model-quality lever.
+        print(json.dumps(backfill_outcomes(max_tickers=args.max_tickers), indent=2, default=str))
     else:
         result = run(
             limit=args.limit,
