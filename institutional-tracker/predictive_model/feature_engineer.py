@@ -140,6 +140,15 @@ FEATURE_COLS = [
     # Zero-variance features in training = noise that hurts AUC. They ARE still computed in
     # get_inference_features() and sit in the DataFrame as context — the model just ignores them.
     # Re-add to FEATURE_COLS once ~6 months of labeled data accumulates with non-zero values.
+    #
+    # FEATURE EXPERIMENTS (2026-06-15, time-embargoed walk-forward, n≈21.8k, base AUC 0.540):
+    #   - conviction_score × institution_hit_rate interaction: +0.0003 (noise) — REJECTED.
+    #   - cross-sectional rank of price_momentum_20d within each snapshot_date: +0.0054
+    #     (0.540→0.546). A real but small lift, and the most promising DIRECTION (relative/
+    #     rank features). NOT yet wired: the training cross-section (all tickers on a date)
+    #     differs from the live inference cross-section (only that day's signals), so a naive
+    #     implementation would behave differently in production. To adopt: compute the rank
+    #     against a fixed reference universe at BOTH train and inference time, then re-measure.
 ]
 
 _QUANT_FUNDS = {"Renaissance Tech", "Two Sigma", "D.E. Shaw", "AQR Capital"}
