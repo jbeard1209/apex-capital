@@ -42,6 +42,9 @@ MAX_GROWTH_RATE    = 0.08
 DCF_YEARS          = 10
 MOS_BUY_THRESHOLD  = 0.25
 MOS_HOLD_THRESHOLD = 0.00
+# Above this discount, an estimate is more likely a model error or special situation
+# than a real bargain — flag REVIEW (human eyes), don't auto-BUY.
+REVIEW_CEILING     = 0.50
 
 
 def _safe_float(val, default=None) -> Optional[float]:
@@ -54,7 +57,7 @@ def _safe_float(val, default=None) -> Optional[float]:
         return default
 
 
-def _dcf_iv(fcf: float, growth_rate: float, shares: float) -> Optional[float]:
+def _dcf_iv(fcf: float, growth_rate: float, shares: float, net_debt: float = 0.0) -> Optional[float]:
     if fcf <= 0 or shares <= 0:
         return None
     pv_total = 0.0
@@ -69,14 +72,20 @@ def _dcf_iv(fcf: float, growth_rate: float, shares: float) -> Optional[float]:
     terminal_fcf = cf * (1 + TERMINAL_GROWTH)
     terminal_val = terminal_fcf / (DISCOUNT_RATE - TERMINAL_GROWTH)
     pv_terminal  = terminal_val / ((1 + DISCOUNT_RATE) ** DCF_YEARS)
-    return (pv_total + pv_terminal) / shares
+    # The discounted cash flows value the whole ENTERPRISE. Equity owners are last
+    # in line — subtract what the company owes (net debt) before dividing per share,
+    # or a heavily-indebted firm looks far cheaper than the equity is actually worth.
+    equity_val = (pv_total + pv_terminal) - max(0.0, net_debt)
+    return equity_val / shares if equity_val > 0 else None
 
 
-def _epv_iv(ebit: float, tax_rate: float, wacc: float, shares: float) -> Optional[float]:
+def _epv_iv(ebit: float, tax_rate: float, wacc: float, shares: float, net_debt: float = 0.0) -> Optional[float]:
     if ebit <= 0 or shares <= 0 or wacc <= 0:
         return None
     nopat = ebit * (1 - max(0.10, min(0.40, tax_rate)))
-    return (nopat / wacc) / shares
+    # nopat/wacc is the ENTERPRISE earnings-power value; subtract net debt for equity.
+    equity_val = (nopat / wacc) - max(0.0, net_debt)
+    return equity_val / shares if equity_val > 0 else None
 
 
 def _revenue_cagr(revenue_list: list, years: int = 5) -> float:
@@ -138,23 +147,19 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
     if book and book > 0:
         book_iv = book * 1.2   # slight premium to book for franchise value
 
-    available = [v for v in [dcf_iv, epv_iv] if v and v > 0]
-    # Book value as a fallback for financials (DCF/EPV don't apply to banks).
-    if not available and book_iv and book_iv > 0:
-        available = [book_iv]
-    if not available:
+    # Keep only non-data-error methods (>10% of price); same elite corroboration
+    # rule as the EDGAR path so the fallback isn't a loophole.
+    methods = {k: v for k, v in {"dcf": dcf_iv, "epv": epv_iv, "book": book_iv}.items()
+               if v and v > 0.10 * current_price}
+    if not methods:
         logger.warning(f"[IV] yfinance fallback: could not compute any IV for {ticker}")
         return None
 
-    # Drop degenerate methods (<30% of best) so a collapsed DCF can't define IV.
-    if len(available) >= 2:
-        _hi = max(available)
-        available = [v for v in available if v >= 0.30 * _hi] or available
+    conservative_iv = min(methods.values())   # cautious anchor
+    _d, _e = methods.get("dcf"), methods.get("epv")
+    have_two = _d is not None and _e is not None
+    agree = have_two and min(_d, _e) >= 0.60 * max(_d, _e)
 
-    conservative_iv = min(available)
-
-    # Same sanity guard as the EDGAR path — reject implausible >5x-price IVs that
-    # are almost certainly data/units errors rather than real deep value.
     if conservative_iv > 5 * current_price:
         logger.warning(f"[IV] {ticker}: IV ${conservative_iv:,.0f} > 5x price "
                        f"${current_price:.2f} — implausible, likely a data error; skipping")
@@ -162,7 +167,14 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
 
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
 
-    verdict = "BUY" if mos >= MOS_BUY_THRESHOLD else ("HOLD" if mos >= MOS_HOLD_THRESHOLD else "OVERVALUED")
+    if agree and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
+        verdict = "BUY"
+    elif mos >= MOS_BUY_THRESHOLD:
+        verdict = "REVIEW"
+    elif mos >= MOS_HOLD_THRESHOLD:
+        verdict = "HOLD"
+    else:
+        verdict = "OVERVALUED"
 
     fcf_yield = (fcf_raw / (current_price * shares)) if (fcf_raw and shares and current_price) else None
 
@@ -257,51 +269,56 @@ def calculate_iv(ticker: str) -> Optional[dict]:
     # ── 5yr revenue CAGR ─────────────────────────────────────────────────────
     growth_rate = _revenue_cagr(rev_list, years=5)
 
-    # ── DCF IV ────────────────────────────────────────────────────────────────
+    # ── Net debt — equity owners are paid after creditors ─────────────────────
+    # Subtract what the company owes in every method, else a heavily-indebted firm
+    # (cable, casinos) looks far cheaper than the equity is actually worth.
+    net_debt = next((v for v in reversed(debt_list) if v is not None), 0.0) or 0.0
+
+    # ── DCF IV (debt-adjusted) ────────────────────────────────────────────────
     dcf_iv = None
     if avg_fcf and avg_fcf > 0:
-        dcf_iv = _dcf_iv(avg_fcf, growth_rate, shares)
+        dcf_iv = _dcf_iv(avg_fcf, growth_rate, shares, net_debt)
 
-    # ── EPV IV ────────────────────────────────────────────────────────────────
+    # ── EPV IV (debt-adjusted, no-growth earnings power) ──────────────────────
     epv_iv = None
     recent_ebit = [v for v in ebit_list[-3:] if v is not None]
     avg_ebit = sum(recent_ebit) / len(recent_ebit) if recent_ebit else None
     if avg_ebit and avg_ebit > 0:
-        tax_rate = 0.21   # conservative US effective tax rate default
-        epv_iv   = _epv_iv(avg_ebit, tax_rate, DISCOUNT_RATE, shares)
+        epv_iv = _epv_iv(avg_ebit, 0.21, DISCOUNT_RATE, shares, net_debt)
 
-    # ── Conservative IV ───────────────────────────────────────────────────────
-    available = [v for v in [dcf_iv, epv_iv] if v and v > 0]
-
-    # Book value (net assets / share) — the right anchor for financials (banks,
-    # insurers) where operating-cash-flow DCF/EPV don't apply. Used ONLY as a
-    # fallback when DCF+EPV are both unavailable, so it never drags down the IV of
-    # ordinary operating companies. (Previously assets/liabilities were fetched but
-    # never used → financials like C/BAC returned no IV at all.)
+    # ── Method corroboration (ELITE standard) ─────────────────────────────────
+    # Keep only methods that aren't an absolute data error (>10% of price — catches
+    # collapsed-DCF $1 cases without discarding a legitimately-low, cautious EPV).
+    methods = {k: v for k, v in {"dcf": dcf_iv, "epv": epv_iv}.items()
+               if v and v > 0.10 * current_price}
+    book_iv = None
     _a = next((v for v in reversed(assets_list) if v), None)
     _l = next((v for v in reversed(liab_list) if v), None)
-    if not available and _a and _l and _a > _l and shares:
-        available = [((_a - _l) / shares) * 1.1]   # slight premium for franchise value
+    if _a and _l and _a > _l and shares:
+        book_iv = (_a - _l) / shares     # tangible-ish net worth per share, no premium
+    # Book value is a single-method fallback for financials only — it can corroborate
+    # but cannot, alone, clear the BUY bar (it's not an earnings-based valuation).
+    if book_iv and book_iv > 0.10 * current_price:
+        methods["book"] = book_iv
 
-    if not available:
+    if not methods:
         logger.warning(f"[IV] Could not compute IV for {ticker}")
         return None
 
-    # Drop degenerate methods (<30% of the best credible estimate) before taking the
-    # conservative (min). A DCF that collapses on volatile/near-zero FCF shouldn't
-    # DEFINE intrinsic value — that produced absurd $1 IVs for names like F / KHC.
-    if len(available) >= 2:
-        _hi = max(available)
-        available = [v for v in available if v >= 0.30 * _hi] or available
+    dcf_iv = methods.get("dcf"); epv_iv = methods.get("epv")
+    # Anchor on the CAUTIOUS estimate (lowest credible method).
+    conservative_iv = min(methods.values())
 
-    conservative_iv = min(available)
+    # CORROBORATION — the heart of the elite standard. The two earnings-based methods
+    # (DCF = with growth, EPV = no-growth) must AGREE within a sane band. If they
+    # disagree wildly we genuinely don't know the value — that's not a buy, it's a
+    # question mark. This single rule rejects both failure modes seen in testing:
+    #   GM  dcf $278 vs epv $73  (peak-cycle DCF fantasy)   -> disagree -> no buy
+    #   KHC dcf $41  vs epv $3.5 (debt-crushed EPV artifact) -> disagree -> no buy
+    have_two = dcf_iv is not None and epv_iv is not None
+    agree = have_two and min(dcf_iv, epv_iv) >= 0.60 * max(dcf_iv, epv_iv)
 
-    # Sanity guard: an IV more than 5x the market price implies a >80% margin of
-    # safety, which for a liquid large-cap is virtually always a data/units error
-    # (e.g. total $ not divided by shares, or a shares-in-thousands mismatch) — not
-    # a real opportunity. Such a bug would manufacture a FALSE deep-value BUY and
-    # deploy capital on garbage, so we reject rather than trust it. Real deep value
-    # tops out well under this. (Caught VTRS @ $313M/sh, RTX @ $37k/sh.)
+    # Upper sanity guard — >5x price is almost always a units/data error.
     if conservative_iv > 5 * current_price:
         logger.warning(f"[IV] {ticker}: IV ${conservative_iv:,.0f} > 5x price "
                        f"${current_price:.2f} — implausible, likely a data error; skipping")
@@ -309,8 +326,14 @@ def calculate_iv(ticker: str) -> Optional[dict]:
 
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
 
-    if mos >= MOS_BUY_THRESHOLD:
+    # ── ELITE verdict tiers ───────────────────────────────────────────────────
+    # BUY only when DCF & EPV corroborate AND the discount is a believable 25-50%.
+    # Anything cheap-but-uncorroborated, single-method, or implausibly deep is REVIEW
+    # (a human decides), never auto-bought. Few names pass — that's the point.
+    if agree and MOS_BUY_THRESHOLD <= mos < REVIEW_CEILING:
         verdict = "BUY"
+    elif mos >= MOS_BUY_THRESHOLD:
+        verdict = "REVIEW"      # cheap, but methods disagree / single-method / too deep
     elif mos >= MOS_HOLD_THRESHOLD:
         verdict = "HOLD"
     else:
