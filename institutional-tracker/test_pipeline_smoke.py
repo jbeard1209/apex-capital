@@ -522,6 +522,17 @@ class TestWiringContracts(unittest.TestCase):
         self.assertEqual(unknown, set(),
                          f"LTIA escalates with categories no board scope recognizes: {unknown}")
 
+    def test_strategy_council_categories_board_recognized(self):
+        """Strategy Council proposals must use board-recognized categories, else the
+        board/IRM silently never act on the council's goals (the classic wiring bug)."""
+        import strategy_council as sc
+        import deputy_board as db
+        known = (db.DEPUTY_CATEGORIES | db.FULL_BOARD_ONLY_CATEGORIES
+                 | db.AUTO_IMPLEMENT_CATEGORIES)
+        for cat in (sc.CAT_GOALS, sc.CAT_ACTION):
+            self.assertIn(cat, known,
+                          f"Strategy Council category '{cat}' is in no board scope set")
+
 
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""
