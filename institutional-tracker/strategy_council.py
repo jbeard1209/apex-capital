@@ -51,6 +51,41 @@ CAT_GOALS = "STRATEGY"
 CAT_ACTION = "IMPROVEMENT"
 
 
+CANARY_STATE = DATA / "canary_state.json"
+APPROVED = DATA / "cit_approved_proposals.json"
+
+
+def _macro_regime() -> str:
+    """Read the market regime from the canary (input for the Macro strategist seat)."""
+    d = _load(CANARY_STATE, {})
+    if isinstance(d, dict):
+        r = d.get("regime")
+        if isinstance(r, dict):
+            r = r.get("label") or r.get("regime") or r.get("state")
+        if isinstance(r, str):
+            return r.upper()
+        for k in ("last_level", "market_regime"):
+            v = d.get(k)
+            if isinstance(v, str):
+                return v.upper()
+    return "UNKNOWN"
+
+
+def _calibration_widen() -> float:
+    """Self-correction: if our graded forecasts hit their range < 50% of the time
+    (overconfident), widen future bands. Needs >=4 graded goals to act."""
+    graded = _load(RECORD, {}).get("graded", [])
+    if len(graded) < 4:
+        return 1.0
+    hit = sum(1 for g in graded if g.get("within_range"))
+    rate = hit / len(graded)
+    if rate < 0.5:
+        return 1.5          # badly overconfident -> widen 50%
+    if rate < 0.7:
+        return 1.2
+    return 1.0
+
+
 def _irm_risk_level() -> str:
     """Read the firm's current risk level from IRM / CRO outputs (contact with IRM)."""
     for p, keys in ((RISK_BULLETIN, ("risk_level", "level", "severity", "status")),
@@ -104,23 +139,39 @@ class RiskStrategist:
                 "irm_risk": irm_risk, "escalate": escalate, "notes": notes}
 
 
+class MacroStrategist:
+    """4th seat (added when the bull/bear axis is too narrow): reads the market regime
+    from the canary and tilts the whole band up (bull regime) or down (bear regime)."""
+    perspective = "MACRO"
+
+    def view(self, snap, regime):
+        tilt = {"BULL": +0.10, "GREEN": +0.05, "NEUTRAL": 0.0, "ORANGE": -0.08,
+                "BEAR": -0.15, "RED": -0.20, "YELLOW": -0.05}.get(regime, 0.0)
+        return {"perspective": self.perspective, "regime": regime, "tilt": tilt,
+                "notes": [f"Market regime = {regime}; tilt bands {tilt:+.0%}."]}
+
+
 class ChiefStrategist:
-    """BASE: reconcile bull+bear into official goals + a council view (consensus + dissent)."""
+    """BASE: reconcile bull+bear+macro into official goals + a council view (consensus + dissent).
+    Applies calibration self-correction and bakes in the cash-is-valid guardrail."""
     perspective = "BASE"
 
-    def reconcile(self, snap, bull, bear, irm_risk):
+    def reconcile(self, snap, bull, bear, macro, irm_risk):
         eq, dep = snap["equity"], max(snap["deployed_pct"], 0.1)
-        have_track = len(_load(RECORD, {}).get("graded", [])) >= 3
-        conf = "MODERATE" if have_track else "LOW — no realized track record yet; ranges are assumption-based"
+        graded = _load(RECORD, {}).get("graded", [])
+        widen = _calibration_widen()
+        if len(graded) >= 3:
+            conf = "MODERATE" if widen == 1.0 else f"MODERATE (bands widened x{widen} — past forecasts overconfident)"
+        else:
+            conf = "LOW — no realized track record yet; ranges are assumption-based"
+        tilt = macro["tilt"]
         goals = []
         for h, days in HORIZONS:
-            bhi = bull["bands"][h][1]            # bull upside
-            rlo = bear["bands"][h][0]            # bear downside
+            bhi = bull["bands"][h][1]
+            rlo = bear["bands"][h][0]
             base_lo, base_hi = _BASE_BANDS[h]
-            # Base case leans conservative: downside toward the bear, upside a blend
-            # of bull and the neutral base (don't fully credit the bull).
-            lo = round((rlo + base_lo) / 2, 1)
-            hi = round((bhi + base_hi) / 2, 1)
+            lo = round(((rlo + base_lo) / 2 + base_lo * abs(tilt) if tilt < 0 else (rlo + base_lo) / 2) * widen, 1)
+            hi = round(((bhi + base_hi) / 2 * (1 + tilt)) * widen, 1)
             lo_eq = round(eq * (1 + lo / 100 * dep))
             hi_eq = round(eq * (1 + hi / 100 * dep))
             goals.append({
@@ -129,11 +180,17 @@ class ChiefStrategist:
                 "status": "proposed", "baseline_equity": eq, "confidence": conf,
                 "financial_target": {"equity_low": lo_eq, "equity_high": hi_eq, "return_range_pct": [lo, hi]},
                 "output_target": {"net_new_elite_picks_min": _OUT_TARGET[h]},
-                "council": {"bull_band": bull["bands"][h], "bear_band": bear["bands"][h], "irm_risk": irm_risk},
+                "council": {"bull_band": bull["bands"][h], "bear_band": bear["bands"][h],
+                            "macro_regime": macro["regime"], "irm_risk": irm_risk, "calibration_widen": widen},
             })
         dissent = abs(bull["bands"]["1y"][1] - bear["bands"]["1y"][0])
         return {"goals": goals, "dissent_spread_pct": round(dissent, 1),
-                "consensus": f"BULL says '{bull['stance']}', BEAR says '{bear['stance']}' at IRM risk {irm_risk}."}
+                # GUARDRAIL: a target is never a reason to lower the bar. Cash is a position.
+                "guardrail": ("Cash is a valid position. A missed financial goal must NEVER pressure "
+                              "deployment into picks below the elite standard (FE 25-50% MoS corroborated; "
+                              "ML only above the 0.57 gate). Goals measure discipline, not override it."),
+                "consensus": (f"BULL '{bull['stance']}', BEAR '{bear['stance']}', MACRO regime "
+                              f"{macro['regime']} ({tilt:+.0%}), IRM risk {irm_risk}.")}
 
 
 def _route_to_board(goals, base, bull, bear):
@@ -155,7 +212,8 @@ def _route_to_board(goals, base, bull, bear):
                             f"${g1y['financial_target']['equity_low']:,.0f}-${g1y['financial_target']['equity_high']:,.0f}. "
                             f"Bull/bear dissent spread {base['dissent_spread_pct']}pp. "
                             "Ranges assumption-based (low confidence until track record); graded at horizon."),
-            "proposed_fix": "Board: ratify / adjust / reject. " + " | ".join(bull["notes"][:1] + bear["notes"][:1]),
+            "proposed_fix": ("Board: ratify / adjust / reject. " + " | ".join(bull["notes"][:1] + bear["notes"][:1])
+                             + " GUARDRAIL: " + base.get("guardrail", "")),
             "owner": "Full Board + Chairman", "created_at": ts.isoformat(), "status": "pending",
         })
         added += 1
@@ -203,17 +261,48 @@ def _post_channel(base, bull, bear):
     _save(FIRM_CHANNEL, fc[-500:])
 
 
+def _sync_ratifications() -> int:
+    """Close the loop: when the board APPROVES the council's goal proposal, flip the
+    matching active goals from 'proposed' to 'ratified' so they aren't proposed forever."""
+    approved = _load(APPROVED, [])
+    if not isinstance(approved, list):
+        return 0
+    ratified_dates = set()
+    for p in approved:
+        if p.get("source") == "Strategy Council" and "Ratify Strategy Council goals" in (p.get("title") or ""):
+            # title carries the set-date: "...goals (YYYY-MM-DD)"
+            import re as _re
+            m = _re.search(r"\((\d{4}-\d{2}-\d{2})\)", p.get("title", ""))
+            if m:
+                ratified_dates.add(m.group(1))
+    if not ratified_dates:
+        return 0
+    goals = _load(GOALS, {"active": [], "history": []})
+    n = 0
+    for g in goals.get("active", []):
+        if g.get("status") == "proposed" and g.get("set_date") in ratified_dates:
+            g["status"] = "ratified"; n += 1
+    if n:
+        _save(GOALS, goals)
+    return n
+
+
 def run(report_only: bool = False) -> dict:
     snap = _firm_snapshot()
     irm_risk = _irm_risk_level()
+    regime = _macro_regime()
     logger.info(f"  Equity ${snap['equity']:,.0f} ({snap['return_vs_budget_pct']}%) | deployed "
-                f"{snap['deployed_pct']*100:.0f}% | IRM risk={irm_risk}")
+                f"{snap['deployed_pct']*100:.0f}% | IRM risk={irm_risk} | regime={regime}")
     bull = GrowthStrategist().view(snap)
     bear = RiskStrategist().view(snap, irm_risk)
-    base = ChiefStrategist().reconcile(snap, bull, bear, irm_risk)
+    macro = MacroStrategist().view(snap, regime)
+    base = ChiefStrategist().reconcile(snap, bull, bear, macro, irm_risk)
     logger.info(f"  BULL: {bull['stance']} | BEAR: {bear['stance']} (esc={bear['escalate']}) | "
-                f"dissent {base['dissent_spread_pct']}pp")
+                f"MACRO: {regime} | dissent {base['dissent_spread_pct']}pp")
 
+    rat = _sync_ratifications()
+    if rat:
+        logger.info(f"  Board ratified {rat} prior goal(s) -> status=ratified.")
     _grade(snap)  # grade matured goals
     goals = _load(GOALS, {"active": [], "history": []})
     if not any(g.get("set_date") == datetime.now().strftime("%Y-%m-%d") and g.get("source") == "council"
