@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-15T00:13:36.633407",
+  "generated_at": "2026-06-15T15:55:20.480530",
   "supervised_agents": [
     "Trade Review Team",
     "Creative Agent",
@@ -11,7 +11,7 @@
   "agent_status": {
     "Trade Review Team": {
       "status": "OK",
-      "note": "Last updated 0h ago",
+      "note": "Last updated 16h ago",
       "data_keys": [
         "generated_at",
         "team",
@@ -46,7 +46,7 @@
     },
     "Report Generator": {
       "status": "OK",
-      "note": "Last updated 0h ago",
+      "note": "Last updated 1h ago",
       "data_keys": [
         "timestamp",
         "company_health",
@@ -58,8 +58,8 @@
       ]
     },
     "Premarket Check": {
-      "status": "STALE",
-      "note": "Last updated 84h ago",
+      "status": "OK",
+      "note": "Last updated 3h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -72,8 +72,8 @@
       ]
     },
     "Earnings Predictor": {
-      "status": "STALE",
-      "note": "Last updated 52h ago",
+      "status": "OK",
+      "note": "Last updated 0h ago",
       "data_keys": [
         "generated_at",
         "lookahead_days",
@@ -83,9 +83,6 @@
       ]
     }
   },
-  "flags": [
-    "Premarket Check: report stale (84h old)",
-    "Earnings Predictor: report stale (52h old)"
-  ],
-  "summary": "Floor status: 4 OK, 2 stale, 0 missing. 2 flag(s)."
+  "flags": [],
+  "summary": "Floor status: 6 OK, 0 stale, 0 missing. 0 flag(s)."
 }

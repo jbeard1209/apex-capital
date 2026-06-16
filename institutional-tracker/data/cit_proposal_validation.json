@@ -1,33 +1,61 @@
 {
-  "generated_at": "2026-06-15T01:00:06.313859",
-  "proposals_reviewed": 4,
+  "generated_at": "2026-06-16T01:02:05.623212",
+  "proposals_reviewed": 8,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "LTIA-20260615001500",
+      "id": "CIT-2026-418",
+      "title": "83 ERROR lines \u2014 dominant: `fe_pipeline`",
+      "category": "BUG_FIX",
+      "pre_validated": true,
+      "validation_note": "Technical/code fix \u2014 no backtest required"
+    },
+    {
+      "id": "CIT-2026-435",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "FCAST-20260615160246",
+      "title": "Ratify firm performance goals (2026-06-15)",
+      "category": "STRATEGY",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "COUNCIL-20260615161430",
+      "title": "Ratify Strategy Council goals (2026-06-15)",
+      "category": "STRATEGY",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LTIA-20260616000022",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260615001500",
+      "id": "LTIA-20260616000022",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260615001500",
-      "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+      "id": "LTIA-20260616000022",
+      "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "PHM-20260615004327-FE",
-      "title": "[FE] ZERO_PICKS: First Eagle Value pod health",
-      "category": "INTEGRATION",
+      "id": "LTIA-20260616000022",
+      "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+      "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }

@@ -18,8 +18,7 @@
     "status": "OK"
   },
   "data/premarket_alerts.json": {
-    "status": "STALE",
-    "last_action": "2026-06-12T19:58:10.251101"
+    "status": "OK"
   },
   "data/hr_report.json": {
     "status": "OK"
@@ -40,8 +39,7 @@
     "status": "OK"
   },
   "data/fe_pipeline_log.json": {
-    "status": "STALE",
-    "last_action": "2026-06-12T19:58:10.251101"
+    "status": "OK"
   },
   "data/etf_research_brief.json": {
     "status": "OK"
@@ -62,10 +60,10 @@
     "status": "OK"
   },
   "data/data_quality_report.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-06-15T20:15:00.462020"
   },
   "heartbeat": {
-    "status": "DEAD",
-    "last_action": "2026-06-14T09:15:58.671435"
+    "status": "OK"
   }
 }

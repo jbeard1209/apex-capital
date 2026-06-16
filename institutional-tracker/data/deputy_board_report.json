@@ -1,15 +1,49 @@
 {
-  "generated_at": "2026-06-15T01:00:46.364840",
+  "generated_at": "2026-06-16T01:10:33.398756",
   "dry_run": false,
-  "proposals_reviewed": 5,
+  "proposals_reviewed": 6,
   "approved_count": 0,
   "rejected_count": 0,
   "deferred_count": 0,
-  "needs_info_count": 5,
+  "needs_info_count": 4,
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "LTIA-20260615001500",
+      "proposal_id": "CIT-2026-418",
+      "title": "83 ERROR lines \u2014 dominant: `fe_pipeline`",
+      "passed": false,
+      "classification": "ESCALATED",
+      "approves": 0,
+      "rejects": 0,
+      "defers": 0,
+      "clarifies": 0,
+      "votes": [
+        {
+          "deputy": "Deputy Board",
+          "vote": "ESCALATE",
+          "rationale": "Max clarification rounds (3) exceeded."
+        }
+      ]
+    },
+    {
+      "proposal_id": "CIT-2026-435",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "passed": false,
+      "classification": "ESCALATED",
+      "approves": 0,
+      "rejects": 0,
+      "defers": 0,
+      "clarifies": 0,
+      "votes": [
+        {
+          "deputy": "Deputy Board",
+          "vote": "ESCALATE",
+          "rationale": "Max clarification rounds (3) exceeded."
+        }
+      ]
+    },
+    {
+      "proposal_id": "LTIA-20260616000022",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "severity": "MEDIUM",
       "category": "IMPROVEMENT",
@@ -58,7 +92,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260615001500",
+      "proposal_id": "LTIA-20260616000022",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "severity": "MEDIUM",
       "category": "IMPROVEMENT",
@@ -107,7 +141,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260615001500",
+      "proposal_id": "LTIA-20260616000022",
       "title": "[LTIA] Expected agents silent \u2014 check they're still running",
       "severity": "LOW",
       "category": "IMPROVEMENT",
@@ -156,100 +190,51 @@
       ]
     },
     {
-      "proposal_id": "PHM-20260615004327-FE",
-      "title": "[FE] ZERO_PICKS: First Eagle Value pod health",
+      "proposal_id": "CIT-2026-433",
+      "title": "32 ERROR lines \u2014 dominant: `fe_pipeline`",
       "severity": "HIGH",
-      "category": "INTEGRATION",
+      "category": "BUG_FIX",
       "passed": false,
       "classification": "NEEDS_INFO",
-      "approves": 1,
+      "approves": 3,
       "rejects": 0,
       "defers": 0,
-      "clarifies": 6,
+      "clarifies": 4,
       "votes": [
         {
           "deputy": "Deputy Manager",
           "vote": "CLARIFY",
-          "rationale": "Severity is HIGH but evidence is vague \u2014 no file:line, metric, or data path cited. CIT Director: provide a specific evidence reference before this can be approved."
+          "rationale": "Proposed fix is not specific enough to implement safely: 'Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in l'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
+          "vote": "APPROVE",
+          "rationale": "No risk control exposure \u2014 evidence checks out."
         },
         {
           "deputy": "Deputy CIT Director",
           "vote": "CLARIFY",
-          "rationale": "Evidence for '[FE] ZERO_PICKS: First Eagle Value pod health' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
+          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
         },
         {
           "deputy": "Deputy Chief of Staff",
-          "vote": "CLARIFY",
-          "rationale": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric."
+          "vote": "APPROVE",
+          "rationale": "HIGH priority with verified evidence \u2014 within deputy mandate, CoS supports."
         },
         {
           "deputy": "Deputy IRM",
-          "vote": "CLARIFY",
-          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
+          "vote": "APPROVE",
+          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
         },
         {
           "deputy": "Deputy R&D Leader",
-          "vote": "APPROVE",
-          "rationale": "No research pipeline exposure \u2014 fix is specific and evidence is present."
+          "vote": "CLARIFY",
+          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
         },
         {
           "deputy": "Deputy Operations Director",
           "vote": "CLARIFY",
-          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
-        }
-      ]
-    },
-    {
-      "proposal_id": "CIT-2026-418",
-      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
-      "severity": "LOW",
-      "category": "VISION",
-      "passed": false,
-      "classification": "NEEDS_INFO",
-      "approves": 2,
-      "rejects": 0,
-      "defers": 2,
-      "clarifies": 3,
-      "votes": [
-        {
-          "deputy": "Deputy Manager",
-          "vote": "APPROVE",
-          "rationale": "Standard VISION bug, evidence verified, safe to implement."
-        },
-        {
-          "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
-        },
-        {
-          "deputy": "Deputy CIT Director",
-          "vote": "CLARIFY",
-          "rationale": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
-        },
-        {
-          "deputy": "Deputy Chief of Staff",
-          "vote": "DEFER",
-          "rationale": "LOW severity \u2014 acceptable to batch with next scheduled CIT cycle rather than acting now."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
-        },
-        {
-          "deputy": "Deputy R&D Leader",
-          "vote": "APPROVE",
-          "rationale": "Research pipeline bug with specific evidence [72%] \u2014 fixing will improve signal quality."
-        },
-        {
-          "deputy": "Deputy Operations Director",
-          "vote": "CLARIFY",
-          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
+          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
         }
       ]
     }

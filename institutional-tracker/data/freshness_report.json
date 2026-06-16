@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-14T21:15:00.804131",
+  "generated_at": "2026-06-15T21:15:00.482685",
   "agent": "Freshness Sentinel",
   "checked": 21,
-  "ok": 10,
+  "ok": 20,
   "stale": 1,
   "auto_fixed": [],
   "issues": [
     {
-      "item": "pipeline_heartbeat (mid-run death)",
-      "status": "DEAD_MID_RUN",
-      "detail": "main.py started 2026-06-12T19:58:52.295644 (pid 6903) but never wrote a completion marker and the process is gone. The pipeline crashed mid-run \u2014 agents scheduled after the crash point did NOT run this cycle.",
-      "critical": true
+      "item": "data/data_quality_report.json",
+      "status": "STALE",
+      "detail": "73h old (budget 54h)",
+      "critical": false
     }
   ],
-  "overall": "CRITICAL"
+  "overall": "DEGRADED"
 }

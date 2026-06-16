@@ -642,5 +642,19 @@
     "conviction": null,
     "source_agent": null,
     "manager_decision": "APPROVED"
+  },
+  {
+    "timestamp": "2026-06-15T15:08:14.330083",
+    "ticker": "SH",
+    "action": "SELL",
+    "order_id": "41c4561e-5b42-44b6-82f3-e682bfd783df",
+    "executed": true,
+    "intraday_context": "MID_SESSION",
+    "decision_price": 32.98,
+    "fill_price": null,
+    "slippage_bps": null,
+    "conviction": null,
+    "source_agent": null,
+    "manager_decision": "APPROVED"
   }
 ]

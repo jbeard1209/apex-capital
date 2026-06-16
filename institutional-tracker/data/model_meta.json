@@ -1,5 +1,5 @@
 {
-  "trained_at": "2026-06-15T00:57:15.697006",
+  "trained_at": "2026-06-15T15:09:48.202672",
   "n_samples": 21775,
   "has_lightgbm": true,
   "has_risk_adj": true,

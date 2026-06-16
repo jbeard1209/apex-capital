@@ -1,19 +1,8 @@
 {
-  "generated_at": "2026-06-15T01:00:02.437341",
-  "files_scanned": 105,
-  "total_findings": 132,
+  "generated_at": "2026-06-16T01:00:23.895557",
+  "files_scanned": 106,
+  "total_findings": 131,
   "findings": [
-    {
-      "agent": "CITCodeInspector",
-      "category": "QUICK_WIN",
-      "severity": "LOW",
-      "confidence": 75,
-      "title": "print() in production code: _apex_liq.py:16",
-      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
-      "evidence": "_apex_liq.py line 16: `print(f\"{label}: n={len(Xs)} walk-forward AUC={mean}\u00b1{std} brier={brier}\")`",
-      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-      "auto_implementable": true
-    },
     {
       "agent": "CITCodeInspector",
       "category": "QUICK_WIN",
@@ -272,9 +261,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 55,
-      "title": "Possible missing makedirs before file write in fe_pipeline.py:804",
+      "title": "Possible missing makedirs before file write in fe_pipeline.py:823",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
-      "evidence": "fe_pipeline.py line 804: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
+      "evidence": "fe_pipeline.py line 823: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -1460,6 +1449,6 @@
     "CRITICAL": 0,
     "HIGH": 0,
     "MEDIUM": 30,
-    "LOW": 102
+    "LOW": 101
   }
 }

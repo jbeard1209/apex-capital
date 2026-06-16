@@ -1,0 +1,158 @@
+{
+  "active": [
+    {
+      "horizon": "1w",
+      "set_date": "2026-06-15",
+      "target_date": "2026-06-22",
+      "status": "proposed",
+      "financial_target": {
+        "equity_low": 103170.0,
+        "equity_high": 105769.0,
+        "return_range_pct": [
+          -1.5,
+          2.0
+        ]
+      },
+      "output_target": {
+        "net_new_elite_picks_min": 1
+      },
+      "baseline_equity": 104283.7,
+      "confidence": "LOW \u2014 no realized track record yet; ranges are assumption-based",
+      "assumptions": "Range = current equity grown by an assumed per-period return band on deployed capital. ML pods excluded from financial upside until they clear the 0.57 gate (currently below). Grade vs actuals at target_date."
+    },
+    {
+      "horizon": "1m",
+      "set_date": "2026-06-15",
+      "target_date": "2026-07-15",
+      "status": "proposed",
+      "financial_target": {
+        "equity_low": 101314.0,
+        "equity_high": 108739.0,
+        "return_range_pct": [
+          -4.0,
+          6.0
+        ]
+      },
+      "output_target": {
+        "net_new_elite_picks_min": 4
+      },
+      "baseline_equity": 104283.7,
+      "confidence": "LOW \u2014 no realized track record yet; ranges are assumption-based",
+      "assumptions": "Range = current equity grown by an assumed per-period return band on deployed capital. ML pods excluded from financial upside until they clear the 0.57 gate (currently below). Grade vs actuals at target_date."
+    },
+    {
+      "horizon": "1y",
+      "set_date": "2026-06-15",
+      "target_date": "2027-06-15",
+      "status": "proposed",
+      "financial_target": {
+        "equity_low": 93146.0,
+        "equity_high": 122846.0,
+        "return_range_pct": [
+          -15.0,
+          25.0
+        ]
+      },
+      "output_target": {
+        "net_new_elite_picks_min": 50
+      },
+      "baseline_equity": 104283.7,
+      "confidence": "LOW \u2014 no realized track record yet; ranges are assumption-based",
+      "assumptions": "Range = current equity grown by an assumed per-period return band on deployed capital. ML pods excluded from financial upside until they clear the 0.57 gate (currently below). Grade vs actuals at target_date."
+    },
+    {
+      "horizon": "1w",
+      "set_date": "2026-06-15",
+      "target_date": "2026-06-22",
+      "status": "proposed",
+      "baseline_equity": 104283.7,
+      "confidence": "LOW \u2014 no realized track record yet; ranges are assumption-based",
+      "financial_target": {
+        "equity_low": 102947,
+        "equity_high": 106066,
+        "return_range_pct": [
+          -1.8,
+          2.4
+        ]
+      },
+      "output_target": {
+        "net_new_elite_picks_min": 1
+      },
+      "council": {
+        "bull_band": [
+          -1.5,
+          2.8
+        ],
+        "bear_band": [
+          -2.1,
+          2.0
+        ],
+        "irm_risk": "ELEVATED"
+      },
+      "source": "council"
+    },
+    {
+      "horizon": "1m",
+      "set_date": "2026-06-15",
+      "target_date": "2026-07-15",
+      "status": "proposed",
+      "baseline_equity": 104283.7,
+      "confidence": "LOW \u2014 no realized track record yet; ranges are assumption-based",
+      "financial_target": {
+        "equity_low": 100720,
+        "equity_high": 109630,
+        "return_range_pct": [
+          -4.8,
+          7.2
+        ]
+      },
+      "output_target": {
+        "net_new_elite_picks_min": 4
+      },
+      "council": {
+        "bull_band": [
+          -4.0,
+          8.4
+        ],
+        "bear_band": [
+          -5.6,
+          6.0
+        ],
+        "irm_risk": "ELEVATED"
+      },
+      "source": "council"
+    },
+    {
+      "horizon": "1y",
+      "set_date": "2026-06-15",
+      "target_date": "2027-06-15",
+      "status": "proposed",
+      "baseline_equity": 104283.7,
+      "confidence": "LOW \u2014 no realized track record yet; ranges are assumption-based",
+      "financial_target": {
+        "equity_low": 90919,
+        "equity_high": 126559,
+        "return_range_pct": [
+          -18.0,
+          30.0
+        ]
+      },
+      "output_target": {
+        "net_new_elite_picks_min": 50
+      },
+      "council": {
+        "bull_band": [
+          -15.0,
+          35.0
+        ],
+        "bear_band": [
+          -21.0,
+          25.0
+        ],
+        "irm_risk": "ELEVATED"
+      },
+      "source": "council"
+    }
+  ],
+  "history": []
+}

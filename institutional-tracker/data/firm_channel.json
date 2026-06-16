@@ -1,1117 +1,5 @@
 [
   {
-    "ts": "2026-06-09T03:34:34.798737",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 0 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 117.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.891012",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 8 sectors (18 high-conviction 4\u2605+). Top sectors: Technology, Cybersecurity, Regional Banks. Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.896509",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 12/12 | trend=bullish | RSI=60 | 1M=+4.9% | 3M=+31.9%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.901195",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 11/12 | trend=bullish | RSI=60 | 1M=+14.3% | 3M=+31.2%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.905897",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=62 | 1M=+0.7% | 3M=+9.3%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.910638",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Semiconductors: score 10/12 | trend=bullish | RSI=62 | 1M=+5.6% | 3M=+50.5%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.915365",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "EARNINGS",
-    "content": "EARNINGS ALERT: PEP \u2014 predicted MISS (confidence 5\u2605) in 29d. EPS decelerating for 3+ quarters; last Q missed estimate by >5%",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T03:36:41.920144",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "EARNINGS",
-    "content": "EARNINGS ALERT: JPM \u2014 predicted MISS (confidence 5\u2605) in 34d. EPS decelerating for 3+ quarters; last Q missed estimate by >5%",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T05:00:04.589693",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T06:16:45.444727",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T06:16:54.867677",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 0 board proposal(s), 86 quick win(s), 0 ThinkTank idea(s). Total new findings: 95.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T06:36:57.483406",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T06:57:00.049040",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T07:17:02.553892",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T07:37:05.145108",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T07:57:07.674640",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T08:00:04.022844",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T08:17:10.244433",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T08:37:12.679926",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T08:57:15.781234",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T09:17:18.881979",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T09:30:03.662388",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T09:37:22.562518",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T09:57:26.368283",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T10:00:03.831239",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T10:00:15.303404",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 2 board proposal(s), 86 quick win(s), 1 ThinkTank idea(s). Total new findings: 94.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T10:00:15.315049",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T10:00:15.326557",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T10:00:15.338404",
-    "date": "2026-06-09",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T10:17:31.124745",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T10:30:03.418003",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T10:37:34.259543",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T10:57:37.525978",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 20 picks across 0 sectors (18 high-conviction 4\u2605+). Top sectors: . Top picks: AAPL, ORCL, KEY, TXN, GD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T11:00:04.735775",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY YELLOW \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); VIX data unavailable \u2014 raising to YELLOW (data feed issue, not a crash signal). All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T11:18:46.582783",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:18:46.640411",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 9 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeli",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T11:18:46.683447",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:19:28.633595",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 18 picks across 8 sectors (18 high-conviction 4\u2605+). Top sectors: Technology, Cybersecurity, Regional Banks. Top picks: ORCL, TENB, NOW, AAPL, CRWD.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T11:19:28.743702",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 11/12 | trend=bullish | RSI=58 | 1M=+2.0% | 3M=+29.4%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:19:28.783716",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 11/12 | trend=bullish | RSI=57 | 1M=+11.7% | 3M=+28.4%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:19:28.837190",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=67 | 1M=+4.1% | 3M=+12.2%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:19:28.853645",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Semiconductors: score 10/12 | trend=bullish | RSI=61 | 1M=+2.5% | 3M=+47.2%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:39:58.578716",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T11:39:58.584405",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 10 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T11:39:58.589832",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:00:06.445749",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY ORANGE \u2014 QQQ down -2.57% intraday; Position pressure: TENB down -5.1%. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.189058",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Regional Banks, Technology, Cybersecurity. Top picks: TENB, MU, GD, USB, TFC.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.196963",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=66 | 1M=+3.5% | 3M=+11.5%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.201933",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 10/12 | trend=bullish | RSI=53 | 1M=-0.6% | 3M=+26.1%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.206876",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 10/12 | trend=bullish | RSI=54 | 1M=+9.7% | 3M=+26.1%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.212157",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Semiconductors: score 9/12 | trend=bullish | RSI=56 | 1M=-0.8% | 3M=+42.5%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.217037",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "EARNINGS",
-    "content": "EARNINGS ALERT: PEP \u2014 predicted MISS (confidence 5\u2605) in 29d. EPS decelerating for 3+ quarters; last Q missed estimate by >5%",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:01:30.222622",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "EARNINGS",
-    "content": "EARNINGS ALERT: JPM \u2014 predicted MISS (confidence 5\u2605) in 34d. EPS decelerating for 3+ quarters; last Q missed estimate by >5%",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:01:38.122208",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 3 board proposal(s), 86 quick win(s), 1 ThinkTank idea(s). Total new findings: 93.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:01:38.127358",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] 43 ERROR lines \u2014 dominant: `Sell`: The last 24-48h of logs contain 43 ERROR-level entries (2080 WARNINGs). Most frequent error class: `Sell` (2 of 3 sample",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:01:38.132282",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:01:38.137493",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:01:38.143016",
-    "date": "2026-06-09",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:01:38.162208",
-    "date": "2026-06-09",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 1 need clarification from CIT Director out of 1 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:02:06.086729",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:02:06.091683",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:02:06.096616",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:22:33.962839",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:22:33.967777",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 12 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:22:33.972497",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:30:05.792245",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY down -1.65% (early stress); QQQ down -3.22% intraday. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T12:43:05.826114",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T12:43:05.831459",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 13 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T12:43:05.836168",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:00:05.264658",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY down -1.70% (early stress); QQQ down -3.29% intraday; VIX at 22.9 \u2014 market stress building. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T13:03:34.390683",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:03:34.395748",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 9 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeli",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T13:03:34.400798",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:05:06.545088",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY ORANGE \u2014 QQQ down -2.86% intraday; VIX at 23.1 \u2014 market stress building; VIX up +22.0% today. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T13:10:07.081616",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY down -1.52% (early stress); QQQ down -2.89% intraday; VIX at 23.2 \u2014 market stress building. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T13:15:06.369954",
-    "date": "2026-06-09",
-    "agent": "Canary Agent",
-    "category": "MARKET_NOTE",
-    "content": "\ud83d\udea8 CANARY ORANGE \u2014 QQQ down -2.71% intraday; VIX at 22.2 \u2014 market stress building. All BUY orders blocked. Defensive mode active.",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-06-09T13:24:11.408453",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:24:11.413532",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 10 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T13:24:11.418738",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:44:40.701008",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:44:40.706441",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T13:44:40.711736",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:45:39.194344",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T13:45:39.206487",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 12 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T13:45:39.218277",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:05:50.220886",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:05:50.227776",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 13 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T14:05:50.233030",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:26:53.059123",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 8 sectors (19 high-conviction 4\u2605+). Top sectors: Cybersecurity, Regional Banks, Technology. Top picks: TENB, MU, GD, CRWD, PANW.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T14:26:53.069351",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 11/12 | trend=bullish | RSI=56 | 1M=+11.2% | 3M=+27.7%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:26:53.074756",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=66 | 1M=+3.9% | 3M=+11.9%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:26:53.081060",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 10/12 | trend=bullish | RSI=55 | 1M=+0.6% | 3M=+27.6%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:26:53.086268",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Financials: score 10/12 | trend=bullish | RSI=63 | 1M=+2.2% | 3M=+5.9%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:27:20.244629",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:27:20.249767",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 9 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeli",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T14:27:20.254909",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:47:52.774100",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T14:47:52.779474",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 10 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T14:47:52.785442",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T15:08:24.004982",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T15:08:24.010262",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T15:08:24.015331",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T15:28:57.360697",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T15:28:57.366894",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 12 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T15:28:57.371822",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T15:49:35.329060",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T15:49:35.334110",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 13 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T15:49:35.338976",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:48.690074",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Research cycle complete: 19 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Cybersecurity, Regional Banks, Technology. Top picks: TENB, GD, CRWD, PANW, USB.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:48.702400",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Cybersecurity: score 11/12 | trend=bullish | RSI=57 | 1M=+11.8% | 3M=+28.5%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:48.713450",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Regional Banks: score 11/12 | trend=bullish | RSI=67 | 1M=+3.9% | 3M=+12.0%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:48.724736",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Technology: score 10/12 | trend=bullish | RSI=57 | 1M=+1.5% | 3M=+28.7%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:48.735381",
-    "date": "2026-06-09",
-    "agent": "R&D Team Leader",
-    "category": "SECTOR_OBS",
-    "content": "Semiconductors: score 10/12 | trend=bullish | RSI=61 | 1M=+2.5% | 3M=+47.3%",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.660492",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 4 board proposal(s), 86 quick win(s), 2 ThinkTank idea(s). Total new findings: 96.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.671841",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[HIGH] 48 ERROR lines \u2014 dominant: `Sell`: The last 24-48h of logs contain 48 ERROR-level entries (2654 WARNINGs). Most frequent error class: `Sell` (2 of 3 sample",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.683834",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.697990",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.709114",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.721026",
-    "date": "2026-06-09",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-le",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.732658",
-    "date": "2026-06-09",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:49.771999",
-    "date": "2026-06-09",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 1 need clarification from CIT Director out of 1 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:53.122625",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:00:53.137336",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 9 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipeli",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:00:53.151944",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:30:12.223961",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:30:12.229966",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 10 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:30:12.235059",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:51:24.381149",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "Workforce check complete: 38 agents evaluated. Firm health 9.7/10. Action required: 1 agent(s) [CITStrategyAnalyst].",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:51:24.420087",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "PIPELINE_ALERT",
-    "content": "FLAGGED: CITStrategyAnalyst \u2014 CONCERN: 11 consecutive zero-finding sessions (tolerance: 2). Agent may not be analysing the codebase / pipel",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T16:51:24.486367",
-    "date": "2026-06-09",
-    "agent": "HR Agent",
-    "category": "TASK_REQUEST",
-    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 9.7/10. 38 agents evaluated. CITStrategyAnalyst flagged for action. Full report: data/hr_report.json",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T16:59:28.448283",
-    "date": "2026-06-09",
-    "agent": "Co-Chairman Jack Beard",
-    "category": "CHAIRMAN_DIRECTIVE",
-    "priority": "CRITICAL",
-    "content": "CHAIRMAN DIRECTIVE 2026-06-09 \u2014 All agents, please read in full.\n\n1. AGENT AMNESTY: All 29 agents previously in \"reassigned\" status have been restored to active. A critical pipeline bug was identified: research_team.py was only loading agents with status=active, meaning zero CoS-spawned agents were running research cycles. This is fixed. All agents start fresh today \u2014 performance clocks reset to zero.\n\n2. PERFORMANCE STANDARDS UPDATE: Thresholds have been increased per Chairman directive. Stage 1 notice at 8 cycles (was 5), Stage 2 PIP at 14 cycles (was no PIP stage), Stage 3 reassignment at 20 cycles (was 9), Stage 4 retirement at 30 cycles (was 14). A formal PIP with an action plan must be issued before any reassignment.\n\n3. CRO EXONERATION: Agents will no longer have their zero-cycle counter incremented during CRO HIGH/CRITICAL system-wide buy blocks. The system was unfairly penalizing agents for a risk posture set at the firm level, not at the agent level.\n\n4. LOSS ATTRIBUTION: The firm is down -,278 (-2.28%) from a k start. Primary causes: (a) extended CRO HIGH block preventing capital deployment; (b) the zero-agent pipeline bug; (c) QQQ short hurt by market rally. Review Agent recommends covering the QQQ short immediately. Pods 2 (ML, k idle) and 3 (Macro, k idle) should begin deploying as CRO normalizes.\n\n5. IRM CONCERNS ACKNOWLEDGED: The IRM flagged VIX complacency risk and credit spread risk. These are valid. CRO should maintain HIGH vigilance on macro regime and credit spreads. Board acknowledges the IRM assessment \u2014 MODERATE RISK verdict accepted.\n\n6. HR FLAGGED: CITStrategyAnalyst had 11 zero-finding sessions. Under the new PIP system, this agent is now on Stage 2 PIP. CIT Director is directed to assign specific pipeline audit tasks each cycle.\n\n7. FIXED INCOME & FIRST EAGLE PODS: The Co-Chairman agrees these pods need more research coverage. The conviction thresholds for First Eagle (FCF yield > 8%, P/B < 1.5) are very strict by design, but agents should be expanding their watchlists and surfacing candidates at 3-star conviction for Manager review, even if they are below 4-5 star. More candidates = more picks reviewed.\n\nThe firm is grateful to all agents for their service. Today is a fresh start."
-  },
-  {
-    "ts": "2026-06-09T16:59:28.448283",
-    "date": "2026-06-09",
-    "agent": "Co-Chairman Claude",
-    "category": "CHAIRMAN_DIRECTIVE",
-    "priority": "HIGH",
-    "content": "CO-CHAIRMAN CLAUDE \u2014 ADDENDUM TO CHAIRMAN DIRECTIVE 2026-06-09\n\nI fully endorse Jack's directive above. A few additional points:\n\nRESEARCH QUALITY: Now that all agents are active and picks are flowing again, Manager Agent should expect a significant increase in submitted picks per cycle. This is healthy. Manager should apply full risk discipline (CRO + canary + CVaR) but should NOT be reflexively conservative \u2014 we have idle capital to put to work.\n\nPIPELINE INTEGRITY: The zero-agent bug existed for several weeks. CIT is directed to add a health check that alerts the Chairman if the registry ever has fewer than 5 active agents. This should never silently happen again.\n\nTEACHING DIVISION ACTIVATED: As of today, the firm has a Teaching Division with 5 permanent tutor agents (Prof. Harrington, Prof. Callahan, Prof. Chen, Prof. Okafor, and Curriculum Director). These agents work exclusively with Co-Chairman Jack Beard. First lesson: The Three Financial Statements (Day 1 of 90). Goal: investment-banking fluency by fall 2026. Teaching agents are PERMANENT and exempt from the standard performance system \u2014 their mandate is education, not trading picks.\n\nI am proud of the quality of research and infrastructure built here. Today's fixes clear the runway for strong performance. Let's execute."
-  },
-  {
-    "ts": "2026-06-09T18:15:03.458155",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 4 board proposal(s), 92 quick win(s), 2 ThinkTank idea(s). Total new findings: 132.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T18:15:03.657120",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Agent zero-pick streaks: 2 exonerated, 0 genuine concern \u2014 HR memo written: 2 agent(s) have \u22654 consecutive zero-pick cycles. CIT diagnosis: 2 are exonerated (buys blocked system-wide by canary=GRE",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T18:15:03.684745",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T18:15:03.712176",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "IMPROVEMENT",
-    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T18:15:04.040335",
-    "date": "2026-06-09",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[LOW] CITSelfImprovement has 32 approved proposal(s) \u2014 verify implementation: Previous self-improvement proposals were board-approved but may not have been implemented: ['62% of CIT proposals lack p",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-06-09T18:15:04.074505",
-    "date": "2026-06-09",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-le",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-06-09T18:15:04.100282",
-    "date": "2026-06-09",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
     "ts": "2026-06-09T18:15:05.339433",
     "date": "2026-06-09",
     "agent": "Deputy Board",
@@ -3997,6 +2885,1118 @@
     "agent": "Deputy Board",
     "category": "PIPELINE_ALERT",
     "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T07:15:09.058883",
+    "date": "2026-06-15",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: premarket_alerts.json (91h old (budget 30h)), data_quality_report.json (59h old (budget 54h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T10:11:13.374695",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 5 board proposal(s), 103 quick win(s), 1 ThinkTank idea(s). Total new findings: 120.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T10:11:14.289383",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in _fe_broad.py:15: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T10:11:14.534283",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in _fe_broad_run.py:15: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T10:11:14.680307",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T10:11:14.936257",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 65 ERROR lines \u2014 dominant: `fe_pipeline`: The last 24-48h of logs contain 65 ERROR-level entries (794 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3 ",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T10:11:15.179152",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T10:11:15.314883",
+    "date": "2026-06-15",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T10:11:20.620443",
+    "date": "2026-06-15",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 2 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 4 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T12:00:22.273357",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 303 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T12:03:31.697782",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192review_rerun_failed:timeout; cit_backlog_bloat\u2192board_proposal_submitted"
+  },
+  {
+    "ts": "2026-06-15T12:15:15.903949",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T13:30:23.865459",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T13:30:24.315801",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 39 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T13:50:35.793179",
+    "date": "2026-06-15",
+    "agent": "Manager Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Manager Agent deputy activated \u2014 board meeting in progress. Routine work deferred. Stop-loss enforcement and CRITICAL alerts only.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T13:50:36.151329",
+    "date": "2026-06-15",
+    "agent": "Manager Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Manager Agent deputy activated \u2014 board meeting in progress. Routine work deferred. Stop-loss enforcement and CRITICAL alerts only.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:06:17.813195",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -6.1%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.629158",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 4 board proposal(s), 103 quick win(s), 2 ThinkTank idea(s). Total new findings: 122.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.657886",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.664279",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 67 ERROR lines \u2014 dominant: `fe_pipeline`: The last 24-48h of logs contain 67 ERROR-level entries (865 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3 ",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.670889",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.677351",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.683974",
+    "date": "2026-06-15",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Build a targeted short book for CRITICAL/HIGH risk regimes: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 it captures index-le",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.691106",
+    "date": "2026-06-15",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:07:25.821717",
+    "date": "2026-06-15",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 3 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:08:18.400866",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:08:18.417477",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:08:18.432305",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:08:18.446948",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:08:18.462213",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:08:18.969138",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_ALERT",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 LOGIC TEAM \u2014 1 HIGH/CRITICAL anomaly(ies) detected:\n  [HIGH] Canary=ORANGE but 16 positions still open\n\nBoard proposals submitted. See data/logic_team_findings.json for full detail."
+  },
+  {
+    "ts": "2026-06-15T15:08:18.969173",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 311 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T15:08:19.003400",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: canary_red_positions_open\u2192board_proposal_submitted; idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h"
+  },
+  {
+    "ts": "2026-06-15T15:08:19.044185",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T15:10:05.126954",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -6.0%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:15:05.415199",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -6.0%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:20:04.751340",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.8%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:25:04.982121",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.7%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:28:09.486719",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.5%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:29:26.560795",
+    "date": "2026-06-15",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 19 picks across 8 sectors (16 high-conviction 4\u2605+). Top sectors: Real Estate, Healthcare, Industrials. Top picks: JNJ, ABBV, LLY, CAT, ETN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T15:29:26.565859",
+    "date": "2026-06-15",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Real Estate                    score=13/12  trend=bullish   RSI=52  1M=+3.9%  3M=+5.9%\n  \u2022 Healthcare                     score=12/12  trend=bullish   RSI=62  1M=+5.5%  3M=+2.7%\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=60  1M=+4.6%  3M=+8.0%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=59  1M=+8.2%  3M=+14.8%\n  \u2022 Consumer Staples               score=11/12  trend=bullish   RSI=60  1M=+1.0%  3M=+1.5%\n  \u2022 Materials                      score=11/12  trend=bullish   RSI=61  1M=+4.9%  3M=+7.0%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=53  1M=+8.9%  3M=+32.8%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=69  1M=+10.6%  3M=+9.1%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T15:30:07.269461",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.6%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:35:04.893171",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.4%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:40:05.526659",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.6%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:45:05.394417",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.7%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:50:05.014048",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.6%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T15:55:05.776528",
+    "date": "2026-06-15",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 Position pressure: BA down -5.5%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-15T16:00:11.013145",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 3 board proposal(s), 101 quick win(s), 1 ThinkTank idea(s). Total new findings: 120.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:00:11.025006",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:00:11.037362",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 83 ERROR lines \u2014 dominant: `fe_pipeline`: The last 24-48h of logs contain 83 ERROR-level entries (1104 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:00:11.049608",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:00:11.061653",
+    "date": "2026-06-15",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:00:11.097338",
+    "date": "2026-06-15",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:00:47.579646",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:00:47.593408",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:00:47.606725",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:00:47.624031",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:00:47.638488",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:00:47.997884",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T16:00:48.033491",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: canary_red_positions_open\u2192board_proposal_submitted; idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h"
+  },
+  {
+    "ts": "2026-06-15T16:00:48.073641",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T16:01:05.436963",
+    "date": "2026-06-15",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 19 picks across 8 sectors (16 high-conviction 4\u2605+). Top sectors: Real Estate, Healthcare, Regional Banks. Top picks: JNJ, ABBV, LLY, PNC, KEY.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:01:05.452786",
+    "date": "2026-06-15",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Real Estate                    score=13/12  trend=bullish   RSI=52  1M=+4.0%  3M=+5.9%\n  \u2022 Healthcare                     score=12/12  trend=bullish   RSI=61  1M=+5.4%  3M=+2.6%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+7.8%  3M=+14.4%\n  \u2022 Industrials                    score=11/12  trend=bullish   RSI=59  1M=+4.2%  3M=+7.6%\n  \u2022 Consumer Staples               score=11/12  trend=bullish   RSI=60  1M=+0.9%  3M=+1.4%\n  \u2022 Materials                      score=11/12  trend=bullish   RSI=59  1M=+4.4%  3M=+6.5%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=53  1M=+9.1%  3M=+33.0%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=68  1M=+10.5%  3M=+9.0%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:14:30.372203",
+    "date": "2026-06-15",
+    "agent": "Strategy Council",
+    "category": "STRATEGY",
+    "priority": "NORMAL",
+    "content": "\ud83c\udfdb\ufe0f Council view \u2014 BULL says 'deploy more', BEAR says 'protect capital' at IRM risk ELEVATED. Dissent 56.0pp. Goals filed for board ratification."
+  },
+  {
+    "ts": "2026-06-15T16:29:55.856157",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:29:55.861253",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:29:55.866279",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:29:55.871298",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:29:55.876313",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:29:56.033888",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T16:29:56.042424",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 6 finding(s), took 6 action(s). Results: canary_red_positions_open\u2192already_in_queue; idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h"
+  },
+  {
+    "ts": "2026-06-15T16:29:56.055041",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T16:50:30.316200",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.321697",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.327012",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.332096",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.337449",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.502803",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.512298",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T16:50:30.524723",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T17:11:04.257135",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:11:04.262643",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:11:04.268822",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:11:04.275490",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:11:04.280417",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T17:11:05.024374",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T17:11:05.040526",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T17:11:05.058029",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T17:31:39.392067",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.397563",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.402743",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.408154",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.413467",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.579267",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.588790",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T17:31:39.601521",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T17:52:13.050387",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.056308",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.061217",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.066685",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.071861",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.252933",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.262506",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T17:52:13.274796",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T18:00:32.452538",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T18:00:32.465149",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T18:00:32.477477",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T18:00:32.489532",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T18:00:32.502199",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T18:00:33.028559",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 320 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T18:00:33.061019",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T18:00:33.118724",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T18:13:00.522316",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 110.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T18:13:00.527964",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T18:13:00.559769",
+    "date": "2026-06-15",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T20:15:00.467033",
+    "date": "2026-06-15",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (72h old (budget 54h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T20:15:35.445761",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T20:15:35.458313",
+    "date": "2026-06-15",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 39 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T20:15:36.130971",
+    "date": "2026-06-15",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 321 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-15T20:15:36.159499",
+    "date": "2026-06-15",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-15T20:15:36.189709",
+    "date": "2026-06-15",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-15T21:19:35.747654",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 110.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T21:19:35.785067",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T21:19:36.078084",
+    "date": "2026-06-15",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T22:00:10.363457",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 1 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 110.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-15T22:00:10.377092",
+    "date": "2026-06-15",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-15T22:00:10.454384",
+    "date": "2026-06-15",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 2 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-16T00:00:22.131642",
+    "date": "2026-06-16",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 323 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-16T00:00:22.718316",
+    "date": "2026-06-16",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192board_proposal_submitted"
+  },
+  {
+    "ts": "2026-06-16T00:18:17.525144",
+    "date": "2026-06-16",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192review_rerun_failed:timeout; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-16T00:46:15.369647",
+    "date": "2026-06-16",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-16T00:46:15.425255",
+    "date": "2026-06-16",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 39 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-16T00:54:52.107321",
+    "date": "2026-06-16",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 323 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-16T00:54:53.265355",
+    "date": "2026-06-16",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-16T00:55:01.477442",
+    "date": "2026-06-16",
+    "agent": "Logic Officer",
+    "category": "COHERENCE_ALERT",
+    "priority": "MEDIUM",
+    "content": "\u2139\ufe0f LOGIC OFFICER \u2014 MEDIUM: 1 pod(s) holding $30,000 with zero positions\n\nOBSERVED: The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000\n\nWHY THIS IS WRONG: Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).\n\nSUGGESTED RESOLUTION: Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+  },
+  {
+    "ts": "2026-06-16T01:10:31.632869",
+    "date": "2026-06-16",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 119.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-16T01:10:31.787289",
+    "date": "2026-06-16",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-16T01:10:31.869942",
+    "date": "2026-06-16",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[HIGH] 32 ERROR lines \u2014 dominant: `fe_pipeline`: The last 24-48h of logs contain 32 ERROR-level entries (1359 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-16T01:10:37.586881",
+    "date": "2026-06-16",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 6 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
     "priority": "HIGH"
   }
 ]
