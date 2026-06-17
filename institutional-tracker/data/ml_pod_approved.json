@@ -55,5 +55,62 @@
       }
     ],
     "status": "approved"
+  },
+  {
+    "agent": "CITCodeInspector",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 80,
+    "title": "Silent exception in ml_pod_board.py:42",
+    "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "evidence": "ml_pod_board.py line 42: `except Exception: pass`",
+    "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
+    "auto_implementable": false,
+    "id": "CIT-2026-067",
+    "context": {
+      "captured_at": "2026-06-15T15:07:25.158902",
+      "canary_level": "ORANGE",
+      "canary_triggers": [],
+      "cro_level": "HIGH",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 188,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 20,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 123,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 0,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: ORANGE | CRO: HIGH | Positions: 0 open | Day 188",
+    "routed_to_pod": "ml",
+    "routed_at": "2026-06-15T15:07:25.211346",
+    "decision": "APPROVED",
+    "voted_at": "2026-06-16T14:45:00.313701",
+    "votes": [
+      {
+        "member": "ML Research Director",
+        "vote": "HOLD",
+        "reason": "LOW priority for model team"
+      },
+      {
+        "member": "Quant Risk Officer",
+        "vote": "APPROVE",
+        "reason": "No portfolio risk"
+      },
+      {
+        "member": "Data Quality Officer",
+        "vote": "APPROVE",
+        "reason": "Confidence 80% acceptable"
+      }
+    ],
+    "status": "approved"
   }
 ]

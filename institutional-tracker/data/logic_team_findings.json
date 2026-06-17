@@ -1,461 +1,6 @@
 {
   "history": [
     {
-      "ts": "2026-06-11T01:08:56.005317",
-      "findings": [
-        {
-          "rule": "zero_picks",
-          "agent": "PipelineLogicAgent",
-          "severity": "HIGH",
-          "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
-          "observation": "36 agents active, canary=GREEN, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days.",
-          "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
-          "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
-          "ts": "2026-06-11T01:08:56.004681"
-        },
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T01:08:56.004690"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T01:08:56.004758"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T01:08:56.004790"
-        },
-        {
-          "rule": "sector_coverage_gap",
-          "agent": "AgentHealthLogicAgent",
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "observation": "The following important sectors have no active research agent: Energy.",
-          "why_wrong": "Sectors without active agents produce zero picks from those areas. Missing Technology or Financials in particular is a major research blind spot.",
-          "suggestion": "Chief of Staff should spawn new agents for: Energy. Use the Agent Factory in chief_of_staff_agent.py.",
-          "ts": "2026-06-11T01:08:56.004837"
-        },
-        {
-          "rule": "complete_inactivity",
-          "agent": "StrategyLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Firm completely inactive \u2014 no positions, no picks, no sells in 14 days",
-          "observation": "The firm has zero open positions, zero picks today, and no sell activity in the past 14 days. It is running but not operating.",
-          "why_wrong": "A paper trading firm that never trades cannot demonstrate whether its strategy works. Complete inactivity produces no learning signal.",
-          "suggestion": "Board should review: is this intentional (market conditions), a pipeline failure (CIT should investigate), or an ML/research gap?",
-          "ts": "2026-06-11T01:08:56.004855"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T01:09:18.068193",
-      "findings": [
-        {
-          "rule": "zero_picks",
-          "agent": "PipelineLogicAgent",
-          "severity": "HIGH",
-          "title": "Research pipeline DARK: 2 days without picks despite 36 active agents",
-          "observation": "36 agents active, canary=GREEN, CRO=ELEVATED, yet zero picks have reached the Manager in ~2 days.",
-          "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
-          "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
-          "ts": "2026-06-11T01:09:18.067803"
-        },
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T01:09:18.067810"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T01:09:18.067877"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T01:09:18.067918"
-        },
-        {
-          "rule": "sector_coverage_gap",
-          "agent": "AgentHealthLogicAgent",
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "observation": "The following important sectors have no active research agent: Energy.",
-          "why_wrong": "Sectors without active agents produce zero picks from those areas. Missing Technology or Financials in particular is a major research blind spot.",
-          "suggestion": "Chief of Staff should spawn new agents for: Energy. Use the Agent Factory in chief_of_staff_agent.py.",
-          "ts": "2026-06-11T01:09:18.067973"
-        },
-        {
-          "rule": "complete_inactivity",
-          "agent": "StrategyLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Firm completely inactive \u2014 no positions, no picks, no sells in 14 days",
-          "observation": "The firm has zero open positions, zero picks today, and no sell activity in the past 14 days. It is running but not operating.",
-          "why_wrong": "A paper trading firm that never trades cannot demonstrate whether its strategy works. Complete inactivity produces no learning signal.",
-          "suggestion": "Board should review: is this intentional (market conditions), a pipeline failure (CIT should investigate), or an ML/research gap?",
-          "ts": "2026-06-11T01:09:18.067991"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T01:15:47.208045",
-      "findings": [
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T01:15:47.207656"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T01:15:47.207727"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T01:15:47.207771"
-        },
-        {
-          "rule": "ml_no_live_validation",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
-          "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
-          "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
-          "ts": "2026-06-11T01:15:47.207826"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T01:22:10.661015",
-      "findings": [
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T01:22:10.652579"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T01:22:10.652632"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T01:22:10.652674"
-        },
-        {
-          "rule": "ml_no_live_validation",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
-          "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
-          "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
-          "ts": "2026-06-11T01:22:10.652732"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "5 open positions have no review recommendation",
-          "observation": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-06-11T01:22:10.652843"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-06-11T01:22:10.654022"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T01:52:31.899922",
-      "findings": [
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T01:52:31.891249"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T01:52:31.891303"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T01:52:31.891341"
-        },
-        {
-          "rule": "ml_no_live_validation",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
-          "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
-          "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
-          "ts": "2026-06-11T01:52:31.891393"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "5 open positions have no review recommendation",
-          "observation": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-06-11T01:52:31.891500"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-06-11T01:52:31.892827"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T01:53:46.316526",
-      "findings": [
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T01:53:46.309437"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T01:53:46.309500"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T01:53:46.309539"
-        },
-        {
-          "rule": "ml_no_live_validation",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
-          "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
-          "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
-          "ts": "2026-06-11T01:53:46.309590"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "5 open positions have no review recommendation",
-          "observation": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-06-11T01:53:46.309718"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-06-11T01:53:46.310551"
-        },
-        {
-          "rule": "fi_never_run",
-          "agent": "PodHealthLogicAgent",
-          "severity": "HIGH",
-          "title": "Fixed Income pipeline has never run",
-          "observation": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produced a report.",
-          "why_wrong": "A pod that never runs never deploys capital. This is infrastructure failure.",
-          "suggestion": "Verify fi_pipeline.py is in crontab and can run without errors.",
-          "ts": "2026-06-11T01:53:46.316288"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T12:00:10.748175",
-      "findings": [
-        {
-          "rule": "fi_pipeline_not_running",
-          "agent": "PipelineLogicAgent",
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "observation": "FI research agents are registered but fi_pipeline_report.json is missing.",
-          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
-          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-          "ts": "2026-06-11T12:00:10.425669"
-        },
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Board should confirm: is this pod intentionally idle (CRO/model readiness) or is it a pipeline failure? If intentional, document why.",
-          "ts": "2026-06-11T12:00:10.426400"
-        },
-        {
-          "rule": "ml_model_not_tracked",
-          "agent": "PerformanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "observation": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured.",
-          "why_wrong": "Without tracking real-world picks, we can't validate whether the model's AUC score translates to actual returns. This was explicitly requested by the Chairman.",
-          "suggestion": "Run `python3 ml_live_test_runner.py --enter` on GCP to begin tracking. Evaluation after 20 days.",
-          "ts": "2026-06-11T12:00:10.426550"
-        },
-        {
-          "rule": "ml_no_live_validation",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "observation": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated against real price outcomes.",
-          "why_wrong": "Without live validation, we cannot know if the model's AUC on backtest data translates to live performance. The capital allocation is speculative without evidence.",
-          "suggestion": "Ensure ml_live_test_runner.enter_new_picks() is being called each pipeline run. Check if the ST model is clearing picks through the conviction gate.",
-          "ts": "2026-06-11T12:00:10.426739"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "5 open positions have no review recommendation",
-          "observation": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-06-11T12:00:10.427750"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-06-11T12:00:10.506105"
-        },
-        {
-          "rule": "fi_never_run",
-          "agent": "PodHealthLogicAgent",
-          "severity": "HIGH",
-          "title": "Fixed Income pipeline has never run",
-          "observation": "No pipeline report found at fi_pipeline_report.json. The Fixed Income pod has capital but its pipeline has never produced a report.",
-          "why_wrong": "A pod that never runs never deploys capital. This is infrastructure failure.",
-          "suggestion": "Verify fi_pipeline.py is in crontab and can run without errors.",
-          "ts": "2026-06-11T12:00:10.720054"
-        }
-      ]
-    },
-    {
       "ts": "2026-06-12T00:00:11.399016",
       "findings": [
         {
@@ -1669,6 +1214,411 @@
           "ts": "2026-06-16T00:54:27.801152"
         }
       ]
+    },
+    {
+      "ts": "2026-06-16T13:41:13.938121",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-16T13:41:13.859451"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-16T13:41:13.859769"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-16T13:41:13.860091"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "5 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: CIT Director, Chief of Staff, IRM Director, Logic Team Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-16T13:41:13.860294"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 332 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 332 entries, 332 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-16T13:41:13.864891"
+        },
+        {
+          "rule": "fi_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income pipeline report is 31h old",
+          "observation": "fi_pipeline_report.json last updated 31h ago. The Fixed Income pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fi_pipeline.py. Check logs for errors.",
+          "ts": "2026-06-16T13:41:13.865256"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T13:45:34.790434",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-16T13:45:34.738845"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-16T13:45:34.739219"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-16T13:45:34.739549"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-16T13:45:34.739788"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 480 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 480 entries, 480 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-16T13:45:34.746118"
+        },
+        {
+          "rule": "canary_red_positions_open",
+          "agent": "RiskCoherenceLogicAgent",
+          "severity": "HIGH",
+          "title": "Canary=ORANGE but 16 positions still open",
+          "observation": "The canary is at ORANGE, indicating market distress or system risk. Yet 16 position(s) remain open with no emergency exit in progress.",
+          "why_wrong": "Canary RED/ORANGE is supposed to trigger defensive action. Open positions during a distress signal means the risk framework is not connected to position management.",
+          "suggestion": "Review canary_agent.py exit triggers. Ensure enforce_canary_exits() is being called and that its thresholds are appropriate.",
+          "ts": "2026-06-16T13:45:34.746950"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T16:00:36.601512",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-16T16:00:36.548628"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-16T16:00:36.548983"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-16T16:00:36.549327"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-16T16:00:36.549646"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 333 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 333 entries, 333 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-16T16:00:36.556256"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T18:00:32.209379",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-16T18:00:32.132150"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-16T18:00:32.132564"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-16T18:00:32.132910"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-16T18:00:32.133253"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 333 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 333 entries, 333 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-16T18:00:32.140381"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T20:15:34.890919",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-16T20:15:34.841030"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-16T20:15:34.841405"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-16T20:15:34.841770"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-16T20:15:34.842157"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 333 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 333 entries, 333 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-16T20:15:34.849811"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-17T00:00:00.535671",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-17T00:00:00.478712"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-17T00:00:00.479126"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-17T00:00:00.479438"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-17T00:00:00.479844"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 334 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 334 entries, 334 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-17T00:00:00.483218"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-17T00:01:47.689786",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-17T00:01:47.642819"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-17T00:01:47.643145"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-17T00:01:47.643481"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-17T00:01:47.643900"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 334 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 334 entries, 334 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-17T00:01:47.647986"
+        }
+      ]
     }
   ],
   "latest": [
@@ -1680,7 +1630,7 @@
       "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
       "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
       "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-      "ts": "2026-06-16T00:54:24.752509"
+      "ts": "2026-06-17T00:01:47.642819"
     },
     {
       "rule": "ml_auc_mediocre",
@@ -1690,7 +1640,7 @@
       "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
       "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
       "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
-      "ts": "2026-06-16T00:54:26.533511"
+      "ts": "2026-06-17T00:01:47.643145"
     },
     {
       "rule": "positions_without_reviews",
@@ -1700,7 +1650,7 @@
       "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
       "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
       "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-      "ts": "2026-06-16T00:54:27.056018"
+      "ts": "2026-06-17T00:01:47.643481"
     },
     {
       "rule": "agent_communication_silence",
@@ -1710,17 +1660,17 @@
       "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
       "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
       "suggestion": "Check crontab and most recent logs for each silent agent.",
-      "ts": "2026-06-16T00:54:27.302573"
+      "ts": "2026-06-17T00:01:47.643900"
     },
     {
       "rule": "cit_backlog_bloat",
       "agent": "CommunicationLogicAgent",
       "severity": "MEDIUM",
-      "title": "CIT backlog has 323 open items \u2014 proposals not being actioned",
-      "observation": "data/cit_backlog.json holds 323 entries, 323 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+      "title": "CIT backlog has 334 open items \u2014 proposals not being actioned",
+      "observation": "data/cit_backlog.json holds 334 entries, 334 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
       "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
       "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-      "ts": "2026-06-16T00:54:27.801152"
+      "ts": "2026-06-17T00:01:47.647986"
     }
   ]
 }

@@ -2271,7 +2271,9 @@
     "from_agent": "CIT Director",
     "summary": "HIGH/CRITICAL code bug: 32 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-15 06:47:17  ERROR     fe_pipeline -- [Pipeline] Fai`, wrap it in `except fe_pipeline` a",
     "urgency": "HIGH",
-    "status": "PENDING"
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:41:13.404576"
   },
   {
     "id": "CMR-E694E3",
@@ -2279,7 +2281,9 @@
     "from_agent": "CIT Director",
     "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0115: 65 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
     "urgency": "HIGH",
-    "status": "PENDING"
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:41:13.416786"
   },
   {
     "id": "CMR-AEDF7D",
@@ -2287,7 +2291,9 @@
     "from_agent": "CIT Director",
     "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0118: Stale data file: data/earnings_predictions.json (62h old, th. Fix: Assign owner and drive to resolution, or call CoS meeting.",
     "urgency": "HIGH",
-    "status": "PENDING"
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:41:13.429112"
   },
   {
     "id": "CMR-B2F668",
@@ -2295,7 +2301,9 @@
     "from_agent": "Deputy Board",
     "summary": "ESCALATION: Proposal '83 ERROR lines \u2014 dominant: `fe_pipeline`' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-418. Last clarification: Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
     "urgency": "HIGH",
-    "status": "PENDING"
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:41:13.441118"
   },
   {
     "id": "CMR-66AA08",
@@ -2303,6 +2311,1390 @@
     "from_agent": "Deputy Board",
     "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-435. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
     "urgency": "HIGH",
-    "status": "PENDING"
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:41:13.453507"
+  },
+  {
+    "id": "CMR-E94E9A",
+    "ts": "2026-06-16T13:42:49.800313",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Silent exception in _fe_broad.py:15. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.698700"
+  },
+  {
+    "id": "CMR-D90A72",
+    "ts": "2026-06-16T13:42:49.812648",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: _fe_broad.py:18. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.709004"
+  },
+  {
+    "id": "CMR-FE7968",
+    "ts": "2026-06-16T13:42:49.824670",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in _fe_broad.py:17. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.718772"
+  },
+  {
+    "id": "CMR-2149C9",
+    "ts": "2026-06-16T13:42:49.837013",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Silent exception in _fe_broad_run.py:15. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.728490"
+  },
+  {
+    "id": "CMR-2EF61F",
+    "ts": "2026-06-16T13:42:49.848917",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: _fe_broad_run.py:18. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.738258"
+  },
+  {
+    "id": "CMR-18639F",
+    "ts": "2026-06-16T13:42:49.860927",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in _fe_broad_run.py:17. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.748189"
+  },
+  {
+    "id": "CMR-F8CB4F",
+    "ts": "2026-06-16T13:42:49.873034",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:104. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.758177"
+  },
+  {
+    "id": "CMR-6FF887",
+    "ts": "2026-06-16T13:42:49.884922",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:112. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.768015"
+  },
+  {
+    "id": "CMR-C1FA4D",
+    "ts": "2026-06-16T13:42:49.896790",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:115. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.777931"
+  },
+  {
+    "id": "CMR-B3A3E5",
+    "ts": "2026-06-16T13:42:49.908766",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:116. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.787705"
+  },
+  {
+    "id": "CMR-2348CE",
+    "ts": "2026-06-16T13:42:49.921034",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:127. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.797517"
+  },
+  {
+    "id": "CMR-458353",
+    "ts": "2026-06-16T13:42:49.932950",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:128. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.807809"
+  },
+  {
+    "id": "CMR-DA47F7",
+    "ts": "2026-06-16T13:42:49.944871",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:136. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.817920"
+  },
+  {
+    "id": "CMR-9B611A",
+    "ts": "2026-06-16T13:42:49.956793",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:142. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.827822"
+  },
+  {
+    "id": "CMR-B08152",
+    "ts": "2026-06-16T13:42:49.968790",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:145. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.837928"
+  },
+  {
+    "id": "CMR-DCCFAA",
+    "ts": "2026-06-16T13:42:49.980753",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:147. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.847744"
+  },
+  {
+    "id": "CMR-9545D6",
+    "ts": "2026-06-16T13:42:49.992717",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:148. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.857987"
+  },
+  {
+    "id": "CMR-359109",
+    "ts": "2026-06-16T13:42:50.004973",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:152. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.867787"
+  },
+  {
+    "id": "CMR-D7CE0B",
+    "ts": "2026-06-16T13:42:50.017835",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:155. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.877636"
+  },
+  {
+    "id": "CMR-A9647F",
+    "ts": "2026-06-16T13:42:50.030030",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: backup_data.py:173. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.887447"
+  },
+  {
+    "id": "CMR-4E7DB6",
+    "ts": "2026-06-16T13:42:50.042236",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in fe_cio_agent.py:70. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.897523"
+  },
+  {
+    "id": "CMR-EB882E",
+    "ts": "2026-06-16T13:42:50.054929",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in fe_pipeline.py:823. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.907667"
+  },
+  {
+    "id": "CMR-598560",
+    "ts": "2026-06-16T13:42:50.067189",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in fi_board.py:175. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.917786"
+  },
+  {
+    "id": "CMR-530FDD",
+    "ts": "2026-06-16T13:42:50.079455",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in fi_credit_monitor.py:210. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.928041"
+  },
+  {
+    "id": "CMR-59AC5F",
+    "ts": "2026-06-16T13:42:50.091898",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in fi_pipeline.py:239. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.938174"
+  },
+  {
+    "id": "CMR-484345",
+    "ts": "2026-06-16T13:42:50.104280",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: manager_agent.py:1658. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.948142"
+  },
+  {
+    "id": "CMR-EBF3B2",
+    "ts": "2026-06-16T13:42:50.116969",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: manager_agent.py:1720. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.958116"
+  },
+  {
+    "id": "CMR-26E9BF",
+    "ts": "2026-06-16T13:42:50.129349",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: manager_agent.py:1723. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.968294"
+  },
+  {
+    "id": "CMR-E9A5E2",
+    "ts": "2026-06-16T13:42:50.141683",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Possible missing makedirs before file write in ml_alpha_decay_monitor.py:297. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.978520"
+  },
+  {
+    "id": "CMR-E3EC06",
+    "ts": "2026-06-16T13:42:50.154257",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Silent exception in ml_pod_board.py:42. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.988456"
+  },
+  {
+    "id": "CMR-229A28",
+    "ts": "2026-06-16T13:42:50.166812",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] Long f-string in logger.debug/info: morning_briefing.py:308. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:32.998752"
+  },
+  {
+    "id": "CMR-AE58DD",
+    "ts": "2026-06-16T13:42:50.179033",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] Long f-string in logger.debug/info: premarket_check.py:252. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.008779"
+  },
+  {
+    "id": "CMR-732474",
+    "ts": "2026-06-16T13:42:50.192619",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: rd_team_leader.py:1344. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.018675"
+  },
+  {
+    "id": "CMR-A658A8",
+    "ts": "2026-06-16T13:42:50.206525",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] Long f-string in logger.debug/info: reconciliation_check.py:86. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.028600"
+  },
+  {
+    "id": "CMR-B775E1",
+    "ts": "2026-06-16T13:42:50.220015",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:23. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.038928"
+  },
+  {
+    "id": "CMR-6B077F",
+    "ts": "2026-06-16T13:42:50.232958",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:24. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.049198"
+  },
+  {
+    "id": "CMR-88B2A7",
+    "ts": "2026-06-16T13:42:50.245886",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:25. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.059214"
+  },
+  {
+    "id": "CMR-47DFA1",
+    "ts": "2026-06-16T13:42:50.259601",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:26. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.069130"
+  },
+  {
+    "id": "CMR-A83F34",
+    "ts": "2026-06-16T13:42:50.273492",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:27. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.079094"
+  },
+  {
+    "id": "CMR-022449",
+    "ts": "2026-06-16T13:42:50.287406",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:28. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.089045"
+  },
+  {
+    "id": "CMR-B59DBD",
+    "ts": "2026-06-16T13:42:50.300673",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:41. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.099104"
+  },
+  {
+    "id": "CMR-66BE4A",
+    "ts": "2026-06-16T13:42:50.313953",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:42. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.109242"
+  },
+  {
+    "id": "CMR-72F35B",
+    "ts": "2026-06-16T13:42:50.326790",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:43. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.119226"
+  },
+  {
+    "id": "CMR-078E49",
+    "ts": "2026-06-16T13:42:50.340218",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:44. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.129105"
+  },
+  {
+    "id": "CMR-4EDF93",
+    "ts": "2026-06-16T13:42:50.353076",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:45. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.139390"
+  },
+  {
+    "id": "CMR-24EF74",
+    "ts": "2026-06-16T13:42:50.365845",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:46. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.149502"
+  },
+  {
+    "id": "CMR-75D1A2",
+    "ts": "2026-06-16T13:42:50.378420",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:47. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.159562"
+  },
+  {
+    "id": "CMR-FF8484",
+    "ts": "2026-06-16T13:42:50.391099",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:48. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.169680"
+  },
+  {
+    "id": "CMR-305187",
+    "ts": "2026-06-16T13:42:50.403720",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:49. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.180016"
+  },
+  {
+    "id": "CMR-057936",
+    "ts": "2026-06-16T13:42:50.416634",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:50. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.190049"
+  },
+  {
+    "id": "CMR-48004D",
+    "ts": "2026-06-16T13:42:50.430778",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:51. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.200113"
+  },
+  {
+    "id": "CMR-2163F0",
+    "ts": "2026-06-16T13:42:50.443606",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:52. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.210278"
+  },
+  {
+    "id": "CMR-109D73",
+    "ts": "2026-06-16T13:42:50.456429",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:53. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.220393"
+  },
+  {
+    "id": "CMR-B82B01",
+    "ts": "2026-06-16T13:42:50.469344",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:54. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.230389"
+  },
+  {
+    "id": "CMR-336865",
+    "ts": "2026-06-16T13:42:50.482604",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:55. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.240585"
+  },
+  {
+    "id": "CMR-22F5BF",
+    "ts": "2026-06-16T13:42:50.495408",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:56. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.251080"
+  },
+  {
+    "id": "CMR-50CBCA",
+    "ts": "2026-06-16T13:42:50.508391",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:57. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.261188"
+  },
+  {
+    "id": "CMR-C65F9D",
+    "ts": "2026-06-16T13:42:50.521463",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:58. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.271492"
+  },
+  {
+    "id": "CMR-2FB97E",
+    "ts": "2026-06-16T13:42:50.534660",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:59. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.281460"
+  },
+  {
+    "id": "CMR-B02020",
+    "ts": "2026-06-16T13:42:50.547817",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:60. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.291587"
+  },
+  {
+    "id": "CMR-9DCCF7",
+    "ts": "2026-06-16T13:42:50.561051",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:61. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.301614"
+  },
+  {
+    "id": "CMR-96301E",
+    "ts": "2026-06-16T13:42:50.574725",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:64. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.311767"
+  },
+  {
+    "id": "CMR-0F9DE8",
+    "ts": "2026-06-16T13:42:50.587909",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:65. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.321890"
+  },
+  {
+    "id": "CMR-4595AF",
+    "ts": "2026-06-16T13:42:50.601149",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:68. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.332094"
+  },
+  {
+    "id": "CMR-F846A0",
+    "ts": "2026-06-16T13:42:50.614199",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:69. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.342147"
+  },
+  {
+    "id": "CMR-3B1CEF",
+    "ts": "2026-06-16T13:42:50.628071",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:70. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.352263"
+  },
+  {
+    "id": "CMR-E27B39",
+    "ts": "2026-06-16T13:42:50.642004",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:72. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.362265"
+  },
+  {
+    "id": "CMR-CD9AF4",
+    "ts": "2026-06-16T13:42:50.655861",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:75. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.372297"
+  },
+  {
+    "id": "CMR-A1FCD5",
+    "ts": "2026-06-16T13:42:50.669129",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:76. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.382342"
+  },
+  {
+    "id": "CMR-E9B7E1",
+    "ts": "2026-06-16T13:42:50.682750",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:77. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.392490"
+  },
+  {
+    "id": "CMR-FB9AF9",
+    "ts": "2026-06-16T13:42:50.696661",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:79. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.402944"
+  },
+  {
+    "id": "CMR-11D969",
+    "ts": "2026-06-16T13:42:50.710189",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:84. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.413166"
+  },
+  {
+    "id": "CMR-401DCC",
+    "ts": "2026-06-16T13:42:50.723753",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:85. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.423181"
+  },
+  {
+    "id": "CMR-BA5270",
+    "ts": "2026-06-16T13:42:50.737078",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:86. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.433318"
+  },
+  {
+    "id": "CMR-37E7C5",
+    "ts": "2026-06-16T13:42:50.750476",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:87. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.443589"
+  },
+  {
+    "id": "CMR-AF937C",
+    "ts": "2026-06-16T13:42:50.763811",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:88. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.453733"
+  },
+  {
+    "id": "CMR-D7906D",
+    "ts": "2026-06-16T13:42:50.777318",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:94. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.463824"
+  },
+  {
+    "id": "CMR-5830C2",
+    "ts": "2026-06-16T13:42:50.791002",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:95. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.474069"
+  },
+  {
+    "id": "CMR-27286F",
+    "ts": "2026-06-16T13:42:50.804400",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:100. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.484212"
+  },
+  {
+    "id": "CMR-C2AB7C",
+    "ts": "2026-06-16T13:42:50.817875",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:101. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.494231"
+  },
+  {
+    "id": "CMR-6F4189",
+    "ts": "2026-06-16T13:42:50.831379",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:102. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.504536"
+  },
+  {
+    "id": "CMR-3C4E42",
+    "ts": "2026-06-16T13:42:50.844960",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:103. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.514656"
+  },
+  {
+    "id": "CMR-A4721E",
+    "ts": "2026-06-16T13:42:50.858343",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:104. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.524827"
+  },
+  {
+    "id": "CMR-894FE8",
+    "ts": "2026-06-16T13:42:50.872036",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:110. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.535323"
+  },
+  {
+    "id": "CMR-166414",
+    "ts": "2026-06-16T13:42:50.885781",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:111. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.545771"
+  },
+  {
+    "id": "CMR-1BFE6E",
+    "ts": "2026-06-16T13:42:50.900372",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:119. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.556524"
+  },
+  {
+    "id": "CMR-DCDE07",
+    "ts": "2026-06-16T13:42:50.914225",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:120. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.566814"
+  },
+  {
+    "id": "CMR-DA61B8",
+    "ts": "2026-06-16T13:42:50.927977",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:121. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.577207"
+  },
+  {
+    "id": "CMR-959029",
+    "ts": "2026-06-16T13:42:50.941842",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:122. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.587537"
+  },
+  {
+    "id": "CMR-735141",
+    "ts": "2026-06-16T13:42:50.955620",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:124. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.597787"
+  },
+  {
+    "id": "CMR-5E6EB0",
+    "ts": "2026-06-16T13:42:50.969311",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:128. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.607984"
+  },
+  {
+    "id": "CMR-8F2F79",
+    "ts": "2026-06-16T13:42:50.982992",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:135. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.618429"
+  },
+  {
+    "id": "CMR-BB2A77",
+    "ts": "2026-06-16T13:42:50.996539",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:140. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.628732"
+  },
+  {
+    "id": "CMR-1B6564",
+    "ts": "2026-06-16T13:42:51.010221",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:169. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.639251"
+  },
+  {
+    "id": "CMR-55D9E6",
+    "ts": "2026-06-16T13:42:51.023910",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:170. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.649929"
+  },
+  {
+    "id": "CMR-065FD4",
+    "ts": "2026-06-16T13:42:51.037597",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:173. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.660223"
+  },
+  {
+    "id": "CMR-9260F2",
+    "ts": "2026-06-16T13:42:51.051342",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:174. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.670756"
+  },
+  {
+    "id": "CMR-AADCCE",
+    "ts": "2026-06-16T13:42:51.065044",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: run_backtest.py:176. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.681019"
+  },
+  {
+    "id": "CMR-CCAAF1",
+    "ts": "2026-06-16T13:42:51.078773",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: teaching_division.py:723. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.691292"
+  },
+  {
+    "id": "CMR-A7C04C",
+    "ts": "2026-06-16T13:42:51.092401",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: teaching_division.py:724. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.701621"
+  },
+  {
+    "id": "CMR-4932CD",
+    "ts": "2026-06-16T13:42:51.106126",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: teaching_division.py:725. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.711996"
+  },
+  {
+    "id": "CMR-FB1B4C",
+    "ts": "2026-06-16T13:42:51.120836",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: teaching_division.py:729. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.722454"
+  },
+  {
+    "id": "CMR-CA2DC5",
+    "ts": "2026-06-16T13:42:51.134980",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: teaching_division.py:731. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.732695"
+  },
+  {
+    "id": "CMR-AC0E4C",
+    "ts": "2026-06-16T13:42:51.148957",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: teaching_division.py:741. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.743128"
+  },
+  {
+    "id": "CMR-0A7FF6",
+    "ts": "2026-06-16T13:42:51.163033",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] Long f-string in logger.debug/info: wakeup_recovery.py:203. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.753421"
+  },
+  {
+    "id": "CMR-0C4042",
+    "ts": "2026-06-16T13:42:51.176965",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:182. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.763787"
+  },
+  {
+    "id": "CMR-23607E",
+    "ts": "2026-06-16T13:42:51.191639",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:183. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.774144"
+  },
+  {
+    "id": "CMR-F2C2DA",
+    "ts": "2026-06-16T13:42:51.206642",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:184. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.784577"
+  },
+  {
+    "id": "CMR-7EB690",
+    "ts": "2026-06-16T13:42:51.221651",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:186. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.794961"
+  },
+  {
+    "id": "CMR-21EBEE",
+    "ts": "2026-06-16T13:42:51.236048",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:188. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.805597"
+  },
+  {
+    "id": "CMR-9CA421",
+    "ts": "2026-06-16T13:42:51.250634",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:190. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.816653"
+  },
+  {
+    "id": "CMR-149556",
+    "ts": "2026-06-16T13:42:51.265139",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:192. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.827033"
+  },
+  {
+    "id": "CMR-5DA7C4",
+    "ts": "2026-06-16T13:42:51.280257",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:194. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.837522"
+  },
+  {
+    "id": "CMR-DFB3E2",
+    "ts": "2026-06-16T13:42:51.294766",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] print() in production code: wiring_audit.py:195. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.847829"
+  },
+  {
+    "id": "CMR-C3B1F3",
+    "ts": "2026-06-16T13:42:51.309783",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [HIGH] 65 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 65 ERROR-level entries (794 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3 ",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:33.869416"
+  },
+  {
+    "id": "CMR-27DCF8",
+    "ts": "2026-06-16T13:42:51.324358",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys. Reporter: CITThinkTank. Description: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.880167"
+  },
+  {
+    "id": "CMR-B7D5E7",
+    "ts": "2026-06-16T13:42:51.339793",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 188/30). Reporter: CITThinkTank. Description: The firm is on day 188/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.890529"
+  },
+  {
+    "id": "CMR-11A00E",
+    "ts": "2026-06-16T13:42:51.354485",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [HIGH] Stale data file: data/earnings_predictions.json (62h old, threshold 26h). Reporter: CITDataQualityAnalyst. Description: data/earnings_predictions.json has not been updated in 62h. Expected refresh interval: 26h. Data from this file may be l",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:33.911136"
+  },
+  {
+    "id": "CMR-974D42",
+    "ts": "2026-06-16T13:42:51.368912",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (2/29 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 29 board proposals but only 2 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.921670"
+  },
+  {
+    "id": "CMR-3B07E8",
+    "ts": "2026-06-16T13:42:51.383449",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 28h: [LOW] Backlog curated: 96 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 388 to 292 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:33.932297"
+  },
+  {
+    "id": "CMR-07C27C",
+    "ts": "2026-06-16T13:42:57.348004",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0115: 65 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:33.953085"
+  },
+  {
+    "id": "CMR-A6FB19",
+    "ts": "2026-06-16T13:42:57.385368",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0118: Stale data file: data/earnings_predictions.json (62h old, th. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:33.974083"
+  },
+  {
+    "id": "CMR-E8F46B",
+    "ts": "2026-06-16T13:42:57.430738",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0123: Risk Manager HIGH \u2014 unfiled in issue tracker. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:33.994880"
+  },
+  {
+    "id": "CMR-BBB29B",
+    "ts": "2026-06-16T13:42:57.449103",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0124: 67 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:34.015719"
+  },
+  {
+    "id": "CMR-5B7CFE",
+    "ts": "2026-06-16T13:42:57.476808",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0126: Stale data file: data/earnings_predictions.json (67h old, th. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:34.036883"
+  },
+  {
+    "id": "CMR-B901A2",
+    "ts": "2026-06-16T13:42:57.607373",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0156: 83 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:34.058071"
+  },
+  {
+    "id": "CMR-99D7D5",
+    "ts": "2026-06-16T13:42:57.747231",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0177: 32 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:34.079393"
+  },
+  {
+    "id": "CMR-985199",
+    "ts": "2026-06-16T13:42:58.182667",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal '83 ERROR lines \u2014 dominant: `fe_pipeline`' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-418. Last clarification: Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:34.100071"
+  },
+  {
+    "id": "CMR-705D16",
+    "ts": "2026-06-16T13:42:58.193798",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-435. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T13:45:34.120819"
+  },
+  {
+    "id": "CMR-8DE873",
+    "ts": "2026-06-16T13:42:58.234178",
+    "from_agent": "Deputy Board",
+    "summary": "DEPUTY BOARD APPROVED [MAJORITY] [LOW] [LTIA] Expected agents silent \u2014 check they're still running | Fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "proposal_id": "LTIA-20260616000022",
+    "evidence": "",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:34.131241"
+  },
+  {
+    "id": "CMR-DE80F2",
+    "ts": "2026-06-16T13:45:18.430682",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T13:45:34.141693"
+  },
+  {
+    "id": "CMR-D3A8FC",
+    "ts": "2026-06-16T13:45:37.303385",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T16:00:35.820744"
+  },
+  {
+    "id": "CMR-77E39B",
+    "ts": "2026-06-16T13:50:17.775139",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T16:00:35.831251"
+  },
+  {
+    "id": "CMR-48501B",
+    "ts": "2026-06-16T13:55:17.095489",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T16:00:35.841498"
+  },
+  {
+    "id": "CMR-1F3176",
+    "ts": "2026-06-16T14:00:17.951407",
+    "from_agent": "Board Meeting",
+    "summary": "BOARD VOTE \u2192 Engineering [THIS_WEEK]: Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
+    "urgency": "NORMAL",
+    "status": "HANDLED",
+    "resolution": "noted_by_cos",
+    "handled_at": "2026-06-16T16:00:35.851701"
+  },
+  {
+    "id": "CMR-83D5C2",
+    "ts": "2026-06-16T16:00:08.602390",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: 36 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-15 06:47:17  ERROR     fe_pipeline -- [Pipeline] Fai`, wrap it in `except fe_pipeline` a",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-16T16:00:35.872610"
+  },
+  {
+    "id": "CMR-07A2C6",
+    "ts": "2026-06-16T22:00:07.615775",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: 42 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Most frequent error type: `fe_pipeline` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-15 06:47:17  ERROR     fe_pipeline -- [Pipeline] Fai`, wrap it in `except fe_pipeline` a",
+    "urgency": "HIGH",
+    "status": "HANDLED",
+    "resolution": "queued_for_next_board_meeting",
+    "handled_at": "2026-06-17T00:01:47.067218"
+  },
+  {
+    "id": "CMR-318354",
+    "ts": "2026-06-17T01:00:07.526069",
+    "from_agent": "Deputy Board",
+    "summary": "DEPUTY BOARD APPROVED [MAJORITY] [LOW] [LTIA] Expected agents silent \u2014 check they're still running | Fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
+    "urgency": "NORMAL",
+    "status": "PENDING",
+    "proposal_id": "LTIA-20260616160036",
+    "evidence": ""
   }
 ]

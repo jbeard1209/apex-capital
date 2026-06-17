@@ -2213,6 +2213,427 @@
           "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
         }
       ]
+    },
+    {
+      "ts": "2026-06-16T13:41:13.942375",
+      "date": "2026-06-16",
+      "source": "Logic Team",
+      "portfolio": 98482.07,
+      "pnl_vs_start": -1517.929999999993,
+      "canary": "YELLOW",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 6,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 332 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 332 entries, 332 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income pipeline report is 31h old",
+          "agent": "PodHealthLogicAgent",
+          "short": "fi_pipeline_report.json last updated 31h ago. The Fixed Income pipeline should run daily."
+        },
+        {
+          "severity": "LOW",
+          "title": "5 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: CIT Director, Chief of Staff, IRM Director, Logic Team Dire"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T13:41:26.245783",
+      "date": "2026-06-16",
+      "source": "Logic Officer",
+      "portfolio": 98488.99,
+      "pnl_vs_start": -1511.0099999999948,
+      "canary": "YELLOW",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T13:45:34.795292",
+      "date": "2026-06-16",
+      "source": "Logic Team",
+      "portfolio": 98498.53,
+      "pnl_vs_start": -1501.4700000000012,
+      "canary": "ORANGE",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 6,
+      "items": [
+        {
+          "severity": "HIGH",
+          "title": "Canary=ORANGE but 16 positions still open",
+          "agent": "RiskCoherenceLogicAgent",
+          "short": "The canary is at ORANGE, indicating market distress or system risk. Yet 16 position(s) remain open with no emergency exi"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 480 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 480 entries, 480 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T13:45:34.846996",
+      "date": "2026-06-16",
+      "source": "Logic Officer",
+      "portfolio": 98498.53,
+      "pnl_vs_start": -1501.4700000000012,
+      "canary": "ORANGE",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T16:00:36.606602",
+      "date": "2026-06-16",
+      "source": "Logic Team",
+      "portfolio": 98453.81,
+      "pnl_vs_start": -1546.1900000000023,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 333 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 333 entries, 333 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T16:00:36.672225",
+      "date": "2026-06-16",
+      "source": "Logic Officer",
+      "portfolio": 98453.81,
+      "pnl_vs_start": -1546.1900000000023,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T18:00:32.214513",
+      "date": "2026-06-16",
+      "source": "Logic Team",
+      "portfolio": 98483.69,
+      "pnl_vs_start": -1516.3099999999977,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 333 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 333 entries, 333 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T18:00:32.264679",
+      "date": "2026-06-16",
+      "source": "Logic Officer",
+      "portfolio": 98483.69,
+      "pnl_vs_start": -1516.3099999999977,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T20:15:34.896847",
+      "date": "2026-06-16",
+      "source": "Logic Team",
+      "portfolio": 98506.51,
+      "pnl_vs_start": -1493.4900000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 333 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 333 entries, 333 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T20:15:34.940944",
+      "date": "2026-06-16",
+      "source": "Logic Officer",
+      "portfolio": 98506.51,
+      "pnl_vs_start": -1493.4900000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-17T00:00:00.541594",
+      "date": "2026-06-17",
+      "source": "Logic Team",
+      "portfolio": 98506.51,
+      "pnl_vs_start": -1493.4900000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 334 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 334 entries, 334 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-17T00:01:47.694595",
+      "date": "2026-06-17",
+      "source": "Logic Team",
+      "portfolio": 98537.51,
+      "pnl_vs_start": -1462.4900000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 334 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 334 entries, 334 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-17T00:01:47.744260",
+      "date": "2026-06-17",
+      "source": "Logic Officer",
+      "portfolio": 98537.51,
+      "pnl_vs_start": -1462.4900000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
     }
   ]
 }

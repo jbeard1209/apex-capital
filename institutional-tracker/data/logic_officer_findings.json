@@ -338,6 +338,84 @@
           "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
         }
       ]
+    },
+    {
+      "ts": "2026-06-16T13:41:26.243439",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T13:45:34.844712",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T16:00:36.669781",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T18:00:32.262225",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-16T20:15:34.938209",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-17T00:01:47.741222",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
     }
   ],
   "latest": [

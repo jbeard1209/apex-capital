@@ -1,518 +1,5 @@
 [
   {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "113 ERROR lines \u2014 dominant: `v1`",
-    "description": "The last 24-48h of logs contain 113 ERROR-level entries (2721 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-11 03:00:06  ERROR      v1 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:08  ERROR      v2 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:11  ERROR      v3 FAILED: No module named 'sklearn'",
-    "proposed_fix": "Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-1145",
-    "context": {
-      "captured_at": "2026-06-11T14:36:35.896975",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 265,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 2,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-11T14:36:35.922128",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:33:56.944527",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "147 ERROR lines \u2014 dominant: `v1`",
-    "description": "The last 24-48h of logs contain 147 ERROR-level entries (2862 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-11 03:00:06  ERROR      v1 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:08  ERROR      v2 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:11  ERROR      v3 FAILED: No module named 'sklearn'",
-    "proposed_fix": "Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-387",
-    "context": {
-      "captured_at": "2026-06-11T16:00:09.418177",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 361,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 2,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-11T16:00:09.521577",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.766686",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "152 ERROR lines \u2014 dominant: `v1`",
-    "description": "The last 24-48h of logs contain 152 ERROR-level entries (1729 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-11 03:00:06  ERROR      v1 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:08  ERROR      v2 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:11  ERROR      v3 FAILED: No module named 'sklearn'",
-    "proposed_fix": "Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-481",
-    "context": {
-      "captured_at": "2026-06-12T17:41:36.358892",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 521,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 2,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-12T17:41:36.389454",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.897116",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "212 ERROR lines \u2014 dominant: `v1`",
-    "description": "The last 24-48h of logs contain 212 ERROR-level entries (2076 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-11 03:00:06  ERROR      v1 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:08  ERROR      v2 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:11  ERROR      v3 FAILED: No module named 'sklearn'",
-    "proposed_fix": "Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-473",
-    "context": {
-      "captured_at": "2026-06-12T18:01:33.610293",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 685,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 0,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-12T18:01:33.675015",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.903741",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "227 ERROR lines \u2014 dominant: `v1`",
-    "description": "The last 24-48h of logs contain 227 ERROR-level entries (2135 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-11 03:00:06  ERROR      v1 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:08  ERROR      v2 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:11  ERROR      v3 FAILED: No module named 'sklearn'",
-    "proposed_fix": "Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-473",
-    "context": {
-      "captured_at": "2026-06-12T19:54:26.007701",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 748,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 5,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-12T19:54:26.045736",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.944263",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "238 ERROR lines \u2014 dominant: `v1`",
-    "description": "The last 24-48h of logs contain 238 ERROR-level entries (2203 WARNINGs). Most frequent error class: `v1` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-11 03:00:06  ERROR      v1 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:08  ERROR      v2 FAILED: No module named 'sklearn'\n  \u2022 2026-06-11 03:00:11  ERROR      v3 FAILED: No module named 'sklearn'",
-    "proposed_fix": "Most frequent error type: `v1` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-11 03:00:06  ERROR      v1 FAILED: No module named '`, wrap it in `except v1` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-470",
-    "context": {
-      "captured_at": "2026-06-12T22:44:05.503485",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 782,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 5,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-12T22:44:05.584552",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.946489",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "42 ERROR lines \u2014 dominant: `yfinance`",
-    "description": "The last 24-48h of logs contain 42 ERROR-level entries (879 WARNINGs). Most frequent error class: `yfinance` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-14 01:30:53  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d\n  \u2022 2026-06-14 01:30:55  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d\n  \u2022 2026-06-14 01:31:16  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d",
-    "proposed_fix": "Most frequent error type: `yfinance` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-14 01:30:53  ERROR     yfinance -- HTTP Error 404: {`, wrap it in `except yfinance` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-409",
-    "context": {
-      "captured_at": "2026-06-14T06:13:12.684539",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 1027,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 10,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-14T06:13:18.724601",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.951410",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "48 ERROR lines \u2014 dominant: `yfinance`",
-    "description": "The last 24-48h of logs contain 48 ERROR-level entries (938 WARNINGs). Most frequent error class: `yfinance` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-14 01:30:53  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d\n  \u2022 2026-06-14 01:30:55  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d\n  \u2022 2026-06-14 01:31:16  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d",
-    "proposed_fix": "Most frequent error type: `yfinance` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-14 01:30:53  ERROR     yfinance -- HTTP Error 404: {`, wrap it in `except yfinance` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-508",
-    "context": {
-      "captured_at": "2026-06-14T16:00:26.235460",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 1048,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 10,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-14T16:00:26.357867",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.952010",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "HIGH",
-    "confidence": 90,
-    "title": "51 ERROR lines \u2014 dominant: `yfinance`",
-    "description": "The last 24-48h of logs contain 51 ERROR-level entries (1119 WARNINGs). Most frequent error class: `yfinance` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-14 01:30:53  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d\n  \u2022 2026-06-14 01:30:55  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d\n  \u2022 2026-06-14 01:31:16  ERROR     yfinance -- HTTP Error 404: {\"quoteSummary\":{\"result\":null,\"error\":{\"code\":\"Not Found\",\"d",
-    "proposed_fix": "Most frequent error type: `yfinance` (3/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-14 01:30:53  ERROR     yfinance -- HTTP Error 404: {`, wrap it in `except yfinance` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-512",
-    "context": {
-      "captured_at": "2026-06-14T21:14:37.503368",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 187,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 20,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 1059,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 10,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 187",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-14T21:14:37.576986",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-15T14:34:01.952223",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "HIGH/CRITICAL severity warrants action"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Quality concern at HIGH"
-      }
-    ],
-    "status": "approved"
-  },
-  {
     "id": "LT-150818-canary_red_positions_open",
     "source": "Logic Team / RiskCoherenceLogicAgent",
     "category": "IMPROVEMENT",
@@ -524,8 +11,64 @@
     "proposed_fix": "Review canary_agent.py exit triggers. Ensure enforce_canary_exits() is being called and that its thresholds are appropriate.",
     "why": "Canary RED/ORANGE is supposed to trigger defensive action. Open positions during a distress signal means the risk framework is not connected to position management.",
     "created_at": "2026-06-15T15:08:18.965494",
-    "status": "pending",
+    "status": "approved",
     "routed_to_pod": "rd",
-    "routed_at": "2026-06-15T15:08:18.966083"
+    "routed_at": "2026-06-15T15:08:18.966083",
+    "decision": "APPROVED",
+    "voted_at": "2026-06-16T14:30:00.484569",
+    "votes": [
+      {
+        "member": "Investment Director",
+        "vote": "APPROVE",
+        "reason": "HIGH/CRITICAL severity warrants action"
+      },
+      {
+        "member": "Risk Officer",
+        "vote": "APPROVE",
+        "reason": "Operational improvement, no portfolio risk"
+      },
+      {
+        "member": "Quality Officer",
+        "vote": "APPROVE",
+        "reason": "Quality concern at HIGH"
+      }
+    ]
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 90,
+    "title": "10 ERROR lines \u2014 dominant: `v3`",
+    "description": "The last 24-48h of logs contain 10 ERROR-level entries (2176 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 2026-06-16 18:03:22  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-16 18:03:42  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-16 18:04:03  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-16 18:03:22  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-468",
+    "context": {
+      "captured_at": "2026-06-17T01:00:05.794407",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "ELEVATED",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 204,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 21,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 369,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 8,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 204",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-06-17T01:00:05.862764"
   }
 ]

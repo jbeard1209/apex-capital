@@ -4797,5 +4797,1289 @@
       "earnings_proximity",
       "valuation"
     ]
+  },
+  {
+    "ts": "2026-06-16T13:41:08.324882",
+    "ticker": "JNJ",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:08.635913",
+    "ticker": "ABBV",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 109 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:08.990047",
+    "ticker": "LLY",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "up 29% in 30d \u2014 momentum exhaustion risk"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:09.282531",
+    "ticker": "PNC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:09.679687",
+    "ticker": "RTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:10.006139",
+    "ticker": "CAT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:10.330773",
+    "ticker": "ETN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:10.654427",
+    "ticker": "CL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:10.949310",
+    "ticker": "TSM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:11.278037",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:11.607427",
+    "ticker": "AMT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:11.896025",
+    "ticker": "PLD",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:41:12.080270",
+    "ticker": "WELL",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 104 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:27.323358",
+    "ticker": "JNJ",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:27.512658",
+    "ticker": "ABBV",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 109 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:27.877391",
+    "ticker": "LLY",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "up 29% in 30d \u2014 momentum exhaustion risk"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:28.449890",
+    "ticker": "PNC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:28.899083",
+    "ticker": "RTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:29.349379",
+    "ticker": "CAT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:29.722009",
+    "ticker": "ETN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:30.047561",
+    "ticker": "CL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:30.308234",
+    "ticker": "TSM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:30.634199",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:30.892308",
+    "ticker": "AMT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:31.296495",
+    "ticker": "PLD",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T13:45:31.521101",
+    "ticker": "WELL",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 103 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:30.178529",
+    "ticker": "JNJ",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:30.380379",
+    "ticker": "ABBV",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 109 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:30.814762",
+    "ticker": "LLY",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "up 29% in 30d \u2014 momentum exhaustion risk"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:31.132985",
+    "ticker": "PNC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:31.741768",
+    "ticker": "RTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:32.178725",
+    "ticker": "CAT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:32.530143",
+    "ticker": "ETN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:33.010824",
+    "ticker": "CL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:33.352260",
+    "ticker": "TSM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:33.757974",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:34.109859",
+    "ticker": "AMT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:34.414704",
+    "ticker": "PLD",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T16:00:34.624236",
+    "ticker": "WELL",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 104 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:26.433967",
+    "ticker": "JNJ",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:26.630232",
+    "ticker": "ABBV",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 109 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:26.967404",
+    "ticker": "LLY",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "up 29% in 30d \u2014 momentum exhaustion risk"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:27.351157",
+    "ticker": "PNC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:27.800357",
+    "ticker": "RTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:28.152242",
+    "ticker": "CAT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:28.466654",
+    "ticker": "ETN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:28.775927",
+    "ticker": "CL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:29.084678",
+    "ticker": "TSM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:29.379887",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:29.646417",
+    "ticker": "AMT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:29.933395",
+    "ticker": "PLD",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T18:00:30.111476",
+    "ticker": "WELL",
+    "proceed": false,
+    "blocked": true,
+    "block_reason": "P/E 104 > 100 (extreme valuation)",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:28.198600",
+    "ticker": "CAT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:28.559356",
+    "ticker": "ETN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:28.896841",
+    "ticker": "RTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:29.233746",
+    "ticker": "ECL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:29.526871",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:29.848557",
+    "ticker": "PNC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:30.153118",
+    "ticker": "ROST",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:30.494820",
+    "ticker": "NUE",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:30.758307",
+    "ticker": "TSM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:31.090486",
+    "ticker": "NEM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:31.400149",
+    "ticker": "TFC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:31.728849",
+    "ticker": "TGT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:31.992690",
+    "ticker": "NOW",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [
+      "P/E 60 \u2014 stretched valuation"
+    ],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:32.257258",
+    "ticker": "ORCL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:32.529541",
+    "ticker": "AMGN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:32.767056",
+    "ticker": "VRTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-16T20:15:33.002393",
+    "ticker": "BIIB",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:41.277399",
+    "ticker": "CAT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:41.588422",
+    "ticker": "ETN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:41.923232",
+    "ticker": "RTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:42.218978",
+    "ticker": "ECL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:42.505430",
+    "ticker": "FCX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:42.795523",
+    "ticker": "PNC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:43.098147",
+    "ticker": "ROST",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:43.370700",
+    "ticker": "NUE",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:43.636994",
+    "ticker": "TSM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:44.057387",
+    "ticker": "NEM",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:44.332749",
+    "ticker": "TFC",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:44.607805",
+    "ticker": "TGT",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:44.862584",
+    "ticker": "ORCL",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:45.109731",
+    "ticker": "NVDA",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:45.394588",
+    "ticker": "AMGN",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:45.661804",
+    "ticker": "VRTX",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
+  },
+  {
+    "ts": "2026-06-17T00:01:45.885128",
+    "ticker": "BIIB",
+    "proceed": true,
+    "blocked": false,
+    "block_reason": "",
+    "warnings": [],
+    "checks_run": [
+      "recent_churn",
+      "earnings_proximity",
+      "valuation",
+      "short_interest",
+      "momentum"
+    ]
   }
 ]

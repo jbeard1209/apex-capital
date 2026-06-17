@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-16T00:00:00.953310",
+  "generated_at": "2026-06-17T00:00:00.953333",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
@@ -9,11 +9,11 @@
     "XLF"
   ],
   "regime": {
-    "regime_label": "bull",
-    "bull": true,
-    "bear": false,
-    "vix": 16.1,
-    "spy_rsi": 52.1,
+    "regime_label": "neutral",
+    "bull": false,
+    "bear": true,
+    "vix": 17.7,
+    "spy_rsi": NaN,
     "overbought": false,
     "warning_count": 1,
     "rising_rates": false,
@@ -26,7 +26,7 @@
       "Healthcare",
       "Consumer Discretionary"
     ],
-    "spy_1d_return": 1.7634,
+    "spy_1d_return": -0.5962,
     "canary_warning": null
   },
   "canary_alerts": null,
@@ -47,20 +47,20 @@
         "bear_mode": false,
         "overbought_mode": false,
         "momentum_scores": {
-          "XLK": 13.0692,
-          "QQQ": 7.5398,
-          "XLF": 3.7974,
-          "XLI": 1.9363,
-          "XLV": 1.2514,
-          "XLB": 0.9272,
-          "XLY": -0.1699,
-          "TLT": -0.3322,
-          "XLP": -0.5147,
-          "XLU": -3.5161,
-          "XLE": -6.1379,
-          "GLD": -10.9882
+          "XLK": 10.3707,
+          "QQQ": 5.898,
+          "XLF": 5.1272,
+          "XLI": 3.1832,
+          "XLB": 2.3342,
+          "XLV": 1.9814,
+          "TLT": 0.6884,
+          "XLY": 0.1719,
+          "XLP": -0.0617,
+          "XLU": -1.8663,
+          "XLE": -7.4549,
+          "GLD": -9.7879
         },
-        "reasoning": "BULL regime (VIX=16.1, SPY_RSI=52.1). Picking top 3 by momentum score. Top 3: [('XLK', 13.07), ('QQQ', 7.54), ('XLF', 3.8)]",
+        "reasoning": "BULL regime (VIX=17.7, SPY_RSI=nan). Picking top 3 by momentum score. Top 3: [('XLK', 10.37), ('QQQ', 5.9), ('XLF', 5.13)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },

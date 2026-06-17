@@ -13,6 +13,13 @@
       "approved": 0,
       "deferred": 0,
       "escalated": 1
+    },
+    {
+      "ts": "2026-06-16T14:45:00.315954",
+      "type": "ops",
+      "approved": 1,
+      "deferred": 0,
+      "escalated": 0
     }
   ]
 }

@@ -1,40 +1,5 @@
 [
   {
-    "id": "LT-232928-ml_model_never_trained",
-    "source": "Logic Team / MLLogicAgent",
-    "category": "IMPROVEMENT",
-    "severity": "CRITICAL",
-    "confidence": 88,
-    "title": "ML pod has $30,000 but NO trained model exists",
-    "description": "data/model_meta.json reports no trained model (model.pkl present=False). The ML / Quantitative pod has $30,000 allocated but there is no model to generate or validate signals. Any AUC shown elsewhere is not coming from a real model.",
-    "evidence": "Logic Team coherence check. Rule=ml_model_never_trained. Agent=MLLogicAgent",
-    "proposed_fix": "Run `python3 predictive_model/ml_model.py` (or overnight_ml_runner.py) to train and persist data/model.pkl + model_meta.json. Until then, the ML pod should hold cash, not deploy on phantom signals.",
-    "why": "A pod allocated capital against a model that was never trained is operating on nothing. This also means every downstream 'model AUC' display is meaningless.",
-    "created_at": "2026-06-12T23:29:28.810648",
-    "status": "escalate",
-    "routed_to_pod": "ml",
-    "routed_at": "2026-06-12T23:29:28.814755",
-    "decision": "ESCALATE",
-    "voted_at": "2026-06-15T14:54:27.051434",
-    "votes": [
-      {
-        "member": "ML Research Director",
-        "vote": "APPROVE",
-        "reason": "Model quality concern at CRITICAL"
-      },
-      {
-        "member": "Quant Risk Officer",
-        "vote": "ESCALATE",
-        "reason": "Capital deployment decisions require main board"
-      },
-      {
-        "member": "Data Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Confidence 88% acceptable"
-      }
-    ]
-  },
-  {
     "agent": "CITCodeInspector",
     "category": "BUG_FIX",
     "severity": "MEDIUM",
@@ -69,6 +34,26 @@
     },
     "context_summary": "Canary: ORANGE | CRO: HIGH | Positions: 0 open | Day 188",
     "routed_to_pod": "ml",
-    "routed_at": "2026-06-15T15:07:25.211346"
+    "routed_at": "2026-06-15T15:07:25.211346",
+    "decision": "APPROVED",
+    "voted_at": "2026-06-16T14:45:00.313701",
+    "votes": [
+      {
+        "member": "ML Research Director",
+        "vote": "HOLD",
+        "reason": "LOW priority for model team"
+      },
+      {
+        "member": "Quant Risk Officer",
+        "vote": "APPROVE",
+        "reason": "No portfolio risk"
+      },
+      {
+        "member": "Data Quality Officer",
+        "vote": "APPROVE",
+        "reason": "Confidence 80% acceptable"
+      }
+    ],
+    "status": "approved"
   }
 ]
