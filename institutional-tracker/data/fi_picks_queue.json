@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-06-17T22:00:53.385444+00:00",
+  "generated_at": "2026-06-19T04:03:01.014678+00:00",
   "capital": 30000.0,
-  "regime": "NORMAL",
+  "regime": "TIGHT",
   "spreads": {
-    "hy_spread": 306.0,
-    "ig_spread": 100.0,
-    "hy_spread_bps": 306.0,
-    "ig_spread_bps": 100.0,
-    "treasury_10yr": 4.463,
-    "yield_curve_slope": -0.837,
-    "spread_regime": "NORMAL",
-    "hyg_price": 79.875,
-    "lqd_price": 109.0199966430664
+    "hy_spread": 299.0,
+    "ig_spread": 99.0,
+    "hy_spread_bps": 299.0,
+    "ig_spread_bps": 99.0,
+    "treasury_10yr": 4.451,
+    "yield_curve_slope": -0.849,
+    "spread_regime": "TIGHT",
+    "hyg_price": 80.01000213623047,
+    "lqd_price": 109.06999969482422
   },
   "market_signals": [
     {
       "type": "INVERTED_CURVE",
-      "message": "Yield curve inverted (-0.84). Favor short duration; avoid long-maturity bonds.",
+      "message": "Yield curve inverted (-0.85). Favor short duration; avoid long-maturity bonds.",
       "direction": "CAUTION"
     }
   ],
@@ -28,57 +28,9 @@
       "reasoning": "SHY: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
       "credit_tier": "TREASURY",
       "segment": "duration",
-      "opportunity_score": 78,
-      "verdict": "BUY",
-      "credit_score": 78,
-      "position_size_usd": 5000.0
-    },
-    {
-      "ticker": "VCSH",
-      "conviction": 4,
-      "action": "BUY",
-      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=306.0bps IG spread=100.0bps | thesis=spread compression play",
-      "credit_tier": "IG",
-      "segment": "credit_spread",
       "opportunity_score": 77,
       "verdict": "BUY",
       "credit_score": 77,
-      "position_size_usd": 5000.0
-    },
-    {
-      "ticker": "IGSB",
-      "conviction": 3,
-      "action": "BUY",
-      "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=100.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
-      "credit_tier": "IG",
-      "segment": "investment_grade",
-      "opportunity_score": 76,
-      "verdict": "BUY",
-      "credit_score": 76,
-      "position_size_usd": 5000.0
-    },
-    {
-      "ticker": "SLQD",
-      "conviction": 3,
-      "action": "BUY",
-      "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=100.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
-      "credit_tier": "IG",
-      "segment": "investment_grade",
-      "opportunity_score": 76,
-      "verdict": "BUY",
-      "credit_score": 76,
-      "position_size_usd": 5000.0
-    },
-    {
-      "ticker": "VCIT",
-      "conviction": 4,
-      "action": "BUY",
-      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=306.0bps IG spread=100.0bps | thesis=spread compression play",
-      "credit_tier": "IG",
-      "segment": "credit_spread",
-      "opportunity_score": 75,
-      "verdict": "BUY",
-      "credit_score": 75,
       "position_size_usd": 5000.0
     },
     {
@@ -88,9 +40,57 @@
       "reasoning": "BIL: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
       "credit_tier": "T_BILL",
       "segment": "duration",
+      "opportunity_score": 77,
+      "verdict": "BUY",
+      "credit_score": 77,
+      "position_size_usd": 5000.0
+    },
+    {
+      "ticker": "VCSH",
+      "conviction": 4,
+      "action": "BUY",
+      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=299.0bps IG spread=99.0bps | thesis=spread compression play",
+      "credit_tier": "IG",
+      "segment": "credit_spread",
       "opportunity_score": 74,
       "verdict": "BUY",
       "credit_score": 74,
+      "position_size_usd": 3750.0
+    },
+    {
+      "ticker": "IGSB",
+      "conviction": 3,
+      "action": "BUY",
+      "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=99.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
+      "credit_tier": "IG",
+      "segment": "investment_grade",
+      "opportunity_score": 73,
+      "verdict": "BUY",
+      "credit_score": 73,
+      "position_size_usd": 3750.0
+    },
+    {
+      "ticker": "SLQD",
+      "conviction": 3,
+      "action": "BUY",
+      "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=99.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
+      "credit_tier": "IG",
+      "segment": "investment_grade",
+      "opportunity_score": 73,
+      "verdict": "BUY",
+      "credit_score": 73,
+      "position_size_usd": 3750.0
+    },
+    {
+      "ticker": "VCIT",
+      "conviction": 4,
+      "action": "BUY",
+      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=299.0bps IG spread=99.0bps | thesis=spread compression play",
+      "credit_tier": "IG",
+      "segment": "credit_spread",
+      "opportunity_score": 69,
+      "verdict": "BUY",
+      "credit_score": 69,
       "position_size_usd": 3750.0
     },
     {
@@ -100,85 +100,13 @@
       "reasoning": "IEF: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
       "credit_tier": "TREASURY",
       "segment": "duration",
-      "opportunity_score": 73,
+      "opportunity_score": 69,
       "verdict": "BUY",
-      "credit_score": 73,
-      "position_size_usd": 3750.0
-    },
-    {
-      "ticker": "IGIB",
-      "conviction": 4,
-      "action": "BUY",
-      "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=306.0bps IG spread=100.0bps | thesis=spread compression play",
-      "credit_tier": "IG",
-      "segment": "credit_spread",
-      "opportunity_score": 71,
-      "verdict": "BUY",
-      "credit_score": 71,
-      "position_size_usd": 3750.0
-    },
-    {
-      "ticker": "USIG",
-      "conviction": 4,
-      "action": "BUY",
-      "reasoning": "USIG: investment_grade credit spread opportunity | regime=NORMAL | HY spread=306.0bps IG spread=100.0bps | thesis=spread compression play",
-      "credit_tier": "IG",
-      "segment": "credit_spread",
-      "opportunity_score": 71,
-      "verdict": "BUY",
-      "credit_score": 71,
-      "position_size_usd": 3750.0
-    },
-    {
-      "ticker": "IGLB",
-      "conviction": 3,
-      "action": "BUY",
-      "reasoning": "IGLB: IG credit | regime=NORMAL | IG spread=100.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
-      "credit_tier": "IG",
-      "segment": "investment_grade",
-      "opportunity_score": 71,
-      "verdict": "BUY",
-      "credit_score": 71,
-      "position_size_usd": 3750.0
-    },
-    {
-      "ticker": "IGOV",
-      "conviction": 3,
-      "action": "BUY",
-      "reasoning": "IGOV: duration play | 10yr=4.5% | regime=NORMAL | long_dur=False | thesis=rate positioning",
-      "credit_tier": "IG",
-      "segment": "duration",
-      "opportunity_score": 71,
-      "verdict": "BUY",
-      "credit_score": 71,
-      "position_size_usd": 3750.0
-    },
-    {
-      "ticker": "BIG",
-      "conviction": 2,
-      "action": "WATCH",
-      "reasoning": "BIG: distressed/stressed | regime=NORMAL | HY spread=306.0bps | thesis=asset coverage > default implied probability",
-      "credit_tier": "IG",
-      "segment": "distressed",
-      "opportunity_score": 71,
-      "verdict": "BUY",
-      "credit_score": 71,
-      "position_size_usd": 3750.0
-    },
-    {
-      "ticker": "SHYG",
-      "conviction": 3,
-      "action": "BUY",
-      "reasoning": "SHYG: high-yield credit | regime=NORMAL | HY spread=306.0bps | thesis=spread compression, carry capture",
-      "credit_tier": "HY",
-      "segment": "high_yield",
-      "opportunity_score": 68,
-      "verdict": "BUY",
-      "credit_score": 68,
+      "credit_score": 69,
       "position_size_usd": 3750.0
     }
   ],
-  "total_picks": 13,
+  "total_picks": 7,
   "agent_results": [
     {
       "agent": "FICreditSpreadAgent",

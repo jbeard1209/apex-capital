@@ -1,6 +1,6 @@
 {
   "created_at": "2026-05-14T20:15:00.000000",
-  "last_updated": "2026-06-13T00:03:28.817633",
+  "last_updated": "2026-06-18T22:00:32.040317",
   "rebalancing_policy": "compound",
   "reserve": {
     "balance": 10000.0,
@@ -133,8 +133,8 @@
       "name": "Macro / ETF Rotation",
       "strategy": "Sector ETF rotation based on R&D sector breadth scores, VIX regime, and SPY RSI. Holds top 3-4 sector ETFs, rebalances monthly. ETFs: XLK, XLE, XLF, XLU, XLP, XLV, XLI, GLD, TLT, QQQ.",
       "budget_inception": 30000.0,
-      "cash_balance": 5199.31,
-      "positions_value": 24800.69,
+      "cash_balance": 5174.25,
+      "positions_value": 24825.75,
       "total_value": 30000.0,
       "pnl_today": 0.0,
       "pnl_lifetime": 0.0,
@@ -163,13 +163,13 @@
           "signal_source": "etf_pod_board",
           "opened_at": "2026-06-09T20:51:17.334576"
         },
-        "XLF": {
-          "qty": 125,
-          "avg_entry": 53.34,
-          "current_price": 53.34,
+        "XLI": {
+          "qty": 37,
+          "avg_entry": 180.88,
+          "current_price": 180.88,
           "side": "long",
           "signal_source": "etf_pod_board",
-          "opened_at": "2026-06-13T00:03:28.817633"
+          "opened_at": "2026-06-18T22:00:32.040317"
         }
       },
       "budget": 30000.0

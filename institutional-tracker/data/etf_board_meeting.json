@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-06-18T00:00:00.891534",
+  "generated_at": "2026-06-19T00:00:00.852602",
   "pod": "pod3_macro",
   "meeting_type": "ETF Pod 3 Board Meeting",
   "final_vote": "APPROVED",
   "target_etfs": [
     "XLK",
     "QQQ",
-    "XLF"
+    "XLI"
   ],
   "regime": {
     "regime_label": "bull",
     "bull": true,
     "bear": false,
-    "vix": 16.9,
-    "spy_rsi": 47.7,
+    "vix": 17.2,
+    "spy_rsi": 44.7,
     "overbought": false,
     "warning_count": 1,
     "rising_rates": false,
@@ -26,12 +26,12 @@
       "Healthcare",
       "Consumer Discretionary"
     ],
-    "spy_1d_return": -1.2488,
+    "spy_1d_return": 0.7801,
     "canary_warning": null
   },
   "canary_alerts": null,
   "pod_state_at_meeting": {
-    "cash_balance": 5199.31,
+    "cash_balance": 5174.25,
     "total_value": 30000.0,
     "n_positions": 4
   },
@@ -42,25 +42,25 @@
         "recommended_etfs": [
           "XLK",
           "QQQ",
-          "XLF"
+          "XLI"
         ],
         "bear_mode": false,
         "overbought_mode": false,
         "momentum_scores": {
-          "XLK": 10.8145,
-          "QQQ": 5.4899,
-          "XLF": 4.5044,
-          "XLI": 3.4939,
-          "XLB": 1.9385,
-          "TLT": 1.1108,
-          "XLV": 0.8744,
-          "XLY": -1.5255,
-          "XLP": -2.1374,
-          "XLU": -2.9132,
-          "XLE": -9.0742,
-          "GLD": -10.9552
+          "XLK": 13.9546,
+          "QQQ": 8.1816,
+          "XLI": 4.9132,
+          "XLF": 4.1161,
+          "XLB": 3.0766,
+          "TLT": 1.7022,
+          "XLY": 0.5888,
+          "XLV": -0.2967,
+          "XLP": -2.3765,
+          "XLU": -2.5551,
+          "GLD": -9.4105,
+          "XLE": -11.2022
         },
-        "reasoning": "BULL regime (VIX=16.9, SPY_RSI=47.7). Picking top 3 by momentum score. Top 3: [('XLK', 10.81), ('QQQ', 5.49), ('XLF', 4.5)]",
+        "reasoning": "BULL regime (VIX=17.2, SPY_RSI=44.7). Picking top 3 by momentum score. Top 3: [('XLK', 13.95), ('QQQ', 8.18), ('XLI', 4.91)]",
         "risk_flags": [],
         "vote": "APPROVE"
       },
@@ -69,7 +69,7 @@
         "recommended_etfs": [
           "XLK",
           "QQQ",
-          "XLF"
+          "XLI"
         ],
         "risk_flags": [
           "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"
@@ -84,11 +84,11 @@
         "recommended_etfs": [
           "XLK",
           "QQQ",
-          "XLF"
+          "XLI"
         ],
         "risk_flags": [],
         "sizing_note": "Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
-        "reasoning": "Diversification OK: 2 distinct asset classes across 3 ETFs. R&D alignment: ['XLK', 'XLF'] have strong R&D sector scores (>=7/10). Historical analogue 'Post-GFC Bull (2013\u20132015)' confirms rotation: sectors ['Technology', 'Healthcare', 'Consumer Discretionary'] led in that regime \u2014 overlap with our picks. Sizing: Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
+        "reasoning": "Diversification OK: 2 distinct asset classes across 3 ETFs. R&D alignment: ['XLK', 'XLI'] have strong R&D sector scores (>=7/10). Historical analogue 'Post-GFC Bull (2013\u20132015)' confirms rotation: sectors ['Technology', 'Healthcare', 'Consumer Discretionary'] led in that regime \u2014 overlap with our picks. Sizing: Momentum gap >3pts: overweight XLK at ~40%, equal-weight remaining at ~30% each.",
         "analogue_match": true,
         "vote": "APPROVE"
       },
@@ -97,16 +97,16 @@
         "target_etfs": [
           "XLK",
           "QQQ",
-          "XLF"
+          "XLI"
         ],
         "notes": [
-          "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLF']"
+          "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLI']"
         ]
       }
     }
   },
   "reconciliation_notes": [
-    "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLF']"
+    "Director + Strategist majority: ETF list = ['XLK', 'QQQ', 'XLI']"
   ],
   "risk_flags": [
     "GEO RISK: Geopolitical flags on proposed ETFs: ['XLK', 'QQQ']"

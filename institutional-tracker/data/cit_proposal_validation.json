@@ -1,66 +1,38 @@
 {
-  "generated_at": "2026-06-18T01:00:03.574321",
-  "proposals_reviewed": 9,
+  "generated_at": "2026-06-19T01:00:04.148529",
+  "proposals_reviewed": 5,
   "backtester_available": true,
   "validation_log": [
     {
       "id": "CIT-2026-468",
-      "title": "Replace fixed R&D cadence with event-triggered research cycles",
-      "category": "VISION",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "CIT-2026-470",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260617160037",
-      "title": "[LTIA] Reconcile contradicting risk signals: Canary=ORANGE but 16 positions still ope",
-      "category": "IMPROVEMENT",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LTIA-20260617160037",
-      "title": "[LTIA] Governance action: CRO=HIGH for 12 cycles (48 days) \u2014 board must vote",
-      "category": "IMPROVEMENT",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LTIA-20260617160037",
-      "title": "[LTIA] CRO extended block needs a vote with explicit exit criteria",
-      "category": "IMPROVEMENT",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "LTIA-20260617160037",
+      "id": "LTIA-20260619000000",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260617160037",
+      "id": "LTIA-20260619000000",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260617160037",
+      "id": "LTIA-20260619000000",
       "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260617160037",
+      "id": "LTIA-20260619000000",
       "title": "[LTIA] Expected agents silent \u2014 check they're still running",
       "category": "IMPROVEMENT",
       "pre_validated": false,

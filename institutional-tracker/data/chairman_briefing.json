@@ -1,390 +1,6 @@
 {
   "entries": [
     {
-      "ts": "2026-06-10T04:25:33.060030",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97776.21,
-      "pnl_vs_start": -2223.7899999999936,
-      "canary": "GREEN",
-      "cro_level": "HIGH",
-      "picks_today": 0,
-      "anomalies": 6,
-      "items": [
-        {
-          "severity": "HIGH",
-          "title": "CRO=HIGH for 17 cycles (68 days) \u2014 board must vote",
-          "agent": "GovernanceLogicAgent",
-          "short": "The CRO has been at HIGH for 17 consecutive pipeline cycles (~68 days). During this time, all new buy orders have been b"
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "Board has not met in 999 days despite 3 IRM flags",
-          "agent": "GovernanceLogicAgent",
-          "short": "Last board meeting was 999 days ago. The IRM has 3 active red flag(s). These should have triggered a board session."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T09:59:39.559635",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97921.1,
-      "pnl_vs_start": -2078.899999999994,
-      "canary": "GREEN",
-      "cro_level": "HIGH",
-      "picks_today": 0,
-      "anomalies": 6,
-      "items": [
-        {
-          "severity": "HIGH",
-          "title": "CRO=HIGH for 18 cycles (72 days) \u2014 board must vote",
-          "agent": "GovernanceLogicAgent",
-          "short": "The CRO has been at HIGH for 18 consecutive pipeline cycles (~72 days). During this time, all new buy orders have been b"
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "Board has not met in 999 days despite 3 IRM flags",
-          "agent": "GovernanceLogicAgent",
-          "short": "Last board meeting was 999 days ago. The IRM has 3 active red flag(s). These should have triggered a board session."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T09:59:39.577342",
-      "date": "2026-06-10",
-      "source": "Logic Officer",
-      "portfolio": 97921.1,
-      "pnl_vs_start": -2078.899999999994,
-      "canary": "GREEN",
-      "cro_level": "HIGH",
-      "picks_today": 0,
-      "anomalies": 2,
-      "items": [
-        {
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 18 cycles \u2014 no board review",
-          "short": "The CRO has been at HIGH for 18 consecutive cycles (roughly 72 days). During this entire period, all new buy orders have been blocked or severely rest"
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T10:20:12.946820",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97880.11,
-      "pnl_vs_start": -2119.8899999999994,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 5,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "Board has not met in 999 days despite 3 IRM flags",
-          "agent": "GovernanceLogicAgent",
-          "short": "Last board meeting was 999 days ago. The IRM has 3 active red flag(s). These should have triggered a board session."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T10:20:12.965434",
-      "date": "2026-06-10",
-      "source": "Logic Officer",
-      "portfolio": 97880.11,
-      "pnl_vs_start": -2119.8899999999994,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 1,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T10:42:17.200339",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97924.13,
-      "pnl_vs_start": -2075.8699999999953,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 4,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T10:42:17.262129",
-      "date": "2026-06-10",
-      "source": "Logic Officer",
-      "portfolio": 97924.13,
-      "pnl_vs_start": -2075.8699999999953,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 1,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T11:03:37.098823",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97808.48,
-      "pnl_vs_start": -2191.520000000004,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 4,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T11:03:37.116455",
-      "date": "2026-06-10",
-      "source": "Logic Officer",
-      "portfolio": 97808.48,
-      "pnl_vs_start": -2191.520000000004,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 1,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T11:24:58.970604",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97621.8,
-      "pnl_vs_start": -2378.199999999997,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 4,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T11:24:58.997530",
-      "date": "2026-06-10",
-      "source": "Logic Officer",
-      "portfolio": 97621.8,
-      "pnl_vs_start": -2378.199999999997,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 1,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-10T11:46:55.369999",
-      "date": "2026-06-10",
-      "source": "Logic Team",
-      "portfolio": 97687.65,
-      "pnl_vs_start": -2312.350000000006,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 4,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "LOW",
-          "title": "Key sectors with no active research agent: Energy",
-          "agent": "AgentHealthLogicAgent",
-          "short": "The following important sectors have no active research agent: Energy."
-        }
-      ]
-    },
-    {
       "ts": "2026-06-10T11:46:55.385276",
       "date": "2026-06-10",
       "source": "Logic Officer",
@@ -3081,6 +2697,397 @@
       "source": "Logic Officer",
       "portfolio": 98593.76,
       "pnl_vs_start": -1406.2400000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T12:00:00.973368",
+      "date": "2026-06-18",
+      "source": "Logic Team",
+      "portfolio": 98593.76,
+      "pnl_vs_start": -1406.2400000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 382 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 382 entries, 382 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T12:01:57.588383",
+      "date": "2026-06-18",
+      "source": "Logic Team",
+      "portfolio": 98669.54,
+      "pnl_vs_start": -1330.4600000000064,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 382 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 382 entries, 382 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T12:01:57.641143",
+      "date": "2026-06-18",
+      "source": "Logic Officer",
+      "portfolio": 98669.54,
+      "pnl_vs_start": -1330.4600000000064,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T13:45:35.006351",
+      "date": "2026-06-18",
+      "source": "Logic Team",
+      "portfolio": 98543.94,
+      "pnl_vs_start": -1456.0599999999977,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 382 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 382 entries, 382 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T13:45:35.065911",
+      "date": "2026-06-18",
+      "source": "Logic Officer",
+      "portfolio": 98543.94,
+      "pnl_vs_start": -1456.0599999999977,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T16:03:26.484300",
+      "date": "2026-06-18",
+      "source": "Logic Team",
+      "portfolio": 98553.62,
+      "pnl_vs_start": -1446.3800000000047,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 405 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 405 entries, 405 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T16:03:26.552859",
+      "date": "2026-06-18",
+      "source": "Logic Officer",
+      "portfolio": 98553.62,
+      "pnl_vs_start": -1446.3800000000047,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T18:00:33.842047",
+      "date": "2026-06-18",
+      "source": "Logic Team",
+      "portfolio": 98618.27,
+      "pnl_vs_start": -1381.729999999996,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 405 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 405 entries, 405 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-18T18:00:33.899069",
+      "date": "2026-06-18",
+      "source": "Logic Officer",
+      "portfolio": 98618.27,
+      "pnl_vs_start": -1381.729999999996,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 1,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-19T00:00:00.951730",
+      "date": "2026-06-19",
+      "source": "Logic Team",
+      "portfolio": 98618.27,
+      "pnl_vs_start": -1381.729999999996,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 375 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 375 entries, 375 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-19T00:01:46.260252",
+      "date": "2026-06-19",
+      "source": "Logic Team",
+      "portfolio": 98545.05,
+      "pnl_vs_start": -1454.949999999997,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 375 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 375 entries, 375 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-19T00:01:46.317331",
+      "date": "2026-06-19",
+      "source": "Logic Officer",
+      "portfolio": 98545.05,
+      "pnl_vs_start": -1454.949999999997,
       "canary": "GREEN",
       "cro_level": "ELEVATED",
       "picks_today": 0,

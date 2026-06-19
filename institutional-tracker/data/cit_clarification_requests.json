@@ -4827,7 +4827,9 @@
     "source": "deputy_board",
     "round": 3,
     "question": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T10:00:00.903976",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 158 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 210/30): paper_day=210/30 in state.json. Fixed-window evaluation ends in -180 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 64h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-15 (64h ago). Canary fired 158 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
   },
   {
     "id": "CLR-36C523",
@@ -4838,7 +4840,9 @@
     "source": "deputy_board",
     "round": 3,
     "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T10:00:00.903976",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 158 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 210/30): paper_day=210/30 in state.json. Fixed-window evaluation ends in -180 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 64h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-15 (64h ago). Canary fired 158 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
   },
   {
     "id": "CLR-F22C31",
@@ -4849,7 +4853,9 @@
     "source": "deputy_board",
     "round": 3,
     "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T10:00:00.903976",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 158 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 210/30): paper_day=210/30 in state.json. Fixed-window evaluation ends in -180 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 64h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-15 (64h ago). Canary fired 158 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
   },
   {
     "id": "CLR-6093B5",
@@ -4860,7 +4866,9 @@
     "source": "deputy_board",
     "round": 3,
     "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T10:00:00.903976",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
   },
   {
     "id": "CLR-DC7DA9",
@@ -4871,7 +4879,9 @@
     "source": "deputy_board",
     "round": 3,
     "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-    "status": "PENDING"
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T10:00:00.903976",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
   },
   {
     "id": "CLR-BE20FC",
@@ -4882,7 +4892,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-40CB83",
@@ -4893,7 +4903,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-F99842",
@@ -4904,7 +4914,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-7DCDB9",
@@ -4915,7 +4925,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-897DD8",
@@ -4926,7 +4936,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-4B6E18",
@@ -4937,7 +4947,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-4FA57F",
@@ -4948,7 +4958,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-E1A312",
@@ -4959,7 +4969,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-05C79E",
@@ -4970,7 +4980,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-63C95E",
@@ -4981,7 +4991,7 @@
     "source": "deputy_board",
     "round": 1,
     "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-68B71B",
@@ -4992,13 +5002,568 @@
     "source": "deputy_board",
     "round": 1,
     "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-    "status": "PENDING"
+    "status": "STALE"
   },
   {
     "id": "CLR-ACBAE3",
     "ts": "2026-06-18T01:00:10.235026",
     "proposal_id": "LTIA-20260617160037",
     "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-9A44F0",
+    "ts": "2026-06-18T16:00:17.155629",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-6AA536",
+    "ts": "2026-06-18T16:00:17.155629",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-98F887",
+    "ts": "2026-06-18T16:00:17.155629",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-2B2A25",
+    "ts": "2026-06-18T16:00:17.155629",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-B28A80",
+    "ts": "2026-06-18T16:00:17.155629",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-80DCF5",
+    "ts": "2026-06-18T16:00:17.155629",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-06E052",
+    "ts": "2026-06-18T16:00:17.170441",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-7A1F73",
+    "ts": "2026-06-18T16:00:17.170441",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-977FB6",
+    "ts": "2026-06-18T16:00:17.170441",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-D061F4",
+    "ts": "2026-06-18T16:00:17.170441",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-528050",
+    "ts": "2026-06-18T16:00:17.170441",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-34BAF9",
+    "ts": "2026-06-18T16:00:17.170441",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-1F1916",
+    "ts": "2026-06-18T16:00:17.184713",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-CBCA8F",
+    "ts": "2026-06-18T16:00:17.184713",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+  },
+  {
+    "id": "CLR-AE37F0",
+    "ts": "2026-06-18T16:00:17.198583",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+  },
+  {
+    "id": "CLR-E309B1",
+    "ts": "2026-06-18T16:00:17.198583",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+  },
+  {
+    "id": "CLR-BE3CEF",
+    "ts": "2026-06-18T16:00:17.198583",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-18T22:00:00.732243",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+  },
+  {
+    "id": "CLR-E03852",
+    "ts": "2026-06-18T22:00:10.261755",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-EC6406",
+    "ts": "2026-06-18T22:00:10.261755",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-0CECAF",
+    "ts": "2026-06-18T22:00:10.261755",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-44543E",
+    "ts": "2026-06-18T22:00:10.261755",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-E3FBD3",
+    "ts": "2026-06-18T22:00:10.261755",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-22F3B3",
+    "ts": "2026-06-18T22:00:10.261755",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-BE0747",
+    "ts": "2026-06-18T22:00:10.277596",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-506B86",
+    "ts": "2026-06-18T22:00:10.277596",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-DDF12E",
+    "ts": "2026-06-18T22:00:10.277596",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-C5B0AA",
+    "ts": "2026-06-18T22:00:10.277596",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-0741AB",
+    "ts": "2026-06-18T22:00:10.277596",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-0E7E48",
+    "ts": "2026-06-18T22:00:10.277596",
+    "proposal_id": "LTIA-20260618134535",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "STALE"
+  },
+  {
+    "id": "CLR-0D079D",
+    "ts": "2026-06-18T22:00:10.360946",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-19T01:00:01.113809",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+  },
+  {
+    "id": "CLR-C29FD1",
+    "ts": "2026-06-18T22:00:10.360946",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 2,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "ANSWERED",
+    "answered_at": "2026-06-19T01:00:01.113809",
+    "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+  },
+  {
+    "id": "CLR-F11C6F",
+    "ts": "2026-06-19T01:00:10.764197",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-C79546",
+    "ts": "2026-06-19T01:00:10.764197",
+    "proposal_id": "CIT-2026-468",
+    "proposal_title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 3,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-CA8D29",
+    "ts": "2026-06-19T01:00:10.780855",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-CDB7BD",
+    "ts": "2026-06-19T01:00:10.780855",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-054B02",
+    "ts": "2026-06-19T01:00:10.780855",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-837C39",
+    "ts": "2026-06-19T01:00:10.780855",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-72455D",
+    "ts": "2026-06-19T01:00:10.780855",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-48F5CA",
+    "ts": "2026-06-19T01:00:10.780855",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-949313",
+    "ts": "2026-06-19T01:00:10.796865",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Manager",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-03BB70",
+    "ts": "2026-06-19T01:00:10.796865",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CRO",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-E5AF7D",
+    "ts": "2026-06-19T01:00:10.796865",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-7E8B60",
+    "ts": "2026-06-19T01:00:10.796865",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Chief of Staff",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-554798",
+    "ts": "2026-06-19T01:00:10.796865",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy R&D Leader",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-8EDF5C",
+    "ts": "2026-06-19T01:00:10.796865",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "requesting_deputy": "Deputy Operations Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-26285C",
+    "ts": "2026-06-19T01:00:10.812404",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "requesting_deputy": "Deputy CIT Director",
+    "source": "deputy_board",
+    "round": 1,
+    "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+    "status": "PENDING"
+  },
+  {
+    "id": "CLR-E04863",
+    "ts": "2026-06-19T01:00:10.812404",
+    "proposal_id": "LTIA-20260619000000",
+    "proposal_title": "[LTIA] Expected agents silent \u2014 check they're still running",
     "requesting_deputy": "Deputy Operations Director",
     "source": "deputy_board",
     "round": 1,
