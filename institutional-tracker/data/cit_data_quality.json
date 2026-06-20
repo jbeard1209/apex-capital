@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-19T01:00:04.146665",
+  "generated_at": "2026-06-20T01:00:04.092953",
   "total_findings": 3,
   "findings": [
     {
@@ -30,7 +30,7 @@
       "severity": "HIGH",
       "confidence": 90,
       "title": "yfinance beat_rate coverage restored: 100% of sample tickers",
-      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 42 day(s).",
+      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 43 day(s).",
       "proposed_fix": "Re-enable beat_rate in earnings_predictor.py and remove the MEDIUM known-gap finding.",
       "auto_implementable": false
     }

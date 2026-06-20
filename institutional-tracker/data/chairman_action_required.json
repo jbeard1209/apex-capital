@@ -1,21 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260616-18-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 16, 2026\" \u00d710; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:F | Jun 16, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-16T18:50:00.905463",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260616-20-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 16, 2026\" \u00d711; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:F | Jun 16, 2026\" \u00d76",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-16T20:50:01.092363",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "CIT-2026-435",
     "title": "36 ERROR lines \u2014 dominant: `fe_pipeline`",
     "category": "BUG_FIX",
@@ -183,6 +167,22 @@
     "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 18, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:F | Jun 18, 2026\" \u00d75",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-18T20:50:00.777544",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260619-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 19, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-19T16:50:01.214874",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260619-18-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 19, 2026\" \u00d75; \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 19, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-19T18:50:01.156354",
     "status": "awaiting_chairman"
   }
 ]

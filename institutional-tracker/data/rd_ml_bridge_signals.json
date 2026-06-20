@@ -1,18 +1,18 @@
 {
-  "updated_at": "2026-06-18T23:45:00.617333+00:00",
-  "rd_run_at": "2026-06-18T19:16:08.292520",
+  "updated_at": "2026-06-19T23:45:00.586459+00:00",
+  "rd_run_at": "2026-06-19T19:16:07.234635",
   "n_tickers": 18,
   "regime": {
     "rd_regime_bull": 1,
     "rd_regime_bear": 0,
-    "rd_vix": 16.4,
+    "rd_vix": 16.8,
     "rd_vix_high": 0,
-    "rd_spy_rsi": 44.9,
+    "rd_spy_rsi": 46.0,
     "rd_spy_overbought": 0,
     "rd_rising_rates": 0,
     "rd_momentum_late": 0,
     "rd_warning_count": 1,
-    "rd_spy_pct_vs_200ma": 8.82
+    "rd_spy_pct_vs_200ma": 9.09
   },
   "tickers": {
     "RTX": {

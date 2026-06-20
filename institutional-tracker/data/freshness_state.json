@@ -18,8 +18,7 @@
     "status": "OK"
   },
   "data/premarket_alerts.json": {
-    "status": "STALE",
-    "last_action": "2026-06-18T19:15:01.050493"
+    "status": "OK"
   },
   "data/hr_report.json": {
     "status": "OK"
@@ -62,7 +61,7 @@
   },
   "data/data_quality_report.json": {
     "status": "STALE",
-    "last_action": "2026-06-18T21:15:01.072735"
+    "last_action": "2026-06-19T10:15:00.301413"
   },
   "heartbeat": {
     "status": "OK"

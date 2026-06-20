@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-18T23:30:00.398514",
+  "generated_at": "2026-06-19T23:30:01.022939",
   "agent": "ETF Research Agent",
   "etf_universe": [
     "XLK",
@@ -24,12 +24,12 @@
     "regime_label": "bull",
     "bull": true,
     "bear": false,
-    "vix": 17.2,
-    "spy_rsi": 44.7,
+    "vix": 16.8,
+    "spy_rsi": 46.0,
     "overbought": false,
     "warning_count": 1,
     "rising_rates": false,
-    "momentum_phase": "bear/recovery",
+    "momentum_phase": "early-bull",
     "defensive_rotation_advised": false,
     "historical_analogue": "Post-GFC Bull (2013\u20132015)",
     "analogue_lesson": "Momentum and institutional-follow both fired together. High conviction tech picks significantly outperformed. Following the biggest institutional buyers was highly profitable.",
@@ -38,7 +38,7 @@
       "Healthcare",
       "Consumer Discretionary"
     ],
-    "spy_1d_return": 0.7801
+    "spy_1d_return": 1.0397
   },
   "etfs": {
     "XLK": {

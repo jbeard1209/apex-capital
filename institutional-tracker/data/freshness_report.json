@@ -1,23 +1,16 @@
 {
-  "generated_at": "2026-06-18T21:15:01.072735",
+  "generated_at": "2026-06-19T21:15:00.452478",
   "agent": "Freshness Sentinel",
   "checked": 21,
-  "ok": 19,
-  "stale": 2,
+  "ok": 20,
+  "stale": 1,
   "auto_fixed": [],
   "issues": [
     {
-      "item": "data/premarket_alerts.json",
-      "status": "STALE",
-      "detail": "33h old (budget 30h)",
-      "critical": false
-    },
-    {
       "item": "data/data_quality_report.json",
       "status": "STALE",
-      "detail": "145h old (budget 54h)",
-      "critical": false,
-      "new_alert": true
+      "detail": "169h old (budget 54h)",
+      "critical": false
     }
   ],
   "overall": "DEGRADED"
