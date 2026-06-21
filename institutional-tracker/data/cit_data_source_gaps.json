@@ -2,26 +2,6 @@
   "first_detected": "2026-05-07T08:31:28.073487",
   "history": [
     {
-      "ts": "2026-06-12T01:04:32.288909",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-12T07:57:33.898219",
-      "beat_rate_coverage_pct": 80,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-12T08:27:54.044785",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-06-12T17:41:20.405051",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
       "ts": "2026-06-12T17:43:23.812001",
       "beat_rate_coverage_pct": 100,
       "sample_size": 5
@@ -298,6 +278,26 @@
     },
     {
       "ts": "2026-06-20T01:00:04.091567",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-20T10:00:03.885194",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-20T16:00:04.014919",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-20T22:00:04.451907",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-06-21T01:00:03.532706",
       "beat_rate_coverage_pct": 100,
       "sample_size": 5
     }
