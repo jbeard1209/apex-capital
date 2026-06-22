@@ -2546,6 +2546,11 @@ def _triage_attention(intel: dict, health: dict) -> list[dict]:
                       "requires_chairman": True,
                       "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
 
+    if health["risk_level"] == "ELEVATED":
+        items.append({"priority": "HIGH", "category": "RISK",
+                      "requires_chairman": True,
+                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})
+
     if health["manager_grade"] in ("D", "F"):
         items.append({"priority": "HIGH", "category": "PERFORMANCE",
                       "requires_chairman": True,

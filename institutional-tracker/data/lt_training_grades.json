@@ -1,5 +1,5 @@
 {
-  "last_training": "2026-06-14T05:03:43.905785",
+  "last_training": "2026-06-21T05:00:01.402228",
   "scenarios_run": 22,
   "grades": {
     "PipelineLogicAgent": "A",
@@ -8,7 +8,7 @@
     "PerformanceLogicAgent": "A",
     "AgentHealthLogicAgent": "A",
     "StrategyLogicAgent": "A",
-    "MLLogicAgent": "F",
+    "MLLogicAgent": "A",
     "DataIntegrityLogicAgent": "A",
     "CommunicationLogicAgent": "A",
     "RiskCoherenceLogicAgent": "A",
@@ -59,11 +59,11 @@
       "score": 18
     },
     "MLLogicAgent": {
-      "grade": "F",
+      "grade": "A",
       "passes": 2,
       "misses": 0,
-      "fp": 1,
-      "score": 1
+      "fp": 0,
+      "score": 2
     },
     "DataIntegrityLogicAgent": {
       "grade": "A",
@@ -103,15 +103,15 @@
   },
   "weakest_agents": [
     [
-      "MLLogicAgent",
-      "F"
-    ],
-    [
       "PipelineLogicAgent",
       "A"
     ],
     [
       "CapitalLogicAgent",
+      "A"
+    ],
+    [
+      "GovernanceLogicAgent",
       "A"
     ]
   ]

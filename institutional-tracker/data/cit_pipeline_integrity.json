@@ -1,5 +1,18 @@
 {
-  "checked_at": "2026-06-21T02:50:00.897309",
-  "issues": [],
-  "healthy": true
+  "checked_at": "2026-06-22T02:50:00.995407",
+  "issues": [
+    {
+      "severity": "HIGH",
+      "check": "deadmans_switch_sanity",
+      "message": "pipeline_heartbeat.json is 54.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+      "auto_fixed": false
+    },
+    {
+      "severity": "MEDIUM",
+      "check": "agent_file_freshness",
+      "message": "1 agent output file(s) are >26h old and no recovery appears in progress: risk_bulletin.json (30h)",
+      "auto_fixed": false
+    }
+  ],
+  "healthy": false
 }

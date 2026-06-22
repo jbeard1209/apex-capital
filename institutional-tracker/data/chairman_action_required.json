@@ -1,45 +1,5 @@
 [
   {
-    "id": "LT-134535-cro_paralysis",
-    "title": "CRO at HIGH for 48+ days \u2014 firm has no buy strategy",
-    "category": "IMPROVEMENT",
-    "description": "The CRO has blocked all buys for 12 cycles (~48 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
-    "confidence": 88,
-    "status": "awaiting_chairman",
-    "times_approved": 2,
-    "queued_at": "2026-06-17T13:45:36.853378"
-  },
-  {
-    "id": "LTIA-20260617134535",
-    "title": "[LTIA] Governance action: CRO=HIGH for 12 cycles (48 days) \u2014 board must vote",
-    "category": "IMPROVEMENT",
-    "description": "Governance check failed: 'CRO=HIGH for 12 cycles (48 days) \u2014 board must vote' (open 0d, 1x).",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 2,
-    "queued_at": "2026-06-17T13:45:36.853378"
-  },
-  {
-    "id": "LTIA-20260617134535",
-    "title": "[LTIA] CRO extended block needs a vote with explicit exit criteria",
-    "category": "IMPROVEMENT",
-    "description": "CRO paralysis: 'CRO at HIGH for 48+ days \u2014 firm has no buy strategy'. A perpetual buy-block with no exit condition is a strategy vacuum.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 2,
-    "queued_at": "2026-06-17T13:45:36.853378"
-  },
-  {
-    "id": "LO-20260617134535-extended_cro_high_no_review",
-    "title": "CRO has been at HIGH for 12 cycles \u2014 no board review",
-    "category": "IMPROVEMENT",
-    "description": "The CRO has been at HIGH for 12 consecutive cycles (roughly 48 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-    "confidence": 90,
-    "status": "awaiting_chairman",
-    "times_approved": 2,
-    "queued_at": "2026-06-17T13:45:36.853378"
-  },
-  {
     "id": "pip-integrity-20260617-14-email_loop_detection",
     "severity": "HIGH",
     "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 17, 2026\" \u00d711; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:F | Jun 17, 2026\" \u00d718",
@@ -177,6 +137,38 @@
     "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 20, 2026\" \u00d76",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-20T20:50:01.138129",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260621-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 21, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-21T16:50:00.843921",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260621-18-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 21, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-21T18:50:00.276401",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-00-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 52.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T00:50:01.245059",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-02-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 54.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T02:50:00.995407",
     "status": "awaiting_chairman"
   }
 ]

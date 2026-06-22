@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-20T21:15:00.667822",
+  "generated_at": "2026-06-21T21:15:00.614872",
   "agent": "Freshness Sentinel",
   "checked": 21,
   "ok": 9,
@@ -9,7 +9,7 @@
     {
       "item": "data/data_quality_report.json",
       "status": "STALE",
-      "detail": "193h old (budget 54h)",
+      "detail": "217h old (budget 54h)",
       "critical": false
     }
   ],

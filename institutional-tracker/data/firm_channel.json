@@ -3014,5 +3014,429 @@
     "category": "PIPELINE_ALERT",
     "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
     "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T05:01:08.310062",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 18 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Materials, Regional Banks. Top picks: RTX, ETN, FCX, ECL, HBAN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T05:01:08.320313",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=64  1M=+6.0%  3M=+12.2%\n  \u2022 Materials                      score=12/12  trend=bullish   RSI=54  1M=+4.2%  3M=+10.8%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+3.7%  3M=+14.4%\n  \u2022 Retail                         score=12/12  trend=bullish   RSI=60  1M=+6.7%  3M=+10.1%\n  \u2022 Technology                     score=11/12  trend=bullish   RSI=50  1M=+8.1%  3M=+41.7%\n  \u2022 Biotech                        score=11/12  trend=bullish   RSI=52  1M=+3.4%  3M=+7.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=53  1M=+7.1%  3M=+7.5%\n  \u2022 Financials                     score=10/12  trend=bullish   RSI=66  1M=+3.7%  3M=+9.7%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T06:00:16.479448",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 193.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T06:00:16.489473",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T06:00:16.498866",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2167 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T06:00:16.646476",
+    "date": "2026-06-21",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T07:15:01.296559",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 10.0/10. Action required: 0 agent(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T07:15:01.306516",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 10.0/10. 39 agents evaluated. Full report: data/hr_report.json",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T07:15:01.730908",
+    "date": "2026-06-21",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: auto-fixed 2: irm_daily_check.json, hr_report.json; newly stale: irm_daily_check.json (37h old (budget 30h)), hr_report.json (37h old (budget 30h))",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-06-21T08:01:09.462243",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 18 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Materials, Regional Banks. Top picks: RTX, ETN, FCX, ECL, HBAN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T08:01:09.473074",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=64  1M=+6.0%  3M=+12.2%\n  \u2022 Materials                      score=12/12  trend=bullish   RSI=54  1M=+4.2%  3M=+10.8%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+3.7%  3M=+14.4%\n  \u2022 Retail                         score=12/12  trend=bullish   RSI=60  1M=+6.7%  3M=+10.1%\n  \u2022 Technology                     score=11/12  trend=bullish   RSI=50  1M=+8.1%  3M=+41.7%\n  \u2022 Biotech                        score=11/12  trend=bullish   RSI=52  1M=+3.4%  3M=+7.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=53  1M=+7.1%  3M=+7.5%\n  \u2022 Financials                     score=10/12  trend=bullish   RSI=66  1M=+3.7%  3M=+9.7%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T09:15:01.184493",
+    "date": "2026-06-21",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (205h old (budget 54h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T10:00:09.207080",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 112.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T10:00:09.217106",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T10:00:09.227020",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2217 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T10:00:09.385014",
+    "date": "2026-06-21",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T12:00:01.148464",
+    "date": "2026-06-21",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 388 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-21T12:00:01.180613",
+    "date": "2026-06-21",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-21T12:01:12.270834",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 18 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Materials, Regional Banks. Top picks: RTX, ETN, FCX, ECL, HBAN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T12:01:12.281449",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=64  1M=+6.0%  3M=+12.2%\n  \u2022 Materials                      score=12/12  trend=bullish   RSI=54  1M=+4.2%  3M=+10.8%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+3.7%  3M=+14.4%\n  \u2022 Retail                         score=12/12  trend=bullish   RSI=60  1M=+6.7%  3M=+10.1%\n  \u2022 Technology                     score=11/12  trend=bullish   RSI=50  1M=+8.1%  3M=+41.7%\n  \u2022 Biotech                        score=11/12  trend=bullish   RSI=52  1M=+3.4%  3M=+7.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=53  1M=+7.1%  3M=+7.5%\n  \u2022 Financials                     score=10/12  trend=bullish   RSI=66  1M=+3.7%  3M=+9.7%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T12:15:08.033016",
+    "date": "2026-06-21",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "HIGH",
+    "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
+  },
+  {
+    "ts": "2026-06-21T12:15:08.052037",
+    "date": "2026-06-21",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192auto_reconciled_reviews; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-21T16:00:14.846279",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 159.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T16:00:14.856780",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T16:00:14.866902",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (3926 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T16:00:15.043284",
+    "date": "2026-06-21",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T16:01:11.400144",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 18 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Materials, Regional Banks. Top picks: RTX, ETN, FCX, ECL, HBAN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T16:01:11.410872",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=64  1M=+6.0%  3M=+12.2%\n  \u2022 Materials                      score=12/12  trend=bullish   RSI=54  1M=+4.2%  3M=+10.8%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+3.7%  3M=+14.4%\n  \u2022 Retail                         score=12/12  trend=bullish   RSI=60  1M=+6.7%  3M=+10.1%\n  \u2022 Technology                     score=11/12  trend=bullish   RSI=50  1M=+8.1%  3M=+41.7%\n  \u2022 Biotech                        score=11/12  trend=bullish   RSI=52  1M=+3.4%  3M=+7.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=53  1M=+7.1%  3M=+7.5%\n  \u2022 Financials                     score=10/12  trend=bullish   RSI=66  1M=+3.7%  3M=+9.7%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T19:00:05.012170",
+    "date": "2026-06-21",
+    "agent": "Missed Winners Agent",
+    "category": "RESEARCH_NOTE",
+    "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: none. ",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T19:16:09.442395",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 18 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Materials, Regional Banks. Top picks: RTX, ETN, FCX, ECL, HBAN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T19:16:09.453131",
+    "date": "2026-06-21",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=64  1M=+6.0%  3M=+12.2%\n  \u2022 Materials                      score=12/12  trend=bullish   RSI=54  1M=+4.2%  3M=+10.8%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+3.7%  3M=+14.4%\n  \u2022 Retail                         score=12/12  trend=bullish   RSI=60  1M=+6.7%  3M=+10.1%\n  \u2022 Technology                     score=11/12  trend=bullish   RSI=50  1M=+8.1%  3M=+41.7%\n  \u2022 Biotech                        score=11/12  trend=bullish   RSI=52  1M=+3.4%  3M=+7.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=53  1M=+7.1%  3M=+7.5%\n  \u2022 Financials                     score=10/12  trend=bullish   RSI=66  1M=+3.7%  3M=+9.7%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:01.412149",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:01.424244",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:01.435540",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:01.446430",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "PIPELINE_ALERT",
+    "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:01.456950",
+    "date": "2026-06-21",
+    "agent": "HR Agent",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T22:00:17.464682",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 197.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-21T22:00:17.475312",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:17.485539",
+    "date": "2026-06-21",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] 18 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 18 ERROR-level entries (4030 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-21T22:00:17.670963",
+    "date": "2026-06-21",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-22T00:00:00.907950",
+    "date": "2026-06-22",
+    "agent": "Logic Team Director",
+    "category": "COHERENCE_NOTE",
+    "priority": "NORMAL",
+    "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 476 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+  },
+  {
+    "ts": "2026-06-22T00:00:00.945003",
+    "date": "2026-06-22",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+  },
+  {
+    "ts": "2026-06-22T00:01:18.530292",
+    "date": "2026-06-22",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 18 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Materials, Regional Banks. Top picks: RTX, ETN, FCX, ECL, HBAN.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-22T00:01:18.541369",
+    "date": "2026-06-22",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=64  1M=+6.0%  3M=+12.2%\n  \u2022 Materials                      score=12/12  trend=bullish   RSI=54  1M=+4.2%  3M=+10.8%\n  \u2022 Regional Banks                 score=12/12  trend=bullish   RSI=58  1M=+3.7%  3M=+14.4%\n  \u2022 Retail                         score=12/12  trend=bullish   RSI=60  1M=+6.7%  3M=+10.1%\n  \u2022 Technology                     score=11/12  trend=bullish   RSI=50  1M=+8.1%  3M=+41.7%\n  \u2022 Biotech                        score=11/12  trend=bullish   RSI=52  1M=+3.4%  3M=+7.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=53  1M=+7.1%  3M=+7.5%\n  \u2022 Financials                     score=10/12  trend=bullish   RSI=66  1M=+3.7%  3M=+9.7%",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-22T00:15:01.024748",
+    "date": "2026-06-22",
+    "agent": "LT Implementation Agent",
+    "category": "LT_RESOLUTION",
+    "priority": "NORMAL",
+    "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192board_proposal_submitted"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.582298",
+    "date": "2026-06-22",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 4 board proposal(s), 101 quick win(s), 2 ThinkTank idea(s). Total new findings: 122.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.593473",
+    "date": "2026-06-22",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.603707",
+    "date": "2026-06-22",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2132 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.614268",
+    "date": "2026-06-22",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[MEDIUM] Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 97h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunit",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.624387",
+    "date": "2026-06-22",
+    "agent": "CIT Director",
+    "category": "IMPROVEMENT",
+    "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.634845",
+    "date": "2026-06-22",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 97h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ear",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.645902",
+    "date": "2026-06-22",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-06-22T01:00:10.765103",
+    "date": "2026-06-22",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
   }
 ]
