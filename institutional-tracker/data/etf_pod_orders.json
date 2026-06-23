@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-21T20:45:00.991231",
+  "generated_at": "2026-06-23T00:01:15.967729",
   "pod": "pod3_macro",
   "board_vote": "APPROVED",
   "target_holdings": [
@@ -25,9 +25,9 @@
   "risk_officer_note": "Risk Officer flags logged and acknowledged. Execution proceeds per board governance: Director + Strategist majority overrides Risk Officer vote.",
   "regime_context": {
     "label": "bull",
-    "vix": 16.4,
-    "spy_rsi": 46.0,
-    "spy_1d_return": 1.0397,
+    "vix": 17.3,
+    "spy_rsi": 43.9,
+    "spy_1d_return": -0.3147,
     "overbought": false,
     "warning_count": 1
   },

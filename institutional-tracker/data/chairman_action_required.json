@@ -1,121 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260617-14-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 17, 2026\" \u00d711; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:F | Jun 17, 2026\" \u00d718",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-17T14:50:00.332694",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260617-16-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 17, 2026\" \u00d724; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:F | Jun 17, 2026\" \u00d718",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-17T16:50:01.115082",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260617-18-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 17, 2026\" \u00d725; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:F | Jun 17, 2026\" \u00d718",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-17T18:50:01.135923",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260617-20-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 17, 2026\" \u00d726; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:F | Jun 17, 2026\" \u00d75; \"[CRO REPORT] Apex Capital \u2014 Risk:HIGH | Manager Grade:F | Jun 17, 2026\" \u00d718",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-17T20:50:00.518441",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "LTIA-20260617160037",
-    "title": "[LTIA] Expected agents silent \u2014 check they're still running",
-    "category": "IMPROVEMENT",
-    "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
-    "proposed_fix": "Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
-    "evidence": "",
-    "confidence": 85,
-    "severity": "LOW",
-    "approved_by": "Deputy Board (MAJORITY)",
-    "status": "awaiting_chairman",
-    "times_approved": 1,
-    "queued_at": "2026-06-18T01:00:10.251452"
-  },
-  {
-    "id": "LTIA-20260618120000",
-    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
-    "category": "IMPROVEMENT",
-    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 44x). This needs a decision, not a rerun.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 20,
-    "queued_at": "2026-06-18T13:30:01.135785"
-  },
-  {
-    "id": "LTIA-20260618120000",
-    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
-    "category": "IMPROVEMENT",
-    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 20,
-    "queued_at": "2026-06-18T13:30:01.135785"
-  },
-  {
-    "id": "LTIA-20260618120000",
-    "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
-    "category": "IMPROVEMENT",
-    "description": "ML finding: 'ST model AUC 0.545 \u2014 barely above random; weak edge'. An AUC below 0.50 means the model loses to a coin flip; any capital on its signals has negative expectancy.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 16,
-    "queued_at": "2026-06-18T13:30:01.135785"
-  },
-  {
-    "id": "pip-integrity-20260618-16-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 18, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-18T16:50:00.479693",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260618-18-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 18, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:F | Jun 18, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-18T18:50:01.013385",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260618-20-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 18, 2026\" \u00d76; \"Apex Capital \u2014 Chief of Staff Brief | Risk:ELEVATED | Grade:F | Jun 18, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-18T20:50:00.777544",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260619-16-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 19, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-19T16:50:01.214874",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260619-18-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 19, 2026\" \u00d75; \"[CRO REPORT] Apex Capital \u2014 Risk:ELEVATED | Manager Grade:F | Jun 19, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-19T18:50:01.156354",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "pip-integrity-20260620-16-email_loop_detection",
     "severity": "HIGH",
     "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 20, 2026\" \u00d75",
@@ -169,6 +53,112 @@
     "description": "pipeline_heartbeat.json is 54.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-22T02:50:00.995407",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-04-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 56.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T04:50:00.289148",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-06-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 58.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T06:50:00.866970",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-08-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 60.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T08:50:01.267089",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-10-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 62.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T10:50:01.097722",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-12-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 64.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T12:50:00.743071",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "LTIA-20260622120010",
+    "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "category": "IMPROVEMENT",
+    "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 35,
+    "queued_at": "2026-06-22T13:30:01.394883"
+  },
+  {
+    "id": "pip-integrity-20260622-14-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 66.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T14:50:01.032796",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-16-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 68.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T16:50:01.226746",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-18-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 70.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T18:50:00.861039",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-20-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 72.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T20:50:00.346006",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260622-22-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 74.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-22T22:50:00.746338",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260623-00-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 76.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-23T00:50:00.969414",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260623-02-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 78.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-23T02:50:00.759861",
     "status": "awaiting_chairman"
   }
 ]

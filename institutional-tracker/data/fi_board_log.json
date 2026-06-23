@@ -146,6 +146,20 @@
       "reviewed": 7,
       "approved_count": 7,
       "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-22T14:30:07.557149",
+      "regime": "NORMAL",
+      "reviewed": 16,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-22T18:00:57.594633",
+      "regime": "NORMAL",
+      "reviewed": 16,
+      "approved_count": 8,
+      "rejected_count": 0
     }
   ]
 }

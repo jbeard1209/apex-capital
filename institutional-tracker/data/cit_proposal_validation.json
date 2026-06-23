@@ -1,31 +1,45 @@
 {
-  "generated_at": "2026-06-22T01:00:04.263496",
-  "proposals_reviewed": 4,
+  "generated_at": "2026-06-23T01:00:03.569631",
+  "proposals_reviewed": 6,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "LTIA-20260622001501",
+      "id": "CIT-2026-488",
+      "title": "Replace fixed R&D cadence with event-triggered research cycles",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "CIT-2026-493",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "LTIA-20260623000000",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260622001501",
+      "id": "LTIA-20260623000000",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260622001501",
+      "id": "LTIA-20260623000000",
       "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260622001501",
+      "id": "LTIA-20260623000000",
       "title": "[LTIA] Expected agents silent \u2014 check they're still running",
       "category": "IMPROVEMENT",
       "pre_validated": false,

@@ -1,6 +1,7 @@
 {
-  "concern": "Independent risk assessment (anonymous): 7 serious concern(s) at severity 10/10. Board verdict: ELEVATED RISK \u2014 IRM Board recommends Chairman review flagged items closely.. Top concern: FACTOR CONCENTRATION \u2014 Tech/Growth: 50% of R&D picks. Fama-French: factor tilts amplify both upside AND downside. In a rate-shock (2022 analogue), tech-heavy portfolios experienced -35% to -70% drawdowns. Recommend capping tech at 40.0%.",
+  "concern": "Independent risk assessment (anonymous): 4 serious concern(s) at severity 9/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Top concern: FACTOR CONCENTRATION \u2014 Tech/Growth: 50% of R&D picks. Fama-French: factor tilts amplify both upside AND downside. In a rate-shock (2022 analogue), tech-heavy portfolios experienced -35% to -70% drawdowns. Recommend capping tech at 40.0%.",
   "trigger_emergency": true,
-  "written_at": "2026-06-21T07:15:01.160519",
-  "read": false
+  "written_at": "2026-06-22T21:00:00.561154",
+  "read": true,
+  "consumed_at": "2026-06-22T21:00:01.352236"
 }

@@ -1,104 +1,6 @@
 {
   "entries": [
     {
-      "ts": "2026-06-11T01:22:10.665344",
-      "date": "2026-06-11",
-      "source": "Logic Team",
-      "portfolio": 97547.06,
-      "pnl_vs_start": -2452.9400000000023,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 6,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "agent": "MLLogicAgent",
-          "short": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated ag"
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "5 open positions have no review recommendation",
-          "agent": "DataIntegrityLogicAgent",
-          "short": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. Th"
-        },
-        {
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "agent": "CommunicationLogicAgent",
-          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-11T01:52:31.904000",
-      "date": "2026-06-11",
-      "source": "Logic Team",
-      "portfolio": 97547.06,
-      "pnl_vs_start": -2452.9400000000023,
-      "canary": "GREEN",
-      "cro_level": "ELEVATED",
-      "picks_today": 0,
-      "anomalies": 6,
-      "items": [
-        {
-          "severity": "MEDIUM",
-          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-          "agent": "PipelineLogicAgent",
-          "short": "FI research agents are registered but fi_pipeline_report.json is missing."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "agent": "CapitalLogicAgent",
-          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML model running but no live picks are being tracked for real-world validation",
-          "agent": "PerformanceLogicAgent",
-          "short": "ml_live_picks_log.json has zero entries. The ST model (AUC=0.6347) is scoring picks but results aren't being captured."
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "ML pod has $30,000 capital but zero live picks logged",
-          "agent": "MLLogicAgent",
-          "short": "The ML / Quantitative pod has $30,000 allocated but ml_live_picks_log.json is empty. The model is not being validated ag"
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "5 open positions have no review recommendation",
-          "agent": "DataIntegrityLogicAgent",
-          "short": "state.json shows 5 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'ENPH', 'RUN']. Th"
-        },
-        {
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "agent": "CommunicationLogicAgent",
-          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
-        }
-      ]
-    },
-    {
       "ts": "2026-06-11T01:53:46.320936",
       "date": "2026-06-11",
       "source": "Logic Team",
@@ -3114,6 +3016,92 @@
           "title": "CIT backlog has 476 open items \u2014 proposals not being actioned",
           "agent": "CommunicationLogicAgent",
           "short": "data/cit_backlog.json holds 476 entries, 476 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-22T12:00:01.141750",
+      "date": "2026-06-22",
+      "source": "Logic Team",
+      "portfolio": 98545.01,
+      "pnl_vs_start": -1454.9900000000052,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 450 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 450 entries, 450 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either t"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-23T00:00:00.950249",
+      "date": "2026-06-23",
+      "source": "Logic Team",
+      "portfolio": 99178.52,
+      "pnl_vs_start": -821.4799999999959,
+      "canary": "GREEN",
+      "cro_level": "ELEVATED",
+      "picks_today": 0,
+      "anomalies": 5,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. T"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 421 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 421 entries, 421 open. A backlog this deep means the CIT is generating proposals far faster "
         },
         {
           "severity": "LOW",
