@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-23T01:00:14.025938",
+  "generated_at": "2026-06-25T01:00:33.749349",
   "dry_run": false,
   "proposals_reviewed": 5,
   "approved_count": 0,
@@ -9,7 +9,7 @@
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "CIT-2026-488",
+      "proposal_id": "CIT-2026-568",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "severity": "MEDIUM",
       "category": "VISION",
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "proposal_id": "CIT-2026-493",
+      "proposal_id": "CIT-2026-569",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "severity": "LOW",
       "category": "VISION",
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260623000000",
+      "proposal_id": "LTIA-20260625000000",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "severity": "MEDIUM",
       "category": "IMPROVEMENT",
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260623000000",
+      "proposal_id": "LTIA-20260625000007",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "severity": "MEDIUM",
       "category": "IMPROVEMENT",
@@ -205,7 +205,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260623000000",
+      "proposal_id": "LTIA-20260625000007",
       "title": "[LTIA] Expected agents silent \u2014 check they're still running",
       "severity": "LOW",
       "category": "IMPROVEMENT",

@@ -2,130 +2,16 @@
   {
     "agent": "CITPipelineMonitor",
     "category": "BUG_FIX",
-    "severity": "MEDIUM",
+    "severity": "HIGH",
     "confidence": 90,
-    "title": "9 ERROR lines \u2014 dominant: `v3`",
-    "description": "The last 24-48h of logs contain 9 ERROR-level entries (2999 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-18 00:10:17  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-18 00:10:39  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-18 00:10:59  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
-    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-18 00:10:17  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "title": "50 ERROR lines \u2014 dominant: `'get'`",
+    "description": "The last 24-48h of logs contain 50 ERROR-level entries (2549 WARNINGs). Most frequent error class: `'get'` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 09:30:21  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:00:18  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:30:19  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'",
+    "proposed_fix": "Most frequent error type: `'get'` (3/3 sampled). Locate the call site in logs/run_*.log matching `09:30:21  ERROR       [Canary] Manager Agent step failed: 's`, wrap it in `except 'get'` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
     "auto_implementable": false,
-    "id": "CIT-2026-454",
+    "id": "CIT-2026-468",
     "context": {
-      "captured_at": "2026-06-19T01:00:07.731813",
-      "canary_level": "GREEN",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 215,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 21,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 526,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 5,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 215",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-19T01:00:07.806374",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-22T14:30:01.134835",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "MEDIUM severity \u2014 acceptable improvement"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Supports research quality"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "MEDIUM",
-    "confidence": 90,
-    "title": "18 ERROR lines \u2014 dominant: `v3`",
-    "description": "The last 24-48h of logs contain 18 ERROR-level entries (3102 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-18 00:10:17  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-18 00:10:39  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-18 00:10:59  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
-    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-18 00:10:17  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-454",
-    "context": {
-      "captured_at": "2026-06-19T10:00:11.042264",
-      "canary_level": "YELLOW",
-      "canary_triggers": [],
-      "cro_level": "ELEVATED",
-      "portfolio_value": null,
-      "open_positions": 0,
-      "paper_day": 215,
-      "cash_balance": null,
-      "loss_streak": 0,
-      "win_streak": 0,
-      "buys_blocked": false,
-      "total_closed_trades": 21,
-      "last_buy": {
-        "ticker": "RUN",
-        "date": "2026-06-08"
-      },
-      "open_issues_count": 533,
-      "open_critical_issues": 0,
-      "pending_proposals_count": 5,
-      "critical_pending": 0
-    },
-    "context_summary": "Canary: YELLOW | CRO: ELEVATED | Positions: 0 open | Day 215",
-    "routed_to_pod": "rd",
-    "routed_at": "2026-06-19T10:00:11.121032",
-    "decision": "APPROVED",
-    "voted_at": "2026-06-22T14:30:01.135266",
-    "votes": [
-      {
-        "member": "Investment Director",
-        "vote": "APPROVE",
-        "reason": "MEDIUM severity \u2014 acceptable improvement"
-      },
-      {
-        "member": "Risk Officer",
-        "vote": "APPROVE",
-        "reason": "Operational improvement, no portfolio risk"
-      },
-      {
-        "member": "Quality Officer",
-        "vote": "APPROVE",
-        "reason": "Supports research quality"
-      }
-    ],
-    "status": "approved"
-  },
-  {
-    "agent": "CITPipelineMonitor",
-    "category": "BUG_FIX",
-    "severity": "MEDIUM",
-    "confidence": 90,
-    "title": "12 ERROR lines \u2014 dominant: `v3`",
-    "description": "The last 24-48h of logs contain 12 ERROR-level entries (4003 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-19 06:03:19  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-19 06:03:38  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-19 06:03:57  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
-    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-19 06:03:19  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
-    "auto_implementable": false,
-    "id": "CIT-2026-454",
-    "context": {
-      "captured_at": "2026-06-20T10:00:08.329711",
+      "captured_at": "2026-06-23T16:00:12.502229",
       "canary_level": "GREEN",
       "canary_triggers": [],
       "cro_level": "ELEVATED",
@@ -141,21 +27,21 @@
         "ticker": "RUN",
         "date": "2026-06-08"
       },
-      "open_issues_count": 597,
+      "open_issues_count": 744,
       "open_critical_issues": 0,
-      "pending_proposals_count": 2,
+      "pending_proposals_count": 0,
       "critical_pending": 0
     },
     "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
     "routed_to_pod": "rd",
-    "routed_at": "2026-06-20T10:00:08.409045",
+    "routed_at": "2026-06-23T16:00:12.578787",
     "decision": "APPROVED",
-    "voted_at": "2026-06-22T14:30:01.135363",
+    "voted_at": "2026-06-24T14:30:00.643333",
     "votes": [
       {
         "member": "Investment Director",
         "vote": "APPROVE",
-        "reason": "MEDIUM severity \u2014 acceptable improvement"
+        "reason": "HIGH/CRITICAL severity warrants action"
       },
       {
         "member": "Risk Officer",
@@ -165,10 +51,47 @@
       {
         "member": "Quality Officer",
         "vote": "APPROVE",
-        "reason": "Supports research quality"
+        "reason": "Quality concern at HIGH"
       }
     ],
     "status": "approved"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "HIGH",
+    "confidence": 90,
+    "title": "56 ERROR lines \u2014 dominant: `'get'`",
+    "description": "The last 24-48h of logs contain 56 ERROR-level entries (3145 WARNINGs). Most frequent error class: `'get'` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 09:30:21  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:00:18  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:30:19  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'",
+    "proposed_fix": "Most frequent error type: `'get'` (3/3 sampled). Locate the call site in logs/run_*.log matching `09:30:21  ERROR       [Canary] Manager Agent step failed: 's`, wrap it in `except 'get'` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-494",
+    "context": {
+      "captured_at": "2026-06-24T16:00:07.476472",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "ELEVATED",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 218,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 21,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 900,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 0,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-06-24T16:00:07.545866"
   },
   {
     "agent": "CITPipelineMonitor",
@@ -176,13 +99,13 @@
     "severity": "MEDIUM",
     "confidence": 90,
     "title": "6 ERROR lines \u2014 dominant: `v3`",
-    "description": "The last 24-48h of logs contain 6 ERROR-level entries (1288 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-    "evidence": "Recent log samples:\n  \u2022 2026-06-23 00:04:14  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-23 00:04:33  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-23 00:04:51  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
-    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-23 00:04:14  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "description": "The last 24-48h of logs contain 6 ERROR-level entries (1911 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 2026-06-24 12:05:56  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-24 12:06:14  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-24 12:06:33  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-24 12:05:56  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
     "auto_implementable": false,
-    "id": "CIT-2026-470",
+    "id": "CIT-2026-494",
     "context": {
-      "captured_at": "2026-06-23T01:00:08.985844",
+      "captured_at": "2026-06-25T01:00:21.363844",
       "canary_level": "GREEN",
       "canary_triggers": [],
       "cro_level": "ELEVATED",
@@ -198,13 +121,13 @@
         "ticker": "RUN",
         "date": "2026-06-08"
       },
-      "open_issues_count": 689,
+      "open_issues_count": 917,
       "open_critical_issues": 0,
       "pending_proposals_count": 6,
       "critical_pending": 0
     },
     "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
     "routed_to_pod": "rd",
-    "routed_at": "2026-06-23T01:00:09.057669"
+    "routed_at": "2026-06-25T01:00:21.447782"
   }
 ]

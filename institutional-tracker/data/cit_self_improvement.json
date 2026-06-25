@@ -1,135 +1,135 @@
 {
-  "generated_at": "2026-06-23T01:00:03.589522",
+  "generated_at": "2026-06-25T01:00:03.908935",
   "total_findings": 4,
   "queue_depth": 6,
-  "backlog_depth": 421,
-  "approved_total": 489,
+  "backlog_depth": 453,
+  "approved_total": 527,
   "agent_stats": {
     "CITCodeInspector": {
-      "total_findings": 46845,
-      "board_proposals": 66,
+      "total_findings": 47631,
+      "board_proposals": 72,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:01.352989"
+      "last_run": "2026-06-25T01:00:01.660248"
     },
     "CITPipelineMonitor": {
-      "total_findings": 1221,
-      "board_proposals": 51,
+      "total_findings": 1243,
+      "board_proposals": 57,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:01.475338"
+      "last_run": "2026-06-25T01:00:01.773760"
     },
     "CITStrategyAnalyst": {
-      "total_findings": 488,
+      "total_findings": 500,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:01.498996"
+      "last_run": "2026-06-25T01:00:01.797364"
     },
     "CITArchitectureAdvisor": {
-      "total_findings": 2323,
+      "total_findings": 2359,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:01.501330"
+      "last_run": "2026-06-25T01:00:01.799824"
     },
     "CITThinkTank": {
-      "total_findings": 1711,
-      "board_proposals": 18,
+      "total_findings": 1741,
+      "board_proposals": 24,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:01.504546"
+      "last_run": "2026-06-25T01:00:01.802988"
     },
     "CITDataQualityAnalyst": {
-      "total_findings": 1036,
+      "total_findings": 1050,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:03.568402"
+      "last_run": "2026-06-25T01:00:03.889580"
     },
     "CITProposalValidator": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-23T01:00:03.569952"
+      "last_run": "2026-06-25T01:00:03.890911"
     },
     "CITSelfImprovement": {
-      "total_findings": 764,
+      "total_findings": 788,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:03.784568"
+      "last_run": "2026-06-24T22:00:04.249002"
     },
     "CITSecurityMonitor": {
       "total_findings": 137,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:04.038474"
+      "last_run": "2026-06-24T22:00:04.507669"
     },
     "CIT Watchdog": {
-      "total_findings": 16399,
+      "total_findings": 16920,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:04.574358"
+      "last_run": "2026-06-24T22:00:05.285202"
     },
     "CIT Trading Auditor": {
-      "total_findings": 21130,
+      "total_findings": 21532,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:04.094929"
+      "last_run": "2026-06-24T22:00:04.564221"
     },
     "CIT Risk Auditor": {
-      "total_findings": 11045,
+      "total_findings": 11255,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:04.167942"
+      "last_run": "2026-06-24T22:00:04.637105"
     },
     "CIT Infra Auditor": {
-      "total_findings": 13771,
+      "total_findings": 14047,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:04.220524"
+      "last_run": "2026-06-24T22:00:04.689744"
     },
     "CIT Integration Auditor": {
-      "total_findings": 334,
+      "total_findings": 340,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:04.242019"
+      "last_run": "2026-06-24T22:00:04.711549"
     },
     "CITMLAuditor": {
       "total_findings": 60,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:05.011611"
+      "last_run": "2026-06-24T22:00:05.326463"
     },
     "CITPodAuditor": {
       "total_findings": 44,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:05.012590"
+      "last_run": "2026-06-24T22:00:05.327429"
     },
     "CITBacklogCurator": {
-      "total_findings": 72,
+      "total_findings": 78,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:05.045328"
+      "last_run": "2026-06-24T22:00:05.360947"
     },
     "CITPerformanceAnalyst": {
-      "total_findings": 150,
+      "total_findings": 162,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:05.046698"
+      "last_run": "2026-06-24T22:00:05.362264"
     },
     "CITEmailAuditor": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:05.047372"
+      "last_run": "2026-06-24T22:00:05.362969"
     },
     "CITAgentQualityAuditor": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:05.051290"
+      "last_run": "2026-06-24T22:00:05.367203"
     },
     "CITEarningsCatalyst": {
       "total_findings": 0,
       "board_proposals": 0,
       "sensitive": 0,
-      "last_run": "2026-06-22T22:00:08.025482"
+      "last_run": "2026-06-24T22:00:07.666535"
     }
   },
   "findings": [
@@ -138,9 +138,9 @@
       "category": "IMPROVEMENT",
       "severity": "MEDIUM",
       "confidence": 72,
-      "title": "Low board approval rate for CITCodeInspector: 6% (4/66 proposals acted on)",
-      "description": "CITCodeInspector has submitted 66 board proposals but only 4 have been approved and implemented (6% rate). Low approval rates may indicate proposals are too vague, too ambitious, or misaligned with the firm's current priorities. This agent should recalibrate its proposal quality standards.",
-      "evidence": "data/cit_history.json: CITCodeInspector board_proposals=66, approved\u22484",
+      "title": "Low board approval rate for CITCodeInspector: 6% (4/72 proposals acted on)",
+      "description": "CITCodeInspector has submitted 72 board proposals but only 4 have been approved and implemented (6% rate). Low approval rates may indicate proposals are too vague, too ambitious, or misaligned with the firm's current priorities. This agent should recalibrate its proposal quality standards.",
+      "evidence": "data/cit_history.json: CITCodeInspector board_proposals=72, approved\u22484",
       "proposed_fix": "Review the last 5 unimplemented CITCodeInspector proposals. Are they too abstract? Too large in scope? Not evidence-backed enough? Retask the agent to produce smaller, more actionable proposals.",
       "auto_implementable": false
     },
@@ -149,9 +149,9 @@
       "category": "IMPROVEMENT",
       "severity": "MEDIUM",
       "confidence": 72,
-      "title": "Low board approval rate for CITThinkTank: 11% (2/18 proposals acted on)",
-      "description": "CITThinkTank has submitted 18 board proposals but only 2 have been approved and implemented (11% rate). Low approval rates may indicate proposals are too vague, too ambitious, or misaligned with the firm's current priorities. This agent should recalibrate its proposal quality standards.",
-      "evidence": "data/cit_history.json: CITThinkTank board_proposals=18, approved\u22482",
+      "title": "Low board approval rate for CITThinkTank: 8% (2/24 proposals acted on)",
+      "description": "CITThinkTank has submitted 24 board proposals but only 2 have been approved and implemented (8% rate). Low approval rates may indicate proposals are too vague, too ambitious, or misaligned with the firm's current priorities. This agent should recalibrate its proposal quality standards.",
+      "evidence": "data/cit_history.json: CITThinkTank board_proposals=24, approved\u22482",
       "proposed_fix": "Review the last 5 unimplemented CITThinkTank proposals. Are they too abstract? Too large in scope? Not evidence-backed enough? Retask the agent to produce smaller, more actionable proposals.",
       "auto_implementable": false
     },
@@ -160,9 +160,9 @@
       "category": "IMPROVEMENT",
       "severity": "MEDIUM",
       "confidence": 80,
-      "title": "83% of CIT bug proposals lack precise evidence \u2014 quality degradation",
-      "description": "237 of 285 BUG_FIX/DATA_QUALITY proposals (83%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
-      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 237/285 bug proposals vague",
+      "title": "84% of CIT bug proposals lack precise evidence \u2014 quality degradation",
+      "description": "257 of 305 BUG_FIX/DATA_QUALITY proposals (84%) have vague evidence strings (no file:line, metric, or data path). VISION/IMPROVEMENT proposals are excluded from this check \u2014 they are architectural and don't require code-level evidence.",
+      "evidence": "data/cit_pending_proposals.json + cit_backlog.json: 257/305 bug proposals vague",
       "proposed_fix": "Each CIT agent's analyze() method should be reviewed. BUG_FIX findings must include a specific file:line, metric, or data path. VISION/IMPROVEMENT proposals may be qualitative.",
       "auto_implementable": false
     },

@@ -1,21 +1,20 @@
 {
-  "timestamp": "2026-06-22T21:00:02.615660",
+  "timestamp": "2026-06-24T21:00:03.645419",
   "session_type": "EMERGENCY",
   "convened_by": "CRO",
   "alert": {
     "raised_by": "Chief Risk Officer",
     "urgency": "CRITICAL",
     "risk_score": 9,
-    "summary": "Anonymous risk assessment: 4 concern(s) identified at severity 9/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+    "summary": "Anonymous risk assessment: 3 concern(s) identified at severity 9/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
     "concerns": [
-      "FACTOR CONCENTRATION \u2014 Tech/Growth: 50% of R&D picks. Fama-French: factor tilts amplify both upside AND downside. In a rate-shock (2022 analogue), tech-heavy portfolios experienced -35% to -70% drawdowns. Recommend capping tech at 40.0%.",
-      "Manager Agent \u2014 output is 75h old (threshold: 26h). Agent may have missed a cycle.",
-      "DEPENDENCY VIOLATION: capital_efficiency_report is 7.5h old but manager_decisions is 75.0h old \u2014 manager_decisions ran BEFORE capital_efficiency_report and used a stale signal.",
-      "DEPENDENCY VIOLATION: review_recommendations is 9.0h old but manager_decisions is 75.0h old \u2014 manager_decisions ran BEFORE review_recommendations and used a stale signal."
+      "Manager Agent \u2014 output is 123h old (threshold: 26h). Agent may have missed a cycle.",
+      "DEPENDENCY VIOLATION: capital_efficiency_report is 7.5h old but manager_decisions is 123.0h old \u2014 manager_decisions ran BEFORE capital_efficiency_report and used a stale signal.",
+      "DEPENDENCY VIOLATION: review_recommendations is 12.7h old but manager_decisions is 123.0h old \u2014 manager_decisions ran BEFORE review_recommendations and used a stale signal."
     ],
     "findings": [
-      "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-67,574) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-      "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,330) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+      "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-67,907) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+      "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,529) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
       "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
     ]
   },
@@ -26,7 +25,7 @@
       "positions": [
         "The CRO has raised an urgent risk alert (score 9/10). I am suspending all new position opens effective immediately until this session produces a resolution.",
         "Risk score 9/10 is in the critical range. I recommend reducing total exposure by 15\u201320% immediately \u2014 exit the weakest positions first.",
-        "CRO flagged 4 specific concern(s): FACTOR CONCENTRATION \u2014 Tech/Growth: 50% of R&D picks. Fama-French: factor tilts ; Manager Agent \u2014 output is 75h old (threshold: 26h). Agent may have missed a cycl; DEPENDENCY VIOLATION: capital_efficiency_report is 7.5h old but manager_decision..."
+        "CRO flagged 3 specific concern(s): Manager Agent \u2014 output is 123h old (threshold: 26h). Agent may have missed a cyc; DEPENDENCY VIOLATION: capital_efficiency_report is 7.5h old but manager_decision; DEPENDENCY VIOLATION: review_recommendations is 12.7h old but manager_decisions "
       ],
       "actions": [
         {
@@ -79,7 +78,7 @@
       "agent": "Risk Manager",
       "role": "Portfolio Risk & Compliance",
       "positions": [
-        "This alert is consistent with the portfolio risk picture I see: score 9/10 with 4 flagged concern(s). I fully support the buy halt and have verified our current VaR and concentration metrics are within bounds \u2014 but only just.",
+        "This alert is consistent with the portfolio risk picture I see: score 9/10 with 3 flagged concern(s). I fully support the buy halt and have verified our current VaR and concentration metrics are within bounds \u2014 but only just.",
         "At score 8+, I am formally recommending a VaR circuit breaker: no new positions open until risk score drops below 7."
       ],
       "actions": [
@@ -288,7 +287,7 @@
         "id": "PAUSE_NEW_BUYS"
       }
     ],
-    "timestamp": "2026-06-22T21:00:02.587538",
+    "timestamp": "2026-06-24T21:00:03.611360",
     "dry_run": false
   }
 }

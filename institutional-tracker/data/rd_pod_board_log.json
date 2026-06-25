@@ -47,6 +47,22 @@
       "approved": 3,
       "deferred": 0,
       "escalated": 0
+    },
+    {
+      "ts": "2026-06-23T14:30:00.605650",
+      "type": "ops",
+      "reviewed": 3,
+      "approved": 3,
+      "deferred": 0,
+      "escalated": 0
+    },
+    {
+      "ts": "2026-06-24T14:30:00.648549",
+      "type": "ops",
+      "reviewed": 1,
+      "approved": 1,
+      "deferred": 0,
+      "escalated": 0
     }
   ]
 }
