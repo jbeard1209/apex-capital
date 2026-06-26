@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-25T01:00:03.888619",
+  "generated_at": "2026-06-26T01:00:03.709538",
   "total_findings": 3,
   "findings": [
     {
@@ -8,7 +8,7 @@
       "severity": "MEDIUM",
       "confidence": 85,
       "title": "None score in sector_assignments.json (8 sector(s))",
-      "description": "Sectors assigned with None scores: ['Industrials', 'Defense & Aerospace', 'Real Estate', 'Retail', 'Semiconductors', 'Healthcare', 'Biotech', 'Materials']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
+      "description": "Sectors assigned with None scores: ['Industrials', 'Retail', 'Financials', 'Healthcare', 'Biotech', 'Defense & Aerospace', 'Real Estate', 'Semiconductors']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
       "evidence": "data/sector_assignments.json: 8 assignments with score=None",
       "proposed_fix": "In rd_team_leader.py: filter out sectors with None scores before ranking. Treat None as score=0 or skip entirely.",
       "auto_implementable": false
@@ -30,7 +30,7 @@
       "severity": "HIGH",
       "confidence": 90,
       "title": "yfinance beat_rate coverage restored: 100% of sample tickers",
-      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 48 day(s).",
+      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 49 day(s).",
       "proposed_fix": "Re-enable beat_rate in earnings_predictor.py and remove the MEDIUM known-gap finding.",
       "auto_implementable": false
     }

@@ -1,3126 +1,3134 @@
 {
   "AAP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.835943"
+    "scanned_at": "2026-06-25T19:00:52.848889"
   },
   "AAPL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.856188"
+    "scanned_at": "2026-06-25T19:00:52.869393"
   },
   "ABBV": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.876136"
+    "scanned_at": "2026-06-25T19:00:52.889664"
   },
   "ABM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.897378"
+    "scanned_at": "2026-06-25T19:00:52.908758"
   },
   "ADM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.916555"
+    "scanned_at": "2026-06-25T19:00:52.928336"
   },
   "ADUS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.936916"
+    "scanned_at": "2026-06-25T19:00:52.948949"
   },
   "AEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.957344"
+    "scanned_at": "2026-06-25T19:00:52.967972"
   },
   "AEP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.975999"
+    "scanned_at": "2026-06-25T19:00:52.987875"
   },
   "AFL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:11.996178"
+    "scanned_at": "2026-06-25T19:00:53.008243"
   },
   "AIG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.016870"
+    "scanned_at": "2026-06-25T19:00:53.027555"
   },
   "ALIZY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.035445"
+    "scanned_at": "2026-06-25T19:00:53.048012"
   },
   "ALL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.056042"
+    "scanned_at": "2026-06-25T19:00:53.069429"
   },
   "AMCX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.076304"
+    "scanned_at": "2026-06-25T19:00:53.088319"
   },
   "AMGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.095302"
+    "scanned_at": "2026-06-25T19:00:53.108931"
   },
   "AMZN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.115610"
+    "scanned_at": "2026-06-25T19:00:53.129415"
   },
   "ANSS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.136896"
+    "scanned_at": "2026-06-25T19:00:53.149032"
   },
   "APD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.156620"
+    "scanned_at": "2026-06-25T19:00:53.168769"
   },
   "ASGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.177061"
+    "scanned_at": "2026-06-25T19:00:53.189086"
   },
   "ASML": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.196098"
+    "scanned_at": "2026-06-25T19:00:53.207783"
   },
   "BA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.215813"
+    "scanned_at": "2026-06-25T19:00:53.227745"
   },
   "BABA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.236096"
+    "scanned_at": "2026-06-25T19:00:53.248030"
   },
   "BAC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.254498"
+    "scanned_at": "2026-06-25T19:00:53.274105"
   },
   "BAH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.274872"
+    "scanned_at": "2026-06-25T19:00:53.295165"
   },
   "BALY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.295296"
+    "scanned_at": "2026-06-25T19:00:53.315599"
   },
   "BAX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.314398"
+    "scanned_at": "2026-06-25T19:00:53.334534"
   },
   "BB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.334966"
+    "scanned_at": "2026-06-25T19:00:53.354769"
   },
   "BBBY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.354472"
+    "scanned_at": "2026-06-25T19:00:53.374640"
   },
   "BBWI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.374505"
+    "scanned_at": "2026-06-25T19:00:53.394007"
   },
   "BBY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.395701"
+    "scanned_at": "2026-06-25T19:00:53.414683"
   },
   "BDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.414556"
-  },
-  "BEN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.434376"
+    "scanned_at": "2026-06-25T19:00:53.434185"
   },
   "BIDU": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.454855"
+    "scanned_at": "2026-06-25T19:00:53.453945"
   },
   "BIIB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.474445"
+    "scanned_at": "2026-06-25T19:00:53.474522"
   },
   "BK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.495077"
+    "scanned_at": "2026-06-25T19:00:53.494203"
   },
   "BKNG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.515519"
+    "scanned_at": "2026-06-25T19:00:53.514027"
   },
   "BKR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.534503"
+    "scanned_at": "2026-06-25T19:00:53.534387"
   },
   "BMRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.554095"
+    "scanned_at": "2026-06-25T19:00:53.554001"
   },
   "BMY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.574346"
+    "scanned_at": "2026-06-25T19:00:53.573121"
   },
   "BP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.593372"
+    "scanned_at": "2026-06-25T19:00:53.593119"
   },
   "BRKR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.613616"
+    "scanned_at": "2026-06-25T19:00:53.613534"
   },
   "BSVN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.633542"
+    "scanned_at": "2026-06-25T19:00:53.632828"
   },
   "BTI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.652792"
+    "scanned_at": "2026-06-25T19:00:53.652191"
   },
   "BWFG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.673137"
+    "scanned_at": "2026-06-25T19:00:53.672609"
   },
   "C": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.692689"
+    "scanned_at": "2026-06-25T19:00:53.693026"
   },
   "CACI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.712348"
+    "scanned_at": "2026-06-25T19:00:53.712966"
   },
   "CAG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.732542"
+    "scanned_at": "2026-06-25T19:00:53.731687"
   },
   "CAH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.751805"
+    "scanned_at": "2026-06-25T19:00:53.750367"
   },
   "CAT": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.771746"
+    "scanned_at": "2026-06-25T19:00:53.770253"
   },
   "CATY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.791844"
+    "scanned_at": "2026-06-25T19:00:53.790399"
   },
   "CBOE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.811222"
+    "scanned_at": "2026-06-25T19:00:53.810127"
   },
   "CBRL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.831697"
+    "scanned_at": "2026-06-25T19:00:53.830604"
   },
   "CBT": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.851576"
+    "scanned_at": "2026-06-25T19:00:53.849372"
   },
   "CC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.870946"
+    "scanned_at": "2026-06-25T19:00:53.867454"
   },
   "CDNS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.891491"
+    "scanned_at": "2026-06-25T19:00:53.886735"
   },
   "CE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.912728"
+    "scanned_at": "2026-06-25T19:00:53.906908"
   },
   "CF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.932983"
+    "scanned_at": "2026-06-25T19:00:53.926694"
   },
   "CFG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.953193"
+    "scanned_at": "2026-06-25T19:00:53.947208"
   },
   "CHMG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.974698"
+    "scanned_at": "2026-06-25T19:00:53.966144"
   },
   "CHTR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:12.994439"
+    "scanned_at": "2026-06-25T19:00:53.985210"
   },
   "CI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.014364"
+    "scanned_at": "2026-06-25T19:00:54.005402"
   },
   "CINF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.034518"
+    "scanned_at": "2026-06-25T19:00:54.026615"
   },
   "CL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.054230"
+    "scanned_at": "2026-06-25T19:00:54.048454"
   },
   "CLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.074627"
+    "scanned_at": "2026-06-25T19:00:54.072245"
   },
   "CLX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.094236"
+    "scanned_at": "2026-06-25T19:00:54.094763"
   },
   "CMCSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.113891"
+    "scanned_at": "2026-06-25T19:00:54.117837"
   },
   "CME": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.134645"
+    "scanned_at": "2026-06-25T19:00:54.138652"
   },
   "CMI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.153868"
+    "scanned_at": "2026-06-25T19:00:54.160164"
   },
   "CNQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.174804"
+    "scanned_at": "2026-06-25T19:00:54.180360"
   },
   "COF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.194685"
+    "scanned_at": "2026-06-25T19:00:54.200055"
   },
   "COHR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.214664"
+    "scanned_at": "2026-06-25T19:00:54.220206"
   },
   "COP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.235146"
+    "scanned_at": "2026-06-25T19:00:54.241211"
   },
   "COR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.255220"
+    "scanned_at": "2026-06-25T19:00:54.259442"
   },
   "COTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.275231"
+    "scanned_at": "2026-06-25T19:00:54.277973"
   },
   "CPB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.296596"
+    "scanned_at": "2026-06-25T19:00:54.298097"
   },
   "CPRI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.315658"
+    "scanned_at": "2026-06-25T19:00:54.318237"
   },
   "CRK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.335669"
+    "scanned_at": "2026-06-25T19:00:54.338583"
   },
   "CSCO": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.356871"
+    "scanned_at": "2026-06-25T19:00:54.358125"
   },
   "CSGP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.376259"
+    "scanned_at": "2026-06-25T19:00:54.377071"
   },
   "CSWC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.396292"
+    "scanned_at": "2026-06-25T19:00:54.395917"
   },
   "CSX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.417296"
+    "scanned_at": "2026-06-25T19:00:54.416418"
   },
   "CVE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.436377"
+    "scanned_at": "2026-06-25T19:00:54.436969"
   },
   "CVS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.456283"
+    "scanned_at": "2026-06-25T19:00:54.457152"
   },
   "CVX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.476801"
+    "scanned_at": "2026-06-25T19:00:54.476156"
   },
   "CXW": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.495653"
+    "scanned_at": "2026-06-25T19:00:54.495551"
   },
   "CYH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.515910"
+    "scanned_at": "2026-06-25T19:00:54.514729"
   },
   "D": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.535671"
+    "scanned_at": "2026-06-25T19:00:54.535272"
   },
   "DD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.555057"
+    "scanned_at": "2026-06-25T19:00:54.555495"
   },
   "DE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.575596"
+    "scanned_at": "2026-06-25T19:00:54.575603"
   },
   "DG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.594927"
+    "scanned_at": "2026-06-25T19:00:54.595069"
   },
   "DGX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.615032"
+    "scanned_at": "2026-06-25T19:00:54.615918"
   },
   "DHI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.636445"
+    "scanned_at": "2026-06-25T19:00:54.635902"
   },
   "DIS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.657012"
+    "scanned_at": "2026-06-25T19:00:54.656332"
   },
   "DLTR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.678086"
+    "scanned_at": "2026-06-25T19:00:54.677136"
   },
   "DNOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.700814"
+    "scanned_at": "2026-06-25T19:00:54.697307"
   },
   "DOV": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.723030"
+    "scanned_at": "2026-06-25T19:00:54.716240"
   },
   "DOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.745687"
+    "scanned_at": "2026-06-25T19:00:54.734425"
   },
   "DUK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.768675"
+    "scanned_at": "2026-06-25T19:00:54.754378"
   },
   "DVN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.791181"
+    "scanned_at": "2026-06-25T19:00:54.774684"
   },
   "ECL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.813808"
+    "scanned_at": "2026-06-25T19:00:54.794586"
   },
   "ED": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.834471"
+    "scanned_at": "2026-06-25T19:00:54.814268"
   },
   "EL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.853893"
+    "scanned_at": "2026-06-25T19:00:54.832993"
   },
   "ELV": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.874003"
+    "scanned_at": "2026-06-25T19:00:54.851108"
   },
   "EMN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.894267"
+    "scanned_at": "2026-06-25T19:00:54.871241"
   },
   "EMR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.914245"
+    "scanned_at": "2026-06-25T19:00:54.891018"
   },
   "ENR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.934452"
+    "scanned_at": "2026-06-25T19:00:54.911905"
   },
   "ENSG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.954938"
+    "scanned_at": "2026-06-25T19:00:54.932117"
   },
   "EOG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.974717"
+    "scanned_at": "2026-06-25T19:00:54.950749"
   },
   "ERIE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:13.994795"
+    "scanned_at": "2026-06-25T19:00:54.969477"
   },
   "ES": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.014992"
+    "scanned_at": "2026-06-25T19:00:54.989605"
   },
   "ESSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.035679"
+    "scanned_at": "2026-06-25T19:00:55.010140"
   },
   "ETHB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.055604"
+    "scanned_at": "2026-06-25T19:00:55.030575"
   },
   "ETN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.075937"
+    "scanned_at": "2026-06-25T19:00:55.051042"
   },
   "EXC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.095645"
+    "scanned_at": "2026-06-25T19:00:55.069983"
   },
   "EXPE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.115497"
+    "scanned_at": "2026-06-25T19:00:55.088774"
   },
   "F": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.135813"
+    "scanned_at": "2026-06-25T19:00:55.108375"
   },
   "FANG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.155334"
+    "scanned_at": "2026-06-25T19:00:55.128123"
   },
   "FBIZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.175439"
+    "scanned_at": "2026-06-25T19:00:55.148448"
   },
   "FCX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.195804"
+    "scanned_at": "2026-06-25T19:00:55.168581"
   },
   "FDS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.215395"
+    "scanned_at": "2026-06-25T19:00:55.187307"
   },
   "FDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.235401"
+    "scanned_at": "2026-06-25T19:00:55.205822"
   },
   "FFIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.256297"
-  },
-  "FICO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.275840"
+    "scanned_at": "2026-06-25T19:00:55.225673"
   },
   "FITB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.296089"
+    "scanned_at": "2026-06-25T19:00:55.246589"
   },
   "FNF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.315647"
+    "scanned_at": "2026-06-25T19:00:55.266733"
   },
   "FNV": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.335256"
+    "scanned_at": "2026-06-25T19:00:55.286430"
   },
   "FOXA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.355237"
+    "scanned_at": "2026-06-25T19:00:55.305285"
   },
   "FRPH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.377235"
+    "scanned_at": "2026-06-25T19:00:55.323828"
   },
   "FSLR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.397784"
+    "scanned_at": "2026-06-25T19:00:55.344059"
   },
   "GBDC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.418774"
+    "scanned_at": "2026-06-25T19:00:55.364676"
   },
   "GD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.438693"
+    "scanned_at": "2026-06-25T19:00:55.384866"
   },
   "GDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.458726"
+    "scanned_at": "2026-06-25T19:00:55.405360"
   },
   "GDXJ": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.478211"
+    "scanned_at": "2026-06-25T19:00:55.425160"
   },
   "GE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.498451"
+    "scanned_at": "2026-06-25T19:00:55.444058"
   },
   "GEO": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.518926"
+    "scanned_at": "2026-06-25T19:00:55.464384"
   },
   "GILD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.538773"
+    "scanned_at": "2026-06-25T19:00:55.484238"
   },
   "GIS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.558728"
+    "scanned_at": "2026-06-25T19:00:55.505041"
   },
   "GLP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.579302"
+    "scanned_at": "2026-06-25T19:00:55.524308"
   },
   "GM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.598769"
+    "scanned_at": "2026-06-25T19:00:55.542901"
   },
   "GME": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.618743"
+    "scanned_at": "2026-06-25T19:00:55.563183"
   },
   "GMED": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.639377"
+    "scanned_at": "2026-06-25T19:00:55.583757"
   },
   "GNRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.658878"
+    "scanned_at": "2026-06-25T19:00:55.603353"
   },
   "GOOGL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.678752"
+    "scanned_at": "2026-06-25T19:00:55.624147"
   },
   "GOOS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.699162"
+    "scanned_at": "2026-06-25T19:00:55.643348"
   },
   "GPC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.718254"
+    "scanned_at": "2026-06-25T19:00:55.661922"
   },
   "GS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.738650"
+    "scanned_at": "2026-06-25T19:00:55.682263"
   },
   "GSBC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.757743"
+    "scanned_at": "2026-06-25T19:00:55.702334"
   },
   "HAFC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.777380"
+    "scanned_at": "2026-06-25T19:00:55.722817"
   },
   "HAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.798518"
+    "scanned_at": "2026-06-25T19:00:55.742924"
   },
   "HBAN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.818987"
+    "scanned_at": "2026-06-25T19:00:55.761775"
   },
   "HBI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.839765"
+    "scanned_at": "2026-06-25T19:00:55.781906"
   },
   "HBT": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.859717"
+    "scanned_at": "2026-06-25T19:00:55.802070"
   },
   "HCA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.879847"
+    "scanned_at": "2026-06-25T19:00:55.822255"
   },
   "HD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.899707"
+    "scanned_at": "2026-06-25T19:00:55.842801"
   },
   "HES": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.919884"
+    "scanned_at": "2026-06-25T19:00:55.863815"
   },
   "HIG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.940469"
+    "scanned_at": "2026-06-25T19:00:55.882703"
   },
   "HII": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.960589"
+    "scanned_at": "2026-06-25T19:00:55.901669"
   },
   "HMNF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:14.980862"
+    "scanned_at": "2026-06-25T19:00:55.922951"
   },
   "HON": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.001620"
+    "scanned_at": "2026-06-25T19:00:55.942894"
   },
   "HOPE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.022353"
+    "scanned_at": "2026-06-25T19:00:55.963807"
   },
   "HP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.041950"
+    "scanned_at": "2026-06-25T19:00:55.983962"
   },
   "HPP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.062712"
+    "scanned_at": "2026-06-25T19:00:56.003054"
   },
   "HRL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.082643"
+    "scanned_at": "2026-06-25T19:00:56.022076"
   },
   "HSY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.102332"
+    "scanned_at": "2026-06-25T19:00:56.042226"
   },
   "HTLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.123282"
+    "scanned_at": "2026-06-25T19:00:56.063471"
   },
   "HUM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.143266"
+    "scanned_at": "2026-06-25T19:00:56.083790"
   },
   "HWBK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.164062"
+    "scanned_at": "2026-06-25T19:00:56.103480"
   },
   "ICE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.184724"
+    "scanned_at": "2026-06-25T19:00:56.122995"
   },
   "IFF": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.204170"
+    "scanned_at": "2026-06-25T19:00:56.142351"
   },
   "INTC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.224750"
+    "scanned_at": "2026-06-25T19:00:56.162502"
   },
   "IP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.244698"
+    "scanned_at": "2026-06-25T19:00:56.183056"
   },
   "IPG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.265338"
+    "scanned_at": "2026-06-25T19:00:56.203525"
   },
   "ITIC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.286120"
+    "scanned_at": "2026-06-25T19:00:56.223502"
   },
   "ITW": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.305451"
+    "scanned_at": "2026-06-25T19:00:56.242094"
   },
   "JACK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.325899"
+    "scanned_at": "2026-06-25T19:00:56.261177"
   },
   "JCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.345979"
+    "scanned_at": "2026-06-25T19:00:56.281582"
   },
   "JD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.365480"
+    "scanned_at": "2026-06-25T19:00:56.301947"
   },
   "JNJ": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.386132"
+    "scanned_at": "2026-06-25T19:00:56.321731"
   },
   "JPM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.406120"
+    "scanned_at": "2026-06-25T19:00:56.340995"
   },
   "K": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.426377"
+    "scanned_at": "2026-06-25T19:00:56.360645"
   },
   "KELYA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.447554"
+    "scanned_at": "2026-06-25T19:00:56.380837"
   },
   "KEY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.467352"
+    "scanned_at": "2026-06-25T19:00:56.401143"
   },
   "KHC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.486679"
+    "scanned_at": "2026-06-25T19:00:56.421605"
   },
   "KMB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.507117"
+    "scanned_at": "2026-06-25T19:00:56.442276"
   },
   "KMI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.526438"
+    "scanned_at": "2026-06-25T19:00:56.461374"
   },
   "KMPR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.546194"
+    "scanned_at": "2026-06-25T19:00:56.480580"
   },
   "KO": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.566854"
+    "scanned_at": "2026-06-25T19:00:56.501570"
   },
   "KR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.585757"
+    "scanned_at": "2026-06-25T19:00:56.521810"
   },
   "LADR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.606112"
+    "scanned_at": "2026-06-25T19:00:56.541749"
   },
   "LDOS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.626247"
+    "scanned_at": "2026-06-25T19:00:56.561385"
   },
   "LEN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.646246"
+    "scanned_at": "2026-06-25T19:00:56.580610"
   },
   "LH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.666994"
+    "scanned_at": "2026-06-25T19:00:56.599526"
   },
   "LHCG": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.687046"
+    "scanned_at": "2026-06-25T19:00:56.620923"
   },
   "LILA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.707159"
+    "scanned_at": "2026-06-25T19:00:56.640966"
   },
   "LIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.727900"
+    "scanned_at": "2026-06-25T19:00:56.661725"
   },
   "LKQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.746685"
+    "scanned_at": "2026-06-25T19:00:56.681882"
   },
   "LMT": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.766872"
+    "scanned_at": "2026-06-25T19:00:56.700446"
   },
   "LNSTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.788518"
+    "scanned_at": "2026-06-25T19:00:56.720792"
   },
   "LOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.807937"
+    "scanned_at": "2026-06-25T19:00:56.741186"
   },
   "LULU": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.828905"
+    "scanned_at": "2026-06-25T19:00:56.761599"
   },
   "LUMN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.848705"
+    "scanned_at": "2026-06-25T19:00:56.782382"
   },
   "LVS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.868908"
+    "scanned_at": "2026-06-25T19:00:56.801698"
   },
   "MAIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.889075"
+    "scanned_at": "2026-06-25T19:00:56.820525"
   },
   "MAN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.909049"
+    "scanned_at": "2026-06-25T19:00:56.840380"
   },
   "MANH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.928558"
+    "scanned_at": "2026-06-25T19:00:56.860319"
   },
   "MCK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.948440"
+    "scanned_at": "2026-06-25T19:00:56.881188"
+  },
+  "MCO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:56.902038"
   },
   "MDT": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.968206"
+    "scanned_at": "2026-06-25T19:00:56.921367"
   },
   "MELI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:15.988390"
+    "scanned_at": "2026-06-25T19:00:56.940278"
   },
   "MET": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.008646"
+    "scanned_at": "2026-06-25T19:00:56.959030"
   },
   "META": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.028233"
+    "scanned_at": "2026-06-25T19:00:56.979967"
   },
   "MGM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.048862"
+    "scanned_at": "2026-06-25T19:00:57.000617"
   },
   "MGRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.068919"
+    "scanned_at": "2026-06-25T19:00:57.020773"
   },
   "MHK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.088575"
+    "scanned_at": "2026-06-25T19:00:57.040343"
   },
   "MKL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.108893"
+    "scanned_at": "2026-06-25T19:00:57.060187"
   },
   "MLM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.128602"
+    "scanned_at": "2026-06-25T19:00:57.080089"
   },
   "MMM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.149131"
+    "scanned_at": "2026-06-25T19:00:57.100685"
   },
   "MO": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.170032"
+    "scanned_at": "2026-06-25T19:00:57.120589"
   },
   "MOH": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.189753"
+    "scanned_at": "2026-06-25T19:00:57.141053"
   },
   "MORN": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.210064"
+    "scanned_at": "2026-06-25T19:00:57.160095"
   },
   "MOS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.229481"
+    "scanned_at": "2026-06-25T19:00:57.178446"
   },
   "MPC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.250542"
+    "scanned_at": "2026-06-25T19:00:57.198632"
   },
   "MPW": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.272727"
+    "scanned_at": "2026-06-25T19:00:57.219683"
   },
   "MRK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.293443"
+    "scanned_at": "2026-06-25T19:00:57.239832"
   },
   "MS": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.314905"
+    "scanned_at": "2026-06-25T19:00:57.260468"
   },
   "MSCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.334997"
+    "scanned_at": "2026-06-25T19:00:57.279729"
   },
   "MTB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.354396"
+    "scanned_at": "2026-06-25T19:00:57.298649"
   },
   "MTD": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.374873"
+    "scanned_at": "2026-06-25T19:00:57.318991"
   },
   "NBTB": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.395211"
+    "scanned_at": "2026-06-25T19:00:57.339052"
   },
   "NDAQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.415974"
+    "scanned_at": "2026-06-25T19:00:57.359305"
   },
   "NEE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.436291"
+    "scanned_at": "2026-06-25T19:00:57.378792"
   },
   "NEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.455180"
+    "scanned_at": "2026-06-25T19:00:57.397387"
   },
   "NFBK": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.474960"
+    "scanned_at": "2026-06-25T19:00:57.417350"
   },
   "NOC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.494838"
+    "scanned_at": "2026-06-25T19:00:57.437978"
   },
   "NOV": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.515296"
+    "scanned_at": "2026-06-25T19:00:57.457902"
   },
   "NSC": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.535700"
+    "scanned_at": "2026-06-25T19:00:57.478578"
   },
   "NTAP": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.554381"
+    "scanned_at": "2026-06-25T19:00:57.497728"
   },
   "NUE": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.573735"
+    "scanned_at": "2026-06-25T19:00:57.516068"
   },
   "NVDA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.593484"
+    "scanned_at": "2026-06-25T19:00:57.535981"
   },
   "NVR": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.613373"
+    "scanned_at": "2026-06-25T19:00:57.556203"
   },
   "NWFL": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.633806"
-  },
-  "NXST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.653765"
-  },
-  "NYT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.673051"
-  },
-  "ODP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.693099"
-  },
-  "OKE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.713068"
-  },
-  "OLN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.733728"
-  },
-  "OLPX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.754438"
-  },
-  "OMC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.774098"
-  },
-  "ORCL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.793299"
-  },
-  "OVV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.813520"
-  },
-  "OXY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.834029"
-  },
-  "PARA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.855574"
-  },
-  "PATK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.874724"
-  },
-  "PBA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.893922"
-  },
-  "PBF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.915069"
-  },
-  "PBI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.935007"
-  },
-  "PCAR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.955914"
-  },
-  "PCG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.976617"
-  },
-  "PCOR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:16.995430"
-  },
-  "PCTY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.015191"
-  },
-  "PCVX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.035736"
-  },
-  "PD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.056338"
-  },
-  "PDD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.078054"
-  },
-  "PDM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.096954"
-  },
-  "PDS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.116167"
-  },
-  "PEB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.136491"
-  },
-  "PEG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.156581"
-  },
-  "PEGA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.177626"
-  },
-  "PEN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.197221"
-  },
-  "PENN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.216125"
-  },
-  "PEP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.236560"
-  },
-  "PFE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.257168"
-  },
-  "PFG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.277837"
-  },
-  "PFGC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.297428"
-  },
-  "PFIS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.316234"
-  },
-  "PFSI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.336372"
-  },
-  "PG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.357412"
-  },
-  "PGNY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.378054"
-  },
-  "PGR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.398540"
-  },
-  "PGTI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.418747"
-  },
-  "PH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.437666"
-  },
-  "PHM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.458534"
-  },
-  "PHR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.478817"
-  },
-  "PI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.499439"
-  },
-  "PII": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.518901"
-  },
-  "PINS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.537548"
-  },
-  "PIPR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.557555"
-  },
-  "PJT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.577931"
-  },
-  "PK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.598480"
-  },
-  "PKG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.619118"
-  },
-  "PL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.638616"
-  },
-  "PLD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.657632"
-  },
-  "PLMR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.678249"
-  },
-  "PLNT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.698528"
-  },
-  "PLTR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.719518"
-  },
-  "PLUG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.739318"
-  },
-  "PLXS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.758099"
-  },
-  "PM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.778546"
-  },
-  "PNC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.799374"
-  },
-  "PNFP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.819672"
-  },
-  "PNR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.839448"
-  },
-  "PNTG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.858450"
-  },
-  "PODD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.878602"
-  },
-  "POOL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.899642"
-  },
-  "POR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.919951"
-  },
-  "POST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.941667"
-  },
-  "PPC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.961870"
-  },
-  "PPG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:17.981771"
-  },
-  "PPL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.002354"
-  },
-  "PR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.023333"
-  },
-  "PRA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.042873"
-  },
-  "PRDO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.062256"
-  },
-  "PREM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.082328"
-  },
-  "PRG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.102952"
-  },
-  "PRGO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.123512"
-  },
-  "PRGS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.143399"
-  },
-  "PRI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.163222"
-  },
-  "PRIM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.183535"
-  },
-  "PRKS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.203835"
-  },
-  "PRLB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.224553"
-  },
-  "PRMB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.245396"
-  },
-  "PRU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.264295"
-  },
-  "PRVA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.284014"
-  },
-  "PSA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.304162"
-  },
-  "PSMT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.324685"
-  },
-  "PSN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.345660"
-  },
-  "PSX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.365949"
-  },
-  "PTC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.385270"
-  },
-  "PTCT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.405428"
-  },
-  "PTEN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.425547"
-  },
-  "PTGX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.446402"
-  },
-  "PTON": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.466610"
-  },
-  "PWR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.485663"
-  },
-  "PYPL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.504874"
-  },
-  "PZZA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.525214"
-  },
-  "Q": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.546161"
-  },
-  "QCOM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.566540"
-  },
-  "QDEL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.585474"
-  },
-  "QFIN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.605262"
-  },
-  "QLYS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.625595"
-  },
-  "QRVO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.645967"
-  },
-  "QS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.667105"
-  },
-  "QSR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.686917"
-  },
-  "QTWO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.707613"
-  },
-  "QVCAQ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.728236"
-  },
-  "R": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.748112"
-  },
-  "RAL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.768688"
-  },
-  "RAMP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.788440"
-  },
-  "RARE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.807458"
-  },
-  "RBA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.827957"
-  },
-  "RBC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.848294"
-  },
-  "RBLX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.868598"
-  },
-  "RBRK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.888831"
-  },
-  "RCI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.907492"
-  },
-  "RCL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.927163"
-  },
-  "RCUS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.948007"
-  },
-  "RDDT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.968369"
-  },
-  "RDN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:18.989411"
-  },
-  "REG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.009206"
-  },
-  "REGN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.028151"
-  },
-  "RELX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.048617"
-  },
-  "RELY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.069114"
-  },
-  "REVG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.090591"
-  },
-  "REXR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.110537"
-  },
-  "REZI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.129539"
-  },
-  "RF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.149255"
-  },
-  "RGEN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.169906"
-  },
-  "RH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.190588"
-  },
-  "RHI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.211588"
-  },
-  "RHP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.230949"
-  },
-  "RICK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.249414"
-  },
-  "RIG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.269794"
-  },
-  "RIOT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.289916"
-  },
-  "RIVN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.310756"
-  },
-  "RJF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.330598"
-  },
-  "RKLB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.349385"
-  },
-  "RL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.369439"
-  },
-  "RLI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.390187"
-  },
-  "RLX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.410439"
-  },
-  "RMBS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.430808"
-  },
-  "RMD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.449904"
-  },
-  "RNG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.470310"
-  },
-  "RNR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.490911"
-  },
-  "ROCK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.510954"
-  },
-  "ROG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.531853"
-  },
-  "ROK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.551380"
-  },
-  "ROKU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.570638"
-  },
-  "ROL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.591094"
-  },
-  "ROP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.611988"
-  },
-  "ROST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.632102"
-  },
-  "RPD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.651532"
-  },
-  "RPRX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.670712"
-  },
-  "RRC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.691018"
-  },
-  "RRR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.711348"
-  },
-  "RRX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.731749"
-  },
-  "RS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.751271"
-  },
-  "RSG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.770609"
-  },
-  "RTNTF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.790514"
-  },
-  "RTX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.811250"
-  },
-  "RUM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.832305"
-  },
-  "RUN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.851715"
-  },
-  "RVTY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.871173"
-  },
-  "RWT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.890148"
-  },
-  "RXT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.911180"
-  },
-  "RY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.931615"
-  },
-  "RYAN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.952691"
-  },
-  "RYN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.972229"
-  },
-  "S": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:19.991397"
-  },
-  "SABR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.012101"
-  },
-  "SAIC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.032814"
-  },
-  "SAM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.053202"
-  },
-  "SANM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.073665"
-  },
-  "SARO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.092518"
-  },
-  "SATS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.112287"
-  },
-  "SB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.133228"
-  },
-  "SBAC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.153538"
-  },
-  "SBGI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.174547"
-  },
-  "SBH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.195014"
-  },
-  "SBLK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.214196"
-  },
-  "SBS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.234763"
-  },
-  "SBSW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.255499"
-  },
-  "SBUX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.275926"
-  },
-  "SCCO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.295729"
-  },
-  "SCHW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.315029"
-  },
-  "SCI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.335539"
-  },
-  "SDGR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.356296"
-  },
-  "SDRL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.376638"
-  },
-  "SE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.396782"
-  },
-  "SEB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.416317"
-  },
-  "SEDG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.435318"
-  },
-  "SEIC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.453455"
-  },
-  "SELF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.473324"
-  },
-  "SEM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.493980"
-  },
-  "SF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.514781"
-  },
-  "SFD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.534094"
-  },
-  "SFM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.553596"
-  },
-  "SG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.573709"
-  },
-  "SGI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.593921"
-  },
-  "SGRY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.614712"
-  },
-  "SHAK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.635200"
-  },
-  "SHC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.653998"
-  },
-  "SHEL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.673790"
-  },
-  "SHLS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.694230"
-  },
-  "SHOP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.714807"
-  },
-  "SHW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.735716"
-  },
-  "SIBN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.754801"
-  },
-  "SIG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.774453"
-  },
-  "SIGI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.794806"
-  },
-  "SII": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.815400"
-  },
-  "SIRI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.836462"
-  },
-  "SITC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.856518"
-  },
-  "SITM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.875923"
-  },
-  "SKLZ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.895824"
-  },
-  "SKM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.915972"
-  },
-  "SKT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.936608"
-  },
-  "SKY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.957946"
-  },
-  "SKYW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.977245"
-  },
-  "SLAB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:20.996589"
-  },
-  "SLB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.017070"
-  },
-  "SLF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.037484"
-  },
-  "SLG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.058301"
-  },
-  "SLGN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.078269"
-  },
-  "SLM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.098135"
-  },
-  "SLP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.118024"
-  },
-  "SM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.138259"
-  },
-  "SMBC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.159195"
-  },
-  "SMCI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.180582"
-  },
-  "SMG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.200779"
-  },
-  "SMHI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.220065"
-  },
-  "SMPL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.240375"
-  },
-  "SMTC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.260646"
-  },
-  "SN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.282066"
-  },
-  "SNA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.302853"
-  },
-  "SNAP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.323143"
-  },
-  "SNBR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.344118"
-  },
-  "SNDK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.364773"
-  },
-  "SNIRF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.385779"
-  },
-  "SNN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.405420"
-  },
-  "SNOW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.424627"
-  },
-  "SNPS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.444972"
-  },
-  "SNX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.465893"
-  },
-  "SO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.486252"
-  },
-  "SOC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.506432"
-  },
-  "SOLV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.525596"
-  },
-  "SON": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.545901"
-  },
-  "SONO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.566759"
-  },
-  "SONY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.587224"
-  },
-  "SPB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.607723"
-  },
-  "SPCE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.627382"
-  },
-  "SPG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.646677"
-  },
-  "SPGI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.667622"
-  },
-  "SPHR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.687921"
-  },
-  "SPOT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.708685"
-  },
-  "SPSC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.728102"
-  },
-  "SPWH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.747612"
-  },
-  "SPWR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.768329"
-  },
-  "SPXC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.789081"
-  },
-  "SPY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.809385"
-  },
-  "SR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.829009"
-  },
-  "SRE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.849374"
-  },
-  "SRPT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.869593"
-  },
-  "SSD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.890449"
-  },
-  "SSNC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.911288"
-  },
-  "SSRM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.931273"
-  },
-  "SSYS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.950413"
-  },
-  "ST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.969665"
-  },
-  "STAA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:21.990487"
-  },
-  "STE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.011343"
-  },
-  "STEM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.031878"
-  },
-  "STLA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.051700"
-  },
-  "STLD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.071793"
-  },
-  "STN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.091969"
-  },
-  "STNE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.112644"
-  },
-  "STNG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.132697"
-  },
-  "STRA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.152598"
-  },
-  "STRL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.172127"
-  },
-  "STT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.191759"
-  },
-  "STWD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.212536"
-  },
-  "STX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.233350"
-  },
-  "STZ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.253572"
-  },
-  "SU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.273181"
-  },
-  "SUI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.292711"
-  },
-  "SUPV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.313493"
-  },
-  "SW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.334303"
-  },
-  "SWBI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.354636"
-  },
-  "SWK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.374510"
-  },
-  "SWKS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.394258"
-  },
-  "SXC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.414522"
-  },
-  "SXT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.435474"
-  },
-  "SYF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.455905"
-  },
-  "SYK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.475368"
-  },
-  "SYM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.494818"
-  },
-  "SYY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.514693"
-  },
-  "T": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.535133"
-  },
-  "TAC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.556036"
-  },
-  "TAL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.576139"
-  },
-  "TALO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.595873"
-  },
-  "TAP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.616221"
-  },
-  "TBPH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.636866"
-  },
-  "TCBI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.657882"
-  },
-  "TCBK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.678151"
-  },
-  "TCMD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.697576"
-  },
-  "TCOM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.717123"
-  },
-  "TCPA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.737219"
-  },
-  "TD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.757959"
-  },
-  "TDC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.778859"
-  },
-  "TDG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.799099"
-  },
-  "TDOC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.819133"
-  },
-  "TDW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.839910"
-  },
-  "TDY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.860321"
-  },
-  "TEAM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.881125"
-  },
-  "TECH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.901032"
-  },
-  "TECK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.920330"
-  },
-  "TEL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.939828"
-  },
-  "TEM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.960398"
-  },
-  "TENB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:22.981852"
-  },
-  "TER": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.002743"
-  },
-  "TEVA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.021928"
-  },
-  "TEX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.041660"
-  },
-  "TFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.062338"
-  },
-  "TFIN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.082788"
-  },
-  "TFX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.103737"
-  },
-  "TGT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.123405"
-  },
-  "TGTX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.142502"
-  },
-  "THC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.163047"
-  },
-  "THFF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.183368"
-  },
-  "THG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.204714"
-  },
-  "THO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.224592"
-  },
-  "THR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.243995"
-  },
-  "THRM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.264428"
-  },
-  "TJX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.285096"
-  },
-  "TKO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.305534"
-  },
-  "TKR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.325878"
-  },
-  "TLN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.344870"
-  },
-  "TLRY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.365315"
-  },
-  "TMC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.386095"
-  },
-  "TMDX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.406719"
-  },
-  "TMHC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.427527"
-  },
-  "TMO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.447403"
-  },
-  "TMUS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.467433"
-  },
-  "TNDM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.488232"
-  },
-  "TNET": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.508756"
-  },
-  "TOL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.529284"
-  },
-  "TOST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.548769"
-  },
-  "TPG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.568487"
-  },
-  "TPL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.589307"
-  },
-  "TPR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.610190"
-  },
-  "TREX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.630889"
-  },
-  "TRGP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.651037"
-  },
-  "TRI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.670590"
-  },
-  "TRIN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.690458"
-  },
-  "TRIP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.711473"
-  },
-  "TRMB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.731856"
-  },
-  "TRMK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.752356"
-  },
-  "TRNO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.772369"
-  },
-  "TROW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.791628"
-  },
-  "TROX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.812427"
-  },
-  "TRP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.833017"
-  },
-  "TRU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.854464"
-  },
-  "TRUP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.874371"
-  },
-  "TRV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.893835"
-  },
-  "TS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.913991"
-  },
-  "TSCO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.935018"
-  },
-  "TSEM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.955362"
-  },
-  "TSLA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.975639"
-  },
-  "TSN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:23.994422"
-  },
-  "TT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.014833"
-  },
-  "TTAN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.035372"
-  },
-  "TTC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.055899"
-  },
-  "TTD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.076100"
-  },
-  "TTEK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.095485"
-  },
-  "TTMI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.115806"
-  },
-  "TTWO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.136709"
-  },
-  "TU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.157655"
-  },
-  "TWLO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.177499"
-  },
-  "TWN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.197316"
-  },
-  "TWST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.217322"
-  },
-  "TXG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.238172"
-  },
-  "TXMD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.258947"
-  },
-  "TXN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.278471"
-  },
-  "TXNM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.297874"
-  },
-  "TXRH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.317883"
-  },
-  "TXT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.338747"
-  },
-  "TYL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.359850"
-  },
-  "U": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.380541"
-  },
-  "UAA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.400173"
-  },
-  "UAL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.420097"
-  },
-  "UBER": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.441035"
-  },
-  "UCTT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.462798"
-  },
-  "UDR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.483898"
-  },
-  "UEC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.503364"
-  },
-  "UFPI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.523046"
-  },
-  "UFPT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.543244"
-  },
-  "UHS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.563578"
-  },
-  "UI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.584553"
-  },
-  "UL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.605275"
-  },
-  "ULCC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.624969"
-  },
-  "ULTA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.644611"
-  },
-  "UMC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.664858"
-  },
-  "UNF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.685832"
-  },
-  "UNH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.706627"
-  },
-  "UNIT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.725734"
-  },
-  "UNP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.745859"
-  },
-  "UPBD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.766526"
-  },
-  "UPS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.787047"
-  },
-  "UPST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.807988"
-  },
-  "UPWK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.827464"
-  },
-  "URBN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.846740"
-  },
-  "URG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.868209"
-  },
-  "URI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.888648"
-  },
-  "USAR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.909674"
-  },
-  "USB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.929574"
-  },
-  "USFD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.948602"
-  },
-  "USNA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.969216"
-  },
-  "USPH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:24.989952"
-  },
-  "UTHR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.010819"
-  },
-  "UUUU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.031108"
-  },
-  "UVSP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.050333"
-  },
-  "UVV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.071226"
-  },
-  "V": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.092173"
-  },
-  "VAC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.112501"
-  },
-  "VAL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.132747"
-  },
-  "VALE": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.152153"
-  },
-  "VC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.172413"
-  },
-  "VCEL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.193294"
-  },
-  "VCYT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.214508"
-  },
-  "VEEV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.234939"
-  },
-  "VET": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.255006"
-  },
-  "VFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.275226"
-  },
-  "VIAV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.296159"
-  },
-  "VICR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.316856"
-  },
-  "VIK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.337861"
-  },
-  "VIOT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.357830"
-  },
-  "VIPS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.377680"
-  },
-  "VIRT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.398194"
-  },
-  "VISN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.419273"
-  },
-  "VKTX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.439562"
-  },
-  "VLO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.460041"
-  },
-  "VLY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.480297"
-  },
-  "VMC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.499655"
-  },
-  "VMI": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.520865"
-  },
-  "VNET": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.540955"
-  },
-  "VNO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.560832"
-  },
-  "VNOM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.581548"
-  },
-  "VNT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.602087"
-  },
-  "VOD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.622062"
-  },
-  "VOYA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.643271"
-  },
-  "VREX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.663417"
-  },
-  "VRM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.684802"
-  },
-  "VRRM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.705482"
-  },
-  "VRSN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.725235"
-  },
-  "VRT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.745741"
-  },
-  "VRTX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.766216"
-  },
-  "VSAT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.785767"
-  },
-  "VSH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.806297"
-  },
-  "VST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.826361"
-  },
-  "VTR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.846600"
-  },
-  "VTRS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.867962"
-  },
-  "VVV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.888245"
-  },
-  "VYX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.909063"
-  },
-  "VZ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.929434"
-  },
-  "W": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.948891"
-  },
-  "WAFD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.969611"
-  },
-  "WAL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:25.989776"
-  },
-  "WAT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.009465"
-  },
-  "WB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.030366"
-  },
-  "WBA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.051652"
-  },
-  "WBD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.071837"
-  },
-  "WBS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.092534"
-  },
-  "WCC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.112463"
-  },
-  "WCN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.132727"
-  },
-  "WDAY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.153655"
-  },
-  "WDC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.173608"
-  },
-  "WDFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.194102"
-  },
-  "WEC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.215049"
-  },
-  "WELL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.234845"
-  },
-  "WEN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.255549"
-  },
-  "WERN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.275335"
-  },
-  "WEST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.296879"
-  },
-  "WEX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.317639"
-  },
-  "WFC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.338611"
-  },
-  "WFG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.360096"
-  },
-  "WFRD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.380880"
-  },
-  "WH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.400915"
-  },
-  "WHD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.422037"
-  },
-  "WHR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.441565"
-  },
-  "WINA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.461824"
-  },
-  "WING": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.482733"
-  },
-  "WIX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.502446"
-  },
-  "WK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.523061"
-  },
-  "WKC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.544121"
-  },
-  "WLK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.563917"
-  },
-  "WM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.584582"
-  },
-  "WMB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.605094"
-  },
-  "WMG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.624979"
-  },
-  "WMK": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.645730"
-  },
-  "WMS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.665882"
-  },
-  "WMT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.686390"
-  },
-  "WNC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.707767"
-  },
-  "WOLF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.727197"
-  },
-  "WOR": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.747826"
-  },
-  "WPC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.768155"
-  },
-  "WRB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.788271"
-  },
-  "WRBY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.808904"
-  },
-  "WSBC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.828759"
-  },
-  "WSC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.849484"
-  },
-  "WSM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.871004"
-  },
-  "WSO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.890193"
-  },
-  "WST": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.910875"
-  },
-  "WT": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.931944"
-  },
-  "WTS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.951798"
-  },
-  "WTW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.972598"
-  },
-  "WU": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:26.993532"
-  },
-  "WULF": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.013312"
-  },
-  "WWD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.033812"
-  },
-  "WWW": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.054709"
-  },
-  "WY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.074880"
-  },
-  "WYNN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.095589"
-  },
-  "XEL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.115692"
-  },
-  "XOM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.136190"
-  },
-  "XPEV": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.156918"
-  },
-  "XPO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.176540"
-  },
-  "XRAY": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.197297"
-  },
-  "XRX": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.218090"
-  },
-  "XYL": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.238739"
-  },
-  "XYZ": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.259769"
-  },
-  "YELP": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.279218"
-  },
-  "YUM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.299805"
-  },
-  "YUMC": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.320932"
-  },
-  "ZBH": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.340129"
-  },
-  "ZBRA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.361127"
-  },
-  "ZD": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.381890"
-  },
-  "ZETA": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.401673"
-  },
-  "ZG": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.422600"
-  },
-  "ZGN": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.443585"
-  },
-  "ZION": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.463724"
-  },
-  "ZLAB": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.484425"
-  },
-  "ZM": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.504355"
-  },
-  "ZS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.525028"
-  },
-  "ZTS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.545977"
-  },
-  "ZWS": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.565605"
-  },
-  "ZYME": {
-    "iv_result": null,
-    "scanned_at": "2026-06-24T16:02:27.586431"
+    "scanned_at": "2026-06-25T19:00:57.576669"
   },
   "NWSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-24T19:00:45.580164"
+    "scanned_at": "2026-06-25T19:00:57.597305"
+  },
+  "NXST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.616181"
+  },
+  "NYT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.635290"
+  },
+  "ODP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.655803"
+  },
+  "OKE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.675927"
+  },
+  "OLN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.696802"
+  },
+  "OLPX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.717394"
+  },
+  "OMC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.736318"
+  },
+  "ORCL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.756128"
+  },
+  "OVV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.776827"
+  },
+  "OXY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.797420"
+  },
+  "PARA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.818678"
+  },
+  "PATK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.838805"
+  },
+  "PBA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.857629"
+  },
+  "PBF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.876647"
+  },
+  "PBI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.896439"
+  },
+  "PCAR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.916681"
+  },
+  "PCG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.936948"
+  },
+  "PCOR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.957434"
+  },
+  "PCTY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.976490"
+  },
+  "PCVX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:57.994811"
+  },
+  "PD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.015065"
+  },
+  "PDD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.035713"
+  },
+  "PDM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.055746"
+  },
+  "PDS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.076878"
+  },
+  "PEB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.095829"
+  },
+  "PEG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.114650"
+  },
+  "PEGA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.135709"
+  },
+  "PEN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.155750"
+  },
+  "PENN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.176453"
+  },
+  "PEP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.196043"
+  },
+  "PFE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.214660"
+  },
+  "PFG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.234510"
+  },
+  "PFGC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.255037"
+  },
+  "PFIS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.275129"
+  },
+  "PFSI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.296057"
+  },
+  "PG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.315113"
+  },
+  "PGNY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.333830"
+  },
+  "PGR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.353941"
+  },
+  "PGTI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.374689"
+  },
+  "PH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.395279"
+  },
+  "PHM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.415935"
+  },
+  "PHR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.434950"
+  },
+  "PI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.454108"
+  },
+  "PII": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.474559"
+  },
+  "PINS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.494908"
+  },
+  "PIPR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.515380"
+  },
+  "PJT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.535516"
+  },
+  "PK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.554495"
+  },
+  "PKG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.573652"
+  },
+  "PL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.593563"
+  },
+  "PLD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.614395"
+  },
+  "PLMR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.635209"
+  },
+  "PLNT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.654797"
+  },
+  "PLTR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.674676"
+  },
+  "PLUG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.694477"
+  },
+  "PLXS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.714550"
+  },
+  "PM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.734955"
+  },
+  "PNC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.755057"
+  },
+  "PNFP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.775184"
+  },
+  "PNR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.794161"
+  },
+  "PNTG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.813034"
+  },
+  "PODD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.833331"
+  },
+  "POOL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.853656"
+  },
+  "POR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.873864"
+  },
+  "POST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.894195"
+  },
+  "PPC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.912951"
+  },
+  "PPG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.932060"
+  },
+  "PPL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.952496"
+  },
+  "PR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.972721"
+  },
+  "PRA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:58.993431"
+  },
+  "PRDO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.013971"
+  },
+  "PREM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.032726"
+  },
+  "PRG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.052269"
+  },
+  "PRGO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.073299"
+  },
+  "PRGS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.093300"
+  },
+  "PRI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.113625"
+  },
+  "PRIM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.133649"
+  },
+  "PRKS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.153233"
+  },
+  "PRLB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.172589"
+  },
+  "PRMB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.192449"
+  },
+  "PRU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.212876"
+  },
+  "PRVA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.233249"
+  },
+  "PSA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.252358"
+  },
+  "PSMT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.271981"
+  },
+  "PSN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.291082"
+  },
+  "PSX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.311511"
+  },
+  "PTC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.331725"
+  },
+  "PTCT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.351941"
+  },
+  "PTEN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.371270"
+  },
+  "PTGX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.390148"
+  },
+  "PTON": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.410028"
+  },
+  "PWR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.430708"
+  },
+  "PYPL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.451028"
+  },
+  "PZZA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.471484"
+  },
+  "Q": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.490797"
+  },
+  "QCOM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.509637"
+  },
+  "QDEL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.530312"
+  },
+  "QFIN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.550589"
+  },
+  "QLYS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.571092"
+  },
+  "QRVO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.591032"
+  },
+  "QS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.610245"
+  },
+  "QSR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.630586"
+  },
+  "QTWO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.651235"
+  },
+  "QVCAQ": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.671638"
+  },
+  "R": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.693304"
+  },
+  "RAL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.712557"
+  },
+  "RAMP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.731198"
+  },
+  "RARE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.751006"
+  },
+  "RBA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.771415"
+  },
+  "RBC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.791470"
+  },
+  "RBLX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.812401"
+  },
+  "RBRK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.832239"
+  },
+  "RCI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.850906"
+  },
+  "RCL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.870479"
+  },
+  "RCUS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.890295"
+  },
+  "RDDT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.911115"
+  },
+  "RDN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.931729"
+  },
+  "REG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.951289"
+  },
+  "REGN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.970042"
+  },
+  "RELX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:00:59.989130"
+  },
+  "RELY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.009981"
+  },
+  "REVG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.031739"
+  },
+  "REXR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.052665"
+  },
+  "REZI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.071842"
+  },
+  "RF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.091810"
+  },
+  "RGEN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.111750"
+  },
+  "RGLD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.132470"
+  },
+  "RH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.153486"
+  },
+  "RHI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.174236"
+  },
+  "RHP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.193709"
+  },
+  "RICK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.212638"
+  },
+  "RIG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.232340"
+  },
+  "RIOT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.253070"
+  },
+  "RIVN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.273553"
+  },
+  "RJF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.292884"
+  },
+  "RKLB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.312267"
+  },
+  "RL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.331403"
+  },
+  "RLI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.351718"
+  },
+  "RLX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.372041"
+  },
+  "RMBS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.392461"
+  },
+  "RMD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.412709"
+  },
+  "RNG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.432691"
+  },
+  "RNR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.452391"
+  },
+  "ROCK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.473211"
+  },
+  "ROG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.493371"
+  },
+  "ROK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.514175"
+  },
+  "ROKU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.533125"
+  },
+  "ROL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.551878"
+  },
+  "ROP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.572150"
+  },
+  "ROST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.592623"
+  },
+  "RPD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.612779"
+  },
+  "RPRX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.633444"
+  },
+  "RRC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.652516"
+  },
+  "RRR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.671464"
+  },
+  "RRX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.691839"
+  },
+  "RS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.712080"
+  },
+  "RSG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.732679"
+  },
+  "RTNTF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.752952"
+  },
+  "RTX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.771935"
+  },
+  "RUM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.790945"
+  },
+  "RUN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.811923"
+  },
+  "RVTY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.832321"
+  },
+  "RWT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.853273"
+  },
+  "RXT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.873476"
+  },
+  "RY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.893072"
+  },
+  "RYAN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.911677"
+  },
+  "RYN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.931845"
+  },
+  "S": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.952563"
+  },
+  "SABR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.972791"
+  },
+  "SAIC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:00.993067"
+  },
+  "SAM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.012436"
+  },
+  "SANM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.031629"
+  },
+  "SARO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.052171"
+  },
+  "SATS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.072316"
+  },
+  "SB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.093329"
+  },
+  "SBAC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.113262"
+  },
+  "SBGI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.132236"
+  },
+  "SBH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.152252"
+  },
+  "SBLK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.172953"
+  },
+  "SBS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.192857"
+  },
+  "SBSW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.213514"
+  },
+  "SBUX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.233178"
+  },
+  "SCCO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.251655"
+  },
+  "SCHW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.272113"
+  },
+  "SCI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.292183"
+  },
+  "SDGR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.312658"
+  },
+  "SDRL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.333417"
+  },
+  "SE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.352497"
+  },
+  "SEB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.372165"
+  },
+  "SEDG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.392759"
+  },
+  "SEIC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.413178"
+  },
+  "SELF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.434384"
+  },
+  "SEM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.454114"
+  },
+  "SF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.472777"
+  },
+  "SFD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.492595"
+  },
+  "SFM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.512662"
+  },
+  "SG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.533263"
+  },
+  "SGI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.554206"
+  },
+  "SGRY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.573272"
+  },
+  "SHAK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.592323"
+  },
+  "SHC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.612381"
+  },
+  "SHEL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.632903"
+  },
+  "SHLS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.653967"
+  },
+  "SHOP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.674301"
+  },
+  "SHW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.693902"
+  },
+  "SIBN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.713608"
+  },
+  "SIG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.733081"
+  },
+  "SIGI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.753761"
+  },
+  "SII": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.774314"
+  },
+  "SIRI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.794549"
+  },
+  "SITC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.814892"
+  },
+  "SITM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.833995"
+  },
+  "SKLZ": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.853285"
+  },
+  "SKM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.873893"
+  },
+  "SKT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.894335"
+  },
+  "SKY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.915052"
+  },
+  "SKYW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.934160"
+  },
+  "SLAB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.953081"
+  },
+  "SLB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.973517"
+  },
+  "SLF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:01.994112"
+  },
+  "SLG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.014414"
+  },
+  "SLGN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.035000"
+  },
+  "SLM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.054104"
+  },
+  "SLP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.072929"
+  },
+  "SM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.094223"
+  },
+  "SMBC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.114377"
+  },
+  "SMCI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.134762"
+  },
+  "SMG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.155347"
+  },
+  "SMHI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.174391"
+  },
+  "SMPL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.194485"
+  },
+  "SMTC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.215173"
+  },
+  "SN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.235136"
+  },
+  "SNA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.255910"
+  },
+  "SNAP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.275416"
+  },
+  "SNBR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.294641"
+  },
+  "SNDK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.314941"
+  },
+  "SNIRF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.334984"
+  },
+  "SNN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.355748"
+  },
+  "SNOW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.376089"
+  },
+  "SNPS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.395021"
+  },
+  "SNX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.414686"
+  },
+  "SO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.435715"
+  },
+  "SOC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.455768"
+  },
+  "SOLV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.476833"
+  },
+  "SON": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.497034"
+  },
+  "SONO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.516374"
+  },
+  "SONY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.536218"
+  },
+  "SPB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.556450"
+  },
+  "SPCE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.577325"
+  },
+  "SPG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.597939"
+  },
+  "SPGI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.617717"
+  },
+  "SPHR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.637053"
+  },
+  "SPOT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.656660"
+  },
+  "SPSC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.677104"
+  },
+  "SPWH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.697906"
+  },
+  "SPWR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.718078"
+  },
+  "SPXC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.737904"
+  },
+  "SPY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.756997"
+  },
+  "SR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.775937"
+  },
+  "SRE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.796898"
+  },
+  "SRPT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.818329"
+  },
+  "SSD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.838810"
+  },
+  "SSNC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.858365"
+  },
+  "SSRM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.877613"
+  },
+  "SSYS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.897493"
+  },
+  "ST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.918097"
+  },
+  "STAA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.938311"
+  },
+  "STE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.959294"
+  },
+  "STEM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.978858"
+  },
+  "STLA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:02.997584"
+  },
+  "STLD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.017969"
+  },
+  "STN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.038714"
+  },
+  "STNE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.059202"
+  },
+  "STNG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.079731"
+  },
+  "STRA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.099476"
+  },
+  "STRL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.119136"
+  },
+  "STT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.139635"
+  },
+  "STWD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.159763"
+  },
+  "STX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.180905"
+  },
+  "STZ": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.200802"
+  },
+  "SU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.219902"
+  },
+  "SUI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.239990"
+  },
+  "SUPV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.260968"
+  },
+  "SW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.281216"
+  },
+  "SWBI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.301969"
+  },
+  "SWK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.321410"
+  },
+  "SWKS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.340706"
+  },
+  "SXC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.361183"
+  },
+  "SXT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.381698"
+  },
+  "SYF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.402524"
+  },
+  "SYK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.422704"
+  },
+  "SYM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.442049"
+  },
+  "SYY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.461672"
+  },
+  "T": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.482070"
+  },
+  "TAC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.502554"
+  },
+  "TAL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.523460"
+  },
+  "TALO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.542988"
+  },
+  "TAP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.562371"
+  },
+  "TBPH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.582059"
+  },
+  "TCBI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.602163"
+  },
+  "TCBK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.622894"
+  },
+  "TCMD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.643971"
+  },
+  "TCOM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.663832"
+  },
+  "TCPA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.683651"
+  },
+  "TD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.703109"
+  },
+  "TDC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.723725"
+  },
+  "TDG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.744558"
+  },
+  "TDOC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.763573"
+  },
+  "TDW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.784360"
+  },
+  "TDY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.805438"
+  },
+  "TEAM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.824811"
+  },
+  "TECH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.845023"
+  },
+  "TECK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.865947"
+  },
+  "TEL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.886133"
+  },
+  "TEM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.905865"
+  },
+  "TENB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.926043"
+  },
+  "TER": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.946313"
+  },
+  "TEVA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.966757"
+  },
+  "TEX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:03.986754"
+  },
+  "TFC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.007041"
+  },
+  "TFIN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.027253"
+  },
+  "TFX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.047457"
+  },
+  "TGT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.067743"
+  },
+  "TGTX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.088825"
+  },
+  "THC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.109807"
+  },
+  "THFF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.129608"
+  },
+  "THG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.149519"
+  },
+  "THO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.170845"
+  },
+  "THR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.190887"
+  },
+  "THRM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.211049"
+  },
+  "TJX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.232322"
+  },
+  "TKO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.251664"
+  },
+  "TKR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.272036"
+  },
+  "TLN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.293312"
+  },
+  "TLRY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.312755"
+  },
+  "TMC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.332995"
+  },
+  "TMDX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.353697"
+  },
+  "TMHC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.373743"
+  },
+  "TMO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.393630"
+  },
+  "TMUS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.414044"
+  },
+  "TNDM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.434296"
+  },
+  "TNET": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.456109"
+  },
+  "TOL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.477248"
+  },
+  "TOST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.497248"
+  },
+  "TPG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.517730"
+  },
+  "TPL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.538072"
+  },
+  "TPR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.557361"
+  },
+  "TREX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.578117"
+  },
+  "TRGP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.598415"
+  },
+  "TRI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.617730"
+  },
+  "TRIN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.638306"
+  },
+  "TRIP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.658635"
+  },
+  "TRMB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.678296"
+  },
+  "TRMK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.698666"
+  },
+  "TRNO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.719729"
+  },
+  "TROW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.739515"
+  },
+  "TROX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.759546"
+  },
+  "TRP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.780563"
+  },
+  "TRU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.800374"
+  },
+  "TRUP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.820286"
+  },
+  "TRV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.841455"
+  },
+  "TS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.861681"
+  },
+  "TSCO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.881064"
+  },
+  "TSEM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.901807"
+  },
+  "TSLA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.921839"
+  },
+  "TSN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.941804"
+  },
+  "TT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.962086"
+  },
+  "TTAN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:04.982028"
+  },
+  "TTC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.003461"
+  },
+  "TTD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.024309"
+  },
+  "TTEK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.044084"
+  },
+  "TTMI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.064478"
+  },
+  "TTWO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.085097"
+  },
+  "TU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.105528"
+  },
+  "TWLO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.125850"
+  },
+  "TWN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.146877"
+  },
+  "TWST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.166628"
+  },
+  "TXG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.186839"
+  },
+  "TXMD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.207892"
+  },
+  "TXN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.227728"
+  },
+  "TXNM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.248288"
+  },
+  "TXRH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.269588"
+  },
+  "TXT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.289171"
+  },
+  "TYL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.309287"
+  },
+  "U": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.330221"
+  },
+  "UAA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.349571"
+  },
+  "UAL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.369387"
+  },
+  "UBER": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.390212"
+  },
+  "UCTT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.410018"
+  },
+  "UDR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.430241"
+  },
+  "UEC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.451107"
+  },
+  "UFPI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.470552"
+  },
+  "UFPT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.491048"
+  },
+  "UHS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.511385"
+  },
+  "UI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.531260"
+  },
+  "UL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.551718"
+  },
+  "ULCC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.571897"
+  },
+  "ULTA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.591811"
+  },
+  "UMC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.612462"
+  },
+  "UNF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.632612"
+  },
+  "UNH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.652677"
+  },
+  "UNIT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.673472"
+  },
+  "UNP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.694062"
+  },
+  "UPBD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.713571"
+  },
+  "UPS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.734138"
+  },
+  "UPST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.754718"
+  },
+  "UPWK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.774690"
+  },
+  "URBN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.795115"
+  },
+  "URG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.816031"
+  },
+  "URI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.835932"
+  },
+  "USAR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.855640"
+  },
+  "USB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.876403"
+  },
+  "USFD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.895930"
+  },
+  "USNA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.916055"
+  },
+  "USPH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.936962"
+  },
+  "UTHR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.956471"
+  },
+  "UUUU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.977134"
+  },
+  "UVSP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:05.998199"
+  },
+  "UVV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.017584"
+  },
+  "V": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.038283"
+  },
+  "VAC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.059011"
+  },
+  "VAL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.078390"
+  },
+  "VALE": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.099646"
+  },
+  "VC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.119749"
+  },
+  "VCEL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.139635"
+  },
+  "VCYT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.160398"
+  },
+  "VEEV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.180917"
+  },
+  "VET": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.200594"
+  },
+  "VFC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.221615"
+  },
+  "VIAV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.242266"
+  },
+  "VICR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.262255"
+  },
+  "VIK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.283132"
+  },
+  "VIOT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.303839"
+  },
+  "VIPS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.323893"
+  },
+  "VIRT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.344126"
+  },
+  "VISN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.365159"
+  },
+  "VKTX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.385237"
+  },
+  "VLO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.404829"
+  },
+  "VLY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.426153"
+  },
+  "VMC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.447058"
+  },
+  "VMI": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.466573"
+  },
+  "VNET": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.487470"
+  },
+  "VNO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.508064"
+  },
+  "VNOM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.527769"
+  },
+  "VNT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.548449"
+  },
+  "VOD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.568301"
+  },
+  "VOYA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.588156"
+  },
+  "VREX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.608834"
+  },
+  "VRM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.628419"
+  },
+  "VRRM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.648699"
+  },
+  "VRSN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.669556"
+  },
+  "VRT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.688956"
+  },
+  "VRTX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.709243"
+  },
+  "VSAT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.729755"
+  },
+  "VSH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.749992"
+  },
+  "VST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.770812"
+  },
+  "VTR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.791036"
+  },
+  "VTRS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.810909"
+  },
+  "VVV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.831588"
+  },
+  "VYX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.851937"
+  },
+  "VZ": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.871848"
+  },
+  "W": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.892313"
+  },
+  "WAFD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.912972"
+  },
+  "WAL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.933150"
+  },
+  "WAT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.952807"
+  },
+  "WB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.973574"
+  },
+  "WBA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:06.994301"
+  },
+  "WBD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.014254"
+  },
+  "WBS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.035146"
+  },
+  "WCC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.055046"
+  },
+  "WCN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.075309"
+  },
+  "WDAY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.096183"
+  },
+  "WDC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.116414"
+  },
+  "WDFC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.136778"
+  },
+  "WEC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.157769"
+  },
+  "WELL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.177185"
+  },
+  "WEN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.197892"
+  },
+  "WERN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.218752"
+  },
+  "WEST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.238306"
+  },
+  "WEX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.258830"
+  },
+  "WFC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.279570"
+  },
+  "WFG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.299335"
+  },
+  "WFRD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.320280"
+  },
+  "WH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.340351"
+  },
+  "WHD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.360170"
+  },
+  "WHR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.380822"
+  },
+  "WINA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.401640"
+  },
+  "WING": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.421265"
+  },
+  "WIX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.441835"
+  },
+  "WK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.462619"
+  },
+  "WKC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.482676"
+  },
+  "WLK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.503105"
+  },
+  "WM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.523611"
+  },
+  "WMB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.543619"
+  },
+  "WMG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.563964"
+  },
+  "WMK": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.584681"
+  },
+  "WMS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.604779"
+  },
+  "WMT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.625102"
+  },
+  "WNC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.644910"
+  },
+  "WOLF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.665521"
+  },
+  "WOR": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.685718"
+  },
+  "WPC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.705935"
+  },
+  "WPM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.726488"
+  },
+  "WRB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.746771"
+  },
+  "WRBY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.766392"
+  },
+  "WSBC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.786780"
+  },
+  "WSC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.807790"
+  },
+  "WSM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.828434"
+  },
+  "WSO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.848859"
+  },
+  "WST": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.869610"
+  },
+  "WT": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.889870"
+  },
+  "WTS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.910059"
+  },
+  "WTW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.930973"
+  },
+  "WU": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.950401"
+  },
+  "WULF": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.971072"
+  },
+  "WWD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:07.991806"
+  },
+  "WWW": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.011486"
+  },
+  "WY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.032166"
+  },
+  "WYNN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.052955"
+  },
+  "XEL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.072272"
+  },
+  "XOM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.093039"
+  },
+  "XPEV": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.114467"
+  },
+  "XPO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.134269"
+  },
+  "XRAY": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.155285"
+  },
+  "XRX": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.175840"
+  },
+  "XYL": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.195636"
+  },
+  "XYZ": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.216388"
+  },
+  "YELP": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.236930"
+  },
+  "YUM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.257440"
+  },
+  "YUMC": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.278207"
+  },
+  "ZBH": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.298485"
+  },
+  "ZBRA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.318349"
+  },
+  "ZD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.339278"
+  },
+  "ZETA": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.360223"
+  },
+  "ZG": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.382843"
+  },
+  "ZGN": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.405526"
+  },
+  "ZION": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.428382"
+  },
+  "ZLAB": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.450674"
+  },
+  "ZM": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.471905"
+  },
+  "ZS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.491978"
+  },
+  "ZTS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.512766"
+  },
+  "ZWS": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.533096"
+  },
+  "ZYME": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T19:01:08.553466"
+  },
+  "FICO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-25T22:00:49.658051"
   }
 }

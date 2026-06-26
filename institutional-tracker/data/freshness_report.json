@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-24T21:15:00.533814",
+  "generated_at": "2026-06-25T21:15:00.341758",
   "agent": "Freshness Sentinel",
   "checked": 21,
   "ok": 17,
@@ -9,30 +9,26 @@
     {
       "item": "data/manager_decisions.json",
       "status": "STALE",
-      "detail": "123h old (budget 26h)",
-      "critical": true,
-      "new_alert": true
+      "detail": "147h old (budget 26h)",
+      "critical": true
     },
     {
       "item": "data/state.json",
       "status": "STALE",
-      "detail": "121h old (budget 26h)",
-      "critical": true,
-      "new_alert": true
+      "detail": "145h old (budget 26h)",
+      "critical": true
     },
     {
       "item": "data/chief_of_staff_report.json",
       "status": "STALE",
-      "detail": "123h old (budget 30h)",
-      "critical": false,
-      "new_alert": true
+      "detail": "147h old (budget 30h)",
+      "critical": false
     },
     {
       "item": "data/data_quality_report.json",
       "status": "STALE",
-      "detail": "289h old (budget 54h)",
-      "critical": false,
-      "new_alert": true
+      "detail": "313h old (budget 54h)",
+      "critical": false
     }
   ],
   "overall": "CRITICAL"

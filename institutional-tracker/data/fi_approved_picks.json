@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-24T14:30:05.311902",
+  "generated_at": "2026-06-25T18:00:59.700505",
   "regime": "NORMAL",
   "approved": [
     {
@@ -31,13 +31,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311224"
+      "board_ts": "2026-06-25T18:00:59.699678"
     },
     {
       "ticker": "VCSH",
       "conviction": 4,
       "action": "BUY",
-      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=303.0bps IG spread=89.0bps | thesis=spread compression play",
+      "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=305.0bps IG spread=89.0bps | thesis=spread compression play",
       "credit_tier": "IG",
       "segment": "credit_spread",
       "opportunity_score": 77,
@@ -62,7 +62,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311308"
+      "board_ts": "2026-06-25T18:00:59.699752"
     },
     {
       "ticker": "IGSB",
@@ -93,7 +93,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311375"
+      "board_ts": "2026-06-25T18:00:59.699812"
     },
     {
       "ticker": "SLQD",
@@ -124,13 +124,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311453"
+      "board_ts": "2026-06-25T18:00:59.699872"
     },
     {
       "ticker": "VCIT",
       "conviction": 4,
       "action": "BUY",
-      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=303.0bps IG spread=89.0bps | thesis=spread compression play",
+      "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=305.0bps IG spread=89.0bps | thesis=spread compression play",
       "credit_tier": "IG",
       "segment": "credit_spread",
       "opportunity_score": 75,
@@ -155,7 +155,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311515"
+      "board_ts": "2026-06-25T18:00:59.699929"
     },
     {
       "ticker": "BIL",
@@ -186,7 +186,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311575"
+      "board_ts": "2026-06-25T18:00:59.699987"
     },
     {
       "ticker": "IEF",
@@ -217,13 +217,13 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311636"
+      "board_ts": "2026-06-25T18:00:59.700043"
     },
     {
       "ticker": "IGIB",
       "conviction": 4,
       "action": "BUY",
-      "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=303.0bps IG spread=89.0bps | thesis=spread compression play",
+      "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=305.0bps IG spread=89.0bps | thesis=spread compression play",
       "credit_tier": "IG",
       "segment": "credit_spread",
       "opportunity_score": 71,
@@ -248,7 +248,7 @@
         }
       ],
       "board_decision": "APPROVED",
-      "board_ts": "2026-06-24T14:30:05.311696"
+      "board_ts": "2026-06-25T18:00:59.700099"
     }
   ],
   "rejected": []

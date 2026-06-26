@@ -1322,5 +1322,176 @@
       }
     ],
     "status": "approved"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "HIGH",
+    "confidence": 90,
+    "title": "56 ERROR lines \u2014 dominant: `'get'`",
+    "description": "The last 24-48h of logs contain 56 ERROR-level entries (3145 WARNINGs). Most frequent error class: `'get'` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 09:30:21  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:00:18  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:30:19  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'",
+    "proposed_fix": "Most frequent error type: `'get'` (3/3 sampled). Locate the call site in logs/run_*.log matching `09:30:21  ERROR       [Canary] Manager Agent step failed: 's`, wrap it in `except 'get'` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-494",
+    "context": {
+      "captured_at": "2026-06-24T16:00:07.476472",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "ELEVATED",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 218,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 21,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 900,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 0,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-06-24T16:00:07.545866",
+    "decision": "APPROVED",
+    "voted_at": "2026-06-25T14:30:00.313258",
+    "votes": [
+      {
+        "member": "Investment Director",
+        "vote": "APPROVE",
+        "reason": "HIGH/CRITICAL severity warrants action"
+      },
+      {
+        "member": "Risk Officer",
+        "vote": "APPROVE",
+        "reason": "Operational improvement, no portfolio risk"
+      },
+      {
+        "member": "Quality Officer",
+        "vote": "APPROVE",
+        "reason": "Quality concern at HIGH"
+      }
+    ],
+    "status": "approved"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 90,
+    "title": "6 ERROR lines \u2014 dominant: `v3`",
+    "description": "The last 24-48h of logs contain 6 ERROR-level entries (1911 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 2026-06-24 12:05:56  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-24 12:06:14  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-24 12:06:33  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-24 12:05:56  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-494",
+    "context": {
+      "captured_at": "2026-06-25T01:00:21.363844",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "ELEVATED",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 218,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 21,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 917,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 6,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-06-25T01:00:21.447782",
+    "decision": "APPROVED",
+    "voted_at": "2026-06-25T14:30:00.313526",
+    "votes": [
+      {
+        "member": "Investment Director",
+        "vote": "APPROVE",
+        "reason": "MEDIUM severity \u2014 acceptable improvement"
+      },
+      {
+        "member": "Risk Officer",
+        "vote": "APPROVE",
+        "reason": "Operational improvement, no portfolio risk"
+      },
+      {
+        "member": "Quality Officer",
+        "vote": "APPROVE",
+        "reason": "Supports research quality"
+      }
+    ],
+    "status": "approved"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 90,
+    "title": "9 ERROR lines \u2014 dominant: `v3`",
+    "description": "The last 24-48h of logs contain 9 ERROR-level entries (2014 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 2026-06-24 12:05:56  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-24 12:06:14  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-24 12:06:33  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+    "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-24 12:05:56  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-494",
+    "context": {
+      "captured_at": "2026-06-25T10:00:27.429047",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "ELEVATED",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 218,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 21,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 925,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 6,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-06-25T10:00:27.500855",
+    "decision": "APPROVED",
+    "voted_at": "2026-06-25T14:30:00.313624",
+    "votes": [
+      {
+        "member": "Investment Director",
+        "vote": "APPROVE",
+        "reason": "MEDIUM severity \u2014 acceptable improvement"
+      },
+      {
+        "member": "Risk Officer",
+        "vote": "APPROVE",
+        "reason": "Operational improvement, no portfolio risk"
+      },
+      {
+        "member": "Quality Officer",
+        "vote": "APPROVE",
+        "reason": "Supports research quality"
+      }
+    ],
+    "status": "approved"
   }
 ]
