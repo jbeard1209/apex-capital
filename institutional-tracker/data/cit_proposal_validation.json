@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-26T01:00:03.711483",
+  "generated_at": "2026-06-27T01:00:04.413108",
   "proposals_reviewed": 6,
   "backtester_available": true,
   "validation_log": [
@@ -18,28 +18,28 @@
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260626000001",
+      "id": "LTIA-20260627000001",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260626000001",
+      "id": "LTIA-20260627000001",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260626000001",
+      "id": "LTIA-20260627000001",
       "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
       "category": "IMPROVEMENT",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "LTIA-20260626000001",
+      "id": "LTIA-20260627000001",
       "title": "[LTIA] Expected agents silent \u2014 check they're still running",
       "category": "IMPROVEMENT",
       "pre_validated": false,

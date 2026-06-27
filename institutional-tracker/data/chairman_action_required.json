@@ -1,93 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260624-16-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 116.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-24T16:50:00.582344",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260624-18-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 118.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-24T18:50:00.431024",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260624-20-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 120.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-24T20:50:00.489681",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260624-22-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 122.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-24T22:50:00.412685",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-00-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 124.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T00:50:00.571592",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-02-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 126.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T02:50:00.227970",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-04-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 128.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T04:50:00.523745",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-06-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 130.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T06:50:00.429917",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-08-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 132.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T08:50:00.889393",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-10-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 134.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T10:50:00.403528",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260625-12-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 136.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-25T12:50:00.916386",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "LTIA-20260625000000",
     "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
     "category": "IMPROVEMENT",
@@ -163,6 +75,100 @@
     "description": "pipeline_heartbeat.json is 150.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-26T02:50:00.990340",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-04-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 152.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T04:50:00.920543",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-06-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 154.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T06:50:00.286980",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-08-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 156.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T08:50:01.243511",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "LTIA-20260626000001",
+    "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "category": "IMPROVEMENT",
+    "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
+    "proposed_fix": "Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
+    "evidence": "",
+    "confidence": 85,
+    "severity": "LOW",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-06-26T10:00:44.059542"
+  },
+  {
+    "id": "pip-integrity-20260626-10-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 158.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T10:50:00.898479",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-12-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 160.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T12:50:00.825574",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-14-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 162.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T14:50:01.137799",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-16-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 164.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T16:50:00.646178",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-18-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 166.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T18:50:00.393163",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-20-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 168.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T20:50:00.750720",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260626-22-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 170.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-26T22:50:00.271078",
     "status": "awaiting_chairman"
   }
 ]

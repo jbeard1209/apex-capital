@@ -1,7 +1,7 @@
 {
-  "concern": "Independent risk assessment (anonymous): 3 serious concern(s) at severity 9/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Top concern: Manager Agent \u2014 output is 123h old (threshold: 26h). Agent may have missed a cycle.",
+  "concern": "Independent risk assessment (anonymous): 4 serious concern(s) at severity 10/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Top concern: Manager Agent \u2014 output is 171h old (threshold: 26h). Agent may have missed a cycle.",
   "trigger_emergency": true,
-  "written_at": "2026-06-24T21:00:01.092062",
+  "written_at": "2026-06-26T21:00:00.950511",
   "read": true,
-  "consumed_at": "2026-06-24T21:00:01.906207"
+  "consumed_at": "2026-06-26T21:00:01.772895"
 }

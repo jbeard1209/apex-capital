@@ -470,6 +470,24 @@
       "gate": 0.57,
       "horizon_days": 365,
       "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-06-26",
+      "status": "model_below_gate",
+      "auc": 0.5448,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "longterm",
+      "pick_date": "2026-06-26",
+      "status": "model_below_gate",
+      "auc": 0.5361,
+      "gate": 0.57,
+      "horizon_days": 365,
+      "picks": []
     }
   ]
 }

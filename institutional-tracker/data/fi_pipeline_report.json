@@ -1,17 +1,17 @@
 {
-  "run_at": "2026-06-25T22:00:59.702356+00:00",
+  "run_at": "2026-06-27T04:02:21.276399+00:00",
   "capital": 30000.0,
   "regime": "NORMAL",
   "spreads": {
-    "hy_spread": 305.0,
-    "ig_spread": 89.0,
-    "hy_spread_bps": 305.0,
-    "ig_spread_bps": 89.0,
-    "treasury_10yr": 4.394,
-    "yield_curve_slope": -0.906,
+    "hy_spread": 308.0,
+    "ig_spread": 90.0,
+    "hy_spread_bps": 308.0,
+    "ig_spread_bps": 90.0,
+    "treasury_10yr": 4.372,
+    "yield_curve_slope": -0.928,
     "spread_regime": "NORMAL",
-    "hyg_price": 79.9000015258789,
-    "lqd_price": 109.53500366210938
+    "hyg_price": 79.83000183105469,
+    "lqd_price": 109.5
   },
   "raw_picks": 229,
   "qualified": 13,
@@ -85,13 +85,13 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.699678"
+        "board_ts": "2026-06-27T00:02:21.271935"
       },
       {
         "ticker": "VCSH",
         "conviction": 4,
         "action": "BUY",
-        "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=305.0bps IG spread=89.0bps | thesis=spread compression play",
+        "reasoning": "VCSH: investment_grade credit spread opportunity | regime=NORMAL | HY spread=308.0bps IG spread=90.0bps | thesis=spread compression play",
         "credit_tier": "IG",
         "segment": "credit_spread",
         "opportunity_score": 77,
@@ -116,13 +116,13 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.699752"
+        "board_ts": "2026-06-27T00:02:21.272001"
       },
       {
         "ticker": "IGSB",
         "conviction": 3,
         "action": "BUY",
-        "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=89.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
+        "reasoning": "IGSB: IG credit | regime=NORMAL | IG spread=90.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
         "credit_tier": "IG",
         "segment": "investment_grade",
         "opportunity_score": 76,
@@ -147,13 +147,13 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.699812"
+        "board_ts": "2026-06-27T00:02:21.272059"
       },
       {
         "ticker": "SLQD",
         "conviction": 3,
         "action": "BUY",
-        "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=89.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
+        "reasoning": "SLQD: IG credit | regime=NORMAL | IG spread=90.0bps | 10yr=4.5% | thesis=quality credit at spread premium",
         "credit_tier": "IG",
         "segment": "investment_grade",
         "opportunity_score": 76,
@@ -178,13 +178,13 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.699872"
+        "board_ts": "2026-06-27T00:02:21.272115"
       },
       {
         "ticker": "VCIT",
         "conviction": 4,
         "action": "BUY",
-        "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=305.0bps IG spread=89.0bps | thesis=spread compression play",
+        "reasoning": "VCIT: investment_grade credit spread opportunity | regime=NORMAL | HY spread=308.0bps IG spread=90.0bps | thesis=spread compression play",
         "credit_tier": "IG",
         "segment": "credit_spread",
         "opportunity_score": 75,
@@ -209,7 +209,7 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.699929"
+        "board_ts": "2026-06-27T00:02:21.272169"
       },
       {
         "ticker": "BIL",
@@ -240,7 +240,7 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.699987"
+        "board_ts": "2026-06-27T00:02:21.272225"
       },
       {
         "ticker": "IEF",
@@ -271,13 +271,13 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.700043"
+        "board_ts": "2026-06-27T00:02:21.272281"
       },
       {
         "ticker": "IGIB",
         "conviction": 4,
         "action": "BUY",
-        "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=305.0bps IG spread=89.0bps | thesis=spread compression play",
+        "reasoning": "IGIB: investment_grade credit spread opportunity | regime=NORMAL | HY spread=308.0bps IG spread=90.0bps | thesis=spread compression play",
         "credit_tier": "IG",
         "segment": "credit_spread",
         "opportunity_score": 71,
@@ -302,7 +302,7 @@
           }
         ],
         "board_decision": "APPROVED",
-        "board_ts": "2026-06-25T18:00:59.700099"
+        "board_ts": "2026-06-27T00:02:21.272335"
       }
     ],
     "regime": "NORMAL"

@@ -1,14 +1,14 @@
 {
   "data/manager_decisions.json": {
     "status": "STALE",
-    "last_action": "2026-06-25T09:15:01.188480"
+    "last_action": "2026-06-26T19:15:00.914267"
   },
   "data/review_recommendations.json": {
     "status": "OK"
   },
   "data/state.json": {
     "status": "STALE",
-    "last_action": "2026-06-25T09:15:01.188480"
+    "last_action": "2026-06-26T19:15:00.914267"
   },
   "data/risk_bulletin.json": {
     "status": "OK"
@@ -27,7 +27,7 @@
   },
   "data/chief_of_staff_report.json": {
     "status": "STALE",
-    "last_action": "2026-06-25T09:15:01.188480"
+    "last_action": "2026-06-26T19:15:00.914267"
   },
   "data/logic_team_findings.json": {
     "status": "OK"
@@ -64,7 +64,7 @@
   },
   "data/data_quality_report.json": {
     "status": "STALE",
-    "last_action": "2026-06-25T09:15:01.188480"
+    "last_action": "2026-06-26T19:15:00.914267"
   },
   "heartbeat": {
     "status": "OK"

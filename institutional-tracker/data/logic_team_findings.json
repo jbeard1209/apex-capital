@@ -1,146 +1,6 @@
 {
   "history": [
     {
-      "ts": "2026-06-17T13:45:35.292133",
-      "findings": [
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "CRO at HIGH may justify caution, but idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-          "ts": "2026-06-17T13:45:35.238017"
-        },
-        {
-          "rule": "cro_extended_no_review",
-          "agent": "GovernanceLogicAgent",
-          "severity": "HIGH",
-          "title": "CRO=HIGH for 12 cycles (48 days) \u2014 board must vote",
-          "observation": "The CRO has been at HIGH for 12 consecutive pipeline cycles (~48 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
-          "why_wrong": "An extended buy block is a major business decision. It should require ongoing board ratification \u2014 not just persist automatically. It penalizes research agents for low approved-picks even when they're working correctly.",
-          "suggestion": "Board should formally vote: (1) Is HIGH still warranted? (2) If yes, what specific condition triggers a downgrade? (3) If no, step down to ELEVATED with 25% cash floor instead of 40%.",
-          "ts": "2026-06-17T13:45:35.238258"
-        },
-        {
-          "rule": "cro_paralysis",
-          "agent": "StrategyLogicAgent",
-          "severity": "HIGH",
-          "title": "CRO at HIGH for 48+ days \u2014 firm has no buy strategy",
-          "observation": "The CRO has blocked all buys for 12 cycles (~48 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
-          "why_wrong": "A firm that can never buy is not an investment firm. Extended buy blocks that persist without board review indicate the risk framework has captured the governance framework.",
-          "suggestion": "Board must vote: either (1) accept the current posture with an explicit end condition, or (2) define specific criteria to step down CRO level. A perpetual HIGH with no exit criteria is not governance.",
-          "ts": "2026-06-17T13:45:35.238431"
-        },
-        {
-          "rule": "ml_auc_mediocre",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
-          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
-          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
-          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
-          "ts": "2026-06-17T13:45:35.238530"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "6 open positions have no review recommendation",
-          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-06-17T13:45:35.238864"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-06-17T13:45:35.239548"
-        },
-        {
-          "rule": "cit_backlog_bloat",
-          "agent": "CommunicationLogicAgent",
-          "severity": "MEDIUM",
-          "title": "CIT backlog has 394 open items \u2014 proposals not being actioned",
-          "observation": "data/cit_backlog.json holds 394 entries, 394 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
-          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
-          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-          "ts": "2026-06-17T13:45:35.249197"
-        },
-        {
-          "rule": "canary_red_positions_open",
-          "agent": "RiskCoherenceLogicAgent",
-          "severity": "HIGH",
-          "title": "Canary=ORANGE but 16 positions still open",
-          "observation": "The canary is at ORANGE, indicating market distress or system risk. Yet 16 position(s) remain open with no emergency exit in progress.",
-          "why_wrong": "Canary RED/ORANGE is supposed to trigger defensive action. Open positions during a distress signal means the risk framework is not connected to position management.",
-          "suggestion": "Review canary_agent.py exit triggers. Ensure enforce_canary_exits() is being called and that its thresholds are appropriate.",
-          "ts": "2026-06-17T13:45:35.249668"
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-17T16:00:37.227594",
-      "findings": [
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-          "ts": "2026-06-17T16:00:37.169797"
-        },
-        {
-          "rule": "ml_auc_mediocre",
-          "agent": "MLLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
-          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
-          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
-          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
-          "ts": "2026-06-17T16:00:37.170133"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "6 open positions have no review recommendation",
-          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-06-17T16:00:37.170475"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "3 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-06-17T16:00:37.171249"
-        },
-        {
-          "rule": "cit_backlog_bloat",
-          "agent": "CommunicationLogicAgent",
-          "severity": "MEDIUM",
-          "title": "CIT backlog has 349 open items \u2014 proposals not being actioned",
-          "observation": "data/cit_backlog.json holds 349 entries, 349 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
-          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
-          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-          "ts": "2026-06-17T16:00:37.187393"
-        }
-      ]
-    },
-    {
       "ts": "2026-06-17T18:00:36.179943",
       "findings": [
         {
@@ -1689,6 +1549,116 @@
           "ts": "2026-06-26T00:00:00.987859"
         }
       ]
+    },
+    {
+      "ts": "2026-06-26T12:00:01.088616",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-26T12:00:01.021830"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-26T12:00:01.022268"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-26T12:00:01.022598"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-26T12:00:01.024469"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 500 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-26T12:00:01.030332"
+        }
+      ]
+    },
+    {
+      "ts": "2026-06-27T00:00:01.113770",
+      "findings": [
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-06-27T00:00:01.041540"
+        },
+        {
+          "rule": "ml_auc_mediocre",
+          "agent": "MLLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.545 \u2014 barely above random; weak edge",
+          "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
+          "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
+          "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
+          "ts": "2026-06-27T00:00:01.041982"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "6 open positions have no review recommendation",
+          "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-06-27T00:00:01.042297"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "3 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-06-27T00:00:01.044828"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 480 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 480 entries, 480 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-06-27T00:00:01.051448"
+        }
+      ]
     }
   ],
   "latest": [
@@ -1700,7 +1670,7 @@
       "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
       "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
       "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-      "ts": "2026-06-26T00:00:00.979837"
+      "ts": "2026-06-27T00:00:01.041540"
     },
     {
       "rule": "ml_auc_mediocre",
@@ -1710,7 +1680,7 @@
       "observation": "The model's holdout ensemble AUC is 0.5448 (walk-forward \u00b10.066) (CV mean 0.5448). That is only marginally better than a coin flip and well below the 0.57 live-trading gate.",
       "why_wrong": "A model this weak provides little real edge. Sizing capital to it implies more confidence than the evidence supports.",
       "suggestion": "Keep the model out of live buys until AUC clears the gate. Pursue feature expansion / retraining (see model_test_harness.py weekly report) before raising its capital weight.",
-      "ts": "2026-06-26T00:00:00.980302"
+      "ts": "2026-06-27T00:00:01.041982"
     },
     {
       "rule": "positions_without_reviews",
@@ -1720,7 +1690,7 @@
       "observation": "state.json shows 6 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'ENPH']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
       "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
       "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-      "ts": "2026-06-26T00:00:00.980628"
+      "ts": "2026-06-27T00:00:01.042297"
     },
     {
       "rule": "agent_communication_silence",
@@ -1730,17 +1700,17 @@
       "observation": "These agents have not posted to the firm channel in 7+ days: Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
       "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
       "suggestion": "Check crontab and most recent logs for each silent agent.",
-      "ts": "2026-06-26T00:00:00.982404"
+      "ts": "2026-06-27T00:00:01.044828"
     },
     {
       "rule": "cit_backlog_bloat",
       "agent": "CommunicationLogicAgent",
       "severity": "MEDIUM",
-      "title": "CIT backlog has 471 open items \u2014 proposals not being actioned",
-      "observation": "data/cit_backlog.json holds 471 entries, 471 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+      "title": "CIT backlog has 480 open items \u2014 proposals not being actioned",
+      "observation": "data/cit_backlog.json holds 480 entries, 480 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
       "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
       "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-      "ts": "2026-06-26T00:00:00.987859"
+      "ts": "2026-06-27T00:00:01.051448"
     }
   ]
 }
