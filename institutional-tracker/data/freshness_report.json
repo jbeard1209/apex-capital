@@ -1,35 +1,28 @@
 {
-  "generated_at": "2026-06-26T21:15:00.397328",
+  "generated_at": "2026-06-27T21:15:00.835113",
   "agent": "Freshness Sentinel",
   "checked": 21,
-  "ok": 17,
-  "stale": 4,
-  "auto_fixed": [],
+  "ok": 8,
+  "stale": 2,
+  "auto_fixed": [
+    "data/hr_report.json"
+  ],
   "issues": [
     {
-      "item": "data/manager_decisions.json",
+      "item": "data/hr_report.json",
       "status": "STALE",
-      "detail": "171h old (budget 26h)",
-      "critical": true
-    },
-    {
-      "item": "data/state.json",
-      "status": "STALE",
-      "detail": "169h old (budget 26h)",
-      "critical": true
-    },
-    {
-      "item": "data/chief_of_staff_report.json",
-      "status": "STALE",
-      "detail": "171h old (budget 30h)",
-      "critical": false
+      "detail": "32h old (budget 30h)",
+      "critical": false,
+      "new_alert": true,
+      "auto_fix": "fixed (exit 0)"
     },
     {
       "item": "data/data_quality_report.json",
       "status": "STALE",
-      "detail": "337h old (budget 54h)",
-      "critical": false
+      "detail": "361h old (budget 54h)",
+      "critical": false,
+      "new_alert": true
     }
   ],
-  "overall": "CRITICAL"
+  "overall": "DEGRADED"
 }

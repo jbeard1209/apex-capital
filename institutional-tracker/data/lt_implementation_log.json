@@ -1,146 +1,6 @@
 {
   "actions": [
     {
-      "ts": "2026-06-18T16:03:26.491196",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T16:03:26.494920",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T16:03:26.498597",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T16:03:26.501926",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T16:03:26.507455",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T18:00:33.849227",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T18:00:33.852984",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T18:00:33.856203",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T18:00:33.859336",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-18T18:00:33.862298",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:00:00.959460",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:00:00.962677",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:00:00.966106",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:00:00.969466",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:00:00.973656",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:01:46.267433",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:01:46.270928",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:01:46.274084",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:01:46.277145",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-19T00:01:46.280184",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
       "ts": "2026-06-19T00:15:00.782864",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
@@ -1399,12 +1259,152 @@
       "action": "handler:agent_communication_silence",
       "result": "already_in_queue",
       "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:00:01.044419",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:00:01.048149",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "skipped:cooldown_12h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:00:01.052884",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:00:01.065006",
+      "finding_key": "MLLogicAgent::ml_auc_mediocre",
+      "action": "handler:ml_auc_mediocre",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:00:01.072578",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:15:01.166342",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:15:01.169974",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "skipped:cooldown_12h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:15:01.173503",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:15:01.176920",
+      "finding_key": "MLLogicAgent::ml_auc_mediocre",
+      "action": "handler:ml_auc_mediocre",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-27T12:15:01.180225",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:00:01.216428",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:00:08.655711",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "auto_reconciled_reviews",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:00:08.659847",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:00:08.663796",
+      "finding_key": "MLLogicAgent::ml_auc_mediocre",
+      "action": "handler:ml_auc_mediocre",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:00:08.667518",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:15:00.353021",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:15:00.356641",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "skipped:cooldown_12h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:15:00.359703",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:15:00.362629",
+      "finding_key": "MLLogicAgent::ml_auc_mediocre",
+      "action": "handler:ml_auc_mediocre",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-06-28T00:15:00.365804",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "already_in_queue",
+      "auto_resolved": false
     }
   ],
-  "last_run": "2026-06-27T00:15:08.719849",
+  "last_run": "2026-06-28T00:15:00.365810",
   "cooldowns": {
     "train_model": "2026-06-14T00:10:38.370766",
-    "reconcile_reviews": "2026-06-27T00:15:08.697260",
+    "reconcile_reviews": "2026-06-28T00:00:08.642885",
     "rerun_fe_pipeline": "2026-06-12T23:41:13.715451",
     "start_ml_tracking": "2026-06-14T00:18:13.215102",
     "rerun_fi_pipeline": "2026-06-16T13:41:26.058563"

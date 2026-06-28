@@ -25016,5 +25016,2689 @@
     "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0972: Severely stale output: data/chief_of_staff_report.json (160h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
     "urgency": "HIGH",
     "status": "PENDING"
+  },
+  {
+    "id": "CMR-BE4884",
+    "ts": "2026-06-27T10:00:04.584798",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Silent exception in _fe_broad.py:15. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AE6E05",
+    "ts": "2026-06-27T10:00:04.689736",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [LOW] print() in production code: _fe_broad.py:18. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6AD1C7",
+    "ts": "2026-06-27T10:00:04.846006",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Possible missing makedirs before file write in _fe_broad.py:17. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-32F76E",
+    "ts": "2026-06-27T10:00:04.951304",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Silent exception in _fe_broad_run.py:15. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8E1F3A",
+    "ts": "2026-06-27T10:00:05.055599",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [LOW] print() in production code: _fe_broad_run.py:18. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7DBB05",
+    "ts": "2026-06-27T10:00:05.158351",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Possible missing makedirs before file write in _fe_broad_run.py:17. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6000D4",
+    "ts": "2026-06-27T10:00:05.262663",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [HIGH] 65 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 65 ERROR-level entries (794 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3 ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ABBFD9",
+    "ts": "2026-06-27T10:00:05.369017",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys. Reporter: CITThinkTank. Description: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E2022B",
+    "ts": "2026-06-27T10:00:05.475234",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 249h: [MEDIUM] Replace fixed R&D cadence with event-triggered research cycles. Reporter: CITThinkTank. Description: R&D last ran 49h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunit",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D4ADB9",
+    "ts": "2026-06-27T10:00:05.578836",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [HIGH] Severely stale output: data/chief_of_staff_report.json (118h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 118h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6CBF64",
+    "ts": "2026-06-27T10:00:05.681544",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] Severely stale output: data/energy_research_report.json (160h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 160h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BB355F",
+    "ts": "2026-06-27T10:00:05.786511",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/70 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 70 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D26D6F",
+    "ts": "2026-06-27T10:00:05.891900",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3123 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-12768C",
+    "ts": "2026-06-27T10:00:05.997432",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3188 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4E7A66",
+    "ts": "2026-06-27T10:00:06.103616",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3199 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-872811",
+    "ts": "2026-06-27T10:00:06.210533",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3654 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5FDAA6",
+    "ts": "2026-06-27T10:00:06.316990",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3695 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E336FB",
+    "ts": "2026-06-27T10:00:06.421714",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [HIGH] Severely stale output: data/chief_of_staff_report.json (136h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 136h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EFBDCF",
+    "ts": "2026-06-27T10:00:06.529872",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] Severely stale output: data/energy_research_report.json (178h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 178h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-01D584",
+    "ts": "2026-06-27T10:00:06.638034",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/73 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 73 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-825A6F",
+    "ts": "2026-06-27T10:00:06.745326",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [LOW] Backlog curated: 60 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 440 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0AC144",
+    "ts": "2026-06-27T10:00:06.850916",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [HIGH] Severely stale output: data/chief_of_staff_report.json (148h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 148h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-35738F",
+    "ts": "2026-06-27T10:00:06.956385",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [MEDIUM] Severely stale output: data/energy_research_report.json (190h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 190h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-87BB8F",
+    "ts": "2026-06-27T10:00:07.061444",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [MEDIUM] 15 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 15 ERROR-level entries (2965 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-929CB4",
+    "ts": "2026-06-27T10:00:07.167911",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/75 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 75 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1264C6",
+    "ts": "2026-06-27T10:00:07.272414",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [MEDIUM] Low board approval rate for CITThinkTank: 8% (2/26 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 26 board proposals but only 2 have been approved and implemented (8% rate). Low approval rate",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-491E38",
+    "ts": "2026-06-27T10:00:07.378806",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 36h: [LOW] Backlog curated: 52 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 448 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CA2044",
+    "ts": "2026-06-27T10:00:07.486584",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [HIGH] Severely stale output: data/chief_of_staff_report.json (151h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 151h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-64EAFB",
+    "ts": "2026-06-27T10:00:07.592799",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] Severely stale output: data/energy_research_report.json (193h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 193h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C291C8",
+    "ts": "2026-06-27T10:00:07.697593",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/76 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 76 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-08054F",
+    "ts": "2026-06-27T10:00:07.803378",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [LOW] Backlog curated: 20 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 471 to 451 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-45A194",
+    "ts": "2026-06-27T10:00:15.440031",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (184h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-608C1F",
+    "ts": "2026-06-27T10:00:15.866921",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0115: 65 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2A8BF4",
+    "ts": "2026-06-27T10:00:16.038268",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0901: Severely stale output: data/chief_of_staff_report.json (118h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A8F1EE",
+    "ts": "2026-06-27T10:00:16.368854",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0926: Severely stale output: data/chief_of_staff_report.json (136h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-37BF38",
+    "ts": "2026-06-27T10:00:16.568572",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0958: Severely stale output: data/chief_of_staff_report.json (148h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-246439",
+    "ts": "2026-06-27T10:00:16.834224",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0964: Severely stale output: data/chief_of_staff_report.json (151h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-88DE5A",
+    "ts": "2026-06-27T10:00:17.033477",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0983: Severely stale output: data/chief_of_staff_report.json (166h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A07F4A",
+    "ts": "2026-06-27T10:00:18.256242",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-568. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-395456",
+    "ts": "2026-06-27T10:00:18.328881",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-569. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1F95DF",
+    "ts": "2026-06-27T10:00:18.464341",
+    "from_agent": "Deputy Board",
+    "summary": "DEPUTY BOARD APPROVED [MAJORITY] [LOW] [LTIA] Expected agents silent \u2014 check they're still running | Fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
+    "urgency": "NORMAL",
+    "status": "PENDING",
+    "proposal_id": "LTIA-20260627000001",
+    "evidence": ""
+  },
+  {
+    "id": "CMR-48034F",
+    "ts": "2026-06-27T16:00:05.700514",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 294h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 188/30). Reporter: CITThinkTank. Description: The firm is on day 188/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-49FD97",
+    "ts": "2026-06-27T16:00:05.808378",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 294h: [HIGH] Stale data file: data/earnings_predictions.json (62h old, threshold 26h). Reporter: CITDataQualityAnalyst. Description: data/earnings_predictions.json has not been updated in 62h. Expected refresh interval: 26h. Data from this file may be l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D49D56",
+    "ts": "2026-06-27T16:00:05.915730",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 294h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (2/29 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 29 board proposals but only 2 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8559A1",
+    "ts": "2026-06-27T16:00:06.022575",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 294h: [LOW] Backlog curated: 96 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 388 to 292 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E80434",
+    "ts": "2026-06-27T16:00:06.130196",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Canary ORANGE alert \u2014 unfiled in issue tracker. Reporter: CIT Watchdog. Description: Canary shows ORANGE but no matching issue found. Triggers: []",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1CFACE",
+    "ts": "2026-06-27T16:00:06.238263",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [HIGH] Risk Manager HIGH \u2014 unfiled in issue tracker. Reporter: CIT Watchdog. Description: Risk Manager reported HIGH but no matching issue filed.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4A6232",
+    "ts": "2026-06-27T16:00:06.401022",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [HIGH] 67 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 67 ERROR-level entries (865 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3 ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-88044D",
+    "ts": "2026-06-27T16:00:06.509685",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Build a targeted short book for CRITICAL/HIGH risk regimes. Reporter: CITThinkTank. Description: In CRITICAL risk regimes (current: HIGH), the firm deploys SH as a broad inverse hedge. SH tracks the S&P 500 inverse \u2014 ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-99C929",
+    "ts": "2026-06-27T16:00:06.616680",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [HIGH] Stale data file: data/earnings_predictions.json (67h old, threshold 26h). Reporter: CITDataQualityAnalyst. Description: data/earnings_predictions.json has not been updated in 67h. Expected refresh interval: 26h. Data from this file may be l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-32047C",
+    "ts": "2026-06-27T16:00:06.724249",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Low board approval rate for CITCodeInspector: 12% (4/32 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 32 board proposals but only 4 have been approved and implemented (12% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-43B574",
+    "ts": "2026-06-27T16:00:06.832598",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] 80% of CIT bug proposals lack precise evidence \u2014 quality degradation. Reporter: CITSelfImprovement. Description: 191 of 238 BUG_FIX/DATA_QUALITY proposals (80%) have vague evidence strings (no file:line, metric, or data path). VISION",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F0B23A",
+    "ts": "2026-06-27T16:00:06.940416",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] chief_of_staff_agent.py:2588 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-97981C",
+    "ts": "2026-06-27T16:00:07.048096",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] chief_of_staff_agent.py:2653 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CDA7C7",
+    "ts": "2026-06-27T16:00:07.157003",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] chief_of_staff_agent.py:2664 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-34035B",
+    "ts": "2026-06-27T16:00:07.263675",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] chief_of_staff_agent.py:3119 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E4D8A0",
+    "ts": "2026-06-27T16:00:07.372808",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] chief_of_staff_agent.py:3160 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2F327C",
+    "ts": "2026-06-27T16:00:07.482875",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Agent underperformance: CITDirector rated NOTICE. Reporter: HR Agent. Description: Issues: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.. Development plan: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C653DB",
+    "ts": "2026-06-27T16:00:07.592189",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Agent underperformance: CITCodeInspector rated NOTICE. Reporter: HR Agent. Description: Issues: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.. Development pl",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4CC145",
+    "ts": "2026-06-27T16:00:07.701335",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Agent underperformance: CITPipelineMonitor rated NOTICE. Reporter: HR Agent. Description: Issues: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.. Development ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A216CC",
+    "ts": "2026-06-27T16:00:07.809705",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Agent underperformance: CITStrategyAnalyst rated NOTICE. Reporter: HR Agent. Description: Issues: Parent CIT Director report is stale \u2014 CITStrategyAnalyst output cannot be verified for this cycle.. Development ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CB74ED",
+    "ts": "2026-06-27T16:00:07.918514",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 289h: [MEDIUM] Agent underperformance: CITArchitectureAdvisor rated NOTICE. Reporter: HR Agent. Description: Issues: Parent CIT Director report is stale \u2014 CITArchitectureAdvisor output cannot be verified for this cycle.. Developm",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6EAC97",
+    "ts": "2026-06-27T16:00:08.027381",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [HIGH] 83 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 83 ERROR-level entries (1104 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-274387",
+    "ts": "2026-06-27T16:00:08.135121",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Manager rejecting 86% of recommendations this cycle. Reporter: CITStrategyAnalyst. Description: The Manager Agent rejected 69/80 recommendations. High rejection rates may indicate overly conservative thresholds or th",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-237DF3",
+    "ts": "2026-06-27T16:00:08.243839",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 189/30). Reporter: CITThinkTank. Description: The firm is on day 189/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BEC4A4",
+    "ts": "2026-06-27T16:00:08.351510",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] Low board approval rate for CITCodeInspector: 12% (4/33 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 33 board proposals but only 4 have been approved and implemented (12% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-92A4A4",
+    "ts": "2026-06-27T16:00:08.461310",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] chief_of_staff_agent.py:2648 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-118676",
+    "ts": "2026-06-27T16:00:08.568526",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] chief_of_staff_agent.py:2713 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F6A0F7",
+    "ts": "2026-06-27T16:00:08.678789",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] chief_of_staff_agent.py:2724 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0C8F88",
+    "ts": "2026-06-27T16:00:08.786977",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] chief_of_staff_agent.py:3179 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-63A81A",
+    "ts": "2026-06-27T16:00:08.895921",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 288h: [MEDIUM] chief_of_staff_agent.py:3220 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F69DF7",
+    "ts": "2026-06-27T16:00:09.005742",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 286h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 196/30). Reporter: CITThinkTank. Description: The firm is on day 196/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C84BA3",
+    "ts": "2026-06-27T16:00:09.115055",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 286h: [MEDIUM] Low board approval rate for CITCodeInspector: 12% (4/34 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 34 board proposals but only 4 have been approved and implemented (12% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C3C386",
+    "ts": "2026-06-27T16:00:09.224522",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 283h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 197/30). Reporter: CITThinkTank. Description: The firm is on day 197/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-153D06",
+    "ts": "2026-06-27T16:00:09.333836",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 283h: [MEDIUM] Low board approval rate for CITCodeInspector: 11% (4/35 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 35 board proposals but only 4 have been approved and implemented (11% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-38C5B1",
+    "ts": "2026-06-27T16:00:09.442656",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 282h: [MEDIUM] Low board approval rate for CITCodeInspector: 11% (4/36 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 36 board proposals but only 4 have been approved and implemented (11% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-53C8D2",
+    "ts": "2026-06-27T16:00:09.551357",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 279h: [HIGH] 32 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 32 ERROR-level entries (1359 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9943DC",
+    "ts": "2026-06-27T16:00:09.661105",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 279h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 198/30). Reporter: CITThinkTank. Description: The firm is on day 198/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5ACEC2",
+    "ts": "2026-06-27T16:00:09.769963",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 279h: [MEDIUM] Low board approval rate for CITCodeInspector: 11% (4/37 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 37 board proposals but only 4 have been approved and implemented (11% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FD6493",
+    "ts": "2026-06-27T16:00:09.881343",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 266h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 199/30). Reporter: CITThinkTank. Description: The firm is on day 199/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9ACFCB",
+    "ts": "2026-06-27T16:00:09.991366",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 266h: [MEDIUM] Low board approval rate for CITCodeInspector: 11% (4/38 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 38 board proposals but only 4 have been approved and implemented (11% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B32795",
+    "ts": "2026-06-27T16:00:10.100901",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 266h: [LOW] Backlog curated: 14 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 332 to 318 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9623BB",
+    "ts": "2026-06-27T16:00:10.210310",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [HIGH] 36 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 36 ERROR-level entries (3131 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CA808F",
+    "ts": "2026-06-27T16:00:10.319748",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 200/30). Reporter: CITThinkTank. Description: The firm is on day 200/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-85DD64",
+    "ts": "2026-06-27T16:00:10.429329",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] Low board approval rate for CITCodeInspector: 10% (4/39 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 39 board proposals but only 4 have been approved and implemented (10% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-33F16C",
+    "ts": "2026-06-27T16:00:10.539467",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] chief_of_staff_agent.py:2673 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E68AED",
+    "ts": "2026-06-27T16:00:10.648601",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] chief_of_staff_agent.py:2738 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-771E3E",
+    "ts": "2026-06-27T16:00:10.756519",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] chief_of_staff_agent.py:2749 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-87EF09",
+    "ts": "2026-06-27T16:00:10.867968",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] chief_of_staff_agent.py:3204 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-18F4C0",
+    "ts": "2026-06-27T16:00:10.979115",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] chief_of_staff_agent.py:3245 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DC49EF",
+    "ts": "2026-06-27T16:00:11.089138",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [LOW] Backlog curated: 160 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 480 to 320 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-832D0C",
+    "ts": "2026-06-27T16:00:11.199770",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 258h: [HIGH] 42 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 42 ERROR-level entries (3310 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A816B4",
+    "ts": "2026-06-27T16:00:11.309678",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 258h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 203/30). Reporter: CITThinkTank. Description: The firm is on day 203/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F555C4",
+    "ts": "2026-06-27T16:00:11.419904",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 258h: [MEDIUM] Low board approval rate for CITCodeInspector: 10% (4/40 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 40 board proposals but only 4 have been approved and implemented (10% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6569CF",
+    "ts": "2026-06-27T16:00:11.529860",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 255h: [MEDIUM] 10 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 10 ERROR-level entries (2176 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ED0B38",
+    "ts": "2026-06-27T16:00:11.640791",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 255h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 204/30). Reporter: CITThinkTank. Description: The firm is on day 204/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D22803",
+    "ts": "2026-06-27T16:00:11.751263",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 255h: [MEDIUM] Low board approval rate for CITCodeInspector: 10% (4/41 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 41 board proposals but only 4 have been approved and implemented (10% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-53DFD6",
+    "ts": "2026-06-27T16:00:11.860135",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 246h: [MEDIUM] 13 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 13 ERROR-level entries (2277 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-45D8A6",
+    "ts": "2026-06-27T16:00:11.969808",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 246h: [MEDIUM] Low board approval rate for CITCodeInspector: 10% (4/42 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 42 board proposals but only 4 have been approved and implemented (10% rate). Low approval",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-93B68F",
+    "ts": "2026-06-27T16:00:12.080383",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [HIGH] 50 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 50 ERROR-level entries (3561 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8161C6",
+    "ts": "2026-06-27T16:00:12.192958",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 206/30). Reporter: CITThinkTank. Description: The firm is on day 206/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-229F66",
+    "ts": "2026-06-27T16:00:12.302530",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] Low board approval rate for CITCodeInspector: 9% (4/43 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 43 board proposals but only 4 have been approved and implemented (9% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B1901D",
+    "ts": "2026-06-27T16:00:12.412417",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] chief_of_staff_agent.py:2878 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6CABA8",
+    "ts": "2026-06-27T16:00:12.523314",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] chief_of_staff_agent.py:2943 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ABD11E",
+    "ts": "2026-06-27T16:00:12.634575",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] chief_of_staff_agent.py:2954 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-085718",
+    "ts": "2026-06-27T16:00:12.744087",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] chief_of_staff_agent.py:3409 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D9FF56",
+    "ts": "2026-06-27T16:00:12.853568",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [MEDIUM] chief_of_staff_agent.py:3450 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3952F5",
+    "ts": "2026-06-27T16:00:12.962292",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 240h: [LOW] Backlog curated: 64 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 394 to 330 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3B8C5E",
+    "ts": "2026-06-27T16:00:13.074748",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 234h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 209/30). Reporter: CITThinkTank. Description: The firm is on day 209/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9CA900",
+    "ts": "2026-06-27T16:00:13.186893",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 234h: [MEDIUM] Low board approval rate for CITCodeInspector: 9% (4/44 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 44 board proposals but only 4 have been approved and implemented (9% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A28F52",
+    "ts": "2026-06-27T16:00:13.296600",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 234h: [MEDIUM] Low board approval rate for CITThinkTank: 18% (2/11 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 11 board proposals but only 2 have been approved and implemented (18% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4C4964",
+    "ts": "2026-06-27T16:00:13.407544",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 234h: [LOW] Backlog curated: 12 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 349 to 337 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-58F83A",
+    "ts": "2026-06-27T16:00:13.518409",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 231h: [HIGH] 46 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 46 ERROR-level entries (1821 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D4844C",
+    "ts": "2026-06-27T16:00:13.629778",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 231h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 210/30). Reporter: CITThinkTank. Description: The firm is on day 210/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AD5022",
+    "ts": "2026-06-27T16:00:13.743576",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 231h: [MEDIUM] Low board approval rate for CITCodeInspector: 9% (4/45 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 45 board proposals but only 4 have been approved and implemented (9% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-26A458",
+    "ts": "2026-06-27T16:00:13.855840",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 222h: [HIGH] 49 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 49 ERROR-level entries (1844 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C29E67",
+    "ts": "2026-06-27T16:00:13.967710",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 222h: [MEDIUM] Low board approval rate for CITCodeInspector: 9% (4/46 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 46 board proposals but only 4 have been approved and implemented (9% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CE719E",
+    "ts": "2026-06-27T16:00:14.078772",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 222h: [LOW] Backlog curated: 48 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 389 to 341 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5A2B60",
+    "ts": "2026-06-27T16:00:14.190996",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 212/30). Reporter: CITThinkTank. Description: The firm is on day 212/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-950A44",
+    "ts": "2026-06-27T16:00:14.301948",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] Low board approval rate for CITCodeInspector: 9% (4/47 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 47 board proposals but only 4 have been approved and implemented (9% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-21409E",
+    "ts": "2026-06-27T16:00:14.414025",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] chief_of_staff_agent.py:2883 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2E549E",
+    "ts": "2026-06-27T16:00:14.525279",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] chief_of_staff_agent.py:2948 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-02D174",
+    "ts": "2026-06-27T16:00:14.634408",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] chief_of_staff_agent.py:2959 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8195BB",
+    "ts": "2026-06-27T16:00:14.744469",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] chief_of_staff_agent.py:3414 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A12DCB",
+    "ts": "2026-06-27T16:00:14.856360",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [MEDIUM] chief_of_staff_agent.py:3455 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-422E67",
+    "ts": "2026-06-27T16:00:14.966333",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 216h: [LOW] Backlog curated: 39 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 382 to 343 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A18811",
+    "ts": "2026-06-27T16:00:15.076620",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 210h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 214/30). Reporter: CITThinkTank. Description: The firm is on day 214/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C15978",
+    "ts": "2026-06-27T16:00:15.186297",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 210h: [MEDIUM] Low board approval rate for CITCodeInspector: 8% (4/48 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 48 board proposals but only 4 have been approved and implemented (8% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B23E15",
+    "ts": "2026-06-27T16:00:15.296039",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 210h: [MEDIUM] Low board approval rate for CITThinkTank: 17% (2/12 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 12 board proposals but only 2 have been approved and implemented (17% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2E3E88",
+    "ts": "2026-06-27T16:00:15.408398",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 210h: [LOW] Backlog curated: 55 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 405 to 350 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4F28B3",
+    "ts": "2026-06-27T16:00:15.520744",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 207h: [MEDIUM] 9 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 9 ERROR-level entries (2999 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-70D413",
+    "ts": "2026-06-27T16:00:15.629764",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 207h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 215/30). Reporter: CITThinkTank. Description: The firm is on day 215/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2EEF31",
+    "ts": "2026-06-27T16:00:15.740472",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 207h: [MEDIUM] Low board approval rate for CITCodeInspector: 8% (4/49 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 49 board proposals but only 4 have been approved and implemented (8% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DD4CBB",
+    "ts": "2026-06-27T16:00:15.853513",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 207h: [LOW] Backlog curated: 22 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 375 to 353 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3792CA",
+    "ts": "2026-06-27T16:00:15.964548",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 198h: [MEDIUM] 18 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 18 ERROR-level entries (3102 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D31102",
+    "ts": "2026-06-27T16:00:16.077254",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 198h: [MEDIUM] Low board approval rate for CITCodeInspector: 8% (4/50 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 50 board proposals but only 4 have been approved and implemented (8% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1EECC2",
+    "ts": "2026-06-27T16:00:16.189544",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 198h: [LOW] Backlog curated: 25 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 380 to 355 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-518E04",
+    "ts": "2026-06-27T16:00:16.301418",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 192h: [MEDIUM] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 216/30). Reporter: CITThinkTank. Description: The firm is on day 216/30 of a fixed trading window. Fixed-window evaluation creates end-of-horizon distortions: agents ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FB9337",
+    "ts": "2026-06-27T16:00:16.412517",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 192h: [MEDIUM] Low board approval rate for CITCodeInspector: 8% (4/51 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 51 board proposals but only 4 have been approved and implemented (8% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-01C4DA",
+    "ts": "2026-06-27T16:00:16.524090",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 192h: [LOW] Backlog curated: 80 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 437 to 357 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1BEED7",
+    "ts": "2026-06-27T16:00:16.635362",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [MEDIUM] Low board approval rate for CITCodeInspector: 8% (4/52 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 52 board proposals but only 4 have been approved and implemented (8% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CFA2A4",
+    "ts": "2026-06-27T16:00:16.745246",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [MEDIUM] chief_of_staff_agent.py:2888 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-59B969",
+    "ts": "2026-06-27T16:00:16.857082",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [MEDIUM] chief_of_staff_agent.py:2953 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EAD228",
+    "ts": "2026-06-27T16:00:16.966937",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [MEDIUM] chief_of_staff_agent.py:2964 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E0509D",
+    "ts": "2026-06-27T16:00:17.080048",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [MEDIUM] chief_of_staff_agent.py:3419 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-468A32",
+    "ts": "2026-06-27T16:00:17.192383",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [MEDIUM] chief_of_staff_agent.py:3460 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3CEC0A",
+    "ts": "2026-06-27T16:00:17.303381",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 186h: [LOW] Backlog curated: 33 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 392 to 359 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2FE9A3",
+    "ts": "2026-06-27T16:00:17.417251",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 183h: [MEDIUM] Low board approval rate for CITCodeInspector: 8% (4/53 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 53 board proposals but only 4 have been approved and implemented (8% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-25447D",
+    "ts": "2026-06-27T16:00:17.527625",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 183h: [MEDIUM] Low board approval rate for CITThinkTank: 15% (2/13 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 13 board proposals but only 2 have been approved and implemented (15% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D57921",
+    "ts": "2026-06-27T16:00:17.638922",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 183h: [LOW] Backlog curated: 16 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 382 to 366 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6D5D63",
+    "ts": "2026-06-27T16:00:17.751433",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 174h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/54 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 54 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D8230B",
+    "ts": "2026-06-27T16:00:17.865400",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 174h: [MEDIUM] Low board approval rate for CITThinkTank: 14% (2/14 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 14 board proposals but only 2 have been approved and implemented (14% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2E8E6E",
+    "ts": "2026-06-27T16:00:17.976100",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 174h: [LOW] Backlog curated: 73 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 442 to 369 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0E3261",
+    "ts": "2026-06-27T16:00:18.093438",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 168h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/55 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 55 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6B3F72",
+    "ts": "2026-06-27T16:00:18.206421",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 168h: [LOW] Backlog curated: 43 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 415 to 372 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-870281",
+    "ts": "2026-06-27T16:00:18.320037",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 162h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/56 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 56 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2E19F9",
+    "ts": "2026-06-27T16:00:18.432991",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 162h: [LOW] Backlog curated: 87 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 461 to 374 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B61838",
+    "ts": "2026-06-27T16:00:18.545616",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 159h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/57 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 57 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BC45E7",
+    "ts": "2026-06-27T16:00:18.658301",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 159h: [LOW] Backlog curated: 21 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 397 to 376 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-50F2F6",
+    "ts": "2026-06-27T16:00:18.771248",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 154h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/58 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 58 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D8629E",
+    "ts": "2026-06-27T16:00:18.883940",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 154h: [LOW] Backlog curated: 32 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 410 to 378 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-86FF62",
+    "ts": "2026-06-27T16:00:18.997829",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 150h: [HIGH] Severely stale output: data/chief_of_staff_report.json (40h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 40h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6CE7B6",
+    "ts": "2026-06-27T16:00:19.108904",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 150h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/59 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 59 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ED1F41",
+    "ts": "2026-06-27T16:00:19.221356",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 144h: [HIGH] Severely stale output: data/chief_of_staff_report.json (46h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 46h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-339107",
+    "ts": "2026-06-27T16:00:19.333736",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 144h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/60 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 60 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3ECF1C",
+    "ts": "2026-06-27T16:00:19.447009",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 144h: [LOW] Backlog curated: 7 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 388 to 381 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E2D334",
+    "ts": "2026-06-27T16:00:19.557785",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 138h: [HIGH] Severely stale output: data/capital_efficiency_report.json (50h old). Reporter: CITPipelineMonitor. Description: data/capital_efficiency_report.json is 50h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing age",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EDB911",
+    "ts": "2026-06-27T16:00:19.670914",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 138h: [HIGH] Severely stale output: data/chief_of_staff_report.json (52h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 52h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8204ED",
+    "ts": "2026-06-27T16:00:19.784179",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 138h: [MEDIUM] Low board approval rate for CITCodeInspector: 7% (4/61 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 61 board proposals but only 4 have been approved and implemented (7% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1956EA",
+    "ts": "2026-06-27T16:00:19.905034",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 138h: [LOW] Backlog curated: 53 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 436 to 383 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3E5126",
+    "ts": "2026-06-27T16:00:20.016947",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [HIGH] Severely stale output: data/chief_of_staff_report.json (55h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 55h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DC9D0F",
+    "ts": "2026-06-27T16:00:20.129564",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/62 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 62 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9FADD7",
+    "ts": "2026-06-27T16:00:20.243753",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [MEDIUM] chief_of_staff_agent.py:2893 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-36ABD5",
+    "ts": "2026-06-27T16:00:20.355719",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [MEDIUM] chief_of_staff_agent.py:2958 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8EA957",
+    "ts": "2026-06-27T16:00:20.468001",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [MEDIUM] chief_of_staff_agent.py:2969 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B50F73",
+    "ts": "2026-06-27T16:00:20.581743",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [MEDIUM] chief_of_staff_agent.py:3424 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BF5B41",
+    "ts": "2026-06-27T16:00:20.695762",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [MEDIUM] chief_of_staff_agent.py:3465 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-690FF3",
+    "ts": "2026-06-27T16:00:20.809215",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 135h: [LOW] Backlog curated: 91 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 476 to 385 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EA9B82",
+    "ts": "2026-06-27T16:00:20.921885",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 126h: [HIGH] Severely stale output: data/chief_of_staff_report.json (64h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 64h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-397903",
+    "ts": "2026-06-27T16:00:21.035409",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 126h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/63 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 63 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2D1EE3",
+    "ts": "2026-06-27T16:00:21.149627",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 126h: [MEDIUM] Low board approval rate for CITThinkTank: 12% (2/16 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 16 board proposals but only 2 have been approved and implemented (12% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DC1DCA",
+    "ts": "2026-06-27T16:00:21.261237",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 126h: [LOW] Backlog curated: 9 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 401 to 392 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E15995",
+    "ts": "2026-06-27T16:00:21.374928",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [HIGH] Severely stale output: data/chief_of_staff_report.json (70h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 70h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-063586",
+    "ts": "2026-06-27T16:00:21.486126",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/64 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 64 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D717AA",
+    "ts": "2026-06-27T16:00:21.599923",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [MEDIUM] chief_of_staff_agent.py:2898 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7E31D4",
+    "ts": "2026-06-27T16:00:21.712616",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [MEDIUM] chief_of_staff_agent.py:2963 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BAD761",
+    "ts": "2026-06-27T16:00:21.825594",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [MEDIUM] chief_of_staff_agent.py:2974 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FC17D4",
+    "ts": "2026-06-27T16:00:21.938130",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [MEDIUM] chief_of_staff_agent.py:3429 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DB7A48",
+    "ts": "2026-06-27T16:00:22.051797",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 120h: [MEDIUM] chief_of_staff_agent.py:3470 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-576A3C",
+    "ts": "2026-06-27T16:00:22.164920",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [HIGH] Severely stale output: data/chief_of_staff_report.json (76h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 76h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-565AAD",
+    "ts": "2026-06-27T16:00:22.276943",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/65 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 65 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-459B17",
+    "ts": "2026-06-27T16:00:22.391026",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] Low board approval rate for CITThinkTank: 11% (2/18 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 18 board proposals but only 2 have been approved and implemented (11% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D672B9",
+    "ts": "2026-06-27T16:00:22.503803",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] chief_of_staff_agent.py:2903 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-98661B",
+    "ts": "2026-06-27T16:00:22.615917",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] chief_of_staff_agent.py:2968 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C6BFCB",
+    "ts": "2026-06-27T16:00:22.727532",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] chief_of_staff_agent.py:2979 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B4F23E",
+    "ts": "2026-06-27T16:00:22.839644",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] chief_of_staff_agent.py:3434 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1A0C64",
+    "ts": "2026-06-27T16:00:22.951938",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [MEDIUM] chief_of_staff_agent.py:3475 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CAE25D",
+    "ts": "2026-06-27T16:00:23.063395",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 114h: [LOW] Backlog curated: 99 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 401 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-340E48",
+    "ts": "2026-06-27T16:00:23.177000",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 111h: [HIGH] Severely stale output: data/chief_of_staff_report.json (79h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 79h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EF1B24",
+    "ts": "2026-06-27T16:00:23.289769",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 111h: [MEDIUM] 6 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 6 ERROR-level entries (1288 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-153394",
+    "ts": "2026-06-27T16:00:23.402902",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 111h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/66 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 66 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2E633B",
+    "ts": "2026-06-27T16:00:23.516482",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [HIGH] Severely stale output: data/chief_of_staff_report.json (88h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 88h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent l",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-937EF1",
+    "ts": "2026-06-27T16:00:23.627893",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] 10 ERROR lines \u2014 dominant: `'get'`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 10 ERROR-level entries (1382 WARNINGs). Most frequent error class: `'get'` (1 of 3 sampl",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-08803B",
+    "ts": "2026-06-27T16:00:23.741070",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/67 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 67 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C17ADE",
+    "ts": "2026-06-27T16:00:23.854622",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] chief_of_staff_agent.py:2908 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0EDAC0",
+    "ts": "2026-06-27T16:00:23.966515",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] chief_of_staff_agent.py:2973 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9003F0",
+    "ts": "2026-06-27T16:00:24.079396",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] chief_of_staff_agent.py:2984 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D465B5",
+    "ts": "2026-06-27T16:00:24.192747",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] chief_of_staff_agent.py:3439 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E5BC0A",
+    "ts": "2026-06-27T16:00:24.306402",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [MEDIUM] chief_of_staff_agent.py:3480 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-361CC7",
+    "ts": "2026-06-27T16:00:24.420046",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 102h: [LOW] Backlog curated: 54 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 464 to 410 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-77DCA2",
+    "ts": "2026-06-27T16:00:24.533005",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [HIGH] 50 ERROR lines \u2014 dominant: `'get'`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 50 ERROR-level entries (2549 WARNINGs). Most frequent error class: `'get'` (3 of 3 sampl",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-00DB9B",
+    "ts": "2026-06-27T16:00:24.644742",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] Research picks have low trade conversion (12%). Reporter: CITStrategyAnalyst. Description: Only 2 of 17 recent research picks were actually traded. Low conversion suggests either the Manager Agent thresholds are",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AE0ACA",
+    "ts": "2026-06-27T16:00:24.758355",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/68 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 68 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5FEFE1",
+    "ts": "2026-06-27T16:00:24.872808",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] Low board approval rate for CITThinkTank: 10% (2/20 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 20 board proposals but only 2 have been approved and implemented (10% rate). Low approval rat",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-23B948",
+    "ts": "2026-06-27T16:00:24.985150",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] chief_of_staff_agent.py:3113 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-005E32",
+    "ts": "2026-06-27T16:00:25.098069",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] chief_of_staff_agent.py:3178 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-57785A",
+    "ts": "2026-06-27T16:00:25.210707",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] chief_of_staff_agent.py:3189 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E717B2",
+    "ts": "2026-06-27T16:00:25.323354",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] chief_of_staff_agent.py:3644 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-30570F",
+    "ts": "2026-06-27T16:00:25.436322",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [MEDIUM] chief_of_staff_agent.py:3685 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-31EE87",
+    "ts": "2026-06-27T16:00:25.549990",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 96h: [LOW] Backlog curated: 84 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 416 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E95858",
+    "ts": "2026-06-27T16:00:25.664617",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 78h: [HIGH] Severely stale output: data/chief_of_staff_report.json (112h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 112h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B2D134",
+    "ts": "2026-06-27T16:00:25.778377",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 78h: [MEDIUM] Severely stale output: data/energy_research_report.json (154h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 154h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D76502",
+    "ts": "2026-06-27T16:00:25.890663",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 78h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/69 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 69 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8E0239",
+    "ts": "2026-06-27T16:00:26.005399",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 78h: [MEDIUM] Low board approval rate for CITThinkTank: 9% (2/22 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 22 board proposals but only 2 have been approved and implemented (9% rate). Low approval rate",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A7B1FD",
+    "ts": "2026-06-27T16:00:26.119443",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 78h: [LOW] Backlog curated: 66 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 491 to 425 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E364F2",
+    "ts": "2026-06-27T16:00:26.233098",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 72h: [HIGH] 56 ERROR lines \u2014 dominant: `'get'`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 56 ERROR-level entries (3145 WARNINGs). Most frequent error class: `'get'` (3 of 3 sampl",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E89EA3",
+    "ts": "2026-06-27T16:00:26.345935",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [HIGH] Severely stale output: data/chief_of_staff_report.json (124h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 124h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FFFDE6",
+    "ts": "2026-06-27T16:00:26.459791",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] Severely stale output: data/energy_research_report.json (166h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 166h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-306F09",
+    "ts": "2026-06-27T16:00:26.570732",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/71 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 71 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AE36FB",
+    "ts": "2026-06-27T16:00:26.684329",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] Low board approval rate for CITThinkTank: 8% (2/24 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 24 board proposals but only 2 have been approved and implemented (8% rate). Low approval rate",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C9A445",
+    "ts": "2026-06-27T16:00:26.796630",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3128 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8AA47D",
+    "ts": "2026-06-27T16:00:26.910766",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3193 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9C5590",
+    "ts": "2026-06-27T16:00:27.024608",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3659 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A1F592",
+    "ts": "2026-06-27T16:00:27.136524",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 66h: [MEDIUM] chief_of_staff_agent.py:3700 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CDD070",
+    "ts": "2026-06-27T16:00:27.249436",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [HIGH] Severely stale output: data/chief_of_staff_report.json (127h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 127h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-31994D",
+    "ts": "2026-06-27T16:00:27.364252",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [MEDIUM] Severely stale output: data/energy_research_report.json (169h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 169h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0691BC",
+    "ts": "2026-06-27T16:00:27.478614",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/72 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 72 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-205170",
+    "ts": "2026-06-27T16:00:27.592927",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [HIGH] Severely stale output: data/chief_of_staff_report.json (142h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 142h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B8EE93",
+    "ts": "2026-06-27T16:00:27.705939",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] Severely stale output: data/energy_research_report.json (184h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 184h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ADE5B3",
+    "ts": "2026-06-27T16:00:27.820339",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/74 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 74 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3F2299",
+    "ts": "2026-06-27T16:00:27.934642",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] chief_of_staff_agent.py:3133 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E150F3",
+    "ts": "2026-06-27T16:00:28.047952",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] chief_of_staff_agent.py:3198 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AB7E23",
+    "ts": "2026-06-27T16:00:28.160828",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] chief_of_staff_agent.py:3209 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-66F9C8",
+    "ts": "2026-06-27T16:00:28.275892",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] chief_of_staff_agent.py:3664 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C81F1E",
+    "ts": "2026-06-27T16:00:28.388914",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] chief_of_staff_agent.py:3705 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D7DB21",
+    "ts": "2026-06-27T16:00:28.502271",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [HIGH] Severely stale output: data/chief_of_staff_report.json (160h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 160h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-941FC5",
+    "ts": "2026-06-27T16:00:28.617412",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Severely stale output: data/energy_research_report.json (202h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 202h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EDD7E3",
+    "ts": "2026-06-27T16:00:28.731103",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 30h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/77 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 77 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-227F60",
+    "ts": "2026-06-27T16:00:37.695516",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (190h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-78D500",
+    "ts": "2026-06-27T16:00:37.974132",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0118: Stale data file: data/earnings_predictions.json (62h old, th. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-80D3E3",
+    "ts": "2026-06-27T16:00:38.184890",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0123: Risk Manager HIGH \u2014 unfiled in issue tracker. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-60E360",
+    "ts": "2026-06-27T16:00:38.299100",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0124: 67 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C105E5",
+    "ts": "2026-06-27T16:00:38.446768",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0126: Stale data file: data/earnings_predictions.json (67h old, th. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F1B0EF",
+    "ts": "2026-06-27T16:00:38.951627",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0156: 83 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-53ACC9",
+    "ts": "2026-06-27T16:00:39.493840",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0177: 32 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CC3491",
+    "ts": "2026-06-27T16:00:39.771151",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0356: 36 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-01F1A9",
+    "ts": "2026-06-27T16:00:40.145357",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0366: 42 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FE9FC2",
+    "ts": "2026-06-27T16:00:40.487122",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0416: 50 ERROR lines \u2014 dominant: `v3`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-58FFED",
+    "ts": "2026-06-27T16:00:40.992762",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0449: 46 ERROR lines \u2014 dominant: `v3`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DC5BDF",
+    "ts": "2026-06-27T16:00:41.172410",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0455: 49 ERROR lines \u2014 dominant: `v3`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7FEDC5",
+    "ts": "2026-06-27T16:00:42.744867",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0630: Severely stale output: data/chief_of_staff_report.json (40h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-57DD9E",
+    "ts": "2026-06-27T16:00:42.889962",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0632: Severely stale output: data/chief_of_staff_report.json (46h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3D5257",
+    "ts": "2026-06-27T16:00:43.067940",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0639: Severely stale output: data/capital_efficiency_report.json (. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B5543D",
+    "ts": "2026-06-27T16:00:43.180835",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0640: Severely stale output: data/chief_of_staff_report.json (52h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D1AB57",
+    "ts": "2026-06-27T16:00:43.358890",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0645: Severely stale output: data/chief_of_staff_report.json (55h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-3BC4D9",
+    "ts": "2026-06-27T16:00:43.702415",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0655: Severely stale output: data/chief_of_staff_report.json (64h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-431A71",
+    "ts": "2026-06-27T16:00:43.911262",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0662: Severely stale output: data/chief_of_staff_report.json (70h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1B782E",
+    "ts": "2026-06-27T16:00:44.220011",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0681: Severely stale output: data/chief_of_staff_report.json (76h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-176F46",
+    "ts": "2026-06-27T16:00:44.593825",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0690: Severely stale output: data/chief_of_staff_report.json (79h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6318CC",
+    "ts": "2026-06-27T16:00:44.772422",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0698: Severely stale output: data/chief_of_staff_report.json (88h . Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FE7973",
+    "ts": "2026-06-27T16:00:45.146329",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0745: 50 ERROR lines \u2014 dominant: `'get'`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-23827D",
+    "ts": "2026-06-27T16:00:45.553422",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0768: Severely stale output: data/chief_of_staff_report.json (112h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EA0B79",
+    "ts": "2026-06-27T16:00:45.800657",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0903: 56 ERROR lines \u2014 dominant: `'get'`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6BCBF4",
+    "ts": "2026-06-27T16:00:45.914927",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0910: Severely stale output: data/chief_of_staff_report.json (124h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-688216",
+    "ts": "2026-06-27T16:00:46.259708",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0918: Severely stale output: data/chief_of_staff_report.json (127h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-233AD3",
+    "ts": "2026-06-27T16:00:46.437946",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0938: Severely stale output: data/chief_of_staff_report.json (142h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-36E32B",
+    "ts": "2026-06-27T16:00:46.781373",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0972: Severely stale output: data/chief_of_staff_report.json (160h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-295F32",
+    "ts": "2026-06-27T16:00:46.959658",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-1002: Severely stale output: data/chief_of_staff_report.json (172h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9BF816",
+    "ts": "2026-06-27T16:00:47.367592",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-1012: Severely stale output: data/chief_of_staff_report.json (175h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1AC331",
+    "ts": "2026-06-27T16:00:49.349429",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-568. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BC9975",
+    "ts": "2026-06-27T16:00:49.429551",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-569. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D37049",
+    "ts": "2026-06-27T22:00:10.414963",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (196h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D2A525",
+    "ts": "2026-06-27T22:00:11.322617",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-568. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-949660",
+    "ts": "2026-06-27T22:00:11.403833",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-569. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F1A59D",
+    "ts": "2026-06-27T22:00:11.547889",
+    "from_agent": "Deputy Board",
+    "summary": "DEPUTY BOARD APPROVED [MAJORITY] [LOW] [LTIA] Expected agents silent \u2014 check they're still running | Fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
+    "urgency": "NORMAL",
+    "status": "PENDING",
+    "proposal_id": "LTIA-20260627120001",
+    "evidence": ""
+  },
+  {
+    "id": "CMR-CC22FD",
+    "ts": "2026-06-28T01:00:04.855383",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [MEDIUM] Silent exception in _fe_broad.py:15. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CFB51C",
+    "ts": "2026-06-28T01:00:04.969220",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [LOW] print() in production code: _fe_broad.py:18. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F06778",
+    "ts": "2026-06-28T01:00:05.084683",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [MEDIUM] Possible missing makedirs before file write in _fe_broad.py:17. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-40B297",
+    "ts": "2026-06-28T01:00:05.198490",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [MEDIUM] Silent exception in _fe_broad_run.py:15. Reporter: CITCodeInspector. Description: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C07549",
+    "ts": "2026-06-28T01:00:05.315046",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [LOW] print() in production code: _fe_broad_run.py:18. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-DA5080",
+    "ts": "2026-06-28T01:00:05.428775",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [MEDIUM] Possible missing makedirs before file write in _fe_broad_run.py:17. Reporter: CITCodeInspector. Description: File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the wr",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B74177",
+    "ts": "2026-06-28T01:00:05.598070",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [HIGH] 65 ERROR lines \u2014 dominant: `fe_pipeline`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 65 ERROR-level entries (794 WARNINGs). Most frequent error class: `fe_pipeline` (3 of 3 ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-00D08F",
+    "ts": "2026-06-28T01:00:05.713856",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 303h: [LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys. Reporter: CITThinkTank. Description: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B95BED",
+    "ts": "2026-06-28T01:00:05.828131",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 264h: [MEDIUM] Replace fixed R&D cadence with event-triggered research cycles. Reporter: CITThinkTank. Description: R&D last ran 49h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunit",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-EA20D2",
+    "ts": "2026-06-28T01:00:05.945101",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [HIGH] Severely stale output: data/chief_of_staff_report.json (118h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 118h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E9BC5F",
+    "ts": "2026-06-28T01:00:06.061423",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] Severely stale output: data/energy_research_report.json (160h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 160h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-ABA09E",
+    "ts": "2026-06-28T01:00:06.176330",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] Low board approval rate for CITCodeInspector: 6% (4/70 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 70 board proposals but only 4 have been approved and implemented (6% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CB55C4",
+    "ts": "2026-06-28T01:00:06.292794",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] chief_of_staff_agent.py:3123 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-04F37B",
+    "ts": "2026-06-28T01:00:06.407978",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] chief_of_staff_agent.py:3188 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-18C505",
+    "ts": "2026-06-28T01:00:06.528695",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] chief_of_staff_agent.py:3199 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-833CB0",
+    "ts": "2026-06-28T01:00:06.645082",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] chief_of_staff_agent.py:3654 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-D4E0E4",
+    "ts": "2026-06-28T01:00:06.758847",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 81h: [MEDIUM] chief_of_staff_agent.py:3695 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AB5E04",
+    "ts": "2026-06-28T01:00:06.875747",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [HIGH] Severely stale output: data/chief_of_staff_report.json (136h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 136h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A25976",
+    "ts": "2026-06-28T01:00:06.991599",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [MEDIUM] Severely stale output: data/energy_research_report.json (178h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 178h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-AB6F44",
+    "ts": "2026-06-28T01:00:07.107515",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/73 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 73 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C64D20",
+    "ts": "2026-06-28T01:00:07.226242",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 63h: [LOW] Backlog curated: 60 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 440 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-80B478",
+    "ts": "2026-06-28T01:00:07.343526",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 51h: [HIGH] Severely stale output: data/chief_of_staff_report.json (148h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 148h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E20DA3",
+    "ts": "2026-06-28T01:00:07.460986",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 51h: [MEDIUM] Severely stale output: data/energy_research_report.json (190h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 190h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-4C8041",
+    "ts": "2026-06-28T01:00:07.574845",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 51h: [MEDIUM] 15 ERROR lines \u2014 dominant: `v3`. Reporter: CITPipelineMonitor. Description: The last 24-48h of logs contain 15 ERROR-level entries (2965 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-B23BF0",
+    "ts": "2026-06-28T01:00:07.691309",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 51h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/75 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 75 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F1360D",
+    "ts": "2026-06-28T01:00:07.808996",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 51h: [MEDIUM] Low board approval rate for CITThinkTank: 8% (2/26 proposals acted on). Reporter: CITSelfImprovement. Description: CITThinkTank has submitted 26 board proposals but only 2 have been approved and implemented (8% rate). Low approval rate",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1B867A",
+    "ts": "2026-06-28T01:00:07.924911",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 51h: [LOW] Backlog curated: 52 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 448 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9DF68D",
+    "ts": "2026-06-28T01:00:08.041437",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [HIGH] Severely stale output: data/chief_of_staff_report.json (151h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 151h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-900596",
+    "ts": "2026-06-28T01:00:08.157458",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] Severely stale output: data/energy_research_report.json (193h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 193h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-A7D525",
+    "ts": "2026-06-28T01:00:08.273125",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/76 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 76 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-6D3B2A",
+    "ts": "2026-06-28T01:00:08.390539",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 48h: [LOW] Backlog curated: 20 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 471 to 451 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2F6E68",
+    "ts": "2026-06-28T01:00:08.506504",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [HIGH] Severely stale output: data/chief_of_staff_report.json (166h old). Reporter: CITPipelineMonitor. Description: data/chief_of_staff_report.json is 166h old against a 26h threshold. This is 50% beyond tolerance \u2014 the producing agent ",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-C85980",
+    "ts": "2026-06-28T01:00:08.624561",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] Severely stale output: data/energy_research_report.json (208h old). Reporter: CITPipelineMonitor. Description: data/energy_research_report.json is 208h old against a 96h threshold. This is 50% beyond tolerance \u2014 the producing agent",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-E1D5D3",
+    "ts": "2026-06-28T01:00:08.738628",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] Low board approval rate for CITCodeInspector: 5% (4/78 proposals acted on). Reporter: CITSelfImprovement. Description: CITCodeInspector has submitted 78 board proposals but only 4 have been approved and implemented (5% rate). Low approval ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-508654",
+    "ts": "2026-06-28T01:00:08.856166",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] chief_of_staff_agent.py:3143 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-751BAB",
+    "ts": "2026-06-28T01:00:08.973231",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] chief_of_staff_agent.py:3208 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-8FD1AD",
+    "ts": "2026-06-28T01:00:09.089735",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] chief_of_staff_agent.py:3219 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-9DC6FE",
+    "ts": "2026-06-28T01:00:09.206284",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] chief_of_staff_agent.py:3674 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-7AF50B",
+    "ts": "2026-06-28T01:00:09.323243",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [MEDIUM] chief_of_staff_agent.py:3715 \u2014 silent exception swallowed (except: pass). Reporter: CIT. Description: ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-36FA47",
+    "ts": "2026-06-28T01:00:09.439906",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 33h: [LOW] Backlog curated: 46 stale/duplicate items pruned. Reporter: CIT. Description: CIT backlog reduced from 500 to 454 items by removing duplicates, noise patterns, and items >30 days old with no action.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2C8D46",
+    "ts": "2026-06-28T01:00:16.490643",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Severely stale output: data/chief_of_staff_report.json (199h old). Fix: Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-943CF9",
+    "ts": "2026-06-28T01:00:16.930440",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0115: 65 ERROR lines \u2014 dominant: `fe_pipeline`. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-5665CF",
+    "ts": "2026-06-28T01:00:17.110637",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0901: Severely stale output: data/chief_of_staff_report.json (118h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-04DE65",
+    "ts": "2026-06-28T01:00:17.455157",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0926: Severely stale output: data/chief_of_staff_report.json (136h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0AD97B",
+    "ts": "2026-06-28T01:00:17.667609",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0958: Severely stale output: data/chief_of_staff_report.json (148h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CA57D1",
+    "ts": "2026-06-28T01:00:17.946506",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0964: Severely stale output: data/chief_of_staff_report.json (151h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-54662F",
+    "ts": "2026-06-28T01:00:18.159796",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-0983: Severely stale output: data/chief_of_staff_report.json (166h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-BB9F1E",
+    "ts": "2026-06-28T01:00:18.535988",
+    "from_agent": "CIT Director",
+    "summary": "HIGH/CRITICAL code bug: Stale issue ISS-1019: Severely stale output: data/chief_of_staff_report.json (184h. Fix: Assign owner and drive to resolution, or call CoS meeting.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-0E32F5",
+    "ts": "2026-06-28T01:00:19.588938",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Replace fixed R&D cadence with event-triggered research cycles' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-568. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-22E722",
+    "ts": "2026-06-28T01:00:19.675184",
+    "from_agent": "Deputy Board",
+    "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-569. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+    "urgency": "HIGH",
+    "status": "PENDING"
   }
 ]

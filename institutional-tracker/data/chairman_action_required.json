@@ -1,25 +1,5 @@
 [
   {
-    "id": "LTIA-20260625000000",
-    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
-    "category": "IMPROVEMENT",
-    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 65x). This needs a decision, not a rerun.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 36,
-    "queued_at": "2026-06-25T13:30:01.075287"
-  },
-  {
-    "id": "LTIA-20260625000007",
-    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
-    "category": "IMPROVEMENT",
-    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 36,
-    "queued_at": "2026-06-25T13:30:01.075287"
-  },
-  {
     "id": "LTIA-20260625000007",
     "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
     "category": "IMPROVEMENT",
@@ -169,6 +149,22 @@
     "description": "pipeline_heartbeat.json is 170.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-26T22:50:00.271078",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260627-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 27, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-27T16:50:00.881054",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260627-18-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 27, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-27T18:50:00.367626",
     "status": "awaiting_chairman"
   }
 ]
