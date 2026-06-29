@@ -1,25 +1,15 @@
 {
-  "generated_at": "2026-06-27T21:15:00.835113",
+  "generated_at": "2026-06-28T21:15:01.230650",
   "agent": "Freshness Sentinel",
   "checked": 21,
-  "ok": 8,
-  "stale": 2,
-  "auto_fixed": [
-    "data/hr_report.json"
-  ],
+  "ok": 9,
+  "stale": 1,
+  "auto_fixed": [],
   "issues": [
-    {
-      "item": "data/hr_report.json",
-      "status": "STALE",
-      "detail": "32h old (budget 30h)",
-      "critical": false,
-      "new_alert": true,
-      "auto_fix": "fixed (exit 0)"
-    },
     {
       "item": "data/data_quality_report.json",
       "status": "STALE",
-      "detail": "361h old (budget 54h)",
+      "detail": "385h old (budget 54h)",
       "critical": false,
       "new_alert": true
     }

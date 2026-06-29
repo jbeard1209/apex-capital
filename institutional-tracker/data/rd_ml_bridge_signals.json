@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-06-27T23:45:01.073991+00:00",
-  "rd_run_at": "2026-06-27T19:16:07.782548",
+  "updated_at": "2026-06-28T23:45:00.565501+00:00",
+  "rd_run_at": "2026-06-28T19:16:12.744746",
   "n_tickers": 17,
   "regime": {
     "rd_regime_bull": 1,
@@ -258,7 +258,7 @@
       "rd_ticker_trend_bearish": 0,
       "rd_ticker_conviction": 4.0,
       "rd_ticker_action_buy": 1,
-      "rd_ticker_fwd_pe": 27.1621,
+      "rd_ticker_fwd_pe": 27.1629,
       "rd_ticker_rev_growth": 55.5,
       "rd_sector_rsi": 68.5,
       "rd_sector_bullish": 1,

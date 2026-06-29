@@ -1,13 +1,6 @@
 {
   "sessions": [
     {
-      "ts": "2026-06-11T01:42:49.142959",
-      "regime": "TIGHT",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
       "ts": "2026-06-11T02:09:39.356865",
       "regime": "TIGHT",
       "reviewed": 13,
@@ -205,6 +198,13 @@
     },
     {
       "ts": "2026-06-27T00:02:21.273471",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-28T06:01:10.172405",
       "regime": "NORMAL",
       "reviewed": 13,
       "approved_count": 8,

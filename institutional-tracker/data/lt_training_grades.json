@@ -1,5 +1,5 @@
 {
-  "last_training": "2026-06-21T05:00:01.402228",
+  "last_training": "2026-06-28T05:00:01.922498",
   "scenarios_run": 22,
   "grades": {
     "PipelineLogicAgent": "A",
@@ -84,7 +84,7 @@
       "passes": 2,
       "misses": 0,
       "fp": 0,
-      "score": 17
+      "score": 18
     },
     "PodHealthLogicAgent": {
       "grade": "A",

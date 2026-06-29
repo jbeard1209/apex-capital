@@ -1,135 +1,135 @@
 {
-  "generated_at": "2026-06-21T19:00:05.003743",
+  "generated_at": "2026-06-28T19:00:05.462976",
   "agent": "Missed Winners Agent (R&D)",
   "lookback_months": 6,
   "universe_size": 117,
   "top_n": 20,
   "capture_rate_pct": 10.0,
   "status_counts": {
-    "PICKED_REJECTED": 15,
+    "PICKED_REJECTED": 14,
     "TRADED": 2,
-    "SEEN_NO_PICK": 3
+    "SEEN_NO_PICK": 4
   },
   "winners": [
     {
-      "ticker": "MRVL",
-      "return_pct": 317.0,
-      "status": "PICKED_REJECTED",
-      "detail": "REJECTED: New position in MRVL (via Agent 1) declined \u2014 at max positions (293.8% BP, 15/15). Will revisit when capacity "
-    },
-    {
       "ticker": "AMD",
-      "return_pct": 234.0,
+      "return_pct": 222.4,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in AMD (via Agent 6) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit when capacity o"
     },
     {
+      "ticker": "MRVL",
+      "return_pct": 217.9,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in MRVL (via Agent 1) declined \u2014 at max positions (293.8% BP, 15/15). Will revisit when capacity "
+    },
+    {
       "ticker": "ARM",
-      "return_pct": 211.7,
+      "return_pct": 136.2,
       "status": "TRADED",
       "detail": "closed WIN +20.7%"
     },
     {
-      "ticker": "VRT",
-      "return_pct": 133.7,
-      "status": "PICKED_REJECTED",
-      "detail": "REJECTED: New position in VRT (via Agent 2) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
-    },
-    {
-      "ticker": "CAT",
-      "return_pct": 110.7,
-      "status": "PICKED_REJECTED",
-      "detail": "[CANARY ORANGE] DEFENSIVE MODE: All new capital deployment blocked. Canary detected: Broad market selloff: 9/11 sectors "
-    },
-    {
-      "ticker": "RKLB",
-      "return_pct": 102.7,
+      "ticker": "HON",
+      "return_pct": 128.0,
       "status": "SEEN_NO_PICK",
       "detail": "covered by Sector watchlists but no pick generated"
     },
     {
+      "ticker": "CAT",
+      "return_pct": 110.5,
+      "status": "PICKED_REJECTED",
+      "detail": "[CANARY ORANGE] DEFENSIVE MODE: All new capital deployment blocked. Canary detected: Broad market selloff: 9/11 sectors "
+    },
+    {
+      "ticker": "VRT",
+      "return_pct": 101.6,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in VRT (via Agent 2) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
+    },
+    {
       "ticker": "NUE",
-      "return_pct": 82.2,
+      "return_pct": 78.3,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in NUE (via Agent 4) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
     },
     {
-      "ticker": "TSM",
-      "return_pct": 64.7,
-      "status": "PICKED_REJECTED",
-      "detail": "REJECTED: New position in TSM (via Agent 5) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
+      "ticker": "RKLB",
+      "return_pct": 76.5,
+      "status": "SEEN_NO_PICK",
+      "detail": "covered by Sector watchlists but no pick generated"
     },
     {
       "ticker": "DDOG",
-      "return_pct": 62.2,
+      "return_pct": 68.4,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in DDOG (via Agent smallcapgrowthagent_cos) declined \u2014 at max positions (300.5% BP, 15/15). Will "
     },
     {
       "ticker": "TGT",
-      "return_pct": 55.1,
+      "return_pct": 61.6,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in TGT (via Agent 4) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
     },
     {
       "ticker": "FCX",
-      "return_pct": 52.7,
+      "return_pct": 60.6,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in FCX (via Agent 2) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
     },
     {
       "ticker": "LLY",
-      "return_pct": 47.8,
+      "return_pct": 59.1,
       "status": "TRADED",
       "detail": "currently held"
     },
     {
-      "ticker": "GOOGL",
-      "return_pct": 46.5,
-      "status": "PICKED_REJECTED",
-      "detail": "REJECTED: New position in GOOGL (via Agent 5) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity"
-    },
-    {
       "ticker": "MRK",
-      "return_pct": 45.7,
+      "return_pct": 56.9,
       "status": "SEEN_NO_PICK",
       "detail": "covered by Sector watchlists but no pick generated"
     },
     {
-      "ticker": "SLB",
-      "return_pct": 42.1,
+      "ticker": "TSM",
+      "return_pct": 56.0,
       "status": "PICKED_REJECTED",
-      "detail": "REJECTED: New position in SLB (via USFossilFuelsAgent) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit when"
+      "detail": "REJECTED: New position in TSM (via Agent 5) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
     },
     {
       "ticker": "PANW",
-      "return_pct": 41.6,
+      "return_pct": 49.4,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in PANW (via Agent geopoliticalriskanalyst_cos) declined \u2014 at max positions (300.5% BP, 15/15). W"
     },
     {
       "ticker": "CRWD",
-      "return_pct": 41.5,
+      "return_pct": 43.0,
       "status": "PICKED_REJECTED",
       "detail": "REJECTED: New position in CRWD (via Agent 3) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit when capacity "
     },
     {
-      "ticker": "MS",
-      "return_pct": 41.2,
-      "status": "PICKED_REJECTED",
-      "detail": "[CANARY ORANGE] DEFENSIVE MODE: All new capital deployment blocked. Canary detected: Broad market selloff: 9/11 sectors "
-    },
-    {
       "ticker": "C",
-      "return_pct": 41.1,
+      "return_pct": 41.9,
       "status": "SEEN_NO_PICK",
       "detail": "covered by Sector watchlists but no pick generated"
     },
     {
       "ticker": "EQIX",
-      "return_pct": 38.2,
+      "return_pct": 41.6,
       "status": "PICKED_REJECTED",
       "detail": "[CANARY ORANGE] DEFENSIVE MODE: All new capital deployment blocked. Canary detected: Broad market selloff: 9/11 sectors "
+    },
+    {
+      "ticker": "JNJ",
+      "return_pct": 39.7,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in JNJ (via Agent 6) declined \u2014 at max positions (288.2% BP, 16/15). Will revisit when capacity o"
+    },
+    {
+      "ticker": "SLB",
+      "return_pct": 39.4,
+      "status": "PICKED_REJECTED",
+      "detail": "REJECTED: New position in SLB (via USFossilFuelsAgent) declined \u2014 at max positions (300.5% BP, 15/15). Will revisit when"
     }
   ]
 }

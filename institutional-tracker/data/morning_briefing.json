@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-27T18:00:01.182417",
-  "date": "2026-06-27",
+  "generated_at": "2026-06-29T00:00:00.972759",
+  "date": "2026-06-29",
   "sections": {
     "market": {
       "status": "unknown",
@@ -20,18 +20,18 @@
         "Trim any single position exceeding 10% of portfolio \u2014 concentration risk is amplified at ELEVATED risk levels."
       ],
       "pdo_signal": "NEUTRAL",
-      "last_updated": "2026-06-26T21:00:03.310830"
+      "last_updated": "2026-06-28T21:00:05.147243"
     },
     "portfolio": {
-      "portfolio_value": 100413.32,
+      "portfolio_value": 100346.39,
       "cash": 80652.12,
-      "deployed_pct": 19.7,
+      "deployed_pct": 19.6,
       "n_positions": 16,
       "positions": [
         {
           "ticker": "BA",
           "qty": -20.0,
-          "pnl_pct": 0.07,
+          "pnl_pct": -0.38,
           "side": "PositionSide.SHORT"
         },
         {
@@ -43,25 +43,25 @@
         {
           "ticker": "DIS",
           "qty": -47.0,
-          "pnl_pct": 1.97,
+          "pnl_pct": 1.63,
           "side": "PositionSide.SHORT"
         },
         {
           "ticker": "IEF",
           "qty": 53.0,
-          "pnl_pct": 1.26,
+          "pnl_pct": 1.18,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "KEY",
           "qty": 223.0,
-          "pnl_pct": 6.4,
+          "pnl_pct": 6.36,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "KO",
           "qty": 44.0,
-          "pnl_pct": 5.16,
+          "pnl_pct": 5.0,
           "side": "PositionSide.LONG"
         },
         {
@@ -73,7 +73,7 @@
         {
           "ticker": "QQQ",
           "qty": -4.0,
-          "pnl_pct": 0.47,
+          "pnl_pct": -0.4,
           "side": "PositionSide.SHORT"
         },
         {
@@ -91,7 +91,7 @@
         {
           "ticker": "XLE",
           "qty": -254.0,
-          "pnl_pct": 4.98,
+          "pnl_pct": 4.66,
           "side": "PositionSide.SHORT"
         },
         {
@@ -103,19 +103,19 @@
         {
           "ticker": "XLK",
           "qty": 28.0,
-          "pnl_pct": 2.02,
+          "pnl_pct": 2.8,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLV",
           "qty": 33.0,
-          "pnl_pct": 4.26,
+          "pnl_pct": 5.3,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLY",
           "qty": -70.0,
-          "pnl_pct": 0.93,
+          "pnl_pct": 0.43,
           "side": "PositionSide.SHORT"
         },
         {
@@ -127,7 +127,7 @@
       ]
     },
     "rd": {
-      "report_age_hours": 2.0,
+      "report_age_hours": 4.7,
       "pick_count": 17,
       "top_picks": [
         {
@@ -291,7 +291,7 @@
           }
         }
       ],
-      "last_updated": "2026-06-27T16:01:07.888044"
+      "last_updated": "2026-06-28T19:16:12.744746"
     },
     "energy_rd": {
       "pick_count": 15,
@@ -468,18 +468,18 @@
     "context": {
       "historical": {
         "summary": "",
-        "last_updated": "2026-06-27T16:00:06.897680",
+        "last_updated": "2026-06-28T19:15:06.411584",
         "fresh": true
       },
       "geopolitical": {
         "summary": "",
         "key_risks": [],
-        "last_updated": "2026-06-27T16:00:06.900372",
+        "last_updated": "2026-06-28T19:15:06.414772",
         "fresh": true
       },
       "macro_policy": {
         "summary": "",
-        "last_updated": "2026-06-26T21:00:03.312968",
+        "last_updated": "2026-06-28T21:00:05.149084",
         "fresh": true
       },
       "system_performance": {
@@ -507,7 +507,7 @@
             "message": "'SPY data unavailable \u2014 failing safe to O' fired 5 times without resolution. This is a decision-loop failure: the canary correctly identifies the problem, but the response pipeline is not closing the position. Repeated identical alerts without resolution erode the signal-to-noise ratio and indicate a gap between detection and execution."
           }
         ],
-        "last_updated": "2026-06-27T16:00:06.922584",
+        "last_updated": "2026-06-28T19:15:06.437082",
         "fresh": true
       }
     },
@@ -550,9 +550,9 @@
     },
     "cit": {
       "pending_count": 6,
-      "approved_count": 545,
+      "approved_count": 546,
       "backlog_count": 500,
-      "latest_session": "morning",
+      "latest_session": "evening",
       "top_proposals": [
         {
           "agent": "CITCodeInspector",
@@ -566,7 +566,7 @@
           "auto_implementable": false,
           "id": "CIT-2026-065",
           "context": {
-            "captured_at": "2026-06-27T16:00:31.704206",
+            "captured_at": "2026-06-28T22:00:36.788075",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -582,7 +582,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1031,
+            "open_issues_count": 1083,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -595,14 +595,14 @@
           "category": "BUG_FIX",
           "severity": "MEDIUM",
           "confidence": 90,
-          "title": "12 ERROR lines \u2014 dominant: `v3`",
-          "description": "The last 24-48h of logs contain 12 ERROR-level entries (3041 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
-          "evidence": "Recent log samples:\n  \u2022 2026-06-27 00:05:45  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-27 00:06:03  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-27 00:06:21  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
-          "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-27 00:05:45  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+          "title": "18 ERROR lines \u2014 dominant: `v3`",
+          "description": "The last 24-48h of logs contain 18 ERROR-level entries (4019 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+          "evidence": "Recent log samples:\n  \u2022 2026-06-28 06:04:30  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-28 06:04:48  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-28 06:05:06  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
+          "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-28 06:04:30  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
           "auto_implementable": false,
-          "id": "CIT-2026-494",
+          "id": "CIT-2026-642",
           "context": {
-            "captured_at": "2026-06-27T16:00:31.704206",
+            "captured_at": "2026-06-28T22:00:36.788075",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -618,13 +618,15 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1031,
+            "open_issues_count": 1083,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
           },
           "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
-          "issue_id": "ISS-0598"
+          "routed_to_pod": "rd",
+          "routed_at": "2026-06-28T22:00:36.874719",
+          "issue_id": "ISS-0534"
         }
       ],
       "all_pending": [
@@ -841,21 +843,123 @@
           "status": "ESCALATED_TO_CHAIRMAN"
         },
         {
-          "id": "LTIA-20260627120001",
+          "id": "LTIA-20260628000001",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "MEDIUM",
           "confidence": 85,
           "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
-          "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 70x). This needs a decision, not a rerun.",
+          "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 71x). This needs a decision, not a rerun.",
           "proposed_fix": "Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week.",
           "owner": "Board + relevant pod CIO",
-          "created_at": "2026-06-27T12:00:01.042982",
-          "status": "pending",
-          "clarification_rounds": 1
+          "created_at": "2026-06-28T00:00:01.214995",
+          "status": "ESCALATED_TO_CHAIRMAN",
+          "clarification_rounds": 3,
+          "clarification_log": [
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy CRO",
+              "source": "deputy_board",
+              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Chief of Staff",
+              "source": "deputy_board",
+              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
+              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
+            }
+          ],
+          "needs_revote": true,
+          "revote_reason": "CIT Director answered 4 simultaneous question(s) from Deputy Manager, Deputy CIT Director, Deputy R&D Leader, Deputy Operations Director after team deliberation."
         },
         {
-          "id": "LTIA-20260627120001",
+          "id": "LTIA-20260628000008",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "MEDIUM",
@@ -864,11 +968,12 @@
           "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
           "proposed_fix": "Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500.",
           "owner": "CIT Director + Deputy Board",
-          "created_at": "2026-06-27T12:00:01.051067",
-          "status": "pending"
+          "created_at": "2026-06-28T00:00:08.658615",
+          "status": "pending",
+          "clarification_rounds": 1
         },
         {
-          "id": "LTIA-20260627120001",
+          "id": "LTIA-20260628000008",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "HIGH",
@@ -877,11 +982,11 @@
           "description": "ML finding: 'ST model AUC 0.545 \u2014 barely above random; weak edge'. An AUC below 0.50 means the model loses to a coin flip; any capital on its signals has negative expectancy.",
           "proposed_fix": "Vote to suspend ML-sourced buy recommendations immediately and assign the ML pod to retrain before re-enabling. Document the suspension in the board log.",
           "owner": "Board + ML pod",
-          "created_at": "2026-06-27T12:00:01.059786",
+          "created_at": "2026-06-28T00:00:08.662624",
           "status": "pending"
         },
         {
-          "id": "LTIA-20260627120001",
+          "id": "LTIA-20260628000008",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "LOW",
@@ -890,8 +995,236 @@
           "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
           "proposed_fix": "Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
           "owner": "Operations Director",
-          "created_at": "2026-06-27T12:00:01.068209",
-          "status": "pending"
+          "created_at": "2026-06-28T00:00:08.666332",
+          "status": "pending",
+          "clarification_log": [
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy CRO",
+              "source": "deputy_board",
+              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Chief of Staff",
+              "source": "deputy_board",
+              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T06:00:00.747068",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy CRO",
+              "source": "deputy_board",
+              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy Chief of Staff",
+              "source": "deputy_board",
+              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T10:00:00.486541",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy CRO",
+              "source": "deputy_board",
+              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy Chief of Staff",
+              "source": "deputy_board",
+              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T16:00:01.035385",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy Manager",
+              "source": "deputy_board",
+              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
+              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy CRO",
+              "source": "deputy_board",
+              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy Chief of Staff",
+              "source": "deputy_board",
+              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy R&D Leader",
+              "source": "deputy_board",
+              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy CIT Director",
+              "source": "deputy_board",
+              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            },
+            {
+              "ts": "2026-06-28T22:00:00.680751",
+              "deputy": "Deputy Operations Director",
+              "source": "deputy_board",
+              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
+              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
+            }
+          ],
+          "needs_revote": true,
+          "revote_reason": "CIT Director answered 8 simultaneous question(s) from Deputy Manager, Deputy CRO, Deputy CIT Director, Deputy Chief of Staff, Deputy R&D Leader, Deputy Operations Director, Deputy CIT Director, Deputy Operations Director after team deliberation."
         }
       ],
       "think_tank": [
@@ -969,7 +1302,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-002",
           "context": {
-            "captured_at": "2026-06-27T16:00:31.704206",
+            "captured_at": "2026-06-28T22:00:36.788075",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -985,7 +1318,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1031,
+            "open_issues_count": 1083,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1005,7 +1338,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-005",
           "context": {
-            "captured_at": "2026-06-27T16:00:31.704206",
+            "captured_at": "2026-06-28T22:00:36.788075",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1021,7 +1354,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1031,
+            "open_issues_count": 1083,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1041,7 +1374,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-007",
           "context": {
-            "captured_at": "2026-06-27T16:00:31.704206",
+            "captured_at": "2026-06-28T22:00:36.788075",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1057,7 +1390,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1031,
+            "open_issues_count": 1083,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1077,7 +1410,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-008",
           "context": {
-            "captured_at": "2026-06-27T16:00:31.704206",
+            "captured_at": "2026-06-28T22:00:36.788075",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1093,7 +1426,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1031,
+            "open_issues_count": 1083,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1102,26 +1435,77 @@
           "issue_id": "ISS-0010"
         }
       ],
-      "last_updated": "2026-06-27T16:00:49.285760",
+      "last_updated": "2026-06-28T22:00:55.858447",
       "morning_fresh": true,
-      "evening_fresh": false
+      "evening_fresh": true
     },
     "irm": {
-      "report_age_hours": 21.0,
+      "report_age_hours": 16.7,
       "risk_score": 10,
       "red_flags": [
-        "Manager Agent \u2014 output is 171h old (threshold: 26h). Agent may have missed a cycle.",
-        "DEPENDENCY VIOLATION: capital_efficiency_report is 7.5h old but manager_decisions is 171.0h old \u2014 manager_decisions ran BEFORE capital_efficiency_report and used a stale signal.",
-        "DEPENDENCY VIOLATION: risk_bulletin is 7.0h old but capital_efficiency_report is 7.5h old \u2014 capital_efficiency_report ran BEFORE risk_bulletin and used a stale signal."
+        "Manager Agent \u2014 output is 205h old (threshold: 26h). Agent may have missed a cycle.",
+        "Portfolio Deployment Officer \u2014 output is 42h old (threshold: 26h). Agent may have missed a cycle.",
+        "IRM Daily Board \u2014 output is 34h old (threshold: 26h). Agent may have missed a cycle."
       ],
       "verdict": "MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.",
-      "last_updated": "2026-06-26T21:00:00.835529"
+      "last_updated": "2026-06-28T07:15:03.437591"
     },
     "hr": {
-      "firm_health_score": 10.0,
-      "action_required": [],
+      "firm_health_score": 8.9,
+      "action_required": [
+        {
+          "agent": "CITDirector",
+          "hrpo_rating": "NOTICE",
+          "hrdo_rating": "NEEDS_SUPPORT",
+          "hrdo_trajectory": "DECLINING",
+          "issues": [
+            "CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session."
+          ],
+          "development_plan": []
+        },
+        {
+          "agent": "CITCodeInspector",
+          "hrpo_rating": "NOTICE",
+          "hrdo_rating": "NEEDS_SUPPORT",
+          "hrdo_trajectory": "DECLINING",
+          "issues": [
+            "Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle."
+          ],
+          "development_plan": []
+        },
+        {
+          "agent": "CITPipelineMonitor",
+          "hrpo_rating": "NOTICE",
+          "hrdo_rating": "NEEDS_SUPPORT",
+          "hrdo_trajectory": "DECLINING",
+          "issues": [
+            "Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle."
+          ],
+          "development_plan": []
+        },
+        {
+          "agent": "CITStrategyAnalyst",
+          "hrpo_rating": "NOTICE",
+          "hrdo_rating": "NEEDS_SUPPORT",
+          "hrdo_trajectory": "DECLINING",
+          "issues": [
+            "Parent CIT Director report is stale \u2014 CITStrategyAnalyst output cannot be verified for this cycle."
+          ],
+          "development_plan": []
+        },
+        {
+          "agent": "CITArchitectureAdvisor",
+          "hrpo_rating": "NOTICE",
+          "hrdo_rating": "NEEDS_SUPPORT",
+          "hrdo_trajectory": "DECLINING",
+          "issues": [
+            "Parent CIT Director report is stale \u2014 CITArchitectureAdvisor output cannot be verified for this cycle."
+          ],
+          "development_plan": []
+        }
+      ],
       "total_agents": 0,
-      "last_updated": "2026-06-26T13:30:01.185748"
+      "last_updated": "2026-06-28T22:00:00.627806"
     },
     "board": {
       "meeting_age_hours": 999,
@@ -1133,7 +1517,7 @@
       "last_updated": ""
     },
     "manager": {
-      "age_hours": 192.0,
+      "age_hours": 222.0,
       "total_decisions": 33,
       "buys": 3,
       "sells": 2,
@@ -1290,7 +1674,7 @@
       "last_updated": "2026-06-19T18:00:31.627502"
     },
     "review": {
-      "age_hours": 17.7,
+      "age_hours": 11.7,
       "buy_count": 0,
       "sell_count": 2,
       "top_buys": [],
@@ -1342,7 +1726,7 @@
           ]
         }
       ],
-      "last_updated": "2026-06-27T00:15:08.445429"
+      "last_updated": "2026-06-28T12:15:10.167382"
     },
     "trade_review": {
       "finding_count": 0,
@@ -1353,7 +1737,7 @@
     },
     "capital": {
       "signal": "DEPLOY_MORE",
-      "deployed_pct": 19.7,
+      "deployed_pct": 19.6,
       "directive": "",
       "last_updated": "2026-06-26T13:30:04.659481"
     },
@@ -1368,7 +1752,7 @@
       "last_updated": ""
     },
     "ops_director": {
-      "age_hours": 28.5,
+      "age_hours": 58.5,
       "floor_status": "UNKNOWN",
       "agents_reviewed": 0,
       "issues_found": 0,
@@ -1377,376 +1761,436 @@
       "last_updated": "2026-06-26T13:30:01.223401"
     },
     "firm_channel": {
-      "total": 34,
+      "total": 41,
       "by_agent": {
-        "R&D Team Leader": 10,
+        "LT Implementation Agent": 4,
+        "Logic Team Director": 2,
         "Deputy Board": 4,
         "CIT Director": 12,
-        "LT Implementation Agent": 5,
-        "Logic Team Director": 2,
-        "Freshness Sentinel": 1
+        "HR Agent": 5,
+        "Freshness Sentinel": 3,
+        "R&D Team Leader": 10,
+        "Missed Winners Agent": 1
       },
       "by_category": {
-        "SECTOR_OBS": 10,
-        "PIPELINE_ALERT": 4,
-        "PROPOSAL": 12,
-        "LT_RESOLUTION": 5,
+        "LT_RESOLUTION": 4,
         "COHERENCE_NOTE": 2,
-        "OPS_ALERT": 1
+        "PIPELINE_ALERT": 8,
+        "PROPOSAL": 12,
+        "TASK_REQUEST": 1,
+        "OPS_ALERT": 3,
+        "SECTOR_OBS": 10,
+        "RESEARCH_NOTE": 1
       },
       "urgent": [
         {
-          "ts": "2026-06-27T16:01:11.323195",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T16:00:49.599463",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T22:00:56.288336",
+          "date": "2026-06-28",
           "agent": "Deputy Board",
           "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-06-27T16:00:49.302836",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T22:00:55.876441",
+          "date": "2026-06-28",
           "agent": "CIT Director",
           "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 335.",
+          "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 343.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-06-27T12:01:11.775307",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T22:00:00.862219",
+          "date": "2026-06-28",
+          "agent": "HR Agent",
+          "category": "TASK_REQUEST",
+          "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T19:16:16.077693",
+          "date": "2026-06-28",
           "agent": "R&D Team Leader",
           "category": "SECTOR_OBS",
           "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-06-27T10:00:18.567350",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T19:00:05.471822",
+          "date": "2026-06-28",
+          "agent": "Missed Winners Agent",
+          "category": "RESEARCH_NOTE",
+          "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: none. ",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T16:01:34.484804",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T16:00:25.202521",
+          "date": "2026-06-28",
           "agent": "Deputy Board",
           "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-06-27T10:00:18.209781",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T16:00:24.815558",
+          "date": "2026-06-28",
           "agent": "CIT Director",
           "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 154.",
+          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 165.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-06-27T08:01:12.086572",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T05:01:08.631149",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T01:00:44.086879",
-          "date": "2026-06-27",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T01:00:43.892938",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 320.",
-          "priority": "HIGH"
-        }
-      ],
-      "posts": [
-        {
-          "ts": "2026-06-27T16:01:11.335822",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T16:01:11.323195",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T16:00:49.599463",
-          "date": "2026-06-27",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T16:00:49.328247",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] 12 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 12 ERROR-level entries (3041 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T16:00:49.315757",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T16:00:49.302836",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 335.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T12:15:01.184027",
-          "date": "2026-06-27",
-          "agent": "LT Implementation Agent",
-          "category": "LT_RESOLUTION",
-          "priority": "NORMAL",
-          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
-        },
-        {
-          "ts": "2026-06-27T12:01:11.788083",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T12:01:11.775307",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T12:00:01.078789",
-          "date": "2026-06-27",
-          "agent": "LT Implementation Agent",
-          "category": "LT_RESOLUTION",
-          "priority": "NORMAL",
-          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192board_proposal_submitted"
-        },
-        {
-          "ts": "2026-06-27T12:00:01.028979",
-          "date": "2026-06-27",
-          "agent": "Logic Team Director",
-          "category": "COHERENCE_NOTE",
-          "priority": "NORMAL",
-          "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 500 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
-        },
-        {
-          "ts": "2026-06-27T10:00:18.567350",
-          "date": "2026-06-27",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T10:00:18.234495",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] 12 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 12 ERROR-level entries (2942 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T10:00:18.222458",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T10:00:18.209781",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 154.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T08:15:01.089344",
-          "date": "2026-06-27",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (348h old (budget 54h))",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T08:01:12.099093",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T08:01:12.086572",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T05:01:08.644162",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T05:01:08.631149",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T01:00:44.086879",
-          "date": "2026-06-27",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T01:00:43.918871",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2843 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T01:00:43.906520",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T01:00:43.892938",
-          "date": "2026-06-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 320.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-27T00:15:08.723678",
-          "date": "2026-06-27",
-          "agent": "LT Implementation Agent",
-          "category": "LT_RESOLUTION",
-          "priority": "NORMAL",
-          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192auto_reconciled_reviews; cit_backlog_bloat\u2192already_in_queue"
-        },
-        {
-          "ts": "2026-06-27T00:15:08.702573",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T12:15:10.422714",
+          "date": "2026-06-28",
           "agent": "LT Implementation Agent",
           "category": "LT_RESOLUTION",
           "priority": "HIGH",
           "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
         },
         {
-          "ts": "2026-06-27T00:01:09.752857",
-          "date": "2026-06-27",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-27T00:01:09.739842",
-          "date": "2026-06-27",
+          "ts": "2026-06-28T12:01:37.865961",
+          "date": "2026-06-28",
           "agent": "R&D Team Leader",
           "category": "SECTOR_OBS",
           "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
           "priority": "HIGH"
-        },
+        }
+      ],
+      "posts": [
         {
-          "ts": "2026-06-27T00:00:01.155844",
-          "date": "2026-06-27",
+          "ts": "2026-06-29T00:00:01.049773",
+          "date": "2026-06-29",
           "agent": "LT Implementation Agent",
           "category": "LT_RESOLUTION",
           "priority": "NORMAL",
-          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192board_proposal_submitted"
+          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
         },
         {
-          "ts": "2026-06-27T00:00:01.120072",
-          "date": "2026-06-27",
+          "ts": "2026-06-29T00:00:01.015793",
+          "date": "2026-06-29",
           "agent": "Logic Team Director",
           "category": "COHERENCE_NOTE",
           "priority": "NORMAL",
-          "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 480 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+          "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 500 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
         },
         {
-          "ts": "2026-06-26T22:00:12.704876",
-          "date": "2026-06-26",
+          "ts": "2026-06-28T22:00:56.288336",
+          "date": "2026-06-28",
           "agent": "Deputy Board",
           "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-06-26T22:00:12.620785",
-          "date": "2026-06-26",
+          "ts": "2026-06-28T22:00:55.900821",
+          "date": "2026-06-28",
           "agent": "CIT Director",
           "category": "PROPOSAL",
-          "content": "[MEDIUM] 12 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 12 ERROR-level entries (2291 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+          "content": "[MEDIUM] 18 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 18 ERROR-level entries (4019 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-06-26T22:00:12.608298",
-          "date": "2026-06-26",
+          "ts": "2026-06-28T22:00:55.888916",
+          "date": "2026-06-28",
           "agent": "CIT Director",
           "category": "PROPOSAL",
           "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-06-26T22:00:12.595209",
-          "date": "2026-06-26",
+          "ts": "2026-06-28T22:00:55.876441",
+          "date": "2026-06-28",
           "agent": "CIT Director",
           "category": "PROPOSAL",
-          "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 123.",
+          "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 343.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T22:00:00.862219",
+          "date": "2026-06-28",
+          "agent": "HR Agent",
+          "category": "TASK_REQUEST",
+          "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T22:00:00.848526",
+          "date": "2026-06-28",
+          "agent": "HR Agent",
+          "category": "PIPELINE_ALERT",
+          "content": "FLAGGED: CITPipelineMonitor \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITPipelineMonitor output cannot be verified for this cycle.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T22:00:00.833114",
+          "date": "2026-06-28",
+          "agent": "HR Agent",
+          "category": "PIPELINE_ALERT",
+          "content": "FLAGGED: CITCodeInspector \u2014 NOTICE: Parent CIT Director report is stale \u2014 CITCodeInspector output cannot be verified for this cycle.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T22:00:00.810445",
+          "date": "2026-06-28",
+          "agent": "HR Agent",
+          "category": "PIPELINE_ALERT",
+          "content": "FLAGGED: CITDirector \u2014 NOTICE: CIT Director latest report is more than 14 hours old \u2014 likely missed a scheduled session.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T22:00:00.791365",
+          "date": "2026-06-28",
+          "agent": "HR Agent",
+          "category": "PIPELINE_ALERT",
+          "content": "Workforce check complete: 39 agents evaluated. Firm health 8.9/10. Action required: 5 agent(s) [CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor].",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T21:15:01.233546",
+          "date": "2026-06-28",
+          "agent": "Freshness Sentinel",
+          "category": "OPS_ALERT",
+          "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (385h old (budget 54h))",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T19:16:16.090405",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T19:16:16.077693",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T19:00:05.471822",
+          "date": "2026-06-28",
+          "agent": "Missed Winners Agent",
+          "category": "RESEARCH_NOTE",
+          "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: none. ",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T16:01:34.497988",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T16:01:34.484804",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T16:00:25.202521",
+          "date": "2026-06-28",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T16:00:24.840642",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] 15 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 15 ERROR-level entries (3917 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T16:00:24.828459",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T16:00:24.815558",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 165.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T12:15:10.444091",
+          "date": "2026-06-28",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "NORMAL",
+          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192auto_reconciled_reviews; cit_backlog_bloat\u2192already_in_queue"
+        },
+        {
+          "ts": "2026-06-28T12:15:10.422714",
+          "date": "2026-06-28",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "HIGH",
+          "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
+        },
+        {
+          "ts": "2026-06-28T12:01:37.878981",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T12:01:37.865961",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T12:00:01.025369",
+          "date": "2026-06-28",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "NORMAL",
+          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+        },
+        {
+          "ts": "2026-06-28T12:00:00.992391",
+          "date": "2026-06-28",
+          "agent": "Logic Team Director",
+          "category": "COHERENCE_NOTE",
+          "priority": "NORMAL",
+          "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 487 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+        },
+        {
+          "ts": "2026-06-28T10:00:11.950028",
+          "date": "2026-06-28",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T10:00:11.643830",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] 15 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 15 ERROR-level entries (3818 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T10:00:11.631180",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T10:00:11.618463",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 114.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T09:15:00.967013",
+          "date": "2026-06-28",
+          "agent": "Freshness Sentinel",
+          "category": "OPS_ALERT",
+          "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (373h old (budget 54h))",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T08:01:10.487832",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T08:01:10.475351",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T07:15:03.639600",
+          "date": "2026-06-28",
+          "agent": "Freshness Sentinel",
+          "category": "OPS_ALERT",
+          "content": "\ud83d\udd50 FRESHNESS: auto-fixed 2: risk_bulletin.json, irm_daily_check.json; newly stale: risk_bulletin.json (34h old (budget 26h)), irm_daily_check.json (34h old (budget 30h))",
+          "priority": "URGENT"
+        },
+        {
+          "ts": "2026-06-28T06:00:51.531243",
+          "date": "2026-06-28",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T06:00:51.230940",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2158 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T06:00:51.218604",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T06:00:51.205630",
+          "date": "2026-06-28",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 339.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-28T05:01:09.537961",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-28T05:01:09.524588",
+          "date": "2026-06-28",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
           "priority": "HIGH"
         }
       ]
@@ -1756,12 +2200,13 @@
     "\u2699 System: 3 operational issue(s) flagged",
     "\ud83d\udccc CoS: Portfolio risk is ELEVATED. Review Risk Manager report for details.",
     "\ud83d\udca1 CIT ThinkTank: 5 VISION proposal(s) awaiting board unanimous vote",
-    "\ud83d\udd0d IRM: 4 red flag(s) from overnight board check",
-    "\ud83d\udea8 Manager: decisions are 192h old \u2014 DEAD-MAN'S SWITCH risk",
-    "\ud83d\udcb0 Capital: only 19.7% deployed \u2014 DEPLOY_MORE directive active",
-    "\ud83d\udce2 R&D Team Leader: Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top",
-    "\ud83d\udce2 Deputy Board: Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT ",
-    "\ud83d\udce2 CIT Director: MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank ide"
+    "\ud83d\udd0d IRM: 6 red flag(s) from overnight board check",
+    "\ud83d\udc65 HR: 5 agent(s) flagged for performance review",
+    "\ud83d\udea8 Manager: decisions are 222h old \u2014 DEAD-MAN'S SWITCH risk",
+    "\ud83d\udcb0 Capital: only 19.6% deployed \u2014 DEPLOY_MORE directive active",
+    "\ud83d\udce2 Deputy Board: Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT ",
+    "\ud83d\udce2 CIT Director: EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank ide",
+    "\ud83d\udce2 HR Agent: TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. "
   ],
   "watchlist": [],
   "agent_status": {
@@ -1770,7 +2215,7 @@
       "level": "YELLOW"
     },
     "cro": {
-      "fresh": false,
+      "fresh": true,
       "risk_level": "ELEVATED"
     },
     "rd_team": {
@@ -1798,7 +2243,7 @@
     },
     "cit": {
       "morning_fresh": true,
-      "evening_fresh": false,
+      "evening_fresh": true,
       "pending": 6
     },
     "irm": {
@@ -1807,7 +2252,7 @@
     },
     "hr": {
       "fresh": true,
-      "health": 10.0
+      "health": 8.9
     },
     "board": {
       "fresh": false,
@@ -1818,7 +2263,7 @@
       "decisions": 33
     },
     "review": {
-      "fresh": false,
+      "fresh": true,
       "buy_recs": 0
     },
     "trade_review": {
