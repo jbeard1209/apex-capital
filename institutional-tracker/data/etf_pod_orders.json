@@ -1,20 +1,20 @@
 {
-  "generated_at": "2026-06-29T00:00:01.184025",
+  "generated_at": "2026-06-29T20:45:00.429539",
   "pod": "pod3_macro",
   "board_vote": "APPROVED",
   "target_holdings": [
     "XLK",
     "XLV",
-    "XLI"
+    "QQQ"
   ],
   "orders": [
     {
       "action": "SELL",
-      "ticker": "QQQ",
-      "qty": 7,
-      "price": 707.83,
-      "dollar_value": 4954.81,
-      "reason": "QQQ removed from rotation \u2014 not in board's approved ETF list."
+      "ticker": "XLI",
+      "qty": 37,
+      "price": 180.88,
+      "dollar_value": 6692.56,
+      "reason": "XLI removed from rotation \u2014 not in board's approved ETF list."
     }
   ],
   "risk_flags": [
@@ -25,9 +25,9 @@
   "risk_officer_note": "Risk Officer flags logged and acknowledged. Execution proceeds per board governance: Director + Strategist majority overrides Risk Officer vote.",
   "regime_context": {
     "label": "bull",
-    "vix": 18.4,
+    "vix": 18.3,
     "spy_rsi": 46.1,
-    "spy_1d_return": -0.7231,
+    "spy_1d_return": 1.6393,
     "overbought": false,
     "warning_count": 0
   },

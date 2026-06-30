@@ -1,3126 +1,3130 @@
 {
   "AAP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.189993"
+    "scanned_at": "2026-06-29T16:02:42.423662"
   },
   "AAPL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.211616"
+    "scanned_at": "2026-06-29T16:02:42.444153"
   },
   "ABBV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.232950"
+    "scanned_at": "2026-06-29T16:02:42.464992"
   },
   "ABM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.254020"
+    "scanned_at": "2026-06-29T16:02:42.484123"
   },
   "ADM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.276644"
+    "scanned_at": "2026-06-29T16:02:42.502974"
   },
   "ADUS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.298338"
+    "scanned_at": "2026-06-29T16:02:42.523289"
   },
   "AEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.319321"
+    "scanned_at": "2026-06-29T16:02:42.543866"
   },
   "AEP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.340131"
+    "scanned_at": "2026-06-29T16:02:42.563741"
   },
   "AFL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.361469"
+    "scanned_at": "2026-06-29T16:02:42.584590"
   },
   "AIG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.382340"
+    "scanned_at": "2026-06-29T16:02:42.605135"
   },
   "ALIZY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.403171"
+    "scanned_at": "2026-06-29T16:02:42.623753"
   },
   "ALL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.424449"
+    "scanned_at": "2026-06-29T16:02:42.642308"
   },
   "AMCX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.445545"
+    "scanned_at": "2026-06-29T16:02:42.661262"
   },
   "AMGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.467478"
+    "scanned_at": "2026-06-29T16:02:42.681781"
   },
   "AMZN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.488219"
+    "scanned_at": "2026-06-29T16:02:42.701905"
   },
   "ANSS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.509239"
+    "scanned_at": "2026-06-29T16:02:42.722562"
   },
   "APD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.530989"
+    "scanned_at": "2026-06-29T16:02:42.742952"
   },
   "ASGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.552394"
+    "scanned_at": "2026-06-29T16:02:42.762925"
   },
   "ASML": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.573434"
+    "scanned_at": "2026-06-29T16:02:42.781056"
   },
   "BA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.594861"
+    "scanned_at": "2026-06-29T16:02:42.800064"
   },
   "BABA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.615866"
+    "scanned_at": "2026-06-29T16:02:42.820416"
   },
   "BAC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.636029"
+    "scanned_at": "2026-06-29T16:02:42.840844"
   },
   "BAH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.657213"
+    "scanned_at": "2026-06-29T16:02:42.861572"
   },
   "BALY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.677944"
+    "scanned_at": "2026-06-29T16:02:42.881886"
   },
   "BAX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.698974"
+    "scanned_at": "2026-06-29T16:02:42.902316"
   },
   "BB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.720071"
+    "scanned_at": "2026-06-29T16:02:42.921388"
   },
   "BBBY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.740815"
+    "scanned_at": "2026-06-29T16:02:42.939487"
   },
   "BBWI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.762093"
+    "scanned_at": "2026-06-29T16:02:42.958719"
   },
   "BBY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.783949"
+    "scanned_at": "2026-06-29T16:02:42.979453"
   },
   "BDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.805372"
+    "scanned_at": "2026-06-29T16:02:42.999461"
   },
   "BIDU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.826990"
+    "scanned_at": "2026-06-29T16:02:43.019988"
   },
   "BIIB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.848321"
+    "scanned_at": "2026-06-29T16:02:43.040476"
   },
   "BK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.869540"
+    "scanned_at": "2026-06-29T16:02:43.059958"
   },
   "BKNG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.890246"
+    "scanned_at": "2026-06-29T16:02:43.078883"
   },
   "BKR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.911876"
+    "scanned_at": "2026-06-29T16:02:43.098217"
   },
   "BMRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.932685"
+    "scanned_at": "2026-06-29T16:02:43.118182"
   },
   "BMY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.954270"
+    "scanned_at": "2026-06-29T16:02:43.138427"
   },
   "BP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.975725"
+    "scanned_at": "2026-06-29T16:02:43.158425"
   },
   "BRKR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:43.996900"
+    "scanned_at": "2026-06-29T16:02:43.178865"
   },
   "BSVN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.018436"
+    "scanned_at": "2026-06-29T16:02:43.198804"
   },
   "BTI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.039412"
+    "scanned_at": "2026-06-29T16:02:43.217077"
   },
   "BWFG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.060390"
+    "scanned_at": "2026-06-29T16:02:43.236163"
   },
   "C": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.081710"
+    "scanned_at": "2026-06-29T16:02:43.256526"
   },
   "CACI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.102776"
+    "scanned_at": "2026-06-29T16:02:43.276578"
   },
   "CAG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.126581"
+    "scanned_at": "2026-06-29T16:02:43.296865"
   },
   "CAH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.148510"
+    "scanned_at": "2026-06-29T16:02:43.317035"
   },
   "CAT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.171052"
+    "scanned_at": "2026-06-29T16:02:43.337287"
   },
   "CATY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.193100"
+    "scanned_at": "2026-06-29T16:02:43.356139"
   },
   "CBOE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.214023"
+    "scanned_at": "2026-06-29T16:02:43.374414"
   },
   "CBRL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.236024"
+    "scanned_at": "2026-06-29T16:02:43.394598"
   },
   "CBT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.258273"
+    "scanned_at": "2026-06-29T16:02:43.414912"
   },
   "CC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.279094"
+    "scanned_at": "2026-06-29T16:02:43.434637"
   },
   "CDNS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.301288"
+    "scanned_at": "2026-06-29T16:02:43.454987"
   },
   "CE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.323252"
+    "scanned_at": "2026-06-29T16:02:43.475363"
   },
   "CF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.344858"
+    "scanned_at": "2026-06-29T16:02:43.494049"
   },
   "CFG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.367315"
+    "scanned_at": "2026-06-29T16:02:43.512726"
   },
   "CHMG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.388721"
+    "scanned_at": "2026-06-29T16:02:43.532639"
   },
   "CHTR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.410890"
+    "scanned_at": "2026-06-29T16:02:43.553264"
   },
   "CI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.432930"
+    "scanned_at": "2026-06-29T16:02:43.573752"
   },
   "CINF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.454657"
+    "scanned_at": "2026-06-29T16:02:43.594547"
   },
   "CL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.477498"
+    "scanned_at": "2026-06-29T16:02:43.615149"
   },
   "CLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.500204"
+    "scanned_at": "2026-06-29T16:02:43.634002"
   },
   "CLX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.522574"
+    "scanned_at": "2026-06-29T16:02:43.653276"
   },
   "CMCSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.545115"
+    "scanned_at": "2026-06-29T16:02:43.673568"
   },
   "CME": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.567720"
+    "scanned_at": "2026-06-29T16:02:43.693634"
   },
   "CMI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.589974"
+    "scanned_at": "2026-06-29T16:02:43.714257"
   },
   "CNQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.612213"
+    "scanned_at": "2026-06-29T16:02:43.734846"
   },
   "COF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.634219"
+    "scanned_at": "2026-06-29T16:02:43.754954"
   },
   "COHR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.656787"
+    "scanned_at": "2026-06-29T16:02:43.774287"
   },
   "COP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.680195"
+    "scanned_at": "2026-06-29T16:02:43.793894"
   },
   "COR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.702199"
+    "scanned_at": "2026-06-29T16:02:43.813513"
   },
   "COTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.724852"
+    "scanned_at": "2026-06-29T16:02:43.834196"
   },
   "CPB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.747546"
+    "scanned_at": "2026-06-29T16:02:43.854517"
   },
   "CPRI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.770155"
+    "scanned_at": "2026-06-29T16:02:43.874486"
   },
   "CRK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.792916"
+    "scanned_at": "2026-06-29T16:02:43.895374"
   },
   "CSCO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.814724"
+    "scanned_at": "2026-06-29T16:02:43.915067"
   },
   "CSGP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.836933"
+    "scanned_at": "2026-06-29T16:02:43.933819"
   },
   "CSWC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.859969"
+    "scanned_at": "2026-06-29T16:02:43.953002"
   },
   "CSX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.882250"
+    "scanned_at": "2026-06-29T16:02:43.973172"
   },
   "CVE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.905011"
+    "scanned_at": "2026-06-29T16:02:43.993765"
   },
   "CVS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.927808"
+    "scanned_at": "2026-06-29T16:02:44.014044"
   },
   "CVX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.949747"
+    "scanned_at": "2026-06-29T16:02:44.035384"
   },
   "CXW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.972327"
+    "scanned_at": "2026-06-29T16:02:44.056679"
   },
   "CYH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:44.994711"
+    "scanned_at": "2026-06-29T16:02:44.075288"
   },
   "D": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.018512"
+    "scanned_at": "2026-06-29T16:02:44.094300"
   },
   "DD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.040582"
+    "scanned_at": "2026-06-29T16:02:44.114629"
   },
   "DE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.061937"
+    "scanned_at": "2026-06-29T16:02:44.134635"
   },
   "DG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.083201"
+    "scanned_at": "2026-06-29T16:02:44.155385"
   },
   "DGX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.105552"
+    "scanned_at": "2026-06-29T16:02:44.176433"
   },
   "DHI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.126646"
+    "scanned_at": "2026-06-29T16:02:44.196498"
   },
   "DIS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.147528"
+    "scanned_at": "2026-06-29T16:02:44.216102"
   },
   "DLTR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.168704"
+    "scanned_at": "2026-06-29T16:02:44.235296"
   },
   "DNOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.189456"
+    "scanned_at": "2026-06-29T16:02:44.254940"
   },
   "DOV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.211480"
+    "scanned_at": "2026-06-29T16:02:44.275219"
   },
   "DOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.232212"
+    "scanned_at": "2026-06-29T16:02:44.295115"
   },
   "DUK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.253429"
+    "scanned_at": "2026-06-29T16:02:44.315386"
   },
   "DVN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.275416"
+    "scanned_at": "2026-06-29T16:02:44.335602"
   },
   "ECL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.296115"
+    "scanned_at": "2026-06-29T16:02:44.354725"
   },
   "ED": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.317494"
+    "scanned_at": "2026-06-29T16:02:44.373278"
   },
   "EL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.339322"
+    "scanned_at": "2026-06-29T16:02:44.393004"
   },
   "ELV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.360216"
+    "scanned_at": "2026-06-29T16:02:44.413036"
   },
   "EMN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.380663"
+    "scanned_at": "2026-06-29T16:02:44.433464"
   },
   "EMR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.401711"
+    "scanned_at": "2026-06-29T16:02:44.453328"
   },
   "ENR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.423655"
+    "scanned_at": "2026-06-29T16:02:44.473980"
   },
   "ENSG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.445373"
+    "scanned_at": "2026-06-29T16:02:44.493611"
   },
   "EOG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.466888"
+    "scanned_at": "2026-06-29T16:02:44.512871"
   },
   "ERIE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.489649"
+    "scanned_at": "2026-06-29T16:02:44.532368"
   },
   "ES": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.511833"
+    "scanned_at": "2026-06-29T16:02:44.553597"
   },
   "ESSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.533459"
+    "scanned_at": "2026-06-29T16:02:44.574782"
   },
   "ETHB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.557488"
+    "scanned_at": "2026-06-29T16:02:44.595499"
   },
   "ETN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.580677"
+    "scanned_at": "2026-06-29T16:02:44.615642"
   },
   "EXC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.603613"
+    "scanned_at": "2026-06-29T16:02:44.634692"
   },
   "EXPE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.625065"
+    "scanned_at": "2026-06-29T16:02:44.653457"
   },
   "F": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.646149"
+    "scanned_at": "2026-06-29T16:02:44.672861"
   },
   "FANG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.667310"
+    "scanned_at": "2026-06-29T16:02:44.693138"
   },
   "FBIZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.688424"
+    "scanned_at": "2026-06-29T16:02:44.713502"
   },
   "FCX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.709092"
+    "scanned_at": "2026-06-29T16:02:44.733320"
   },
   "FDS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.730047"
+    "scanned_at": "2026-06-29T16:02:44.753641"
   },
   "FDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.753087"
+    "scanned_at": "2026-06-29T16:02:44.773383"
   },
   "FFIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.774304"
+    "scanned_at": "2026-06-29T16:02:44.791931"
+  },
+  "FICO": {
+    "iv_result": null,
+    "scanned_at": "2026-06-29T16:02:44.811696"
   },
   "FITB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.796297"
+    "scanned_at": "2026-06-29T16:02:44.832087"
   },
   "FNF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.817279"
+    "scanned_at": "2026-06-29T16:02:44.852018"
   },
   "FNV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.837823"
+    "scanned_at": "2026-06-29T16:02:44.873232"
   },
   "FOXA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.859325"
+    "scanned_at": "2026-06-29T16:02:44.893867"
   },
   "FRPH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.881227"
+    "scanned_at": "2026-06-29T16:02:44.914966"
   },
   "FSLR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.902765"
+    "scanned_at": "2026-06-29T16:02:44.934271"
   },
   "GBDC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.924975"
+    "scanned_at": "2026-06-29T16:02:44.952669"
   },
   "GD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.946192"
+    "scanned_at": "2026-06-29T16:02:44.972892"
   },
   "GDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.967876"
+    "scanned_at": "2026-06-29T16:02:44.993871"
   },
   "GDXJ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:45.988954"
+    "scanned_at": "2026-06-29T16:02:45.014175"
   },
   "GE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.009567"
+    "scanned_at": "2026-06-29T16:02:45.034644"
   },
   "GEO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.030932"
+    "scanned_at": "2026-06-29T16:02:45.055090"
   },
   "GILD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.052104"
+    "scanned_at": "2026-06-29T16:02:45.074488"
   },
   "GIS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.074193"
+    "scanned_at": "2026-06-29T16:02:45.093343"
   },
   "GLP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.094670"
+    "scanned_at": "2026-06-29T16:02:45.112798"
   },
   "GM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.114823"
+    "scanned_at": "2026-06-29T16:02:45.133300"
   },
   "GME": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.136304"
+    "scanned_at": "2026-06-29T16:02:45.154339"
   },
   "GMED": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.157894"
+    "scanned_at": "2026-06-29T16:02:45.174232"
   },
   "GNRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.179120"
+    "scanned_at": "2026-06-29T16:02:45.194866"
   },
   "GOOGL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.201092"
+    "scanned_at": "2026-06-29T16:02:45.214608"
   },
   "GOOS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.222830"
+    "scanned_at": "2026-06-29T16:02:45.232921"
   },
   "GPC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.243452"
+    "scanned_at": "2026-06-29T16:02:45.252602"
   },
   "GS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.264957"
+    "scanned_at": "2026-06-29T16:02:45.272590"
   },
   "GSBC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.285587"
+    "scanned_at": "2026-06-29T16:02:45.292898"
   },
   "HAFC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.306568"
+    "scanned_at": "2026-06-29T16:02:45.313635"
   },
   "HAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.327987"
+    "scanned_at": "2026-06-29T16:02:45.333422"
   },
   "HBAN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.349054"
+    "scanned_at": "2026-06-29T16:02:45.354382"
   },
   "HBI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.371491"
+    "scanned_at": "2026-06-29T16:02:45.374409"
   },
   "HBT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.392823"
+    "scanned_at": "2026-06-29T16:02:45.393202"
   },
   "HCA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.414262"
+    "scanned_at": "2026-06-29T16:02:45.414647"
   },
   "HD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.436210"
+    "scanned_at": "2026-06-29T16:02:45.435370"
   },
   "HES": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.458341"
+    "scanned_at": "2026-06-29T16:02:45.456965"
   },
   "HIG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.479987"
+    "scanned_at": "2026-06-29T16:02:45.477586"
   },
   "HII": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.501087"
+    "scanned_at": "2026-06-29T16:02:45.497985"
   },
   "HMNF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.523508"
+    "scanned_at": "2026-06-29T16:02:45.517371"
   },
   "HON": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.544743"
+    "scanned_at": "2026-06-29T16:02:45.536762"
   },
   "HOPE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.566952"
+    "scanned_at": "2026-06-29T16:02:45.557901"
   },
   "HP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.587570"
+    "scanned_at": "2026-06-29T16:02:45.578087"
   },
   "HPP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.609160"
+    "scanned_at": "2026-06-29T16:02:45.598461"
   },
   "HRL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.630611"
+    "scanned_at": "2026-06-29T16:02:45.619217"
   },
   "HSY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.651791"
+    "scanned_at": "2026-06-29T16:02:45.639055"
   },
   "HTLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.673596"
+    "scanned_at": "2026-06-29T16:02:45.659273"
   },
   "HUM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.695158"
+    "scanned_at": "2026-06-29T16:02:45.678209"
   },
   "HWBK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.716200"
+    "scanned_at": "2026-06-29T16:02:45.698536"
   },
   "ICE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.737323"
+    "scanned_at": "2026-06-29T16:02:45.719180"
   },
   "IFF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.758812"
+    "scanned_at": "2026-06-29T16:02:45.739168"
   },
   "INTC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.779915"
+    "scanned_at": "2026-06-29T16:02:45.759492"
   },
   "IP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.801820"
+    "scanned_at": "2026-06-29T16:02:45.780019"
   },
   "IPG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.823114"
+    "scanned_at": "2026-06-29T16:02:45.799733"
   },
   "ITIC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.844335"
+    "scanned_at": "2026-06-29T16:02:45.818753"
   },
   "ITW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.866501"
+    "scanned_at": "2026-06-29T16:02:45.839061"
   },
   "JACK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.887583"
+    "scanned_at": "2026-06-29T16:02:45.859557"
   },
   "JCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.909193"
+    "scanned_at": "2026-06-29T16:02:45.880282"
   },
   "JD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.930936"
+    "scanned_at": "2026-06-29T16:02:45.901049"
   },
   "JNJ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.952043"
+    "scanned_at": "2026-06-29T16:02:45.921042"
   },
   "JPM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.973941"
+    "scanned_at": "2026-06-29T16:02:45.940277"
   },
   "K": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:46.997044"
+    "scanned_at": "2026-06-29T16:02:45.959756"
   },
   "KELYA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.017774"
+    "scanned_at": "2026-06-29T16:02:45.980406"
   },
   "KEY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.039073"
+    "scanned_at": "2026-06-29T16:02:46.000855"
   },
   "KHC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.059795"
+    "scanned_at": "2026-06-29T16:02:46.020854"
   },
   "KMB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.080932"
+    "scanned_at": "2026-06-29T16:02:46.041793"
   },
   "KMI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.103058"
+    "scanned_at": "2026-06-29T16:02:46.063277"
   },
   "KMPR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.122851"
+    "scanned_at": "2026-06-29T16:02:46.082099"
   },
   "KO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.143603"
+    "scanned_at": "2026-06-29T16:02:46.101042"
   },
   "KR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.165216"
+    "scanned_at": "2026-06-29T16:02:46.121709"
   },
   "LADR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.186688"
+    "scanned_at": "2026-06-29T16:02:46.141833"
   },
   "LDOS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.208269"
+    "scanned_at": "2026-06-29T16:02:46.162208"
   },
   "LEN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.230326"
+    "scanned_at": "2026-06-29T16:02:46.182462"
   },
   "LH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.251580"
+    "scanned_at": "2026-06-29T16:02:46.203245"
   },
   "LHCG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.273555"
+    "scanned_at": "2026-06-29T16:02:46.224175"
   },
   "LILA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.294559"
+    "scanned_at": "2026-06-29T16:02:46.242550"
   },
   "LIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.315923"
+    "scanned_at": "2026-06-29T16:02:46.262494"
   },
   "LKQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.337697"
+    "scanned_at": "2026-06-29T16:02:46.282934"
   },
   "LMT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.359454"
+    "scanned_at": "2026-06-29T16:02:46.302962"
   },
   "LNSTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.381502"
+    "scanned_at": "2026-06-29T16:02:46.324322"
   },
   "LOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.402143"
+    "scanned_at": "2026-06-29T16:02:46.345393"
   },
   "LULU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.423345"
+    "scanned_at": "2026-06-29T16:02:46.364886"
   },
   "LUMN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.444960"
+    "scanned_at": "2026-06-29T16:02:46.383881"
   },
   "LVS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.466785"
+    "scanned_at": "2026-06-29T16:02:46.402450"
   },
   "MAIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.487637"
+    "scanned_at": "2026-06-29T16:02:46.423218"
   },
   "MAN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.509006"
+    "scanned_at": "2026-06-29T16:02:46.443697"
   },
   "MANH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.529739"
+    "scanned_at": "2026-06-29T16:02:46.463757"
   },
   "MCK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.551859"
-  },
-  "MCO": {
-    "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.573422"
+    "scanned_at": "2026-06-29T16:02:46.484568"
   },
   "MDT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.594165"
+    "scanned_at": "2026-06-29T16:02:46.504741"
   },
   "MELI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.615805"
+    "scanned_at": "2026-06-29T16:02:46.524106"
   },
   "MET": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.636667"
+    "scanned_at": "2026-06-29T16:02:46.543436"
   },
   "META": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.658377"
+    "scanned_at": "2026-06-29T16:02:46.563581"
   },
   "MGM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.679614"
+    "scanned_at": "2026-06-29T16:02:46.583942"
   },
   "MGRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.700967"
+    "scanned_at": "2026-06-29T16:02:46.604398"
   },
   "MHK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.723059"
+    "scanned_at": "2026-06-29T16:02:46.624357"
   },
   "MKL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.745205"
+    "scanned_at": "2026-06-29T16:02:46.645026"
   },
   "MLM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.766870"
+    "scanned_at": "2026-06-29T16:02:46.663699"
   },
   "MMM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.788515"
+    "scanned_at": "2026-06-29T16:02:46.682523"
   },
   "MO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.809231"
+    "scanned_at": "2026-06-29T16:02:46.703153"
   },
   "MOH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.830617"
+    "scanned_at": "2026-06-29T16:02:46.723103"
   },
   "MORN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.852132"
+    "scanned_at": "2026-06-29T16:02:46.743438"
   },
   "MOS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.873296"
+    "scanned_at": "2026-06-29T16:02:46.763855"
   },
   "MPC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.895021"
+    "scanned_at": "2026-06-29T16:02:46.784619"
   },
   "MPW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.917259"
+    "scanned_at": "2026-06-29T16:02:46.804782"
   },
   "MRK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.938243"
+    "scanned_at": "2026-06-29T16:02:46.824224"
   },
   "MS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.960559"
+    "scanned_at": "2026-06-29T16:02:46.844588"
   },
   "MSCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:47.982598"
+    "scanned_at": "2026-06-29T16:02:46.865061"
   },
   "MTB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.003387"
+    "scanned_at": "2026-06-29T16:02:46.885349"
   },
   "MTD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.024582"
+    "scanned_at": "2026-06-29T16:02:46.906116"
   },
   "NBTB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.045232"
+    "scanned_at": "2026-06-29T16:02:46.926901"
   },
   "NDAQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.066071"
+    "scanned_at": "2026-06-29T16:02:46.946322"
   },
   "NEE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.087320"
+    "scanned_at": "2026-06-29T16:02:46.965016"
   },
   "NEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.108668"
+    "scanned_at": "2026-06-29T16:02:46.985208"
   },
   "NFBK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.131494"
+    "scanned_at": "2026-06-29T16:02:47.005505"
   },
   "NOC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.154551"
+    "scanned_at": "2026-06-29T16:02:47.026527"
   },
   "NOV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.175798"
+    "scanned_at": "2026-06-29T16:02:47.046988"
   },
   "NSC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.197754"
+    "scanned_at": "2026-06-29T16:02:47.067550"
   },
   "NTAP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.219233"
+    "scanned_at": "2026-06-29T16:02:47.086806"
   },
   "NUE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.240915"
+    "scanned_at": "2026-06-29T16:02:47.105184"
   },
   "NVDA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.262933"
+    "scanned_at": "2026-06-29T16:02:47.125747"
   },
   "NVR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.284230"
+    "scanned_at": "2026-06-29T16:02:47.146734"
   },
   "NWFL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.305269"
+    "scanned_at": "2026-06-29T16:02:47.166748"
   },
   "NWSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.326425"
+    "scanned_at": "2026-06-29T16:02:47.187526"
   },
   "NXST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.347864"
+    "scanned_at": "2026-06-29T16:02:47.209206"
   },
   "NYT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.369411"
+    "scanned_at": "2026-06-29T16:02:47.229842"
   },
   "ODP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.391740"
+    "scanned_at": "2026-06-29T16:02:47.251118"
   },
   "OKE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.411781"
+    "scanned_at": "2026-06-29T16:02:47.271119"
   },
   "OLN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.432792"
+    "scanned_at": "2026-06-29T16:02:47.291753"
   },
   "OLPX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.454627"
+    "scanned_at": "2026-06-29T16:02:47.311996"
   },
   "OMC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.476139"
+    "scanned_at": "2026-06-29T16:02:47.332513"
   },
   "ORCL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.498120"
+    "scanned_at": "2026-06-29T16:02:47.354047"
   },
   "OVV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.519992"
+    "scanned_at": "2026-06-29T16:02:47.373465"
   },
   "OXY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.540896"
+    "scanned_at": "2026-06-29T16:02:47.392262"
   },
   "PARA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.563025"
+    "scanned_at": "2026-06-29T16:02:47.412649"
   },
   "PATK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.583917"
+    "scanned_at": "2026-06-29T16:02:47.433130"
   },
   "PBA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.605054"
+    "scanned_at": "2026-06-29T16:02:47.453715"
   },
   "PBF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.627035"
+    "scanned_at": "2026-06-29T16:02:47.474416"
   },
   "PBI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.648122"
+    "scanned_at": "2026-06-29T16:02:47.494600"
   },
   "PCAR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.669640"
+    "scanned_at": "2026-06-29T16:02:47.514248"
   },
   "PCG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.690984"
+    "scanned_at": "2026-06-29T16:02:47.533116"
   },
   "PCOR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.712170"
+    "scanned_at": "2026-06-29T16:02:47.552534"
   },
   "PCTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.733488"
+    "scanned_at": "2026-06-29T16:02:47.573896"
   },
   "PCVX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.755105"
+    "scanned_at": "2026-06-29T16:02:47.594474"
   },
   "PD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.777340"
+    "scanned_at": "2026-06-29T16:02:47.615146"
   },
   "PDD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.798939"
+    "scanned_at": "2026-06-29T16:02:47.636048"
   },
   "PDM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.819777"
+    "scanned_at": "2026-06-29T16:02:47.656633"
   },
   "PDS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.841516"
+    "scanned_at": "2026-06-29T16:02:47.675660"
   },
   "PEB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.862868"
+    "scanned_at": "2026-06-29T16:02:47.696183"
   },
   "PEG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.885609"
+    "scanned_at": "2026-06-29T16:02:47.716151"
   },
   "PEGA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.907660"
+    "scanned_at": "2026-06-29T16:02:47.736685"
   },
   "PEN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.929163"
+    "scanned_at": "2026-06-29T16:02:47.757457"
   },
   "PENN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.954420"
+    "scanned_at": "2026-06-29T16:02:47.778051"
   },
   "PEP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:48.979192"
+    "scanned_at": "2026-06-29T16:02:47.798620"
   },
   "PFE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.001628"
+    "scanned_at": "2026-06-29T16:02:47.818583"
   },
   "PFG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.022761"
+    "scanned_at": "2026-06-29T16:02:47.838043"
   },
   "PFGC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.044565"
+    "scanned_at": "2026-06-29T16:02:47.859155"
   },
   "PFIS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.066438"
+    "scanned_at": "2026-06-29T16:02:47.879241"
   },
   "PFSI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.088179"
+    "scanned_at": "2026-06-29T16:02:47.899634"
   },
   "PG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.109695"
+    "scanned_at": "2026-06-29T16:02:47.920801"
   },
   "PGNY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.131102"
+    "scanned_at": "2026-06-29T16:02:47.941167"
   },
   "PGR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.152800"
+    "scanned_at": "2026-06-29T16:02:47.961545"
   },
   "PGTI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.175186"
+    "scanned_at": "2026-06-29T16:02:47.981474"
   },
   "PH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.196578"
+    "scanned_at": "2026-06-29T16:02:48.001396"
   },
   "PHM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.218166"
+    "scanned_at": "2026-06-29T16:02:48.022072"
   },
   "PHR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.239649"
+    "scanned_at": "2026-06-29T16:02:48.042465"
   },
   "PI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.260943"
+    "scanned_at": "2026-06-29T16:02:48.062697"
   },
   "PII": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.282220"
+    "scanned_at": "2026-06-29T16:02:48.083820"
   },
   "PINS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.302898"
+    "scanned_at": "2026-06-29T16:02:48.102986"
   },
   "PIPR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.324434"
+    "scanned_at": "2026-06-29T16:02:48.122037"
   },
   "PJT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.346339"
+    "scanned_at": "2026-06-29T16:02:48.142249"
   },
   "PK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.367779"
+    "scanned_at": "2026-06-29T16:02:48.163065"
   },
   "PKG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.389160"
+    "scanned_at": "2026-06-29T16:02:48.183446"
   },
   "PL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.410446"
+    "scanned_at": "2026-06-29T16:02:48.203891"
   },
   "PLD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.432404"
+    "scanned_at": "2026-06-29T16:02:48.224383"
   },
   "PLMR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.454315"
+    "scanned_at": "2026-06-29T16:02:48.243887"
   },
   "PLNT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.475745"
+    "scanned_at": "2026-06-29T16:02:48.263160"
   },
   "PLTR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.498022"
+    "scanned_at": "2026-06-29T16:02:48.283422"
   },
   "PLUG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.520510"
+    "scanned_at": "2026-06-29T16:02:48.303979"
   },
   "PLXS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.543260"
+    "scanned_at": "2026-06-29T16:02:48.324166"
   },
   "PM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.566300"
+    "scanned_at": "2026-06-29T16:02:48.344671"
   },
   "PNC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.588108"
+    "scanned_at": "2026-06-29T16:02:48.366379"
   },
   "PNFP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.610401"
+    "scanned_at": "2026-06-29T16:02:48.385726"
   },
   "PNR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.632531"
+    "scanned_at": "2026-06-29T16:02:48.404492"
   },
   "PNTG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.655050"
+    "scanned_at": "2026-06-29T16:02:48.424477"
   },
   "PODD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.676901"
+    "scanned_at": "2026-06-29T16:02:48.444482"
   },
   "POOL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.699210"
+    "scanned_at": "2026-06-29T16:02:48.465052"
   },
   "POR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.720875"
+    "scanned_at": "2026-06-29T16:02:48.485221"
   },
   "POST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.743581"
+    "scanned_at": "2026-06-29T16:02:48.506040"
   },
   "PPC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.765419"
+    "scanned_at": "2026-06-29T16:02:48.526096"
   },
   "PPG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.787504"
+    "scanned_at": "2026-06-29T16:02:48.544855"
   },
   "PPL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.809826"
+    "scanned_at": "2026-06-29T16:02:48.565591"
   },
   "PR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.831950"
+    "scanned_at": "2026-06-29T16:02:48.586290"
   },
   "PRA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.854029"
+    "scanned_at": "2026-06-29T16:02:48.606171"
   },
   "PRDO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.876883"
+    "scanned_at": "2026-06-29T16:02:48.626826"
   },
   "PREM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.898651"
+    "scanned_at": "2026-06-29T16:02:48.647305"
   },
   "PRG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.920655"
+    "scanned_at": "2026-06-29T16:02:48.666511"
   },
   "PRGO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.942789"
+    "scanned_at": "2026-06-29T16:02:48.685553"
   },
   "PRGS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.965214"
+    "scanned_at": "2026-06-29T16:02:48.704605"
   },
   "PRI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:49.987074"
+    "scanned_at": "2026-06-29T16:02:48.725139"
   },
   "PRIM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.008812"
+    "scanned_at": "2026-06-29T16:02:48.745690"
   },
   "PRKS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.031574"
+    "scanned_at": "2026-06-29T16:02:48.766364"
   },
   "PRLB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.054118"
+    "scanned_at": "2026-06-29T16:02:48.787097"
   },
   "PRMB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.076112"
+    "scanned_at": "2026-06-29T16:02:48.807584"
   },
   "PRU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.098677"
+    "scanned_at": "2026-06-29T16:02:48.826867"
   },
   "PRVA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.121237"
+    "scanned_at": "2026-06-29T16:02:48.847085"
   },
   "PSA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.143148"
+    "scanned_at": "2026-06-29T16:02:48.868606"
   },
   "PSMT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.166122"
+    "scanned_at": "2026-06-29T16:02:48.889805"
   },
   "PSN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.188279"
+    "scanned_at": "2026-06-29T16:02:48.911404"
   },
   "PSX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.210501"
+    "scanned_at": "2026-06-29T16:02:48.932574"
   },
   "PTC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.232988"
+    "scanned_at": "2026-06-29T16:02:48.955005"
   },
   "PTCT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.255110"
+    "scanned_at": "2026-06-29T16:02:48.978007"
   },
   "PTEN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.277133"
+    "scanned_at": "2026-06-29T16:02:49.000026"
   },
   "PTGX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.299845"
+    "scanned_at": "2026-06-29T16:02:49.022889"
   },
   "PTON": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.321904"
+    "scanned_at": "2026-06-29T16:02:49.045376"
   },
   "PWR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.344146"
+    "scanned_at": "2026-06-29T16:02:49.066111"
   },
   "PYPL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.366438"
+    "scanned_at": "2026-06-29T16:02:49.087230"
   },
   "PZZA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.388524"
+    "scanned_at": "2026-06-29T16:02:49.107467"
   },
   "Q": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.411735"
+    "scanned_at": "2026-06-29T16:02:49.127874"
   },
   "QCOM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.433167"
+    "scanned_at": "2026-06-29T16:02:49.148474"
   },
   "QDEL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.455576"
+    "scanned_at": "2026-06-29T16:02:49.167664"
   },
   "QFIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.478293"
+    "scanned_at": "2026-06-29T16:02:49.187652"
   },
   "QLYS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.500301"
+    "scanned_at": "2026-06-29T16:02:49.207563"
   },
   "QRVO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.522797"
+    "scanned_at": "2026-06-29T16:02:49.227573"
   },
   "QS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.545358"
+    "scanned_at": "2026-06-29T16:02:49.248125"
   },
   "QSR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.568486"
+    "scanned_at": "2026-06-29T16:02:49.268669"
   },
   "QTWO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.590945"
+    "scanned_at": "2026-06-29T16:02:49.288849"
   },
   "QVCAQ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.612854"
+    "scanned_at": "2026-06-29T16:02:49.308888"
   },
   "R": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.635105"
+    "scanned_at": "2026-06-29T16:02:49.327661"
   },
   "RAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.657402"
+    "scanned_at": "2026-06-29T16:02:49.346937"
   },
   "RAMP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.678840"
+    "scanned_at": "2026-06-29T16:02:49.368736"
   },
   "RARE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.701079"
+    "scanned_at": "2026-06-29T16:02:49.389661"
   },
   "RBA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.723303"
+    "scanned_at": "2026-06-29T16:02:49.410637"
   },
   "RBC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.744966"
+    "scanned_at": "2026-06-29T16:02:49.430954"
   },
   "RBLX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.766967"
+    "scanned_at": "2026-06-29T16:02:49.450319"
   },
   "RBRK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.789335"
+    "scanned_at": "2026-06-29T16:02:49.469331"
   },
   "RCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.811082"
+    "scanned_at": "2026-06-29T16:02:49.489110"
   },
   "RCL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.834067"
+    "scanned_at": "2026-06-29T16:02:49.509471"
   },
   "RCUS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.855769"
+    "scanned_at": "2026-06-29T16:02:49.529923"
   },
   "RDDT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.877895"
+    "scanned_at": "2026-06-29T16:02:49.549847"
   },
   "RDN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.900467"
+    "scanned_at": "2026-06-29T16:02:49.570702"
   },
   "REG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.922483"
+    "scanned_at": "2026-06-29T16:02:49.590871"
   },
   "REGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.944570"
+    "scanned_at": "2026-06-29T16:02:49.609487"
   },
   "RELX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.966660"
+    "scanned_at": "2026-06-29T16:02:49.629542"
   },
   "RELY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:50.988262"
+    "scanned_at": "2026-06-29T16:02:49.650161"
   },
   "REVG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.011203"
+    "scanned_at": "2026-06-29T16:02:49.670983"
   },
   "REXR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.033506"
+    "scanned_at": "2026-06-29T16:02:49.692218"
   },
   "REZI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.055583"
+    "scanned_at": "2026-06-29T16:02:49.712513"
   },
   "RF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.078400"
+    "scanned_at": "2026-06-29T16:02:49.732719"
   },
   "RGEN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.100769"
+    "scanned_at": "2026-06-29T16:02:49.752253"
   },
   "RH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.122738"
+    "scanned_at": "2026-06-29T16:02:49.771694"
   },
   "RHI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.145572"
+    "scanned_at": "2026-06-29T16:02:49.792208"
   },
   "RHP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.167824"
+    "scanned_at": "2026-06-29T16:02:49.812984"
   },
   "RICK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.189883"
+    "scanned_at": "2026-06-29T16:02:49.832766"
   },
   "RIG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.211740"
+    "scanned_at": "2026-06-29T16:02:49.853652"
   },
   "RIOT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.232959"
+    "scanned_at": "2026-06-29T16:02:49.873672"
   },
   "RIVN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.255133"
+    "scanned_at": "2026-06-29T16:02:49.892073"
   },
   "RJF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.276767"
+    "scanned_at": "2026-06-29T16:02:49.911625"
   },
   "RKLB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.298009"
+    "scanned_at": "2026-06-29T16:02:49.932243"
   },
   "RL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.319362"
+    "scanned_at": "2026-06-29T16:02:49.952647"
   },
   "RLI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.340495"
+    "scanned_at": "2026-06-29T16:02:49.973108"
   },
   "RLX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.362236"
+    "scanned_at": "2026-06-29T16:02:49.993539"
   },
   "RMBS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.383683"
+    "scanned_at": "2026-06-29T16:02:50.014109"
   },
   "RMD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.403703"
+    "scanned_at": "2026-06-29T16:02:50.033422"
   },
   "RNG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.424519"
+    "scanned_at": "2026-06-29T16:02:50.052291"
   },
   "RNR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.445969"
+    "scanned_at": "2026-06-29T16:02:50.072731"
   },
   "ROCK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.467376"
+    "scanned_at": "2026-06-29T16:02:50.093246"
   },
   "ROG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.489296"
+    "scanned_at": "2026-06-29T16:02:50.113630"
   },
   "ROK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.511249"
+    "scanned_at": "2026-06-29T16:02:50.134168"
   },
   "ROKU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.533595"
+    "scanned_at": "2026-06-29T16:02:50.154902"
   },
   "ROL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.556208"
+    "scanned_at": "2026-06-29T16:02:50.174772"
   },
   "ROP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.579447"
+    "scanned_at": "2026-06-29T16:02:50.193939"
   },
   "ROST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.602888"
+    "scanned_at": "2026-06-29T16:02:50.213777"
   },
   "RPD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.626551"
+    "scanned_at": "2026-06-29T16:02:50.234386"
   },
   "RPRX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.649870"
+    "scanned_at": "2026-06-29T16:02:50.254940"
   },
   "RRC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.673518"
+    "scanned_at": "2026-06-29T16:02:50.275256"
   },
   "RRR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.696599"
+    "scanned_at": "2026-06-29T16:02:50.296310"
   },
   "RRX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.719984"
+    "scanned_at": "2026-06-29T16:02:50.316554"
   },
   "RS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.743898"
+    "scanned_at": "2026-06-29T16:02:50.336328"
   },
   "RSG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.767375"
+    "scanned_at": "2026-06-29T16:02:50.356824"
   },
   "RTNTF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.788474"
+    "scanned_at": "2026-06-29T16:02:50.376908"
   },
   "RTX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.808852"
+    "scanned_at": "2026-06-29T16:02:50.397794"
   },
   "RUM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.828915"
+    "scanned_at": "2026-06-29T16:02:50.418457"
   },
   "RUN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.849754"
+    "scanned_at": "2026-06-29T16:02:50.438372"
   },
   "RVTY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.870517"
+    "scanned_at": "2026-06-29T16:02:50.460667"
   },
   "RWT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.891336"
+    "scanned_at": "2026-06-29T16:02:50.480314"
   },
   "RXT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.911135"
+    "scanned_at": "2026-06-29T16:02:50.501037"
   },
   "RY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.930159"
+    "scanned_at": "2026-06-29T16:02:50.521428"
   },
   "RYAN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.951031"
+    "scanned_at": "2026-06-29T16:02:50.541419"
   },
   "RYN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.971524"
+    "scanned_at": "2026-06-29T16:02:50.563164"
   },
   "S": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:51.992003"
+    "scanned_at": "2026-06-29T16:02:50.583805"
   },
   "SABR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.013079"
+    "scanned_at": "2026-06-29T16:02:50.604204"
   },
   "SAIC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.032751"
+    "scanned_at": "2026-06-29T16:02:50.623634"
   },
   "SAM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.052306"
+    "scanned_at": "2026-06-29T16:02:50.643124"
   },
   "SANM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.071652"
+    "scanned_at": "2026-06-29T16:02:50.663702"
   },
   "SARO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.091829"
+    "scanned_at": "2026-06-29T16:02:50.684774"
   },
   "SATS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.112448"
+    "scanned_at": "2026-06-29T16:02:50.704755"
   },
   "SB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.133092"
+    "scanned_at": "2026-06-29T16:02:50.725543"
   },
   "SBAC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.154251"
+    "scanned_at": "2026-06-29T16:02:50.745621"
   },
   "SBGI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.174413"
+    "scanned_at": "2026-06-29T16:02:50.764841"
   },
   "SBH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.193495"
+    "scanned_at": "2026-06-29T16:02:50.785070"
   },
   "SBLK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.214091"
+    "scanned_at": "2026-06-29T16:02:50.805494"
   },
   "SBS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.237512"
+    "scanned_at": "2026-06-29T16:02:50.825828"
   },
   "SBSW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.258393"
+    "scanned_at": "2026-06-29T16:02:50.846283"
   },
   "SBUX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.279240"
+    "scanned_at": "2026-06-29T16:02:50.866573"
   },
   "SCCO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.299499"
+    "scanned_at": "2026-06-29T16:02:50.887049"
   },
   "SCHW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.318138"
+    "scanned_at": "2026-06-29T16:02:50.906678"
   },
   "SCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.337908"
+    "scanned_at": "2026-06-29T16:02:50.927155"
   },
   "SDGR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.358347"
+    "scanned_at": "2026-06-29T16:02:50.947967"
   },
   "SDRL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.379076"
+    "scanned_at": "2026-06-29T16:02:50.968357"
   },
   "SE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.399570"
+    "scanned_at": "2026-06-29T16:02:50.989697"
   },
   "SEB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.419985"
+    "scanned_at": "2026-06-29T16:02:51.011284"
   },
   "SEDG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.440226"
+    "scanned_at": "2026-06-29T16:02:51.031918"
   },
   "SEIC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.459617"
+    "scanned_at": "2026-06-29T16:02:51.051186"
   },
   "SELF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.480232"
+    "scanned_at": "2026-06-29T16:02:51.072022"
   },
   "SEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.501273"
+    "scanned_at": "2026-06-29T16:02:51.092156"
   },
   "SF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.522014"
+    "scanned_at": "2026-06-29T16:02:51.112890"
   },
   "SFD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.542177"
+    "scanned_at": "2026-06-29T16:02:51.133463"
   },
   "SFM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.563328"
+    "scanned_at": "2026-06-29T16:02:51.153974"
   },
   "SG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.582820"
+    "scanned_at": "2026-06-29T16:02:51.174076"
   },
   "SGI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.602659"
+    "scanned_at": "2026-06-29T16:02:51.192932"
   },
   "SGRY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.623502"
+    "scanned_at": "2026-06-29T16:02:51.212981"
   },
   "SHAK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.643744"
+    "scanned_at": "2026-06-29T16:02:51.233344"
   },
   "SHC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.664925"
+    "scanned_at": "2026-06-29T16:02:51.253330"
   },
   "SHEL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.685854"
+    "scanned_at": "2026-06-29T16:02:51.274353"
   },
   "SHLS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.706085"
+    "scanned_at": "2026-06-29T16:02:51.294813"
   },
   "SHOP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.726069"
+    "scanned_at": "2026-06-29T16:02:51.314211"
   },
   "SHW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.745478"
+    "scanned_at": "2026-06-29T16:02:51.333210"
   },
   "SIBN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.766081"
+    "scanned_at": "2026-06-29T16:02:51.352673"
   },
   "SIG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.787417"
+    "scanned_at": "2026-06-29T16:02:51.373553"
   },
   "SIGI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.807731"
+    "scanned_at": "2026-06-29T16:02:51.394147"
   },
   "SII": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.829113"
+    "scanned_at": "2026-06-29T16:02:51.414807"
   },
   "SIRI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.849608"
+    "scanned_at": "2026-06-29T16:02:51.435287"
   },
   "SITC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.869038"
+    "scanned_at": "2026-06-29T16:02:51.456311"
   },
   "SITM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.889564"
+    "scanned_at": "2026-06-29T16:02:51.475329"
   },
   "SKLZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.913707"
+    "scanned_at": "2026-06-29T16:02:51.494516"
   },
   "SKM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.937052"
+    "scanned_at": "2026-06-29T16:02:51.514847"
   },
   "SKT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.960104"
+    "scanned_at": "2026-06-29T16:02:51.535376"
   },
   "SKY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:52.982397"
+    "scanned_at": "2026-06-29T16:02:51.556156"
   },
   "SKYW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.005692"
+    "scanned_at": "2026-06-29T16:02:51.576828"
   },
   "SLAB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.027958"
+    "scanned_at": "2026-06-29T16:02:51.597349"
   },
   "SLB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.049951"
+    "scanned_at": "2026-06-29T16:02:51.616663"
   },
   "SLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.072094"
+    "scanned_at": "2026-06-29T16:02:51.635109"
   },
   "SLG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.094691"
+    "scanned_at": "2026-06-29T16:02:51.655388"
   },
   "SLGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.116020"
+    "scanned_at": "2026-06-29T16:02:51.676517"
   },
   "SLM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.137306"
+    "scanned_at": "2026-06-29T16:02:51.696486"
   },
   "SLP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.158631"
+    "scanned_at": "2026-06-29T16:02:51.717128"
   },
   "SM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.179432"
+    "scanned_at": "2026-06-29T16:02:51.737438"
   },
   "SMBC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.200494"
+    "scanned_at": "2026-06-29T16:02:51.756923"
   },
   "SMCI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.220773"
+    "scanned_at": "2026-06-29T16:02:51.776849"
   },
   "SMG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.241850"
+    "scanned_at": "2026-06-29T16:02:51.796736"
   },
   "SMHI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.262790"
+    "scanned_at": "2026-06-29T16:02:51.817709"
   },
   "SMPL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.282998"
+    "scanned_at": "2026-06-29T16:02:51.838531"
   },
   "SMTC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.303318"
+    "scanned_at": "2026-06-29T16:02:51.858747"
   },
   "SN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.324007"
+    "scanned_at": "2026-06-29T16:02:51.879495"
   },
   "SNA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.344620"
+    "scanned_at": "2026-06-29T16:02:51.899500"
   },
   "SNAP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.365186"
+    "scanned_at": "2026-06-29T16:02:51.918984"
   },
   "SNBR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.384819"
+    "scanned_at": "2026-06-29T16:02:51.939587"
   },
   "SNDK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.405494"
+    "scanned_at": "2026-06-29T16:02:51.960144"
   },
   "SNIRF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.426385"
+    "scanned_at": "2026-06-29T16:02:51.981017"
   },
   "SNN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.445775"
+    "scanned_at": "2026-06-29T16:02:52.001487"
   },
   "SNOW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.466982"
+    "scanned_at": "2026-06-29T16:02:52.022264"
   },
   "SNPS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.488085"
+    "scanned_at": "2026-06-29T16:02:52.042513"
   },
   "SNX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.507981"
+    "scanned_at": "2026-06-29T16:02:52.062628"
   },
   "SO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.527999"
+    "scanned_at": "2026-06-29T16:02:52.082772"
   },
   "SOC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.548974"
+    "scanned_at": "2026-06-29T16:02:52.103381"
   },
   "SOLV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.569641"
+    "scanned_at": "2026-06-29T16:02:52.123823"
   },
   "SON": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.589814"
+    "scanned_at": "2026-06-29T16:02:52.144020"
   },
   "SONO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.609505"
+    "scanned_at": "2026-06-29T16:02:52.165019"
   },
   "SONY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.630516"
+    "scanned_at": "2026-06-29T16:02:52.184025"
   },
   "SPB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.651467"
+    "scanned_at": "2026-06-29T16:02:52.203236"
   },
   "SPCE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.671463"
+    "scanned_at": "2026-06-29T16:02:52.223978"
   },
   "SPG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.692332"
+    "scanned_at": "2026-06-29T16:02:52.244133"
   },
   "SPGI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.713131"
+    "scanned_at": "2026-06-29T16:02:52.265292"
   },
   "SPHR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.733501"
+    "scanned_at": "2026-06-29T16:02:52.286375"
   },
   "SPOT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.753668"
+    "scanned_at": "2026-06-29T16:02:52.306735"
   },
   "SPSC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.774283"
+    "scanned_at": "2026-06-29T16:02:52.326110"
   },
   "SPWH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.794830"
+    "scanned_at": "2026-06-29T16:02:52.345181"
   },
   "SPWR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.814942"
+    "scanned_at": "2026-06-29T16:02:52.365424"
   },
   "SPXC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.835538"
+    "scanned_at": "2026-06-29T16:02:52.386321"
   },
   "SPY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.856346"
+    "scanned_at": "2026-06-29T16:02:52.406593"
   },
   "SR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.876072"
+    "scanned_at": "2026-06-29T16:02:52.427432"
   },
   "SRE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.896240"
+    "scanned_at": "2026-06-29T16:02:52.447953"
   },
   "SRPT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.917052"
+    "scanned_at": "2026-06-29T16:02:52.467405"
   },
   "SSD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.937444"
+    "scanned_at": "2026-06-29T16:02:52.486617"
   },
   "SSNC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.957376"
+    "scanned_at": "2026-06-29T16:02:52.507139"
   },
   "SSRM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.978402"
+    "scanned_at": "2026-06-29T16:02:52.527285"
   },
   "SSYS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:53.999309"
+    "scanned_at": "2026-06-29T16:02:52.548180"
   },
   "ST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.019140"
+    "scanned_at": "2026-06-29T16:02:52.568474"
   },
   "STAA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.040380"
+    "scanned_at": "2026-06-29T16:02:52.589531"
   },
   "STE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.060754"
+    "scanned_at": "2026-06-29T16:02:52.610137"
   },
   "STEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.081286"
+    "scanned_at": "2026-06-29T16:02:52.629281"
   },
   "STLA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.101376"
+    "scanned_at": "2026-06-29T16:02:52.648492"
   },
   "STLD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.121766"
+    "scanned_at": "2026-06-29T16:02:52.669008"
   },
   "STN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.142752"
+    "scanned_at": "2026-06-29T16:02:52.689367"
   },
   "STNE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.162762"
+    "scanned_at": "2026-06-29T16:02:52.709965"
   },
   "STNG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.183492"
+    "scanned_at": "2026-06-29T16:02:52.730821"
   },
   "STRA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.205200"
+    "scanned_at": "2026-06-29T16:02:52.751423"
   },
   "STRL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.226030"
+    "scanned_at": "2026-06-29T16:02:52.771099"
   },
   "STT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.246622"
+    "scanned_at": "2026-06-29T16:02:52.790032"
   },
   "STWD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.267560"
+    "scanned_at": "2026-06-29T16:02:52.810818"
   },
   "STX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.288178"
+    "scanned_at": "2026-06-29T16:02:52.831521"
   },
   "STZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.308171"
+    "scanned_at": "2026-06-29T16:02:52.852096"
   },
   "SU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.328868"
+    "scanned_at": "2026-06-29T16:02:52.873416"
   },
   "SUI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.349687"
+    "scanned_at": "2026-06-29T16:02:52.894459"
   },
   "SUPV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.370309"
+    "scanned_at": "2026-06-29T16:02:52.913232"
   },
   "SW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.390784"
+    "scanned_at": "2026-06-29T16:02:52.933356"
   },
   "SWBI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.411170"
+    "scanned_at": "2026-06-29T16:02:52.953425"
   },
   "SWK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.432961"
+    "scanned_at": "2026-06-29T16:02:52.974007"
   },
   "SWKS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.452221"
+    "scanned_at": "2026-06-29T16:02:52.994655"
   },
   "SXC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.473341"
+    "scanned_at": "2026-06-29T16:02:53.015010"
   },
   "SXT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.494418"
+    "scanned_at": "2026-06-29T16:02:53.035673"
   },
   "SYF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.513887"
+    "scanned_at": "2026-06-29T16:02:53.055123"
   },
   "SYK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.534449"
+    "scanned_at": "2026-06-29T16:02:53.073938"
   },
   "SYM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.555952"
+    "scanned_at": "2026-06-29T16:02:53.094598"
   },
   "SYY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.576028"
+    "scanned_at": "2026-06-29T16:02:53.115115"
   },
   "T": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.596477"
+    "scanned_at": "2026-06-29T16:02:53.135113"
   },
   "TAC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.616936"
+    "scanned_at": "2026-06-29T16:02:53.156211"
   },
   "TAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.638227"
+    "scanned_at": "2026-06-29T16:02:53.176384"
   },
   "TALO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.658077"
+    "scanned_at": "2026-06-29T16:02:53.195866"
   },
   "TAP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.678256"
+    "scanned_at": "2026-06-29T16:02:53.215263"
   },
   "TBPH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.699620"
+    "scanned_at": "2026-06-29T16:02:53.235462"
   },
   "TCBI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.720889"
+    "scanned_at": "2026-06-29T16:02:53.256020"
   },
   "TCBK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.740324"
+    "scanned_at": "2026-06-29T16:02:53.276964"
   },
   "TCMD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.761378"
+    "scanned_at": "2026-06-29T16:02:53.297172"
   },
   "TCOM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.782051"
+    "scanned_at": "2026-06-29T16:02:53.317663"
   },
   "TCPA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.802014"
+    "scanned_at": "2026-06-29T16:02:53.336675"
   },
   "TD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.821923"
+    "scanned_at": "2026-06-29T16:02:53.355590"
   },
   "TDC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.842145"
+    "scanned_at": "2026-06-29T16:02:53.376498"
   },
   "TDG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.863144"
+    "scanned_at": "2026-06-29T16:02:53.396694"
   },
   "TDOC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.882785"
+    "scanned_at": "2026-06-29T16:02:53.417653"
   },
   "TDW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.903510"
+    "scanned_at": "2026-06-29T16:02:53.438414"
   },
   "TDY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.924347"
+    "scanned_at": "2026-06-29T16:02:53.458788"
   },
   "TEAM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.944209"
+    "scanned_at": "2026-06-29T16:02:53.478754"
   },
   "TECH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.964559"
+    "scanned_at": "2026-06-29T16:02:53.498247"
   },
   "TECK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:54.985328"
+    "scanned_at": "2026-06-29T16:02:53.518131"
   },
   "TEL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.006207"
+    "scanned_at": "2026-06-29T16:02:53.538873"
   },
   "TEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.026411"
+    "scanned_at": "2026-06-29T16:02:53.559115"
   },
   "TENB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.047277"
+    "scanned_at": "2026-06-29T16:02:53.579927"
   },
   "TER": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.067731"
+    "scanned_at": "2026-06-29T16:02:53.600605"
   },
   "TEVA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.088111"
+    "scanned_at": "2026-06-29T16:02:53.619875"
   },
   "TEX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.108865"
+    "scanned_at": "2026-06-29T16:02:53.639742"
   },
   "TFC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.129419"
+    "scanned_at": "2026-06-29T16:02:53.659745"
   },
   "TFIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.149512"
+    "scanned_at": "2026-06-29T16:02:53.680453"
   },
   "TFX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.170422"
+    "scanned_at": "2026-06-29T16:02:53.701366"
   },
   "TGT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.191142"
+    "scanned_at": "2026-06-29T16:02:53.722331"
   },
   "TGTX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.212715"
+    "scanned_at": "2026-06-29T16:02:53.742622"
   },
   "THC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.232335"
+    "scanned_at": "2026-06-29T16:02:53.763079"
   },
   "THFF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.253523"
+    "scanned_at": "2026-06-29T16:02:53.782317"
   },
   "THG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.274357"
+    "scanned_at": "2026-06-29T16:02:53.801906"
   },
   "THO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.294689"
+    "scanned_at": "2026-06-29T16:02:53.822706"
   },
   "THR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.315248"
+    "scanned_at": "2026-06-29T16:02:53.843339"
   },
   "THRM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.336074"
+    "scanned_at": "2026-06-29T16:02:53.864602"
   },
   "TJX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.356845"
+    "scanned_at": "2026-06-29T16:02:53.884483"
   },
   "TKO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.377274"
+    "scanned_at": "2026-06-29T16:02:53.904723"
   },
   "TKR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.398130"
+    "scanned_at": "2026-06-29T16:02:53.925976"
   },
   "TLN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.418248"
+    "scanned_at": "2026-06-29T16:02:53.946797"
   },
   "TLRY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.439072"
+    "scanned_at": "2026-06-29T16:02:53.966121"
   },
   "TMC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.458612"
+    "scanned_at": "2026-06-29T16:02:53.987342"
   },
   "TMDX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.479515"
+    "scanned_at": "2026-06-29T16:02:54.007579"
   },
   "TMHC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.500197"
+    "scanned_at": "2026-06-29T16:02:54.028603"
   },
   "TMO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.519734"
+    "scanned_at": "2026-06-29T16:02:54.048119"
   },
   "TMUS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.540429"
+    "scanned_at": "2026-06-29T16:02:54.068189"
   },
   "TNDM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.561473"
+    "scanned_at": "2026-06-29T16:02:54.090462"
   },
   "TNET": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.581396"
+    "scanned_at": "2026-06-29T16:02:54.111942"
   },
   "TOL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.601990"
+    "scanned_at": "2026-06-29T16:02:54.131654"
   },
   "TOST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.623467"
+    "scanned_at": "2026-06-29T16:02:54.152483"
   },
   "TPG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.643617"
+    "scanned_at": "2026-06-29T16:02:54.173024"
   },
   "TPL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.664254"
+    "scanned_at": "2026-06-29T16:02:54.193526"
   },
   "TPR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.684609"
+    "scanned_at": "2026-06-29T16:02:54.214031"
   },
   "TREX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.705154"
+    "scanned_at": "2026-06-29T16:02:54.234377"
   },
   "TRGP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.724850"
+    "scanned_at": "2026-06-29T16:02:54.255020"
   },
   "TRI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.745108"
+    "scanned_at": "2026-06-29T16:02:54.274502"
   },
   "TRIN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.766230"
+    "scanned_at": "2026-06-29T16:02:54.294925"
   },
   "TRIP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.786642"
+    "scanned_at": "2026-06-29T16:02:54.315501"
   },
   "TRMB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.805952"
+    "scanned_at": "2026-06-29T16:02:54.335273"
   },
   "TRMK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.826801"
+    "scanned_at": "2026-06-29T16:02:54.355524"
   },
   "TRNO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.847444"
+    "scanned_at": "2026-06-29T16:02:54.376478"
   },
   "TROW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.867977"
+    "scanned_at": "2026-06-29T16:02:54.396797"
   },
   "TROX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.888316"
+    "scanned_at": "2026-06-29T16:02:54.416691"
   },
   "TRP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.908819"
+    "scanned_at": "2026-06-29T16:02:54.437229"
   },
   "TRU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.929869"
+    "scanned_at": "2026-06-29T16:02:54.457559"
   },
   "TRUP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.949432"
+    "scanned_at": "2026-06-29T16:02:54.478222"
   },
   "TRV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.969728"
+    "scanned_at": "2026-06-29T16:02:54.498546"
   },
   "TS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:55.990692"
+    "scanned_at": "2026-06-29T16:02:54.518933"
   },
   "TSCO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.011969"
+    "scanned_at": "2026-06-29T16:02:54.539934"
   },
   "TSEM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.031148"
+    "scanned_at": "2026-06-29T16:02:54.559985"
   },
   "TSLA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.052144"
+    "scanned_at": "2026-06-29T16:02:54.580367"
   },
   "TSN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.072842"
+    "scanned_at": "2026-06-29T16:02:54.601132"
   },
   "TT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.093532"
+    "scanned_at": "2026-06-29T16:02:54.621711"
   },
   "TTAN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.113009"
+    "scanned_at": "2026-06-29T16:02:54.644038"
   },
   "TTC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.134133"
+    "scanned_at": "2026-06-29T16:02:54.663566"
   },
   "TTD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.155342"
+    "scanned_at": "2026-06-29T16:02:54.684049"
   },
   "TTEK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.174825"
+    "scanned_at": "2026-06-29T16:02:54.704642"
   },
   "TTMI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.195364"
+    "scanned_at": "2026-06-29T16:02:54.724543"
   },
   "TTWO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.216089"
+    "scanned_at": "2026-06-29T16:02:54.744877"
   },
   "TU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.236349"
+    "scanned_at": "2026-06-29T16:02:54.765460"
   },
   "TWLO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.257080"
+    "scanned_at": "2026-06-29T16:02:54.786136"
   },
   "TWN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.277464"
+    "scanned_at": "2026-06-29T16:02:54.806078"
   },
   "TWST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.298317"
+    "scanned_at": "2026-06-29T16:02:54.826597"
   },
   "TXG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.318291"
+    "scanned_at": "2026-06-29T16:02:54.846884"
   },
   "TXMD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.338733"
+    "scanned_at": "2026-06-29T16:02:54.866917"
   },
   "TXN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.359535"
+    "scanned_at": "2026-06-29T16:02:54.886539"
   },
   "TXNM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.379347"
+    "scanned_at": "2026-06-29T16:02:54.906989"
   },
   "TXRH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.400245"
+    "scanned_at": "2026-06-29T16:02:54.928364"
   },
   "TXT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.421307"
+    "scanned_at": "2026-06-29T16:02:54.948169"
   },
   "TYL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.441714"
+    "scanned_at": "2026-06-29T16:02:54.968802"
   },
   "U": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.462487"
+    "scanned_at": "2026-06-29T16:02:54.989635"
   },
   "UAA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.483568"
+    "scanned_at": "2026-06-29T16:02:55.010075"
   },
   "UAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.503767"
+    "scanned_at": "2026-06-29T16:02:55.030770"
   },
   "UBER": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.523949"
+    "scanned_at": "2026-06-29T16:02:55.051104"
   },
   "UCTT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.545044"
+    "scanned_at": "2026-06-29T16:02:55.072282"
   },
   "UDR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.565867"
+    "scanned_at": "2026-06-29T16:02:55.092047"
   },
   "UEC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.586140"
+    "scanned_at": "2026-06-29T16:02:55.112137"
   },
   "UFPI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.606872"
+    "scanned_at": "2026-06-29T16:02:55.133455"
   },
   "UFPT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.627499"
+    "scanned_at": "2026-06-29T16:02:55.154806"
   },
   "UHS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.648888"
+    "scanned_at": "2026-06-29T16:02:55.174246"
   },
   "UI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.668285"
+    "scanned_at": "2026-06-29T16:02:55.195517"
   },
   "UL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.688773"
+    "scanned_at": "2026-06-29T16:02:55.216412"
   },
   "ULCC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.709546"
+    "scanned_at": "2026-06-29T16:02:55.237356"
   },
   "ULTA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.729836"
+    "scanned_at": "2026-06-29T16:02:55.257182"
   },
   "UMC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.750501"
+    "scanned_at": "2026-06-29T16:02:55.277746"
   },
   "UNF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.771252"
+    "scanned_at": "2026-06-29T16:02:55.298330"
   },
   "UNH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.791868"
+    "scanned_at": "2026-06-29T16:02:55.320091"
   },
   "UNIT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.812334"
+    "scanned_at": "2026-06-29T16:02:55.339436"
   },
   "UNP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.833169"
+    "scanned_at": "2026-06-29T16:02:55.359966"
   },
   "UPBD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.853764"
+    "scanned_at": "2026-06-29T16:02:55.380660"
   },
   "UPS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.873472"
+    "scanned_at": "2026-06-29T16:02:55.400301"
   },
   "UPST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.894116"
+    "scanned_at": "2026-06-29T16:02:55.420797"
   },
   "UPWK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.915159"
+    "scanned_at": "2026-06-29T16:02:55.441099"
   },
   "URBN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.935228"
+    "scanned_at": "2026-06-29T16:02:55.462852"
   },
   "URG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.955525"
+    "scanned_at": "2026-06-29T16:02:55.483380"
   },
   "URI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.976372"
+    "scanned_at": "2026-06-29T16:02:55.503552"
   },
   "USAR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:56.996841"
+    "scanned_at": "2026-06-29T16:02:55.524575"
   },
   "USB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.016936"
+    "scanned_at": "2026-06-29T16:02:55.544969"
   },
   "USFD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.038072"
+    "scanned_at": "2026-06-29T16:02:55.565001"
   },
   "USNA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.059063"
+    "scanned_at": "2026-06-29T16:02:55.586001"
   },
   "USPH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.078572"
+    "scanned_at": "2026-06-29T16:02:55.606587"
   },
   "UTHR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.099507"
+    "scanned_at": "2026-06-29T16:02:55.626241"
   },
   "UUUU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.120366"
+    "scanned_at": "2026-06-29T16:02:55.647415"
   },
   "UVSP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.141533"
+    "scanned_at": "2026-06-29T16:02:55.667572"
   },
   "UVV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.162182"
+    "scanned_at": "2026-06-29T16:02:55.688168"
   },
   "V": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.182555"
+    "scanned_at": "2026-06-29T16:02:55.707875"
   },
   "VAC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.204226"
+    "scanned_at": "2026-06-29T16:02:55.728821"
   },
   "VAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.224178"
+    "scanned_at": "2026-06-29T16:02:55.749656"
   },
   "VALE": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.244296"
+    "scanned_at": "2026-06-29T16:02:55.770474"
   },
   "VC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.265493"
+    "scanned_at": "2026-06-29T16:02:55.790416"
   },
   "VCEL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.285613"
+    "scanned_at": "2026-06-29T16:02:55.811535"
   },
   "VCYT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.305917"
+    "scanned_at": "2026-06-29T16:02:55.831772"
   },
   "VEEV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.326549"
+    "scanned_at": "2026-06-29T16:02:55.852307"
   },
   "VET": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.347562"
+    "scanned_at": "2026-06-29T16:02:55.871751"
   },
   "VFC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.368387"
+    "scanned_at": "2026-06-29T16:02:55.892014"
   },
   "VIAV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.389238"
+    "scanned_at": "2026-06-29T16:02:55.913113"
   },
   "VICR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.410006"
+    "scanned_at": "2026-06-29T16:02:55.933422"
   },
   "VIK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.429820"
+    "scanned_at": "2026-06-29T16:02:55.953983"
   },
   "VIOT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.451350"
+    "scanned_at": "2026-06-29T16:02:55.974507"
   },
   "VIPS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.472190"
+    "scanned_at": "2026-06-29T16:02:55.995490"
   },
   "VIRT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.492837"
+    "scanned_at": "2026-06-29T16:02:56.015374"
   },
   "VISN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.513494"
+    "scanned_at": "2026-06-29T16:02:56.036136"
   },
   "VKTX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.534328"
+    "scanned_at": "2026-06-29T16:02:56.056817"
   },
   "VLO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.555148"
+    "scanned_at": "2026-06-29T16:02:56.076925"
   },
   "VLY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.575628"
+    "scanned_at": "2026-06-29T16:02:56.098025"
   },
   "VMC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.596553"
+    "scanned_at": "2026-06-29T16:02:56.118306"
   },
   "VMI": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.617896"
+    "scanned_at": "2026-06-29T16:02:56.139869"
   },
   "VNET": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.637668"
+    "scanned_at": "2026-06-29T16:02:56.159604"
   },
   "VNO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.658994"
+    "scanned_at": "2026-06-29T16:02:56.180232"
   },
   "VNOM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.679969"
+    "scanned_at": "2026-06-29T16:02:56.200928"
   },
   "VNT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.700174"
+    "scanned_at": "2026-06-29T16:02:56.220632"
   },
   "VOD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.720676"
+    "scanned_at": "2026-06-29T16:02:56.241023"
   },
   "VOYA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.741410"
+    "scanned_at": "2026-06-29T16:02:56.262128"
   },
   "VREX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.762649"
+    "scanned_at": "2026-06-29T16:02:56.282722"
   },
   "VRM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.782997"
+    "scanned_at": "2026-06-29T16:02:56.302670"
   },
   "VRRM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.803288"
+    "scanned_at": "2026-06-29T16:02:56.323171"
   },
   "VRSN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.824274"
+    "scanned_at": "2026-06-29T16:02:56.343895"
   },
   "VRT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.844855"
+    "scanned_at": "2026-06-29T16:02:56.365431"
   },
   "VRTX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.865246"
+    "scanned_at": "2026-06-29T16:02:56.385328"
   },
   "VSAT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.886446"
+    "scanned_at": "2026-06-29T16:02:56.405776"
   },
   "VSH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.908175"
+    "scanned_at": "2026-06-29T16:02:56.426634"
   },
   "VST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.928333"
+    "scanned_at": "2026-06-29T16:02:56.446987"
   },
   "VTR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.949119"
+    "scanned_at": "2026-06-29T16:02:56.466483"
   },
   "VTRS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.969505"
+    "scanned_at": "2026-06-29T16:02:56.486966"
   },
   "VVV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:57.989653"
+    "scanned_at": "2026-06-29T16:02:56.507681"
   },
   "VYX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.010528"
+    "scanned_at": "2026-06-29T16:02:56.529077"
   },
   "VZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.031106"
+    "scanned_at": "2026-06-29T16:02:56.549413"
   },
   "W": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.051815"
+    "scanned_at": "2026-06-29T16:02:56.570252"
   },
   "WAFD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.072408"
+    "scanned_at": "2026-06-29T16:02:56.591210"
   },
   "WAL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.093039"
+    "scanned_at": "2026-06-29T16:02:56.611086"
   },
   "WAT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.114313"
+    "scanned_at": "2026-06-29T16:02:56.631251"
   },
   "WB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.134518"
+    "scanned_at": "2026-06-29T16:02:56.652566"
   },
   "WBA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.156054"
+    "scanned_at": "2026-06-29T16:02:56.673876"
   },
   "WBD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.178427"
+    "scanned_at": "2026-06-29T16:02:56.693733"
   },
   "WBS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.198650"
+    "scanned_at": "2026-06-29T16:02:56.714934"
   },
   "WCC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.220372"
+    "scanned_at": "2026-06-29T16:02:56.735631"
   },
   "WCN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.241348"
+    "scanned_at": "2026-06-29T16:02:56.755916"
   },
   "WDAY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.262265"
+    "scanned_at": "2026-06-29T16:02:56.776961"
   },
   "WDC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.282957"
+    "scanned_at": "2026-06-29T16:02:56.797519"
   },
   "WDFC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.303981"
+    "scanned_at": "2026-06-29T16:02:56.818660"
   },
   "WEC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.324880"
+    "scanned_at": "2026-06-29T16:02:56.838861"
   },
   "WELL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.344491"
+    "scanned_at": "2026-06-29T16:02:56.859291"
   },
   "WEN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.364769"
+    "scanned_at": "2026-06-29T16:02:56.880294"
   },
   "WERN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.386072"
+    "scanned_at": "2026-06-29T16:02:56.900797"
   },
   "WEST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.406915"
+    "scanned_at": "2026-06-29T16:02:56.920577"
   },
   "WEX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.427820"
+    "scanned_at": "2026-06-29T16:02:56.941912"
   },
   "WFC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.448734"
+    "scanned_at": "2026-06-29T16:02:56.962995"
   },
   "WFG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.470069"
+    "scanned_at": "2026-06-29T16:02:56.983492"
   },
   "WFRD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.490217"
+    "scanned_at": "2026-06-29T16:02:57.003659"
   },
   "WH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.510966"
+    "scanned_at": "2026-06-29T16:02:57.024486"
   },
   "WHD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.531790"
+    "scanned_at": "2026-06-29T16:02:57.045619"
   },
   "WHR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.551576"
+    "scanned_at": "2026-06-29T16:02:57.065729"
   },
   "WINA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.572646"
+    "scanned_at": "2026-06-29T16:02:57.085526"
   },
   "WING": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.593110"
+    "scanned_at": "2026-06-29T16:02:57.106301"
   },
   "WIX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.613402"
+    "scanned_at": "2026-06-29T16:02:57.126772"
   },
   "WK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.633956"
+    "scanned_at": "2026-06-29T16:02:57.147244"
   },
   "WKC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.654310"
+    "scanned_at": "2026-06-29T16:02:57.168005"
   },
   "WLK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.675320"
+    "scanned_at": "2026-06-29T16:02:57.188537"
   },
   "WM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.695390"
+    "scanned_at": "2026-06-29T16:02:57.209308"
   },
   "WMB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.715878"
+    "scanned_at": "2026-06-29T16:02:57.230169"
   },
   "WMG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.737614"
+    "scanned_at": "2026-06-29T16:02:57.250339"
   },
   "WMK": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.757510"
+    "scanned_at": "2026-06-29T16:02:57.271457"
   },
   "WMS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.778404"
+    "scanned_at": "2026-06-29T16:02:57.292129"
   },
   "WMT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.799424"
+    "scanned_at": "2026-06-29T16:02:57.311812"
   },
   "WNC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.819128"
+    "scanned_at": "2026-06-29T16:02:57.332249"
   },
   "WOLF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.839430"
+    "scanned_at": "2026-06-29T16:02:57.352832"
   },
   "WOR": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.860248"
+    "scanned_at": "2026-06-29T16:02:57.373391"
   },
   "WPC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.880931"
+    "scanned_at": "2026-06-29T16:02:57.393284"
   },
   "WPM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.901279"
+    "scanned_at": "2026-06-29T16:02:57.413612"
   },
   "WRB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.922721"
+    "scanned_at": "2026-06-29T16:02:57.434750"
   },
   "WRBY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.943190"
+    "scanned_at": "2026-06-29T16:02:57.454254"
   },
   "WSBC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.964079"
+    "scanned_at": "2026-06-29T16:02:57.474707"
   },
   "WSC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:58.984579"
+    "scanned_at": "2026-06-29T16:02:57.495614"
   },
   "WSM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.005177"
+    "scanned_at": "2026-06-29T16:02:57.516655"
   },
   "WSO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.025031"
+    "scanned_at": "2026-06-29T16:02:57.536803"
   },
   "WST": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.044590"
+    "scanned_at": "2026-06-29T16:02:57.557210"
   },
   "WT": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.065364"
+    "scanned_at": "2026-06-29T16:02:57.578214"
   },
   "WTS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.086092"
+    "scanned_at": "2026-06-29T16:02:57.598875"
   },
   "WTW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.106569"
+    "scanned_at": "2026-06-29T16:02:57.619447"
   },
   "WU": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.127859"
+    "scanned_at": "2026-06-29T16:02:57.639679"
   },
   "WULF": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.148627"
+    "scanned_at": "2026-06-29T16:02:57.660696"
   },
   "WWD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.168514"
+    "scanned_at": "2026-06-29T16:02:57.680150"
   },
   "WWW": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.189695"
+    "scanned_at": "2026-06-29T16:02:57.700890"
   },
   "WY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.210227"
+    "scanned_at": "2026-06-29T16:02:57.722089"
   },
   "WYNN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.231137"
+    "scanned_at": "2026-06-29T16:02:57.742252"
   },
   "XEL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.252050"
+    "scanned_at": "2026-06-29T16:02:57.761950"
   },
   "XOM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.272761"
+    "scanned_at": "2026-06-29T16:02:57.782769"
   },
   "XPEV": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.293365"
+    "scanned_at": "2026-06-29T16:02:57.803137"
   },
   "XPO": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.313236"
+    "scanned_at": "2026-06-29T16:02:57.823820"
   },
   "XRAY": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.333074"
+    "scanned_at": "2026-06-29T16:02:57.843831"
   },
   "XRX": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.354041"
+    "scanned_at": "2026-06-29T16:02:57.864348"
   },
   "XYL": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.374477"
+    "scanned_at": "2026-06-29T16:02:57.885769"
   },
   "XYZ": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.395489"
+    "scanned_at": "2026-06-29T16:02:57.905256"
   },
   "YELP": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.416499"
+    "scanned_at": "2026-06-29T16:02:57.926097"
   },
   "YUM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.436410"
+    "scanned_at": "2026-06-29T16:02:57.947049"
   },
   "YUMC": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.456148"
+    "scanned_at": "2026-06-29T16:02:57.967553"
   },
   "ZBH": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.477153"
+    "scanned_at": "2026-06-29T16:02:57.988454"
   },
   "ZBRA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.497758"
+    "scanned_at": "2026-06-29T16:02:58.009100"
   },
   "ZD": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.518553"
+    "scanned_at": "2026-06-29T16:02:58.029522"
   },
   "ZETA": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.539308"
+    "scanned_at": "2026-06-29T16:02:58.049669"
   },
   "ZG": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.559789"
+    "scanned_at": "2026-06-29T16:02:58.069618"
   },
   "ZGN": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.581279"
+    "scanned_at": "2026-06-29T16:02:58.090453"
   },
   "ZION": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.601247"
+    "scanned_at": "2026-06-29T16:02:58.111494"
   },
   "ZLAB": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.621528"
+    "scanned_at": "2026-06-29T16:02:58.130756"
   },
   "ZM": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.642394"
+    "scanned_at": "2026-06-29T16:02:58.151496"
   },
   "ZS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.662683"
+    "scanned_at": "2026-06-29T16:02:58.172555"
   },
   "ZTS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.683876"
+    "scanned_at": "2026-06-29T16:02:58.193153"
   },
   "ZWS": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.705023"
+    "scanned_at": "2026-06-29T16:02:58.213781"
   },
   "ZYME": {
     "iv_result": null,
-    "scanned_at": "2026-06-28T10:00:59.724294"
+    "scanned_at": "2026-06-29T16:02:58.234427"
+  },
+  "RGLD": {
+    "iv_result": null,
+    "scanned_at": "2026-06-29T19:00:54.020859"
   }
 }

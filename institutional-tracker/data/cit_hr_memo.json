@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-29T01:00:01.339557",
+  "generated_at": "2026-06-30T01:00:02.224935",
   "canary_level": "GREEN",
   "cro_level": "ELEVATED",
   "buys_blocked": true,
   "assigned_sectors": [
-    "cybersecurity",
+    "consumer staples",
     "defense & aerospace",
     "financials",
     "healthcare",
     "industrials",
-    "materials",
     "real estate",
-    "retail"
+    "retail",
+    "semiconductors"
   ],
   "streak_agents": [
     {

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-29T00:00:00.972759",
+  "generated_at": "2026-06-29T13:15:00.629809",
   "date": "2026-06-29",
   "sections": {
     "market": {
@@ -23,111 +23,105 @@
       "last_updated": "2026-06-28T21:00:05.147243"
     },
     "portfolio": {
-      "portfolio_value": 100346.39,
-      "cash": 80652.12,
-      "deployed_pct": 19.6,
-      "n_positions": 16,
+      "portfolio_value": 100290.96,
+      "cash": 84336.31,
+      "deployed_pct": 15.9,
+      "n_positions": 15,
       "positions": [
         {
           "ticker": "BA",
           "qty": -20.0,
-          "pnl_pct": -0.38,
+          "pnl_pct": 0.67,
           "side": "PositionSide.SHORT"
         },
         {
           "ticker": "CFG",
           "qty": 60.0,
-          "pnl_pct": 9.45,
+          "pnl_pct": 9.27,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "DIS",
           "qty": -47.0,
-          "pnl_pct": 1.63,
+          "pnl_pct": 1.8,
           "side": "PositionSide.SHORT"
         },
         {
           "ticker": "IEF",
           "qty": 53.0,
-          "pnl_pct": 1.18,
+          "pnl_pct": 1.21,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "KEY",
           "qty": 223.0,
-          "pnl_pct": 6.36,
+          "pnl_pct": 5.72,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "KO",
           "qty": 44.0,
-          "pnl_pct": 5.0,
-          "side": "PositionSide.LONG"
-        },
-        {
-          "ticker": "PFFD",
-          "qty": 198.0,
-          "pnl_pct": -1.53,
+          "pnl_pct": 4.96,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "QQQ",
           "qty": -4.0,
-          "pnl_pct": -0.4,
+          "pnl_pct": -1.77,
           "side": "PositionSide.SHORT"
         },
         {
           "ticker": "RF",
           "qty": 158.0,
-          "pnl_pct": 8.44,
+          "pnl_pct": 8.68,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "USB",
           "qty": 52.0,
-          "pnl_pct": 9.43,
+          "pnl_pct": 10.13,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLE",
           "qty": -254.0,
-          "pnl_pct": 4.66,
+          "pnl_pct": 4.77,
           "side": "PositionSide.SHORT"
         },
         {
           "ticker": "XLI",
           "qty": 37.0,
-          "pnl_pct": -0.23,
+          "pnl_pct": 0.61,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLK",
           "qty": 28.0,
-          "pnl_pct": 2.8,
+          "pnl_pct": 4.17,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLV",
           "qty": 33.0,
-          "pnl_pct": 5.3,
+          "pnl_pct": 4.06,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLY",
           "qty": -70.0,
-          "pnl_pct": 0.43,
+          "pnl_pct": -1.41,
           "side": "PositionSide.SHORT"
         },
         {
           "ticker": "ZION",
           "qty": 94.0,
-          "pnl_pct": 11.99,
+          "pnl_pct": 12.26,
           "side": "PositionSide.LONG"
         }
       ]
     },
     "rd": {
-      "report_age_hours": 4.7,
+      "report_age_hours": 5.2,
       "pick_count": 17,
       "top_picks": [
         {
@@ -291,7 +285,7 @@
           }
         }
       ],
-      "last_updated": "2026-06-28T19:16:12.744746"
+      "last_updated": "2026-06-29T08:01:23.439965"
     },
     "energy_rd": {
       "pick_count": 15,
@@ -468,13 +462,13 @@
     "context": {
       "historical": {
         "summary": "",
-        "last_updated": "2026-06-28T19:15:06.411584",
+        "last_updated": "2026-06-29T12:00:14.640914",
         "fresh": true
       },
       "geopolitical": {
         "summary": "",
         "key_risks": [],
-        "last_updated": "2026-06-28T19:15:06.414772",
+        "last_updated": "2026-06-29T12:00:14.643973",
         "fresh": true
       },
       "macro_policy": {
@@ -507,7 +501,7 @@
             "message": "'SPY data unavailable \u2014 failing safe to O' fired 5 times without resolution. This is a decision-loop failure: the canary correctly identifies the problem, but the response pipeline is not closing the position. Repeated identical alerts without resolution erode the signal-to-noise ratio and indicate a gap between detection and execution."
           }
         ],
-        "last_updated": "2026-06-28T19:15:06.437082",
+        "last_updated": "2026-06-29T12:00:14.666424",
         "fresh": true
       }
     },
@@ -550,9 +544,9 @@
     },
     "cit": {
       "pending_count": 6,
-      "approved_count": 546,
+      "approved_count": 555,
       "backlog_count": 500,
-      "latest_session": "evening",
+      "latest_session": "morning",
       "top_proposals": [
         {
           "agent": "CITCodeInspector",
@@ -566,7 +560,7 @@
           "auto_implementable": false,
           "id": "CIT-2026-065",
           "context": {
-            "captured_at": "2026-06-28T22:00:36.788075",
+            "captured_at": "2026-06-29T10:00:16.651644",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -582,7 +576,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1083,
+            "open_issues_count": 1105,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -595,14 +589,14 @@
           "category": "BUG_FIX",
           "severity": "MEDIUM",
           "confidence": 90,
-          "title": "18 ERROR lines \u2014 dominant: `v3`",
-          "description": "The last 24-48h of logs contain 18 ERROR-level entries (4019 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+          "title": "9 ERROR lines \u2014 dominant: `v3`",
+          "description": "The last 24-48h of logs contain 9 ERROR-level entries (2229 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
           "evidence": "Recent log samples:\n  \u2022 2026-06-28 06:04:30  ERROR      v3 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-28 06:04:48  ERROR      v4 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.\n  \u2022 2026-06-28 06:05:06  ERROR      v5 FAILED: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.",
           "proposed_fix": "Most frequent error type: `v3` (1/3 sampled). Locate the call site in logs/run_*.log matching `2026-06-28 06:04:30  ERROR      v3 FAILED: Unable to find a `, wrap it in `except v3` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
           "auto_implementable": false,
-          "id": "CIT-2026-642",
+          "id": "CIT-2026-494",
           "context": {
-            "captured_at": "2026-06-28T22:00:36.788075",
+            "captured_at": "2026-06-29T10:00:16.651644",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -618,15 +612,13 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1083,
+            "open_issues_count": 1105,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
           },
           "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
-          "routed_to_pod": "rd",
-          "routed_at": "2026-06-28T22:00:36.874719",
-          "issue_id": "ISS-0534"
+          "issue_id": "ISS-0527"
         }
       ],
       "all_pending": [
@@ -636,13 +628,13 @@
           "severity": "MEDIUM",
           "confidence": 78,
           "title": "Replace fixed R&D cadence with event-triggered research cycles",
-          "description": "R&D last ran 208h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after earnings beats, sector breakouts, and macro prints \u2014 not on a Tuesday-every-three-days basis. Proposal: keep the 3-day heartbeat, but add event triggers: any sector ETF moving >3% in a day forces an immediate targeted R&D cycle for that sector only. Canary YELLOW triggers a full cycle. This would have caught the DIS move that fired ORANGE today.",
-          "evidence": "last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.",
+          "description": "R&D last ran 265h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after earnings beats, sector breakouts, and macro prints \u2014 not on a Tuesday-every-three-days basis. Proposal: keep the 3-day heartbeat, but add event triggers: any sector ETF moving >3% in a day forces an immediate targeted R&D cycle for that sector only. Canary YELLOW triggers a full cycle. This would have caught the DIS move that fired ORANGE today.",
+          "evidence": "last_research_run: 2026-06-18 (265h ago). Canary fired 199 alert(s) today without fresh research.",
           "proposed_fix": "In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes.",
           "auto_implementable": false,
           "id": "CIT-2026-568",
           "context": {
-            "captured_at": "2026-06-26T16:00:09.983320",
+            "captured_at": "2026-06-29T01:00:06.952948",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -658,97 +650,54 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 982,
+            "open_issues_count": 1092,
             "open_critical_issues": 0,
-            "pending_proposals_count": 0,
+            "pending_proposals_count": 4,
             "critical_pending": 0
           },
           "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
           "routed_to_pod": "main",
-          "routed_at": "2026-06-26T16:00:10.057724",
-          "clarification_rounds": 3,
+          "routed_at": "2026-06-29T01:00:07.023346",
+          "clarification_rounds": 2,
           "clarification_log": [
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy CRO",
               "source": "deputy_board",
               "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 265h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (265h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
             },
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy CIT Director",
               "source": "deputy_board",
               "question": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 265h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (265h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
             },
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy Chief of Staff",
               "source": "deputy_board",
               "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 265h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (265h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
             },
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy IRM",
               "source": "deputy_board",
               "question": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 265h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (265h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
             },
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy Operations Director",
               "source": "deputy_board",
               "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
-            },
-            {
-              "ts": "2026-06-27T01:00:01.203704",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (217h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
-            },
-            {
-              "ts": "2026-06-27T01:00:01.203704",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (217h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
-            },
-            {
-              "ts": "2026-06-27T01:00:01.203704",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (217h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
-            },
-            {
-              "ts": "2026-06-27T10:00:00.934591",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (226h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
-            },
-            {
-              "ts": "2026-06-27T10:00:00.934591",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (226h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
-            },
-            {
-              "ts": "2026-06-27T10:00:00.934591",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (226h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 208h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (208h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Add a regime-adaptive strategy layer: momentum \u2192 defensive factor rotation: CRO level: ELEVATED | Canary alerts today: 199 | Current portfolio down from start; all buys blocked for extended period. | fix: Add `regime` field to canary_state.json (BULL/NEUTRAL/DEFENSIVE/CRISIS). R&D leader reads regime at assignment time and shifts sector scoring weights: in DEFENSIVE mode, boost low-volatility and divid\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Replace 30-day fixed evaluation window with a rolling perpetual model (currently day 218/30): paper_day=218/30 in state.json. Fixed-window evaluation ends in -188 day(s). | fix: In state.json, replace `paper_day` counter with `trading_day_total` (never resets). Add `quarterly_benchmark_day` that triggers a benchmark report every 63 days. In main.py, remove the day-30 terminat\nRelevant functions/methods: data/rd_trigger.json\nConcrete metrics from description: 265h, 3, 3, 3%\nFull evidence: last_research_run: 2026-06-18 (265h ago). Canary fired 199 alert(s) today without fresh research.\nFull proposed fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes."
             }
           ],
           "needs_revote": true,
-          "revote_reason": "CIT Director answered 3 simultaneous question(s) from Deputy CIT Director, Deputy Chief of Staff, Deputy Operations Director after team deliberation.",
-          "status": "ESCALATED_TO_CHAIRMAN"
+          "revote_reason": "CIT Director answered 5 simultaneous question(s) from Deputy CRO, Deputy CIT Director, Deputy Chief of Staff, Deputy IRM, Deputy Operations Director after team deliberation."
         },
         {
           "agent": "CITThinkTank",
@@ -762,7 +711,7 @@
           "auto_implementable": false,
           "id": "CIT-2026-569",
           "context": {
-            "captured_at": "2026-06-26T16:00:09.983320",
+            "captured_at": "2026-06-29T01:00:06.952948",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -778,188 +727,56 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 982,
+            "open_issues_count": 1092,
             "open_critical_issues": 0,
-            "pending_proposals_count": 0,
+            "pending_proposals_count": 4,
             "critical_pending": 0
           },
           "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 218",
           "routed_to_pod": "main",
-          "routed_at": "2026-06-26T16:00:10.058342",
-          "clarification_rounds": 3,
+          "routed_at": "2026-06-29T01:00:07.024044",
+          "clarification_rounds": 2,
           "clarification_log": [
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy CRO",
               "source": "deputy_board",
               "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
             },
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy CIT Director",
               "source": "deputy_board",
               "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
             },
             {
-              "ts": "2026-06-26T22:00:00.320793",
+              "ts": "2026-06-29T10:00:00.979410",
               "deputy": "Deputy Operations Director",
               "source": "deputy_board",
               "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (214h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
-            },
-            {
-              "ts": "2026-06-27T01:00:01.203704",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (217h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
-            },
-            {
-              "ts": "2026-06-27T01:00:01.203704",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (217h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
-            },
-            {
-              "ts": "2026-06-27T10:00:00.934591",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (226h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
-            },
-            {
-              "ts": "2026-06-27T10:00:00.934591",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (226h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
+              "answer": "CIT team deliberation findings:\n  \u2022 [CITThinkTank] Replace fixed R&D cadence with event-triggered research cycles: last_research_run: 2026-06-18 (274h ago). Canary fired 199 alert(s) today without fresh research. | fix: In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --secto\n  \u2022 [CITThinkTank] Replace flat position sizing with conviction-weighted Kelly-derived sizing: buy_log has 30 entries; all use flat MAX_POSITION_SIZE_PCT with no conviction modifier. | fix: In manager_agent.py: at BUY execution, compute `size_multiplier = 0.5 + (conviction - 3) * 0.25` for conviction 3\u20135. Multiply MAX_POSITION_SIZE_PCT by this factor (floor 0.5\u00d7, ceiling 1.5\u00d7). Log `conv\n  \u2022 [CITThinkTank] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline. | fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), \nRelevant functions/methods: data/bear_cases.json\nConcrete metrics from description: 4\nFull evidence: Current pipeline: Review \u2192 Manager (single path). 30 historical buys with no pre-trade adversarial check in pipeline.\nFull proposed fix: Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review."
             }
           ],
           "needs_revote": true,
-          "revote_reason": "CIT Director answered 2 simultaneous question(s) from Deputy CIT Director, Deputy Operations Director after team deliberation.",
-          "status": "ESCALATED_TO_CHAIRMAN"
+          "revote_reason": "CIT Director answered 3 simultaneous question(s) from Deputy CRO, Deputy CIT Director, Deputy Operations Director after team deliberation."
         },
         {
-          "id": "LTIA-20260628000001",
+          "id": "LTIA-20260629120000",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "MEDIUM",
           "confidence": 85,
           "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
-          "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 71x). This needs a decision, not a rerun.",
+          "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 74x). This needs a decision, not a rerun.",
           "proposed_fix": "Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week.",
           "owner": "Board + relevant pod CIO",
-          "created_at": "2026-06-28T00:00:01.214995",
-          "status": "ESCALATED_TO_CHAIRMAN",
-          "clarification_rounds": 3,
-          "clarification_log": [
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy CRO",
-              "source": "deputy_board",
-              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: $30,000, 2026, 06, 11, , 71\nFull proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement.",
-              "answer": "Full proposed fix: Vote one of: (a) document an explicit reason the pod is held flat and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT to fix the pod pipeline this week."
-            }
-          ],
-          "needs_revote": true,
-          "revote_reason": "CIT Director answered 4 simultaneous question(s) from Deputy Manager, Deputy CIT Director, Deputy R&D Leader, Deputy Operations Director after team deliberation."
+          "created_at": "2026-06-29T12:00:00.792135",
+          "status": "pending"
         },
         {
-          "id": "LTIA-20260628000008",
+          "id": "LTIA-20260629120016",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "MEDIUM",
@@ -968,12 +785,11 @@
           "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
           "proposed_fix": "Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confidence/precision gate; if valuable, widen deputy-board auto-implement so they actually get done. Write site now caps cit_backlog.json at 500.",
           "owner": "CIT Director + Deputy Board",
-          "created_at": "2026-06-28T00:00:08.658615",
-          "status": "pending",
-          "clarification_rounds": 1
+          "created_at": "2026-06-29T12:00:16.305493",
+          "status": "pending"
         },
         {
-          "id": "LTIA-20260628000008",
+          "id": "LTIA-20260629120016",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "HIGH",
@@ -982,11 +798,11 @@
           "description": "ML finding: 'ST model AUC 0.545 \u2014 barely above random; weak edge'. An AUC below 0.50 means the model loses to a coin flip; any capital on its signals has negative expectancy.",
           "proposed_fix": "Vote to suspend ML-sourced buy recommendations immediately and assign the ML pod to retrain before re-enabling. Document the suspension in the board log.",
           "owner": "Board + ML pod",
-          "created_at": "2026-06-28T00:00:08.662624",
+          "created_at": "2026-06-29T12:00:16.309402",
           "status": "pending"
         },
         {
-          "id": "LTIA-20260628000008",
+          "id": "LTIA-20260629120016",
           "source": "LT Implementation Agent",
           "category": "IMPROVEMENT",
           "severity": "LOW",
@@ -995,236 +811,8 @@
           "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
           "proposed_fix": "Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
           "owner": "Operations Director",
-          "created_at": "2026-06-28T00:00:08.666332",
-          "status": "pending",
-          "clarification_log": [
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy CRO",
-              "source": "deputy_board",
-              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T06:00:00.747068",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy CRO",
-              "source": "deputy_board",
-              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T10:00:00.486541",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy CRO",
-              "source": "deputy_board",
-              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T16:00:01.035385",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy Manager",
-              "source": "deputy_board",
-              "question": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes.",
-              "answer": "Full proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy CRO",
-              "source": "deputy_board",
-              "question": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy Chief of Staff",
-              "source": "deputy_board",
-              "question": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy R&D Leader",
-              "source": "deputy_board",
-              "question": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy CIT Director",
-              "source": "deputy_board",
-              "question": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            },
-            {
-              "ts": "2026-06-28T22:00:00.680751",
-              "deputy": "Deputy Operations Director",
-              "source": "deputy_board",
-              "question": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
-              "answer": "Concrete metrics from description: 3 , 7 \nFull proposed fix: Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute."
-            }
-          ],
-          "needs_revote": true,
-          "revote_reason": "CIT Director answered 8 simultaneous question(s) from Deputy Manager, Deputy CRO, Deputy CIT Director, Deputy Chief of Staff, Deputy R&D Leader, Deputy Operations Director, Deputy CIT Director, Deputy Operations Director after team deliberation."
+          "created_at": "2026-06-29T12:00:16.313061",
+          "status": "pending"
         }
       ],
       "think_tank": [
@@ -1302,7 +890,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-002",
           "context": {
-            "captured_at": "2026-06-28T22:00:36.788075",
+            "captured_at": "2026-06-29T10:00:16.651644",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1318,7 +906,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1083,
+            "open_issues_count": 1105,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1338,7 +926,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-005",
           "context": {
-            "captured_at": "2026-06-28T22:00:36.788075",
+            "captured_at": "2026-06-29T10:00:16.651644",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1354,7 +942,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1083,
+            "open_issues_count": 1105,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1374,7 +962,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-007",
           "context": {
-            "captured_at": "2026-06-28T22:00:36.788075",
+            "captured_at": "2026-06-29T10:00:16.651644",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1390,7 +978,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1083,
+            "open_issues_count": 1105,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1410,7 +998,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-008",
           "context": {
-            "captured_at": "2026-06-28T22:00:36.788075",
+            "captured_at": "2026-06-29T10:00:16.651644",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "ELEVATED",
@@ -1426,7 +1014,7 @@
               "ticker": "RUN",
               "date": "2026-06-08"
             },
-            "open_issues_count": 1083,
+            "open_issues_count": 1105,
             "open_critical_issues": 0,
             "pending_proposals_count": 6,
             "critical_pending": 0
@@ -1435,12 +1023,12 @@
           "issue_id": "ISS-0010"
         }
       ],
-      "last_updated": "2026-06-28T22:00:55.858447",
+      "last_updated": "2026-06-29T10:00:26.269871",
       "morning_fresh": true,
       "evening_fresh": true
     },
     "irm": {
-      "report_age_hours": 16.7,
+      "report_age_hours": 30.0,
       "risk_score": 10,
       "red_flags": [
         "Manager Agent \u2014 output is 205h old (threshold: 26h). Agent may have missed a cycle.",
@@ -1517,7 +1105,7 @@
       "last_updated": ""
     },
     "manager": {
-      "age_hours": 222.0,
+      "age_hours": 235.2,
       "total_decisions": 33,
       "buys": 3,
       "sells": 2,
@@ -1674,59 +1262,36 @@
       "last_updated": "2026-06-19T18:00:31.627502"
     },
     "review": {
-      "age_hours": 11.7,
+      "age_hours": 1.2,
       "buy_count": 0,
-      "sell_count": 2,
+      "sell_count": 1,
       "top_buys": [],
       "top_sells": [
-        {
-          "ticker": "PFFD",
-          "side": "long",
-          "qty": 198.0,
-          "avg_entry": 18.93,
-          "current_price": 18.64,
-          "unrealized_pnl_pct": -1.53,
-          "hold_days": 1,
-          "weight_pct": 3.68,
-          "momentum": {
-            "trend": "bearish",
-            "above_50ma": false,
-            "above_200ma": false,
-            "pct_from_50ma": -0.94,
-            "pct_from_200ma": -0.03,
-            "rsi_14": 43.7
-          },
-          "action": "SELL",
-          "priority": 2,
-          "reasons": [
-            "Momentum reversed bearish while underwater (RSI=43.7, -0.9% vs 50MA)"
-          ]
-        },
         {
           "ticker": "QQQ",
           "side": "short",
           "qty": -4.0,
           "avg_entry": 709.87,
-          "current_price": 706.52,
-          "unrealized_pnl_pct": 0.47,
+          "current_price": 719.18,
+          "unrealized_pnl_pct": -1.31,
           "hold_days": 1,
-          "weight_pct": -2.81,
+          "weight_pct": -2.86,
           "momentum": {
             "trend": "bullish",
             "above_50ma": true,
             "above_200ma": true,
-            "pct_from_50ma": 0.63,
-            "pct_from_200ma": 12.03,
-            "rsi_14": 50.7
+            "pct_from_50ma": 2.18,
+            "pct_from_200ma": 13.89,
+            "rsi_14": 51.1
           },
           "action": "SELL",
           "priority": 2,
           "reasons": [
-            "Short recovered above 50MA \u2014 cover position (+0.6% vs 50MA)"
+            "Short recovered above 50MA \u2014 cover position (+2.2% vs 50MA)"
           ]
         }
       ],
-      "last_updated": "2026-06-28T12:15:10.167382"
+      "last_updated": "2026-06-29T12:00:16.031477"
     },
     "trade_review": {
       "finding_count": 0,
@@ -1737,9 +1302,9 @@
     },
     "capital": {
       "signal": "DEPLOY_MORE",
-      "deployed_pct": 19.6,
+      "deployed_pct": 15.9,
       "directive": "",
-      "last_updated": "2026-06-26T13:30:04.659481"
+      "last_updated": "2026-06-29T00:01:41.727459"
     },
     "reconciliation": {
       "age_hours": 999,
@@ -1752,119 +1317,321 @@
       "last_updated": ""
     },
     "ops_director": {
-      "age_hours": 58.5,
+      "age_hours": 13.2,
       "floor_status": "UNKNOWN",
       "agents_reviewed": 0,
       "issues_found": 0,
       "top_issues": [],
       "directive": "",
-      "last_updated": "2026-06-26T13:30:01.223401"
+      "last_updated": "2026-06-29T00:01:38.506592"
     },
     "firm_channel": {
-      "total": 41,
+      "total": 40,
       "by_agent": {
-        "LT Implementation Agent": 4,
+        "LT Implementation Agent": 5,
         "Logic Team Director": 2,
-        "Deputy Board": 4,
-        "CIT Director": 12,
-        "HR Agent": 5,
         "Freshness Sentinel": 3,
-        "R&D Team Leader": 10,
+        "Deputy Board": 3,
+        "CIT Director": 11,
+        "R&D Team Leader": 8,
+        "CIT ThinkTank": 2,
+        "HR Agent": 5,
         "Missed Winners Agent": 1
       },
       "by_category": {
-        "LT_RESOLUTION": 4,
+        "LT_RESOLUTION": 5,
         "COHERENCE_NOTE": 2,
-        "PIPELINE_ALERT": 8,
-        "PROPOSAL": 12,
-        "TASK_REQUEST": 1,
         "OPS_ALERT": 3,
-        "SECTOR_OBS": 10,
+        "PIPELINE_ALERT": 7,
+        "PROPOSAL": 9,
+        "SECTOR_OBS": 8,
+        "IMPROVEMENT": 4,
+        "TASK_REQUEST": 1,
         "RESEARCH_NOTE": 1
       },
       "urgent": [
         {
-          "ts": "2026-06-28T22:00:56.288336",
-          "date": "2026-06-28",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T22:00:55.876441",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 343.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T22:00:00.862219",
-          "date": "2026-06-28",
-          "agent": "HR Agent",
-          "category": "TASK_REQUEST",
-          "content": "TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. 39 agents evaluated. CITDirector, CITCodeInspector, CITPipelineMonitor, CITStrategyAnalyst, CITArchitectureAdvisor flagged for action. Full report: data/hr_report.json",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T19:16:16.077693",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T19:00:05.471822",
-          "date": "2026-06-28",
-          "agent": "Missed Winners Agent",
-          "category": "RESEARCH_NOTE",
-          "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: none. ",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T16:01:34.484804",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T16:00:25.202521",
-          "date": "2026-06-28",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T16:00:24.815558",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 165.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T12:15:10.422714",
-          "date": "2026-06-28",
+          "ts": "2026-06-29T12:00:16.294926",
+          "date": "2026-06-29",
           "agent": "LT Implementation Agent",
           "category": "LT_RESOLUTION",
           "priority": "HIGH",
           "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
         },
         {
-          "ts": "2026-06-28T12:01:37.865961",
-          "date": "2026-06-28",
+          "ts": "2026-06-29T10:00:26.595292",
+          "date": "2026-06-29",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T10:00:26.287805",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 175.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T08:01:27.403011",
+          "date": "2026-06-29",
           "agent": "R&D Team Leader",
           "category": "SECTOR_OBS",
           "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
           "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T07:15:01.117628",
+          "date": "2026-06-29",
+          "agent": "Freshness Sentinel",
+          "category": "OPS_ALERT",
+          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (229h old (budget 26h)), state.json (227h old (budget 26h)), premarket_alerts.json (67h old (budget 30h)), chief_of_staff_report.json (229h old (budget 30h))",
+          "priority": "URGENT"
+        },
+        {
+          "ts": "2026-06-29T05:01:20.806000",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.505353",
+          "date": "2026-06-29",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.332490",
+          "date": "2026-06-29",
+          "agent": "CIT ThinkTank",
+          "category": "IMPROVEMENT",
+          "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.320054",
+          "date": "2026-06-29",
+          "agent": "CIT ThinkTank",
+          "category": "IMPROVEMENT",
+          "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 265h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.258111",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "EVENING session complete: 4 board proposal(s), 101 quick win(s), 2 ThinkTank idea(s). Total new findings: 125.",
+          "priority": "HIGH"
         }
       ],
       "posts": [
+        {
+          "ts": "2026-06-29T12:15:00.324506",
+          "date": "2026-06-29",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "NORMAL",
+          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
+        },
+        {
+          "ts": "2026-06-29T12:00:16.317874",
+          "date": "2026-06-29",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "NORMAL",
+          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192auto_reconciled_reviews; cit_backlog_bloat\u2192board_proposal_submitted"
+        },
+        {
+          "ts": "2026-06-29T12:00:16.294926",
+          "date": "2026-06-29",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "HIGH",
+          "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
+        },
+        {
+          "ts": "2026-06-29T12:00:00.777975",
+          "date": "2026-06-29",
+          "agent": "Logic Team Director",
+          "category": "COHERENCE_NOTE",
+          "priority": "NORMAL",
+          "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 500 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
+        },
+        {
+          "ts": "2026-06-29T10:15:00.561980",
+          "date": "2026-06-29",
+          "agent": "Freshness Sentinel",
+          "category": "OPS_ALERT",
+          "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (398h old (budget 54h))",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T10:00:26.595292",
+          "date": "2026-06-29",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 1 approved, 0 rejected, 0 deferred, 4 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T10:00:26.313243",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2229 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T10:00:26.300814",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T10:00:26.287805",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 175.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T08:01:27.415629",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T08:01:27.403011",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T07:15:01.117628",
+          "date": "2026-06-29",
+          "agent": "Freshness Sentinel",
+          "category": "OPS_ALERT",
+          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (229h old (budget 26h)), state.json (227h old (budget 26h)), premarket_alerts.json (67h old (budget 30h)), chief_of_staff_report.json (229h old (budget 30h))",
+          "priority": "URGENT"
+        },
+        {
+          "ts": "2026-06-29T05:01:20.819283",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T05:01:20.806000",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.505353",
+          "date": "2026-06-29",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.332490",
+          "date": "2026-06-29",
+          "agent": "CIT ThinkTank",
+          "category": "IMPROVEMENT",
+          "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.320054",
+          "date": "2026-06-29",
+          "agent": "CIT ThinkTank",
+          "category": "IMPROVEMENT",
+          "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 265h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.307803",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "IMPROVEMENT",
+          "content": "[LOW] Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM re",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.295439",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "IMPROVEMENT",
+          "content": "[MEDIUM] Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 265h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportuni",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.282995",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2127 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.270769",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T01:00:13.258111",
+          "date": "2026-06-29",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "EVENING session complete: 4 board proposal(s), 101 quick win(s), 2 ThinkTank idea(s). Total new findings: 125.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-06-29T00:15:00.773684",
+          "date": "2026-06-29",
+          "agent": "LT Implementation Agent",
+          "category": "LT_RESOLUTION",
+          "priority": "NORMAL",
+          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192board_proposal_submitted; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192board_proposal_submitted"
+        },
+        {
+          "ts": "2026-06-29T00:01:27.851744",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-06-29T00:01:27.838732",
+          "date": "2026-06-29",
+          "agent": "R&D Team Leader",
+          "category": "SECTOR_OBS",
+          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
+          "priority": "HIGH"
+        },
         {
           "ts": "2026-06-29T00:00:01.049773",
           "date": "2026-06-29",
@@ -1984,214 +1751,6 @@
           "category": "RESEARCH_NOTE",
           "content": "\ud83d\udcca MISSED WINNERS (6M): capture rate 10% of top 20. Never seen: none. ",
           "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T16:01:34.497988",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T16:01:34.484804",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T16:00:25.202521",
-          "date": "2026-06-28",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T16:00:24.840642",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] 15 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 15 ERROR-level entries (3917 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T16:00:24.828459",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T16:00:24.815558",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 165.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T12:15:10.444091",
-          "date": "2026-06-28",
-          "agent": "LT Implementation Agent",
-          "category": "LT_RESOLUTION",
-          "priority": "NORMAL",
-          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192auto_reconciled_reviews; cit_backlog_bloat\u2192already_in_queue"
-        },
-        {
-          "ts": "2026-06-28T12:15:10.422714",
-          "date": "2026-06-28",
-          "agent": "LT Implementation Agent",
-          "category": "LT_RESOLUTION",
-          "priority": "HIGH",
-          "content": "\ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no review recommendation') \u2014 re-ran review_agent.py to restore stop-loss / exit monitoring."
-        },
-        {
-          "ts": "2026-06-28T12:01:37.878981",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T12:01:37.865961",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T12:00:01.025369",
-          "date": "2026-06-28",
-          "agent": "LT Implementation Agent",
-          "category": "LT_RESOLUTION",
-          "priority": "NORMAL",
-          "content": "LT Implementation Agent triaged 5 finding(s), took 5 action(s). Results: idle_pod_pod2_ml\u2192already_in_queue; positions_without_reviews\u2192skipped:cooldown_12h; cit_backlog_bloat\u2192already_in_queue"
-        },
-        {
-          "ts": "2026-06-28T12:00:00.992391",
-          "date": "2026-06-28",
-          "agent": "Logic Team Director",
-          "category": "COHERENCE_NOTE",
-          "priority": "NORMAL",
-          "content": "\u2139\ufe0f LOGIC TEAM \u2014 5 MEDIUM/LOW note(s):\n  [MEDIUM] ML / Quantitative: $30,000 capital, zero positions\n  [MEDIUM] ST model AUC 0.545 \u2014 barely above random; weak edge\n  [MEDIUM] 6 open positions have no review recommendation\n  [MEDIUM] CIT backlog has 487 open items \u2014 proposals not being actioned\n  [LOW] 3 expected agent(s) silent on firm channel >7 days"
-        },
-        {
-          "ts": "2026-06-28T10:00:11.950028",
-          "date": "2026-06-28",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T10:00:11.643830",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] 15 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 15 ERROR-level entries (3818 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T10:00:11.631180",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T10:00:11.618463",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 114.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T09:15:00.967013",
-          "date": "2026-06-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: data_quality_report.json (373h old (budget 54h))",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T08:01:10.487832",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T08:01:10.475351",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T07:15:03.639600",
-          "date": "2026-06-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: auto-fixed 2: risk_bulletin.json, irm_daily_check.json; newly stale: risk_bulletin.json (34h old (budget 26h)), irm_daily_check.json (34h old (budget 30h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-06-28T06:00:51.531243",
-          "date": "2026-06-28",
-          "agent": "Deputy Board",
-          "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T06:00:51.230940",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] 9 ERROR lines \u2014 dominant: `v3`: The last 24-48h of logs contain 9 ERROR-level entries (2158 WARNINGs). Most frequent error class: `v3` (1 of 3 sampled).",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T06:00:51.218604",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in ml_pod_board.py:42: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T06:00:51.205630",
-          "date": "2026-06-28",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank idea(s). Total new findings: 339.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-06-28T05:01:09.537961",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Sector momentum snapshot (16 sectors scored):\n  \u2022 Industrials                    score=12/12  trend=bullish   RSI=61  1M=+4.5%  3M=+14.1%\n  \u2022 Real Estate                    score=12/12  trend=bullish   RSI=58  1M=+2.8%  3M=+14.1%\n  \u2022 Financials                     score=11/12  trend=bullish   RSI=65  1M=+4.8%  3M=+12.4%\n  \u2022 Healthcare                     score=11/12  trend=bullish   RSI=68  1M=+6.7%  3M=+12.4%\n  \u2022 Defense & Aerospace            score=11/12  trend=bullish   RSI=59  1M=+0.6%  3M=+9.7%\n  \u2022 Cybersecurity                  score=11/12  trend=bullish   RSI=45  1M=+2.1%  3M=+40.6%\n  \u2022 Retail                         score=11/12  trend=bullish   RSI=70  1M=+3.9%  3M=+13.2%\n  \u2022 Materials                      score=10/12  trend=bullish   RSI=57  1M=+0.8%  3M=+5.9%",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-06-28T05:01:09.524588",
-          "date": "2026-06-28",
-          "agent": "R&D Team Leader",
-          "category": "SECTOR_OBS",
-          "content": "Research cycle complete: 17 picks across 8 sectors (17 high-conviction 4\u2605+). Top sectors: Industrials, Real Estate, Financials. Top picks: RTX, CAT, MS, V, GS.",
-          "priority": "HIGH"
         }
       ]
     }
@@ -2202,11 +1761,11 @@
     "\ud83d\udca1 CIT ThinkTank: 5 VISION proposal(s) awaiting board unanimous vote",
     "\ud83d\udd0d IRM: 6 red flag(s) from overnight board check",
     "\ud83d\udc65 HR: 5 agent(s) flagged for performance review",
-    "\ud83d\udea8 Manager: decisions are 222h old \u2014 DEAD-MAN'S SWITCH risk",
-    "\ud83d\udcb0 Capital: only 19.6% deployed \u2014 DEPLOY_MORE directive active",
-    "\ud83d\udce2 Deputy Board: Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT ",
-    "\ud83d\udce2 CIT Director: EVENING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank ide",
-    "\ud83d\udce2 HR Agent: TASK REQUEST \u2192 CIT Director: HR workforce review complete. Firm health: 8.9/10. "
+    "\ud83d\udea8 Manager: decisions are 235h old \u2014 DEAD-MAN'S SWITCH risk",
+    "\ud83d\udcb0 Capital: only 15.9% deployed \u2014 DEPLOY_MORE directive active",
+    "\ud83d\udce2 LT Implementation Agent: \ud83d\udd27 LT auto-action: positions lacked review coverage ('5 open positions have no re",
+    "\ud83d\udce2 Deputy Board: Deputy Board: 1 approved, 0 rejected, 0 deferred, 4 need clarification from CIT ",
+    "\ud83d\udce2 CIT Director: MORNING session complete: 2 board proposal(s), 101 quick win(s), 0 ThinkTank ide"
   ],
   "watchlist": [],
   "agent_status": {
@@ -2215,7 +1774,7 @@
       "level": "YELLOW"
     },
     "cro": {
-      "fresh": true,
+      "fresh": false,
       "risk_level": "ELEVATED"
     },
     "rd_team": {
@@ -2283,7 +1842,7 @@
     },
     "deputy_board": {
       "fresh": true,
-      "approved": 0
+      "approved": 1
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "version": "v2",
-  "trained_at": "2026-06-28T06:04:11.521643",
+  "trained_at": "2026-06-29T12:06:27.645793",
   "n_samples": 21775,
   "has_lightgbm": true,
   "has_xgboost": true,
@@ -9,23 +9,23 @@
   "top_features": [
     [
       "hold_streak_quarters",
-      891.0
+      938.0
     ],
     [
       "pct_change_shares",
-      682.0
+      727.0
     ],
     [
       "rd_spy_rsi",
-      620.0
+      701.0
     ],
     [
       "price_momentum_20d",
-      610.0
+      671.0
     ],
     [
       "rd_vix",
-      606.0
+      660.0
     ]
   ],
   "feature_cols": [
@@ -56,19 +56,19 @@
     "rd_spy_rsi",
     "earnings_surprise_flag"
   ],
-  "lgb_auc_val": 0.6032,
+  "lgb_auc_val": 0.601,
   "xgb_auc_val": 0.6161,
   "rf_auc_val": 0.6451,
   "lr_auc_val": 0.5879,
-  "ensemble_auc_val": 0.6468,
-  "ensemble_acc_val": 0.6211,
+  "ensemble_auc_val": 0.6453,
+  "ensemble_acc_val": 0.6195,
   "ensemble_weights": {
-    "lgb": 0.0909,
-    "xgb": 0.0,
+    "lgb": 0.0,
+    "xgb": 0.0909,
     "rf": 0.9091,
     "lr": 0.0
   },
-  "cv_auc_mean": 0.5312,
-  "cv_auc_std": 0.0565,
+  "cv_auc_mean": 0.5299,
+  "cv_auc_std": 0.0548,
   "risk_adj_r2_val": -0.0437
 }

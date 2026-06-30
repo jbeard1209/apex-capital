@@ -1,20 +1,6 @@
 {
   "sessions": [
     {
-      "ts": "2026-06-11T02:09:39.356865",
-      "regime": "TIGHT",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
-      "ts": "2026-06-11T02:10:14.596068",
-      "regime": "TIGHT",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
       "ts": "2026-06-11T06:01:24.911791",
       "regime": "TIGHT",
       "reviewed": 13,
@@ -205,6 +191,20 @@
     },
     {
       "ts": "2026-06-28T06:01:10.172405",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-29T12:03:09.683104",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-06-29T14:30:07.997867",
       "regime": "NORMAL",
       "reviewed": 13,
       "approved_count": 8,

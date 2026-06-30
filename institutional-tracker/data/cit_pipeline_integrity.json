@@ -1,10 +1,10 @@
 {
-  "checked_at": "2026-06-29T02:50:00.722113",
+  "checked_at": "2026-06-30T02:50:00.447377",
   "issues": [
     {
       "severity": "HIGH",
       "check": "deadmans_switch_sanity",
-      "message": "pipeline_heartbeat.json is 222.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+      "message": "pipeline_heartbeat.json is 246.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
       "auto_fixed": false
     }
   ],

@@ -1,19 +1,18 @@
 {
-  "generated_at": "2026-06-28T07:15:03.600810",
+  "generated_at": "2026-06-29T14:15:00.684880",
   "source": "anonymous",
   "urgency": "CRITICAL",
   "risk_score": 10,
-  "alert_summary": "Anonymous risk assessment: 6 concern(s) identified at severity 10/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+  "alert_summary": "Anonymous risk assessment: 4 concern(s) identified at severity 10/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
   "concerns": [
-    "Manager Agent \u2014 output is 205h old (threshold: 26h). Agent may have missed a cycle.",
-    "Portfolio Deployment Officer \u2014 output is 42h old (threshold: 26h). Agent may have missed a cycle.",
-    "IRM Daily Board \u2014 output is 34h old (threshold: 26h). Agent may have missed a cycle.",
-    "DEPENDENCY VIOLATION: capital_efficiency_report is 41.7h old but manager_decisions is 205.2h old \u2014 manager_decisions ran BEFORE capital_efficiency_report and used a stale signal.",
-    "DEPENDENCY VIOLATION: risk_bulletin is 0.0h old but capital_efficiency_report is 41.7h old \u2014 capital_efficiency_report ran BEFORE risk_bulletin and used a stale signal."
+    "Manager Agent \u2014 output is 236h old (threshold: 26h). Agent may have missed a cycle.",
+    "IRM Daily Board \u2014 output is 31h old (threshold: 26h). Agent may have missed a cycle.",
+    "DEPENDENCY VIOLATION: capital_efficiency_report is 0.7h old but manager_decisions is 236.2h old \u2014 manager_decisions ran BEFORE capital_efficiency_report and used a stale signal.",
+    "DEPENDENCY VIOLATION: review_recommendations is 2.2h old but manager_decisions is 236.2h old \u2014 manager_decisions ran BEFORE review_recommendations and used a stale signal."
   ],
   "findings": [
-    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-68,442) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,848) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-68,388) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,816) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
     "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
   ]
 }
