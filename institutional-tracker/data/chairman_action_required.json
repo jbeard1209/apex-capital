@@ -1,153 +1,5 @@
 [
   {
-    "id": "pip-integrity-20260628-16-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 28, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-28T16:50:01.069253",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260628-18-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 28, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-28T18:50:01.139842",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260628-20-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 28, 2026\" \u00d76",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-28T20:50:01.162891",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "LTIA-20260628000001",
-    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
-    "category": "IMPROVEMENT",
-    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 71x). This needs a decision, not a rerun.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 40,
-    "queued_at": "2026-06-29T00:01:38.636706"
-  },
-  {
-    "id": "LTIA-20260628000008",
-    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
-    "category": "IMPROVEMENT",
-    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 40,
-    "queued_at": "2026-06-29T00:01:38.636706"
-  },
-  {
-    "id": "LTIA-20260628000008",
-    "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
-    "category": "IMPROVEMENT",
-    "description": "ML finding: 'ST model AUC 0.545 \u2014 barely above random; weak edge'. An AUC below 0.50 means the model loses to a coin flip; any capital on its signals has negative expectancy.",
-    "confidence": 85,
-    "status": "awaiting_chairman",
-    "times_approved": 36,
-    "queued_at": "2026-06-29T00:01:38.636706"
-  },
-  {
-    "id": "pip-integrity-20260629-00-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 220.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T00:50:01.086466",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-02-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 222.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T02:50:00.722113",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-04-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 224.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T04:50:00.709979",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-06-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 226.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T06:50:00.912474",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-08-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 228.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T08:50:00.826160",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "LTIA-20260629001500",
-    "title": "[LTIA] Expected agents silent \u2014 check they're still running",
-    "category": "IMPROVEMENT",
-    "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
-    "proposed_fix": "Check crontab and the latest log for each silent agent; restart any that have stopped, or wire its output to the firm channel if it's running mute.",
-    "evidence": "",
-    "confidence": 85,
-    "severity": "LOW",
-    "approved_by": "Deputy Board (MAJORITY)",
-    "status": "awaiting_chairman",
-    "times_approved": 1,
-    "queued_at": "2026-06-29T10:00:26.407256"
-  },
-  {
-    "id": "pip-integrity-20260629-10-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 230.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T10:50:00.495773",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-12-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 232.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T12:50:01.027412",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-14-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 234.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T14:50:00.240178",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-16-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 236.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T16:50:00.651665",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260629-18-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 238.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-29T18:50:01.171721",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "pip-integrity-20260629-22-deadmans_switch_sani",
     "severity": "HIGH",
     "description": "pipeline_heartbeat.json is 242.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
@@ -169,6 +21,146 @@
     "description": "pipeline_heartbeat.json is 246.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-30T02:50:00.447377",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-04-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 248.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T04:50:00.292259",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-06-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 250.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T06:50:00.760534",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-08-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 252.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T08:50:00.358775",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-10-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 254.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T10:50:00.856812",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-12-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 256.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T12:50:00.403841",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "LTIA-20260630120001",
+    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "category": "IMPROVEMENT",
+    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 76x). This needs a decision, not a rerun.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 44,
+    "queued_at": "2026-06-30T13:30:00.891899"
+  },
+  {
+    "id": "LTIA-20260630120001",
+    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "category": "IMPROVEMENT",
+    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 44,
+    "queued_at": "2026-06-30T13:30:00.891899"
+  },
+  {
+    "id": "pip-integrity-20260630-14-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 258.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T14:50:00.849625",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-16-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 260.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T16:50:00.866216",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-16-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T16:50:00.866216",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-18-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 262.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T18:50:00.761971",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-18-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T18:50:00.761971",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-20-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 264.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T20:50:01.080036",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-20-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d76",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T20:50:01.080036",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-22-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 266.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T22:50:00.509502",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260701-00-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 268.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-07-01T00:50:00.290767",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260701-02-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 270.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-07-01T02:50:01.167885",
     "status": "awaiting_chairman"
   }
 ]

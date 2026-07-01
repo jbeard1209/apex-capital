@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-06-30T01:00:02.224935",
+  "generated_at": "2026-07-01T01:00:01.514240",
   "canary_level": "GREEN",
   "cro_level": "ELEVATED",
   "buys_blocked": true,
   "assigned_sectors": [
-    "consumer staples",
     "defense & aerospace",
     "financials",
     "healthcare",
     "industrials",
     "real estate",
+    "regional banks",
     "retail",
     "semiconductors"
   ],
