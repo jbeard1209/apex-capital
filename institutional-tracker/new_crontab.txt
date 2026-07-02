@@ -147,3 +147,6 @@
 0 12 * * 1 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 strategy_council.py >> logs/council_$(date +\%Y\%m\%d).log 2>&1
 30 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 pod_health_monitor.py >> logs/pod_health_$(date +\%Y\%m\%d).log 2>&1
 0 7 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 model_test_harness.py >> logs/model_test_$(date +\%Y\%m\%d).log 2>&1
+
+# ── DATA BACKUP — daily 5 AM EDT = 09:00 UTC (was never scheduled; data had no backups) ──
+0 9 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 backup_data.py >> logs/backup_$(date +\%Y\%m\%d).log 2>&1
