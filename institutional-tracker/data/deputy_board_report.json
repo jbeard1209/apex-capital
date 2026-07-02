@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-01T01:01:07.139850",
+  "generated_at": "2026-07-02T01:00:33.813129",
   "dry_run": false,
   "proposals_reviewed": 5,
   "approved_count": 0,
@@ -107,7 +107,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260701000000",
+      "proposal_id": "LTIA-20260702000001",
       "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
       "severity": "MEDIUM",
       "category": "IMPROVEMENT",
@@ -156,7 +156,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260701000009",
+      "proposal_id": "LTIA-20260702000001",
       "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
       "severity": "MEDIUM",
       "category": "IMPROVEMENT",
@@ -205,7 +205,7 @@
       ]
     },
     {
-      "proposal_id": "LTIA-20260701000009",
+      "proposal_id": "LTIA-20260702000001",
       "title": "[LTIA] Expected agents silent \u2014 check they're still running",
       "severity": "LOW",
       "category": "IMPROVEMENT",

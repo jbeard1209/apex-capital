@@ -1,19 +1,6 @@
 {
   "history": [
     {
-      "ts": "2026-06-15T15:08:19.042009",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
       "ts": "2026-06-15T16:00:48.070963",
       "findings": [
         {
@@ -387,6 +374,19 @@
     },
     {
       "ts": "2026-06-19T18:00:33.694734",
+      "findings": [
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-02T02:23:06.269516",
       "findings": [
         {
           "rule": "idle_capital",

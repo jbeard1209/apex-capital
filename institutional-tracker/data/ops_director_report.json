@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-30T13:30:00.703334",
+  "generated_at": "2026-07-01T13:30:00.632565",
   "supervised_agents": [
     "Trade Review Team",
     "Creative Agent",
@@ -11,7 +11,7 @@
   "agent_status": {
     "Trade Review Team": {
       "status": "STALE",
-      "note": "Last updated 373h ago",
+      "note": "Last updated 397h ago",
       "data_keys": [
         "generated_at",
         "team",
@@ -46,7 +46,7 @@
     },
     "Report Generator": {
       "status": "STALE",
-      "note": "Last updated 259h ago",
+      "note": "Last updated 283h ago",
       "data_keys": [
         "timestamp",
         "company_health",
@@ -84,8 +84,8 @@
     }
   },
   "flags": [
-    "Trade Review Team: report stale (373h old)",
-    "Report Generator: report stale (259h old)"
+    "Trade Review Team: report stale (397h old)",
+    "Report Generator: report stale (283h old)"
   ],
   "summary": "Floor status: 4 OK, 2 stale, 0 missing. 2 flag(s)."
 }

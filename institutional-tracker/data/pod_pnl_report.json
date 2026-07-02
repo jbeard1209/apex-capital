@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-19T22:00:31.826202",
+  "generated_at": "2026-07-02T06:17:42.323365",
   "pods": {
     "pod1_rd": {
       "name": "R&D / Institutional",
@@ -86,13 +86,13 @@
     "pod3_macro": {
       "name": "Macro / ETF Rotation",
       "total_value": 30000.0,
-      "cash_balance": 5174.25,
-      "positions_value": 24825.75,
-      "cash_pct": 17.25,
-      "positions_pct": 82.75,
+      "cash_balance": 11234.06,
+      "positions_value": 18765.94,
+      "cash_pct": 37.45,
+      "positions_pct": 62.55,
       "pnl_today": 0.0,
       "pnl_lifetime": 0.0,
-      "n_positions": 4,
+      "n_positions": 3,
       "top_positions": [
         {
           "ticker": "XLK",
@@ -113,16 +113,25 @@
           "market_value": 8243.1
         },
         {
-          "ticker": "QQQ",
-          "qty": 7,
-          "avg_entry": 707.83,
-          "current_price": 707.83,
+          "ticker": "XLF",
+          "qty": 102,
+          "avg_entry": 54.78,
+          "current_price": 54.78,
           "unrealized_pct": 0.0,
           "unrealized_dollar": 0.0,
-          "market_value": 4954.81
+          "market_value": 5587.56
         }
       ],
       "worst_positions": [
+        {
+          "ticker": "XLK",
+          "qty": 28,
+          "avg_entry": 176.26,
+          "current_price": 176.26,
+          "unrealized_pct": 0.0,
+          "unrealized_dollar": 0.0,
+          "market_value": 4935.28
+        },
         {
           "ticker": "XLV",
           "qty": 54,
@@ -133,22 +142,13 @@
           "market_value": 8243.1
         },
         {
-          "ticker": "QQQ",
-          "qty": 7,
-          "avg_entry": 707.83,
-          "current_price": 707.83,
+          "ticker": "XLF",
+          "qty": 102,
+          "avg_entry": 54.78,
+          "current_price": 54.78,
           "unrealized_pct": 0.0,
           "unrealized_dollar": 0.0,
-          "market_value": 4954.81
-        },
-        {
-          "ticker": "XLI",
-          "qty": 37,
-          "avg_entry": 180.88,
-          "current_price": 180.88,
-          "unrealized_pct": 0.0,
-          "unrealized_dollar": 0.0,
-          "market_value": 6692.56
+          "market_value": 5587.56
         }
       ]
     }

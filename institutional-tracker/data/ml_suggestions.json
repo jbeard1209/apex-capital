@@ -19,5 +19,16 @@
     "title": "Label and study 6 never-seen winners",
     "description": "Top-20 performers absent from all pipelines: ['MRVL', 'VRT', 'RKLB', 'NUE', 'TSM', 'C']. Add these as positive examples to the label set and check which model features they share \u2014 the model can learn the profile of winners our watchlists structurally exclude.",
     "status": "PENDING"
+  },
+  {
+    "id": "rd_bridge_003",
+    "source": "ml_rd_bridge_agent",
+    "date": "2026-07-01",
+    "category": "FEATURE",
+    "priority": "REVIEW",
+    "title": "Add sector RSI as per-ticker ML feature",
+    "description": "Average sector RSI across tracked tickers: 65.2. Sector-level RSI captures sector rotation momentum not in individual ticker RSI. R&D already computes this \u2014 just needs routing to feature_engineer.",
+    "proposed_fix": "Add 'rd_sector_rsi' and 'rd_sector_bullish' to FEATURE_COLS. Read from rd_ml_bridge_signals.json['tickers'][ticker]['rd_sector_rsi']. Default 50 (neutral) when ticker not in bridge.",
+    "status": "PENDING"
   }
 ]
