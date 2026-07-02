@@ -124,10 +124,22 @@ def _todays_error_count(log_glob: str) -> int:
         return 0
 
 
+def _pod_positions(pod: str) -> int:
+    """Held positions for a pod from the ledger. An order QUEUE that's empty because
+    main.py executed+consumed the orders is healthy — held positions prove it.
+    (The ETF pod triggered a false ZERO_PICKS: queue empty, but XLK/XLV/XLF held.)"""
+    pa = _load(DATA_DIR / "pod_allocations.json", {})
+    key = {"ETF": "pod3_macro", "FI": "pod_fi", "FE": "pod_fe"}.get(pod, "")
+    p = (pa.get("pods", {}) or {}).get(key, {})
+    return len(p.get("positions", {}) or {})
+
+
 def check_pod(pod: str, spec: dict) -> dict:
     report = DATA_DIR / spec["report"]
     age = _age_hours(report)
     picks = _count_picks(DATA_DIR / spec["picks_file"])
+    if picks == 0:
+        picks = _pod_positions(pod)   # executed-and-held counts as deployed
     errors = _todays_error_count(spec["log_glob"])
 
     problems = []

@@ -35,6 +35,17 @@ import os
 from pathlib import Path
 from typing import Optional
 
+# Load .env HERE, not just in config.py. Cron jobs have no shell profile, so any
+# entry point that called apex_llm without importing config first saw an empty
+# ANTHROPIC_API_KEY and every LLM call silently returned None (usage log froze on
+# 2026-06-12 because of exactly this). Loading at import makes the key available
+# to all ~36 enabled agents regardless of entry point.
+try:
+    from dotenv import load_dotenv as _ld
+    _ld(dotenv_path=Path(__file__).parent / ".env", override=False)
+except Exception:
+    pass
+
 logger = logging.getLogger("apex_llm")
 
 _CONFIG_PATH = Path(__file__).parent / "config" / "llm_config.json"

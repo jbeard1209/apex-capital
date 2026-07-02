@@ -23,13 +23,26 @@ from pathlib import Path
 #  ★ CONFIGURATION — update these after deploying to Railway
 # ============================================================
 
-CLOUD_URL = "https://YOUR-APP-NAME.up.railway.app"  # ← paste your Railway URL here
-API_KEY   = "change-this-secret-key"                # ← must match Railway env var API_KEY
+# Real deployment URL (was the YOUR-APP-NAME placeholder since creation, so this
+# script had NEVER synced — the cloud dashboard showed frozen data). Key comes from
+# .env (SYNC_API_KEY) and must match the Railway env var API_KEY; both sides default
+# to the same dev value, so sync works out-of-the-box until a custom key is set.
+import os as _os
+try:
+    from dotenv import load_dotenv as _ld
+    _ld(dotenv_path=Path(__file__).parent.parent / ".env", override=False)
+except Exception:
+    pass
+CLOUD_URL = _os.environ.get("CLOUD_URL", "https://apex-capital-production-17b6.up.railway.app")
+API_KEY   = _os.environ.get("SYNC_API_KEY", "change-this-secret-key")
 
 # ============================================================
 
-BASE_DIR = Path(__file__).parent.parent   # Claude investment strategy/
-DATA_DIR = BASE_DIR / "institutional-tracker" / "data"
+# __file__ lives at institutional-tracker/dashboard/, so parent.parent IS
+# institutional-tracker — the old extra "institutional-tracker" segment double-
+# nested the path and every data file read as "missing" (synced 0 files).
+BASE_DIR = Path(__file__).parent.parent   # institutional-tracker/
+DATA_DIR = BASE_DIR / "data"
 
 DATA_FILES = {
     "state":             "state.json",
