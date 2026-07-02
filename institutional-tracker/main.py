@@ -1786,6 +1786,21 @@ if __name__ == "__main__":
         logging.getLogger(__name__).warning("  main.py already running — skipping this cron tick.")
         sys.exit(0)
 
+    # ── Hang watchdog ─────────────────────────────────────────────────────────
+    # A normal run is minutes. On 2026-06-19 a run hung (stuck network/IO) and,
+    # because flock is held for the life of the process, it blocked EVERY cron tick
+    # for ~13 days (state.json went stale, no trades executed) with nothing noticing.
+    # This daemon thread force-exits after 90 min so the process dies, the flock
+    # releases, and the next cron tick runs normally.
+    import threading as _th
+    def _hang_watchdog():
+        import time as _t
+        _t.sleep(90 * 60)
+        logging.getLogger(__name__).error(
+            "main.py watchdog: run exceeded 90 min — force-exiting to release the lock.")
+        os._exit(2)
+    _th.Thread(target=_hang_watchdog, daemon=True).start()
+
     parser = argparse.ArgumentParser(description="Institutional Tracker — Daily Run")
     parser.add_argument("--no-email",     action="store_true", help="Skip sending email")
     parser.add_argument("--backtest",     action="store_true", help="Include backtest in report")
