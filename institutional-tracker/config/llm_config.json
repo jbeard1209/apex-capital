@@ -1,7 +1,7 @@
 {
-  "_comment": "To switch models after June 22, change 'model' to 'claude-opus-4-8' or 'claude-sonnet-4-6'. Nothing else needs to change.",
-  "model": "claude-opus-4-8",
-  "fallback_model": "claude-sonnet-4-6",
+  "_comment": "Single model switch for all ~36 enabled agents (apex_llm.reason reads this). Fable 5 GA'd 2026-07, so the firm now runs on claude-fable-5; opus-4-8 is the fallback if Fable is unavailable.",
+  "model": "claude-fable-5",
+  "fallback_model": "claude-opus-4-8",
   "api_key_env": "ANTHROPIC_API_KEY",
   "max_tokens": 1024,
   "timeout_seconds": 30,
