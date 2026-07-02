@@ -115,18 +115,6 @@
 # FE Lane 4: $5,000 capital, deep value / intrinsic value strategy
 0 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 fe_pipeline.py >> logs/fe_$(date +\%Y\%m\%d).log 2>&1
 
-# ── STRATEGY COUNCIL — Mondays 8 AM EDT = 12:00 UTC ──
-# Weekly 3-perspective FP&A + risk committee (bull/bear/chief). Reads IRM risk, sets
-# data-grounded board-ratified goals, grades prior forecasts, routes goals+risk+HR
-# items to the board/IRM/HR queues. Reuses the performance_forecaster engine.
-0 12 * * 1 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 strategy_council.py >> logs/council_$(date +\%Y\%m\%d).log 2>&1
-
-# ── POD HEALTH MONITOR — 11:30 AM EDT = 15:30 UTC, Mon-Fri ──
-# Runs AFTER the FI (14:30) and FE (15:00) pipelines. Uniform all-pod health check
-# (stale / zero-picks / error-flood); auto-files board proposals + Chairman action
-# items with a fix plan so a broken or idle pod surfaces itself immediately.
-30 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 pod_health_monitor.py >> logs/pod_health_$(date +\%Y\%m\%d).log 2>&1
-
 # ── AUTO COMMIT + PUSH — 11 PM EDT = 03:00 UTC, daily ──
 # Saves all pipeline data, findings, and any code changes to GitHub nightly
 0 3 * * * cd "/Users/jackbeard/Claude investment strategy" && git add -A && git diff --cached --quiet || git commit -m "Nightly auto-save: pipeline data + findings $(date +\%Y-\%m-\%d)" && git push origin main >> /tmp/apex_git_$(date +\%Y\%m\%d).log 2>&1
@@ -144,9 +132,18 @@
 30 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 rd_pod_board.py >> logs/rd_board_$(date +\%Y\%m\%d).log 2>&1
 # ML pod board: 10:45 AM EDT = 14:45 UTC
 45 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 ml_pod_board.py >> logs/ml_board_$(date +\%Y\%m\%d).log 2>&1
+0 14 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 risk_manager_agent.py >> logs/risk_manager_$(date +\%Y\%m\%d).log 2>&1
+0 21 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 risk_manager_agent.py >> logs/risk_manager_$(date +\%Y\%m\%d).log 2>&1
+30 13 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 hr_agent.py >> logs/hr_$(date +\%Y\%m\%d).log 2>&1
+0 22 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 hr_agent.py >> logs/hr_$(date +\%Y\%m\%d).log 2>&1
+*/30 13-20 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 rd_team_leader.py --triggered >> logs/rd_triggered_$(date +\%Y\%m\%d).log 2>&1
+0 9 22 6 * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && python3 -c "import json; c=json.load(open('config/llm_config.json')); c['model']='claude-opus-4-8'; json.dump(c, open('config/llm_config.json','w'), indent=2)" && python3 -c "from email_sender import send_alert_email; send_alert_email('Apex: Fable model switched to Opus 4.8', 'Your Fable 5 access expired today (June 22). The board model has been automatically switched to claude-opus-4-8 in config/llm_config.json. Everything is still running normally.')" >> /tmp/apex_model_switch.log 2>&1
+0 19 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 missed_winners_agent.py >> logs/missed_winners_$(date +\%Y\%m\%d).log 2>&1
+0 2 13-21 6 * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 pregenerate_lessons.py --batch 12 >> logs/lesson_pregen_$(date +\%Y\%m\%d).log 2>&1
+0 21 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 irm_review_agent.py >> logs/irm_daily_$(date +\%Y\%m\%d).log 2>&1
+15 7-21 * * * cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 freshness_sentinel.py >> logs/sentinel_$(date +\%Y\%m\%d).log 2>&1
 
-# ── WEEKLY MODEL TEST HARNESS — Sunday 3 AM EDT = 07:00 UTC ──
-# Reproducible, seeded, walk-forward (no-leakage) evaluation of BOTH models.
-# Writes data/model_test_report.json + posts honest AUC to the firm channel.
-# This is the trustworthy answer to "how good is the model, really?"
+# ── Governance + monitoring (added 2026-07-02 — were in new_crontab.txt but never installed) ──
+0 12 * * 1 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 strategy_council.py >> logs/council_$(date +\%Y\%m\%d).log 2>&1
+30 15 * * 1-5 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 pod_health_monitor.py >> logs/pod_health_$(date +\%Y\%m\%d).log 2>&1
 0 7 * * 0 cd "/Users/jackbeard/Claude investment strategy/institutional-tracker" && /usr/bin/python3 model_test_harness.py >> logs/model_test_$(date +\%Y\%m\%d).log 2>&1
