@@ -51,8 +51,8 @@ def _load_config() -> dict:
     except Exception as e:
         logger.warning("[LLM] Config load failed: %s — using defaults", e)
         _config = {
-            "model": "claude-sonnet-4-6",
-            "fallback_model": "claude-sonnet-4-6",
+            "model": "claude-fable-5",
+            "fallback_model": "claude-opus-4-8",
             "api_key_env": "ANTHROPIC_API_KEY",
             "max_tokens": 1024,
             "timeout_seconds": 30,
@@ -71,7 +71,7 @@ def is_available(agent_name: str = "") -> bool:
 
 
 def get_model() -> str:
-    return _load_config().get("model", "claude-sonnet-4-6")
+    return _load_config().get("model", "claude-fable-5")
 
 
 _USAGE_PATH = Path(__file__).parent / "data" / "llm_usage.json"
@@ -155,7 +155,8 @@ def reason(
         logger.warning("[LLM] Daily call budget reached — falling back to rules")
         return None
 
-    model     = cfg.get("model", "claude-sonnet-4-6")
+    model     = cfg.get("model", "claude-fable-5")
+    fallback  = cfg.get("fallback_model")
     # Floor of 600: Fable 5's thinking tokens count against max_tokens, so a
     # tight cap can truncate before any text is emitted (worst case ~3¢).
     n_tokens  = max(max_tokens or cfg.get("max_tokens", 1024), 600)
@@ -164,23 +165,36 @@ def reason(
     try:
         import anthropic
         client = anthropic.Anthropic(api_key=api_key, timeout=timeout)
+    except Exception as e:
+        logger.warning("[LLM] client init failed: %s", e)
+        return None
+
+    def _call(m):
         msg = client.messages.create(
-            model=model,
-            max_tokens=n_tokens,
-            system=system,
+            model=m, max_tokens=n_tokens, system=system,
             messages=[{"role": "user", "content": user}],
         )
-        # Fable 5 may prepend thinking blocks — take the first text block
         text = next((b.text for b in msg.content if getattr(b, "type", "") == "text"), "")
-        _record_usage(agent_name,
-                      getattr(msg.usage, "input_tokens", 0),
+        _record_usage(agent_name, getattr(msg.usage, "input_tokens", 0),
                       getattr(msg.usage, "output_tokens", 0))
-        logger.debug("[LLM] %s (%s) → %d chars", agent_name or "?", model, len(text))
         return text
-    except anthropic.AuthenticationError:
-        logger.warning("[LLM] Invalid API key — check ANTHROPIC_API_KEY")
-    except anthropic.RateLimitError:
-        logger.warning("[LLM] Rate limit hit — falling back")
-    except Exception as e:
-        logger.warning("[LLM] Call failed (%s): %s — falling back", model, e)
+
+    # Try the primary model, then the configured fallback_model on a transient
+    # failure (e.g. Fable temporarily unavailable) before giving up to rule-based
+    # logic. Auth errors never retry — the key is the problem.
+    candidates = [model] + ([fallback] if fallback and fallback != model else [])
+    for i, m in enumerate(candidates):
+        try:
+            text = _call(m)
+            if i > 0:
+                logger.warning("[LLM] primary failed; served by fallback %s", m)
+            logger.debug("[LLM] %s (%s) → %d chars", agent_name or "?", m, len(text))
+            return text
+        except anthropic.AuthenticationError:
+            logger.warning("[LLM] Invalid API key — check ANTHROPIC_API_KEY")
+            return None
+        except anthropic.RateLimitError:
+            logger.warning("[LLM] Rate limit on %s%s", m, " — trying fallback" if i == 0 and len(candidates) > 1 else "")
+        except Exception as e:
+            logger.warning("[LLM] Call failed (%s): %s%s", m, e, " — trying fallback" if i == 0 and len(candidates) > 1 else "")
     return None
