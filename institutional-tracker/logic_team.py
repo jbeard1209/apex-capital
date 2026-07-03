@@ -90,6 +90,20 @@ def _days_since(iso_ts: str) -> Optional[int]:
 # All sub-agents return lists of these dicts.
 # =============================================================================
 
+def _ml_gate_enforcing() -> bool:
+    """True if the live runner's AUC gate blocked ML picks within the last 3 days —
+    i.e. the 'suspend ML buys' action is already enforced, verifiably."""
+    try:
+        import json as _j
+        from datetime import datetime, timedelta
+        d = _j.load(open("data/ml_live_picks_log.json"))
+        cutoff = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+        return any(p.get("status") == "model_below_gate" and str(p.get("pick_date","")) >= cutoff
+                   for p in d.get("picks", []))
+    except Exception:
+        return False
+
+
 def _finding(rule: str, severity: str, title: str,
              observation: str, why: str, suggestion: str,
              agent: str = "LogicTeam") -> dict:
@@ -206,7 +220,13 @@ class CapitalLogicAgent:
             total_v  = pod.get("total_value", 0) or 0
 
             cro_blocking_buys = cro in ("CRITICAL",)  # CRITICAL = systemically blocked, expected idle
-            if budget >= 20000 and n_pos == 0 and not cro_blocking_buys:
+            # DOCUMENTED idle is a decision, not a failure: if the pod carries an
+            # idle_reason + redeploy_trigger in pod_allocations.json (this finding's
+            # own suggestion #3), don't re-fire. The ML pod's idle capital was
+            # board-approved 50x without resolution because nothing recorded that
+            # idle-until-gate-clears IS the resolution.
+            documented_idle = bool(pod.get("idle_reason")) and bool(pod.get("redeploy_trigger"))
+            if budget >= 20000 and n_pos == 0 and not cro_blocking_buys and not documented_idle:
                 total_idle += total_v
 
                 # R4: Large pod completely idle (not due to CRO=CRITICAL — that's expected)
@@ -645,8 +665,13 @@ class MLLogicAgent:
                 agent=self.name,
             ))
 
-        # R19: AUC present but mediocre (barely above coin-flip) — don't tolerate silently
-        elif trained and isinstance(auc_st, (int, float)) and 0.50 <= auc_st < 0.55:
+        # R19: AUC present but mediocre (barely above coin-flip) — don't tolerate silently.
+        # GATE-AWARE: if the live runner's 0.57 gate is already blocking ML buys (the
+        # suggested action, verifiably enforced daily in ml_live_picks_log), the risk is
+        # contained — do NOT re-escalate. This finding was board-approved 46x "without
+        # resolution" while the gate had in fact been enforcing the resolution all along.
+        elif trained and isinstance(auc_st, (int, float)) and 0.50 <= auc_st < 0.55 \
+                and not _ml_gate_enforcing():
             findings.append(_finding(
                 rule="ml_auc_mediocre",
                 severity="MEDIUM",

@@ -4257,14 +4257,29 @@ class CITDirector:
         # (It had reached 939 entries because this site appended blindly. Keep the
         #  most recent BACKLOG_MAX unique-title items — open ones first.)
         BACKLOG_MAX = 500
+        BACKLOG_EXPIRY_DAYS = 45   # an open item nobody touched in 45 days is stale by definition
         existing_backlog = _load_json_list_safe(CIT_BACKLOG)
         merged = existing_backlog + list(backlog)
+        _today = datetime.now()
         seen, deduped = set(), []
         for item in merged:
             key = (item.get("title", "") or "").strip().lower()
             if key and key in seen:
                 continue
             seen.add(key)
+            # Auto-expiry: stamp undated items on first pass, then age them out.
+            # Without this the backlog just refilled to its cap and the Logic Team's
+            # "backlog bloat" finding was board-approved 50x with no possible action —
+            # accumulation needs an outflow, not another approval.
+            if not item.get("created_at"):
+                item["created_at"] = _today.isoformat()
+            try:
+                _age = (_today - datetime.fromisoformat(str(item["created_at"])[:19])).days
+            except Exception:
+                _age = 0
+            if item.get("status", "open") == "open" and _age > BACKLOG_EXPIRY_DAYS:
+                item["status"] = "expired_stale"
+                item["resolution_note"] = f"Auto-expired after {BACKLOG_EXPIRY_DAYS}d untouched (backlog hygiene)."
             deduped.append(item)
         # Prefer keeping open items; drop oldest closed/stale beyond the cap.
         if len(deduped) > BACKLOG_MAX:
