@@ -1,0 +1,9 @@
+# ============================================================
+# APEX CAPITAL — MAC (DEVELOPMENT MACHINE) CRONTAB
+# ============================================================
+# As of 2026-07-03 (Option A migration) the firm RUNS ON THE GCP VM
+# (ssh apex-capital — 55 jobs, current code, always-on).
+# The Mac is a development machine only: NO trading, NO agents on cron.
+# Redeploy code changes to production with:  bash gcp_setup/deploy.sh
+# ============================================================
+# (intentionally empty)
