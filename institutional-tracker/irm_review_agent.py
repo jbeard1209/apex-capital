@@ -1499,9 +1499,14 @@ def _capture_metrics_snapshot() -> dict:
         if _o.path.exists("data/risk_manager_report.json"):
             with open("data/risk_manager_report.json") as f:
                 rm = _j.load(f)
-            snap["var_99"] = rm.get("var_metrics", {}).get("var_99_pct")
-            snap["concentration_top5"] = rm.get("concentration", {}).get("top5_pct")
-            snap["sharpe"] = rm.get("performance", {}).get("sharpe_ratio")
+            # Keys must match risk_manager_report.json's REAL structure. The old
+            # names (var_99_pct / top5_pct / sharpe_ratio) never existed there, so
+            # every baseline captured None and outcome deltas were blind on risk —
+            # the firm's classic silent key-mismatch bug.
+            snap["var_99"] = rm.get("var_metrics", {}).get("var_99_1d")
+            snap["concentration_top5"] = rm.get("concentration", {}).get("max_single_pct")
+            snap["herfindahl"] = rm.get("concentration", {}).get("herfindahl_index")
+            snap["sharpe"] = rm.get("performance", {}).get("sharpe_ratio")  # absent today; tolerated
             snap["total_return_pct"] = rm.get("performance", {}).get("total_return_pct")
         # Canary level
         if _o.path.exists("data/canary_state.json"):
@@ -1686,6 +1691,25 @@ def run_irm_daily(send_email: bool = True) -> dict:
     try:
         outcomes_summary = sync_implementation_outcomes()
         irm_output["implementation_outcomes"] = outcomes_summary
+        # P&L attribution + IRM accuracy audit: dollarize every implemented idea's
+        # impact (benchmark-adjusted, formula-versioned) and independently verify
+        # the report against the raw snapshots. IRM is the standing watchdog here;
+        # any >20% divergence lands in the daily brief via the FLAGGED status.
+        try:
+            from implementation_pnl import compute_attribution, irm_audit
+            pnl = compute_attribution()
+            audit = irm_audit()
+            irm_output["implementation_pnl"] = {
+                "total_attributed_excess_dollars": pnl.get("total_attributed_excess_dollars"),
+                "n_ideas": pnl.get("n_ideas_tracked"),
+                "formula_version": pnl.get("formula_version"),
+                "audit_status": audit.get("status"),
+                "audit_flags": audit.get("flags", []),
+            }
+            if audit.get("status") == "FLAGGED":
+                logger.warning(f"  [IRM Daily] Implementation-P&L audit FLAGGED: {audit['flags'][:2]}")
+        except Exception as _pe:
+            logger.debug(f"  [IRM Daily] implementation_pnl skipped: {_pe}")
         if outcomes_summary["registered"] > 0:
             logger.info(
                 f"  [IRM Daily] Outcome tracker: {outcomes_summary['registered']} new "
