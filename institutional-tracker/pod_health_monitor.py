@@ -243,6 +243,19 @@ def run(quiet: bool = False) -> dict:
                       " — board proposals + Chairman actions auto-filed.",
                       "HIGH" if any_critical else "NORMAL")
 
+    # Shared-resource check — the one detector that survives common-mode failure:
+    # unexplained orders on the Alpaca account mean ANOTHER HOST is trading it
+    # (that's how the forgotten GCP VM stayed invisible to 40 local protections).
+    try:
+        from foreign_order_detector import run_check as _fod
+        fod = _fod()
+        results["_foreign_orders"] = {"status": fod.get("status"),
+                                      "unexplained": len(fod.get("foreign", []))}
+        if fod.get("status") == "FOREIGN_ORDERS":
+            any_critical = True
+    except Exception as _fe:
+        logger.debug(f"  foreign-order check skipped: {_fe}")
+
     logger.info(f"  {escalated} problem(s) escalated to board + Chairman")
     return {"results": results, "escalated": escalated, "critical": any_critical}
 
