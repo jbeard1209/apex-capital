@@ -75,6 +75,7 @@ JOBS = [
     ("cit_director.py",              "cit",                7, False, ["--session", "morning"]),
     ("overnight_ml_runner.py",       "ml_runner_daily",   25, False, []),
     ("email_buffer.py",              "digest",            25, False, []),
+    ("logic_team.py",                "logic_team",        13, False, []),
 ]
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────

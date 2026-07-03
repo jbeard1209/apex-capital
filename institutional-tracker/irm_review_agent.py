@@ -1910,6 +1910,12 @@ def run_irm_daily(send_email: bool = True) -> dict:
 
 if __name__ == "__main__":
     import argparse
+    import logging as _logging
+    _logging.basicConfig(
+        level=_logging.INFO,
+        format="%(asctime)s  %(levelname)-8s  %(name)s -- %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
     _ap = argparse.ArgumentParser()
     _ap.add_argument("--no-email", action="store_true")
     _args = _ap.parse_args()

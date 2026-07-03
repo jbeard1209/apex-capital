@@ -168,8 +168,91 @@
     "source": "Pod Health Monitor",
     "severity": "HIGH",
     "description": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report 2h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "resolved",
+    "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
+    "ts": "2026-07-02T01:49:06.406014"
+  },
+  {
+    "id": "PHM-20260702090133-ETF",
+    "source": "Pod Health Monitor",
+    "severity": "HIGH",
+    "description": "[ETF] ZERO_PICKS: Macro/ETF pod health \u2014 Macro/ETF pipeline ran (report 1h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python3 pod3_macro.py\nOwner: Macro Pod Board. Auto-raised by pod_health_monitor.",
+    "status": "resolved",
+    "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
+    "ts": "2026-07-02T09:01:33.574732"
+  },
+  {
+    "id": "AUD-20260702094001",
+    "source": "Deep Audit 2026-07-02",
+    "severity": "MEDIUM",
     "status": "open",
     "resolution_note": "",
-    "ts": "2026-07-02T01:49:06.406014"
+    "ts": "2026-07-02T09:40:01.849001",
+    "description": "[Audit] ml_research_team_leader / ml_data_watchdog orphaned \u2014 data_quality_report 469h stale \u2014 nothing invokes it (not in cron, not in overnight_ml_runner). Decide: schedule it, fold the data watchdog into an existing run, or retire the report (freshness_sentinel budget expects 54h)."
+  },
+  {
+    "id": "PHM-20260702014906-FE",
+    "title": "[FE] ZERO_PICKS: First Eagle Value pod health",
+    "category": "INTEGRATION",
+    "description": "First Eagle Value pipeline ran (report 2h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-02T09:58:42.283692"
+  },
+  {
+    "id": "PHM-20260702090133-ETF",
+    "title": "[ETF] ZERO_PICKS: Macro/ETF pod health",
+    "category": "INTEGRATION",
+    "description": "Macro/ETF pipeline ran (report 1h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-02T09:58:42.283692"
+  },
+  {
+    "id": "LTIA-20260702120033",
+    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "category": "IMPROVEMENT",
+    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 81x). This needs a decision, not a rerun.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 48,
+    "queued_at": "2026-07-02T13:30:16.041454"
+  },
+  {
+    "id": "LTIA-20260702120033",
+    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "category": "IMPROVEMENT",
+    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 48,
+    "queued_at": "2026-07-02T13:30:16.041454"
+  },
+  {
+    "id": "INVEST-2026-0703-ml-parquet",
+    "title": "ML v3/v4/v5 fail every nightly run \u2014 pyarrow never installed",
+    "severity": "HIGH",
+    "category": "BUG_FIX",
+    "description": "ML models v3 (macro walk-forward), v4 (Optuna LGB), and v5 (macro-conditioned stack) fail with ModuleNotFoundError: pyarrow every time overnight_ml_runner.py runs. pyarrow was never added to requirements.txt. FORENSIC FIX APPLIED 2026-07-03: installed pyarrow 21.0.0 + added to requirements.txt. Next nightly run should succeed. Verify in logs/ml_overnight_*.log or ml_runner_daily_*.log.",
+    "evidence": "overnight_ml_runner.py:197,160,179 | predictive_model/macro_features.py:92,134",
+    "source": "forensic_investigator",
+    "ts": "2026-07-03T18:48:38.661806",
+    "status": "open",
+    "fix_applied": true,
+    "fix_description": "pip3 install pyarrow>=12.0.0; added pyarrow>=12.0.0 to requirements.txt"
+  },
+  {
+    "id": "INVEST-2026-0703-lt-noon-miss",
+    "title": "logic_team noon run missed when Mac sleeps \u2014 not in wakeup_recovery",
+    "severity": "MEDIUM",
+    "category": "INTEGRATION",
+    "description": "wakeup_recovery.py catches up main pipeline, rd_team_leader, board_meeting, etc. but does NOT include logic_team.py. When the Mac sleeps through the noon EDT run (0 12 * * * = noon EDT), the logic_team run is permanently skipped. Evidence: logic_team_20260703.log = 0 bytes (only midnight run), noon run at 12:00 EDT missed today (confirmed 18:42 EDT). File recovery.py does not log or catch logic_team. Additionally, midnight runs (0 0 * * *) consistently produce 0-byte logs since Jun 17 \u2014 likely a Mac sleep/wake timing issue at 8 PM EDT.",
+    "evidence": "wakeup_recovery.py (no logic_team reference) | logs/logic_team_20260703.log (0 bytes)",
+    "proposed_fix": "Add logic_team.py and logic_team_implementation_agent.py to wakeup_recovery catchup schedule.",
+    "source": "forensic_investigator",
+    "ts": "2026-07-03T18:48:38.661806",
+    "status": "open"
   }
 ]

@@ -17,3 +17,4 @@ lightgbm>=4.0.0
 xgboost>=1.7.0
 optuna>=3.5.0
 shap>=0.44.0
+pyarrow>=12.0.0
