@@ -4,7 +4,13 @@ AI-driven **paper-trading** firm in Python. This file is the cold-start brief fo
 Claude session. Read it before making changes.
 
 - **Local dev:** `/Users/jackbeard/Claude investment strategy/` (most code under `institutional-tracker/`)
-- **Cloud:** Railway — https://apex-capital-production-17b6.up.railway.app
+- **Cloud (CRITICAL — two hosts run this firm, do not forget the VM):**
+  - **GCP VM** `apex-capital-495523` (ssh alias `apex-capital`): ALWAYS-ON second brain with its
+    own crontab (~63 jobs incl. main.py 6×/day) trading the SAME Alpaca paper account as the Mac.
+    Its repo does NOT auto-pull — deploy via `gcp_setup/deploy.sh` or it runs stale code (it ran
+    June-3 code for a month → phantom alert emails + divergent trading vs the Mac). Every audit
+    MUST check it: `ssh apex-capital 'cd ~/institutional-tracker && git log -1 && uptime'`.
+  - **Railway** — display-only dashboard viewer, no agents: https://apex-capital-production-17b6.up.railway.app
 - **GitHub:** https://github.com/jbeard1209/apex-capital
 - **Owner:** Jack Beard, Co-Chairman (learning finance — explain reasoning, don't just emit code)
 
