@@ -134,6 +134,46 @@ def _pod_positions(pod: str) -> int:
     return len(p.get("positions", {}) or {})
 
 
+def _deploy_drift_check() -> dict:
+    """PRODUCTION SELF-CHECK: is this host running stale code?
+
+    deploy.sh ships deploy_stamp.json (repo SHA + date). If the GitHub repo's HEAD
+    has moved past our stamp AND the stamp is >3 days old, production is drifting
+    behind the codebase — exactly how the VM silently ran June-3 code for a month
+    (the "two brains" incident). Absent stamp = dev machine, check skipped."""
+    stamp_p = BASE_DIR / "deploy_stamp.json"
+    if not stamp_p.exists():
+        return {"status": "SKIPPED (no stamp — dev host)"}
+    stamp = _load(stamp_p, {})
+    try:
+        import subprocess
+        out = subprocess.run(
+            ["git", "ls-remote", "git@github.com:jbeard1209/apex-capital.git", "HEAD"],
+            capture_output=True, text=True, timeout=20)
+        remote_sha = out.stdout.split()[0] if out.returncode == 0 and out.stdout else None
+    except Exception:
+        remote_sha = None
+    if not remote_sha:
+        return {"status": "UNKNOWN (cannot reach repo)", "stamp": stamp}
+    local_sha = str(stamp.get("sha", ""))
+    age_days = None
+    try:
+        dep = datetime.fromisoformat(str(stamp.get("deployed_at", "")).replace("Z", ""))
+        age_days = (datetime.utcnow() - dep).days
+    except Exception:
+        pass
+    drifted = local_sha and not remote_sha.startswith(local_sha) and (age_days or 0) > 3
+    if drifted:
+        detail = (f"Production code is STALE: deployed {local_sha} {age_days}d ago but the "
+                  f"repo HEAD has moved ({remote_sha[:8]}). Run `bash gcp_setup/ship.sh` "
+                  "from the Mac. (Prevention layer from the June/July stale-prod incident.)")
+        _escalate("PROD", {"name": "Deploy drift", "fix": "bash gcp_setup/ship.sh (from Mac)",
+                           "owner": "Chairman"}, "STALE_CODE", "CRITICAL", detail)
+        return {"status": "DRIFTED", "deployed": local_sha, "repo": remote_sha[:8],
+                "age_days": age_days}
+    return {"status": "CURRENT", "deployed": local_sha, "age_days": age_days}
+
+
 def check_pod(pod: str, spec: dict) -> dict:
     report = DATA_DIR / spec["report"]
     age = _age_hours(report)
@@ -242,6 +282,16 @@ def run(quiet: bool = False) -> dict:
         _post_channel("🩺 Pod health: " + " | ".join(bad) +
                       " — board proposals + Chairman actions auto-filed.",
                       "HIGH" if any_critical else "NORMAL")
+
+    # Deploy-drift self-check (prod only): are we running stale code vs the repo?
+    try:
+        drift = _deploy_drift_check()
+        results["_deploy_drift"] = drift
+        if drift.get("status") == "DRIFTED":
+            any_critical = True
+            logger.warning(f"  [DeployDrift] {drift}")
+    except Exception as _de:
+        logger.debug(f"  deploy-drift check skipped: {_de}")
 
     # Shared-resource check — the one detector that survives common-mode failure:
     # unexplained orders on the Alpaca account mean ANOTHER HOST is trading it

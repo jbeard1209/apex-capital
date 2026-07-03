@@ -106,3 +106,4 @@ institutional-tracker/data/historical_13f.db-journal
 
 # Claude scratch/diagnostic scripts (never commit)
 institutional-tracker/_*.py
+institutional-tracker/deploy_stamp.json

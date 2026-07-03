@@ -4,6 +4,8 @@ AI-driven **paper-trading** firm in Python. This file is the cold-start brief fo
 Claude session. Read it before making changes.
 
 - **Local dev:** `/Users/jackbeard/Claude investment strategy/` (most code under `institutional-tracker/`)
+- **INFRASTRUCTURE.md is the single source of truth for every host/account — read it
+  before assuming where anything runs. Code is NOT live until `bash gcp_setup/ship.sh`.**
 - **Cloud (CRITICAL — two hosts run this firm, do not forget the VM):**
   - **GCP VM** `apex-capital-495523` (ssh alias `apex-capital`): ALWAYS-ON second brain with its
     own crontab (~63 jobs incl. main.py 6×/day) trading the SAME Alpaca paper account as the Mac.
