@@ -119,6 +119,18 @@ def _calculate_iv_yfinance_fallback(ticker: str, current_price: float) -> Option
         logger.warning(f"[IV] yfinance fallback failed for {ticker}: {e}")
         return None
 
+    # CURRENCY GUARD (added 2026-07-03 after the SBS/Sabesp miss): foreign issuers
+    # report financials in their home currency (Sabesp: Brazilian reais) while the
+    # ADR trades in USD. Dividing BRL earnings by shares and comparing to a USD
+    # price inflated Sabesp's earnings-power value ~5x and manufactured a fake 67%
+    # margin of safety. Until proper FX conversion exists, refuse to value
+    # non-USD-reporting names — a wrong valuation is worse than none.
+    fin_ccy = str(info.get("financialCurrency") or "USD").upper()
+    if fin_ccy != "USD":
+        logger.warning(f"[IV] {ticker}: financials in {fin_ccy}, price in USD — "
+                       "skipping valuation (FX mismatch would fabricate margin of safety)")
+        return None
+
     shares   = _safe_float(info.get("sharesOutstanding"))
     eps      = _safe_float(info.get("trailingEps"))
     fcf_raw  = _safe_float(info.get("freeCashflow"))
@@ -347,6 +359,22 @@ def calculate_iv(ticker: str) -> Optional[dict]:
         return None
 
     mos = (conservative_iv - current_price) / conservative_iv if conservative_iv > 0 else -1.0
+
+    # CURRENCY CONFIRMATION before any positive verdict (SBS/Sabesp lesson): EDGAR
+    # filings from foreign issuers are in home currency (reais, etc.) while the ADR
+    # price is USD — mixing them fabricates margin of safety (~5x on SBS). Only for
+    # names about to get a positive verdict (cheap-looking), confirm USD reporting
+    # via one yfinance lookup; non-USD -> refuse to value.
+    if mos >= MOS_BUY_THRESHOLD:
+        try:
+            import yfinance as _yf
+            _ccy = str((_yf.Ticker(ticker).info or {}).get("financialCurrency") or "USD").upper()
+        except Exception:
+            _ccy = "USD"
+        if _ccy != "USD":
+            logger.warning(f"[IV] {ticker}: EDGAR financials in {_ccy}, price in USD — "
+                           "refusing valuation (FX mismatch fabricates margin of safety)")
+            return None
 
     # ── ELITE verdict tiers ───────────────────────────────────────────────────
     # BUY: cheap on no-growth earnings (25-50% MoS) AND DCF confirms it's not
