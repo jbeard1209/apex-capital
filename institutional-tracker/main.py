@@ -220,13 +220,14 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # actually started.  Distinct from manager_decisions.json, which only
     # exists once the Manager Agent finishes — this file exists the moment
     # the pipeline begins, so a crash mid-run is detectable.
+    _pipeline_start_iso = datetime.now().isoformat()   # captured once; reused in completion HB
     try:
         import json as _hb_json
         _hb_path = Path(__file__).parent / "data" / "pipeline_heartbeat.json"
         _hb_path.parent.mkdir(parents=True, exist_ok=True)
         with open(_hb_path, "w") as _hb_f:
             _hb_json.dump({
-                "last_started":  datetime.now().isoformat(),
+                "last_started":  _pipeline_start_iso,
                 "pid":           os.getpid() if hasattr(os, "getpid") else None,
             }, _hb_f, indent=2)
     except Exception:
@@ -1737,7 +1738,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         _chb_path = Path(__file__).parent / "data" / "pipeline_heartbeat.json"
         with open(_chb_path, "w") as _chb_f:
             _chb_json.dump({
-                "last_started":   state.get("_pipeline_start", datetime.now().isoformat()),
+                "last_started":   _pipeline_start_iso,   # local var, always set at run start
                 "last_completed": datetime.now().isoformat(),
                 "status":         "completed",
                 "paper_day":      state.get("paper_day", 0),

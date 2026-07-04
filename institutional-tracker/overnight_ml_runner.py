@@ -234,14 +234,19 @@ def _fmt_model(label: str, r: dict, prior_auc: float = 0.0) -> list:
     if "ensemble_weights" in r:
         lines.append(f"   Ensemble weights:{r['ensemble_weights']}")
     if "macro_top_features" in r and r["macro_top_features"]:
-        lines.append(f"   Top macro feat:  {[f for f,_ in r['macro_top_features'][:3]]}")
+        feats = r["macro_top_features"]
+        # macro_top_features is a list of feature-name strings (not tuples)
+        top = [f[0] if isinstance(f, (list, tuple)) else f for f in feats[:3]]
+        lines.append(f"   Top macro feat:  {top}")
     if "rd_score" in r:
         score = r["rd_score"]
         sentiment = "bullish" if score > 0.2 else ("bearish" if score < -0.2 else "neutral")
         lines.append(f"   R&D macro signal:{score:+.3f}  ({sentiment})")
     if r.get("risk_adj_r2_val") is not None:
         lines.append(f"   Risk-adj R²:     {r['risk_adj_r2_val']}")
-    lines.append(f"   Top features:    {[f for f,_ in r.get('top_features',[])[:3]]}")
+    raw_feats = r.get("top_features", [])
+    top_feats = [f[0] if isinstance(f, (list, tuple)) else f for f in raw_feats[:3]]
+    lines.append(f"   Top features:    {top_feats}")
     lines.append("")
     return lines
 
