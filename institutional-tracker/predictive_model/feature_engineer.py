@@ -119,6 +119,16 @@ FEATURE_COLS = [
     "rd_spy_rsi",
     # Earnings surprise (price-reaction proxy at nearest earnings date before filing)
     "earnings_surprise_flag",
+    # Cross-sectional rank features (ADDED 2026-07-04 after +0.0103 walk-forward AUC
+    # validation — see notes below). Each is the stock's percentile RANK among all
+    # stocks snapshotted the same day ("is this the strongest momentum in today's
+    # cross-section?"), which trees can exploit but a global monotonic rescale
+    # cannot. Training: exact per-date rank (leak-free). Inference: rank against
+    # the persisted latest-cross-section reference (data/feature_xrank_ref.json).
+    "price_momentum_20d_xrank",
+    "conviction_score_xrank",
+    "n_institutions_xrank",
+    "avg_conviction_3q_xrank",
     # NOTE: days_since_ipo, short_interest_pct, insider_buy_dollars, insider_is_ceo_cfo,
     # and sector_momentum_vs_spy were REMOVED 2026-06-14. A coverage audit found all five
     # are 0% non-zero across the 10,555-row training set — their backfill (label builder /
@@ -804,6 +814,26 @@ def build_feature_matrix(target: str = "outcome_20d") -> tuple:
     else:
         y = (label_raw > 0).astype(int)
 
+    # Cross-sectional rank features: percentile of each base metric WITHIN the
+    # snapshot date (relative-to-peers-today). Validated +0.0103 walk-forward AUC.
+    # Also persist the LATEST date's cross-section as the inference reference so
+    # live scoring ranks against "today's market" the same way training did.
+    _XRANK_BASE = ["price_momentum_20d", "conviction_score",
+                   "n_institutions", "avg_conviction_3q"]
+    _ref = {}
+    _latest = snaps["snapshot_date"].max()
+    for _c in _XRANK_BASE:
+        snaps[_c + "_xrank"] = (snaps.groupby("snapshot_date")[_c]
+                                     .rank(pct=True).fillna(0.5))
+        _vals = snaps.loc[snaps["snapshot_date"] == _latest, _c].dropna()
+        _ref[_c] = sorted(float(v) for v in _vals.quantile([i/20 for i in range(21)]).values) \
+                   if len(_vals) >= 5 else []
+    try:
+        _ref_path = Path(__file__).parent.parent / "data" / "feature_xrank_ref.json"
+        _ref_path.write_text(json.dumps({"as_of": str(_latest)[:10], "edges": _ref}, indent=1))
+    except Exception as _re:
+        logger.debug(f"  xrank ref persist failed: {_re}")
+
     X    = snaps[FEATURE_COLS].values.astype(float)
     meta = snaps[["ticker", "snapshot_date", "conviction_score"]].reset_index(drop=True)
 
@@ -954,6 +984,25 @@ def get_inference_features(signals: list) -> pd.DataFrame:
         return pd.DataFrame(columns=["ticker"] + FEATURE_COLS)
 
     df = pd.DataFrame(rows)
+
+    # Cross-sectional rank features at inference: a live batch is small (10-45
+    # names), so rank against the persisted training cross-section reference
+    # (20-quantile edges of the latest full snapshot date) — same meaning as
+    # training's per-date rank. Missing reference -> neutral 0.5.
+    try:
+        import numpy as _np, json as _j
+        _refp = Path(__file__).parent.parent / "data" / "feature_xrank_ref.json"
+        _edges = _j.loads(_refp.read_text()).get("edges", {}) if _refp.exists() else {}
+    except Exception:
+        _edges = {}
+    for _c in ["price_momentum_20d", "conviction_score", "n_institutions", "avg_conviction_3q"]:
+        _e = _edges.get(_c) or []
+        if len(_e) >= 5:
+            _v = pd.to_numeric(df.get(_c), errors="coerce").fillna(0.0).values
+            df[_c + "_xrank"] = _np.searchsorted(_e, _v, side="right") / len(_e)
+        else:
+            df[_c + "_xrank"] = 0.5
+
     for col in FEATURE_COLS:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0)
 
