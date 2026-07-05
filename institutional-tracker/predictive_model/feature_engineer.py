@@ -63,6 +63,7 @@ Features (28 total)
 
 import sys
 import json
+import os as _os
 import sqlite3
 import logging
 import numpy as np
@@ -125,10 +126,12 @@ FEATURE_COLS = [
     # cross-section?"), which trees can exploit but a global monotonic rescale
     # cannot. Training: exact per-date rank (leak-free). Inference: rank against
     # the persisted latest-cross-section reference (data/feature_xrank_ref.json).
-    "price_momentum_20d_xrank",
-    "conviction_score_xrank",
-    "n_institutions_xrank",
-    "avg_conviction_3q_xrank",
+    *([] if _os.environ.get("APEX_DISABLE_XRANK") else [
+        "price_momentum_20d_xrank",
+        "conviction_score_xrank",
+        "n_institutions_xrank",
+        "avg_conviction_3q_xrank",
+    ]),
     # NOTE: days_since_ipo, short_interest_pct, insider_buy_dollars, insider_is_ceo_cfo,
     # and sector_momentum_vs_spy were REMOVED 2026-06-14. A coverage audit found all five
     # are 0% non-zero across the 10,555-row training set — their backfill (label builder /
