@@ -1,7 +1,9 @@
 # ── ENVIRONMENT (CRITICAL — deleting these caused the July 4-5 outage) ─────────
 # Cron strips the environment. The 2026-07-03 migration dropped these three lines
 # and: healthchecks.io went DOWN (no ping URL), and pipeline slots began failing
-# silently. Any crontab install MUST keep them (VM values shown; Mac dev has none).
+# silently. THE VM'S LIVE CRONTAB IS CANONICAL FOR PROD — this file is the Mac-path
+# template. If installing on the VM: adapt paths AND UNCOMMENT these three lines
+# (commented here only because the Mac dev machine must not set the VM's PATH):
 # APEX_HEALTHCHECK_URL=https://hc-ping.com/0ca2940f-74a7-4306-a5fe-c7078f7c79cc
 # SHELL=/bin/bash
 # PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

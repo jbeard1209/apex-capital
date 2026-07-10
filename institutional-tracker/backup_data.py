@@ -32,12 +32,21 @@ logger = logging.getLogger("backup")
 BASE_DIR    = Path(__file__).parent
 DATA_DIR    = BASE_DIR / "data"
 BACKUP_DIR  = DATA_DIR / "backups"
-MAX_BACKUPS = 30   # rolling window — keeps last 30 days
+MAX_BACKUPS = 3    # rolling window. Was 30: on the prod VM's 9.7GB disk, each
+                   # snapshot is ~1.3GB, so 30 days would need ~40GB — the backup
+                   # job itself filled the disk to 100% twice in July 2026. Three
+                   # dailies + GitHub (code) + EDGAR (rebuildable DBs) is plenty.
 
-# Files that are runtime-only and don't need to be backed up
+# Files that are runtime-only, rebuildable, or too big — not backed up
 EXCLUDE_PATTERNS = {
-    "backups",          # don't backup the backup directory itself
-    "canary_alert.json",  # transient alert state — regenerated each run
+    "backups",              # don't backup the backup directory itself
+    "canary_alert.json",    # transient alert state — regenerated each run
+    "historical_13f.db",    # 144MB+, fully rebuildable from EDGAR scraper
+    "matrix_cache",         # regenerable model matrices (200MB+)
+    "price_cache.pkl",      # re-downloadable from yfinance (23MB+)
+    "edgar_cache",          # re-downloadable filings cache
+    "filing_tickers.json",  # 102MB derived file, rebuilt by label builder
+    "fe_fundamentals_cache",# re-downloadable EDGAR fundamentals
 }
 
 
