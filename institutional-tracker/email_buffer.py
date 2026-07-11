@@ -30,22 +30,19 @@ GMAIL_PASSWORD  = os.getenv("GMAIL_APP_PASSWORD", "vaje mgnh jhtm kknf")
 
 # ── Urgent keywords — emails containing these bypass the buffer ───────────────
 URGENT_PATTERNS = [
+    # Chairman directive 2026-07-09: ONE daily digest with everything; only
+    # "super super urgent" bypasses. The old list (generic "critical", emojis,
+    # IRM dailies, canary orange...) produced ~34 emails/week and drowned the
+    # 3 that mattered. Immediate-send is now reserved for money-at-risk or
+    # firm-down events ONLY. Everything else buffers into the 6 PM digest.
     "dead-man",
     "dead man",
     "circuit breaker",
-    "critical",
-    "⚠️",
-    "🚨",
-    "from claude",
-    "cit sensitive",
-    "chairman input required",
-    "stop-loss breach",
     "margin call",
-    "pipeline stalled",
-    "canary red",
-    "canary orange",
-    "[irm daily check]",
-    "irm: risk score",
+    "stop-loss breach",
+    "canary red",          # RED only — orange buffers
+    "foreign order",       # unknown actor on the trading account
+    "pipeline stalled",    # firm-down
 ]
 
 

@@ -306,6 +306,14 @@ def run(quiet: bool = False) -> dict:
     except Exception as _fe:
         logger.debug(f"  foreign-order check skipped: {_fe}")
 
+    # Verified-closed hygiene (Chairman-ratified 2026-07-09): flip tracker items
+    # covered by the resolution registry; break >=3-approval stale loops.
+    try:
+        from tracker_hygiene import run as _th
+        results["_tracker_hygiene"] = _th()
+    except Exception as _the:
+        logger.debug(f"  tracker hygiene skipped: {_the}")
+
     logger.info(f"  {escalated} problem(s) escalated to board + Chairman")
     return {"results": results, "escalated": escalated, "critical": any_critical}
 
