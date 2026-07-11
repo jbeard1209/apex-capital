@@ -510,11 +510,13 @@ class ResearchTeamCoordinator:
         all_picks.sort(key=lambda r: r["conviction"], reverse=True)
 
         summary = {
-            "total_tickers_analysed": sum(r["tickers_analysed"] for r in agent_reports),
+            # Use .get() — CoS-spawned agents may use "tickers_scanned" or omit the key entirely
+            "total_tickers_analysed": sum(r.get("tickers_analysed", 0) for r in agent_reports),
             "total_picks":            len(all_picks),
             "high_conviction":        sum(1 for r in all_picks if r.get("conviction", 0) >= 4),
             "agents_run":             len(agent_reports),
-            "sectors_covered":        [r["sector_name"] for r in agent_reports],
+            "sectors_covered":        [r.get("sector_name") or r.get("segment", "unknown")
+                                       for r in agent_reports],
         }
 
         report = {
