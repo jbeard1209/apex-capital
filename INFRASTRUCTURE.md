@@ -11,7 +11,7 @@ for a month (June–July 2026, the "two brains" incident).**
 | 2 | **Mac — DEVELOPMENT ONLY** (this machine) | Code editing + tests. NO trading crons (demoted 2026-07-03, see mac_dev_crontab.txt). Claude scheduled tasks live here (weekly investigator; paused daily runner) | `crontab -l` should show no python jobs |
 | 3 | **Alpaca paper account** | The shared trading account BOTH hosts can reach (keys in config.py fallback + .env). The foreign-order detector (daily, on prod) flags orders no local decision explains | `python3 foreign_order_detector.py` |
 | 4 | **GitHub** `jbeard1209/apex-capital` | Source of truth for code. Prod does NOT auto-pull — ship with `bash gcp_setup/ship.sh` | `git log origin/main -1` |
-| 5 | **Railway** (apex-capital-production-17b6) | Display-only dashboard viewer. No agents. Sync needs SYNC_API_KEY in .env (optional) | `curl -s -o /dev/null -w "%{http_code}" https://apex-capital-production-17b6.up.railway.app/` |
+| 5 | **Railway** | DECOMMISSIONED 2026-07-10 (free tier ended; Chairman opted out of paying). Was a display-only dashboard whose data sync never functioned — zero operational impact. Do not re-add without Chairman approval. Free local alternative: `python3 dashboard_server.py` (port 5050) | n/a |
 | 6 | **Oracle Cloud** | DEAD. Failed 2nd-cloud attempt; trial expired, no instance ever created. Retry job removed from schedules. Do not resurrect without Chairman approval (cost risk) | n/a |
 | 7 | **Gmail** (email_sender) | Chairman notifications + daily digest. Creds in .env on BOTH hosts — after demotion, prod (VM) is the sender | check latest digest email timestamps |
 

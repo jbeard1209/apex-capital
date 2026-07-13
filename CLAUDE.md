@@ -12,7 +12,7 @@ Claude session. Read it before making changes.
     Its repo does NOT auto-pull — deploy via `gcp_setup/deploy.sh` or it runs stale code (it ran
     June-3 code for a month → phantom alert emails + divergent trading vs the Mac). Every audit
     MUST check it: `ssh apex-capital 'cd ~/institutional-tracker && git log -1 && uptime'`.
-  - **Railway** — display-only dashboard viewer, no agents: https://apex-capital-production-17b6.up.railway.app
+  - **Railway** — DECOMMISSIONED 2026-07-10 (paid tier declined). Local dashboard: `python3 dashboard_server.py` → port 5050.
 - **GitHub:** https://github.com/jbeard1209/apex-capital
 - **Owner:** Jack Beard, Co-Chairman (learning finance — explain reasoning, don't just emit code)
 
