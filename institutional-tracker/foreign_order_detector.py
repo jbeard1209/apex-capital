@@ -36,6 +36,12 @@ REPORT = DATA / "foreign_order_report.json"
 
 LOOKBACK_HOURS = 72
 
+# The firm's designated hedge instruments, traded directly by main.py Step 2b
+# (regime hedge) WITHOUT writing manager_decisions/buy_log entries. A hedge
+# order on a day the pipeline completed is the firm acting, not a foreign
+# actor — 7 SH orders false-alarmed HIGH to the Chairman on 2026-07-13.
+HEDGE_TICKERS = {"SH"}
+
 
 def _load(p, d):
     try:
@@ -104,6 +110,10 @@ def run_check() -> dict:
         prev = (datetime.fromisoformat(day) - timedelta(days=1)).strftime("%Y-%m-%d") if day else ""
         if (sym, day) in local or (sym, prev) in local:
             continue
+        if sym in HEDGE_TICKERS:
+            hb = _load(DATA / "pipeline_heartbeat.json", {})
+            if str(hb.get("last_completed", ""))[:10] in (day, prev):
+                continue  # regime hedge executed by our own completed pipeline run
         out["foreign"].append({"symbol": sym, "submitted_at": str(sub),
                                "side": str(getattr(o, "side", "")),
                                "qty": str(getattr(o, "qty", "")),

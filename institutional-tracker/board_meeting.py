@@ -1331,7 +1331,15 @@ def _route_approved_cit_proposals(approved: list) -> None:
         count   = title_counts.get(short, 0)
 
         # ── Detect persistent issues ──────────────────────────────────────
-        if count >= 2:   # approved 3+ times (this is the 3rd+)
+        # Verified-closed policy: titles matched by the resolution registry are
+        # FIXED — do not resurrect them as "unresolved after N approvals".
+        try:
+            import json as _rj
+            _reg = _rj.load(open("data/resolution_registry.json"))
+            _fixed = any(r.get("match","").lower() in title.lower() and r.get("match") for r in _reg)
+        except Exception:
+            _fixed = False
+        if count >= 2 and not _fixed:   # approved 3+ times (this is the 3rd+)
             persistent.append({
                 "title":       title,
                 "times_seen":  count + 1,
@@ -1452,7 +1460,8 @@ def _route_approved_cit_proposals(approved: list) -> None:
     if persistent:
         logger.warning(f"  [CIT Router] {len(persistent)} PERSISTENT issue(s) — sending urgent alert")
 
-    # ── Email persistent issues immediately ───────────────────────────────
+    # ── Persistent issues: buffered into the daily digest (Chairman one-digest
+    # policy 2026-07-09 — these were bypassing email_buffer and interrupting). ──
     if persistent:
         try:
             rows = "".join(
@@ -1473,10 +1482,11 @@ def _route_approved_cit_proposals(approved: list) -> None:
     Full details in data/chairman_action_required.json · Board meeting {datetime.now().strftime('%Y-%m-%d %H:%M')}
   </p>
 </div>"""
-            from email_sender import send_alert_email
-            send_alert_email(
-                subject=f"🚨 CIT: {len(persistent)} persistent issue(s) unresolved after {max(p['times_seen'] for p in persistent)}+ board approvals",
-                body=html,
+            # One-digest policy 2026-07-09: buffer, don't interrupt.
+            from email_buffer import buffer_email
+            buffer_email(
+                subject=f"CIT: {len(persistent)} persistent issue(s) unresolved after {max(p['times_seen'] for p in persistent)}+ board approvals",
+                html_body=html,
             )
         except Exception as _e:
             logger.debug(f"  [CIT Router] Persistent-issue alert failed: {_e}")
@@ -3302,14 +3312,17 @@ def run_emergency_board_meeting(tip_data: dict, dry_run: bool = False, send_emai
     # Email you immediately — bypass buffer (subject contains 🚨)
     if send_email:
         try:
-            from email_sender import send_alert_email
+            # One-digest policy 2026-07-09: emergency-session REPORTS buffer into the
+            # digest; truly urgent states (canary RED, circuit breaker, dead-man,
+            # margin/stop-loss) already have their own immediate-send paths.
+            from email_buffer import buffer_email
             subject = (
-                f"🚨 Emergency Board Session — Risk Score {alert_score}/10 | "
+                f"Emergency Board Session — Risk Score {alert_score}/10 | "
                 f"{len(alert_concerns)} Concern(s) | "
                 f"{datetime.now().strftime('%b %d %H:%M')}"
             )
-            send_alert_email(subject=subject, body=html)
-            logger.info("  ✅ Emergency session report emailed to Chairman (immediate — bypasses buffer)")
+            buffer_email(subject=subject, html_body=html, sender_name="Board")
+            logger.info("  Emergency session report buffered for daily digest (one-digest policy)")
         except Exception as e:
             logger.warning(f"  Emergency email error: {e}")
 
