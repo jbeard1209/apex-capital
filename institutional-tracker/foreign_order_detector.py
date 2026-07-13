@@ -78,6 +78,25 @@ def _local_decision_index() -> set:
         d = str(o.get("date") or o.get("created_at") or "")[:10]
         if t and d:
             idx.add((t, d))
+    # Pipeline execution logs — some executors (ETF Pod Step 4d, momentum shorts)
+    # CONSUME their order queue after filling, erasing queue-based evidence. The
+    # dated cron logs are the durable proof ("Executed SELL 11 QQQ") and the disk
+    # janitor keeps them 5 days > the 72h lookback. Parse execution lines.
+    import re as _re
+    logdir = DATA.parent / "logs"
+    for lf in logdir.glob("cron_*.log"):
+        day = lf.stem.replace("cron_", "")
+        day = f"{day[:4]}-{day[4:6]}-{day[6:8]}" if len(day) == 8 else ""
+        if not day:
+            continue
+        try:
+            txt = lf.read_text(errors="ignore")
+        except Exception:
+            continue
+        for m in _re.finditer(r"Executed (?:BUY|SELL) [\d.]+ ([A-Z.]{1,6})", txt):
+            idx.add((m.group(1).upper(), day))
+        for m in _re.finditer(r"(?:BUY|SELL) \([^)]*\) ([A-Z.]{1,6}) x", txt):
+            idx.add((m.group(1).upper(), day))
     return idx
 
 
