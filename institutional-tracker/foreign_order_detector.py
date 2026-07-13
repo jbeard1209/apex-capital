@@ -111,9 +111,13 @@ def run_check() -> dict:
         if (sym, day) in local or (sym, prev) in local:
             continue
         if sym in HEDGE_TICKERS:
-            hb = _load(DATA / "pipeline_heartbeat.json", {})
-            if str(hb.get("last_completed", ""))[:10] in (day, prev):
-                continue  # regime hedge executed by our own completed pipeline run
+            # per-day evidence: our pipeline ran that day (its dated log exists) —
+            # the heartbeat only remembers the LATEST run, which missed 2-3 day old
+            # hedge orders inside the 72h lookback.
+            logdir = DATA.parent / "logs"
+            if any((logdir / f"cron_{d.replace('-', '')}.log").exists()
+                   for d in (day, prev) if d):
+                continue  # regime hedge executed by our own pipeline that day
         out["foreign"].append({"symbol": sym, "submitted_at": str(sub),
                                "side": str(getattr(o, "side", "")),
                                "qty": str(getattr(o, "qty", "")),
