@@ -180,7 +180,9 @@ class PipelineLogicAgent:
         fi_agents_exist = any("fi_" in a.get("file","").lower() or "fi" in a.get("sector","").lower()
                                for a in agents)
         fi_pipeline_age = state.get("fi_pipeline_age_h")
-        if fi_agents_exist and (fi_pipeline_age is None or fi_pipeline_age > 48):
+        # Threshold 74h: Fri 14:30→Mon 12:00 = 71.5h (weekend gap). 74h avoids Monday
+        # morning false positives while still catching a missed weekday (≥95h on Tuesday).
+        if fi_agents_exist and (fi_pipeline_age is None or fi_pipeline_age > 74):
             findings.append(_finding(
                 rule="fi_pipeline_not_running",
                 severity="MEDIUM",
@@ -939,14 +941,17 @@ class PodHealthLogicAgent:
                 "pipeline_report": DATA_DIR / "fi_pipeline_report.json",
                 "picks_queue":     DATA_DIR / "fi_picks_queue.json",
                 "approved":        DATA_DIR / "fi_approved_picks.json",
-                "max_stale_h":     30,
+                # 74h: Mon-Fri pipelines have a 71.5h Fri→Mon gap; 74h avoids
+                # Monday-morning false positives while catching genuine failures by Tuesday.
+                "max_stale_h":     74,
             },
             "fe": {
                 "name": "First Eagle",
                 "pipeline_report": DATA_DIR / "fe_pipeline_log.json",
                 "picks_queue":     DATA_DIR / "fe_picks_queue.json",
                 "approved":        DATA_DIR / "fe_approved_picks.json",
-                "max_stale_h":     30,
+                # Same 74h reasoning as FI — both run Mon-Fri only.
+                "max_stale_h":     74,
             },
         }
 
