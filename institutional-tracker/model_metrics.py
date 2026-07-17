@@ -12,9 +12,11 @@
 # data/model_meta.json). That is why the displayed AUC "felt fake": it was.
 #
 # The producer is predictive_model/ml_model.py -> _save_model() which writes
-# data/model_meta.json with keys: ensemble_auc_val, cv_auc_mean, cv_auc_std,
+# data/model_meta.json with keys (v1–v3): ensemble_auc_val, cv_auc_mean, cv_auc_std,
 # lgb_auc_val, rf_auc_val, lr_auc_val, ensemble_acc_val, n_samples,
 # positive_rate, trained_at, has_lightgbm, ...
+# ml_model_v5 renamed the walk-forward key to wf_cv_mean_auc (+ per-model
+# wf_cv_lgb_auc, wf_cv_xgb_auc, …). Both key names are handled here.
 #
 # If the model has not been trained (meta missing), this returns trained=False
 # and auc=None — callers must show "N/A — not trained", NEVER a default number.
@@ -69,13 +71,18 @@ def get_model_metrics() -> dict:
         result["auc_label"] = "N/A — model_meta.json unreadable"
         return result
 
-    # Headline = embargoed walk-forward AUC. Fall back to the holdout only if a
-    # walk-forward number isn't present (older meta files).
+    # Headline = embargoed walk-forward AUC. ml_model_v5+ writes it under the
+    # key "wf_cv_mean_auc"; older versions (v1–v3) used "cv_auc_mean". Check
+    # both before falling back to the single-split holdout (ensemble_auc_val),
+    # which we deliberately do NOT headline because one lucky split can read
+    # high while the walk-forward is weaker.
     holdout = meta.get("ensemble_auc_val")
-    auc = meta.get("cv_auc_mean")
+    auc = meta.get("cv_auc_mean")           # v1–v3 key
     if auc is None:
-        auc = holdout
-    cv_std = meta.get("cv_auc_std")
+        auc = meta.get("wf_cv_mean_auc")    # v5+ key (ml_model_v5 renamed it)
+    if auc is None:
+        auc = holdout                        # last resort: single 80/20 holdout
+    cv_std = meta.get("cv_auc_std")         # not written by v5 (None is fine)
     if isinstance(auc, (int, float)):
         label = f"{auc:.4f} (walk-forward"
         label += f" ±{cv_std:.3f})" if isinstance(cv_std, (int, float)) else ")"
@@ -90,8 +97,11 @@ def get_model_metrics() -> dict:
         "auc":           auc,            # SHORT-TERM headline (walk-forward)
         "auc_label":     label,
         "holdout_auc":   holdout,
-        "cv_auc_mean":   meta.get("cv_auc_mean"),
-        "cv_auc_std":    meta.get("cv_auc_std"),
+        # Return whichever walk-forward key is present (v5+ or v1–v3).
+        "cv_auc_mean":   (meta.get("cv_auc_mean")
+                          if meta.get("cv_auc_mean") is not None
+                          else meta.get("wf_cv_mean_auc")),
+        "cv_auc_std":    meta.get("cv_auc_std"),   # None for v5 models (acceptable)
         "lt_auc":        lt_auc,         # LONG-TERM walk-forward AUC (None if not trained)
         "lt_auc_label":  (f"{lt_auc:.4f} (walk-forward)" if isinstance(lt_auc, (int, float))
                           else "N/A — LT not trained"),

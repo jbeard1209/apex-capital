@@ -562,6 +562,31 @@ class TestModelMetricsContract(unittest.TestCase):
             hits = re.findall(r'(?:model_)?auc\w*\s*=\s*0\.[56]\d+', txt)
             self.assertEqual(hits, [], f"{fn} has hardcoded AUC literal(s): {hits}")
 
+    def test_model_metrics_handles_v5_wf_cv_key(self):
+        """model_metrics must use wf_cv_mean_auc (v5+ key) as headline AUC when
+        cv_auc_mean is absent — not silently fall through to the holdout."""
+        import model_metrics, json, tempfile, pathlib
+        fake_meta = {
+            "ensemble_auc_val": 0.99,   # holdout — must NOT be headlined when WF present
+            "wf_cv_mean_auc":   0.55,   # v5 walk-forward key
+            "trained_at": "2026-01-01T00:00:00",
+            "n_samples": 1000,
+        }
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+            json.dump(fake_meta, f)
+            tmp = pathlib.Path(f.name)
+        original = model_metrics.META_PATH
+        try:
+            model_metrics.META_PATH = tmp
+            m = model_metrics.get_model_metrics()
+            self.assertEqual(m["auc"], 0.55,
+                             "headline AUC should be wf_cv_mean_auc (0.55), not holdout (0.99)")
+            self.assertEqual(m["cv_auc_mean"], 0.55,
+                             "cv_auc_mean should alias wf_cv_mean_auc in returned dict")
+        finally:
+            model_metrics.META_PATH = original
+            tmp.unlink(missing_ok=True)
+
 
 # =============================================================================
 # Runner
