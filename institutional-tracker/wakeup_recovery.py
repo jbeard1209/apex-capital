@@ -66,7 +66,11 @@ def _yesterday() -> str:
 JOBS = [
     # (script_name, log_prefix, max_stale_hours, weekday_only, extra_args)
     ("morning_briefing.py",          "briefing",          25, False, []),
-    ("rd_team_leader.py",            "rd",                 3, False, []),
+    # rd_team_leader.py's own cron (05:00, 08:00, 16:00, 19:15 UTC daily) has a
+    # natural max gap of ~9h45m (19:15 -> next day 05:00); 3h falsely flagged it
+    # as missed on almost every 6h wakeup_recovery check, forcing redundant full
+    # pipeline reruns (duplicate R&D Briefing + IRM review emails, 2026-07-17/18).
+    ("rd_team_leader.py",            "rd",                11, False, []),
     ("canary_agent.py",              "canary",             1, True,  []),
     ("main.py",                      "main",               7, True,  []),
     ("fe_pipeline.py",               "fe_pipeline",       25, False, []),
