@@ -139,18 +139,35 @@ def send_daily_report(
     return success
 
 
-def send_alert_email(subject: str, body: str) -> bool:
+def send_alert_email(subject: str, body: str, force: bool = False) -> bool:
     """
     Send a priority alert email to the Chairman.
     Used by the dead-man's switch and any other urgent pipeline alerts.
     Bypasses the IRM review hook — alerts are not reviewed, they ARE the signal.
 
+    One-digest policy chokepoint (2026-07-09): unless force=True, a subject that
+    is NOT on the urgent whitelist (dead-man, circuit breaker, margin call,
+    stop-loss breach, canary RED, foreign order, pipeline stalled) is BUFFERED
+    into the daily digest instead of interrupting the Chairman. This catches
+    every agent that calls send_alert_email for routine reports (ML training
+    summaries, drift monitors, decay monitors, CIT persistents) without editing
+    each one. Genuinely urgent callers pass force=True or a whitelisted subject.
+
     Args:
         subject: Email subject line (should include severity indicator)
         body:    HTML body string
+        force:   send immediately even if subject isn't on the urgent whitelist
     Returns:
-        True if sent successfully, False otherwise.
+        True if sent (or buffered) successfully, False otherwise.
     """
+    if not force:
+        try:
+            from email_buffer import _is_urgent, buffer_email
+            if not _is_urgent(subject):
+                return buffer_email(subject=subject, html_body=body,
+                                    sender_name="Alert")
+        except Exception:
+            pass  # if the buffer is unavailable, fall through and send now
     wrapped = f"""
     <html>
     <body style="background:#0d1117;color:#c9d1d9;font-family:Arial,sans-serif;padding:24px;">

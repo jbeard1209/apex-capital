@@ -45,12 +45,23 @@ logger = logging.getLogger("ml_runner")
 
 
 def _send(subject: str, body: str):
+    # One-digest policy (2026-07-09): routine "training complete" summaries buffer
+    # into the daily digest — they were sending ~9 immediate emails/week and drowning
+    # real alerts. Only genuine training ERRORS (subject starts with 🚨) still send
+    # immediately, since a broken model pipeline is time-sensitive.
+    is_error = subject.lstrip().startswith("\U0001f6a8")
     try:
-        from email_sender import send_alert_email
-        send_alert_email(subject, body)
-        logger.info(f"  Email sent: {subject}")
+        if is_error:
+            from email_sender import send_alert_email
+            send_alert_email(subject, body, force=True)   # broken pipeline = immediate
+            logger.info(f"  Error email sent immediately: {subject}")
+        else:
+            from email_buffer import buffer_email
+            buffer_email(subject=subject, html_body=body.replace("\n", "<br>"),
+                         sender_name="ML Runner")
+            logger.info(f"  Summary buffered for daily digest: {subject}")
     except Exception as e:
-        logger.error(f"  Could not send email: {e}")
+        logger.error(f"  Could not send/buffer email: {e}")
 
 
 # =============================================================================
