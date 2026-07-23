@@ -26,7 +26,6 @@ import importlib.util
 import json
 import logging
 import os
-import smtplib
 import sys
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
@@ -40,12 +39,6 @@ LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 PICKS_QUEUE_FILE = DATA_DIR / "fi_picks_queue.json"
 PIPELINE_LOG_FILE = DATA_DIR / "fi_pipeline_log.json"
-
-EMAIL_SENDER    = "jack.beard07@gmail.com"
-EMAIL_RECIPIENT = "jack.beard07@gmail.com"
-APP_PASSWORD    = "vaje mgnh jhtm kknf"
-SMTP_HOST       = "smtp.gmail.com"
-SMTP_PORT       = 465
 
 FI_CAPITAL = 30000.00
 

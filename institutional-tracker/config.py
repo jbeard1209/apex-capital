@@ -1,35 +1,43 @@
 # =============================================================================
 # INSTITUTIONAL TRACKER — CONFIGURATION
 # =============================================================================
-# Credentials are loaded from .env (via python-dotenv).
-# .env is gitignored — never hardcode secrets here.
+# Credentials are loaded from .env (via python-dotenv) only. .env is gitignored
+# — never hardcode secrets here (2026-07-23 incident: hardcoded fallbacks below
+# had drifted to match the live credentials byte-for-byte across ~10 files,
+# committed to git for weeks — see INV-20260723-CRED-HARDCODE. Rotate any
+# credential that was ever hardcoded here; a missing env var must now fail
+# loudly instead of silently resurrecting a checked-in secret).
 #
 # To set up:
 #   pip install python-dotenv
 #   cp .env.example .env   (or create .env manually)
 #   Fill in your credentials in .env
-#
-# The hardcoded fallbacks below are kept only so the system still runs if
-# python-dotenv is not installed.  They should be removed in production.
 # =============================================================================
 
 import os as _os
 
-try:
-    from dotenv import load_dotenv as _load_dotenv
-    _load_dotenv(dotenv_path=_os.path.join(_os.path.dirname(__file__), ".env"), override=False)
-except ImportError:
-    pass   # python-dotenv not installed — fall back to hardcoded values below
+from dotenv import load_dotenv as _load_dotenv
+_load_dotenv(dotenv_path=_os.path.join(_os.path.dirname(__file__), ".env"), override=False)
+
+
+def _require_env(name: str) -> str:
+    val = _os.getenv(name)
+    if not val:
+        raise RuntimeError(
+            f"{name} is not set. Add it to .env (see .env — gitignored, "
+            f"never hardcode credentials in config.py).")
+    return val
+
 
 # --- ALPACA PAPER TRADING ---
-ALPACA_API_KEY    = _os.getenv("ALPACA_API_KEY",    "PKMJMECIKK235BQTNKGCCSKEL3")
-ALPACA_SECRET_KEY = _os.getenv("ALPACA_SECRET_KEY", "7uxURY6amjpDaQkVcoD2tXrcMsrpUHntjut95QwHZbR8")
-ALPACA_BASE_URL   = _os.getenv("ALPACA_BASE_URL",   "https://paper-api.alpaca.markets")
+ALPACA_API_KEY    = _require_env("ALPACA_API_KEY")
+ALPACA_SECRET_KEY = _require_env("ALPACA_SECRET_KEY")
+ALPACA_BASE_URL   = _os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
 
 # --- EMAIL (Gmail App Password) ---
-EMAIL_SENDER       = _os.getenv("EMAIL_SENDER",       "jack.beard07@gmail.com")
-EMAIL_RECIPIENT    = _os.getenv("EMAIL_RECIPIENT",    "jack.beard07@gmail.com")
-GMAIL_APP_PASSWORD = _os.getenv("GMAIL_APP_PASSWORD", "vaje mgnh jhtm kknf")
+EMAIL_SENDER       = _os.getenv("EMAIL_SENDER", "jack.beard07@gmail.com")
+EMAIL_RECIPIENT    = _os.getenv("EMAIL_RECIPIENT", "jack.beard07@gmail.com")
+GMAIL_APP_PASSWORD = _require_env("GMAIL_APP_PASSWORD")
 
 # --- TRADING PARAMETERS ---
 STARTING_CAPITAL       = 100000.00    # USD — paper trading starting balance

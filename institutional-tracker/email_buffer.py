@@ -23,10 +23,9 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
+from config import EMAIL_SENDER, EMAIL_RECIPIENT, GMAIL_APP_PASSWORD as GMAIL_PASSWORD
+
 BUFFER_PATH     = "data/email_buffer.json"
-EMAIL_SENDER    = os.getenv("EMAIL_SENDER",    "jack.beard07@gmail.com")
-EMAIL_RECIPIENT = os.getenv("EMAIL_RECIPIENT", "jack.beard07@gmail.com")
-GMAIL_PASSWORD  = os.getenv("GMAIL_APP_PASSWORD", "vaje mgnh jhtm kknf")
 
 # ── Urgent keywords — emails containing these bypass the buffer ───────────────
 URGENT_PATTERNS = [

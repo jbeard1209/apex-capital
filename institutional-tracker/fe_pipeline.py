@@ -25,7 +25,6 @@ import importlib.util
 import json
 import logging
 import os
-import smtplib
 import sys
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
@@ -42,11 +41,6 @@ PICKS_QUEUE_FILE    = DATA_DIR / "fe_picks_queue.json"
 PIPELINE_LOG_FILE   = DATA_DIR / "fe_pipeline_log.json"
 APPROVED_FILE       = DATA_DIR / "fe_approved_picks.json"
 
-EMAIL_SENDER    = "jack.beard07@gmail.com"
-EMAIL_RECIPIENT = "jack.beard07@gmail.com"
-APP_PASSWORD    = "vaje mgnh jhtm kknf"
-SMTP_HOST       = "smtp.gmail.com"
-SMTP_PORT       = 465
 
 # First Eagle Lane 4 capital parameters
 LANE_CAPITAL        = 5000.00
