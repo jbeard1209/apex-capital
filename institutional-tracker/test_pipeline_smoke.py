@@ -533,6 +533,41 @@ class TestWiringContracts(unittest.TestCase):
             self.assertIn(cat, known,
                           f"Strategy Council category '{cat}' is in no board scope set")
 
+    def test_apply_code_changes_is_idempotent_on_cos_agent(self):
+        """board_meeting._apply_code_changes() patches chief_of_staff_agent.py via
+        string replacement; running it must never duplicate the patched block.
+
+        Regression guard: the old guard checked `old_block in cos_src`, but
+        old_block was a substring of the block it inserted, so every board
+        meeting re-matched and re-inserted another copy. This ran unnoticed on
+        both hosts — 124 duplicates reached git HEAD and the VM's live copy (no
+        git, never overwritten between deploys) accumulated 175 before catch.
+        """
+        import shutil
+        import board_meeting as bm
+
+        real_path = Path(__file__).parent / "chief_of_staff_agent.py"
+        marker = 'if health["risk_level"] == "ELEVATED":'
+        self.assertEqual(
+            real_path.read_text().count(marker), 1,
+            "chief_of_staff_agent.py has a duplicated ELEVATED risk block — "
+            "collapse to a single copy")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_cos = Path(tmpdir) / "chief_of_staff_agent.py"
+            shutil.copy(real_path, tmp_cos)
+            cwd = os.getcwd()
+            os.chdir(tmpdir)
+            try:
+                bm._apply_code_changes({})
+                bm._apply_code_changes({})
+                bm._apply_code_changes({})
+            finally:
+                os.chdir(cwd)
+            self.assertEqual(
+                tmp_cos.read_text().count(marker), 1,
+                "_apply_code_changes duplicated the ELEVATED block on repeat runs")
+
 
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""

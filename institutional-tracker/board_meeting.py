@@ -1817,7 +1817,10 @@ def _apply_code_changes(consensus: dict) -> list[str]:
             '                      "requires_chairman": True,\n'
             '                      "item": "Portfolio risk is ELEVATED. Review Risk Manager report for details."})'
         )
-        if old_block in cos_src:
+        elevated_marker = 'if health["risk_level"] == "ELEVATED":'
+        if elevated_marker in cos_src:
+            applied.append("CoS escalation threshold: ELEVATED block already present — skipping.")
+        elif old_block in cos_src:
             cos_src = cos_src.replace(old_block, new_block)
             with open(cos_path, "w") as f:
                 f.write(cos_src)
