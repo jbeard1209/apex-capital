@@ -1,107 +1,25 @@
 [
   {
-    "id": "pip-integrity-20260630-16-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-30T16:50:00.866216",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260630-18-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 262.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-30T18:50:00.761971",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260630-18-email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-30T18:50:00.761971",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260630-20-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 264.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-30T20:50:01.080036",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "pip-integrity-20260630-20-email_loop_detection",
     "severity": "HIGH",
     "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d76",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-06-30T20:50:01.080036",
-    "status": "awaiting_chairman"
+    "status": "awaiting_chairman",
+    "dedup_key": "Repeated email subjects in buffer (# unique subject(s) appear #+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun #, #\" \u00d7#",
+    "times_seen": 3,
+    "first_seen_of_group": "2026-06-30T16:50:00.866216"
   },
   {
-    "id": "pip-integrity-20260630-22-deadmans_switch_sani",
+    "id": "pip-integrity-20260702-00-deadmans_switch_sani",
     "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 266.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "description": "pipeline_heartbeat.json is 292.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
     "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-06-30T22:50:00.509502",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-00-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 268.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T00:50:00.290767",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-02-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 270.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T02:50:01.167885",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-04-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 272.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T04:50:00.322043",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-06-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 274.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T06:50:00.989869",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-08-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 276.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T08:50:00.262260",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-10-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 278.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T10:50:00.591671",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-12-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 280.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T12:50:00.289519",
-    "status": "awaiting_chairman"
+    "ts": "2026-07-02T00:50:01.076806",
+    "status": "awaiting_chairman",
+    "dedup_key": "pipeline_heartbeat.json is #.#h old on a weekday (threshold #h) \u2014 possible genuine pipeline outage or VM issue.",
+    "times_seen": 15,
+    "first_seen_of_group": "2026-06-30T18:50:00.761971"
   },
   {
     "id": "LTIA-20260701000009",
@@ -124,53 +42,16 @@
     "queued_at": "2026-07-01T13:30:00.842048"
   },
   {
-    "id": "pip-integrity-20260701-14-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 282.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T14:50:01.105113",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-16-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 284.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T16:50:00.436130",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-18-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 286.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T18:50:00.366738",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260701-22-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 290.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-01T22:50:00.908159",
-    "status": "awaiting_chairman"
-  },
-  {
-    "id": "pip-integrity-20260702-00-deadmans_switch_sani",
-    "severity": "HIGH",
-    "description": "pipeline_heartbeat.json is 292.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-07-02T00:50:01.076806",
-    "status": "awaiting_chairman"
-  },
-  {
     "id": "PHM-20260702014906-FE",
     "source": "Pod Health Monitor",
     "severity": "HIGH",
     "description": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report 2h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
     "status": "resolved",
     "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
-    "ts": "2026-07-02T01:49:06.406014"
+    "ts": "2026-07-02T01:49:06.406014",
+    "dedup_key": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report #h old) but produced # qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python# fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still # \u2014 keep the #% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "times_seen": 2,
+    "first_seen_of_group": "2026-07-02T01:49:06.406014"
   },
   {
     "id": "PHM-20260702090133-ETF",
@@ -254,5 +135,158 @@
     "source": "forensic_investigator",
     "ts": "2026-07-03T18:48:38.661806",
     "status": "open"
+  },
+  {
+    "id": "INVEST-BUG-2026-0703-pyarrow",
+    "title": "ML v3/v4/v5 fail every run \u2014 pyarrow never in requirements.txt",
+    "category": "BUG_FIX",
+    "description": "overnight_ml_runner.py runs v3/v4/v5 models nightly. All three fail with \"ModuleNotFoundError: No module named pyarrow\" because macro_features.py uses pd.to_parquet/pd.read_parquet (lines 92, 134). pyarrow was never in requirements.txt.",
+    "proposed_fix": "ALREADY APPLIED: pip3 install pyarrow; added pyarrow>=12.0.0 to requirements.txt",
+    "evidence": "predictive_model/macro_features.py:92 and :134 | overnight_ml_runner.py:197",
+    "confidence": 99,
+    "severity": "HIGH",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-07-04T11:32:53.583050"
+  },
+  {
+    "id": "INVEST-BUG-2026-0703-lt-cron",
+    "title": "wakeup_recovery.py missing logic_team.py catchup \u2014 noon runs permanently missed ",
+    "category": "INTEGRATION",
+    "description": "wakeup_recovery.py catches up main pipeline and supporting jobs but does not include logic_team.py or logic_team_implementation_agent.py. When Mac sleeps through noon EDT (the cron 0 12 * * *), the logic_team run is skipped for the day with no recovery. Evidence: logic_team_20260703.log = 0 bytes, noon run missed on 2026-07-03.",
+    "proposed_fix": "Add logic_team.py to wakeup_recovery.py catchup jobs list alongside main pipeline.",
+    "evidence": "wakeup_recovery.py:22 \u2014 wakeup_recovery.py (grep logic_team = empty) | logs/logic_team_20260703.log (0 bytes)",
+    "confidence": 95,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-07-04T11:32:54.645966"
+  },
+  {
+    "id": "LT-125400-cro_extended_no_review",
+    "title": "CRO=HIGH for 7 cycles (28 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 7 consecutive pipeline cycles (~28 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-16T09:43:07.430496",
+    "dedup_key": "CRO=HIGH for # cycles (# days) \u2014 board must vote",
+    "times_seen": 9,
+    "first_seen_of_group": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LT-160139-cro_paralysis",
+    "title": "CRO at HIGH for 52+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 13 cycles (~52 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-15T09:46:13.573650",
+    "dedup_key": "CRO at HIGH for #+ days \u2014 firm has no buy strategy",
+    "times_seen": 6,
+    "first_seen_of_group": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LTIA-20260715115334",
+    "title": "[LTIA] Governance action: CRO=HIGH for 5 cycles (20 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "Governance check failed: 'CRO=HIGH for 5 cycles (20 days) \u2014 board must vote' (open 0d, 1x).",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-16T09:43:07.430496",
+    "dedup_key": "[LTIA] Governance action: CRO=HIGH for # cycles (# days) \u2014 board must vote",
+    "times_seen": 2,
+    "first_seen_of_group": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LTIA-20260714133149",
+    "title": "[LTIA] CRO extended block needs a vote with explicit exit criteria",
+    "category": "IMPROVEMENT",
+    "description": "CRO paralysis: 'CRO at HIGH for 32+ days \u2014 firm has no buy strategy'. A perpetual buy-block with no exit condition is a strategy vacuum.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LTIA-20260714133205",
+    "title": "[LTIA] Governance action: 4 Chairman action item(s) unresolved for >3 days",
+    "category": "IMPROVEMENT",
+    "description": "Governance check failed: '4 Chairman action item(s) unresolved for >3 days' (open 0d, 1x).",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "PHM-20260723112501-FI",
+    "source": "Pod Health Monitor",
+    "severity": "CRITICAL",
+    "description": "[FI] STALE: Fixed Income pod health \u2014 Fixed Income pipeline report is 214h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fi_pipeline.py\nOwner: FI Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:01.794639"
+  },
+  {
+    "id": "PHM-20260723112501-FE",
+    "source": "Pod Health Monitor",
+    "severity": "CRITICAL",
+    "description": "[FE] STALE: First Eagle Value pod health \u2014 First Eagle Value pipeline report is 478h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:01.800983"
+  },
+  {
+    "id": "PHM-20260723112501-ETF",
+    "source": "Pod Health Monitor",
+    "severity": "CRITICAL",
+    "description": "[ETF] STALE: Macro/ETF pod health \u2014 Macro/ETF pipeline report is 474h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 pod3_macro.py\nOwner: Macro Pod Board. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:01.804414"
+  },
+  {
+    "id": "FOD-20260723112502",
+    "source": "Foreign Order Detector",
+    "severity": "HIGH",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:02.979301",
+    "description": "[ForeignOrders] 2026-07-23 \u2014 3 account order(s) with NO local decision record (SH). Either another host is trading this account (e.g. the GCP VM) or local decision logging broke. Both demand investigation."
+  },
+  {
+    "id": "PHM-20260723112501-FI",
+    "title": "[FI] STALE: Fixed Income pod health",
+    "category": "INTEGRATION",
+    "root_cause": "Mac off \u2192 pipeline skipped \u2192 data files not refreshed",
+    "resolution": "AUTOMATIC once Oracle 24/7 server is live. catch_up.py now runs on Mac wake to partially mitigate.",
+    "status": "known_infrastructure",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:25:10.431313"
+  },
+  {
+    "id": "PHM-20260723112501-FE",
+    "title": "[FE] STALE: First Eagle Value pod health",
+    "category": "INTEGRATION",
+    "root_cause": "Mac off \u2192 pipeline skipped \u2192 data files not refreshed",
+    "resolution": "AUTOMATIC once Oracle 24/7 server is live. catch_up.py now runs on Mac wake to partially mitigate.",
+    "status": "known_infrastructure",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:25:10.431313"
+  },
+  {
+    "id": "PHM-20260723112501-ETF",
+    "title": "[ETF] STALE: Macro/ETF pod health",
+    "category": "INTEGRATION",
+    "root_cause": "Mac off \u2192 pipeline skipped \u2192 data files not refreshed",
+    "resolution": "AUTOMATIC once Oracle 24/7 server is live. catch_up.py now runs on Mac wake to partially mitigate.",
+    "status": "known_infrastructure",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:25:10.431313"
   }
 ]

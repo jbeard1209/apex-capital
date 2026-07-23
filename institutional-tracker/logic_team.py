@@ -35,6 +35,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 from collections import Counter
 from datetime import datetime, timedelta
@@ -1284,6 +1285,14 @@ def _post_findings_to_channel(findings: list):
         logger.warning(f"  Firm channel post failed: {e}")
 
 
+def _dedup_norm(text: str) -> str:
+    """Collapse embedded numbers (day/cycle counts) so a title like 'CRO at HIGH
+    for 32+ days' matches 'CRO at HIGH for 52+ days' — same underlying finding,
+    just staler. Without this, dedup-by-exact-title never fires for a chronic
+    condition since the rendered count changes every cycle (queue bloat)."""
+    return re.sub(r"\d+", "#", text or "")
+
+
 def _submit_board_proposals(findings: list) -> int:
     serious = [f for f in findings if f.get("severity") in ("HIGH","CRITICAL")]
     if not serious:
@@ -1319,7 +1328,8 @@ def _submit_board_proposals(findings: list) -> int:
             # Fallback: write directly to main pending
             pending = _load(CIT_PENDING, [])
             if not isinstance(pending, list): pending = []
-            if proposal["title"] not in {p.get("title","") for p in pending}:
+            existing_norm = {_dedup_norm(p.get("title","")) for p in pending}
+            if _dedup_norm(proposal["title"]) not in existing_norm:
                 pending.append(proposal)
                 _save(CIT_PENDING, pending)
         added += 1

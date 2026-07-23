@@ -632,15 +632,25 @@ def _queue_fix(proposal: dict, vote_result: dict):
         json.dump(existing, f, indent=2, default=str)
 
     # ── 2. chairman_action_required — picked up at every check-in ────────
+    # Dedup on a normalized key, not the raw title: chronic findings (CRO
+    # paralysis, stale-chairman-actions, etc.) render a growing cycle/day
+    # count into the title every run, so exact-title dedup never matches its
+    # own prior entry and the queue bloats with near-duplicates of the same
+    # unresolved issue. Prefer the upstream dedup_key (stable finding rule)
+    # when the proposal carries one; otherwise fall back to a digit-collapsed
+    # title so two renders of the same finding still compare equal.
     action_queue = _load_json(CHAIRMAN_ACTION_FILE) or []
     if not isinstance(action_queue, list):
         action_queue = []
-    existing_titles = {str(a.get("title", ""))[:80] for a in action_queue}
     title = str(proposal.get("title", ""))[:80]
-    if title not in existing_titles:
+    dedup_key = proposal.get("dedup_key") or _re.sub(r"\d+", "#", title)
+    existing_keys = {a.get("dedup_key") or _re.sub(r"\d+", "#", str(a.get("title", ""))[:80])
+                      for a in action_queue}
+    if dedup_key not in existing_keys:
         action_queue.append({
             "id":             proposal.get("id", ""),
             "title":          title,
+            "dedup_key":      dedup_key,
             "category":       proposal.get("category", ""),
             "description":    proposal.get("description", ""),
             "proposed_fix":   proposal.get("proposed_fix", ""),

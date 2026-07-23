@@ -32,6 +32,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timedelta
@@ -108,14 +109,24 @@ def _post_to_channel(message: str, priority: str = "NORMAL"):
 
 
 def _escalate_to_board(title: str, description: str, recommended_owner: str,
-                       severity: str = "MEDIUM", proposed_fix: str = "") -> bool:
-    """Submit a resolution proposal to the board queue."""
+                       severity: str = "MEDIUM", proposed_fix: str = "",
+                       dedup_key: str = None) -> bool:
+    """Submit a resolution proposal to the board queue.
+
+    Dedup defaults to the title, but the title often embeds a value that
+    changes every cycle (cycle count, day count, $ amount) — matching on
+    it verbatim lets the same unresolved issue re-queue every run instead
+    of being recognized as already pending. Callers that have a stable
+    finding `rule` should pass it as dedup_key so repeats of the same
+    issue collapse regardless of what number is in the title this time.
+    """
     try:
         pending = _load(CIT_PENDING, [])
         if not isinstance(pending, list):
             pending = []
-        existing = {p.get("title","") for p in pending}
-        if title in existing:
+        key = dedup_key or title
+        existing = {p.get("dedup_key") or p.get("title","") for p in pending}
+        if key in existing:
             return False
         pending.append({
             "id":           f"LTIA-{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -129,6 +140,7 @@ def _escalate_to_board(title: str, description: str, recommended_owner: str,
             "severity":     severity,
             "confidence":   85,
             "title":        title,
+            "dedup_key":    key,
             "description":  description,
             "proposed_fix": proposed_fix or description,
             "owner":        recommended_owner,
@@ -324,7 +336,8 @@ def _board_idle_capital(entry: dict) -> str:
         severity="MEDIUM",
         proposed_fix="Vote one of: (a) document an explicit reason the pod is held flat "
                      "and a re-deploy trigger; or (b) if it's a pipeline failure, assign CIT "
-                     "to fix the pod pipeline this week.")
+                     "to fix the pod pipeline this week.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -337,7 +350,8 @@ def _board_governance(entry: dict) -> str:
         recommended_owner="Chairman + Board",
         severity="HIGH",
         proposed_fix="Run `python3 board_meeting.py` with this item as the lead agenda line; "
-                     "record the vote in board_meeting_report.json so this finding can auto-close.")
+                     "record the vote in board_meeting_report.json so this finding can auto-close.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -351,7 +365,8 @@ def _board_cro_paralysis(entry: dict) -> str:
         severity="HIGH",
         proposed_fix="Board must define the exact metric+threshold that steps CRO down to "
                      "ELEVATED (e.g. 'VIX < 22 for 3 sessions AND IRM flags == 0'), or accept "
-                     "the posture with a named review date. 'Keep reviewing' is not an answer.")
+                     "the posture with a named review date. 'Keep reviewing' is not an answer.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -365,7 +380,8 @@ def _board_risk_contradiction(entry: dict) -> str:
         severity=entry.get("severity", "MEDIUM"),
         proposed_fix="IRM and CRO each confirm their inputs are fresh (check timestamps on "
                      "irm_daily_check.json and risk_bulletin.json). Whichever is running on "
-                     "stale data gets re-run; if both are fresh, board picks the governing signal.")
+                     "stale data gets re-run; if both are fresh, board picks the governing signal.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -388,7 +404,8 @@ def _board_agent_health(entry: dict) -> str:
     title = f"[LTIA] Agent-health fix: {entry.get('title','?')[:48]}"
     submitted = _escalate_to_board(title,
                                    f"Agent-health finding: '{entry.get('title','?')}'.",
-                                   recommended_owner=owner, severity="MEDIUM", proposed_fix=fix)
+                                   recommended_owner=owner, severity="MEDIUM", proposed_fix=fix,
+                                   dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -402,7 +419,8 @@ def _board_loss_action(entry: dict) -> str:
         severity="HIGH",
         proposed_fix="Board approves specific recovery trades (e.g. cover the QQQ short per the "
                      "Review Agent, deploy idle pod capital when CRO permits) and logs them under "
-                     "loss_attribution.fixes_applied_today so this finding closes.")
+                     "loss_attribution.fixes_applied_today so this finding closes.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -415,7 +433,8 @@ def _board_ml_suspend(entry: dict) -> str:
         recommended_owner="Board + ML pod",
         severity="HIGH",
         proposed_fix="Vote to suspend ML-sourced buy recommendations immediately and assign the "
-                     "ML pod to retrain before re-enabling. Document the suspension in the board log.")
+                     "ML pod to retrain before re-enabling. Document the suspension in the board log.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -429,7 +448,8 @@ def _board_wiring_fix(entry: dict) -> str:
         recommended_owner="CIT",
         severity="HIGH",
         proposed_fix="CIT: align the producer and consumer identifiers (rule/queue/category/file), "
-                     "then add a TestWiringContracts case. Reproduce with `python3 wiring_audit.py`.")
+                     "then add a TestWiringContracts case. Reproduce with `python3 wiring_audit.py`.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -443,7 +463,8 @@ def _board_backlog_bloat(entry: dict) -> str:
         severity="MEDIUM",
         proposed_fix="Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT "
                      "confidence/precision gate; if valuable, widen deputy-board auto-implement so "
-                     "they actually get done. Write site now caps cit_backlog.json at 500.")
+                     "they actually get done. Write site now caps cit_backlog.json at 500.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -455,7 +476,8 @@ def _board_email_overflow(entry: dict) -> str:
         recommended_owner="Operations Director",
         severity="MEDIUM",
         proposed_fix="In email_buffer.py, suppress LOW-priority senders from the digest and/or "
-                     "raise digest frequency. Target < 20 buffered emails between flushes.")
+                     "raise digest frequency. Target < 20 buffered emails between flushes.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -467,7 +489,8 @@ def _board_communication_silence(entry: dict) -> str:
         recommended_owner="Operations Director",
         severity="LOW",
         proposed_fix="Check crontab and the latest log for each silent agent; restart any that "
-                     "have stopped, or wire its output to the firm channel if it's running mute.")
+                     "have stopped, or wire its output to the firm channel if it's running mute.",
+        dedup_key=entry.get("rule",""))
     return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
@@ -599,6 +622,7 @@ def run_triage() -> dict:
                     f"Rule: {rule}. Times seen: {entry.get('times_seen',1)}.",
                     recommended_owner="CIT",
                     severity=severity,
+                    dedup_key=rule,
                 )
                 result = "generic_board_escalation" if submitted else "already_in_queue"
                 _log_action("generic_escalation", key, result)

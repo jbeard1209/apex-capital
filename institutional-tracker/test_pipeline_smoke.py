@@ -393,6 +393,99 @@ class TestDeputyBoardRouting(unittest.TestCase):
             self.assertIn(cat, self.auto_cats)
 
 
+class TestChairmanQueueDedup(unittest.TestCase):
+    """Chronic findings (CRO paralysis, stale-chairman-actions, ...) render a
+    growing cycle/day count into their title every run. Dedup that compares
+    exact title text never matches its own prior entry, so the same
+    unresolved issue re-queues indefinitely and chairman_action_required.json
+    bloats with near-duplicates. Both write sites must collapse embedded
+    digits (or use a stable dedup_key) before comparing."""
+
+    def test_deputy_board_queue_fix_collapses_digit_variants(self):
+        import deputy_board as db
+
+        orig_chairman, orig_cmr = db.CHAIRMAN_ACTION_FILE, db.CMR_PATH
+        with tempfile.TemporaryDirectory() as d:
+            chairman_path = os.path.join(d, "chairman_action_required.json")
+            cmr_path = os.path.join(d, "cos_meeting_requests.json")
+            db.CHAIRMAN_ACTION_FILE = chairman_path
+            db.CMR_PATH = cmr_path
+            try:
+                vote = {"classification": "deputy_approved"}
+                db._queue_fix({"id": "LT-1-cro_paralysis", "title": "CRO at HIGH for 32+ days",
+                                "category": "IMPROVEMENT", "severity": "HIGH"}, vote)
+                db._queue_fix({"id": "LT-2-cro_paralysis", "title": "CRO at HIGH for 52+ days",
+                                "category": "IMPROVEMENT", "severity": "HIGH"}, vote)
+                with open(chairman_path) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "same finding re-rendered with a different day count must not duplicate")
+            finally:
+                db.CHAIRMAN_ACTION_FILE, db.CMR_PATH = orig_chairman, orig_cmr
+
+    def test_pod_queue_dedup_collapses_digit_variants(self):
+        import cit_director as cd
+
+        with tempfile.TemporaryDirectory() as d:
+            target = Path(d) / "cit_pending_proposals.json"
+            orig_cit_pending = cd.CIT_PENDING
+            cd.CIT_PENDING = target
+            try:
+                # "pod": "main" forces routing to CIT_PENDING regardless of
+                # keyword matching, so the test can't leak into a live pod file.
+                cd.submit_to_pod_queue({"title": "CRO at HIGH for 32+ days", "category": "IMPROVEMENT",
+                                         "severity": "HIGH", "proposed_fix": "x", "pod": "main"})
+                cd.submit_to_pod_queue({"title": "CRO at HIGH for 52+ days", "category": "IMPROVEMENT",
+                                         "severity": "HIGH", "proposed_fix": "x", "pod": "main"})
+                with open(target) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "same finding re-rendered with a different day count must not duplicate")
+            finally:
+                cd.CIT_PENDING = orig_cit_pending
+
+    def test_ltia_escalate_to_board_dedups_by_rule(self):
+        import logic_team_implementation_agent as ltia
+
+        with tempfile.TemporaryDirectory() as d:
+            target = Path(d) / "cit_pending_proposals.json"
+            orig_cit_pending = ltia.CIT_PENDING
+            ltia.CIT_PENDING = target
+            try:
+                ltia._board_cro_paralysis({"rule": "cro_paralysis",
+                    "title": "CRO at HIGH for 32+ days"})
+                ltia._board_cro_paralysis({"rule": "cro_paralysis",
+                    "title": "CRO at HIGH for 52+ days"})
+                with open(target) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "same rule re-fired with a growing day count must not duplicate")
+            finally:
+                ltia.CIT_PENDING = orig_cit_pending
+
+    def test_logic_officer_write_board_proposals_dedups_by_rule(self):
+        import logic_officer as lo
+
+        with tempfile.TemporaryDirectory() as d:
+            target = Path(d) / "cit_pending_proposals.json"
+            orig_cit_pending = lo.CIT_PENDING_PATH
+            lo.CIT_PENDING_PATH = target
+            try:
+                finding = lambda cycles: {
+                    "rule": "extended_cro_high_no_review", "severity": "HIGH",
+                    "title": f"CRO has been at HIGH for {cycles} cycles — no board review",
+                    "observation": "x", "why_its_wrong": "x", "suggested_resolution": "x",
+                }
+                lo._write_board_proposals([finding(8)])
+                lo._write_board_proposals([finding(9)])
+                with open(target) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "same rule re-fired with a growing cycle count must not duplicate")
+            finally:
+                lo.CIT_PENDING_PATH = orig_cit_pending
+
+
 # =============================================================================
 # 7. System health check (module imports)
 # =============================================================================
@@ -637,6 +730,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestCITSpecificityGate))
     suite.addTests(loader.loadTestsFromTestCase(TestCITScannerPrecision))
     suite.addTests(loader.loadTestsFromTestCase(TestDeputyBoardRouting))
+    suite.addTests(loader.loadTestsFromTestCase(TestChairmanQueueDedup))
     suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
     suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
     suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))

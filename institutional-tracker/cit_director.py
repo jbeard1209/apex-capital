@@ -246,9 +246,11 @@ def submit_to_pod_queue(proposal: dict) -> str:
         if not isinstance(existing, list):
             existing = []
 
-        # Dedup by title
-        existing_titles = {p.get("title","") for p in existing}
-        if proposal.get("title","") not in existing_titles:
+        # Dedup by title, normalized to collapse embedded counters (e.g. "N cycles /
+        # M+ days") — otherwise a chronic finding whose rendered title grows every
+        # cycle never matches its own prior entry and the queue bloats with near-dupes.
+        existing_titles = {re.sub(r"\d+", "#", p.get("title","")) for p in existing}
+        if re.sub(r"\d+", "#", proposal.get("title","")) not in existing_titles:
             proposal["routed_to_pod"] = pod
             proposal["routed_at"]     = datetime.now().isoformat()
             existing.append(proposal)

@@ -437,13 +437,18 @@ def _write_board_proposals(findings: list) -> int:
     if not isinstance(pending, list):
         pending = []
 
-    existing_titles = {p.get("title","") for p in pending}
+    # Dedup on rule, not title: every title here embeds a value that changes
+    # run to run (cycle count, day count, $ amount, agent count), so matching
+    # the literal title let the same unresolved issue re-queue every cycle
+    # instead of being recognized as already pending.
+    existing_keys = {p.get("dedup_key") or p.get("title","") for p in pending}
     added = 0
     now   = datetime.now().isoformat()
 
     for finding in serious:
         title = finding.get("title","")
-        if title in existing_titles:
+        key = finding.get("rule") or title
+        if key in existing_keys:
             continue
 
         proposal = {
@@ -453,6 +458,7 @@ def _write_board_proposals(findings: list) -> int:
             "severity":      finding["severity"],
             "confidence":    90,
             "title":         title,
+            "dedup_key":     key,
             "description":   finding["observation"],
             "evidence":      (
                 f"Logic Officer coherence check. Rule: {finding['rule']}. "
@@ -464,7 +470,7 @@ def _write_board_proposals(findings: list) -> int:
             "status":        "pending",
         }
         pending.append(proposal)
-        existing_titles.add(title)
+        existing_keys.add(key)
         added += 1
 
     if added:
