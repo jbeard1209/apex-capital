@@ -208,9 +208,17 @@ def flush_digest(force: bool = False) -> bool:
         msg["To"]      = EMAIL_RECIPIENT
         msg.attach(MIMEText(html, "html"))
 
+        try:
+            import mail_guard; mail_guard.allow_direct(True)  # THE one daily email
+        except Exception:
+            pass
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
             server.login(EMAIL_SENDER, GMAIL_PASSWORD)
             server.send_message(msg)
+        try:
+            import mail_guard; mail_guard.allow_direct(False)
+        except Exception:
+            pass
 
         logger.info(f"  [EmailBuffer] ✅ Daily digest sent ({count} reports)")
 

@@ -137,3 +137,14 @@ BACKTEST_END_DATE   = "2024-12-31"
 PAPER_TRADING_DAYS = 30
 DAILY_REPORT_HOUR  = 16   # 4:00 PM ET — after market close
 DAILY_REPORT_MIN   = 15   # 4:15 PM ET
+
+# --- ONE-DIGEST MAIL POLICY (2026-07-21) ---
+# Install the SMTP guard so EVERY script that sends mail (even ones with their
+# own smtplib connection, even VM-only ones) routes non-urgent mail into the
+# single daily digest. This is the real chokepoint; see mail_guard.py header.
+try:
+    import mail_guard as _mail_guard
+    _mail_guard.install()
+except Exception as _mge:
+    import logging as _lg
+    _lg.getLogger("config").warning(f"mail_guard not installed: {_mge}")
