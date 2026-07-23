@@ -85,6 +85,38 @@ def run_reconciliation() -> dict:
 
     logger.info(f"  Portfolio: ${portfolio_value:,.2f} | Cash: ${cash:,.2f} ({cash_pct*100:.1f}%) | Positions: {n_positions}")
 
+    # ── AUTHORITATIVE FIRM VALUE (2026-07-23) ──────────────────────────────
+    # The Alpaca account is ground truth. The pod ledger is a virtual overlay
+    # that drifted to $104,284 while the real account was $97,524 — reports were
+    # overstating value by ~$6,700. Write the true equity to data/firm_value.json
+    # so every report/briefing reads ONE honest number, and flag when the pod
+    # ledger diverges >2% (that drift is itself a bug worth surfacing).
+    try:
+        pod_data = _load_json("data/pod_allocations.json") or {}
+        pod_sum = round(sum((p.get("total_value") or 0)
+                            for p in pod_data.get("pods", {}).values()), 2)
+        drift = portfolio_value - pod_sum
+        drift_pct = (drift / portfolio_value * 100.0) if portfolio_value else 0.0
+        with open("data/firm_value.json", "w") as fh:
+            json.dump({
+                "equity": round(portfolio_value, 2),
+                "cash": round(cash, 2),
+                "as_of": now.isoformat(),
+                "source": "alpaca_paper_account (ground truth)",
+                "pod_ledger_sum": pod_sum,
+                "pod_ledger_drift": round(drift, 2),
+                "pod_ledger_drift_pct": round(drift_pct, 2),
+            }, fh, indent=2)
+        logger.info(f"  Authoritative firm value written: ${portfolio_value:,.2f} "
+                    f"(pod ledger ${pod_sum:,.2f}, drift {drift_pct:+.1f}%)")
+        if abs(drift_pct) > 2.0:
+            _flag(flags, "HIGH", "LEDGER_DRIFT",
+                  f"Pod ledger (${pod_sum:,.0f}) diverges {drift_pct:+.1f}% from the real "
+                  f"account (${portfolio_value:,.0f}). Reports built on the pod ledger are "
+                  f"MISSTATING firm value by ${drift:,.0f}. Reconcile pod cash/positions to Alpaca.")
+    except Exception as _fve:
+        logger.warning(f"  Could not write authoritative firm value: {_fve}")
+
     # ── CHECK 1: Cash floor ────────────────────────────────────────────────
     logger.info("\n  [1/7] Cash floor...")
     if cash_pct < _MIN_CASH_FLOOR_PCT:
