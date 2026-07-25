@@ -485,6 +485,64 @@ class TestChairmanQueueDedup(unittest.TestCase):
             finally:
                 lo.CIT_PENDING_PATH = orig_cit_pending
 
+    def test_board_meeting_route_approved_dedups_by_key(self):
+        import board_meeting as bm
+
+        orig_cwd = os.getcwd()
+        with tempfile.TemporaryDirectory() as d:
+            os.makedirs(os.path.join(d, "data"), exist_ok=True)
+            os.chdir(d)
+            try:
+                bm._route_approved_cit_proposals([{
+                    "id": "LT-1-cro_paralysis", "title": "CRO at HIGH for 32+ days",
+                    "dedup_key": "cro_paralysis", "category": "IMPROVEMENT",
+                    "description": "x", "confidence": 88,
+                }])
+                bm._route_approved_cit_proposals([{
+                    "id": "LT-2-cro_paralysis", "title": "CRO at HIGH for 52+ days",
+                    "dedup_key": "cro_paralysis", "category": "IMPROVEMENT",
+                    "description": "x", "confidence": 88,
+                }])
+                with open(os.path.join(d, "data", "chairman_action_required.json")) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "same rule re-approved with a growing day count must not duplicate")
+            finally:
+                os.chdir(orig_cwd)
+
+    def test_pipeline_integrity_chairman_queue_dedups_and_preserves_others(self):
+        import cit_pipeline_integrity_agent as pia
+
+        orig_path, orig_max = pia._CHAIRMAN_PATH, pia._CHAIRMAN_MAX_ENTRIES
+        with tempfile.TemporaryDirectory() as d:
+            target = os.path.join(d, "chairman_action_required.json")
+            pia._CHAIRMAN_PATH = target
+            pia._CHAIRMAN_MAX_ENTRIES = 2
+            try:
+                # A pre-existing item from a different producer must survive
+                # even once this agent's own entries exceed its cap.
+                with open(target, "w") as f:
+                    json.dump([{"id": "LT-1-cro_paralysis", "source": "logic_officer",
+                                "status": "awaiting_chairman"}], f)
+
+                issue = lambda check: {"check": check, "severity": "HIGH", "message": "x"}
+                pia._update_chairman_queue([issue("email_loop_detection")], "2026-07-24T16:00:00")
+                pia._update_chairman_queue([issue("email_loop_detection")], "2026-07-24T18:00:00")
+                pia._update_chairman_queue([issue("disk_pressure")], "2026-07-24T20:00:00")
+
+                with open(target) as f:
+                    queue = json.load(f)
+
+                sources = [e.get("source") for e in queue]
+                self.assertIn("logic_officer", sources,
+                    "another producer's entry must not be evicted by this agent's own cap")
+                own = [e for e in queue if e.get("source") == "cit_pipeline_integrity_agent"]
+                self.assertEqual(
+                    sorted(e["dedup_key"] for e in own), ["disk_pressure", "email_loop_detection"],
+                    "same check re-firing every 2h cycle must not duplicate")
+            finally:
+                pia._CHAIRMAN_PATH, pia._CHAIRMAN_MAX_ENTRIES = orig_path, orig_max
+
 
 # =============================================================================
 # 7. System health check (module imports)

@@ -423,31 +423,57 @@ def _write_output(issues: list):
 
 
 def _update_chairman_queue(issues: list, now_iso: str):
-    """Append CRITICAL/HIGH issues to chairman_action_required.json (keep last 20)."""
+    """Append CRITICAL/HIGH issues to chairman_action_required.json.
+
+    Dedup by check name, not by the id (which embeds the run hour): this
+    agent runs every 2h, so a chronic issue (e.g. email_loop_detection
+    stuck HIGH for days) was re-queuing itself every single run instead of
+    being recognized as already pending — the same silent-dedup bug class
+    fixed 2026-07-23/24 in board_meeting.py / deputy_board.py / logic_officer.py
+    / logic_team_implementation_agent.py, just on this 7th write site.
+
+    Also: the old `combined[-20:]` truncation trimmed the WHOLE shared
+    queue, so a burst of this agent's own findings could silently evict
+    another producer's still-unresolved item. Cap only this agent's own
+    entries; never touch entries from other sources.
+    """
     existing: list = []
     raw = _load_json(_CHAIRMAN_PATH)
     if isinstance(raw, list):
         existing = raw
+
+    own_source = "cit_pipeline_integrity_agent"
+    existing_keys = {
+        e.get("dedup_key") for e in existing
+        if e.get("source") == own_source and e.get("status") == "awaiting_chairman"
+    }
 
     run_id = _run_id()
     new_entries = []
     for iss in issues:
         if iss["severity"] not in ("CRITICAL", "HIGH"):
             continue
+        key = iss["check"]
+        if key in existing_keys:
+            continue
         entry = {
             "id":          f"{run_id}-{iss['check'][:20]}",
+            "dedup_key":   key,
             "severity":    iss["severity"],
             "description": iss["message"],
-            "source":      "cit_pipeline_integrity_agent",
+            "source":      own_source,
             "ts":          now_iso,
             "status":      "awaiting_chairman",
         }
         new_entries.append(entry)
+        existing_keys.add(key)
         logger.info(f"  Queued to chairman: [{iss['severity']}] {iss['check']}")
 
     combined = existing + new_entries
-    # Keep last 20
-    combined = combined[-_CHAIRMAN_MAX_ENTRIES:]
+    own_indices = [i for i, e in enumerate(combined) if e.get("source") == own_source]
+    if len(own_indices) > _CHAIRMAN_MAX_ENTRIES:
+        drop = set(own_indices[: len(own_indices) - _CHAIRMAN_MAX_ENTRIES])
+        combined = [e for i, e in enumerate(combined) if i not in drop]
 
     with open(_CHAIRMAN_PATH, "w") as f:
         json.dump(combined, f, indent=2, default=str)

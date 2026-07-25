@@ -1311,10 +1311,20 @@ def _route_approved_cit_proposals(approved: list) -> None:
     except Exception:
         pass
 
-    # Count how many times each title has been approved historically
+    # Count how many times each finding has been approved historically.
+    # Chronic findings (CRO paralysis, stale-output alerts, ...) render a growing
+    # cycle/day/$ count into the title every run, so comparing raw title text
+    # never matches its own prior entry — persistence never gets detected and
+    # chairman_action_required.json bloats with near-duplicates every cycle.
+    # Prefer the proposal's stable dedup_key (set upstream by logic_officer.py /
+    # logic_team_implementation_agent.py / logic_team.py); fall back to a
+    # digit-collapsed title for proposals that predate that field.
+    def _norm_key(p: dict) -> str:
+        return p.get("dedup_key") or re.sub(r"\d+", "#", str(p.get("title", ""))[:80])
+
     title_counts: dict = {}
     for p in existing_approved:
-        t = str(p.get("title", ""))[:60]
+        t = _norm_key(p)
         title_counts[t] = title_counts.get(t, 0) + 1
 
     newly_actioned  = []
@@ -1327,7 +1337,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
         cat     = prop.get("category", "")
         desc    = prop.get("description", "")
         conf    = prop.get("confidence", 0)
-        short   = title[:60]
+        short   = _norm_key(prop)
         count   = title_counts.get(short, 0)
 
         # ── Detect persistent issues ──────────────────────────────────────
@@ -1361,6 +1371,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
             needs_chairman.append({
                 "id":           prop.get("id", ""),
                 "title":        title,
+                "dedup_key":    short,
                 "category":     cat,
                 "root_cause":   "Mac off → pipeline skipped → data files not refreshed",
                 "resolution":   "AUTOMATIC once Oracle 24/7 server is live. "
@@ -1374,6 +1385,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
             needs_chairman.append({
                 "id":           prop.get("id", ""),
                 "title":        title,
+                "dedup_key":    short,
                 "category":     cat,
                 "root_cause":   "yfinance download failures logged as ERROR (fixed: "
                                 "logging suppressed in research_team.py + rd_team_leader.py)",
@@ -1388,6 +1400,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
             needs_chairman.append({
                 "id":           prop.get("id", ""),
                 "title":        title,
+                "dedup_key":    short,
                 "category":     cat,
                 "description":  desc,
                 "confidence":   conf,
@@ -1398,11 +1411,14 @@ def _route_approved_cit_proposals(approved: list) -> None:
         newly_actioned.append(title)
 
     # ── Save updated action queue ─────────────────────────────────────────
-    # Deduplicate — don't pile up identical entries
-    existing_titles = {str(a.get("title",""))[:80] for a in action_queue}
+    # Deduplicate on the normalized key, not raw title (see _norm_key above) —
+    # matches the dedup contract used by deputy_board.py._queue_fix so both
+    # writers of this file agree on what counts as "the same finding".
+    existing_keys = {_norm_key(a) for a in action_queue}
     for item in needs_chairman:
-        if item["title"] not in existing_titles or item.get("status") == "fixed":
+        if item["dedup_key"] not in existing_keys or item.get("status") == "fixed":
             action_queue.append(item)
+            existing_keys.add(item["dedup_key"])
 
     os.makedirs("data", exist_ok=True)
     with open(ACTION_FILE, "w") as _f:
