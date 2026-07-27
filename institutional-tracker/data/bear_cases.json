@@ -1,45 +1,5 @@
 [
   {
-    "ts": "2026-07-02T09:40:11.145643",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-02T09:40:11.181935",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T13:54:35.865265",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T13:54:35.868830",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
     "ts": "2026-07-03T13:54:37.187822",
     "ticker": "NVDA",
     "conviction": 4,
@@ -2219,6 +2179,46 @@
   },
   {
     "ts": "2026-07-27T14:30:06.972632",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-07-27T14:30:23.839433",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-07-27T14:30:23.842686",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-07-27T15:29:03.106074",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-07-27T15:29:03.109211",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",

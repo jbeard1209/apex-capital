@@ -1024,22 +1024,22 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         except Exception:
             pass
 
+        # Both HistoricalContextAnalyst and GeopoliticalResearchTeam take
+        # assignments (list of {"sector_name": ...} dicts), NOT sector strings.
+        _ctx_assignments = [{"sector_name": s, "sector": s} for s in _ctx_sectors]
         try:
             from rd_historical_analyst import HistoricalContextAnalyst
-            _hca_result = HistoricalContextAnalyst().analyze(
-                assigned_sectors=_ctx_sectors, regime=_ctx_regime
-            )
+            _hca_result = HistoricalContextAnalyst().analyze(_ctx_assignments, quiet=True)
             state["last_context_run"] = today_str
+            _analogues = _hca_result.get("historical_analogues", {})
             logger.info(
-                f"  Historical Context: {len(_hca_result.get('bull_analogues', []))} bull "
-                f"+ {len(_hca_result.get('bear_analogues', []))} bear analogues "
+                f"  Historical Context: "
+                f"{len(_analogues.get('most_relevant_bull_analogues', []))} bull "
+                f"+ {len(_analogues.get('most_relevant_bear_analogues', []))} bear analogues "
                 f"(sectors: {len(_ctx_sectors)}, regime: {_ctx_regime.get('regime','?')}) ✓"
             )
         except Exception as e:
             logger.warning(f"  Historical Context Analyst error: {e}")
-
-        # GeopoliticalResearchTeam.analyze() takes assignments (list of dicts) not sector strings
-        _ctx_assignments = [{"sector_name": s, "sector": s} for s in _ctx_sectors]
         try:
             from rd_geopolitical_team import GeopoliticalResearchTeam
             _geo_result = GeopoliticalResearchTeam().analyze(
