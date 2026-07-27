@@ -684,6 +684,39 @@ class TestWiringContracts(unittest.TestCase):
             self.assertIn(cat, known,
                           f"Strategy Council category '{cat}' is in no board scope set")
 
+    def test_metric_sanity_sentinel_categories_board_recognized(self):
+        """metric_sanity_sentinel files bug proposals into cit_pending_proposals.json;
+        their categories must be in a board scope or the board silently never acts
+        on an impossible-metric finding (the exact wiring-bug class it exists to catch)."""
+        import re
+        import deputy_board as db
+        src = open(Path(__file__).parent / "metric_sanity_sentinel.py").read()
+        m = re.search(r'def _file_bug_proposals\(.*?\n(?=def )', src, re.DOTALL)
+        body = m.group(0) if m else src
+        # Categories may be literal or a ternary of two literals — capture all.
+        cats = set(re.findall(r'"([A-Z_]+)"\s+if |"category":\s*"([A-Z_]+)"|else\s+"([A-Z_]+)"', body))
+        cats = {c for tup in cats for c in tup if c}
+        known = (db.DEPUTY_CATEGORIES | db.FULL_BOARD_ONLY_CATEGORIES
+                 | db.AUTO_IMPLEMENT_CATEGORIES)
+        unknown = cats - known
+        self.assertEqual(unknown, set(),
+                         f"metric_sanity_sentinel files categories no board scope recognizes: {unknown}")
+
+    def test_chairman_decision_sla_escalation_category_board_recognized(self):
+        """chairman_decision_sla escalates undecided items to a board vote after 50d;
+        the escalation category must reach the board or the SLA is toothless."""
+        import re
+        import deputy_board as db
+        src = open(Path(__file__).parent / "chairman_decision_sla.py").read()
+        m = re.search(r'def _escalate_to_board\(.*?\n(?=def )', src, re.DOTALL)
+        body = m.group(0) if m else src
+        cats = set(re.findall(r'"category":\s*"([A-Z_]+)"', body))
+        known = (db.DEPUTY_CATEGORIES | db.FULL_BOARD_ONLY_CATEGORIES
+                 | db.AUTO_IMPLEMENT_CATEGORIES)
+        unknown = cats - known
+        self.assertEqual(unknown, set(),
+                         f"chairman_decision_sla escalates with unrecognized categories: {unknown}")
+
     def test_apply_code_changes_is_idempotent_on_cos_agent(self):
         """board_meeting._apply_code_changes() patches chief_of_staff_agent.py via
         string replacement; running it must never duplicate the patched block.

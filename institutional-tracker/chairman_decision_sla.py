@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""
+Chairman Decision SLA  (Department: Governance / Logic Team)
+============================================================
+WHY THIS EXISTS
+---------------
+The 272-day buy-freeze (2026-07-27 post-mortem) survived so long partly because
+the one thing that could have stopped it — a human decision — never got asked
+for cleanly. The bug disguised itself as a routine "board must vote" item and
+sat in a 153-entry chairman_action_required.json queue that nobody triages, and
+whatever notice existed went out by *email*, where it drowned. Two failure modes:
+  (1) decisions the Chairman should make were never surfaced to him CLEARLY, and
+  (2) nothing forced a resolution when he didn't respond.
+
+This agent is the governance backstop the Chairman asked for (2026-07-27):
+  • Surface decision-needed items to Jack FIRST in the Claude APP, never email.
+    It maintains data/chairman_decision_queue.json — a clean, deduped inbox that
+    a Claude app session reads and presents. Email is deliberately NOT used here.
+  • Enforce a 50-DAY SLA. Any item still undecided 50 days after it was first
+    surfaced is auto-escalated to a BOARD VOTE (a STRATEGY proposal appended to
+    data/cit_pending_proposals.json, consumed by deputy_board.py / board_meeting.py),
+    and its status flips to "escalated_to_board". The firm never stalls on a
+    silent non-decision again.
+
+SOURCES it pulls decisions from:
+  • data/chairman_action_required.json  — items with status "awaiting_chairman"
+  • (extensible) any producer that writes an awaiting_chairman item
+
+DECISION LIFECYCLE (status on each queue entry):
+  awaiting_chairman  → surfaced, clock running (deadline = first_surfaced + 50d)
+  decided            → Chairman resolved it (set by the app session; we archive it)
+  escalated_to_board → 50d elapsed with no decision; board proposal filed
+
+This agent NEVER makes the decision itself and NEVER sends email. It only
+surfaces, tracks the clock, and — as a last resort — hands the call to the board.
+"""
+from __future__ import annotations
+import json, argparse, datetime
+from pathlib import Path
+
+DATA = Path(__file__).resolve().parent / "data"
+CHAIR_ACTION  = DATA / "chairman_action_required.json"   # upstream producers
+QUEUE_PATH    = DATA / "chairman_decision_queue.json"     # the app-facing inbox (this agent owns it)
+CIT_PENDING   = DATA / "cit_pending_proposals.json"       # board escalation target
+
+SLA_DAYS = 50
+
+
+def _load(path: Path, default):
+    try:
+        if path.exists():
+            return json.loads(path.read_text())
+    except Exception:
+        pass
+    return default
+
+
+def _save(path: Path, obj):
+    path.write_text(json.dumps(obj, indent=2))
+
+
+def _now():
+    return datetime.datetime.utcnow()
+
+
+def _parse_ts(s):
+    if not s:
+        return None
+    try:
+        return datetime.datetime.fromisoformat(str(s).replace("Z", "").split("+")[0])
+    except Exception:
+        return None
+
+
+def _iso(dt):
+    return dt.isoformat()
+
+
+def _ingest(queue_by_id):
+    """Pull awaiting_chairman items from chairman_action_required.json into the
+    app-facing queue, stamping first_surfaced + a 50-day deadline exactly once."""
+    actions = _load(CHAIR_ACTION, [])
+    if not isinstance(actions, list):
+        return 0
+    now = _now()
+    added = 0
+    for a in actions:
+        if not isinstance(a, dict):
+            continue
+        if a.get("status") != "awaiting_chairman":
+            continue
+        aid = a.get("id")
+        if not aid or aid in queue_by_id:
+            continue
+        # The 50-day SLA clock starts when the item ENTERS this managed queue
+        # (now), NOT from the upstream item's historical timestamp. Anchoring to
+        # old first_seen values would retroactively blow the deadline on the
+        # whole existing backlog and flood the board with escalations on the
+        # first run. We keep the original timestamp for reference only.
+        queue_by_id[aid] = {
+            "id": aid,
+            "severity": a.get("severity", "MEDIUM"),
+            "description": a.get("description", ""),
+            "source": a.get("source", "unknown"),
+            "status": "awaiting_chairman",
+            "first_surfaced": _iso(now),
+            "deadline": _iso(now + datetime.timedelta(days=SLA_DAYS)),
+            "upstream_first_seen": a.get("first_seen_of_group") or a.get("ts"),
+            "surfaced_channel": "claude_app",   # explicitly NOT email
+        }
+        added += 1
+    return added
+
+
+def _escalate_to_board(item):
+    """Append a STRATEGY board-vote proposal for an item that blew its 50-day SLA."""
+    pending = _load(CIT_PENDING, [])
+    if not isinstance(pending, list):
+        pending = []
+    pid = f"sla-escalation-{item['id']}"
+    if any(isinstance(p, dict) and p.get("id") == pid for p in pending):
+        return False
+    pending.append({
+        "id": pid,
+        "source": "Chairman Decision SLA (Governance)",
+        "category": "STRATEGY",   # always routes to the Full Board (deputy_board.py)
+        "severity": item.get("severity", "MEDIUM"),
+        "confidence": 100,
+        "title": f"[SLA] Board must decide (Chairman did not respond in {SLA_DAYS}d): {item['id']}",
+        "description": (f"This decision was surfaced to the Chairman on "
+                        f"{item.get('first_surfaced')} and remained undecided for "
+                        f"{SLA_DAYS} days. Per standing governance policy, the board now "
+                        f"decides on his behalf so the firm does not stall.\n\n"
+                        f"ORIGINAL ITEM ({item.get('severity')}, from {item.get('source')}):\n"
+                        f"{item.get('description')}"),
+        "evidence": f"chairman_decision_queue: first_surfaced={item.get('first_surfaced')}, "
+                    f"deadline={item.get('deadline')} elapsed with status=awaiting_chairman.",
+        "proposed_fix": "Board votes to resolve the original decision (approve / reject / "
+                        "defer-with-explicit-owner). Record the outcome and close the queue item.",
+        "auto_implementable": False,
+        "ts": _iso(_now()),
+    })
+    _save(CIT_PENDING, pending)
+    return True
+
+
+def run(write: bool = True) -> dict:
+    queue = _load(QUEUE_PATH, [])
+    if not isinstance(queue, list):
+        queue = []
+    queue_by_id = {q["id"]: q for q in queue if isinstance(q, dict) and q.get("id")}
+
+    ingested = _ingest(queue_by_id) if write else 0
+
+    now = _now()
+    escalated = []
+    for item in queue_by_id.values():
+        if item.get("status") != "awaiting_chairman":
+            continue
+        deadline = _parse_ts(item.get("deadline"))
+        if deadline and now >= deadline:
+            if write and _escalate_to_board(item):
+                item["status"] = "escalated_to_board"
+                item["escalated_at"] = _iso(now)
+                escalated.append(item["id"])
+
+    pending_items = [q for q in queue_by_id.values() if q.get("status") == "awaiting_chairman"]
+    # Sort the app inbox: soonest deadline first, then severity.
+    sev_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+    pending_items.sort(key=lambda q: (_parse_ts(q.get("deadline")) or now,
+                                      sev_rank.get(q.get("severity", "MEDIUM"), 2)))
+
+    if write:
+        _save(QUEUE_PATH, list(queue_by_id.values()))
+
+    return {
+        "generated_at": _iso(now),
+        "ingested": ingested,
+        "pending_for_chairman": pending_items,
+        "escalated_to_board": escalated,
+        "sla_days": SLA_DAYS,
+    }
+
+
+def _days_left(item, now):
+    d = _parse_ts(item.get("deadline"))
+    return (d - now).days if d else None
+
+
+def main():
+    ap = argparse.ArgumentParser(description="Surface Chairman decisions to the Claude app and enforce a 50-day board-escalation SLA.")
+    ap.add_argument("--report", action="store_true", help="print the current queue without ingesting/escalating")
+    args = ap.parse_args()
+
+    rep = run(write=not args.report)
+    now = _now()
+
+    print("=" * 66)
+    print("  CHAIRMAN DECISION QUEUE  (surfaced in the Claude app — never email)")
+    print("=" * 66)
+    pend = rep["pending_for_chairman"]
+    if not pend:
+        print("  ✅ No decisions currently awaiting the Chairman.")
+    else:
+        print(f"  {len(pend)} item(s) need your decision, Jack "
+              f"(auto-escalate to board at {SLA_DAYS} days):\n")
+        for q in pend:
+            dl = _days_left(q, now)
+            dl_str = f"{dl}d left" if dl is not None and dl >= 0 else (
+                     "OVERDUE" if dl is not None else "no deadline")
+            print(f"   • [{q.get('severity')}] {q.get('id')}  ({dl_str})")
+            desc = (q.get("description") or "").strip().replace("\n", " ")
+            print(f"       {desc[:160]}{'…' if len(desc) > 160 else ''}")
+            print(f"       source: {q.get('source')}")
+    if rep["escalated_to_board"]:
+        print(f"\n  ⚖️  Auto-escalated to BOARD VOTE (SLA blown): "
+              f"{', '.join(rep['escalated_to_board'])}")
+    if not args.report:
+        print(f"\n  (ingested {rep['ingested']} new item(s) this run)")
+    print()
+
+
+if __name__ == "__main__":
+    main()
