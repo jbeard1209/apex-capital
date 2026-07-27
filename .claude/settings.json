@@ -12,5 +12,17 @@
       "mcp__scheduled-tasks__update_scheduled_task(*)"
     ],
     "deny": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd '/Users/jackbeard/Claude investment strategy/institutional-tracker' && python3 chairman_inbox.py --quiet-if-empty"
+          }
+        ]
+      }
+    ]
   }
 }
