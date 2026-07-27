@@ -760,6 +760,30 @@ class TestWiringContracts(unittest.TestCase):
         self.assertEqual(cats - known, set(),
                          f"fundamentals_sanity files unrecognized categories: {cats - known}")
 
+    def test_rsi_last_is_always_finite(self):
+        """REGRESSION (the NaN-in-JSON bug): RSI on a pure-uptrend window (zero
+        losses) used to divide by NaN and serialize the invalid token `NaN`. The
+        shared helper must return a finite value (100 for all-gains) in every case."""
+        import math, pandas as pd
+        from technical_indicators import rsi_last
+        up = pd.Series([float(i) for i in range(1, 40)])          # only gains
+        down = pd.Series([float(i) for i in range(40, 1, -1)])    # only losses
+        flat = pd.Series([5.0] * 40)                               # no change
+        for s in (up, down, flat, pd.Series([1.0, 2.0])):
+            self.assertTrue(math.isfinite(rsi_last(s)), "rsi_last returned non-finite")
+        self.assertEqual(rsi_last(up), 100.0)
+        self.assertEqual(rsi_last(down), 0.0)
+
+    def test_data_integrity_sentinel_heals_nonfinite_json(self):
+        """The sentinel's regex heal must turn invalid NaN/Infinity tokens into
+        valid JSON (null) without touching legitimate string content."""
+        import data_integrity_sentinel as dis
+        raw = '{"a": NaN, "b": [1, Infinity, -Infinity], "c": "NaN is fine in text"}'
+        fixed = dis._NONFINITE.sub("null", raw)
+        obj = json.loads(fixed)  # must now parse
+        self.assertIsNone(obj["a"])
+        self.assertEqual(obj["c"], "NaN is fine in text")
+
     def test_data_integrity_sentinel_composes(self):
         """The umbrella must run all invariant checks and return a valid verdict,
         or the firm's self-inspection silently no-ops."""

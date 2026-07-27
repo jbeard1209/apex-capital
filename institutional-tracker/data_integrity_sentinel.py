@@ -29,7 +29,7 @@ Freshness/json findings are filed here as a single consolidated Chairman item wh
 they are genuinely blocking, never one-per-file (queue-noise is its own anti-pattern).
 """
 from __future__ import annotations
-import json, math, argparse, datetime
+import json, math, re, argparse, datetime
 from pathlib import Path
 
 DATA = Path(__file__).resolve().parent / "data"
@@ -142,6 +142,31 @@ CHECKS = [check_fundamentals, check_risk_and_model, check_freshness, check_json_
 
 _RANK = {"GREEN": 0, "YELLOW": 1, "RED": 2}
 
+# Match the invalid JSON tokens as standalone values (after ':' or in an array),
+# never inside a string. json.dump writes them bare, so they always sit between
+# structural chars.
+_NONFINITE = re.compile(r'(?<=[:\[,\s])(-?Infinity|NaN)(?=[\s,\]\}])')
+
+
+def heal_json_health() -> list[str]:
+    """Rewrite any data/*.json containing NaN/Infinity, replacing those invalid
+    tokens with null (valid JSON; downstream .get()/None-handling already tolerates
+    it). This is a safe, universal net that cleans corruption regardless of which
+    producer emitted the non-finite value. Only top-level data/ files, not backups."""
+    healed = []
+    for p in sorted(DATA.glob("*.json")):
+        raw = p.read_text()
+        if not any(tok in raw for tok in ("NaN", "Infinity")):
+            continue
+        fixed = _NONFINITE.sub("null", raw)
+        try:
+            json.loads(fixed)  # only write if the result is now valid JSON
+        except Exception:
+            continue           # couldn't safely heal — leave it for the RED flag
+        p.write_text(fixed)
+        healed.append(p.name)
+    return healed
+
 
 def _file_chairman(sections: dict):
     """File ONE consolidated Chairman item if any section is RED. Deduped by day."""
@@ -170,6 +195,7 @@ def _file_chairman(sections: dict):
 
 
 def run(write: bool = True) -> dict:
+    healed = heal_json_health() if write else []
     sections = {}
     overall = "GREEN"
     for chk in CHECKS:
@@ -180,6 +206,7 @@ def run(write: bool = True) -> dict:
     report = {
         "generated_at": datetime.datetime.utcnow().isoformat(),
         "overall": overall,
+        "healed_files": healed,
         "sections": sections,
     }
     if write:
@@ -199,6 +226,9 @@ def main():
         print(f"  {mark} {name:16} {s['status']:6} ({len(s['findings'])} finding(s))")
         for f in s["findings"][:5]:
             print(f"        - {f.get('note') or f}")
+    if rep.get("healed_files"):
+        print(f"  → healed {len(rep['healed_files'])} corrupt file(s): "
+              f"{', '.join(rep['healed_files'])}")
     if not args.report and rep.get("chairman_filed"):
         print("  → filed a consolidated Chairman decision item.")
 

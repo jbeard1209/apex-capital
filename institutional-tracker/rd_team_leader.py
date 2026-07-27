@@ -197,12 +197,9 @@ def _score_etf(etf: str) -> Optional[dict]:
         ma50   = float(close.iloc[-50:].mean())  if len(close) >= 50  else float(close.mean())
         ma200  = float(close.iloc[-200:].mean()) if len(close) >= 200 else ma50
 
-        # RSI-14
-        delta = close.diff()
-        gain  = delta.clip(lower=0).rolling(14).mean()
-        loss  = (-delta.clip(upper=0)).rolling(14).mean()
-        rs    = gain / loss.replace(0, float("nan"))
-        rsi   = float((100 - 100 / (1 + rs)).iloc[-1]) if len(rs.dropna()) > 0 else 50.0
+        # RSI-14 (shared, NaN-safe)
+        from technical_indicators import rsi_last
+        rsi = rsi_last(close)
 
         # Returns
         ret1m  = float((close.iloc[-1] / close.iloc[-21] - 1) * 100) if len(close) >= 21 else 0.0

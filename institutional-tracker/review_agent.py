@@ -179,12 +179,9 @@ def _momentum_score(df: pd.DataFrame) -> dict:
     pct_50  = (price - ma50)  / ma50  * 100
     pct_200 = (price - ma200) / ma200 * 100
 
-    # Approximate RSI-14
-    delta = close.diff()
-    gain  = delta.clip(lower=0).rolling(14).mean()
-    loss  = (-delta.clip(upper=0)).rolling(14).mean()
-    rs    = gain / loss.replace(0, float("nan"))
-    rsi   = float((100 - 100 / (1 + rs)).iloc[-1]) if not rs.empty else 50.0
+    # Approximate RSI-14 (shared, NaN-safe)
+    from technical_indicators import rsi_last
+    rsi = rsi_last(close)
 
     if price > ma50 and price > ma200:
         trend = "bullish"

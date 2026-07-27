@@ -287,12 +287,24 @@ class HistoricalContextAnalyst:
                 spy_ma200 = float(spy_df["Close"].iloc[-200:].mean())
                 pct_vs_200 = (spy_price - spy_ma200) / spy_ma200 * 100
 
-                # RSI for momentum phase
+                # RSI for momentum phase.
+                # BUGFIX: a window with zero losses made rs=NaN -> RSI=NaN, which was
+                # stored verbatim and corrupted the JSON (invalid `NaN` token). The old
+                # `len(rs.dropna())>0` guard checked the whole series but .iloc[-1] could
+                # still be NaN. Honour the RSI convention instead: no losses -> 100
+                # (max overbought), no gains -> 0, no data -> neutral 50.
                 delta = spy_df["Close"].diff()
                 gain  = delta.clip(lower=0).rolling(14).mean()
                 loss  = (-delta.clip(upper=0)).rolling(14).mean()
-                rs    = gain / loss.replace(0, float("nan"))
-                spy_rsi = float((100 - 100 / (1 + rs)).iloc[-1]) if len(rs.dropna()) > 0 else 50.0
+                last_gain = float(gain.iloc[-1]) if not pd.isna(gain.iloc[-1]) else 0.0
+                last_loss = float(loss.iloc[-1]) if not pd.isna(loss.iloc[-1]) else 0.0
+                if last_loss == 0 and last_gain == 0:
+                    spy_rsi = 50.0            # flat / insufficient history
+                elif last_loss == 0:
+                    spy_rsi = 100.0           # only gains
+                else:
+                    spy_rsi = 100 - 100 / (1 + last_gain / last_loss)
+                spy_rsi = float(spy_rsi)
 
                 regime["spy_trend"]        = "bull" if spy_price >= spy_ma200 else "bear"
                 regime["spy_pct_vs_200ma"] = round(pct_vs_200, 2)
