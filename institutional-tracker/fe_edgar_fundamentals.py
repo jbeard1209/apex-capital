@@ -52,6 +52,7 @@ def _load_cache(ticker: str) -> Optional[dict]:
 def _save_cache(ticker: str, data: dict):
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     path = CACHE_DIR / f"{ticker.upper()}.json"
+    data = {**data, "fetched_at": datetime.now().isoformat(timespec="seconds")}
     try:
         with open(path, "w") as f:
             json.dump(data, f)
@@ -103,33 +104,82 @@ def _get_cik(ticker: str) -> Optional[str]:
         return None
 
 
-def _extract_concept(facts: dict, *concept_names: str) -> list[float]:
+def _annual_span_days(e: dict) -> Optional[int]:
+    """Days between an entry's start and end. None if it isn't a duration fact."""
+    s, en = e.get("start"), e.get("end")
+    if not s or not en:
+        return None
+    try:
+        d0 = datetime.strptime(s, "%Y-%m-%d")
+        d1 = datetime.strptime(en, "%Y-%m-%d")
+        return (d1 - d0).days
+    except Exception:
+        return None
+
+
+def _extract_concept(facts: dict, *concept_names: str, flow: bool = True) -> list[float]:
     """
-    Pull a financial concept from EDGAR facts JSON.
-    Returns list of annual values, oldest first.
+    Pull a financial concept from EDGAR facts JSON. Returns annual values, oldest first.
+
+    CRITICAL: a 10-K's XBRL carries the full-year fact *and* embedded quarterly /
+    comparative-period facts, ALL tagged form="10-K". Filtering by form alone lets a
+    3-month Q4 value overwrite the 12-month one (period-mixing bug — produced ABBV
+    P/E 256, INCY debt/assets 2.74). So for `flow` (duration) concepts we additionally
+    require the period span to be ~annual (330-400 days). `instant` concepts (shares,
+    debt, assets — balance-sheet snapshots) have no start date and are kept as-is.
     """
-    us_gaap = facts.get("facts", {}).get("us-gaap", {})
     for name in concept_names:
-        concept = us_gaap.get(name, {})
-        units = concept.get("units", {})
-        # Try USD first
-        for unit_key in ("USD", "shares"):
-            entries = units.get(unit_key, [])
-            # Filter to annual 10-K filings only
-            annual = [
-                e for e in entries
-                if e.get("form") in ("10-K", "20-F", "40-F")
-                and e.get("val") is not None
-            ]
-            if annual:
-                # Sort by end date, deduplicate by fiscal year
-                annual.sort(key=lambda x: x.get("end", ""))
-                seen_years = {}
-                for e in annual:
-                    year = e.get("end", "")[:4]
-                    seen_years[year] = e.get("val")
-                return [float(v) for v in seen_years.values()]
+        annual = _collect_annual(facts, name, flow)
+        if annual:
+            return _dedup_by_year(annual)
     return []
+
+
+def _collect_annual(facts: dict, name: str, flow: bool) -> list[dict]:
+    """Gather annual 10-K entries for one concept, searching BOTH the us-gaap and
+    dei taxonomies. Many issuers (Visa, Kellanova, banks) report shares outstanding
+    only on the cover page as dei:EntityCommonStockSharesOutstanding, absent from
+    us-gaap — searching us-gaap alone silently returns zero shares → undefined P/E."""
+    taxes = facts.get("facts", {})
+    annual = []
+    for tax in ("us-gaap", "dei"):
+        units = taxes.get(tax, {}).get(name, {}).get("units", {})
+        if not units:
+            continue
+        for unit_key in ("USD", "shares"):
+            for e in units.get(unit_key, []):
+                if e.get("form") not in ("10-K", "20-F", "40-F") or e.get("val") is None:
+                    continue
+                if flow:
+                    span = _annual_span_days(e)
+                    if span is None or not (330 <= span <= 400):
+                        continue  # skip quarterly / non-annual periods
+                annual.append(e)
+        if annual:
+            break  # first taxonomy that has the concept wins
+    return annual
+
+
+def _dedup_by_year(annual: list[dict]) -> list[float]:
+    """Newest filing wins per fiscal year; return values oldest-first."""
+    annual.sort(key=lambda x: (x.get("end", ""), x.get("filed", "")))
+    seen_years = {}
+    for e in annual:
+        seen_years[e.get("end", "")[:4]] = e.get("val")
+    return [float(v) for v in seen_years.values()]
+
+
+def _extract_by_year(facts: dict, *concept_names: str, flow: bool = True) -> dict:
+    """Like _extract_concept but returns {fiscal_year: value} so callers can ALIGN
+    series across metrics. The unlabeled-array form silently misaligns when metrics
+    have different history lengths (INCY: 16 asset-years vs 8 debt-years → [-1] of
+    each is a different year). Keyed output makes cross-metric ratios year-safe."""
+    for name in concept_names:
+        annual = _collect_annual(facts, name, flow)
+        if annual:
+            annual.sort(key=lambda x: (x.get("end", ""), x.get("filed", "")))
+            return {e.get("end", "")[:4]: float(e.get("val")) for e in annual}
+    return {}
 
 
 def _fetch_edgar_fundamentals(ticker: str, cik: str) -> Optional[dict]:
@@ -146,19 +196,23 @@ def _fetch_edgar_fundamentals(ticker: str, cik: str) -> Optional[dict]:
         logger.debug(f"  [EDGAR] Facts fetch failed for {ticker} (CIK={cik}): {e}")
         return None
 
-    return {
-        "revenue":             _extract_concept(facts, "Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet"),
-        "operating_cf":        _extract_concept(facts, "NetCashProvidedByUsedInOperatingActivities"),
-        "capex":               _extract_concept(facts, "PaymentsToAcquirePropertyPlantAndEquipment", "CapitalExpendituresIncurredButNotYetPaid"),
-        "ebit":                _extract_concept(facts, "OperatingIncomeLoss", "IncomeLossFromContinuingOperationsBeforeIncomeTaxes"),
-        "net_income":          _extract_concept(facts, "NetIncomeLoss"),
-        "shares_outstanding":  _extract_concept(facts, "CommonStockSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"),
-        "long_term_debt":      _extract_concept(facts, "LongTermDebt", "LongTermDebtNoncurrent"),
-        "total_assets":        _extract_concept(facts, "Assets"),
-        "total_liabilities":   _extract_concept(facts, "Liabilities"),
-        "source":              "EDGAR",
-        "cik":                 cik,
+    specs = {
+        "revenue":            (("Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax", "SalesRevenueNet"), True),
+        "operating_cf":       (("NetCashProvidedByUsedInOperatingActivities",), True),
+        "capex":              (("PaymentsToAcquirePropertyPlantAndEquipment", "CapitalExpendituresIncurredButNotYetPaid"), True),
+        "ebit":               (("OperatingIncomeLoss", "IncomeLossFromContinuingOperationsBeforeIncomeTaxes"), True),
+        "net_income":         (("NetIncomeLoss",), True),
+        "shares_outstanding": (("CommonStockSharesOutstanding", "EntityCommonStockSharesOutstanding", "WeightedAverageNumberOfSharesOutstandingBasic"), False),
+        "long_term_debt":     (("LongTermDebt", "LongTermDebtNoncurrent"), False),
+        "total_assets":       (("Assets",), False),
+        "total_liabilities":  (("Liabilities",), False),
     }
+    out = {"source": "EDGAR", "cik": cik, "by_year": {}}
+    for field, (names, flow) in specs.items():
+        by_year = _extract_by_year(facts, *names, flow=flow)
+        out[field] = [by_year[y] for y in sorted(by_year)]  # legacy oldest-first list
+        out["by_year"][field] = by_year                     # year-keyed for alignment
+    return out
 
 
 def _fetch_yfinance_fundamentals(ticker: str) -> Optional[dict]:

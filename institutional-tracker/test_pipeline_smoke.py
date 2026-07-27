@@ -717,6 +717,58 @@ class TestWiringContracts(unittest.TestCase):
         self.assertEqual(unknown, set(),
                          f"chairman_decision_sla escalates with unrecognized categories: {unknown}")
 
+    def test_edgar_extractor_drops_quarterly_periods(self):
+        """REGRESSION (the ABBV P/E 256 bug): a 10-K's XBRL carries quarterly facts
+        tagged form='10-K'; the annual extractor must keep only ~365-day periods for
+        flow concepts, or a 3-month value corrupts the annual series."""
+        import fe_edgar_fundamentals as fe
+        facts = {"facts": {"us-gaap": {"Revenues": {"units": {"USD": [
+            {"start": "2023-01-01", "end": "2023-12-31", "val": 60e9, "form": "10-K", "filed": "2024-02-01"},
+            {"start": "2023-10-01", "end": "2023-12-31", "val": 15e9, "form": "10-K", "filed": "2024-02-01"},  # Q4 — must be dropped
+        ]}}}}}
+        by_year = fe._extract_by_year(facts, "Revenues", flow=True)
+        self.assertEqual(by_year.get("2023"), 60e9,
+                         "quarterly value leaked into the annual revenue series")
+
+    def test_edgar_extractor_reads_dei_shares(self):
+        """Many issuers (Visa, banks) report shares only in the dei taxonomy; the
+        extractor must search dei, not just us-gaap, or every per-share metric breaks."""
+        import fe_edgar_fundamentals as fe
+        facts = {"facts": {"dei": {"EntityCommonStockSharesOutstanding": {"units": {"shares": [
+            {"end": "2024-12-31", "val": 1_800_000_000, "form": "10-K", "filed": "2025-02-01"},
+        ]}}}}}
+        by_year = fe._extract_by_year(facts, "EntityCommonStockSharesOutstanding", flow=False)
+        self.assertEqual(by_year.get("2024"), 1_800_000_000)
+
+    def test_fundamentals_sanity_gates_impossible_debt(self):
+        """The plausibility GATE must reject debt>assets (the INCY case) so no pod
+        can value or trade a name on a physically-impossible balance sheet."""
+        import fundamentals_sanity as fs
+        data = {"_ticker": "TEST", "shares_outstanding": [1e8], "revenue": [1e9],
+                "net_income": [1e8],
+                "by_year": {"long_term_debt": {"2024": 20e9},
+                            "total_assets": {"2024": 5e9}}}
+        ok, reasons = fs.is_reliable(data)
+        self.assertFalse(ok, "validator failed to gate impossible debt/assets")
+
+    def test_fundamentals_sanity_proposal_category_recognized(self):
+        """fundamentals_sanity files LOGIC_ERROR proposals — must reach a board scope."""
+        import re, deputy_board as db
+        src = open(Path(__file__).parent / "fundamentals_sanity.py").read()
+        cats = set(re.findall(r'"category":\s*"([A-Z_]+)"', src))
+        known = (db.DEPUTY_CATEGORIES | db.FULL_BOARD_ONLY_CATEGORIES | db.AUTO_IMPLEMENT_CATEGORIES)
+        self.assertEqual(cats - known, set(),
+                         f"fundamentals_sanity files unrecognized categories: {cats - known}")
+
+    def test_data_integrity_sentinel_composes(self):
+        """The umbrella must run all invariant checks and return a valid verdict,
+        or the firm's self-inspection silently no-ops."""
+        import data_integrity_sentinel as dis
+        rep = dis.run(write=False)
+        self.assertIn(rep["overall"], ("GREEN", "YELLOW", "RED"))
+        self.assertEqual(set(rep["sections"]),
+                         {"fundamentals", "risk_and_model", "freshness", "json_health"})
+
     def test_apply_code_changes_is_idempotent_on_cos_agent(self):
         """board_meeting._apply_code_changes() patches chief_of_staff_agent.py via
         string replacement; running it must never duplicate the patched block.
