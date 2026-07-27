@@ -1,17 +1,19 @@
 {
-  "generated_at": "2026-06-30T21:00:00.576142",
+  "generated_at": "2026-07-24T17:29:04.388062",
   "source": "anonymous",
-  "urgency": "CRITICAL",
-  "risk_score": 9,
-  "alert_summary": "Anonymous risk assessment: 3 concern(s) identified at severity 9/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+  "urgency": "HIGH",
+  "risk_score": 7,
+  "alert_summary": "Anonymous risk assessment: 5 concern(s) identified at severity 7/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
   "concerns": [
-    "Manager Agent \u2014 output is 267h old (threshold: 26h). Agent may have missed a cycle.",
-    "DEPENDENCY VIOLATION: capital_efficiency_report is 7.5h old but manager_decisions is 267.0h old \u2014 manager_decisions ran BEFORE capital_efficiency_report and used a stale signal.",
-    "DEPENDENCY VIOLATION: review_recommendations is 20.7h old but manager_decisions is 267.0h old \u2014 manager_decisions ran BEFORE review_recommendations and used a stale signal."
+    "DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated portfolio risk is HIGH. Shiller: complacency at fundamental highs is a classic late-cycle signal. Soros reflexivity: prices can remain irrational while risk accumulates silently.",
+    "CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spreads typically widen simultaneously, reducing cross-asset diversification. Equity-only portfolios lose their correlation buffer precisely when it is most needed (Ilmanen, 'Expected Returns').",
+    "Canary Agent \u2014 output is 502h old (threshold: 13h). Agent may have missed a cycle.",
+    "CANARY CONTINUITY: canary_state.json is 502h old. Canary should update every few hours \u2014 a 502h gap suggests it may have stopped running.",
+    "EXTENDED CRO HIGH: The CRO has been at HIGH for 51+ consecutive cycles. This buy block has NOT been formally reviewed by the board. IRM RECOMMENDATION: Board must convene to assess whether the HIGH posture is still warranted or should be relaxed. Extended buy blocks silently damage research throughput and agent performance."
   ],
   "findings": [
-    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-68,604) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,945) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-66,720) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-39,820) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
     "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
   ]
 }

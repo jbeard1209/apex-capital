@@ -1,3 +1,28 @@
 {
-  "graded": []
+  "graded": [
+    {
+      "horizon": "1w",
+      "set_date": "2026-06-15",
+      "graded_on": "2026-07-02",
+      "predicted_range": [
+        103170.0,
+        105769.0
+      ],
+      "actual_equity": 104283.7,
+      "within_range": true,
+      "miss_pct": null
+    },
+    {
+      "horizon": "1w",
+      "set_date": "2026-06-15",
+      "graded_on": "2026-07-02",
+      "predicted_range": [
+        102947,
+        106066
+      ],
+      "actual_equity": 104283.7,
+      "within_range": true,
+      "miss_pct": null
+    }
+  ]
 }

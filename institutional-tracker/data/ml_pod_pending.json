@@ -55,5 +55,42 @@
       }
     ],
     "status": "approved"
+  },
+  {
+    "agent": "CITCodeInspector",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 80,
+    "title": "Silent exception in ml_improvement_loop.py:949",
+    "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "evidence": "ml_improvement_loop.py line 949: `except Exception: pass`",
+    "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
+    "auto_implementable": false,
+    "id": "CIT-2026-084",
+    "context": {
+      "captured_at": "2026-07-25T12:03:11.646086",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "HIGH",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 266,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 23,
+      "last_buy": {
+        "ticker": "RUN",
+        "date": "2026-06-08"
+      },
+      "open_issues_count": 582,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 3,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: HIGH | Positions: 0 open | Day 266",
+    "routed_to_pod": "ml",
+    "routed_at": "2026-07-25T12:03:11.691790"
   }
 ]

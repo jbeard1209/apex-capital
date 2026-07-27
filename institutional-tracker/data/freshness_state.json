@@ -1,14 +1,12 @@
 {
   "data/manager_decisions.json": {
-    "status": "STALE",
-    "last_action": "2026-07-02T02:09:35.091671"
+    "status": "OK"
   },
   "data/review_recommendations.json": {
     "status": "OK"
   },
   "data/state.json": {
-    "status": "STALE",
-    "last_action": "2026-07-02T02:09:35.091671"
+    "status": "OK"
   },
   "data/risk_bulletin.json": {
     "status": "OK"
@@ -26,8 +24,7 @@
     "status": "OK"
   },
   "data/chief_of_staff_report.json": {
-    "status": "STALE",
-    "last_action": "2026-07-02T02:09:35.091671"
+    "status": "OK"
   },
   "data/logic_team_findings.json": {
     "status": "OK"
@@ -45,7 +42,8 @@
     "status": "OK"
   },
   "data/etf_research_brief.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-07-03T17:15:00.761416"
   },
   "data/etf_pod_orders.json": {
     "status": "OK"
@@ -64,7 +62,7 @@
   },
   "data/data_quality_report.json": {
     "status": "STALE",
-    "last_action": "2026-07-01T21:15:00.963016"
+    "last_action": "2026-07-03T14:15:01.219274"
   },
   "heartbeat": {
     "status": "OK"

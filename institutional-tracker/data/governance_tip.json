@@ -1,7 +1,7 @@
 {
-  "concern": "Independent risk assessment (anonymous): 3 serious concern(s) at severity 9/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Top concern: Manager Agent \u2014 output is 267h old (threshold: 26h). Agent may have missed a cycle.",
-  "trigger_emergency": true,
-  "written_at": "2026-06-30T21:00:00.575348",
+  "concern": "Independent risk assessment (anonymous): 5 serious concern(s) at severity 7/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Top concern: DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated portfolio risk is HIGH. Shiller: complacency at fundamental highs is a classic late-cycle signal. Soros reflexivity: prices can remain irrational while risk accumulates silently.",
+  "trigger_emergency": false,
+  "written_at": "2026-07-24T17:50:22.623386",
   "read": true,
-  "consumed_at": "2026-06-30T21:00:01.401997"
+  "consumed_at": "2026-07-27T09:54:13.761203"
 }

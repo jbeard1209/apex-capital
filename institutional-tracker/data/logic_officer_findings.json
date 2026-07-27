@@ -1,221 +1,13 @@
 {
   "history": [
     {
-      "ts": "2026-06-15T16:00:48.070963",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T16:29:56.054043",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T16:50:30.523698",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T17:11:05.056810",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T17:31:39.600369",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T17:52:13.273901",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T18:00:33.115852",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-15T20:15:36.187725",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-16T00:55:01.371615",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-16T13:41:26.243439",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-16T13:45:34.844712",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-16T16:00:36.669781",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-16T18:00:32.262225",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-16T20:15:34.938209",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-17T00:01:47.741222",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-17T12:01:54.991276",
-      "findings": [
-        {
-          "rule": "idle_capital",
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
-          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
-          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
-        }
-      ]
-    },
-    {
-      "ts": "2026-06-17T13:45:35.363381",
+      "ts": "2026-07-23T15:21:40.960327",
       "findings": [
         {
           "rule": "extended_cro_high_no_review",
           "severity": "HIGH",
-          "title": "CRO has been at HIGH for 12 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 12 consecutive cycles (roughly 48 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "title": "CRO has been at HIGH for 23 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 23 consecutive cycles (roughly 92 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
           "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
           "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
         },
@@ -230,8 +22,16 @@
       ]
     },
     {
-      "ts": "2026-06-17T16:00:37.437318",
+      "ts": "2026-07-23T15:43:10.864794",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 24 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 24 consecutive cycles (roughly 96 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -243,8 +43,16 @@
       ]
     },
     {
-      "ts": "2026-06-17T18:00:36.241112",
+      "ts": "2026-07-23T16:04:08.976538",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 25 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 25 consecutive cycles (roughly 100 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -256,8 +64,16 @@
       ]
     },
     {
-      "ts": "2026-06-17T20:15:35.471994",
+      "ts": "2026-07-23T16:26:13.989969",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 26 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 26 consecutive cycles (roughly 104 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -269,8 +85,16 @@
       ]
     },
     {
-      "ts": "2026-06-18T00:06:39.286495",
+      "ts": "2026-07-23T16:47:36.106818",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 27 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 27 consecutive cycles (roughly 108 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -282,8 +106,16 @@
       ]
     },
     {
-      "ts": "2026-06-18T12:01:57.636529",
+      "ts": "2026-07-23T17:08:56.588965",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 28 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 28 consecutive cycles (roughly 112 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -295,8 +127,16 @@
       ]
     },
     {
-      "ts": "2026-06-18T13:45:35.060787",
+      "ts": "2026-07-23T17:30:18.035437",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 29 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 29 consecutive cycles (roughly 116 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -308,8 +148,16 @@
       ]
     },
     {
-      "ts": "2026-06-18T16:03:26.546285",
+      "ts": "2026-07-23T17:51:39.687823",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 30 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 30 consecutive cycles (roughly 120 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -321,8 +169,16 @@
       ]
     },
     {
-      "ts": "2026-06-18T18:00:33.893934",
+      "ts": "2026-07-24T10:06:58.897543",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 31 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 31 consecutive cycles (roughly 124 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -334,8 +190,16 @@
       ]
     },
     {
-      "ts": "2026-06-19T00:01:46.311893",
+      "ts": "2026-07-24T10:29:58.647610",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 32 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 32 consecutive cycles (roughly 128 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -347,8 +211,16 @@
       ]
     },
     {
-      "ts": "2026-06-19T12:01:54.427584",
+      "ts": "2026-07-24T10:51:22.599756",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 33 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 33 consecutive cycles (roughly 132 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -360,8 +232,16 @@
       ]
     },
     {
-      "ts": "2026-06-19T16:00:37.488602",
+      "ts": "2026-07-24T11:12:44.722471",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 34 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 34 consecutive cycles (roughly 136 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -373,8 +253,16 @@
       ]
     },
     {
-      "ts": "2026-06-19T18:00:33.694734",
+      "ts": "2026-07-24T11:34:15.966273",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 35 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 35 consecutive cycles (roughly 140 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -386,8 +274,352 @@
       ]
     },
     {
-      "ts": "2026-07-02T02:23:06.269516",
+      "ts": "2026-07-24T12:01:08.246399",
       "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 36 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 36 consecutive cycles (roughly 144 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T12:27:23.646462",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 37 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 37 consecutive cycles (roughly 148 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T12:49:14.781936",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 38 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 38 consecutive cycles (roughly 152 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T13:11:05.131204",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 39 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 39 consecutive cycles (roughly 156 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T13:32:59.438577",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 40 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 40 consecutive cycles (roughly 160 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T13:54:52.963520",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 41 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 41 consecutive cycles (roughly 164 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T14:16:48.764228",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 42 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 42 consecutive cycles (roughly 168 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T14:38:16.723566",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 43 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 43 consecutive cycles (roughly 172 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T14:59:35.556595",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 44 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 44 consecutive cycles (roughly 176 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T15:20:59.753301",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 45 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 45 consecutive cycles (roughly 180 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T15:42:24.231356",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 46 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 46 consecutive cycles (roughly 184 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T16:03:11.413792",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 47 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 47 consecutive cycles (roughly 188 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T16:25:08.175833",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 48 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 48 consecutive cycles (roughly 192 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T16:46:27.460466",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 49 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 49 consecutive cycles (roughly 196 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T17:07:45.969042",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 50 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 50 consecutive cycles (roughly 200 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T17:29:04.085325",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 51 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 51 consecutive cycles (roughly 204 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
+        {
+          "rule": "idle_capital",
+          "severity": "MEDIUM",
+          "title": "1 pod(s) holding $30,000 with zero positions",
+          "observation": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000",
+          "why_its_wrong": "Idle cash earns nothing and creates a drag on portfolio returns. $30,000 sitting in cash means the firm is not executing on its mandate. This is either a CRO block (acceptable short-term), a research pipeline failure (not acceptable), or an ML model not yet cleared for live trading (expected).",
+          "suggested_resolution": "Board should vote: (1) for each idle pod, identify root cause of zero deployment, (2) if CRO block is reason, confirm this is still justified, (3) if pipeline failure is reason, assign CIT to fix it with priority."
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-24T17:50:22.250874",
+      "findings": [
+        {
+          "rule": "extended_cro_high_no_review",
+          "severity": "HIGH",
+          "title": "CRO has been at HIGH for 52 cycles \u2014 no board review",
+          "observation": "The CRO has been at HIGH for 52 consecutive cycles (roughly 208 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -400,6 +632,14 @@
     }
   ],
   "latest": [
+    {
+      "rule": "extended_cro_high_no_review",
+      "severity": "HIGH",
+      "title": "CRO has been at HIGH for 52 cycles \u2014 no board review",
+      "observation": "The CRO has been at HIGH for 52 consecutive cycles (roughly 208 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+      "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
+      "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
+    },
     {
       "rule": "idle_capital",
       "severity": "MEDIUM",

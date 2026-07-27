@@ -1,63 +1,63 @@
 {
-  "generated_at": "2026-06-14T19:12:52.828818",
+  "generated_at": "2026-07-03T13:38:01.808595",
   "seed": 42,
   "live_auc_gate": 0.57,
   "models": {
     "shortterm": {
       "label": "shortterm",
       "target": "outcome_20d",
-      "evaluated_at": "2026-06-14T19:12:53.421261",
+      "evaluated_at": "2026-07-03T13:38:02.085560",
       "seed": 42,
-      "status": "PASS",
-      "n_samples": 10555,
+      "status": "WEAK",
+      "n_samples": 21775,
       "n_features": 26,
-      "positive_rate": 0.4964,
+      "positive_rate": 0.4945,
       "cv_method": "TimeSeriesSplit(n_splits=5, time-embargo=20d)",
       "embargo_days": 20,
       "confidence": "HIGH",
       "fold_aucs": [
-        0.5476,
-        0.5561,
-        0.4507,
-        0.6309,
-        0.6795
+        0.4813,
+        0.5589,
+        0.4695,
+        0.5329,
+        0.6587
       ],
-      "walk_forward_auc_mean": 0.5729,
-      "walk_forward_auc_std": 0.0782,
-      "brier_score": 0.2523,
-      "baseline_momentum_auc": 0.4924,
-      "edge_over_baseline": 0.0805
+      "walk_forward_auc_mean": 0.5403,
+      "walk_forward_auc_std": 0.0677,
+      "brier_score": 0.2571,
+      "baseline_momentum_auc": 0.4951,
+      "edge_over_baseline": 0.0452
     },
     "risk_adjusted": {
       "label": "risk_adjusted",
       "target": "risk_adjusted_20d",
-      "evaluated_at": "2026-06-14T19:13:20.058087",
+      "evaluated_at": "2026-07-03T13:38:10.510575",
       "seed": 42,
-      "status": "PASS",
-      "n_samples": 10537,
+      "status": "WEAK",
+      "n_samples": 21733,
       "n_features": 26,
       "target_binarized_at_zero": true,
-      "positive_rate": 0.497,
+      "positive_rate": 0.4953,
       "cv_method": "TimeSeriesSplit(n_splits=5, time-embargo=20d)",
       "embargo_days": 20,
       "confidence": "HIGH",
       "fold_aucs": [
-        0.5456,
-        0.5546,
-        0.4512,
-        0.6373,
-        0.6806
+        0.4777,
+        0.5489,
+        0.4742,
+        0.5475,
+        0.6549
       ],
-      "walk_forward_auc_mean": 0.5739,
-      "walk_forward_auc_std": 0.0795,
-      "brier_score": 0.2524,
-      "baseline_momentum_auc": 0.4918,
-      "edge_over_baseline": 0.0821
+      "walk_forward_auc_mean": 0.5406,
+      "walk_forward_auc_std": 0.0656,
+      "brier_score": 0.2572,
+      "baseline_momentum_auc": 0.4948,
+      "edge_over_baseline": 0.0458
     }
   },
   "persisted_metrics": {
     "trained": true,
-    "displayed_auc": 0.5837,
-    "cv_auc_mean": 0.5837
+    "displayed_auc": 0.5448,
+    "cv_auc_mean": 0.5448
   }
 }

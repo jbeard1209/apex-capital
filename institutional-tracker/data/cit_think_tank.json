@@ -58,5 +58,14 @@
     "proposed_fix": "In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes.",
     "auto_implementable": false,
     "id": "CIT-2026-265"
+  },
+  {
+    "title": "Track South Korea semiconductor exports as an AI-demand canary",
+    "source": "Chairman (via Strategy discussion 2026-07-03)",
+    "category": "VISION",
+    "status": "proposed",
+    "created_at": "2026-07-03T14:31:16.731520",
+    "description": "South Korea publishes export data earlier than almost any economy, and Korean memory (SK Hynix HBM) feeds AI datacenters. Korean chip-export momentum is a leading indicator for AI-hardware demand \u2014 weeks ahead of US tech earnings. Proposal: Macro pod ingests monthly SK semiconductor export prints (and optionally TSMC monthly revenue) as a regime input; sustained rollover = early-caution flag for AI-heavy US exposure.",
+    "proposed_fix": "Add a monthly data pull (SK customs semiconductor exports + TSMC monthly revenue) to pod_macro_agent context; wire a caution flag into the canary/regime when 3-month momentum turns negative."
   }
 ]

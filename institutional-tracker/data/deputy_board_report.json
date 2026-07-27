@@ -1,15 +1,15 @@
 {
-  "generated_at": "2026-07-02T01:00:33.813129",
+  "generated_at": "2026-07-27T12:24:29.268591",
   "dry_run": false,
-  "proposals_reviewed": 5,
+  "proposals_reviewed": 2,
   "approved_count": 0,
   "rejected_count": 0,
   "deferred_count": 0,
-  "needs_info_count": 5,
+  "needs_info_count": 2,
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "CIT-2026-568",
+      "proposal_id": "CIT-2026-778",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "severity": "MEDIUM",
       "category": "VISION",
@@ -17,8 +17,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 2,
-      "clarifies": 3,
+      "defers": 0,
+      "clarifies": 5,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -27,8 +27,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "DEFER",
-          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+          "vote": "CLARIFY",
+          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
         },
         {
           "deputy": "Deputy CIT Director",
@@ -42,8 +42,8 @@
         },
         {
           "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
+          "vote": "CLARIFY",
+          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
         },
         {
           "deputy": "Deputy R&D Leader",
@@ -58,7 +58,7 @@
       ]
     },
     {
-      "proposal_id": "CIT-2026-569",
+      "proposal_id": "CIT-2026-779",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "severity": "LOW",
       "category": "VISION",
@@ -66,8 +66,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 3,
-      "clarifies": 2,
+      "defers": 2,
+      "clarifies": 3,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -76,8 +76,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "DEFER",
-          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+          "vote": "CLARIFY",
+          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
         },
         {
           "deputy": "Deputy CIT Director",
@@ -98,153 +98,6 @@
           "deputy": "Deputy R&D Leader",
           "vote": "APPROVE",
           "rationale": "Research pipeline bug with specific evidence [72%] \u2014 fixing will improve signal quality."
-        },
-        {
-          "deputy": "Deputy Operations Director",
-          "vote": "CLARIFY",
-          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
-        }
-      ]
-    },
-    {
-      "proposal_id": "LTIA-20260702000001",
-      "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
-      "severity": "MEDIUM",
-      "category": "IMPROVEMENT",
-      "passed": false,
-      "classification": "NEEDS_INFO",
-      "approves": 0,
-      "rejects": 0,
-      "defers": 1,
-      "clarifies": 6,
-      "votes": [
-        {
-          "deputy": "Deputy Manager",
-          "vote": "CLARIFY",
-          "rationale": "Proposed fix is not specific enough to implement safely: 'Vote one of: (a) document an explicit reason the pod is held flat and a re-deplo'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
-        },
-        {
-          "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
-        },
-        {
-          "deputy": "Deputy CIT Director",
-          "vote": "CLARIFY",
-          "rationale": "Evidence for '[LTIA] Decide on idle pod capital: ML / Quantitative: $30,00' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
-        },
-        {
-          "deputy": "Deputy Chief of Staff",
-          "vote": "CLARIFY",
-          "rationale": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
-        },
-        {
-          "deputy": "Deputy R&D Leader",
-          "vote": "CLARIFY",
-          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
-        },
-        {
-          "deputy": "Deputy Operations Director",
-          "vote": "CLARIFY",
-          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
-        }
-      ]
-    },
-    {
-      "proposal_id": "LTIA-20260702000001",
-      "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
-      "severity": "MEDIUM",
-      "category": "IMPROVEMENT",
-      "passed": false,
-      "classification": "NEEDS_INFO",
-      "approves": 0,
-      "rejects": 0,
-      "defers": 1,
-      "clarifies": 6,
-      "votes": [
-        {
-          "deputy": "Deputy Manager",
-          "vote": "CLARIFY",
-          "rationale": "Proposed fix is not specific enough to implement safely: 'Sample 20 open BUG_FIX items: if mostly low-value/duplicate, raise the CIT confi'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
-        },
-        {
-          "deputy": "Deputy CRO",
-          "vote": "CLARIFY",
-          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
-        },
-        {
-          "deputy": "Deputy CIT Director",
-          "vote": "CLARIFY",
-          "rationale": "Evidence for '[LTIA] CIT backlog bloat \u2014 tighten proposal quality or actio' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
-        },
-        {
-          "deputy": "Deputy Chief of Staff",
-          "vote": "CLARIFY",
-          "rationale": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
-        },
-        {
-          "deputy": "Deputy R&D Leader",
-          "vote": "CLARIFY",
-          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
-        },
-        {
-          "deputy": "Deputy Operations Director",
-          "vote": "CLARIFY",
-          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
-        }
-      ]
-    },
-    {
-      "proposal_id": "LTIA-20260702000001",
-      "title": "[LTIA] Expected agents silent \u2014 check they're still running",
-      "severity": "LOW",
-      "category": "IMPROVEMENT",
-      "passed": false,
-      "classification": "NEEDS_INFO",
-      "approves": 2,
-      "rejects": 0,
-      "defers": 3,
-      "clarifies": 2,
-      "votes": [
-        {
-          "deputy": "Deputy Manager",
-          "vote": "APPROVE",
-          "rationale": "Standard IMPROVEMENT bug, evidence verified, safe to implement."
-        },
-        {
-          "deputy": "Deputy CRO",
-          "vote": "DEFER",
-          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
-        },
-        {
-          "deputy": "Deputy CIT Director",
-          "vote": "CLARIFY",
-          "rationale": "Evidence for '[LTIA] Expected agents silent \u2014 check they're still running' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
-        },
-        {
-          "deputy": "Deputy Chief of Staff",
-          "vote": "DEFER",
-          "rationale": "LOW severity \u2014 acceptable to batch with next scheduled CIT cycle rather than acting now."
-        },
-        {
-          "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
-        },
-        {
-          "deputy": "Deputy R&D Leader",
-          "vote": "APPROVE",
-          "rationale": "No research pipeline exposure \u2014 fix is specific and evidence is present."
         },
         {
           "deputy": "Deputy Operations Director",

@@ -1,1412 +1,1412 @@
 {
   "actions": [
     {
-      "ts": "2026-06-22T12:15:01.267798",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-23T17:08:56.550977",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-22T12:15:01.271334",
+      "ts": "2026-07-23T17:08:56.552372",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:08:56.553709",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:08:56.555019",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-22T12:15:01.274726",
+      "ts": "2026-07-23T17:08:56.556346",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-22T12:15:01.278008",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-23T17:08:56.557712",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-22T12:15:01.281369",
+      "ts": "2026-07-23T17:08:56.558968",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:08:56.560341",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:00:00.959621",
+      "ts": "2026-07-23T17:30:17.999248",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:30:18.000763",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:30:18.002034",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:00:00.963734",
+      "ts": "2026-07-23T17:30:18.003338",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:00:00.967484",
+      "ts": "2026-07-23T17:30:18.004617",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:00:00.972298",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-23T17:30:18.006128",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:00:00.976500",
+      "ts": "2026-07-23T17:30:18.007360",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:30:18.008842",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:15:01.162999",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-23T17:51:39.620754",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:15:08.321402",
+      "ts": "2026-07-23T17:51:39.622190",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:51:39.623517",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:51:39.624750",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "skipped:cooldown_12h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:51:39.626115",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:51:39.627479",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:51:39.628790",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-23T17:51:39.630196",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:06:31.688216",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:06:31.689672",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:06:31.691441",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:06:58.857748",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "auto_reconciled_reviews",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T00:15:08.324465",
+      "ts": "2026-07-24T10:06:58.859632",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-23T00:15:08.327300",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-23T00:15:08.330109",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-23T12:00:00.928569",
-      "finding_key": "RiskCoherenceLogicAgent::canary_red_positions_open",
-      "action": "handler:canary_red_positions_open",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:00:00.932582",
+      "ts": "2026-07-24T10:06:58.861054",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:06:58.862458",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:06:58.863866",
+      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
+      "action": "handler:agent_communication_silence",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:29:58.608616",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:29:58.610545",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:29:58.611838",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:00:00.935803",
+      "ts": "2026-07-24T10:29:58.613105",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:00:00.939273",
+      "ts": "2026-07-24T10:29:58.614504",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:00:00.942571",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T10:29:58.617991",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:00:00.945982",
+      "ts": "2026-07-24T10:29:58.619413",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:29:58.620710",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:15:01.049998",
-      "finding_key": "RiskCoherenceLogicAgent::canary_red_positions_open",
-      "action": "handler:canary_red_positions_open",
+      "ts": "2026-07-24T10:51:22.564140",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:15:01.054033",
+      "ts": "2026-07-24T10:51:22.565654",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:51:22.566971",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:15:01.057567",
+      "ts": "2026-07-24T10:51:22.568230",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:15:01.061078",
+      "ts": "2026-07-24T10:51:22.569531",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:15:01.064246",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T10:51:22.570791",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-23T12:15:01.067257",
+      "ts": "2026-07-24T10:51:22.572022",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T10:51:22.573265",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T08:15:00.825809",
-      "finding_key": "RiskCoherenceLogicAgent::canary_red_positions_open",
-      "action": "handler:canary_red_positions_open",
+      "ts": "2026-07-24T11:12:44.655039",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T08:15:00.852820",
+      "ts": "2026-07-24T11:12:44.656847",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T11:12:44.658244",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T08:15:08.337680",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T08:15:08.341890",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T08:15:08.346679",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T08:15:08.351017",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T12:00:01.097072",
-      "finding_key": "RiskCoherenceLogicAgent::canary_red_positions_open",
-      "action": "handler:canary_red_positions_open",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T12:00:01.100293",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T12:00:01.104132",
+      "ts": "2026-07-24T11:12:44.659516",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:00:01.107537",
+      "ts": "2026-07-24T11:12:44.661140",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:00:01.110730",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T11:12:44.662467",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:00:01.113842",
+      "ts": "2026-07-24T11:12:44.663696",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T11:12:44.664996",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:15:00.658817",
-      "finding_key": "RiskCoherenceLogicAgent::canary_red_positions_open",
-      "action": "handler:canary_red_positions_open",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T11:34:15.929868",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:15:00.662321",
+      "ts": "2026-07-24T11:34:15.931392",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T11:34:15.932625",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:15:00.665877",
+      "ts": "2026-07-24T11:34:15.934050",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-24T12:15:00.669132",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T12:15:00.672397",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-24T12:15:00.675383",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-25T00:00:00.389148",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-25T00:00:07.882954",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-25T00:00:07.886890",
+      "ts": "2026-07-24T11:34:15.935418",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:00:07.890374",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T11:34:15.936774",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:00:07.893821",
+      "ts": "2026-07-24T11:34:15.938058",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T11:34:15.939404",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:15:00.493809",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T11:56:08.156966",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:15:00.497303",
+      "ts": "2026-07-24T11:56:08.158988",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T11:56:08.160700",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T11:56:08.162394",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:15:00.500301",
+      "ts": "2026-07-24T11:56:08.164401",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:15:00.503215",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T11:56:08.165693",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T00:15:00.506095",
+      "ts": "2026-07-24T12:01:08.195695",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "fe_rerun_failed:timeout",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T12:01:08.199998",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:00:00.970670",
+      "ts": "2026-07-24T12:27:23.610466",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T12:27:23.612132",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T12:27:23.613882",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:00:00.974669",
+      "ts": "2026-07-24T12:27:23.615127",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:00:00.978126",
+      "ts": "2026-07-24T12:27:23.616428",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:00:00.981581",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T12:27:23.617763",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:00:00.984822",
+      "ts": "2026-07-24T12:27:23.618992",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T12:27:23.620333",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:15:00.678974",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T12:49:14.746025",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:15:10.167510",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
+      "ts": "2026-07-24T12:49:14.747686",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-25T12:15:10.170979",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-25T12:15:10.174153",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-25T12:15:10.177268",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-26T00:00:01.078124",
+      "ts": "2026-07-24T12:49:14.748923",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:00:01.081859",
+      "ts": "2026-07-24T12:49:14.750462",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:00:01.086006",
+      "ts": "2026-07-24T12:49:14.751833",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:00:01.089883",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T12:49:14.753277",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:00:01.093988",
+      "ts": "2026-07-24T12:49:14.754534",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T12:49:14.755824",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:15:00.802627",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T13:11:05.095783",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:15:00.806277",
+      "ts": "2026-07-24T13:11:05.097253",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:11:05.098664",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:11:05.099940",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T00:15:00.809306",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-26T00:15:00.812159",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-26T00:15:00.815090",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-26T12:00:01.111139",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-26T12:00:10.176042",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-26T12:00:10.180540",
+      "ts": "2026-07-24T13:11:05.101361",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:00:10.184464",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T13:11:05.102693",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:00:10.188347",
+      "ts": "2026-07-24T13:11:05.103911",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:11:05.105202",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:15:00.477490",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T13:32:59.401475",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:15:00.481162",
+      "ts": "2026-07-24T13:32:59.403705",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:32:59.404991",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:32:59.406429",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:15:00.484614",
+      "ts": "2026-07-24T13:32:59.407983",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:15:00.488046",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T13:32:59.409569",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-26T12:15:00.491237",
+      "ts": "2026-07-24T13:32:59.410818",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:32:59.412617",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:00:01.136655",
+      "ts": "2026-07-24T13:54:52.895159",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:54:52.896952",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:54:52.898212",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:00:01.139968",
+      "ts": "2026-07-24T13:54:52.899545",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:00:01.143800",
+      "ts": "2026-07-24T13:54:52.900970",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:00:01.147947",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T13:54:52.902607",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:00:01.151681",
+      "ts": "2026-07-24T13:54:52.904049",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T13:54:52.905334",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:15:00.440348",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T14:16:48.728500",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:15:08.710671",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
+      "ts": "2026-07-24T14:16:48.730213",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T00:15:08.713895",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-27T00:15:08.716902",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-27T00:15:08.719844",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-27T12:00:01.044419",
+      "ts": "2026-07-24T14:16:48.731636",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:00:01.048149",
+      "ts": "2026-07-24T14:16:48.732892",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:00:01.052884",
+      "ts": "2026-07-24T14:16:48.734398",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:00:01.065006",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T14:16:48.735848",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:00:01.072578",
+      "ts": "2026-07-24T14:16:48.737074",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:16:48.738364",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:15:01.166342",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T14:38:16.688384",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:15:01.169974",
+      "ts": "2026-07-24T14:38:16.690144",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:38:16.691434",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:38:16.692709",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-27T12:15:01.173503",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-27T12:15:01.176920",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-27T12:15:01.180225",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-28T00:00:01.216428",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-28T00:00:08.655711",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-28T00:00:08.659847",
+      "ts": "2026-07-24T14:38:16.693992",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:00:08.663796",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T14:38:16.695378",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:00:08.667518",
+      "ts": "2026-07-24T14:38:16.696631",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:38:16.697920",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:15:00.353021",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T14:59:35.486408",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:15:00.356641",
+      "ts": "2026-07-24T14:59:35.488234",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:59:35.489528",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:59:35.490781",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:15:00.359703",
+      "ts": "2026-07-24T14:59:35.492072",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:15:00.362629",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T14:59:35.493483",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T00:15:00.365804",
+      "ts": "2026-07-24T14:59:35.494736",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T14:59:35.495994",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:00:01.007213",
+      "ts": "2026-07-24T15:20:59.692880",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T15:20:59.694396",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T15:20:59.695753",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:00:01.011114",
+      "ts": "2026-07-24T15:20:59.697070",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:00:01.014503",
+      "ts": "2026-07-24T15:20:59.698458",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:00:01.018071",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T15:20:59.699922",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:00:01.021355",
+      "ts": "2026-07-24T15:20:59.701289",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T15:20:59.702689",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:15:01.034594",
+      "ts": "2026-07-24T15:42:24.194198",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T15:42:24.195753",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T15:42:24.199485",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-28T12:15:10.430149",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-28T12:15:10.433723",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-28T12:15:10.437103",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-28T12:15:10.440417",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T00:00:01.030798",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T00:00:01.035029",
+      "ts": "2026-07-24T15:42:24.200764",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:00:01.038551",
+      "ts": "2026-07-24T15:42:24.202163",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:00:01.042201",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T15:42:24.203417",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:00:01.045641",
+      "ts": "2026-07-24T15:42:24.204648",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T15:42:24.205990",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:15:00.757546",
+      "ts": "2026-07-24T16:03:11.378832",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:03:11.380328",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:03:11.381751",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:15:00.760750",
+      "ts": "2026-07-24T16:03:11.383025",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:15:00.763776",
+      "ts": "2026-07-24T16:03:11.384299",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:15:00.766733",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T16:03:11.385610",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T00:15:00.770045",
+      "ts": "2026-07-24T16:03:11.386860",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:03:11.388291",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T12:00:00.793349",
+      "ts": "2026-07-24T16:25:08.138348",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:25:08.139980",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:25:08.141225",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T12:00:16.302407",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T12:00:16.306632",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T12:00:16.310460",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T12:00:16.314066",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T12:15:00.307102",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-29T12:15:00.310648",
+      "ts": "2026-07-24T16:25:08.142469",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T12:15:00.314035",
+      "ts": "2026-07-24T16:25:08.143876",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T12:15:00.317308",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T16:25:08.145609",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-29T12:15:00.320508",
+      "ts": "2026-07-24T16:25:08.148164",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:25:08.149649",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:00:00.922011",
+      "ts": "2026-07-24T16:46:27.425193",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:46:27.426913",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:46:27.428370",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:00:00.925650",
+      "ts": "2026-07-24T16:46:27.430092",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:00:00.929521",
+      "ts": "2026-07-24T16:46:27.431410",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:00:00.933577",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T16:46:27.432678",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:00:00.937501",
+      "ts": "2026-07-24T16:46:27.433921",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T16:46:27.435192",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:15:00.305864",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T17:07:45.934889",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:15:08.266719",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
+      "ts": "2026-07-24T17:07:45.936351",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T00:15:08.269991",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-30T00:15:08.272982",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-30T00:15:08.275987",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-30T12:00:01.243685",
+      "ts": "2026-07-24T17:07:45.937745",
       "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
       "action": "handler:idle_pod_pod2_ml",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:00:01.247241",
+      "ts": "2026-07-24T17:07:45.939008",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:00:01.251872",
+      "ts": "2026-07-24T17:07:45.940244",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:00:01.256455",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T17:07:45.941520",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:00:01.260744",
+      "ts": "2026-07-24T17:07:45.942734",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:07:45.944006",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:15:00.352844",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T17:29:04.049946",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:15:00.359700",
+      "ts": "2026-07-24T17:29:04.051228",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:29:04.052512",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:29:04.053913",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-06-30T12:15:00.364391",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-30T12:15:00.367817",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-06-30T12:15:00.370827",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T00:00:00.935427",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T00:00:09.024604",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T00:00:09.028534",
+      "ts": "2026-07-24T17:29:04.055301",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-01T00:00:09.032069",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T17:29:04.056572",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-01T00:00:09.035579",
+      "ts": "2026-07-24T17:29:04.058004",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:29:04.059300",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-01T00:15:00.535825",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
+      "ts": "2026-07-24T17:50:22.214770",
+      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
+      "action": "handler:cro_extended_no_review",
+      "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-01T00:15:00.539336",
+      "ts": "2026-07-24T17:50:22.216375",
+      "finding_key": "StrategyLogicAgent::cro_paralysis",
+      "action": "handler:cro_paralysis",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:50:22.217627",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:50:22.218890",
       "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
       "action": "handler:positions_without_reviews",
       "result": "skipped:cooldown_12h",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-01T00:15:00.542430",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T00:15:00.545378",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T00:15:00.548637",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:00:00.309839",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:00:00.313249",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:00:00.316475",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:00:00.319960",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:00:00.323151",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:15:01.208621",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:15:09.484677",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:15:09.487936",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:15:09.490929",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-01T12:15:09.493866",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:00:01.230705",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:00:01.235135",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:00:01.239292",
+      "ts": "2026-07-24T17:50:22.220164",
       "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
       "action": "handler:cit_backlog_bloat",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-02T00:00:01.243333",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
+      "ts": "2026-07-24T17:50:22.221453",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
       "result": "board_proposal_submitted",
       "auto_resolved": false
     },
     {
-      "ts": "2026-07-02T00:00:01.247378",
+      "ts": "2026-07-24T17:50:22.222668",
+      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
+      "action": "handler:fe_pipeline_stale",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-24T17:50:22.223944",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:15:00.652605",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:15:00.656235",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:15:00.659304",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:15:00.662574",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T00:15:00.665652",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T02:23:01.243388",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T02:23:06.211009",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "auto_reconciled_reviews",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T02:23:06.212466",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T02:23:06.213808",
-      "finding_key": "MLLogicAgent::ml_auc_mediocre",
-      "action": "handler:ml_auc_mediocre",
-      "result": "already_in_queue",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-02T02:23:06.215124",
-      "finding_key": "CommunicationLogicAgent::agent_communication_silence",
-      "action": "handler:agent_communication_silence",
-      "result": "already_in_queue",
       "auto_resolved": false
     }
   ],
-  "last_run": "2026-07-02T02:23:06.215127",
+  "last_run": "2026-07-24T17:50:22.223946",
   "cooldowns": {
     "train_model": "2026-06-14T00:10:38.370766",
-    "reconcile_reviews": "2026-07-02T02:23:06.203511",
-    "rerun_fe_pipeline": "2026-06-12T23:41:13.715451",
+    "reconcile_reviews": "2026-07-24T10:06:58.850942",
+    "rerun_fe_pipeline": "2026-07-24T12:01:08.191294",
     "start_ml_tracking": "2026-06-14T00:18:13.215102",
-    "rerun_fi_pipeline": "2026-06-16T13:41:26.058563"
+    "rerun_fi_pipeline": "2026-07-23T11:35:42.396943"
   }
 }

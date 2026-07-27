@@ -1,41 +1,6 @@
 {
   "sessions": [
     {
-      "ts": "2026-06-12T19:52:45.266125",
-      "regime": "NORMAL",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
-      "ts": "2026-06-12T19:54:09.017534",
-      "regime": "NORMAL",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
-      "ts": "2026-06-14T01:31:42.622093",
-      "regime": "NORMAL",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
-      "ts": "2026-06-15T00:30:23.868066",
-      "regime": "NORMAL",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
-      "ts": "2026-06-15T07:08:17.244698",
-      "regime": "NORMAL",
-      "reviewed": 13,
-      "approved_count": 8,
-      "rejected_count": 0
-    },
-    {
       "ts": "2026-06-16T13:41:25.864234",
       "regime": "TIGHT",
       "reviewed": 7,
@@ -207,6 +172,41 @@
       "ts": "2026-07-02T00:02:43.639331",
       "regime": "NORMAL",
       "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-07-02T14:32:36.655334",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-07-03T13:36:52.184804",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-07-03T14:30:05.908977",
+      "regime": "NORMAL",
+      "reviewed": 13,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-07-14T13:32:05.536371",
+      "regime": "NORMAL",
+      "reviewed": 16,
+      "approved_count": 8,
+      "rejected_count": 0
+    },
+    {
+      "ts": "2026-07-23T11:35:42.306866",
+      "regime": "NORMAL",
+      "reviewed": 16,
       "approved_count": 8,
       "rejected_count": 0
     }

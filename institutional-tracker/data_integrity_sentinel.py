@@ -118,8 +118,11 @@ def check_json_health():
     findings, worst = [], "GREEN"
     for p in sorted(DATA.glob("*.json")):
         raw = p.read_text() if p.exists() else ""
-        # 1) invalid JSON tokens that Python's json writes but standards forbid
-        if any(tok in raw for tok in ("NaN", "Infinity")):
+        # 1) BARE NaN/Infinity tokens that Python's json writes but standards forbid.
+        # Must use the token regex, not a substring scan: the words "NaN"/"Infinity"
+        # legitimately appear inside string values (e.g. "pe_ratio": "Infinity") and in
+        # prose (this sentinel's own report). Only unquoted structural tokens are corrupt.
+        if _NONFINITE.search(raw):
             findings.append({"file": p.name, "note": "contains NaN/Infinity — invalid JSON; "
                              "downstream json.loads in other languages/tools will fail."})
             worst = "RED"
@@ -156,7 +159,7 @@ def heal_json_health() -> list[str]:
     healed = []
     for p in sorted(DATA.glob("*.json")):
         raw = p.read_text()
-        if not any(tok in raw for tok in ("NaN", "Infinity")):
+        if not _NONFINITE.search(raw):
             continue
         fixed = _NONFINITE.sub("null", raw)
         try:

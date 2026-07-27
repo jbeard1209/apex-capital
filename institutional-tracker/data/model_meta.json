@@ -1,29 +1,29 @@
 {
-  "trained_at": "2026-07-02T02:23:26.941163",
+  "trained_at": "2026-07-23T11:36:18.233681",
   "n_samples": 21775,
   "has_lightgbm": true,
   "has_risk_adj": true,
   "positive_rate": 0.4945,
   "top_features": [
     [
-      "rd_spy_rsi",
-      220.0
-    ],
-    [
       "rd_vix",
-      209.0
+      165.0
     ],
     [
-      "quarter_of_year",
-      120.0
+      "conviction_score_xrank",
+      141.0
+    ],
+    [
+      "rd_spy_rsi",
+      123.0
     ],
     [
       "days_since_filing",
-      114.0
+      111.0
     ],
     [
-      "filing_quarter_consensus",
-      88.0
+      "price_momentum_20d_xrank",
+      96.0
     ]
   ],
   "feature_cols": [
@@ -52,21 +52,25 @@
     "rd_regime_bull",
     "rd_vix",
     "rd_spy_rsi",
-    "earnings_surprise_flag"
+    "earnings_surprise_flag",
+    "price_momentum_20d_xrank",
+    "conviction_score_xrank",
+    "n_institutions_xrank",
+    "avg_conviction_3q_xrank"
   ],
-  "lgb_auc_val": 0.6426,
-  "rf_auc_val": 0.6516,
-  "lr_auc_val": 0.5879,
-  "ensemble_auc_val": 0.6468,
-  "ensemble_acc_val": 0.6057,
-  "cv_auc_mean": 0.5448,
-  "cv_auc_std": 0.0656,
+  "lgb_auc_val": 0.6586,
+  "rf_auc_val": 0.6528,
+  "lr_auc_val": 0.588,
+  "ensemble_auc_val": 0.6615,
+  "ensemble_acc_val": 0.6358,
+  "cv_auc_mean": 0.5477,
+  "cv_auc_std": 0.0727,
   "cv_method": "TimeSeriesSplit(n_splits=5, time-embargo=20d)",
   "cv_n_splits": 5,
   "cv_embargo_days": 20,
-  "risk_adj_r2_val": 0.0518,
-  "lt_cv_auc_mean": 0.5361,
-  "lt_cv_auc_std": 0.0263,
+  "risk_adj_r2_val": 0.0516,
+  "lt_cv_auc_mean": 0.5353,
+  "lt_cv_auc_std": 0.0297,
   "lt_n_samples": 17652,
   "lt_meets_gate": false
 }

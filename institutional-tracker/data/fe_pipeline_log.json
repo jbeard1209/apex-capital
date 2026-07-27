@@ -1,124 +1,13 @@
 {
-  "generated_at": "2026-07-02T06:20:00.759330+00:00",
-  "completed_at": "2026-07-02T06:23:16.567678+00:00",
+  "generated_at": "2026-07-03T17:35:24.729111+00:00",
+  "completed_at": "2026-07-03T17:36:41.288750+00:00",
   "agents_run": 10,
-  "total_rd_picks": 31,
-  "iv_enriched_count": 27,
-  "board_queue_count": 2,
-  "approved_count": 2,
+  "total_rd_picks": 10,
+  "iv_enriched_count": 0,
+  "board_queue_count": 0,
+  "approved_count": 0,
   "filtered_count": 0,
-  "sized_positions": [
-    {
-      "ticker": "EOG",
-      "source": "iv_opportunity_scan",
-      "conviction": 5,
-      "verdict": "BUY",
-      "iv_verdict": "BUY",
-      "margin_of_safety": 0.3704,
-      "conservative_iv": 204.23,
-      "dcf_iv": 637.65,
-      "epv_iv": 204.23,
-      "current_price": 128.59,
-      "fcf_yield": 0.2624,
-      "roic": null,
-      "data_source": "EDGAR_XBRL",
-      "notes": "IV-scan direct pick: MoS=37.0% | IV=$204.23 | Price=$128.59 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
-      "net_debt_ebitda": 0.99,
-      "conviction_score": 58,
-      "conviction_position": 500,
-      "fraud_result": {
-        "risk_level": "LOW",
-        "recommendation": "CLEAR"
-      },
-      "mgmt_result": {
-        "category": "FAIR",
-        "score": 50
-      },
-      "moat_result": {
-        "moat_width": "NONE",
-        "score": 0
-      },
-      "blocked_by_fraud": false,
-      "board_decision": "APPROVED",
-      "board_votes": [
-        {
-          "member": "Value Officer",
-          "vote": "APPROVE",
-          "reason": "MoS=37.0%"
-        },
-        {
-          "member": "Quality Officer",
-          "vote": "APPROVE",
-          "reason": "conviction=5"
-        },
-        {
-          "member": "Risk Officer",
-          "vote": "APPROVE",
-          "reason": "MoS=37.0% conv=5"
-        }
-      ],
-      "position_usd": 500.0,
-      "is_gold_position": false,
-      "sizing_rule": "conviction_58_score",
-      "lane_capital": 5000.0,
-      "position_pct": 0.1
-    },
-    {
-      "ticker": "UPBD",
-      "source": "iv_opportunity_scan",
-      "conviction": 4,
-      "verdict": "BUY",
-      "iv_verdict": "BUY",
-      "margin_of_safety": 0.2651,
-      "conservative_iv": 28.21,
-      "dcf_iv": 44.62,
-      "epv_iv": 28.21,
-      "current_price": 20.73,
-      "fcf_yield": 0.2039,
-      "roic": 0.2566,
-      "data_source": "EDGAR_XBRL",
-      "notes": "IV-scan direct pick: MoS=26.5% | IV=$28.21 | Price=$20.73 | R&D agents did not nominate this ticker \u2014 board should apply enhanced due diligence",
-      "net_debt_ebitda": 0.85,
-      "conviction_score": 48,
-      "conviction_position": 500,
-      "fraud_result": {
-        "risk_level": "LOW",
-        "recommendation": "CLEAR"
-      },
-      "mgmt_result": {
-        "category": "FAIR",
-        "score": 50
-      },
-      "moat_result": {
-        "moat_width": "NONE",
-        "score": 0
-      },
-      "blocked_by_fraud": false,
-      "board_decision": "APPROVED",
-      "board_votes": [
-        {
-          "member": "Value Officer",
-          "vote": "APPROVE",
-          "reason": "MoS=26.5%"
-        },
-        {
-          "member": "Quality Officer",
-          "vote": "APPROVE",
-          "reason": "conviction=4"
-        },
-        {
-          "member": "Risk Officer",
-          "vote": "APPROVE",
-          "reason": "MoS=26.5% conv=4"
-        }
-      ],
-      "position_usd": 500.0,
-      "is_gold_position": false,
-      "sizing_rule": "conviction_48_score",
-      "lane_capital": 5000.0,
-      "position_pct": 0.1
-    }
-  ],
+  "sized_positions": [],
   "gold_allocation_pct": 0.0,
   "lane_capital": 5000.0
 }
