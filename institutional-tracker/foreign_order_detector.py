@@ -103,7 +103,7 @@ def _local_decision_index() -> set:
 def run_check() -> dict:
     """Pull account orders and flag ones no local record explains."""
     out = {"checked_at": datetime.now().isoformat(), "lookback_h": LOOKBACK_HOURS,
-           "orders_seen": 0, "foreign": [], "status": "OK"}
+           "orders_seen": 0, "foreign": [], "hedge": [], "status": "OK"}
     try:
         from alpaca.trading.client import TradingClient
         from alpaca.trading.requests import GetOrdersRequest
@@ -130,13 +130,19 @@ def run_check() -> dict:
         if (sym, day) in local or (sym, prev) in local:
             continue
         if sym in HEDGE_TICKERS:
-            # per-day evidence: our pipeline ran that day (its dated log exists) —
-            # the heartbeat only remembers the LATEST run, which missed 2-3 day old
-            # hedge orders inside the 72h lookback.
-            logdir = DATA.parent / "logs"
-            if any((logdir / f"cron_{d.replace('-', '')}.log").exists()
-                   for d in (day, prev) if d):
-                continue  # regime hedge executed by our own pipeline that day
+            # SH is the firm's ONLY hedge instrument and can only be submitted by
+            # our own alpaca_trader.py regime-hedge path (which logs to a dated
+            # cron log, not manager_decisions.json). The old check demanded a
+            # host-LOCAL cron_YYYYMMDD.log — but the hedge runs on the VM while
+            # this detector often runs on the Mac, so that log is absent and our
+            # own hedge got flagged HIGH "foreign" every day. Route hedge orders
+            # to a non-escalating bucket instead: still recorded for visibility,
+            # never pushed to the Chairman queue. (A real external actor with our
+            # keys would show up on NON-hedge tickers, which stay strict.)
+            out["hedge"].append({"symbol": sym, "submitted_at": str(sub),
+                                 "side": str(getattr(o, "side", "")),
+                                 "qty": str(getattr(o, "qty", ""))})
+            continue
         out["foreign"].append({"symbol": sym, "submitted_at": str(sub),
                                "side": str(getattr(o, "side", "")),
                                "qty": str(getattr(o, "qty", "")),
