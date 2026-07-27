@@ -93,10 +93,16 @@ def compute_portfolio_var(positions_df: pd.DataFrame,
         }
 
     tickers = positions_df["ticker"].tolist()
+    # Weight by GROSS exposure (absolute market value). market_value is SIGNED
+    # (negative for shorts); normalizing by the signed net sum collapses the
+    # denominator to ~0 on a market-neutral long/short book and inflates every
+    # weight ~10x — which produced a spurious 44.9% 1-day VaR (should be ~4%).
+    # See matching fix in compute_concentration_risk(). (Fixed 2026-07-27)
+    _abs_mv = positions_df["market_value"].abs()
+    _gross  = _abs_mv.sum()
     weights = (
-        positions_df["market_value"].values /
-        positions_df["market_value"].sum()
-        if "market_value" in positions_df.columns
+        _abs_mv.values / _gross
+        if ("market_value" in positions_df.columns and _gross > 0)
         else np.ones(len(tickers)) / len(tickers)
     )
 
@@ -166,10 +172,14 @@ def compute_concentration_risk(positions_df: pd.DataFrame,
                 "severity": "HIGH" if w > limit_pct * 1.5 else "MODERATE",
             })
 
-    # Herfindahl index (concentration measure; 1.0 = fully concentrated)
-    # BUG FIX: guard against zero-sum market_value to avoid ZeroDivisionError
-    _mv_sum = positions_df["market_value"].sum()
-    w_arr = (positions_df["market_value"] / _mv_sum).values if _mv_sum != 0 else np.ones(len(positions_df)) / max(len(positions_df), 1)
+    # Herfindahl index (concentration measure; bounded [1/n, 1.0]).
+    # Weight by GROSS exposure (absolute market value). market_value is SIGNED
+    # (shorts negative); normalizing by the signed net sum on a market-neutral
+    # book collapses the denominator and yields an impossible HHI (was 240.87,
+    # must be <=1.0), permanently mis-flagging concentration. (Fixed 2026-07-27)
+    _abs_mv = positions_df["market_value"].abs()
+    _mv_sum = _abs_mv.sum()
+    w_arr = (_abs_mv / _mv_sum).values if _mv_sum > 0 else np.ones(len(positions_df)) / max(len(positions_df), 1)
     hhi   = float(np.sum(w_arr ** 2))
 
     if hhi > 0.5:
