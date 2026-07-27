@@ -751,6 +751,26 @@ class TestWiringContracts(unittest.TestCase):
         ok, reasons = fs.is_reliable(data)
         self.assertFalse(ok, "validator failed to gate impossible debt/assets")
 
+    def test_fundamentals_sanity_gates_stale_subseries(self):
+        """A present-but-truncated sub-series is as dangerous as a missing one:
+        EOG's shares stop at 2012 (P/E on a stale share count), INCY's debt at 2018
+        (bogus leverage). The gate must reject when a key field lags the record's
+        newest fiscal year by >2 years, while leaving current records reliable."""
+        import fundamentals_sanity as fs
+        stale = {"_ticker": "STALE", "shares_outstanding": [1e8], "revenue": [1e9],
+                 "net_income": [1e8],
+                 "by_year": {"net_income": {"2025": 1e8}, "total_assets": {"2025": 5e9},
+                             "shares_outstanding": {"2012": 1e8}}}
+        ok, _ = fs.is_reliable(stale)
+        self.assertFalse(ok, "failed to gate a 13yr-stale shares sub-series")
+        fresh = {"_ticker": "FRESH", "shares_outstanding": [1e8], "revenue": [1e9],
+                 "net_income": [1e8],
+                 "by_year": {"net_income": {"2025": 1e8}, "total_assets": {"2025": 5e9},
+                             "shares_outstanding": {"2025": 1e8},
+                             "long_term_debt": {"2025": 1e9}}}
+        ok2, _ = fs.is_reliable(fresh)
+        self.assertTrue(ok2, "over-gated a current record")
+
     def test_fundamentals_sanity_proposal_category_recognized(self):
         """fundamentals_sanity files LOGIC_ERROR proposals — must reach a board scope."""
         import re, deputy_board as db

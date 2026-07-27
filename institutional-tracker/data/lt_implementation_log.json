@@ -1,55 +1,6 @@
 {
   "actions": [
     {
-      "ts": "2026-07-23T17:08:56.550977",
-      "finding_key": "GovernanceLogicAgent::cro_extended_no_review",
-      "action": "handler:cro_extended_no_review",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-23T17:08:56.552372",
-      "finding_key": "StrategyLogicAgent::cro_paralysis",
-      "action": "handler:cro_paralysis",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-23T17:08:56.553709",
-      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
-      "action": "handler:idle_pod_pod2_ml",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-23T17:08:56.555019",
-      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
-      "action": "handler:positions_without_reviews",
-      "result": "skipped:cooldown_12h",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-23T17:08:56.556346",
-      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
-      "action": "handler:cit_backlog_bloat",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-23T17:08:56.557712",
-      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
-      "action": "handler:stale_chairman_actions",
-      "result": "board_proposal_submitted",
-      "auto_resolved": false
-    },
-    {
-      "ts": "2026-07-23T17:08:56.558968",
-      "finding_key": "PodHealthLogicAgent::fe_pipeline_stale",
-      "action": "handler:fe_pipeline_stale",
-      "result": "skipped:cooldown_24h",
-      "auto_resolved": false
-    },
-    {
       "ts": "2026-07-23T17:08:56.560341",
       "finding_key": "CommunicationLogicAgent::agent_communication_silence",
       "action": "handler:agent_communication_silence",
@@ -1399,14 +1350,64 @@
       "action": "handler:agent_communication_silence",
       "result": "board_proposal_submitted",
       "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T13:34:28.319477",
+      "finding_key": "PipelineLogicAgent::zero_picks",
+      "action": "handler:zero_picks",
+      "result": "research_rerun_failed:timeout",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T13:34:28.322166",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T14:00:35.874619",
+      "finding_key": "PipelineLogicAgent::zero_picks",
+      "action": "handler:zero_picks",
+      "result": "skipped:cooldown_24h",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T14:00:35.876054",
+      "finding_key": "CapitalLogicAgent::idle_pod_pod2_ml",
+      "action": "handler:idle_pod_pod2_ml",
+      "result": "already_in_queue",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T14:00:42.343863",
+      "finding_key": "DataIntegrityLogicAgent::positions_without_reviews",
+      "action": "handler:positions_without_reviews",
+      "result": "auto_reconciled_reviews",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T14:00:42.345848",
+      "finding_key": "CommunicationLogicAgent::cit_backlog_bloat",
+      "action": "handler:cit_backlog_bloat",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
+    },
+    {
+      "ts": "2026-07-27T14:00:42.347506",
+      "finding_key": "GovernanceLogicAgent::stale_chairman_actions",
+      "action": "handler:stale_chairman_actions",
+      "result": "board_proposal_submitted",
+      "auto_resolved": false
     }
   ],
-  "last_run": "2026-07-24T17:50:22.223946",
+  "last_run": "2026-07-27T14:00:42.347509",
   "cooldowns": {
     "train_model": "2026-06-14T00:10:38.370766",
-    "reconcile_reviews": "2026-07-24T10:06:58.850942",
+    "reconcile_reviews": "2026-07-27T14:00:42.336992",
     "rerun_fe_pipeline": "2026-07-24T12:01:08.191294",
     "start_ml_tracking": "2026-06-14T00:18:13.215102",
-    "rerun_fi_pipeline": "2026-07-23T11:35:42.396943"
+    "rerun_fi_pipeline": "2026-07-23T11:35:42.396943",
+    "rerun_research": "2026-07-27T13:34:28.316179"
   }
 }

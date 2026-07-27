@@ -1,176 +1,6 @@
 {
   "history": [
     {
-      "ts": "2026-07-23T17:51:39.609864",
-      "findings": [
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "CRO at HIGH may justify caution, but idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-          "ts": "2026-07-23T17:51:39.546010"
-        },
-        {
-          "rule": "cro_extended_no_review",
-          "agent": "GovernanceLogicAgent",
-          "severity": "HIGH",
-          "title": "CRO=HIGH for 30 cycles (120 days) \u2014 board must vote",
-          "observation": "The CRO has been at HIGH for 30 consecutive pipeline cycles (~120 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
-          "why_wrong": "An extended buy block is a major business decision. It should require ongoing board ratification \u2014 not just persist automatically. It penalizes research agents for low approved-picks even when they're working correctly.",
-          "suggestion": "Board should formally vote: (1) Is HIGH still warranted? (2) If yes, what specific condition triggers a downgrade? (3) If no, step down to ELEVATED with 25% cash floor instead of 40%.",
-          "ts": "2026-07-23T17:51:39.546071"
-        },
-        {
-          "rule": "stale_chairman_actions",
-          "agent": "GovernanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "3 Chairman action item(s) unresolved for >3 days",
-          "observation": "Items: '?', 'ML v3/v4/v5 fail every nightly run \u2014 pyarrow never', 'logic_team noon run missed when Mac sleeps \u2014 not i'",
-          "why_wrong": "Items flagged for Chairman action should be resolved promptly. Stale items indicate a process gap.",
-          "suggestion": "Review data/chairman_action_required.json and action or dismiss each item.",
-          "ts": "2026-07-23T17:51:39.546096"
-        },
-        {
-          "rule": "cro_paralysis",
-          "agent": "StrategyLogicAgent",
-          "severity": "HIGH",
-          "title": "CRO at HIGH for 120+ days \u2014 firm has no buy strategy",
-          "observation": "The CRO has blocked all buys for 30 cycles (~120 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
-          "why_wrong": "A firm that can never buy is not an investment firm. Extended buy blocks that persist without board review indicate the risk framework has captured the governance framework.",
-          "suggestion": "Board must vote: either (1) accept the current posture with an explicit end condition, or (2) define specific criteria to step down CRO level. A perpetual HIGH with no exit criteria is not governance.",
-          "ts": "2026-07-23T17:51:39.546195"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "7 open positions have no review recommendation",
-          "observation": "state.json shows 7 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'KO']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-07-23T17:51:39.546444"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "4 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-07-23T17:51:39.547188"
-        },
-        {
-          "rule": "cit_backlog_bloat",
-          "agent": "CommunicationLogicAgent",
-          "severity": "MEDIUM",
-          "title": "CIT backlog has 500 open items \u2014 proposals not being actioned",
-          "observation": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
-          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
-          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-          "ts": "2026-07-23T17:51:39.559218"
-        },
-        {
-          "rule": "fe_pipeline_stale",
-          "agent": "PodHealthLogicAgent",
-          "severity": "MEDIUM",
-          "title": "First Eagle pipeline report is 484h old",
-          "observation": "fe_pipeline_log.json last updated 484h ago. The First Eagle pipeline should run daily.",
-          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
-          "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
-          "ts": "2026-07-23T17:51:39.560045"
-        }
-      ]
-    },
-    {
-      "ts": "2026-07-24T10:06:31.675450",
-      "findings": [
-        {
-          "rule": "idle_pod_pod2_ml",
-          "agent": "CapitalLogicAgent",
-          "severity": "MEDIUM",
-          "title": "ML / Quantitative: $30,000 capital, zero positions",
-          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
-          "why_wrong": "CRO at HIGH may justify caution, but idle capital earns zero return and represents a failure to execute on the pod's mandate.",
-          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-          "ts": "2026-07-24T10:06:31.608458"
-        },
-        {
-          "rule": "cro_extended_no_review",
-          "agent": "GovernanceLogicAgent",
-          "severity": "HIGH",
-          "title": "CRO=HIGH for 31 cycles (124 days) \u2014 board must vote",
-          "observation": "The CRO has been at HIGH for 31 consecutive pipeline cycles (~124 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
-          "why_wrong": "An extended buy block is a major business decision. It should require ongoing board ratification \u2014 not just persist automatically. It penalizes research agents for low approved-picks even when they're working correctly.",
-          "suggestion": "Board should formally vote: (1) Is HIGH still warranted? (2) If yes, what specific condition triggers a downgrade? (3) If no, step down to ELEVATED with 25% cash floor instead of 40%.",
-          "ts": "2026-07-24T10:06:31.608517"
-        },
-        {
-          "rule": "stale_chairman_actions",
-          "agent": "GovernanceLogicAgent",
-          "severity": "MEDIUM",
-          "title": "3 Chairman action item(s) unresolved for >3 days",
-          "observation": "Items: '?', 'ML v3/v4/v5 fail every nightly run \u2014 pyarrow never', 'logic_team noon run missed when Mac sleeps \u2014 not i'",
-          "why_wrong": "Items flagged for Chairman action should be resolved promptly. Stale items indicate a process gap.",
-          "suggestion": "Review data/chairman_action_required.json and action or dismiss each item.",
-          "ts": "2026-07-24T10:06:31.608543"
-        },
-        {
-          "rule": "cro_paralysis",
-          "agent": "StrategyLogicAgent",
-          "severity": "HIGH",
-          "title": "CRO at HIGH for 124+ days \u2014 firm has no buy strategy",
-          "observation": "The CRO has blocked all buys for 31 cycles (~124 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
-          "why_wrong": "A firm that can never buy is not an investment firm. Extended buy blocks that persist without board review indicate the risk framework has captured the governance framework.",
-          "suggestion": "Board must vote: either (1) accept the current posture with an explicit end condition, or (2) define specific criteria to step down CRO level. A perpetual HIGH with no exit criteria is not governance.",
-          "ts": "2026-07-24T10:06:31.608654"
-        },
-        {
-          "rule": "positions_without_reviews",
-          "agent": "DataIntegrityLogicAgent",
-          "severity": "MEDIUM",
-          "title": "7 open positions have no review recommendation",
-          "observation": "state.json shows 7 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'KO']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
-          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
-          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-          "ts": "2026-07-24T10:06:31.608908"
-        },
-        {
-          "rule": "agent_communication_silence",
-          "agent": "CommunicationLogicAgent",
-          "severity": "LOW",
-          "title": "4 expected agent(s) silent on firm channel >7 days",
-          "observation": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
-          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
-          "suggestion": "Check crontab and most recent logs for each silent agent.",
-          "ts": "2026-07-24T10:06:31.609745"
-        },
-        {
-          "rule": "cit_backlog_bloat",
-          "agent": "CommunicationLogicAgent",
-          "severity": "MEDIUM",
-          "title": "CIT backlog has 500 open items \u2014 proposals not being actioned",
-          "observation": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
-          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
-          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-          "ts": "2026-07-24T10:06:31.614541"
-        },
-        {
-          "rule": "fe_pipeline_stale",
-          "agent": "PodHealthLogicAgent",
-          "severity": "MEDIUM",
-          "title": "First Eagle pipeline report is 500h old",
-          "observation": "fe_pipeline_log.json last updated 500h ago. The First Eagle pipeline should run daily.",
-          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
-          "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
-          "ts": "2026-07-24T10:06:31.615271"
-        }
-      ]
-    },
-    {
       "ts": "2026-07-24T10:29:58.597102",
       "findings": [
         {
@@ -2689,6 +2519,216 @@
           "ts": "2026-07-27T13:00:52.783157"
         }
       ]
+    },
+    {
+      "ts": "2026-07-27T13:30:28.258482",
+      "findings": [
+        {
+          "rule": "zero_picks",
+          "agent": "PipelineLogicAgent",
+          "severity": "CRITICAL",
+          "title": "Research pipeline DARK: 999 days without picks despite 37 active agents",
+          "observation": "37 agents active, canary=GREEN, CRO=LOW, yet zero picks have reached the Manager in ~999 days.",
+          "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
+          "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
+          "ts": "2026-07-27T13:30:28.175940"
+        },
+        {
+          "rule": "fi_pipeline_not_running",
+          "agent": "PipelineLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "observation": "FI research agents are registered but fi_pipeline_report.json is 98h old.",
+          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
+          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
+          "ts": "2026-07-27T13:30:28.175948"
+        },
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-07-27T13:30:28.176038"
+        },
+        {
+          "rule": "stale_chairman_actions",
+          "agent": "GovernanceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "7 Chairman action item(s) unresolved for >3 days",
+          "observation": "Items: '?', 'ML v3/v4/v5 fail every nightly run \u2014 pyarrow never', 'logic_team noon run missed when Mac sleeps \u2014 not i'",
+          "why_wrong": "Items flagged for Chairman action should be resolved promptly. Stale items indicate a process gap.",
+          "suggestion": "Review data/chairman_action_required.json and action or dismiss each item.",
+          "ts": "2026-07-27T13:30:28.176114"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "7 open positions have no review recommendation",
+          "observation": "state.json shows 7 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'KO']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-07-27T13:30:28.176396"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "4 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-07-27T13:30:28.177261"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 500 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-07-27T13:30:28.182235"
+        },
+        {
+          "rule": "irm_cro_contradiction",
+          "agent": "RiskCoherenceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "IRM has 5 red flag(s) but CRO=LOW \u2014 risk signals contradict",
+          "observation": "The Independent Risk Manager is flagging 5 red flag(s) while the CRO risk bulletin shows level=LOW. These two risk monitors should not be pointing in opposite directions.",
+          "why_wrong": "When IRM and CRO disagree, the board doesn't know which signal to trust. This undermines the entire risk governance framework.",
+          "suggestion": "First check freshness: compare the timestamps on irm_daily_check.json and risk_bulletin.json. Re-run whichever is stale (`python3 irm_review_agent.py` or the CRO job) and see if the contradiction clears. If both are current, the board names the governing signal and records why the other is overridden.",
+          "ts": "2026-07-27T13:30:28.182542"
+        },
+        {
+          "rule": "fi_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income pipeline report is 98h old",
+          "observation": "fi_pipeline_report.json last updated 98h ago. The Fixed Income pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fi_pipeline.py. Check logs for errors.",
+          "ts": "2026-07-27T13:30:28.182597"
+        },
+        {
+          "rule": "fe_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "First Eagle pipeline report is 576h old",
+          "observation": "fe_pipeline_log.json last updated 576h ago. The First Eagle pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
+          "ts": "2026-07-27T13:30:28.183046"
+        }
+      ]
+    },
+    {
+      "ts": "2026-07-27T14:00:35.859118",
+      "findings": [
+        {
+          "rule": "zero_picks",
+          "agent": "PipelineLogicAgent",
+          "severity": "CRITICAL",
+          "title": "Research pipeline DARK: 999 days without picks despite 37 active agents",
+          "observation": "37 agents active, canary=GREEN, CRO=LOW, yet zero picks have reached the Manager in ~999 days.",
+          "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
+          "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
+          "ts": "2026-07-27T14:00:35.776993"
+        },
+        {
+          "rule": "fi_pipeline_not_running",
+          "agent": "PipelineLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "observation": "FI research agents are registered but fi_pipeline_report.json is 98h old.",
+          "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
+          "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
+          "ts": "2026-07-27T14:00:35.777005"
+        },
+        {
+          "rule": "idle_pod_pod2_ml",
+          "agent": "CapitalLogicAgent",
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
+          "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
+          "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
+          "ts": "2026-07-27T14:00:35.777128"
+        },
+        {
+          "rule": "stale_chairman_actions",
+          "agent": "GovernanceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "7 Chairman action item(s) unresolved for >3 days",
+          "observation": "Items: '?', 'ML v3/v4/v5 fail every nightly run \u2014 pyarrow never', 'logic_team noon run missed when Mac sleeps \u2014 not i'",
+          "why_wrong": "Items flagged for Chairman action should be resolved promptly. Stale items indicate a process gap.",
+          "suggestion": "Review data/chairman_action_required.json and action or dismiss each item.",
+          "ts": "2026-07-27T14:00:35.777212"
+        },
+        {
+          "rule": "positions_without_reviews",
+          "agent": "DataIntegrityLogicAgent",
+          "severity": "MEDIUM",
+          "title": "7 open positions have no review recommendation",
+          "observation": "state.json shows 7 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'KO']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
+          "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
+          "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
+          "ts": "2026-07-27T14:00:35.777519"
+        },
+        {
+          "rule": "agent_communication_silence",
+          "agent": "CommunicationLogicAgent",
+          "severity": "LOW",
+          "title": "4 expected agent(s) silent on firm channel >7 days",
+          "observation": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
+          "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
+          "suggestion": "Check crontab and most recent logs for each silent agent.",
+          "ts": "2026-07-27T14:00:35.778390"
+        },
+        {
+          "rule": "cit_backlog_bloat",
+          "agent": "CommunicationLogicAgent",
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 500 open items \u2014 proposals not being actioned",
+          "observation": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
+          "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
+          "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
+          "ts": "2026-07-27T14:00:35.783802"
+        },
+        {
+          "rule": "irm_cro_contradiction",
+          "agent": "RiskCoherenceLogicAgent",
+          "severity": "MEDIUM",
+          "title": "IRM has 5 red flag(s) but CRO=LOW \u2014 risk signals contradict",
+          "observation": "The Independent Risk Manager is flagging 5 red flag(s) while the CRO risk bulletin shows level=LOW. These two risk monitors should not be pointing in opposite directions.",
+          "why_wrong": "When IRM and CRO disagree, the board doesn't know which signal to trust. This undermines the entire risk governance framework.",
+          "suggestion": "First check freshness: compare the timestamps on irm_daily_check.json and risk_bulletin.json. Re-run whichever is stale (`python3 irm_review_agent.py` or the CRO job) and see if the contradiction clears. If both are current, the board names the governing signal and records why the other is overridden.",
+          "ts": "2026-07-27T14:00:35.784132"
+        },
+        {
+          "rule": "fi_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "Fixed Income pipeline report is 98h old",
+          "observation": "fi_pipeline_report.json last updated 98h ago. The Fixed Income pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fi_pipeline.py. Check logs for errors.",
+          "ts": "2026-07-27T14:00:35.784186"
+        },
+        {
+          "rule": "fe_pipeline_stale",
+          "agent": "PodHealthLogicAgent",
+          "severity": "MEDIUM",
+          "title": "First Eagle pipeline report is 576h old",
+          "observation": "fe_pipeline_log.json last updated 576h ago. The First Eagle pipeline should run daily.",
+          "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
+          "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
+          "ts": "2026-07-27T14:00:35.784639"
+        }
+      ]
     }
   ],
   "latest": [
@@ -2700,17 +2740,17 @@
       "observation": "37 agents active, canary=GREEN, CRO=LOW, yet zero picks have reached the Manager in ~999 days.",
       "why_wrong": "Active agents in a non-emergency environment should always produce candidates. Zero output means the pipeline has a structural break \u2014 agents not loading, output not routing, or Manager rejecting everything.",
       "suggestion": "Check research_team.py status filter (must include 'active' + 'reassigned'). Check manager_agent.py BUY gates aren't misconfigured. Run a manual research cycle: `python3 -c 'from research_team import ResearchTeamCoordinator; ResearchTeamCoordinator().run()'`",
-      "ts": "2026-07-27T13:00:52.776327"
+      "ts": "2026-07-27T14:00:35.776993"
     },
     {
       "rule": "fi_pipeline_not_running",
       "agent": "PipelineLogicAgent",
       "severity": "MEDIUM",
       "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
-      "observation": "FI research agents are registered but fi_pipeline_report.json is 97h old.",
+      "observation": "FI research agents are registered but fi_pipeline_report.json is 98h old.",
       "why_wrong": "FI agents without a running FI pipeline produce no picks. The FI pod's $30k capital sits idle.",
       "suggestion": "Verify fi_pipeline.py is scheduled in main.py or on GCP cron. Run manually: `python3 fi_pipeline.py`",
-      "ts": "2026-07-27T13:00:52.776339"
+      "ts": "2026-07-27T14:00:35.777005"
     },
     {
       "rule": "idle_pod_pod2_ml",
@@ -2720,7 +2760,7 @@
       "observation": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions.",
       "why_wrong": "idle capital earns zero return and represents a failure to execute on the pod's mandate.",
       "suggestion": "Distinguish the cause, then act: (1) run `python3 ml_pipeline.py` \u2014 if it produces picks, this was a pipeline stall, not a policy choice; (2) if it produces nothing and CRO isn't blocking, lower the pod's conviction threshold or widen its watchlist; (3) if the pod is intentionally flat, write the reason and a concrete re-deploy trigger into pod_allocations.json so this stops re-firing.",
-      "ts": "2026-07-27T13:00:52.776463"
+      "ts": "2026-07-27T14:00:35.777128"
     },
     {
       "rule": "stale_chairman_actions",
@@ -2730,7 +2770,7 @@
       "observation": "Items: '?', 'ML v3/v4/v5 fail every nightly run \u2014 pyarrow never', 'logic_team noon run missed when Mac sleeps \u2014 not i'",
       "why_wrong": "Items flagged for Chairman action should be resolved promptly. Stale items indicate a process gap.",
       "suggestion": "Review data/chairman_action_required.json and action or dismiss each item.",
-      "ts": "2026-07-27T13:00:52.776535"
+      "ts": "2026-07-27T14:00:35.777212"
     },
     {
       "rule": "positions_without_reviews",
@@ -2740,7 +2780,7 @@
       "observation": "state.json shows 7 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'KO']. These positions are unmonitored \u2014 no stop-loss or exit signal.",
       "why_wrong": "The review agent can only manage positions it knows about. Ghost positions accumulate losses silently with no exit trigger.",
       "suggestion": "Reconcile: run review_agent.py manually, or check if positions were opened outside the normal pipeline flow.",
-      "ts": "2026-07-27T13:00:52.776884"
+      "ts": "2026-07-27T14:00:35.777519"
     },
     {
       "rule": "agent_communication_silence",
@@ -2750,7 +2790,7 @@
       "observation": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Operations Director. Either they're not running or their output isn't reaching the channel.",
       "why_wrong": "Silent agents are invisible agents. If an agent stops communicating, nobody knows whether it's healthy or broken.",
       "suggestion": "Check crontab and most recent logs for each silent agent.",
-      "ts": "2026-07-27T13:00:52.777736"
+      "ts": "2026-07-27T14:00:35.778390"
     },
     {
       "rule": "cit_backlog_bloat",
@@ -2760,7 +2800,7 @@
       "observation": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster than the boards act on them \u2014 volume without throughput.",
       "why_wrong": "A perpetually-growing backlog is the 'useless solutions' failure mode: effort is spent producing proposals nobody implements. Either the proposals lack value or the action path is broken.",
       "suggestion": "Triage: sample 20 open BUG_FIX items \u2014 if most are low-value/duplicate, raise the CIT confidence/precision gate. If they're valuable, the board action path is the bottleneck \u2014 route more to the deputy board for auto-implement. The write site now caps the file at 500.",
-      "ts": "2026-07-27T13:00:52.782403"
+      "ts": "2026-07-27T14:00:35.783802"
     },
     {
       "rule": "irm_cro_contradiction",
@@ -2770,27 +2810,27 @@
       "observation": "The Independent Risk Manager is flagging 5 red flag(s) while the CRO risk bulletin shows level=LOW. These two risk monitors should not be pointing in opposite directions.",
       "why_wrong": "When IRM and CRO disagree, the board doesn't know which signal to trust. This undermines the entire risk governance framework.",
       "suggestion": "First check freshness: compare the timestamps on irm_daily_check.json and risk_bulletin.json. Re-run whichever is stale (`python3 irm_review_agent.py` or the CRO job) and see if the contradiction clears. If both are current, the board names the governing signal and records why the other is overridden.",
-      "ts": "2026-07-27T13:00:52.782810"
+      "ts": "2026-07-27T14:00:35.784132"
     },
     {
       "rule": "fi_pipeline_stale",
       "agent": "PodHealthLogicAgent",
       "severity": "MEDIUM",
-      "title": "Fixed Income pipeline report is 97h old",
-      "observation": "fi_pipeline_report.json last updated 97h ago. The Fixed Income pipeline should run daily.",
+      "title": "Fixed Income pipeline report is 98h old",
+      "observation": "fi_pipeline_report.json last updated 98h ago. The Fixed Income pipeline should run daily.",
       "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
       "suggestion": "Check crontab for fi_pipeline.py. Check logs for errors.",
-      "ts": "2026-07-27T13:00:52.782866"
+      "ts": "2026-07-27T14:00:35.784186"
     },
     {
       "rule": "fe_pipeline_stale",
       "agent": "PodHealthLogicAgent",
       "severity": "MEDIUM",
-      "title": "First Eagle pipeline report is 575h old",
-      "observation": "fe_pipeline_log.json last updated 575h ago. The First Eagle pipeline should run daily.",
+      "title": "First Eagle pipeline report is 576h old",
+      "observation": "fe_pipeline_log.json last updated 576h ago. The First Eagle pipeline should run daily.",
       "why_wrong": "Stale pipeline = stale picks = no capital deployment opportunity.",
       "suggestion": "Check crontab for fe_pipeline.py. Check logs for errors.",
-      "ts": "2026-07-27T13:00:52.783157"
+      "ts": "2026-07-27T14:00:35.784639"
     }
   ]
 }

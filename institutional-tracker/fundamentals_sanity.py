@@ -121,6 +121,27 @@ def check_ticker(ticker: str, data: dict) -> list[dict]:
             add(field, "empty", f"{field} series empty — cannot value the company.",
                 gate=True, impossible=False, severity="MEDIUM")
 
+    # --- stale SUB-SERIES: a field that stopped updating is as dangerous as a
+    #     missing one. EOG's shares stop at 2012 (P/E computed on a 13yr-old share
+    #     count); INCY's long_term_debt stops at 2018 (leverage ratio unreliable).
+    #     Anchor to the record's newest fiscal year (from the reliably-populated
+    #     series) and gate any per-share / leverage input that lags it by >2 years. ---
+    def _max_year(field):
+        ys = [int(y) for y in (by_year.get(field) or {}).keys() if str(y).isdigit()]
+        return max(ys) if ys else None
+    anchor = max([y for y in (_max_year("net_income"), _max_year("revenue"),
+                              _max_year("total_assets")) if y is not None], default=None)
+    if anchor is not None:
+        for field, label in (("shares_outstanding", "per-share metrics"),
+                             ("long_term_debt", "leverage ratio")):
+            fy = _max_year(field)
+            if fy is not None and anchor - fy > 2:
+                add(field, f"latest FY{fy} vs record FY{anchor}",
+                    f"{field} series stops at FY{fy} but the company reports through "
+                    f"FY{anchor} — {label} would use a {anchor - fy}yr-stale value. "
+                    "Likely a taxonomy/tag change EDGAR parsing missed.",
+                    gate=True, impossible=False, severity="MEDIUM")
+
     # --- freshness: unknown age is a soft flag only ---
     fetched = data.get("fetched_at")
     if not fetched:
