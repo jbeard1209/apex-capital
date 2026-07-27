@@ -137,12 +137,18 @@ class PipelineLogicAgent:
         cro      = state.get("cro_level", "LOW")
         picks_today = state.get("picks_today", 0)
         days_dark   = state.get("days_since_last_pick", 0) or 0
+        candidates_last_cycle = state.get("candidates_last_cycle", 0)
 
         # R1: Zero picks despite active agents + non-emergency conditions
         # Only fire if CRO is NOT the reason picks are blocked (CRO is a valid posture, not a bug)
         cro_is_blocking = cro in ("HIGH", "CRITICAL", "ELEVATED")
+        # A pipeline that EVALUATED candidates but approved none is being
+        # disciplined (or buy-frozen), NOT dark. Only fire when the Manager saw
+        # nothing at all — that is the real structural break. This prevents the
+        # false "999 days DARK" CRITICAL that fired throughout the 272-day freeze.
+        pipeline_truly_dark = candidates_last_cycle == 0
         if len(active) >= 5 and canary not in ("RED","ORANGE") and cro != "CRITICAL":
-            if days_dark >= 2 and picks_today == 0 and not cro_is_blocking:
+            if days_dark >= 2 and picks_today == 0 and not cro_is_blocking and pipeline_truly_dark:
                 findings.append(_finding(
                     rule="zero_picks",
                     severity="CRITICAL" if days_dark > 5 else "HIGH",
@@ -1098,9 +1104,15 @@ def _build_state() -> dict:
     mgr = _load(DATA_DIR / "manager_decisions.json", [])
     picks_today = 0
     last_pick_date = None
+    # Candidates the Manager actually EVALUATED in the most recent cycle. A
+    # non-empty list with zero approvals means the pipeline is WORKING and the
+    # Manager is simply being selective (or a buy-freeze is in force) — that is
+    # discipline, not a structural break. Only an empty evaluation set is "dark".
+    candidates_last_cycle = 0
     if isinstance(mgr, list) and mgr:
         last_cycle = mgr[-1] if isinstance(mgr[-1], dict) else {}
         decisions  = last_cycle.get("decisions", [])
+        candidates_last_cycle = len(decisions)
         picks_today = sum(1 for d in decisions
                           if d.get("manager_decision") == "APPROVED"
                           and d.get("manager_action") not in ("HOLD","WATCH","SELL","TRIM"))
@@ -1112,6 +1124,7 @@ def _build_state() -> dict:
                     break
     state["picks_today"]     = picks_today
     state["last_pick_date"]  = last_pick_date
+    state["candidates_last_cycle"] = candidates_last_cycle
     state["days_since_last_pick"] = _days_since(last_pick_date) if last_pick_date else 999
 
     # Research report age
