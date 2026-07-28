@@ -547,10 +547,20 @@ class AlpacaTrader:
             logger.warning(f"Could not fetch SPY regime data: {e}")
             return True, 0.0, 0.0   # Default to bull if data unavailable
 
+    # Hysteresis band around the 200-day MA. Without it, when SPY hovers within
+    # a fraction of a percent of its 200MA, tiny intraday moves flip the regime
+    # bull↔bear every pipeline run — selling the SH hedge and buying it right
+    # back (observed: net-zero 145-share round trips every ~20 min all day).
+    # Inside ±this band we HOLD the current posture instead of trading. SPY must
+    # cross the MA by more than the band to actually flip the hedge on/off.
+    HEDGE_MA_DEADBAND_PCT = 1.5
+
     def manage_regime_hedge(self) -> dict:
         """
         Bear regime  → buy SH (inverse S&P500 ETF) at 20% of portfolio.
         Bull regime  → sell SH if held, free cash for longs.
+        Neutral zone (SPY within ±HEDGE_MA_DEADBAND_PCT of its 200MA) → hold the
+        current posture, no trade. This deadband is what stops the flip-flop churn.
         Returns action summary dict.
         """
         is_bull, spy_price, ma200 = self.get_spy_regime()
@@ -558,6 +568,14 @@ class AlpacaTrader:
         positions   = self.get_positions()
         has_hedge   = (not positions.empty and
                        HEDGE_ETF in positions["ticker"].values)
+
+        # Neutral deadband: too close to the 200MA to trust the signal — keep
+        # whatever posture we already hold rather than round-tripping the lot.
+        if abs(pct_from_ma) <= self.HEDGE_MA_DEADBAND_PCT:
+            regime_str = f"NEUTRAL (SPY {pct_from_ma:+.1f}% vs 200MA, within ±{self.HEDGE_MA_DEADBAND_PCT}% deadband)"
+            posture = "hedge held" if has_hedge else "no hedge"
+            logger.info(f"  {regime_str} — holding current posture ({posture}), no trade")
+            return {"action": "hold_deadband", "regime": regime_str, "has_hedge": has_hedge}
 
         if is_bull:
             regime_str = f"BULL (SPY {pct_from_ma:+.1f}% above 200MA)"
