@@ -45,7 +45,14 @@ MAX_POSITION_SIZE_PCT  = 0.07         # Max 7% of portfolio per position (board 
 MIN_INSTITUTIONS_SIGNAL = 2           # Minimum institutions buying same stock to trigger buy
 STOP_LOSS_PCT          = 0.07         # 7% stop loss per position
 TAKE_PROFIT_PCT        = 0.20         # 20% take profit per position
-MAX_OPEN_POSITIONS     = 15           # Max simultaneous open positions
+MAX_OPEN_POSITIONS     = 20           # Max simultaneous open positions
+                                      # TRIAL 2026-07-27 → review 2026-08-17: raised 15→20.
+                                      # The 15-cap was the ONLY thing rejecting new picks
+                                      # (V/WFC/GS/USB all bounced "15/15 positions", not on
+                                      # quality). Quality bar unchanged. Trial picks (any name
+                                      # beyond the original 15 incumbents) are tracked in
+                                      # data/pick_gate_trial.json; review with
+                                      # pick_gate_trial_review.py. Revert = set back to 15.
 HOLD_DAYS_MAX          = 60           # Max days to hold a position before forced exit
 
 # --- CAPITAL DEPLOYMENT POLICY ---
