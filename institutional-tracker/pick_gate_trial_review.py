@@ -79,6 +79,60 @@ def _fmt(x):
     return f"{x:+.2f}%" if isinstance(x, (int, float)) else "n/a"
 
 
+def _verdict(o) -> tuple[str, str]:
+    """Return (verdict, one-line rationale) comparing trial picks to incumbents."""
+    t, inc = o["trial_avg_return_pct"], o["incumbent_avg_return_pct"]
+    if o["n_trial_picks"] == 0:
+        return ("INCONCLUSIVE",
+                "No trial pick ever filled a 16th+ slot — the cap wasn't the "
+                "only thing gating buys, or no new pick qualified. Investigate the "
+                "pod→manager path before extending.")
+    if t is None or inc is None:
+        return ("INCONCLUSIVE", "Not enough return data yet to judge.")
+    edge = t - inc
+    if edge >= 1.0:
+        return ("EXTEND", f"Trial picks beat incumbents by {edge:+.1f}pp — the extra "
+                          "seats are earning their place. Consider bumping the cap further.")
+    if edge <= -1.0:
+        return ("REVERT", f"Trial picks lag incumbents by {edge:+.1f}pp — the extra "
+                          "seats diluted quality. Set MAX_OPEN_POSITIONS back to 15.")
+    return ("HOLD", f"Trial picks ≈ incumbents ({edge:+.1f}pp) — no clear signal. "
+                    "Extend the trial window before deciding.")
+
+
+def notify():
+    """Compose the review + verdict and email it through the guarded mail path."""
+    # Guard: the cron fires yearly (0 13 17 8 *) but this trial is one-shot. Only
+    # email while the manifest is still ACTIVE, so post-trial fires stay silent.
+    with open(MANIFEST) as fh:
+        if json.load(fh).get("status") != "ACTIVE":
+            print("Trial no longer ACTIVE — skipping notification.")
+            return
+    o = review()
+    v, why = _verdict(o)
+    picks = "".join(
+        f"<li>{r['ticker']}: {_fmt(r['unrealized_pnl_pct'])} (wt {r['weight_pct']:+.1f}%)</li>"
+        for r in o["trial_picks"]) or "<li>none admitted</li>"
+    body = (
+        f"<h2>Pick-gate trial review — verdict: {v}</h2>"
+        f"<p>{why}</p>"
+        f"<p>Trial ran {o['started']} → {o['review_on']}, cap {o['prior_cap']}→{o['trial_cap']}.</p>"
+        f"<h3>Scoreboard (avg unrealized return)</h3><ul>"
+        f"<li>Trial picks: {_fmt(o['trial_avg_return_pct'])}</li>"
+        f"<li>Incumbents: {_fmt(o['incumbent_avg_return_pct'])}</li>"
+        f"<li>SPY: {_fmt(o['spy_return_since_start_pct'])}</li></ul>"
+        f"<h3>Trial picks ({o['n_trial_picks']})</h3><ul>{picks}</ul>"
+        f"<p style='color:#888'>Revert = set MAX_OPEN_POSITIONS back to 15 in config.py "
+        f"(does not force-sell). Auto-sent by pick_gate_trial_review.py.</p>")
+    try:
+        from email_sender import send_alert_email
+        send_alert_email(f"[APEX TRIAL] Pick-gate review — {v} ({o['n_trial_picks']} trial picks)", body)
+        print(f"Emailed review — verdict {v}.")
+    except Exception as e:
+        print(f"Email failed ({e}); printing instead.")
+        main()
+
+
 def main():
     o = review()
     if "--json" in sys.argv:
@@ -100,4 +154,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if "--notify" in sys.argv:
+        notify()
+    else:
+        main()
