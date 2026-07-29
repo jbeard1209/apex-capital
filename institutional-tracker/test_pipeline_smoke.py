@@ -913,15 +913,81 @@ class TestSignoffLedger(unittest.TestCase):
         L.veto("c", "Canary", "flapping risk")
         self.assertFalse(L.is_cleared("c")[0], "veto failed to block")
 
+    def test_one_agent_cannot_wear_both_lenses(self):
+        """Dual sign-off is theatre if the same agent signs CIT and IRM."""
+        L = self.L
+        L.propose_change("c", "x", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("c", "SoloActor", "CIT", "looks fine")
+        L.sign("c", "SoloActor", "IRM", "looks fine")
+        ok, reasons = L.is_cleared("c")
+        self.assertFalse(ok, "one agent self-approved both lenses")
+        self.assertTrue(any("distinct agents" in r for r in reasons))
+
+    def test_hard_line_resists_rename_and_case_evasion(self):
+        """Red team RT-09/RT-10: a hard-line guardrail must catch renamed
+        siblings and case variants, not just the exact filename."""
+        L = self.L
+        for f in ("alpaca_trader_v2.py", "ALPACA_TRADER.py", "execution/config.py"):
+            self.assertTrue(L.touches_hard_line([f]), f"hard-line evaded via {f}")
+
+    def test_daily_line_cap_stops_split_to_evade(self):
+        """Red team RT-18: three 40-line deploys must not smuggle 120 lines past
+        the blast-radius limit — the daily line cap bites at deploy time."""
+        L = self.L
+        shipped = 0
+        for i in range(3):
+            cid = f"s{i}"
+            L.propose_change(cid, "x", [f"p{i}.py"], 40, 0, "BUG_FIX", "PASS")
+            L.sign(cid, "CIT1", "CIT", "ok"); L.sign(cid, "IRM1", "IRM", "ok")
+            if L.reserve_and_deploy(cid)[0]:
+                shipped += 1
+        self.assertLessEqual(shipped * 40, L.MAX_DAILY_DEPLOY_LINES)
+
+    def test_reserve_and_deploy_enforces_budget(self):
+        """Red team RT-20: the sanctioned deploy path caps deploys/day."""
+        L = self.L
+        shipped = 0
+        for i in range(6):
+            cid = f"b{i}"
+            L.propose_change(cid, "x", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+            L.sign(cid, "CIT1", "CIT", "ok"); L.sign(cid, "IRM1", "IRM", "ok")
+            if L.reserve_and_deploy(cid)[0]:
+                shipped += 1
+        self.assertLessEqual(shipped, L.DAILY_DEPLOY_BUDGET)
+
+    def test_stale_green_tests_do_not_clear(self):
+        """Red team RT-16 (staleness): a PASS recorded against an old commit must
+        not clear once HEAD has moved past it."""
+        L = self.L
+        L.propose_change("a", "x", ["z.py"], 2, 0, "BUG_FIX", None)
+        L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
+        rec = L._ledger()
+        rec["a"]["test_result"] = "PASS"
+        rec["a"]["test_commit"] = "deadbee"      # a commit that is not HEAD
+        L._save(L.LEDGER_PATH, rec)
+        ok, reasons = L.is_cleared("a")
+        # Only asserts when git is present (test_commit vs real HEAD differ).
+        if L._git_head():
+            self.assertFalse(ok, "stale green tests cleared")
+            self.assertTrue(any("stale" in r for r in reasons))
+
+    def test_outcome_requires_deploy(self):
+        """Red team RT-21: cannot score a fix that never shipped."""
+        L = self.L
+        L.propose_change("a", "x", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+        L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
+        with self.assertRaises(ValueError):
+            L.record_outcome("a", "HELD")
+
     def test_reverted_outcome_costs_more_than_a_hold(self):
         """Reputation must be outcome-weighted and asymmetric, or sign-off is theatre."""
         L = self.L
         L.propose_change("g", "good", ["z.py"], 2, 0, "BUG_FIX", "PASS")
         L.sign("g", "S", "CIT", "ok"); L.sign("g", "IRM-x", "IRM", "ok")
-        L.record_outcome("g", "HELD")
+        L.reserve_and_deploy("g"); L.record_outcome("g", "HELD")
         L.propose_change("b", "bad", ["z.py"], 2, 0, "BUG_FIX", "PASS")
         L.sign("b", "S", "CIT", "ok"); L.sign("b", "IRM-x", "IRM", "ok")
-        L.record_outcome("b", "REVERTED")
+        L.reserve_and_deploy("b"); L.record_outcome("b", "REVERTED")
         self.assertLess(L.reputation("S")["ewma"], 0.0,
                         "a hold then a revert should net NEGATIVE (burn weighs 3x)")
 

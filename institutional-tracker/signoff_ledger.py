@@ -47,14 +47,17 @@ LEDGER_PATH     = os.path.join(DATA, "signoff_ledger.json")
 REPUTATION_PATH = os.path.join(DATA, "agent_reputation.json")
 
 # --- HARD LINE: files an autonomous change may never self-clear -------------
-# Matched with fnmatch against the change's declared file paths (basename OR
-# repo-relative). Touch any of these and the change routes to the Chairman.
-HARD_LINE_GLOBS = [
-    "alpaca_trader.py",        # order submission / execution paths
-    "config.py",               # position caps, risk limits, deployment targets
-    ".env", "*.env",           # credentials
-    "*secret*", "*credential*",
-    "position_risk_monitor.py",  # circuit breaker
+# Red team RT-09/RT-10 (2026-07-29) evaded an exact-name glob with a renamed
+# sibling (alpaca_trader_v2.py) and a case variant (ALPACA_TRADER.py). A
+# hard-line guardrail must fail SAFE: match case-insensitively on a SUBSTRING
+# of the basename, so any near-neighbour of a protected file also routes to the
+# Chairman. Over-blocking here only means a human reviews — the correct bias.
+HARD_LINE_SUBSTRINGS = [
+    "alpaca_trader",           # order submission / execution paths (+ any sibling)
+    "config",                  # position caps, risk limits, deployment targets
+    "secret", "credential",    # credentials
+    "position_risk_monitor",   # circuit breaker
+    "risk_limit", "risk_manager",  # risk configuration / scoring
 ]
 
 # --- BLAST RADIUS: auto-route to human above these ---------------------------
@@ -63,6 +66,10 @@ MAX_BLAST_LINES = 40           # added + removed, summed
 
 # --- DAILY DEPLOY BUDGET -----------------------------------------------------
 DAILY_DEPLOY_BUDGET = 3
+# Red team RT-18: a big change split into N small ones each passes the
+# per-change blast limit. A cumulative daily line cap closes the aggregate
+# hole — you cannot ship 3× 40-line changes to smuggle a 120-line refactor.
+MAX_DAILY_DEPLOY_LINES = 60
 
 # --- REQUIRED SIGNERS --------------------------------------------------------
 REQUIRED_ROLES = {"CIT", "IRM"}     # both lenses must sign
@@ -105,6 +112,17 @@ def _now() -> str:
     return datetime.now().isoformat()
 
 
+def _git_head() -> str | None:
+    """Current HEAD short hash, or None if git is unavailable."""
+    try:
+        import subprocess
+        r = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                           cwd=BASE, capture_output=True, text=True, timeout=5)
+        return r.stdout.strip() or None
+    except Exception:
+        return None
+
+
 def _ledger() -> dict:
     d = _load(LEDGER_PATH, {})
     return d if isinstance(d, dict) else {}
@@ -114,14 +132,15 @@ def _ledger() -> dict:
 # guardrail checks
 # ---------------------------------------------------------------------------
 def touches_hard_line(files: list) -> list:
-    """Return the subset of declared files that hit a hard-line glob."""
+    """Return the subset of declared files that hit a hard-line rule.
+    Case-insensitive substring match on the basename, plus any .env file."""
     hits = []
     for f in files or []:
-        base = os.path.basename(str(f))
-        for glob in HARD_LINE_GLOBS:
-            if fnmatch.fnmatch(base, glob) or fnmatch.fnmatch(str(f), glob):
-                hits.append(str(f))
-                break
+        base = os.path.basename(str(f)).lower()
+        if base == ".env" or base.endswith(".env"):
+            hits.append(str(f)); continue
+        if any(sub in base for sub in HARD_LINE_SUBSTRINGS):
+            hits.append(str(f))
     return hits
 
 
@@ -130,10 +149,19 @@ def blast_radius_ok(files: list, added: int, removed: int) -> bool:
             and (int(added or 0) + int(removed or 0)) <= MAX_BLAST_LINES)
 
 
-def deploys_today() -> int:
+def _deployed_today_records() -> list:
     today = date.today().isoformat()
-    return sum(1 for c in _ledger().values()
-               if (c.get("deployed_at") or "")[:10] == today)
+    return [c for c in _ledger().values()
+            if (c.get("deployed_at") or "")[:10] == today]
+
+
+def deploys_today() -> int:
+    return len(_deployed_today_records())
+
+
+def lines_deployed_today() -> int:
+    return sum(int(c.get("added", 0)) + int(c.get("removed", 0))
+              for c in _deployed_today_records())
 
 
 # ---------------------------------------------------------------------------
@@ -168,9 +196,12 @@ def propose_change(change_id: str, title: str, files: list,
 
 
 def attach_test_result(change_id: str, result: str) -> None:
+    """Record a green/red test result AND the commit it ran against, so a PASS
+    can't be reused after the code moves on (red team RT-16, staleness angle)."""
     led = _ledger()
     if change_id in led:
         led[change_id]["test_result"] = result
+        led[change_id]["test_commit"] = _git_head()
         _save(LEDGER_PATH, led)
 
 
@@ -231,6 +262,13 @@ def _clearance_reasons(rec: dict) -> tuple[bool, list]:
         reasons.append(f"vetoed by {v['agent']} ({v['role']}): {v['reason']}")
     if rec.get("test_result") != "PASS":
         reasons.append(f"no green test+audit on record (test_result={rec.get('test_result')})")
+    else:
+        # The green result must have run against the code being deployed. If
+        # HEAD has moved since the tests passed, the PASS is stale — re-test.
+        head, tc = _git_head(), rec.get("test_commit")
+        if head and tc and head != tc:
+            reasons.append(f"green tests are stale — ran against {tc} but HEAD is now "
+                           f"{head}; re-run tests before deploy")
     if not blast_radius_ok(rec.get("files"), rec.get("added"), rec.get("removed")):
         reasons.append(f"blast radius too large ({len(rec.get('files',[]))} files, "
                        f"{rec.get('added',0)+rec.get('removed',0)} lines > "
@@ -239,6 +277,17 @@ def _clearance_reasons(rec: dict) -> tuple[bool, list]:
     missing = REQUIRED_ROLES - roles_signed
     if missing:
         reasons.append(f"missing required sign-off from: {', '.join(sorted(missing))}")
+    # Dual sign-off is only real if the lenses are DIFFERENT agents. One agent
+    # wearing both the CIT and IRM hats is self-approval, not independent review.
+    role_agents = {role: {s["agent"] for s in rec.get("signatures", []) if s["role"] == role}
+                   for role in REQUIRED_ROLES}
+    if all(role_agents.get(r) for r in REQUIRED_ROLES):
+        import itertools
+        for ra, rb in itertools.combinations(REQUIRED_ROLES, 2):
+            if role_agents[ra] & role_agents[rb]:
+                dupe = ', '.join(sorted(role_agents[ra] & role_agents[rb]))
+                reasons.append(f"same agent ({dupe}) signed both {ra} and {rb} lenses — "
+                               f"dual sign-off requires two distinct agents")
     return (len(reasons) == 0, reasons)
 
 
@@ -250,10 +299,36 @@ def is_cleared(change_id: str) -> tuple[bool, list]:
     ok, reasons = _clearance_reasons(rec)
     if ok and deploys_today() >= DAILY_DEPLOY_BUDGET:
         return (False, [f"daily deploy budget reached ({DAILY_DEPLOY_BUDGET}) — queues for Chairman"])
+    change_lines = int(rec.get("added", 0)) + int(rec.get("removed", 0))
+    if ok and lines_deployed_today() + change_lines > MAX_DAILY_DEPLOY_LINES:
+        return (False, [f"daily line budget would be exceeded "
+                        f"({lines_deployed_today()}+{change_lines} > {MAX_DAILY_DEPLOY_LINES}) "
+                        f"— queues for Chairman (anti-split guard)"])
     return (ok, reasons)
 
 
+def reserve_and_deploy(change_id: str) -> tuple[bool, list]:
+    """Atomically re-check clearance + budget and stamp deployed in ONE
+    load→verify→save, so two racing deployers can't both slip past the budget
+    (red team RT-20). This is the only sanctioned way to mark a deploy."""
+    ok, reasons = is_cleared(change_id)
+    if not ok:
+        return (False, reasons)
+    led = _ledger()                       # re-read immediately before writing
+    rec = led.get(change_id)
+    if rec is None:
+        return (False, ["unknown change"])
+    if len([c for c in led.values()
+            if (c.get("deployed_at") or "")[:10] == date.today().isoformat()]) >= DAILY_DEPLOY_BUDGET:
+        return (False, ["budget consumed by a concurrent deploy — queues for Chairman"])
+    rec["deployed_at"] = _now()
+    rec["status"] = "DEPLOYED"
+    _save(LEDGER_PATH, led)
+    return (True, [])
+
+
 def mark_deployed(change_id: str) -> None:
+    """Thin wrapper; prefer reserve_and_deploy() which enforces the budget."""
     led = _ledger()
     if change_id in led:
         led[change_id]["deployed_at"] = _now()
@@ -261,9 +336,16 @@ def mark_deployed(change_id: str) -> None:
         _save(LEDGER_PATH, led)
 
 
-def record_outcome(change_id: str, outcome: str) -> dict:
+def record_outcome(change_id: str, outcome: str, reported_by: str = "unattributed") -> dict:
     """Close the loop: score the SIGNERS on how their change fared.
-    outcome ∈ {HELD, REVERTED, REGRESSED}."""
+    outcome ∈ {HELD, REVERTED, REGRESSED}.
+
+    Red team RT-21: outcome reporting is only as trustworthy as its provenance.
+    Two guards: (1) you cannot score a change that never deployed — a HELD on a
+    fix that never shipped is meaningless; (2) every outcome is stamped with the
+    reporter and appended to an audit trail, so a self-serving HELD is at least
+    attributable and reviewable (HR reads reputation; a pattern of one agent
+    reporting only HELDs on its own sign-offs is now visible)."""
     outcome = outcome.upper()
     if outcome not in _OUTCOME_SIGNAL:
         raise ValueError(f"outcome must be one of {list(_OUTCOME_SIGNAL)}")
@@ -271,8 +353,13 @@ def record_outcome(change_id: str, outcome: str) -> dict:
     rec = led.get(change_id)
     if rec is None:
         raise KeyError(f"unknown change {change_id}")
+    if not rec.get("deployed_at"):
+        raise ValueError(f"cannot record an outcome for {change_id}: it never deployed")
     rec["outcome"] = outcome
     rec["outcome_at"] = _now()
+    rec["outcome_reported_by"] = reported_by
+    rec.setdefault("outcome_audit", []).append(
+        {"outcome": outcome, "by": reported_by, "at": _now()})
     _save(LEDGER_PATH, led)
     signal = _OUTCOME_SIGNAL[outcome]
     for s in rec.get("signatures", []):
