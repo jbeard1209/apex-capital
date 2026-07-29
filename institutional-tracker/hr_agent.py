@@ -763,7 +763,7 @@ class HRDevelopmentOfficer:
             try:
                 import signoff_ledger as _sl
                 rep = _sl.reputation(cn)
-                if rep.get("n_signed", 0) >= 3 and rep.get("ewma", 0.0) < -0.5:
+                if _sl.hr_flag(cn):
                     observations.append(
                         f"Sign-off reputation is negative (ewma {rep['ewma']:+.2f}; "
                         f"{rep.get('n_burned',0)} of {rep['n_signed']} signed fixes "

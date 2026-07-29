@@ -59,14 +59,33 @@ BACKUP_DIR   = DATA_DIR / "backups" / "cit_impl"
 FIRM_CHANNEL = DATA_DIR / "firm_channel.json"
 
 # Never auto-modify these — too risky without human review
-PROTECTED_FILES = {
-    "alpaca_trader.py",
-    "main.py",
-    "risk_manager_agent.py",
-    "irm_review_agent.py",
-    "board_meeting.py",
-    "manager_agent.py",
+# Protected-file policy is NO LONGER defined here. It used to be a private set
+# that could silently drift from the real guardrail. As of 2026-07-29 the single
+# source of truth is signoff_ledger.HARD_LINE_SUBSTRINGS via
+# signoff_ledger.touches_hard_line() — one policy, one place, red-teamed. The old
+# set is kept only as a documented fallback if the ledger import ever fails.
+try:
+    import signoff_ledger as _sl
+except Exception:      # pragma: no cover - defensive
+    _sl = None
+
+_LEGACY_PROTECTED_FALLBACK = {
+    "alpaca_trader.py", "main.py", "risk_manager_agent.py",
+    "irm_review_agent.py", "board_meeting.py", "manager_agent.py",
 }
+
+
+def _is_protected(target_file_name: str) -> bool:
+    """Is this file off-limits to autonomous edits? Delegates to the ledger's
+    hard-line rules so there is exactly one protected-file policy in the firm.
+    Falls back to the legacy set only if the ledger can't be imported."""
+    if _sl is not None:
+        try:
+            return bool(_sl.touches_hard_line([target_file_name]))
+        except Exception:
+            pass
+    return Path(target_file_name).name in _LEGACY_PROTECTED_FALLBACK
+
 
 MIN_CONFIDENCE  = 65    # minimum confidence to attempt auto-fix
 MAX_FIXES_PER_RUN = 10  # hard cap per invocation
@@ -281,9 +300,10 @@ def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN
                                   "reason": "Requires architectural change, not a single-file fix"})
             continue
 
-        # Protected file check
+        # Protected file check — delegated to the sign-off ledger's hard-line
+        # rules (single source of truth), not a private list that can drift.
         base_name = Path(target_file_name).name
-        if base_name in PROTECTED_FILES:
+        if _is_protected(target_file_name):
             reason = f"{base_name} is a protected file — human review required"
             logger.info(f"    SKIP: {reason}")
             item["status"]    = "protected"
@@ -308,6 +328,33 @@ def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN
             skipped.append(pid)
             report_items.append({"pid": pid, "title": title, "result": "FILE_NOT_FOUND", "reason": reason})
             continue
+
+        # --- Sign-off ledger PREFLIGHT (single autonomy choke point) ----------
+        # Register this autonomous change and ask the gate whether it may proceed.
+        # In SHADOW mode preflight always allows but logs what it WOULD block, so
+        # the board + CIT can watch the gate's judgement without breaking the
+        # pipeline. In ENFORCE mode a would-block actually blocks and routes to
+        # the Chairman. dry_run never registers a real change.
+        if _sl is not None and not dry_run:
+            try:
+                _cid = f"citimpl-{pid}"
+                _sl.propose_change(
+                    _cid, title=title[:120], files=[str(target_path.name)],
+                    added=0, removed=0, category=str(category),
+                )
+                pf = _sl.preflight(_cid, actuator="cit_implementation_agent")
+                if not pf.get("allow", True):
+                    reason = ("gate blocked (ENFORCE): " +
+                              "; ".join(pf.get("reasons", [])[:2]))
+                    logger.info(f"    ROUTE_TO_HUMAN: {reason}")
+                    item["status"] = "routed_to_human"
+                    item["skip_reason"] = reason
+                    skipped.append(pid)
+                    report_items.append({"pid": pid, "title": title,
+                                         "result": "ROUTED_TO_HUMAN", "reason": reason})
+                    continue
+            except Exception as _e:      # fail-open in shadow; never break pipeline
+                logger.debug(f"    preflight skipped ({_e})")
 
         # Determine fix pattern
         fix_lower = (fix_desc + " " + title).lower()

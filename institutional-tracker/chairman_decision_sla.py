@@ -43,7 +43,7 @@ CHAIR_ACTION  = DATA / "chairman_action_required.json"   # upstream producers
 QUEUE_PATH    = DATA / "chairman_decision_queue.json"     # the app-facing inbox (this agent owns it)
 CIT_PENDING   = DATA / "cit_pending_proposals.json"       # board escalation target
 
-SLA_DAYS = 50
+SLA_DAYS = 20   # Chairman directive 2026-07-29: escalate to board after 20 days, not 50
 
 
 def _load(path: Path, default):

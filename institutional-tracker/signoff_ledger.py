@@ -45,6 +45,17 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(BASE, "data")
 LEDGER_PATH     = os.path.join(DATA, "signoff_ledger.json")
 REPUTATION_PATH = os.path.join(DATA, "agent_reputation.json")
+MODE_PATH       = os.path.join(DATA, "signoff_mode.json")     # SHADOW | ENFORCE
+SHADOW_LOG_PATH = os.path.join(DATA, "signoff_shadow_log.json")
+
+# --- ROLLOUT MODE ------------------------------------------------------------
+# The gate starts in SHADOW: it computes exactly what it WOULD block and logs it,
+# but never actually blocks an autonomous action — so wiring it into live
+# actuators cannot break the pipeline while the board + CIT watch it. Flipping to
+# ENFORCE (Chairman directive 2026-07-29) requires a JOINT board+CIT vote, not a
+# manual toggle: see set_mode(). Default is always SHADOW if the file is absent.
+_VALID_MODES = ("SHADOW", "ENFORCE")
+_FLIP_APPROVERS_REQUIRED = {"BOARD", "CIT"}   # both must approve to enforce
 
 # --- HARD LINE: files an autonomous change may never self-clear -------------
 # Red team RT-09/RT-10 (2026-07-29) evaded an exact-name glob with a renamed
@@ -58,7 +69,18 @@ HARD_LINE_SUBSTRINGS = [
     "secret", "credential",    # credentials
     "position_risk_monitor",   # circuit breaker
     "risk_limit", "risk_manager",  # risk configuration / scoring
+    # 2026-07-29: absorbed cit_implementation_agent's private PROTECTED_FILES so
+    # the firm has ONE protected-file policy. These are trade-execution and
+    # governance files an autonomous fixer must never rewrite unsupervised.
+    "manager_agent",           # places board-approved orders
+    "board_meeting",           # governance / vote application
+    "irm_review",              # independent risk review
 ]
+
+# A few files where a substring rule would be too broad or too narrow are pinned
+# by exact basename (still matched case-insensitively). main.py is the pipeline
+# entrypoint; "main" as a substring would over-match unrelated files.
+HARD_LINE_EXACT = {"main.py"}
 
 # --- BLAST RADIUS: auto-route to human above these ---------------------------
 MAX_BLAST_FILES = 2
@@ -139,14 +161,24 @@ def touches_hard_line(files: list) -> list:
         base = os.path.basename(str(f)).lower()
         if base == ".env" or base.endswith(".env"):
             hits.append(str(f)); continue
+        if base in {e.lower() for e in HARD_LINE_EXACT}:
+            hits.append(str(f)); continue
         if any(sub in base for sub in HARD_LINE_SUBSTRINGS):
             hits.append(str(f))
     return hits
 
 
+def _norm_agent(a: str) -> str:
+    """Canonical agent identity for the distinct-signer check (red team RT-23/24):
+    case- and whitespace-insensitive so 'Solo', 'solo', 'Solo ' are one entity."""
+    return " ".join(str(a).split()).casefold()
+
+
 def blast_radius_ok(files: list, added: int, removed: int) -> bool:
-    return (len(files or []) <= MAX_BLAST_FILES
-            and (int(added or 0) + int(removed or 0)) <= MAX_BLAST_LINES)
+    # Clamp negatives (red team RT-26): a negative removed can't be used to net
+    # a huge `added` down under the limit.
+    lines = max(0, int(added or 0)) + max(0, int(removed or 0))
+    return len(files or []) <= MAX_BLAST_FILES and lines <= MAX_BLAST_LINES
 
 
 def _deployed_today_records() -> list:
@@ -255,6 +287,15 @@ def _refresh_status(rec: dict) -> None:
 
 def _clearance_reasons(rec: dict) -> tuple[bool, list]:
     reasons = []
+    files = rec.get("files") or []
+    # A change that declares no files can't be assessed for hard-line/blast — it
+    # must not auto-clear (red team RT-25).
+    if not files:
+        reasons.append("no files declared — cannot assess hard-line/blast radius")
+    # Non-ASCII filenames can smuggle a homoglyph past the substring match
+    # (red team RT-27) — route anything exotic to a human.
+    if any(any(ord(ch) > 127 for ch in str(f)) for f in files):
+        reasons.append("non-ascii character in a filename — route to human")
     if rec.get("hard_line_hits"):
         reasons.append(f"touches hard-line file(s): {', '.join(rec['hard_line_hits'])}")
     if rec.get("veto"):
@@ -279,7 +320,7 @@ def _clearance_reasons(rec: dict) -> tuple[bool, list]:
         reasons.append(f"missing required sign-off from: {', '.join(sorted(missing))}")
     # Dual sign-off is only real if the lenses are DIFFERENT agents. One agent
     # wearing both the CIT and IRM hats is self-approval, not independent review.
-    role_agents = {role: {s["agent"] for s in rec.get("signatures", []) if s["role"] == role}
+    role_agents = {role: {_norm_agent(s["agent"]) for s in rec.get("signatures", []) if s["role"] == role}
                    for role in REQUIRED_ROLES}
     if all(role_agents.get(r) for r in REQUIRED_ROLES):
         import itertools
@@ -387,6 +428,20 @@ def _apply_reputation(agent: str, signal: float, change_id: str, outcome: str) -
     _save(REPUTATION_PATH, rep)
 
 
+def hr_flag(agent: str, window: int = 25) -> bool:
+    """Should HR flag this signer? Uses BOTH the ewma AND a trailing burn count,
+    so an agent can't farm trivial HELDs to lift its ewma above the threshold and
+    hide a recent burn (red team RT-28). A burn stays visible until it ages out
+    of the window — and the raw n_burned count never disappears."""
+    r = reputation(agent)
+    if not r or r.get("n_signed", 0) < 3:
+        return False
+    if r.get("ewma", 0.0) < -0.5:
+        return True
+    recent = r.get("history", [])[-window:]
+    return any(h.get("outcome") in ("REVERTED", "REGRESSED") for h in recent)
+
+
 def reputation(agent: str | None = None):
     """Signer reputation. ewma < 0 means recent sign-offs have been burning."""
     rep = _load(REPUTATION_PATH, {})
@@ -395,6 +450,100 @@ def reputation(agent: str | None = None):
     if agent:
         return rep.get(agent, {"ewma": 0.0, "n_signed": 0, "n_held": 0, "n_burned": 0})
     return rep
+
+
+# ---------------------------------------------------------------------------
+# rollout mode (shadow -> enforce) + preflight gate for live actuators
+# ---------------------------------------------------------------------------
+def get_mode() -> str:
+    """Current gate mode. Absent/invalid file → SHADOW (fail safe: never
+    silently start blocking, and never silently start enforcing)."""
+    m = _load(MODE_PATH, {})
+    mode = (m or {}).get("mode") if isinstance(m, dict) else None
+    return mode if mode in _VALID_MODES else "SHADOW"
+
+
+def set_mode(mode: str, approvals: list, note: str = "") -> tuple[bool, str]:
+    """Flip the gate mode. Going to ENFORCE requires a joint board+CIT vote —
+    `approvals` must contain distinct entries covering BOTH {BOARD, CIT}
+    (Chairman directive 2026-07-29: 'if the board AND the cit team agrees, it
+    can be flipped to enforce'). Flipping BACK to SHADOW is always allowed
+    (de-risking is never gated). Returns (ok, message)."""
+    mode = str(mode).upper()
+    if mode not in _VALID_MODES:
+        return (False, f"mode must be one of {_VALID_MODES}")
+    if mode == "ENFORCE":
+        got = {str(a).strip().upper() for a in (approvals or [])}
+        missing = _FLIP_APPROVERS_REQUIRED - got
+        if missing:
+            return (False, f"ENFORCE requires joint approval from {', '.join(sorted(missing))} "
+                           f"(have: {', '.join(sorted(got)) or 'none'})")
+    _save(MODE_PATH, {
+        "mode": mode,
+        "approvals": sorted({str(a).strip().upper() for a in (approvals or [])}),
+        "note": note[:400],
+        "set_at": _now(),
+        "set_head": _git_head(),
+    })
+    return (True, f"gate mode set to {mode}")
+
+
+def _shadow_log(entry: dict) -> None:
+    log = _load(SHADOW_LOG_PATH, [])
+    if not isinstance(log, list):
+        log = []
+    log.append(entry)
+    _save(SHADOW_LOG_PATH, log[-500:])   # keep the tail bounded
+
+
+def preflight(change_id: str, actuator: str = "unknown") -> dict:
+    """The single choke point every autonomous actuator must call BEFORE it
+    applies a code change. It answers one question: may this proceed?
+
+      • SHADOW  → allow is ALWAYS True (nothing breaks), but if the change would
+                  have been blocked we record it to the shadow log so the board +
+                  CIT can watch the gate's judgement without risk.
+      • ENFORCE → allow == is_cleared(): a would-block actually blocks and the
+                  change routes to the Chairman queue.
+
+    Returns {allow, mode, would_block, reasons, change_id, actuator}. Callers
+    honour `allow`; they may surface `reasons` either way."""
+    mode = get_mode()
+    cleared, reasons = is_cleared(change_id)
+    would_block = not cleared
+    allow = True if mode == "SHADOW" else cleared
+    result = {
+        "change_id": change_id,
+        "actuator": actuator,
+        "mode": mode,
+        "would_block": would_block,
+        "allow": allow,
+        "reasons": reasons,
+        "at": _now(),
+    }
+    # Log every would-block in shadow, and every actual block in enforce.
+    if would_block:
+        _shadow_log(result)
+    return result
+
+
+def shadow_summary() -> dict:
+    """What the board + CIT review to decide the flip: how often the gate would
+    have blocked, and why."""
+    log = _load(SHADOW_LOG_PATH, [])
+    if not isinstance(log, list):
+        log = []
+    from collections import Counter
+    reason_heads = Counter()
+    for e in log:
+        for r in e.get("reasons", []):
+            reason_heads[r.split(" (")[0].split(" —")[0][:60]] += 1
+    return {
+        "mode": get_mode(),
+        "would_block_events": len(log),
+        "distinct_changes": len({e.get("change_id") for e in log}),
+        "top_reasons": reason_heads.most_common(8),
+    }
 
 
 # ---------------------------------------------------------------------------

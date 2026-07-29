@@ -198,6 +198,99 @@ def attack_rep():
            True, not attributed, "every outcome must be stamped with a reporter")
 
 
+# =============================================================================
+# ROUND 2 — two more specialists join (identity, payload & incentive attacks)
+# =============================================================================
+def attack_r2_identity():
+    """Distinct-agent rule is only as strong as agent identity. Try to be two
+    'different' agents with name variants (case, whitespace)."""
+    L = _fresh_ledger()
+    L.propose_change("a", "x", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+    L.sign("a", "Solo", "CIT", "ok"); L.sign("a", "solo", "IRM", "ok")   # case
+    _check("R2 identity", "one entity signs both lenses via case variant", "HIGH",
+           True, L.is_cleared("a")[0], "'Solo' vs 'solo' treated as distinct agents")
+    L.propose_change("b", "x", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+    L.sign("b", "Solo", "CIT", "ok"); L.sign("b", "Solo ", "IRM", "ok")  # whitespace
+    _check("R2 identity", "both lenses via trailing-space name", "HIGH",
+           True, L.is_cleared("b")[0], "'Solo' vs 'Solo ' treated as distinct")
+
+
+def attack_r2_payload():
+    """Malformed change metadata to slip the mechanical checks."""
+    L = _fresh_ledger()
+    # empty file list — nothing to hard-line/blast check against
+    L.propose_change("a", "x", [], 5, 5, "BUG_FIX", "PASS")
+    L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
+    _check("R2 payload", "clear a change that declares NO files", "HIGH",
+           True, L.is_cleared("a")[0], "empty file list means hard-line/blast can't be assessed")
+    # negative line counts to make a huge change look tiny
+    L.propose_change("b", "x", ["big.py"], 5000, -4980, "BUG_FIX", "PASS")
+    L.sign("b", "CIT1", "CIT", "ok"); L.sign("b", "IRM1", "IRM", "ok")
+    _check("R2 payload", "negative line count masks a 5000-line change", "MEDIUM",
+           True, L.is_cleared("b")[0], "added+removed nets to 20 via a negative removed")
+
+
+def attack_r2_reputation_farm():
+    """Climb back above HR's flag threshold by farming trivial HELDs after a
+    burn, so the burn is hidden."""
+    L = _fresh_ledger()
+    def cycle(cid, outcome):
+        L.propose_change(cid, "x", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+        L.sign(cid, "CIT1", "CIT", "ok"); L.sign(cid, "IRM1", "IRM", "ok")
+        if L.reserve_and_deploy(cid)[0]:      # budget caps how fast one can farm
+            L.record_outcome(cid, outcome, "CIT1")
+    cycle("burn", "REVERTED")
+    for i in range(10):
+        cycle(f"farm{i}", "HELD")
+    rep = L.reputation("CIT1")
+    # The real question: does HR still flag the agent despite the farming?
+    hidden = not L.hr_flag("CIT1")
+    _check("R2 incentive", "farm HELDs to hide a burn from HR", "MEDIUM",
+           True, hidden,
+           f"ewma back to {rep['ewma']:+.2f}, {rep['n_burned']} burn(s) — hr_flag={L.hr_flag('CIT1')}")
+
+
+def attack_r2_homoglyph():
+    """Unicode look-alike in a hard-line filename."""
+    L = _fresh_ledger()
+    sneaky = "cοnfig.py"   # greek omicron instead of 'o'
+    L.propose_change("a", "x", [sneaky], 1, 0, "BUG_FIX", "PASS")
+    L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
+    _check("R2 payload", "hard-line evaded via unicode homoglyph filename", "LOW",
+           True, L.is_cleared("a")[0], "cοnfig.py (greek omicron) dodges the substring")
+
+
+# ── R3: migration verification (the "old thing" must be gone) ───────────────
+# Chairman directive 2026-07-29: verify every autonomous actuator was migrated
+# onto the ledger and no private guardrail list survives to drift. The red team
+# checks the migration the CIT team claims it finished.
+def attack_r3_migration():
+    L = _fresh_ledger()
+    # ENFORCE mode: a hard-line change (absorbed from the old PROTECTED_FILES)
+    # must actually block via preflight — proving the unified policy bites.
+    L.MODE_PATH = os.path.join(os.path.dirname(L.LEDGER_PATH), "mode.json")
+    L.SHADOW_LOG_PATH = os.path.join(os.path.dirname(L.LEDGER_PATH), "shadow.json")
+    L.set_mode("ENFORCE", ["BOARD", "CIT"])
+    for f in ("manager_agent.py", "board_meeting.py", "main.py", "irm_review_agent.py"):
+        L.propose_change(f, "x", [f], 1, 0, "BUG_FIX", "PASS")
+        _check("R3 migration", f"absorbed protected file {f} still hard-line", "CRITICAL",
+               True, L.preflight(f, actuator="rt")["allow"],
+               "old PROTECTED_FILES entry must remain blocked under the unified gate")
+
+    # The CIT implementation actuator must delegate protection to the ledger,
+    # not a private list — verified against the real module.
+    try:
+        import cit_implementation_agent as C
+        importlib.reload(C)
+        prot = C._is_protected("manager_agent.py") and not C._is_protected("some_random_file.py")
+        has_private = hasattr(C, "PROTECTED_FILES")
+        _check("R3 migration", "cit_implementation_agent delegates to ledger", "HIGH",
+               True, (not prot) or has_private,
+               "actuator must use ledger hard-line, no private PROTECTED_FILES")
+    except Exception as e:
+        _check("R3 migration", "cit_implementation_agent import", "HIGH", True, True, repr(e))
+
+
 def _weekly_investigator_lenses():
     """Second angle: pull the firm's own auditors over the new module."""
     out = []
@@ -209,11 +302,21 @@ def _weekly_investigator_lenses():
                     else "VIOLATIONS", r.stdout.strip().splitlines()[-1] if r.stdout else ""))
     except Exception as e:
         out.append(("wiring_audit", "error", str(e)))
+    try:
+        import subprocess
+        r = subprocess.run([sys.executable, "cit_migration_audit.py"],
+                           capture_output=True, text=True, timeout=60)
+        out.append(("cit_migration", "clean" if r.returncode == 0 else "UNMIGRATED",
+                    r.stdout.strip().splitlines()[-1] if r.stdout else ""))
+    except Exception as e:
+        out.append(("cit_migration", "error", str(e)))
     return out
 
 
 def run():
-    for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep):
+    for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
+               attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
+               attack_r2_homoglyph, attack_r3_migration):
         try:
             fn()
         except Exception as e:

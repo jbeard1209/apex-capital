@@ -76,6 +76,42 @@ REGIME_MANDATES = {
     "UNKNOWN":  {"mandate": "MOMENTUM",   "max_position_pct": 0.07, "deploy_target": TARGET_DEPLOYMENT_PCT},
 }
 
+# --- RISK-LIMIT GOVERNOR OVERRIDES (applied at import) -----------------------
+# The source constants above are the BASELINE (Chairman-owned). The Risk-Limit
+# Governor (risk_limit_governor.py) may move a governed limit within a small,
+# notified, hard-capped band by writing data/risk_limit_overrides.json — it never
+# edits this file (that stays a ledger hard line). We apply any override here so
+# every consumer that reads config.<NAME> sees the effective value, and we stash
+# the untouched baselines on _RISK_BASELINES so the governor can band correctly.
+_RISK_BASELINES = {}
+def _apply_risk_overrides():
+    _governed = {
+        "MAX_POSITION_SIZE_PCT": (0.02, 0.10),
+        "MAX_OPEN_POSITIONS":    (5, 25),
+        "STOP_LOSS_PCT":         (0.03, 0.12),
+        "TARGET_DEPLOYMENT_PCT": (0.20, 0.85),
+    }
+    for _k in _governed:
+        _RISK_BASELINES[_k] = globals().get(_k)
+    try:
+        import json as _json, os as _o
+        _p = _o.path.join(_o.path.dirname(_o.path.abspath(__file__)),
+                          "data", "risk_limit_overrides.json")
+        if not _o.path.exists(_p):
+            return
+        _ov = _json.load(open(_p))
+        for _k, (_floor, _ceil) in _governed.items():
+            _entry = _ov.get(_k)
+            if isinstance(_entry, dict) and "value" in _entry:
+                _v = _entry["value"]
+                # Final safety clamp: a corrupted override can never breach the
+                # Chairman-only hard bounds, no matter what got written to disk.
+                _v = max(_floor, min(_ceil, _v))
+                globals()[_k] = _v
+    except Exception:
+        pass   # never let an override file break config import
+_apply_risk_overrides()
+
 # --- TRACKED INSTITUTIONS (SEC CIK numbers) ---
 TRACKED_INSTITUTIONS = {
     "Citadel":              "0001423053",

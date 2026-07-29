@@ -1794,6 +1794,23 @@ def _apply_code_changes(consensus: dict) -> list[str]:
     """
     applied = []
 
+    # --- Sign-off ledger PREFLIGHT ------------------------------------------
+    # No autonomous code-writer may bypass the gate. This function edits
+    # chief_of_staff_agent.py (and reads main.py); register it and honour the
+    # gate. SHADOW logs what it would block and proceeds; ENFORCE blocks a
+    # would-block change and routes it to the Chairman.
+    try:
+        import signoff_ledger as _sl
+        _cid = "boardmeeting-apply-code-changes"
+        _sl.propose_change(_cid, "board _apply_code_changes",
+                           files=["chief_of_staff_agent.py", "main.py"],
+                           added=0, removed=0, category="GOVERNANCE")
+        _pf = _sl.preflight(_cid, actuator="board_meeting._apply_code_changes")
+        if not _pf.get("allow", True):
+            return [f"ROUTED_TO_HUMAN (gate ENFORCE): {'; '.join(_pf.get('reasons', [])[:2])}"]
+    except Exception:
+        pass   # fail-open in shadow; never break the board meeting
+
     # ── 1. Reorder pipeline in main.py ───────────────────────────────────
     try:
         import re

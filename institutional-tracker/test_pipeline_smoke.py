@@ -871,11 +871,74 @@ class TestSignoffLedger(unittest.TestCase):
         self.L = L
         self._d = tempfile.mkdtemp()
         self._led, self._rep = L.LEDGER_PATH, L.REPUTATION_PATH
+        self._mode, self._slog = L.MODE_PATH, L.SHADOW_LOG_PATH
         L.LEDGER_PATH = os.path.join(self._d, "led.json")
         L.REPUTATION_PATH = os.path.join(self._d, "rep.json")
+        L.MODE_PATH = os.path.join(self._d, "mode.json")
+        L.SHADOW_LOG_PATH = os.path.join(self._d, "shadow.json")
 
     def tearDown(self):
         self.L.LEDGER_PATH, self.L.REPUTATION_PATH = self._led, self._rep
+        self.L.MODE_PATH, self.L.SHADOW_LOG_PATH = self._mode, self._slog
+
+    def test_default_mode_is_shadow_and_preflight_never_blocks(self):
+        """Wiring the gate into live actuators must be safe: in SHADOW the gate
+        allows everything (nothing breaks) but records what it WOULD block."""
+        L = self.L
+        self.assertEqual(L.get_mode(), "SHADOW", "default mode must be SHADOW")
+        L.propose_change("c", "x", ["z.py"], 2, 0, "BUG_FIX", None)  # no green test
+        pf = L.preflight("c", actuator="test")
+        self.assertTrue(pf["allow"], "shadow must never block")
+        self.assertTrue(pf["would_block"], "should record it WOULD have blocked")
+        self.assertEqual(L.shadow_summary()["would_block_events"], 1)
+
+    def test_enforce_flip_requires_joint_board_and_cit(self):
+        L = self.L
+        self.assertFalse(L.set_mode("ENFORCE", ["BOARD"])[0], "board alone flipped")
+        self.assertFalse(L.set_mode("ENFORCE", ["CIT"])[0], "cit alone flipped")
+        self.assertEqual(L.get_mode(), "SHADOW")
+        self.assertTrue(L.set_mode("ENFORCE", ["BOARD", "CIT"])[0], "joint vote should flip")
+        self.assertEqual(L.get_mode(), "ENFORCE")
+        # de-risking back to SHADOW is always allowed
+        self.assertTrue(L.set_mode("SHADOW", [])[0])
+
+    def test_enforce_preflight_blocks_uncleared(self):
+        L = self.L
+        L.set_mode("ENFORCE", ["BOARD", "CIT"])
+        L.propose_change("c", "x", ["z.py"], 2, 0, "BUG_FIX", None)  # no green test
+        pf = L.preflight("c", actuator="test")
+        self.assertFalse(pf["allow"], "enforce must block an uncleared change")
+
+    def test_risk_governor_asymmetric(self):
+        """Tighten always applies; loosen is banded, rate-limited, ceiling-bounded."""
+        import tempfile, risk_limit_governor as G
+        d = tempfile.mkdtemp()
+        o, l, c = G.OVERRIDES_PATH, G.GOV_LOG_PATH, G.CHAIR_ACTION
+        G.OVERRIDES_PATH = os.path.join(d, "ov.json")
+        G.GOV_LOG_PATH = os.path.join(d, "log.json")
+        G.CHAIR_ACTION = os.path.join(d, "chair.json")
+        try:
+            base = G.effective("MAX_OPEN_POSITIONS")
+            self.assertEqual(G.propose_adjustment("MAX_OPEN_POSITIONS", base - 8, "de-risk", "CRO")["status"],
+                             "APPLIED", "tighten must always apply")
+            # past the Chairman-only ceiling → routed, never applied
+            self.assertEqual(G.propose_adjustment("MAX_POSITION_SIZE_PCT", 0.20, "concentrate", "pod")["status"],
+                             "ROUTED_TO_CHAIRMAN")
+            # within band, first loosen of the day → applied
+            self.assertEqual(G.propose_adjustment("MAX_POSITION_SIZE_PCT", 0.075, "add", "pod")["status"],
+                             "APPLIED")
+            # second loosen same day → rate-limited to Chairman
+            self.assertEqual(G.propose_adjustment("MAX_POSITION_SIZE_PCT", 0.077, "add more", "pod")["status"],
+                             "ROUTED_TO_CHAIRMAN")
+        finally:
+            G.OVERRIDES_PATH, G.GOV_LOG_PATH, G.CHAIR_ACTION = o, l, c
+
+    def test_absorbed_protected_files_are_hard_line(self):
+        """cit_implementation_agent's old PROTECTED_FILES must now all be hard-line
+        so unifying the policy did not weaken protection."""
+        L = self.L
+        for f in ("main.py", "manager_agent.py", "board_meeting.py", "irm_review_agent.py"):
+            self.assertTrue(L.touches_hard_line([f]), f"{f} lost hard-line protection")
 
     def test_clearance_requires_both_lenses_and_green_tests(self):
         L = self.L
@@ -978,6 +1041,46 @@ class TestSignoffLedger(unittest.TestCase):
         L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
         with self.assertRaises(ValueError):
             L.record_outcome("a", "HELD")
+
+    def test_agent_identity_is_normalized(self):
+        """Red team RT-23/24: name variants (case, whitespace) must not count as
+        two distinct signers."""
+        L = self.L
+        for a2 in ("solo", "Solo "):
+            cid = "c_" + a2.strip()
+            L.propose_change(cid, "x", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+            L.sign(cid, "Solo", "CIT", "ok"); L.sign(cid, a2, "IRM", "ok")
+            self.assertFalse(L.is_cleared(cid)[0], f"'{a2}' spoofed a distinct agent")
+
+    def test_empty_or_exotic_file_list_does_not_clear(self):
+        """Red team RT-25/27: undeclared files and non-ASCII names route to human."""
+        L = self.L
+        L.propose_change("empty", "x", [], 5, 5, "BUG_FIX", "PASS")
+        L.sign("empty", "CIT1", "CIT", "ok"); L.sign("empty", "IRM1", "IRM", "ok")
+        self.assertFalse(L.is_cleared("empty")[0], "empty file list cleared")
+        L.propose_change("uni", "x", ["cοnfig.py"], 1, 0, "BUG_FIX", "PASS")
+        L.sign("uni", "CIT1", "CIT", "ok"); L.sign("uni", "IRM1", "IRM", "ok")
+        self.assertFalse(L.is_cleared("uni")[0], "non-ascii filename cleared")
+
+    def test_negative_line_counts_cannot_mask_blast(self):
+        """Red team RT-26: a negative removed can't net a huge change under the limit."""
+        L = self.L
+        L.propose_change("b", "x", ["big.py"], 5000, -4980, "BUG_FIX", "PASS")
+        L.sign("b", "CIT1", "CIT", "ok"); L.sign("b", "IRM1", "IRM", "ok")
+        self.assertFalse(L.is_cleared("b")[0], "negative line count masked a 5000-line change")
+
+    def test_hr_flag_survives_reputation_farming(self):
+        """Red team RT-28: farming HELDs must not hide a recent burn from HR."""
+        L = self.L
+        def cyc(cid, outcome):
+            L.propose_change(cid, "x", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+            L.sign(cid, "A", "CIT", "ok"); L.sign(cid, "B", "IRM", "ok")
+            if L.reserve_and_deploy(cid)[0]:
+                L.record_outcome(cid, outcome, "A")
+        cyc("burn", "REVERTED")
+        for i in range(10):
+            cyc(f"f{i}", "HELD")
+        self.assertTrue(L.hr_flag("A"), "farming hid a burn from HR")
 
     def test_reverted_outcome_costs_more_than_a_hold(self):
         """Reputation must be outcome-weighted and asymmetric, or sign-off is theatre."""
