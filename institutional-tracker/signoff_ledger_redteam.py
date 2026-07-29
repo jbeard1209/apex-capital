@@ -291,6 +291,49 @@ def attack_r3_migration():
         _check("R3 migration", "cit_implementation_agent import", "HIGH", True, True, repr(e))
 
 
+# ── R4: board-escalation override cannot be abused ──────────────────────────
+def attack_r4_escalation():
+    L = _fresh_ledger()
+    # A CANARY health veto must NOT be board-overridable.
+    L.propose_change("cy", "f", ["x.py"], 2, 0, "BUG_FIX", "PASS")
+    L.sign("cy", "CIT-Director", "CIT", "ok")
+    L.veto("cy", "Canary", "system unhealthy", role="CANARY")
+    _check("R4 escalation", "board-override a Canary health veto", "CRITICAL",
+           True, L.escalate_veto_to_board("cy").get("ok", False),
+           "Canary kill-switch must never be board-overridable")
+
+    # A hard-line file veto must NOT be board-overridable.
+    L.propose_change("hl", "f", ["alpaca_trader.py"], 2, 0, "BUG_FIX", "PASS")
+    L.veto("hl", "IRM-Director", "risky", role="IRM")
+    _check("R4 escalation", "board-override a hard-line file veto", "CRITICAL",
+           True, L.escalate_veto_to_board("hl").get("ok", False),
+           "hard-line stays Chairman-only")
+
+    # A simple-majority (not 2/3) override must NOT clear.
+    L.propose_change("mj", "f", ["a.py"], 2, 0, "BUG_FIX", "PASS")
+    L.sign("mj", "CIT-Director", "CIT", "ok")
+    L.veto("mj", "IRM-Director", "risk", role="IRM")
+    L.escalate_veto_to_board("mj")
+    L.board_vote("mj", "CIT-Director", "OVERRIDE")
+    L.board_vote("mj", "CEO", "OVERRIDE")
+    L.board_vote("mj", "CFO", "UPHOLD")   # 2/3 exactly — but is it >= threshold?
+    L.board_vote("mj", "COO", "UPHOLD")   # now 2/4 = simple majority, < 2/3
+    L.resolve_board_escalation("mj")
+    _check("R4 escalation", "clear an IRM veto on a 2/4 simple majority", "HIGH",
+           True, L.is_cleared("mj")[0], "override needs a 2/3 supermajority, not 1/2")
+
+    # An override WITHOUT the CIT Director voting must NOT clear.
+    L.propose_change("nc", "f", ["a.py"], 2, 0, "BUG_FIX", "PASS")
+    L.sign("nc", "CIT-Director", "CIT", "ok")
+    L.veto("nc", "IRM-Director", "risk", role="IRM")
+    L.escalate_veto_to_board("nc")
+    for m in ("CEO", "CFO", "COO"):
+        L.board_vote("nc", m, "OVERRIDE")
+    L.resolve_board_escalation("nc")
+    _check("R4 escalation", "override an IRM veto with no CIT Director vote", "HIGH",
+           True, L.is_cleared("nc")[0], "CIT Director must have voted to override")
+
+
 def _weekly_investigator_lenses():
     """Second angle: pull the firm's own auditors over the new module."""
     out = []
@@ -316,7 +359,7 @@ def _weekly_investigator_lenses():
 def run():
     for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
                attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
-               attack_r2_homoglyph, attack_r3_migration):
+               attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation):
         try:
             fn()
         except Exception as e:

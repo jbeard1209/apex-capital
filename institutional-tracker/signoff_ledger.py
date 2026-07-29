@@ -97,6 +97,17 @@ MAX_DAILY_DEPLOY_LINES = 60
 REQUIRED_ROLES = {"CIT", "IRM"}     # both lenses must sign
 VETO_ROLES     = {"CIT", "IRM", "CANARY"}
 
+# --- IRM-VETO → BOARD ESCALATION (Chairman directive 2026-07-29) -------------
+# An IRM *risk-judgment* veto is not a dead end and is not overridable by CIT
+# alone: it escalates to the board, which can override only by a hard bar —
+# a 2/3 supermajority, with the CIT Director (a voting board member) having
+# voted, above a quorum. Overriding your own risk officer must be difficult.
+# Two vetoes are NEVER board-overridable: a CANARY veto (system-health kill
+# switch) and any hard-line file (the Oracle line — Chairman only).
+BOARD_OVERRIDE_SUPERMAJORITY = 2.0 / 3.0
+BOARD_MIN_QUORUM = 3
+_CIT_DIRECTOR_HINT = "cit"          # a voter whose name carries this is the CIT lens
+
 # --- REPUTATION MODEL --------------------------------------------------------
 # EWMA of a per-event quality signal. Asymmetric: a burn hurts 3x a hold.
 _EWMA_ALPHA      = 0.30
@@ -276,8 +287,104 @@ def veto(change_id: str, agent: str, reason: str, role: str = "CANARY") -> dict:
     return rec
 
 
+def escalate_veto_to_board(change_id: str, note: str = "") -> dict:
+    """Route an IRM risk-veto up to the board (which can override it by the hard
+    bar in resolve_board_escalation). Refuses to escalate the two vetoes that are
+    never board-overridable: a CANARY health veto and any hard-line file."""
+    led = _ledger()
+    rec = led.get(change_id)
+    if rec is None:
+        raise KeyError(f"unknown change {change_id}")
+    v = rec.get("veto")
+    if not v:
+        return {"ok": False, "reason": "no veto to escalate"}
+    if v.get("overridden_by_board"):
+        return {"ok": False, "reason": "veto already overridden"}
+    if rec.get("hard_line_hits"):
+        return {"ok": False, "reason": "hard-line change — Chairman only, not board-overridable"}
+    if v.get("role") == "CANARY":
+        return {"ok": False, "reason": "Canary health veto is not board-overridable"}
+    rec["board_escalation"] = {
+        "reason_from_irm": v.get("reason"),
+        "irm_agent": v.get("agent"),
+        "note": note[:400],
+        "votes": [],
+        "opened_at": _now(),
+    }
+    rec["status"] = "ESCALATED_TO_BOARD"
+    _save(LEDGER_PATH, led)
+    return {"ok": True, "status": rec["status"]}
+
+
+def board_vote(change_id: str, member: str, vote: str) -> dict:
+    """Record one board member's vote on an escalated IRM veto.
+    vote ∈ {OVERRIDE, UPHOLD}. One vote per member (re-voting updates)."""
+    vote = str(vote).upper()
+    if vote not in ("OVERRIDE", "UPHOLD"):
+        raise ValueError("vote must be OVERRIDE or UPHOLD")
+    led = _ledger()
+    rec = led.get(change_id)
+    esc = rec.get("board_escalation") if rec else None
+    if not esc:
+        raise ValueError(f"{change_id} is not escalated to the board")
+    esc["votes"] = [x for x in esc["votes"]
+                    if _norm_agent(x["member"]) != _norm_agent(member)]
+    esc["votes"].append({"member": member, "vote": vote, "at": _now()})
+    _save(LEDGER_PATH, led)
+    return rec
+
+
+def resolve_board_escalation(change_id: str) -> dict:
+    """Tally the board vote. Override an IRM veto ONLY if: quorum met, the CIT
+    Director voted, and OVERRIDE reached the 2/3 supermajority. On override the
+    board supplies the IRM lens itself (it is taking the risk-sign responsibility)
+    and reputation attaches to the board. Otherwise the veto is upheld → human."""
+    led = _ledger()
+    rec = led.get(change_id)
+    esc = rec.get("board_escalation") if rec else None
+    if not esc:
+        return {"resolved": False, "reason": "not escalated"}
+    votes = esc.get("votes", [])
+    if len(votes) < BOARD_MIN_QUORUM:
+        return {"resolved": False, "reason": f"quorum not met ({len(votes)}/{BOARD_MIN_QUORUM})"}
+    cit_voted = any(_CIT_DIRECTOR_HINT in _norm_agent(v["member"]) for v in votes)
+    n_override = sum(1 for v in votes if v["vote"] == "OVERRIDE")
+    frac = n_override / len(votes)
+    passed = cit_voted and frac >= BOARD_OVERRIDE_SUPERMAJORITY
+    esc["resolved_at"] = _now()
+    esc["tally"] = {"override": n_override, "total": len(votes),
+                    "fraction": round(frac, 3), "cit_director_voted": cit_voted,
+                    "threshold": round(BOARD_OVERRIDE_SUPERMAJORITY, 3)}
+    if passed:
+        rec["veto"]["overridden_by_board"] = True
+        rec["veto"]["override_tally"] = esc["tally"]
+        # The board assumes the IRM lens. Attach it if IRM hasn't otherwise signed.
+        if not any(s["role"] == "IRM" for s in rec.get("signatures", [])):
+            rec["signatures"].append({
+                "role": "IRM", "agent": "Main Board (veto override)",
+                "rationale": f"board {n_override}/{len(votes)} supermajority overrode "
+                             f"IRM veto by {esc.get('irm_agent')}: {esc.get('reason_from_irm')}",
+                "at": _now()})
+        esc["outcome"] = "OVERRIDDEN"
+        _refresh_status(rec)
+    else:
+        esc["outcome"] = "UPHELD"
+        rec["status"] = "VETO_UPHELD_ROUTE_TO_HUMAN"
+    _save(LEDGER_PATH, led)
+    return {"resolved": True, "outcome": esc["outcome"], "tally": esc["tally"],
+            "status": rec["status"]}
+
+
+def _veto_active(rec: dict) -> bool:
+    """A veto blocks unless the board has overridden it (IRM vetoes only)."""
+    v = rec.get("veto")
+    return bool(v) and not v.get("overridden_by_board")
+
+
 def _refresh_status(rec: dict) -> None:
-    if rec.get("veto"):
+    if rec.get("status") == "ESCALATED_TO_BOARD" and _veto_active(rec):
+        return                                    # awaiting the board's ruling
+    if _veto_active(rec):
         rec["status"] = "VETOED_ROUTE_TO_HUMAN"; return
     if rec.get("hard_line_hits"):
         rec["status"] = "ROUTE_TO_HUMAN"; return
@@ -298,7 +405,7 @@ def _clearance_reasons(rec: dict) -> tuple[bool, list]:
         reasons.append("non-ascii character in a filename — route to human")
     if rec.get("hard_line_hits"):
         reasons.append(f"touches hard-line file(s): {', '.join(rec['hard_line_hits'])}")
-    if rec.get("veto"):
+    if _veto_active(rec):
         v = rec["veto"]
         reasons.append(f"vetoed by {v['agent']} ({v['role']}): {v['reason']}")
     if rec.get("test_result") != "PASS":

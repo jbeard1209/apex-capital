@@ -909,6 +909,49 @@ class TestSignoffLedger(unittest.TestCase):
         pf = L.preflight("c", actuator="test")
         self.assertFalse(pf["allow"], "enforce must block an uncleared change")
 
+    def test_irm_veto_escalates_and_board_supermajority_overrides(self):
+        L = self.L
+        L.propose_change("c", "fix", ["agent_meeting.py"], 3, 1, "BUG_FIX", "PASS")
+        L.sign("c", "CIT-Director", "CIT", "correct")
+        L.veto("c", "IRM-Director", "concentration risk", role="IRM")
+        self.assertFalse(L.is_cleared("c")[0], "IRM veto must block")
+        self.assertTrue(L.escalate_veto_to_board("c")["ok"])
+        for m in ("CIT-Director", "CEO", "CFO"):
+            L.board_vote("c", m, "OVERRIDE")
+        self.assertEqual(L.resolve_board_escalation("c")["outcome"], "OVERRIDDEN")
+        self.assertTrue(L.is_cleared("c")[0], "board 3/3 override should clear")
+
+    def test_board_override_needs_supermajority_and_cit_director(self):
+        L = self.L
+        # minority override → upheld
+        L.propose_change("m", "fix", ["a.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("m", "CIT-Director", "CIT", "ok")
+        L.veto("m", "IRM-Director", "risk", role="IRM")
+        L.escalate_veto_to_board("m")
+        for mm, v in (("CIT-Director", "OVERRIDE"), ("CEO", "UPHOLD"), ("CFO", "UPHOLD")):
+            L.board_vote("m", mm, v)
+        self.assertEqual(L.resolve_board_escalation("m")["outcome"], "UPHELD")
+        self.assertFalse(L.is_cleared("m")[0])
+        # supermajority but no CIT Director present → upheld
+        L.propose_change("n", "fix", ["a.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("n", "CIT-Director", "CIT", "ok")
+        L.veto("n", "IRM-Director", "risk", role="IRM")
+        L.escalate_veto_to_board("n")
+        for mm in ("CEO", "CFO", "COO"):
+            L.board_vote("n", mm, "OVERRIDE")
+        self.assertEqual(L.resolve_board_escalation("n")["outcome"], "UPHELD",
+                         "override without CIT Director must fail")
+
+    def test_canary_and_hardline_vetoes_are_not_board_overridable(self):
+        L = self.L
+        L.propose_change("cy", "f", ["x.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("cy", "CIT-Director", "CIT", "ok")
+        L.veto("cy", "Canary", "system unhealthy", role="CANARY")
+        self.assertFalse(L.escalate_veto_to_board("cy")["ok"], "Canary veto escalated")
+        L.propose_change("hl", "f", ["alpaca_trader.py"], 2, 0, "BUG_FIX", "PASS")
+        L.veto("hl", "IRM-Director", "risky", role="IRM")
+        self.assertFalse(L.escalate_veto_to_board("hl")["ok"], "hard-line veto escalated")
+
     def test_risk_governor_asymmetric(self):
         """Tighten always applies; loosen is banded, rate-limited, ceiling-bounded."""
         import tempfile, risk_limit_governor as G
