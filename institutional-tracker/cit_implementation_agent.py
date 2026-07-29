@@ -69,6 +69,11 @@ try:
 except Exception:      # pragma: no cover - defensive
     _sl = None
 
+try:
+    import irm_code_envelope as _irm_env    # the IRM lens (distinct from CIT)
+except Exception:      # pragma: no cover - defensive
+    _irm_env = None
+
 _LEGACY_PROTECTED_FALLBACK = {
     "alpaca_trader.py", "main.py", "risk_manager_agent.py",
     "irm_review_agent.py", "board_meeting.py", "manager_agent.py",
@@ -242,6 +247,96 @@ def _try_try_except_wrap(file_path: Path, fix_desc: str, evidence: str) -> dict:
 # MAIN IMPLEMENTATION LOOP
 # =============================================================================
 
+def _line_delta(before: str, after: str) -> tuple:
+    """Count added/removed lines between two file contents (for blast radius)."""
+    import difflib
+    added = removed = 0
+    for ln in difflib.ndiff(before.splitlines(), after.splitlines()):
+        if ln.startswith("+ "):
+            added += 1
+        elif ln.startswith("- "):
+            removed += 1
+    return added, removed
+
+
+def _run_green_tests(timeout: int = 600) -> bool:
+    """The 'green tests' the ledger requires: smoke suite + wiring audit must BOTH
+    pass against the (edited) working tree. Fail-closed — if we can't prove green,
+    the fix does not earn its test result."""
+    import sys, subprocess
+    for script in ("test_pipeline_smoke.py", "wiring_audit.py"):
+        try:
+            p = subprocess.run([sys.executable, script], cwd=str(BASE_DIR),
+                               capture_output=True, text=True, timeout=timeout)
+            if p.returncode != 0:
+                return False
+        except Exception:
+            return False
+    return True
+
+
+def _account_and_gate(pid, title, target_path, category, severity,
+                      confidence, pre_content, applied_change) -> dict:
+    """Produce the CIT + IRM sign-offs for a freshly-applied fix and run the gate.
+
+      • Both modes: register the change, run green tests, record the two lenses
+        (CIT = this agent; IRM = the risk-envelope reviewer), and call preflight
+        so the decision is logged for the promotion gate.
+      • SHADOW: keep the fix regardless (observation only — no behaviour change).
+      • ENFORCE: an uncleared / over-budget fix is REVERTED from pre_content and
+        routed to a human; a cleared one consumes the daily deploy budget.
+    """
+    out = {"cleared": False, "reverted": False, "reason": ""}
+    if _sl is None:
+        return out
+    name = target_path.name
+    try:
+        post = target_path.read_text()
+    except Exception:
+        post = pre_content or ""
+    added, removed = _line_delta(pre_content or "", post)
+    tr = "PASS" if _run_green_tests() else "FAIL"
+
+    cid = f"citimpl-{pid}"
+    _sl.propose_change(cid, title[:120], [name], added, removed,
+                       str(category), test_result=tr)
+    _sl.attach_test_result(cid, tr)   # tie the green result to HEAD (staleness guard)
+
+    # CIT lens — the implementer signs what it actually verified.
+    _sl.sign(cid, "CIT-Implementation-Agent", "CIT",
+             f"auto-fix ({confidence}% conf): {applied_change[:100]}; "
+             f"green tests {tr}; blast {added + removed} lines/1 file")
+
+    # IRM lens — bounded, independent risk-envelope review (distinct agent).
+    verdict = {"ok": False, "reason": "IRM envelope reviewer unavailable"}
+    if _irm_env is not None:
+        try:
+            verdict = _irm_env.review([name], added, removed, severity, category)
+        except Exception as e:
+            verdict = {"ok": False, "reason": f"envelope review error: {e}"}
+    if verdict.get("ok"):
+        _sl.sign(cid, "IRM-Risk-Envelope", "IRM", verdict.get("rationale", "within envelope"))
+    else:
+        _sl.veto(cid, "IRM-Risk-Envelope", verdict.get("reason", "outside envelope"), role="IRM")
+
+    pf = _sl.preflight(cid, actuator="cit_implementation_agent")
+    out["cleared"] = not pf.get("would_block", True)
+
+    if pf.get("mode") == "ENFORCE":
+        deployed = False
+        if pf.get("allow"):
+            deployed, _r = _sl.reserve_and_deploy(cid)
+        if not deployed:
+            if pre_content is not None:
+                try:
+                    target_path.write_text(pre_content)   # undo — must not persist
+                except Exception:
+                    pass
+            out["reverted"] = True
+            out["reason"] = "gate blocked (ENFORCE): " + "; ".join(pf.get("reasons", [])[:2])
+    return out
+
+
 def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN) -> dict:
     queue   = _load_queue()
     pending = [item for item in queue if item.get("status") == "queued"]
@@ -329,32 +424,14 @@ def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN
             report_items.append({"pid": pid, "title": title, "result": "FILE_NOT_FOUND", "reason": reason})
             continue
 
-        # --- Sign-off ledger PREFLIGHT (single autonomy choke point) ----------
-        # Register this autonomous change and ask the gate whether it may proceed.
-        # In SHADOW mode preflight always allows but logs what it WOULD block, so
-        # the board + CIT can watch the gate's judgement without breaking the
-        # pipeline. In ENFORCE mode a would-block actually blocks and routes to
-        # the Chairman. dry_run never registers a real change.
-        if _sl is not None and not dry_run:
-            try:
-                _cid = f"citimpl-{pid}"
-                _sl.propose_change(
-                    _cid, title=title[:120], files=[str(target_path.name)],
-                    added=0, removed=0, category=str(category),
-                )
-                pf = _sl.preflight(_cid, actuator="cit_implementation_agent")
-                if not pf.get("allow", True):
-                    reason = ("gate blocked (ENFORCE): " +
-                              "; ".join(pf.get("reasons", [])[:2]))
-                    logger.info(f"    ROUTE_TO_HUMAN: {reason}")
-                    item["status"] = "routed_to_human"
-                    item["skip_reason"] = reason
-                    skipped.append(pid)
-                    report_items.append({"pid": pid, "title": title,
-                                         "result": "ROUTED_TO_HUMAN", "reason": reason})
-                    continue
-            except Exception as _e:      # fail-open in shadow; never break pipeline
-                logger.debug(f"    preflight skipped ({_e})")
+        # Capture the file BEFORE we touch it. The sign-off gate runs AFTER the
+        # fix is applied (so it can measure the real blast radius and run green
+        # tests against the edited code); in ENFORCE a blocked fix is reverted
+        # from this snapshot. See _account_and_gate().
+        try:
+            _pre_content = target_path.read_text()
+        except Exception:
+            _pre_content = None
 
         # Determine fix pattern
         fix_lower = (fix_desc + " " + title).lower()
@@ -377,16 +454,40 @@ def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN
             result = {"applied": False, "reason": reason}
 
         if result.get("applied"):
+            # Produce the CIT + IRM sign-offs and run the gate. In ENFORCE a
+            # blocked fix is reverted here and routed to a human; in SHADOW the
+            # fix is kept and the gate's verdict is only observed.
+            acct = {"cleared": None, "reverted": False, "reason": ""}
+            if not dry_run:
+                try:
+                    acct = _account_and_gate(pid, title, target_path, category,
+                                             severity, confidence, _pre_content,
+                                             result.get("change", ""))
+                except Exception as _e:   # never break the pipeline on accounting
+                    logger.debug(f"    sign-off accounting skipped ({_e})")
+
+            if acct.get("reverted"):
+                logger.info(f"    ROUTE_TO_HUMAN (reverted): {acct.get('reason','')}")
+                item["status"]     = "routed_to_human"
+                item["skip_reason"] = acct.get("reason", "gate blocked (ENFORCE)")
+                skipped.append(pid)
+                report_items.append({"pid": pid, "title": title,
+                                     "result": "ROUTED_TO_HUMAN", "reason": acct.get("reason", "")})
+                continue
+
             fixes_applied += 1
             item["status"]      = "implemented"
             item["implemented_at"] = datetime.now().isoformat()
             item["change"]      = result.get("change", "")
+            item["gate_cleared"] = acct.get("cleared")
             implemented.append(pid)
             report_items.append({
                 "pid": pid, "title": title, "result": "IMPLEMENTED",
                 "change": result.get("change", ""), "file": str(target_path.name),
+                "gate_cleared": acct.get("cleared"),
             })
-            logger.info(f"    ✓ IMPLEMENTED: {result.get('change','')}")
+            logger.info(f"    ✓ IMPLEMENTED: {result.get('change','')} "
+                        f"(gate_cleared={acct.get('cleared')})")
         else:
             item["status"]       = "needs_human"
             item["skip_reason"]  = result.get("reason", "Pattern not matched")

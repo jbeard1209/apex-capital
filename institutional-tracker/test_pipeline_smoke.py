@@ -1167,6 +1167,79 @@ class TestSignoffLedger(unittest.TestCase):
         self.assertLess(days, G.MIN_WINDOW_DAYS, "fresh window must not satisfy the gate")
 
 
+class TestSignoffProduction(unittest.TestCase):
+    """The sign-off PRODUCTION path: an autonomous fix must be able to EARN its
+    CIT + IRM sign-offs, or ENFORCE would be a full stop. Guards the actuator's
+    accounting + the IRM risk-envelope lens (2026-07-29)."""
+
+    def setUp(self):
+        import tempfile, signoff_ledger as L, cit_implementation_agent as C
+        self.L, self.C = L, C
+        self._d = tempfile.mkdtemp()
+        self._paths = (L.LEDGER_PATH, L.REPUTATION_PATH, L.MODE_PATH, L.SHADOW_LOG_PATH)
+        L.LEDGER_PATH = os.path.join(self._d, "led.json")
+        L.REPUTATION_PATH = os.path.join(self._d, "rep.json")
+        L.MODE_PATH = os.path.join(self._d, "mode.json")
+        L.SHADOW_LOG_PATH = os.path.join(self._d, "shadow.json")
+        # Patch the green-test runner so the suite never shells out to itself.
+        self._green = C._run_green_tests
+        C._run_green_tests = lambda timeout=600: True
+
+    def tearDown(self):
+        self.L.LEDGER_PATH, self.L.REPUTATION_PATH, self.L.MODE_PATH, self.L.SHADOW_LOG_PATH = self._paths
+        self.C._run_green_tests = self._green
+
+    def _tmp_pyfile(self, name, content):
+        import pathlib
+        p = pathlib.Path(self._d) / name
+        p.write_text(content)
+        return p
+
+    def test_irm_envelope_lens_is_bounded(self):
+        import irm_code_envelope as E
+        self.assertTrue(E.review(["foo.py"], 2, 0, "LOW", "BUG_FIX")["ok"])
+        self.assertFalse(E.review(["foo.py"], 2, 0, "HIGH", "BUG_FIX")["ok"], "HIGH cleared")
+        self.assertFalse(E.review(["config.py"], 1, 0, "LOW", "BUG_FIX")["ok"], "hard-line cleared")
+        self.assertFalse(E.review(["a.py", "b.py", "c.py"], 90, 0, "LOW", "BUG_FIX")["ok"], "blast cleared")
+        self.assertFalse(E.review(["foo.py"], 2, 0, "LOW", "REFACTOR")["ok"], "off-envelope category cleared")
+
+    def test_low_fix_earns_dual_signoff_and_clears(self):
+        """A LOW BUG_FIX with green tests must produce CIT+IRM sign-offs and CLEAR —
+        proving ENFORCE won't be a full stop."""
+        C = self.C
+        p = self._tmp_pyfile("gizmo.py", "a = 1\n")
+        p.write_text("import os\na = 1\n")   # simulate the applied edit
+        acct = C._account_and_gate("P1", "guard a write", p, "BUG_FIX", "LOW",
+                                    90, "a = 1\n", "added makedirs guard")
+        self.assertTrue(acct["cleared"], "LOW fix with green tests failed to clear")
+        summ = self.L.shadow_summary()
+        self.assertGreaterEqual(summ["distinct_would_clear_changes"], 1)
+        # both distinct lenses present
+        sigs = self.L._ledger()["citimpl-P1"]["signatures"]
+        self.assertEqual({s["role"] for s in sigs}, {"CIT", "IRM"})
+
+    def test_medium_fix_is_vetoed_by_irm_and_would_block(self):
+        C = self.C
+        p = self._tmp_pyfile("gizmo2.py", "a = 1\n")
+        p.write_text("import os\na = 1\n")
+        acct = C._account_and_gate("P2", "risky change", p, "BUG_FIX", "MEDIUM",
+                                   90, "a = 1\n", "wrapped call")
+        self.assertFalse(acct["cleared"], "MEDIUM change cleared the envelope")
+        rec = self.L._ledger()["citimpl-P2"]
+        self.assertEqual(rec["veto"]["role"], "IRM")
+
+    def test_enforce_reverts_a_blocked_fix(self):
+        """In ENFORCE, a fix the gate blocks must be UNDONE, not left in the tree."""
+        C = self.C
+        self.L.set_mode("ENFORCE", ["BOARD", "CIT"])
+        p = self._tmp_pyfile("gizmo3.py", "a = 1\n")
+        p.write_text("import os\na = 1\n")           # the applied (bad) edit
+        acct = C._account_and_gate("P3", "risky", p, "BUG_FIX", "MEDIUM",
+                                   90, "a = 1\n", "edit")
+        self.assertTrue(acct["reverted"], "ENFORCE failed to revert a blocked fix")
+        self.assertEqual(p.read_text(), "a = 1\n", "file was not restored to pre-edit")
+
+
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""
 
@@ -1240,6 +1313,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
     suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffLedger))
+    suite.addTests(loader.loadTestsFromTestCase(TestSignoffProduction))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)

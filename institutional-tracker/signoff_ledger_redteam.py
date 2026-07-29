@@ -356,10 +356,36 @@ def _weekly_investigator_lenses():
     return out
 
 
+def attack_r5_production():
+    """ROUND 5 — the sign-off PRODUCTION path. The IRM risk-envelope lens is the
+    only thing standing between 'CIT wrote a fix' and 'a machine shipped it
+    unattended'. It must withhold on anything outside a small, reversible
+    envelope; if it signs an out-of-envelope change, ENFORCE clears something a
+    human should have seen."""
+    import irm_code_envelope as E
+    # LOW / trivial / small → SHOULD sign (allow)
+    _check("G7 irm-envelope", "LOW BUG_FIX, 1 file, tiny", "-",
+           False, E.review(["z.py"], 2, 0, "LOW", "BUG_FIX")["ok"])
+    # MEDIUM severity → must withhold
+    _check("G7 irm-envelope", "MEDIUM severity smuggled as trivial", "HIGH",
+           True, E.review(["z.py"], 2, 0, "MEDIUM", "BUG_FIX")["ok"],
+           "only LOW ships unattended")
+    # hard-line file → must withhold (defense in depth)
+    _check("G7 irm-envelope", "hard-line file via the IRM lens", "CRITICAL",
+           True, E.review(["alpaca_trader.py"], 1, 0, "LOW", "BUG_FIX")["ok"])
+    # off-envelope category → must withhold
+    _check("G7 irm-envelope", "REFACTOR category outside envelope", "MEDIUM",
+           True, E.review(["z.py"], 2, 0, "LOW", "REFACTOR")["ok"])
+    # oversized blast → must withhold
+    _check("G7 irm-envelope", "blast radius past the limit", "HIGH",
+           True, E.review(["a.py", "b.py", "c.py"], 90, 10, "LOW", "BUG_FIX")["ok"])
+
+
 def run():
     for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
                attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
-               attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation):
+               attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation,
+               attack_r5_production):
         try:
             fn()
         except Exception as e:
