@@ -1137,6 +1137,35 @@ class TestSignoffLedger(unittest.TestCase):
         self.assertLess(L.reputation("S")["ewma"], 0.0,
                         "a hold then a revert should net NEGATIVE (burn weighs 3x)")
 
+    def test_shadow_logs_clears_so_promotion_can_prove_not_a_full_stop(self):
+        """SHADOW must record CLEARED decisions too, not just would-blocks —
+        otherwise the promotion gate can't prove ENFORCE won't be a full stop."""
+        L = self.L
+        # a fully-cleared change (both lenses + green tests)
+        L.propose_change("ok", "x", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("ok", "CIT1", "CIT", "correct"); L.sign("ok", "IRM1", "IRM", "no risk")
+        pf = L.preflight("ok", actuator="test")
+        self.assertTrue(pf["allow"] and not pf["would_block"])
+        summ = L.shadow_summary()
+        self.assertGreaterEqual(summ["would_clear_events"], 1,
+                                "shadow must log a cleared decision")
+        self.assertGreaterEqual(summ["distinct_would_clear_changes"], 1)
+
+    def test_promotion_gate_thresholds_and_signals(self):
+        """Guard the promotion gate's pure logic (NOT evaluate(), which shells out
+        to this very suite). A fresh window must fail the window check, and the
+        gate must consume the would-clear signal we log in shadow."""
+        import signoff_promotion_gate as G
+        self.assertGreaterEqual(G.MIN_WINDOW_DAYS, 7, "week-long observation is the floor")
+        self.assertGreaterEqual(G.MIN_WOULD_CLEAR, 1, "must require a real cleared change")
+        # a brand-new window is younger than MIN_WINDOW_DAYS → not promotable
+        self.L.set_mode("SHADOW", [], note="window start")
+        meta = self.L._load(self.L.MODE_PATH, {})
+        start = G._parse(meta.get("set_at", ""))
+        self.assertIsNotNone(start)
+        days = (G._now() - start).total_seconds() / 86400
+        self.assertLess(days, G.MIN_WINDOW_DAYS, "fresh window must not satisfy the gate")
+
 
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""

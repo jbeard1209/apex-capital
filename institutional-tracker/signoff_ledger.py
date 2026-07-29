@@ -628,8 +628,11 @@ def preflight(change_id: str, actuator: str = "unknown") -> dict:
         "reasons": reasons,
         "at": _now(),
     }
-    # Log every would-block in shadow, and every actual block in enforce.
-    if would_block:
+    # SHADOW: log EVERY decision (blocks AND clears) so the promotion gate can
+    # prove the sign-off path actually clears legitimate work — a gate that only
+    # ever blocks means ENFORCE would be a full stop, not full auto.
+    # ENFORCE: only the real blocks are worth recording.
+    if mode == "SHADOW" or would_block:
         _shadow_log(result)
     return result
 
@@ -642,13 +645,18 @@ def shadow_summary() -> dict:
         log = []
     from collections import Counter
     reason_heads = Counter()
-    for e in log:
+    blocks = [e for e in log if e.get("would_block")]
+    clears = [e for e in log if not e.get("would_block")]
+    for e in blocks:
         for r in e.get("reasons", []):
             reason_heads[r.split(" (")[0].split(" —")[0][:60]] += 1
     return {
         "mode": get_mode(),
-        "would_block_events": len(log),
+        "events": len(log),
+        "would_block_events": len(blocks),
+        "would_clear_events": len(clears),
         "distinct_changes": len({e.get("change_id") for e in log}),
+        "distinct_would_clear_changes": len({e.get("change_id") for e in clears}),
         "top_reasons": reason_heads.most_common(8),
     }
 
