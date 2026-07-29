@@ -1627,6 +1627,103 @@ def get_stale_agents(threshold_hours: float = 26.0) -> list[str]:
     return stale
 
 
+# --- LIVENESS CORROBORATION (registry-staleness is NOT proof of death) -------
+# The status registry (data/agent_status.json) is only stamped by
+# update_agent_status(), which fires on inbox-driven runs. But almost every
+# agent runs via cron (main.py 6×/day, canary, the boards, the pods), and that
+# path never calls it — so the registry goes stale for exactly the busiest
+# agents while they run fine. That produced a chronic false "31 agents OFFLINE"
+# in the weekly health report (Manager Agent looked 63 days dead while trading
+# every cycle). Before branding an agent OFFLINE we now corroborate against the
+# ONE thing cron runs DO leave behind: dated files in logs/. If an agent has a
+# fresh log, it's alive regardless of what the registry says.
+#
+# Maps registry agent name → underscore-delimited log-prefix tokens that
+# evidence a run. Matching is contiguous-token (see _prefix_matches), so "rd"
+# corroborates "catchup_rd_team_leader" but not "pipeline_integrity". Agents
+# that only run inside the main pipeline map to the pipeline's own logs
+# (main/run/cron/canary) — those firing IS that agent running.
+_AGENT_LOG_EVIDENCE = {
+    "Canary":                 ["canary"],
+    "CITDirector":            ["cit"],
+    "CITPipelineIntegrity":   ["pipeline_integrity", "cit"],
+    "ApexSystemCIT":          ["sentinel", "cit"],
+    "Manager Agent":          ["main", "run", "cron"],
+    "AlpacaTrader":           ["main", "run", "cron"],
+    "CROAgent":               ["risk_manager", "main", "cron"],
+    "CapitalEfficiencyAgent": ["main", "run", "cron"],
+    "SignalEngine":           ["main", "rd", "cron"],
+    "ReviewAgent":            ["main", "run", "cron"],
+    "TradeReviewTeam":        ["main", "run", "cron"],
+    "LogReviewAgent":         ["main", "run", "cron"],
+    "EarningsPredictor":      ["main", "run", "cron"],
+    "Chief of Staff":         ["briefing", "main", "cron"],
+    "MorningBriefing":        ["briefing"],
+    "PremarketCheck":         ["premarket"],
+    "ResearchTeam":           ["rd", "rd_triggered"],
+    "EnergyResearchTeam":     ["etf_research", "etf_board"],
+    "InternationalAnalyst":   ["rd", "main"],
+    "HRPerformanceOfficer":   ["hr"],
+    "IndependentRiskManager": ["irm_daily", "risk_manager"],
+    "Board":                  ["board", "rd_board"],
+    "DeputyBoard":            ["board", "rd_board"],
+    "FEBoard":                ["fe", "fe_pipeline", "etf_board"],
+    "FECIOAgent":             ["fe", "fe_pipeline"],
+    "FIBoard":                ["fi", "fi_pipeline"],
+    "MLShortTermBoard":       ["ml_board"],
+    "MLLongTermBoard":        ["ml_board"],
+    "MLResearchTeamLeader":   ["ml_runner_daily", "ml_live", "ml_overnight"],
+    "MLSTExpRunner":          ["ml_overnight", "ml_runner_daily"],
+    "MLLTExpRunner":          ["ml_overnight", "lt_impl", "ml_runner_daily"],
+    # AuditTestAgent_V2: intentionally UNMAPPED — a test scaffold with no live
+    # log. If it's stale it should surface; that's a true signal, not noise.
+}
+
+
+def _prefix_matches(candidate: str, fresh_prefix: str) -> bool:
+    """True if `candidate` is a contiguous underscore-token run inside a log
+    prefix. Wrapping both in underscores makes 'rd' match 'catchup_rd_team'
+    but not 'board_rd'-only-as-substring accidents like 'fi' in 'notify'."""
+    return f"_{candidate}_" in f"_{fresh_prefix}_"
+
+
+def fresh_log_prefixes(threshold_hours: float = 26.0) -> set:
+    """Underscore-delimited prefixes of logs/ files modified within the window.
+    A log file `canary_20260729.log` → prefix `canary`; runs on whichever host
+    calls this (Mac or VM) so it reflects THAT host's activity."""
+    import re as _re
+    cutoff = time.time() - threshold_hours * 3600
+    prefixes = set()
+    logdir = os.path.join(_BASE, "logs")
+    try:
+        for fn in os.listdir(logdir):
+            if not fn.endswith(".log"):
+                continue
+            try:
+                if os.path.getmtime(os.path.join(logdir, fn)) < cutoff:
+                    continue
+            except OSError:
+                continue
+            # strip trailing timestamp chunks (_20260729, _0945, .log)
+            stem = _re.sub(r"(_\d{4,})+$", "", fn[:-4])
+            if stem:
+                prefixes.add(stem)
+    except OSError:
+        pass
+    return prefixes
+
+
+def agents_with_fresh_logs(threshold_hours: float = 26.0) -> set:
+    """Registry agent names whose log-evidence prefixes are fresh — i.e.
+    demonstrably alive regardless of a stale status-registry entry."""
+    fresh = fresh_log_prefixes(threshold_hours)
+    alive = set()
+    for agent, cands in _AGENT_LOG_EVIDENCE.items():
+        if any(_prefix_matches(c, fp) for c in cands for fp in fresh):
+            alive.add(agent)
+    return alive
+
+
 # =============================================================================
 # SECTION 12 — ACTION ITEMS  (tracked deliverables from meetings / decisions)
 # =============================================================================
@@ -2179,6 +2276,40 @@ def get_pending_compute_requests(agent_name: str) -> list:
 # ── SECTION 19: Agent Health Heartbeat Report  (#14) ────────────────────────
 # =============================================================================
 
+def _flag_suspect_health_report(offline_agents: list, n_revived: int) -> None:
+    """Raise a Chairman-queue item when the health report looks self-inconsistent
+    (firm pipeline demonstrably alive, yet many agents still 'offline'). Deduped
+    once/day. This is the guard against 'a report ran, was wrong, nobody read it'."""
+    path = os.path.join(_BASE, "data", "chairman_action_required.json")
+    actions = _load_dict(path)
+    if not isinstance(actions, list):
+        actions = _load(path) or []
+    if not isinstance(actions, list):
+        return
+    today = datetime.now().strftime("%Y-%m-%d")
+    tag = f"[HealthReportSelfCheck] {today}"
+    if any((a.get("description") or "").startswith(tag) for a in actions
+           if a.get("status") == "open"):
+        return
+    syms = ", ".join(sorted(offline_agents)[:8])
+    actions.append({
+        "id": f"HRSC-{datetime.now().strftime('%Y%m%d%H%M%S')}",
+        "source": "Agent Health Self-Check", "severity": "MEDIUM", "status": "open",
+        "resolution_note": "", "ts": datetime.now().isoformat(),
+        "description": (f"{tag} — weekly health report still lists {len(offline_agents)} "
+                        f"agent(s) OFFLINE ({syms}) AFTER log-corroboration revived "
+                        f"{n_revived}, yet the main pipeline logs are fresh (firm is "
+                        "alive). Likely a missing entry in agent_meeting._AGENT_LOG_EVIDENCE "
+                        "or a genuinely retired agent — NOT a mass outage. Reconcile the "
+                        "alias map rather than trusting the offline count."),
+    })
+    try:
+        with open(path, "w") as fh:
+            json.dump(actions, fh, indent=2, default=str)
+    except OSError:
+        pass
+
+
 def generate_agent_health_report(posted_by: str = "Chief of Staff") -> dict:
     """
     Generate a weekly agent health report showing OK/DEGRADED/OFFLINE agents,
@@ -2211,6 +2342,38 @@ def generate_agent_health_report(posted_by: str = "Chief of Staff") -> dict:
         if agent not in [d["agent"] for d in degraded_agents] and agent not in offline_agents:
             offline_agents.append(agent)
 
+    # --- CORROBORATE before branding OFFLINE ---------------------------------
+    # The registry only knows about inbox-driven runs; cron-driven agents look
+    # dead in it while running fine. Reclassify any "offline" agent that left a
+    # fresh log as OK (revived_by_logs), so the report stops crying wolf.
+    alive_by_log = agents_with_fresh_logs(threshold_hours=26.0)
+    revived = [a for a in offline_agents if a in alive_by_log]
+    if revived:
+        offline_agents = [a for a in offline_agents if a not in alive_by_log]
+        for a in revived:
+            if a not in ok_agents:
+                ok_agents.append(a)
+
+    # --- SELF-CHECK: the report must not be silently wrong --------------------
+    # This whole bug persisted for ~2 months because a report ran, was wrong,
+    # and nobody read it. So the report now audits ITSELF: if it's still about
+    # to declare a pile of agents OFFLINE while the firm is demonstrably alive
+    # (pipeline logs fresh), that's more likely a corroboration/mapping gap than
+    # a real mass outage — flag it to the Chairman queue instead of burying it.
+    firm_is_alive = bool(fresh_log_prefixes(26.0) & {
+        "main", "run", "cron", "canary"})
+    health_self_check = {
+        "firm_pipeline_alive": firm_is_alive,
+        "offline_after_corroboration": len(offline_agents),
+        "revived_by_logs": sorted(revived),
+        "suspect_report": firm_is_alive and len(offline_agents) >= 5,
+    }
+    if health_self_check["suspect_report"]:
+        try:
+            _flag_suspect_health_report(offline_agents, len(revived))
+        except Exception:
+            pass
+
     # Escalation patterns
     escalated = [r for r in all_meets
                  if r.get("type") == "INFO_REQUEST" and r.get("status") == "open"
@@ -2229,6 +2392,8 @@ def generate_agent_health_report(posted_by: str = "Chief of Staff") -> dict:
         "ok_list":               sorted(ok_agents),
         "degraded_list":         degraded_agents,
         "offline_list":          sorted(offline_agents),
+        "revived_by_logs":       sorted(revived),
+        "self_check":            health_self_check,
         "open_escalations":      digest["escalated_requests"],
         "stale_threads":         digest["stale_threads_24h"],
         "top_escalation_targets":top_escalation_targets,
@@ -2240,6 +2405,12 @@ def generate_agent_health_report(posted_by: str = "Chief of Staff") -> dict:
         f"  OK: {len(ok_agents)} | DEGRADED: {len(degraded_agents)} | OFFLINE: {len(offline_agents)}",
         f"  Open escalations: {digest['escalated_requests']}  Stale threads: {digest['stale_threads_24h']}",
     ]
+    if revived:
+        lines.append(f"  Revived by fresh logs (registry was stale): {len(revived)} "
+                     f"— {', '.join(sorted(revived)[:6])}")
+    if health_self_check["suspect_report"]:
+        lines.append("  ⚠️ SELF-CHECK: offline count looks inconsistent with a live "
+                     "pipeline — flagged to Chairman (check alias map, not a mass outage).")
     if degraded_agents:
         lines.append("  DEGRADED agents: " + ", ".join(d["agent"] for d in degraded_agents))
     if offline_agents:
