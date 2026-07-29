@@ -253,6 +253,25 @@ def calculate_iv(ticker: str) -> Optional[dict]:
         logger.info(f"[IV] No EDGAR data for {ticker} — trying yfinance fallback")
         return _calculate_iv_yfinance_fallback(ticker, current_price)
 
+    # QUARANTINE GATE (wiring-contract fix 2026-07-29): fundamentals_sanity
+    # exposes is_reliable() and even *tests* it, but until now NO production
+    # consumer called it — so tickers with physically-impossible EDGAR facts
+    # (e.g. SBAC: long_term_debt $12.9B > total_assets $11.6B) were valued on
+    # garbage, and the CIT proposals to "quarantine via is_reliable()" sat
+    # approved-but-never-implemented (1,078 of them). Gate here so an impossible
+    # fundamental skips valuation instead of fabricating a margin of safety.
+    try:
+        import fundamentals_sanity as _fs
+        _ok, _reasons = _fs.is_reliable({**fundamentals, "_ticker": ticker})
+        if not _ok:
+            logger.warning(f"[IV] {ticker} fundamentals unreliable — quarantined from "
+                           f"valuation: {'; '.join(_reasons[:3])}")
+            return None
+    except Exception as _e:
+        # Fail OPEN (proceed to value) rather than silently dropping everything if
+        # the sanity module errors — a broken gate must not blank the whole slate.
+        logger.debug(f"[IV] is_reliable() gate skipped for {ticker}: {_e}")
+
     rev_list  = fundamentals.get("revenue", [])
     ocf_list  = fundamentals.get("operating_cf", [])
     capex_list = fundamentals.get("capex", [])

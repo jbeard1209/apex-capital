@@ -751,6 +751,18 @@ class TestWiringContracts(unittest.TestCase):
         ok, reasons = fs.is_reliable(data)
         self.assertFalse(ok, "validator failed to gate impossible debt/assets")
 
+    def test_iv_valuation_actually_calls_the_reliability_gate(self):
+        """WIRING CONTRACT (2026-07-29): is_reliable() was built + tested but no
+        production consumer called it, so impossible-fundamentals tickers (SBAC)
+        were valued anyway and 1,078 'quarantine' proposals sat unimplemented.
+        calculate_iv MUST invoke the gate — guard against it being unwired again."""
+        import inspect, fe_intrinsic_value as iv
+        src = inspect.getsource(iv.calculate_iv)
+        self.assertIn("is_reliable", src,
+                      "fe_intrinsic_value.calculate_iv no longer gates on "
+                      "fundamentals_sanity.is_reliable() — impossible fundamentals "
+                      "will be valued on garbage data again.")
+
     def test_fundamentals_sanity_gates_stale_subseries(self):
         """A present-but-truncated sub-series is as dangerous as a missing one:
         EOG's shares stop at 2012 (P/E on a stale share count), INCY's debt at 2018
