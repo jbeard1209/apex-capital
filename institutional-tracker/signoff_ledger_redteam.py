@@ -381,11 +381,90 @@ def attack_r5_production():
            True, E.review(["a.py", "b.py", "c.py"], 90, 10, "LOW", "BUG_FIX")["ok"])
 
 
+def _fresh_sentinel():
+    """A Problem Lifecycle Sentinel bound to a private temp store."""
+    import problem_lifecycle_sentinel as S
+    importlib.reload(S)
+    from pathlib import Path
+    d = tempfile.mkdtemp(prefix="redteam_loops_")
+    S.PENDING_PATH   = Path(d) / "pending.json"
+    S.IMPL_QUEUE_PATH = Path(d) / "impl.json"
+    S.CHAIRMAN_PATH  = Path(d) / "chair.json"
+    S.HISTORY_PATH   = Path(d) / "history.json"
+    S.LOOPS_PATH     = Path(d) / "loops.json"
+    return S
+
+
+def attack_r6_loops():
+    """ROUND 6 — the Problem Lifecycle Sentinel. This is the firm's historically
+    notorious failure: a problem gets flagged but is never eliminated — either
+    never acted on, or band-aided and quietly recurring. Every attack tries to
+    make a real problem slip the loop-detector."""
+    S = _fresh_sentinel()
+
+    def _write(path, items):
+        path.write_text(json.dumps(items))
+
+    # A1 — id churn + number drift must NOT create a new identity (the exact
+    # trick that let a proposal be re-raised 210x undetected).
+    a = {"id": "LTIA-1", "title": "6 ERROR lines — dominant: 'get'"}
+    b = {"id": "LTIA-2", "title": "9 ERROR lines — dominant: 'get'"}
+    _check("R6 loop-signature", "id churn + number drift evades dedup", "CRITICAL",
+           True, S.signature(a, "impl") != S.signature(b, "impl"),
+           "same problem must map to one signature")
+
+    # A2 — a fix that doesn't hold (resolved then recurs) MUST be caught as LOOPING.
+    p = {"id": "q1", "title": "widget broken", "dedup_key": "widget",
+         "status": "queued", "category": "BUG_FIX", "severity": "LOW"}
+    _write(S.IMPL_QUEUE_PATH, [p]);                                    S.run()
+    _write(S.IMPL_QUEUE_PATH, [{**p, "status": "implemented"}]);       S.run()
+    _write(S.IMPL_QUEUE_PATH, [{**p, "id": "q1b", "status": "queued"}])
+    rep = S.run()
+    sig = S.signature(p, "impl")
+    _check("R6 loop-detect", "fixed-then-recurring band-aid slips through", "CRITICAL",
+           True, sig not in rep["looping"], "recurrence after resolution must be LOOPING")
+
+    # A3 — the loop escalation must use a category a board consumer actually reads
+    # (else it's a new orphan queue — the very bug class we're killing).
+    import deputy_board
+    board = json.loads(S.PENDING_PATH.read_text())
+    loop_entry = [e for e in board if e.get("dedup_key") == f"loop_{sig}"]
+    orphan = (not loop_entry) or (loop_entry[0]["category"]
+             not in (deputy_board.DEPUTY_CATEGORIES | deputy_board.FULL_BOARD_ONLY_CATEGORIES))
+    _check("R6 loop-wiring", "loop escalation lands in an orphan category", "CRITICAL",
+           True, orphan, "escalation must route to a real board consumer")
+
+    # A4 — the loop-break set must actually stop the CIT actuator re-patching it.
+    _check("R6 loop-break", "known loop still auto-patchable by actuator", "HIGH",
+           True, not S.is_loop_broken({**p, "id": "q1b"}, "impl"),
+           "looping sig must be in the loop-break set")
+
+    # A5 — IDEMPOTENCY: hammering the sentinel must not re-flood the queues (it
+    # must not BECOME the loop it detects).
+    n_before = len(json.loads(S.PENDING_PATH.read_text()))
+    for _ in range(6):
+        S.run()
+    n_after = len(json.loads(S.PENDING_PATH.read_text()))
+    _check("R6 idempotency", "repeat runs flood the board queue", "HIGH",
+           True, n_after != n_before, "escalations must dedup across runs")
+
+    # A6 — a problem that vanishes with no recorded resolution must be surfaced,
+    # not assumed fixed.
+    S2 = _fresh_sentinel()
+    g = {"id": "g1", "title": "ghost", "dedup_key": "ghost", "status": "queued"}
+    S2.IMPL_QUEUE_PATH.write_text(json.dumps([g]));  S2.run()
+    S2.IMPL_QUEUE_PATH.write_text(json.dumps([]))
+    rep2 = S2.run()
+    _check("R6 silent-drop", "problem vanishes and is assumed fixed", "HIGH",
+           True, S2.signature(g, "impl") not in rep2["silent_drop"],
+           "a drop with no resolution must be surfaced to the Chairman")
+
+
 def run():
     for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
                attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
                attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation,
-               attack_r5_production):
+               attack_r5_production, attack_r6_loops):
         try:
             fn()
         except Exception as e:

@@ -74,6 +74,11 @@ try:
 except Exception:      # pragma: no cover - defensive
     _irm_env = None
 
+try:
+    import problem_lifecycle_sentinel as _loop_sentinel  # loop-break set consumer
+except Exception:      # pragma: no cover - defensive
+    _loop_sentinel = None
+
 _LEGACY_PROTECTED_FALLBACK = {
     "alpaca_trader.py", "main.py", "risk_manager_agent.py",
     "irm_review_agent.py", "board_meeting.py", "manager_agent.py",
@@ -370,6 +375,25 @@ def run_implementation(dry_run: bool = False, max_fixes: int = MAX_FIXES_PER_RUN
             skipped.append(pid)
             report_items.append({"pid": pid, "title": title, "result": "SKIPPED", "reason": reason})
             continue
+
+        # Loop-break gate — the Problem Lifecycle Sentinel has flagged this
+        # problem as a RECURRING loop (fixed before, came back). Re-patching it
+        # here is exactly the band-aid loop we must not repeat, so route it to
+        # the board for a structural fix instead of auto-applying again.
+        if _loop_sentinel is not None:
+            try:
+                if _loop_sentinel.is_loop_broken(item, kind="impl"):
+                    reason = ("recurring problem (loop-break set) — needs a structural "
+                              "fix ratified by the board, not another band-aid")
+                    logger.info(f"    ROUTE-TO-BOARD: {reason}")
+                    item["status"]      = "routed_to_human"
+                    item["skip_reason"] = reason
+                    skipped.append(pid)
+                    report_items.append({"pid": pid, "title": title,
+                                         "result": "ROUTED_TO_BOARD", "reason": reason})
+                    continue
+            except Exception as _e:  # fail-open: a sentinel error must not stall fixes
+                logger.warning(f"    loop-break check failed ({_e}); proceeding")
 
         # Identify target file from evidence, title, or fix description
         _search_text = (evidence or "") + " " + (fix_desc or "") + " " + title

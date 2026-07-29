@@ -1240,6 +1240,146 @@ class TestSignoffProduction(unittest.TestCase):
         self.assertEqual(p.read_text(), "a = 1\n", "file was not restored to pre-edit")
 
 
+class TestProblemLifecycle(unittest.TestCase):
+    """Closed-loop problem lifecycle: every flagged problem is acted on, and no
+    problem loops (unaddressed OR fixed-then-recurring). Guards the firm's most
+    notorious bug class. All paths sandboxed to a temp dir."""
+
+    def setUp(self):
+        import tempfile, problem_lifecycle_sentinel as S
+        from pathlib import Path as _P
+        self.S = S
+        self.tmp = tempfile.mkdtemp()
+        d = _P(self.tmp)
+        self._orig = (S.PENDING_PATH, S.IMPL_QUEUE_PATH, S.CHAIRMAN_PATH,
+                      S.HISTORY_PATH, S.LOOPS_PATH)
+        self.pending = d / "pending.json"
+        self.impl = d / "impl.json"
+        self.chair = d / "chair.json"
+        S.PENDING_PATH = self.pending
+        S.IMPL_QUEUE_PATH = self.impl
+        S.CHAIRMAN_PATH = self.chair
+        S.HISTORY_PATH = d / "history.json"
+        S.LOOPS_PATH = d / "loops.json"
+
+    def tearDown(self):
+        S = self.S
+        (S.PENDING_PATH, S.IMPL_QUEUE_PATH, S.CHAIRMAN_PATH,
+         S.HISTORY_PATH, S.LOOPS_PATH) = self._orig
+        import shutil
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write(self, path, items):
+        path.write_text(json.dumps(items))
+
+    def test_signature_is_stable_across_id_and_number_drift(self):
+        """The core anti-loop property: same problem, new id + drifted numbers ==
+        SAME signature. (id-keyed trackers are what let the 210x loop hide.)"""
+        S = self.S
+        a = {"id": "LTIA-20260729105803", "title": "6 ERROR lines — dominant: 'get'"}
+        b = {"id": "LTIA-20260801120000", "title": "8 ERROR lines — dominant: 'get'"}
+        self.assertEqual(S.signature(a, "impl"), S.signature(b, "impl"))
+        # explicit dedup_key wins and is stable
+        c = {"id": "x", "title": "whatever", "dedup_key": "idle_pod_pod2_ml"}
+        dd = {"id": "y", "title": "different words", "dedup_key": "idle_pod_pod2_ml"}
+        self.assertEqual(S.signature(c, "impl"), S.signature(dd, "impl"))
+
+    def test_fixed_then_recurring_is_LOOPING_and_escalated_to_full_board(self):
+        S = self.S
+        prob = {"id": "p1", "title": "widget X broken", "dedup_key": "widget_x",
+                "status": "queued", "category": "BUG_FIX", "severity": "LOW"}
+        # 1) open
+        self._write(self.impl, [prob])
+        S.run()
+        # 2) resolved
+        self._write(self.impl, [{**prob, "status": "implemented"}])
+        S.run()
+        # 3) it came back (new id, still same problem) -> LOOPING
+        self._write(self.impl, [{**prob, "id": "p1-again", "status": "queued"}])
+        rep = S.run()
+        sig = S.signature(prob, "impl")
+        self.assertIn(sig, rep["looping"])
+        self.assertEqual(rep["escalated_board"], 1)
+        # escalation landed in the board queue with a FULL-board-recognized category
+        board = json.loads(self.pending.read_text())
+        entry = [e for e in board if e.get("dedup_key") == f"loop_{sig}"][0]
+        import deputy_board
+        self.assertIn(entry["category"],
+                      deputy_board.DEPUTY_CATEGORIES | deputy_board.FULL_BOARD_ONLY_CATEGORIES,
+                      "loop escalation uses a category no board consumer handles (orphan!)")
+        self.assertIn(entry["category"], deputy_board.FULL_BOARD_ONLY_CATEGORIES,
+                      "recurring loops must go to the FULL board, not auto-deferred")
+        # and it's in the loop-break set the actuator consults
+        self.assertIn(sig, rep["loop_break_set"])
+        self.assertTrue(S.is_loop_broken({**prob, "id": "p1-again"}, "impl"))
+
+    def test_open_past_SLA_is_STALE_and_escalated_to_chairman(self):
+        S = self.S
+        prob = {"id": "s1", "title": "slow decay", "dedup_key": "slow_decay",
+                "status": "queued"}
+        self._write(self.impl, [prob])
+        S.run()
+        # backdate first_seen/last_open beyond the SLA
+        hist = json.loads(S.HISTORY_PATH.read_text())
+        old = "2026-01-01T00:00:00+00:00"
+        for h in hist.values():
+            h["first_seen"] = old
+            h["last_open"] = old
+        S.HISTORY_PATH.write_text(json.dumps(hist))
+        rep = S.run()
+        sig = S.signature(prob, "impl")
+        self.assertIn(sig, rep["stale"])
+        self.assertEqual(rep["escalated_chairman"], 1)
+        chair = json.loads(self.chair.read_text())
+        self.assertTrue(any(e["id"] == f"lifecycle-stale-{sig}" for e in chair))
+
+    def test_vanished_without_resolution_is_SILENT_DROP(self):
+        S = self.S
+        prob = {"id": "d1", "title": "ghost problem", "dedup_key": "ghost",
+                "status": "queued"}
+        self._write(self.impl, [prob])
+        S.run()
+        # it disappears from every queue with no recorded resolution
+        self._write(self.impl, [])
+        rep = S.run()
+        sig = S.signature(prob, "impl")
+        self.assertIn(sig, rep["silent_drop"])
+        chair = json.loads(self.chair.read_text())
+        self.assertTrue(any(e["id"] == f"lifecycle-drop-{sig}" for e in chair))
+
+    def test_escalations_are_idempotent_no_queue_flood(self):
+        """The cardinal rule: the sentinel must not BECOME the loop. Running it
+        repeatedly on an unchanged state must not re-escalate."""
+        S = self.S
+        prob = {"id": "i1", "title": "recur me", "dedup_key": "recur_me",
+                "status": "queued", "category": "BUG_FIX", "severity": "LOW"}
+        self._write(self.impl, [prob])
+        S.run()
+        self._write(self.impl, [{**prob, "status": "implemented"}])
+        S.run()
+        self._write(self.impl, [{**prob, "id": "i1-b", "status": "queued"}])
+        S.run()          # first LOOPING escalation
+        _rd = lambda p: len(json.loads(p.read_text())) if p.exists() else 0
+        n_board = _rd(self.pending)
+        n_chair = _rd(self.chair)
+        self.assertGreaterEqual(n_board, 1, "expected a board escalation to dedup against")
+        for _ in range(5):     # hammer it
+            S.run()
+        self.assertEqual(_rd(self.pending), n_board,
+                         "sentinel re-flooded the board queue (not idempotent)")
+        self.assertEqual(_rd(self.chair), n_chair, "sentinel re-flooded the chairman queue")
+
+    def test_wont_fix_is_not_a_silent_drop(self):
+        """A skipped/protected finding is a DECISION, not a dropped problem."""
+        S = self.S
+        prob = {"id": "w1", "title": "known limitation", "dedup_key": "known_lim",
+                "status": "skipped"}
+        self._write(self.impl, [prob])
+        rep = S.run()
+        self.assertEqual(rep["silent_drop"], [])
+        self.assertEqual(rep["stale"], [])
+
+
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""
 
@@ -1314,6 +1454,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffLedger))
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffProduction))
+    suite.addTests(loader.loadTestsFromTestCase(TestProblemLifecycle))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
