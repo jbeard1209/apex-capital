@@ -861,6 +861,71 @@ class TestWiringContracts(unittest.TestCase):
                 "_apply_code_changes duplicated the ELEVATED block on repeat runs")
 
 
+class TestSignoffLedger(unittest.TestCase):
+    """The accountable sign-off ledger gates autonomous fixes. These guard the
+    guardrails: a regression that quietly disables one of them would let a change
+    deploy without the accountability the Chairman required (2026-07-29)."""
+
+    def setUp(self):
+        import tempfile, signoff_ledger as L
+        self.L = L
+        self._d = tempfile.mkdtemp()
+        self._led, self._rep = L.LEDGER_PATH, L.REPUTATION_PATH
+        L.LEDGER_PATH = os.path.join(self._d, "led.json")
+        L.REPUTATION_PATH = os.path.join(self._d, "rep.json")
+
+    def tearDown(self):
+        self.L.LEDGER_PATH, self.L.REPUTATION_PATH = self._led, self._rep
+
+    def test_clearance_requires_both_lenses_and_green_tests(self):
+        L = self.L
+        L.propose_change("c", "tidy", ["agent_meeting.py"], 3, 1, "BUG_FIX", None)
+        self.assertFalse(L.is_cleared("c")[0], "cleared with no green test")
+        L.attach_test_result("c", "PASS")
+        L.sign("c", "CIT-Director", "CIT", "msg-only, no logic change")
+        self.assertFalse(L.is_cleared("c")[0], "cleared with only one lens")
+        L.sign("c", "IRM-Director", "IRM", "no risk surface")
+        self.assertTrue(L.is_cleared("c")[0], "both lenses + green tests should clear")
+
+    def test_hard_line_files_can_never_self_clear(self):
+        L = self.L
+        for f in ("alpaca_trader.py", "config.py", ".env"):
+            L.propose_change(f, "x", [f], 1, 1, "BUG_FIX", "PASS")
+            L.sign(f, "CIT-Director", "CIT", "trivial")
+            L.sign(f, "IRM-Director", "IRM", "trivial")
+            self.assertFalse(L.is_cleared(f)[0], f"hard-line {f} self-cleared")
+            self.assertEqual(L._ledger()[f]["status"], "ROUTE_TO_HUMAN")
+
+    def test_blast_radius_routes_to_human(self):
+        L = self.L
+        L.propose_change("big", "refactor", ["a.py", "b.py", "c.py"], 80, 20, "BUG_FIX", "PASS")
+        L.sign("big", "CIT-Director", "CIT", "x")
+        L.sign("big", "IRM-Director", "IRM", "y")
+        self.assertFalse(L.is_cleared("big")[0], "oversized change cleared")
+
+    def test_veto_blocks_and_empty_rationale_rejected(self):
+        L = self.L
+        L.propose_change("c", "x", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+        with self.assertRaises(ValueError):
+            L.sign("c", "CIT-Director", "CIT", "   ")
+        L.sign("c", "CIT-Director", "CIT", "ok")
+        L.sign("c", "IRM-Director", "IRM", "ok")
+        L.veto("c", "Canary", "flapping risk")
+        self.assertFalse(L.is_cleared("c")[0], "veto failed to block")
+
+    def test_reverted_outcome_costs_more_than_a_hold(self):
+        """Reputation must be outcome-weighted and asymmetric, or sign-off is theatre."""
+        L = self.L
+        L.propose_change("g", "good", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("g", "S", "CIT", "ok"); L.sign("g", "IRM-x", "IRM", "ok")
+        L.record_outcome("g", "HELD")
+        L.propose_change("b", "bad", ["z.py"], 2, 0, "BUG_FIX", "PASS")
+        L.sign("b", "S", "CIT", "ok"); L.sign("b", "IRM-x", "IRM", "ok")
+        L.record_outcome("b", "REVERTED")
+        self.assertLess(L.reputation("S")["ewma"], 0.0,
+                        "a hold then a revert should net NEGATIVE (burn weighs 3x)")
+
+
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""
 
@@ -933,6 +998,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
     suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
     suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))
+    suite.addTests(loader.loadTestsFromTestCase(TestSignoffLedger))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)

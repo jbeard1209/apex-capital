@@ -756,6 +756,25 @@ class HRDevelopmentOfficer:
                 else:
                     trajectory = "STABLE"
 
+            # ── Sign-off accountability (read-only) ───────────────────────
+            # An agent that signs off on autonomous fixes carries its
+            # reputation on the outcome. HR surfaces a burning record — this is
+            # the loop that makes a sign-off cost something (see signoff_ledger).
+            try:
+                import signoff_ledger as _sl
+                rep = _sl.reputation(cn)
+                if rep.get("n_signed", 0) >= 3 and rep.get("ewma", 0.0) < -0.5:
+                    observations.append(
+                        f"Sign-off reputation is negative (ewma {rep['ewma']:+.2f}; "
+                        f"{rep.get('n_burned',0)} of {rep['n_signed']} signed fixes "
+                        f"reverted/regressed). Review the rigour of this agent's "
+                        f"correctness/risk sign-offs before it clears more changes."
+                    )
+                    if rating == "DEVELOPING":
+                        rating = "NEEDS_ATTENTION"
+            except Exception:
+                pass  # ledger optional; never let it break HR evaluation
+
             # ── Culture of learning assessment ────────────────────────────
             if perm:
                 observations.append(

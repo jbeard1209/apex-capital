@@ -320,18 +320,34 @@ def evaluate_manager_agent(manager_log: list[dict],
             n_trades = tr.get("analytics", {}).get("total_trades", 0)
             if n_trades >= 5:
                 impact = ri.get("grade_impact", "NEUTRAL")
+                bench_delta = tr.get("analytics", {}).get("benchmark_delta", 0) or 0
+                win_rate = ri.get("win_rate", 0)
                 if impact == "POSITIVE":
                     score = min(100, score + 8)
                     trade_review_note = (
-                        f"Historical win rate {ri.get('win_rate',0):.0f}% "
-                        f"(+{tr['analytics'].get('benchmark_delta',0):.1f}pp vs SPY) +8 pts."
+                        f"Historical win rate {win_rate:.0f}% "
+                        f"(+{bench_delta:.1f}pp vs SPY) +8 pts."
                     )
                 elif impact == "NEGATIVE":
-                    score = max(0, score - 10)
-                    trade_review_note = (
-                        f"Historical win rate {ri.get('win_rate',0):.0f}% "
-                        f"({tr['analytics'].get('benchmark_delta',0):+.1f}pp vs SPY) -10 pts."
-                    )
+                    # A low win rate is NOT a failing grade if the book still
+                    # beats its benchmark: momentum/asymmetric payoffs win small
+                    # often and lose big rarely — few winners, positive delta.
+                    # Only penalize when low win rate AND lagging SPY. When the
+                    # win rate is low but the delta is positive, credit the
+                    # benchmark-relative return instead of docking it.
+                    if bench_delta > 0:
+                        score = min(100, score + 4)
+                        trade_review_note = (
+                            f"Win rate {win_rate:.0f}% but +{bench_delta:.1f}pp vs "
+                            f"SPY — asymmetric payoff beating benchmark, +4 pts "
+                            f"(not penalized for low hit-rate)."
+                        )
+                    else:
+                        score = max(0, score - 10)
+                        trade_review_note = (
+                            f"Historical win rate {win_rate:.0f}% "
+                            f"({bench_delta:+.1f}pp vs SPY) -10 pts."
+                        )
     except Exception:
         pass
 
