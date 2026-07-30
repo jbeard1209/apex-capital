@@ -1380,6 +1380,58 @@ class TestProblemLifecycle(unittest.TestCase):
         self.assertEqual(rep["stale"], [])
 
 
+class TestTechShortPod(unittest.TestCase):
+    """Korea/AI-hardware short pod producer->consumer contract. The short book
+    must only open KR-stress shorts when the signal is ACTIVE and FRESH
+    (fail-closed), and the pod's output must feed the short book."""
+
+    def setUp(self):
+        import tempfile, tech_short_pod as T
+        from pathlib import Path as _P
+        self.T = T
+        self.tmp = tempfile.mkdtemp()
+        self._orig = T.OUTPUT_PATH
+        T.OUTPUT_PATH = _P(self.tmp) / "cand.json"
+
+    def tearDown(self):
+        import shutil
+        self.T.OUTPUT_PATH = self._orig
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write(self, active, ts, tickers=("QCOM", "ORCL")):
+        self.T.OUTPUT_PATH.write_text(json.dumps(
+            {"active": active, "ts": ts, "tickers": list(tickers)}))
+
+    def test_active_fresh_signal_feeds_candidates(self):
+        from datetime import datetime, timezone
+        self._write(True, datetime.now(timezone.utc).isoformat())
+        self.assertEqual(self.T.load_candidates(), ["QCOM", "ORCL"])
+
+    def test_inactive_signal_is_fail_closed(self):
+        from datetime import datetime, timezone
+        self._write(False, datetime.now(timezone.utc).isoformat())
+        self.assertEqual(self.T.load_candidates(), [],
+                         "inactive KR signal must never open shorts")
+
+    def test_stale_report_is_fail_closed(self):
+        self._write(True, "2026-01-01T00:00:00+00:00")
+        self.assertEqual(self.T.load_candidates(max_age_hours=30), [],
+                         "a stale KR report must never open shorts")
+
+    def test_missing_report_is_fail_closed(self):
+        self.assertEqual(self.T.load_candidates(), [])
+
+    def test_short_book_consumes_the_pod(self):
+        """The wiring contract: alpaca_trader imports the pod and its universe
+        exists — else the pod is an orphan producer."""
+        import config
+        self.assertTrue(hasattr(config, "KR_SHORT_UNIVERSE"))
+        self.assertIn("NVDA", config.KR_SHORT_UNIVERSE)
+        src = open(Path(__file__).parent / "alpaca_trader.py").read()
+        self.assertIn("_tech_short.load_candidates", src,
+                      "short book must consume tech_short_pod.load_candidates()")
+
+
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""
 
@@ -1455,6 +1507,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffLedger))
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffProduction))
     suite.addTests(loader.loadTestsFromTestCase(TestProblemLifecycle))
+    suite.addTests(loader.loadTestsFromTestCase(TestTechShortPod))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)

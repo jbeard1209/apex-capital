@@ -158,6 +158,23 @@ SHORT_CANDIDATES = [
 ]
 SHORT_CANDIDATES = list(dict.fromkeys(SHORT_CANDIDATES))  # deduplicate
 
+# --- KOREA / AI-HARDWARE REGIME SHORTS (tech_short_pod.py) -------------------
+# Thesis (2026-07-30): KOSPI −33% in July (worst month ever) after China began
+# mass-producing DUV chip tools, gutting the Samsung/SK Hynix memory moat. That
+# AI-hardware shock transmits to the US names most levered to the same capex
+# cycle. tech_short_pod.py screens THIS universe against real prices, gated by a
+# live Korea-stress signal (EWY+SMH), and ranks the most vulnerable shorts.
+KR_SHORT_UNIVERSE = [
+    "NVDA", "AMD", "MU", "AVGO", "MRVL", "QCOM", "TXN", "ARM",   # semis
+    "SMCI", "DELL", "ANET", "VRT",                                # AI-hardware/adjacent
+    "LRCX", "AMAT", "KLAC",                                        # semi-cap equipment
+    "INTC", "ORCL", "PLTR", "TSM", "ASML",                         # AI-capex-levered / stretched
+]
+KR_SHORT_UNIVERSE = list(dict.fromkeys(KR_SHORT_UNIVERSE))
+# When the Korea-stress signal is STRESS/ACUTE, allow the short book to activate
+# on that signal alone (not only CRO>=HIGH), since KR stress IS a risk regime.
+KR_STRESS_ACTIVATES_SHORTS = True
+
 # Short book policy (CIT Think Tank 2026-06-09):
 # In CRO HIGH regime: up to MAX_SHORT_POSITIONS single-name shorts
 # In CRO CRITICAL regime: up to MAX_SHORT_POSITIONS + 2 single-name shorts

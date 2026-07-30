@@ -25,6 +25,15 @@ from config import (
     SHORT_BOOK_CRITICAL_BONUS,
 )
 
+try:
+    from config import KR_STRESS_ACTIVATES_SHORTS
+except Exception:
+    KR_STRESS_ACTIVATES_SHORTS = False
+try:
+    import tech_short_pod as _tech_short
+except Exception:      # pragma: no cover - defensive
+    _tech_short = None
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -721,9 +730,21 @@ class AlpacaTrader:
         _cro_rank = {"LOW": 0, "MEDIUM": 1, "ELEVATED": 2, "HIGH": 3, "CRITICAL": 4}
         _min_rank = _cro_rank.get(SHORT_BOOK_CRO_MIN, 3)
         _cur_rank = _cro_rank.get(cro_risk_level, 1)
-        if _cur_rank < _min_rank:
+
+        # Korea/AI-hardware regime shorts (tech_short_pod) — the KR-stress signal
+        # is itself a risk regime, so it can activate the short book even when CRO
+        # is below HIGH. The pod already fail-closes on a stale/inactive signal.
+        kr_tickers = []
+        if KR_STRESS_ACTIVATES_SHORTS and _tech_short is not None:
+            try:
+                kr_tickers = _tech_short.load_candidates()
+            except Exception as e:
+                logger.warning(f"  tech_short_pod load failed: {e}")
+
+        if _cur_rank < _min_rank and not kr_tickers:
             logger.info(
-                f"  Short book inactive (CRO={cro_risk_level} < required={SHORT_BOOK_CRO_MIN})"
+                f"  Short book inactive (CRO={cro_risk_level} < required={SHORT_BOOK_CRO_MIN}, "
+                f"no KR-stress shorts)"
             )
             return []
 
@@ -732,8 +753,14 @@ class AlpacaTrader:
         if cro_risk_level == "CRITICAL":
             max_slots += SHORT_BOOK_CRITICAL_BONUS
 
+        # KR-stress-ranked tech names lead the screen (already ranked worst-first
+        # by the pod); the standing SHORT_CANDIDATES follow. Dedup, preserve order.
+        _universe = list(dict.fromkeys(list(kr_tickers) + list(SHORT_CANDIDATES)))
+        if kr_tickers:
+            logger.info(f"  Korea-stress shorts active — screening {kr_tickers} first")
+
         confirmed = []
-        for ticker in SHORT_CANDIDATES:
+        for ticker in _universe:
             try:
                 df = yf.download(ticker, period="250d", progress=False, auto_adjust=True)
                 if isinstance(df.columns, pd.MultiIndex):
