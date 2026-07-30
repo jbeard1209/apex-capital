@@ -1810,6 +1810,81 @@ class TestShortBookCanClose(unittest.TestCase):
         self.assertIn("MIN_EXTENSION_PCTILE", src,
                       "legacy short screen must apply the anti-chasing gate")
 
+    # -- the false audit trail -------------------------------------------
+    # Second bug found in the same VM log on 2026-07-30: the cover rule fired,
+    # submit_sell() refused, and manage_momentum_shorts() appended
+    # {"action": "covered"} anyway — so main.py printed "COVERED: XLE" for a
+    # position that was still open. The books said the trade happened. It
+    # hadn't. An action log that reports success without checking the result is
+    # worse than no log: it actively conceals the failure it should surface.
+
+    def _shorts_trader(self, cover_result, price=110.0, ma_level=100.0, pnl=1.0):
+        """A trader whose submit_sell returns exactly `cover_result`. Defaults
+        force the 'recovered above 50MA' branch; pass price < ma_level with
+        pnl <= -10.0 to drive the stop-loss branch instead."""
+        import pandas as pd
+        import alpaca_trader
+        t = alpaca_trader.AlpacaTrader.__new__(alpaca_trader.AlpacaTrader)
+        t.get_positions = lambda: pd.DataFrame(
+            [{"ticker": "XLE", "qty": -163, "qty_available": -163,
+              "unrealized_pct": pnl}])
+        self.sell_calls = []
+
+        def _submit_sell(ticker, reason=None):
+            self.sell_calls.append((ticker, reason))
+            return cover_result
+
+        t.submit_sell = _submit_sell
+        # The open-new-shorts phase is not under test; keep it a no-op.
+        t.get_account = lambda: {"portfolio_value": 100000.0, "cash": 50000.0}
+        t.get_momentum_short_candidates = lambda *a, **k: []
+        closes = pd.Series([ma_level] * 49 + [price])
+        df = pd.DataFrame({"Close": closes})
+        self._orig_yf = alpaca_trader.yf
+        alpaca_trader.yf = type("YF", (), {
+            "download": staticmethod(lambda *a, **k: df)})()
+        self.addCleanup(lambda: setattr(alpaca_trader, "yf", self._orig_yf))
+        return t
+
+    def test_a_refused_cover_is_not_logged_as_covered(self):
+        """submit_sell returning None means NO ORDER WAS PLACED. The action log
+        must say so — this is the line that printed a phantom 'COVERED: XLE'."""
+        t = self._shorts_trader(cover_result=None)
+        actions = t.manage_momentum_shorts()
+        self.assertTrue(self.sell_calls, "the cover rule should still have fired")
+        covered = [a for a in actions if a.get("action") == "covered"]
+        self.assertEqual(covered, [],
+                         "a cover that placed no order was logged as COVERED — "
+                         "this is the 2026-07-30 false audit trail")
+        self.assertTrue([a for a in actions if a.get("action") == "cover_failed"],
+                        "a refused cover must be surfaced, not silently dropped")
+
+    def test_a_real_cover_is_still_logged_as_covered(self):
+        """The fix must not go the other way and stop recording real covers."""
+        t = self._shorts_trader(
+            cover_result={"id": "abc123", "ticker": "XLE", "qty": 163,
+                          "side": "buy_to_cover"})
+        actions = t.manage_momentum_shorts()
+        covered = [a for a in actions if a.get("action") == "covered"]
+        self.assertEqual(len(covered), 1, "a successful cover must be recorded")
+        self.assertEqual(covered[0]["ticker"], "XLE")
+        self.assertEqual(covered[0].get("order_id"), "abc123",
+                         "the recorded action must carry the real broker order id")
+
+    def test_a_refused_stop_loss_is_not_logged_as_covered(self):
+        """Same guarantee on the stop-loss branch. Caught by mutation testing:
+        the first version of these tests only exercised the 50MA branch, so
+        sabotaging the stop-loss path survived clean."""
+        t = self._shorts_trader(cover_result=None, price=90.0, ma_level=100.0,
+                                pnl=-14.0)
+        actions = t.manage_momentum_shorts()
+        self.assertEqual(self.sell_calls, [("XLE", "short_stop_loss")],
+                         "the stop-loss branch should have fired")
+        self.assertEqual([a for a in actions if a.get("action") == "covered"], [],
+                         "a stop-loss that placed no order was logged as COVERED")
+        self.assertTrue([a for a in actions if a.get("action") == "cover_failed"],
+                        "a refused stop-loss must be surfaced")
+
 
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""

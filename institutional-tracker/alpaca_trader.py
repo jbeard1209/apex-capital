@@ -855,14 +855,33 @@ class AlpacaTrader:
                     ma50  = float(df["Close"].iloc[-50:].mean()) if len(df) >= 50 else price
                     pnl   = float(positions[positions["ticker"]==ticker]["unrealized_pct"].values[0])
                     # Cover if: price recovered above 50MA OR stop-loss hit (+10% loss on short)
+                    # submit_sell() RETURNS None on refusal rather than raising, so the
+                    # action is only recorded once an order actually came back. Recording
+                    # it unconditionally is how the log reported "COVERED: XLE" on
+                    # 2026-07-30 while the position was still open — a false audit trail
+                    # that hid the un-closeable short book.
                     if price > ma50:
                         logger.info(f"  COVER SHORT {ticker} — recovered above 50MA")
-                        self.submit_sell(ticker, reason="short_cover_recovery")
-                        actions.append({"action": "covered", "ticker": ticker, "reason": "recovery"})
+                        res = self.submit_sell(ticker, reason="short_cover_recovery")
+                        if res:
+                            actions.append({"action": "covered", "ticker": ticker,
+                                            "reason": "recovery", "order_id": res.get("id")})
+                        else:
+                            logger.error(f"  ⚠ COVER FAILED {ticker} — cover rule fired but no "
+                                         f"order was placed; position still open")
+                            actions.append({"action": "cover_failed", "ticker": ticker,
+                                            "reason": "recovery"})
                     elif pnl <= -10.0:
                         logger.info(f"  COVER SHORT {ticker} — stop loss hit ({pnl:.1f}%)")
-                        self.submit_sell(ticker, reason="short_stop_loss")
-                        actions.append({"action": "covered", "ticker": ticker, "reason": "stop_loss"})
+                        res = self.submit_sell(ticker, reason="short_stop_loss")
+                        if res:
+                            actions.append({"action": "covered", "ticker": ticker,
+                                            "reason": "stop_loss", "order_id": res.get("id")})
+                        else:
+                            logger.error(f"  ⚠ COVER FAILED {ticker} — stop-loss fired but no "
+                                         f"order was placed; position still open")
+                            actions.append({"action": "cover_failed", "ticker": ticker,
+                                            "reason": "stop_loss"})
                 except Exception as e:
                     logger.warning(f"  Could not evaluate short {ticker}: {e}")
 
