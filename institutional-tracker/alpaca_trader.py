@@ -404,7 +404,36 @@ class AlpacaTrader:
             # Use qty_available (not held for pending orders) to avoid error 40310000
             qty_avail_col = "qty_available" if "qty_available" in pos_row.columns else "qty"
             qty = int(pos_row[qty_avail_col].values[0])
-            if qty <= 0:
+
+            # A SHORT position carries a NEGATIVE qty, and closing it means BUYING
+            # to cover — not selling, which would double the short. This branch was
+            # missing: the `qty <= 0` guard below caught every short and returned
+            # None with a misleading "held for pending orders" warning, so the short
+            # book could OPEN positions but never close them. Neither the
+            # cover-above-50MA rule nor the -10% stop-loss could ever fire; six
+            # shorts sat un-closeable, one of them (XLE) 3% ABOVE its 50MA and long
+            # past its documented cover trigger.
+            is_short = qty < 0
+            if is_short:
+                cover_qty = abs(qty)
+                order_req = self._MarketOrderRequest(
+                    symbol=ticker,
+                    qty=cover_qty,
+                    side=self._OrderSide.BUY,          # buy-to-cover
+                    time_in_force=self._TimeInForce.DAY,
+                )
+                order = self.client.submit_order(order_req)
+                logger.info(f"  BUY-TO-COVER ({reason}): {cover_qty} shares of {ticker}")
+                return {
+                    "id":     str(order.id),
+                    "ticker": ticker,
+                    "qty":    cover_qty,
+                    "side":   "buy_to_cover",
+                    "reason": reason,
+                    "status": str(order.status),
+                }
+
+            if qty == 0:
                 total_qty = int(pos_row["qty"].values[0])
                 logger.warning(
                     f"  ⚠ {ticker} available qty={qty} (total={total_qty}) — "
@@ -773,15 +802,35 @@ class AlpacaTrader:
                 pct_from_50  = (price - ma50)  / ma50  * 100
                 pct_from_200 = (price - ma200) / ma200 * 100
                 if price < ma50 and price < ma200:
-                    confirmed.append((ticker, pct_from_50 + pct_from_200))
+                    # ANTI-CHASING GATE — same rule as tech_short_pod, imported from
+                    # it so there is ONE definition and the two paths cannot drift.
+                    # This legacy screen used to rank by (pct_from_50 + pct_from_200)
+                    # and sort "most below MAs first", i.e. it treated maximum
+                    # downside extension as the BEST short. Measured over 5y that is
+                    # backwards: from this much extension the average forward 20-day
+                    # return is positive and shorts win well under half the time.
+                    # Extension is a disqualifier, never a ranking bonus.
+                    if _tech_short is not None:
+                        pctile = _tech_short._extension_pctile(df["Close"], pct_from_50)
+                        if pctile < _tech_short.MIN_EXTENSION_PCTILE:
+                            logger.info(
+                                f"    SKIP {ticker} — {pct_from_50:+.1f}% vs 50MA is the "
+                                f"{pctile:.1f}th percentile of its own history; "
+                                f"mean-reversion/squeeze risk, not a short"
+                            )
+                            continue
+                    # Rank on structural damage (drop from 52w high), not extension.
+                    hi_52w = float(df["Close"].iloc[-252:].max()) if len(df) >= 60 else price
+                    pct_from_high = (price - hi_52w) / hi_52w * 100 if hi_52w else 0.0
+                    confirmed.append((ticker, pct_from_high))
                     logger.info(
                         f"    SHORT candidate: {ticker} — "
-                        f"{pct_from_50:+.1f}% vs 50MA, {pct_from_200:+.1f}% vs 200MA"
-                        f" | CRO={cro_risk_level}"
+                        f"{pct_from_50:+.1f}% vs 50MA, {pct_from_200:+.1f}% vs 200MA, "
+                        f"{pct_from_high:+.1f}% off 52w high | CRO={cro_risk_level}"
                     )
             except Exception as e:
                 logger.warning(f"  Could not screen {ticker}: {e}")
-        # Sort by worst (most below MAs) first
+        # Sort by most structural damage first (NOT by extension — see above)
         confirmed.sort(key=lambda x: x[1])
         return [t for t, _ in confirmed[:max_slots]]
 

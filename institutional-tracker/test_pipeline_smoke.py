@@ -1528,6 +1528,105 @@ class TestTechShortPod(unittest.TestCase):
                       "short book must consume tech_short_pod.load_candidates()")
 
 
+class TestShortBookCanClose(unittest.TestCase):
+    """A short book that can OPEN but never CLOSE is a one-way risk machine.
+
+    Found 2026-07-30: `submit_sell()` read the position qty, and a short carries
+    a NEGATIVE qty, so the `qty <= 0` guard rejected every short with a
+    misleading "held for pending orders" warning. Neither the cover-above-50MA
+    rule nor the -10% stop-loss could fire on any short, ever. Six shorts sat
+    un-closeable. These tests pin the close path shut against that regression."""
+
+    def _trader(self, positions_df):
+        """An AlpacaTrader with no network: __init__ is skipped and the SDK
+        types are replaced with recorders, so we can assert on the ORDER built
+        rather than on anything Alpaca returns."""
+        import alpaca_trader
+        t = alpaca_trader.AlpacaTrader.__new__(alpaca_trader.AlpacaTrader)
+        self.submitted = []
+
+        class _Req:
+            def __init__(self, symbol, qty, side, time_in_force):
+                self.symbol, self.qty = symbol, qty
+                self.side, self.time_in_force = side, time_in_force
+
+        class _Side:
+            BUY, SELL = "BUY", "SELL"
+
+        class _TIF:
+            DAY = "DAY"
+
+        class _Client:
+            def __init__(self, sink):
+                self.sink = sink
+
+            def submit_order(self, req):
+                self.sink.append(req)
+                return type("O", (), {"id": "test-order", "status": "accepted"})()
+
+        t._MarketOrderRequest = _Req
+        t._OrderSide = _Side
+        t._TimeInForce = _TIF
+        t.client = _Client(self.submitted)
+        t.get_positions = lambda: positions_df
+        return t
+
+    @staticmethod
+    def _pos(ticker, qty):
+        import pandas as pd
+        return pd.DataFrame([{"ticker": ticker, "qty": qty, "qty_available": qty}])
+
+    def test_short_position_is_closed_with_a_buy_to_cover(self):
+        t = self._trader(self._pos("XLE", -163))
+        res = t.submit_sell("XLE", reason="above_50ma")
+        self.assertIsNotNone(res, "a short MUST be closeable — this is the 2026-07-30 bug")
+        self.assertEqual(len(self.submitted), 1)
+        order = self.submitted[0]
+        self.assertEqual(order.side, "BUY", "closing a short is a BUY-to-cover, not a SELL")
+        self.assertEqual(order.qty, 163, "cover qty must be the ABSOLUTE size of the short")
+        self.assertEqual(res["side"], "buy_to_cover")
+
+    def test_a_short_is_never_closed_with_a_sell(self):
+        """A SELL on a short doubles the position instead of closing it —
+        the single most dangerous way for this bug to come back."""
+        t = self._trader(self._pos("QQQ", -11))
+        t.submit_sell("QQQ", reason="stop_loss")
+        self.assertTrue(self.submitted, "no order was placed at all")
+        self.assertNotEqual(self.submitted[0].side, "SELL",
+                            "SELL on a negative-qty position INCREASES the short")
+
+    def test_long_position_still_sells(self):
+        t = self._trader(self._pos("AAPL", 50))
+        res = t.submit_sell("AAPL", reason="signal")
+        self.assertEqual(self.submitted[0].side, "SELL")
+        self.assertEqual(self.submitted[0].qty, 50)
+        self.assertEqual(res["qty"], 50)
+
+    def test_fully_held_position_still_skips(self):
+        """The original guard existed for a real reason (Alpaca 40310000 when
+        every share is held by a pending order). Fixing shorts must not delete
+        it: qty_available == 0 still means 'place no order'."""
+        import pandas as pd
+        df = pd.DataFrame([{"ticker": "PFE", "qty": 100, "qty_available": 0}])
+        t = self._trader(df)
+        self.assertIsNone(t.submit_sell("PFE"))
+        self.assertEqual(self.submitted, [], "must not submit an order for a held position")
+
+    def test_legacy_short_screen_does_not_rank_by_extension(self):
+        """The anti-chasing law, on the LEGACY entry path.
+
+        `get_momentum_short_candidates()` used to score candidates as
+        (pct_from_50 + pct_from_200) and sort worst-first — i.e. it treated
+        maximum downside extension as the BEST short. Measured over 5y that is
+        backwards (basket avg fwd-20d +6.73%, short win rate 40.7%). Extension
+        is a disqualifier, never a ranking bonus, on BOTH entry paths."""
+        src = open(Path(__file__).parent / "alpaca_trader.py").read()
+        self.assertNotIn("confirmed.append((ticker, pct_from_50 + pct_from_200))", src,
+                         "legacy short screen is ranking by extension again")
+        self.assertIn("MIN_EXTENSION_PCTILE", src,
+                      "legacy short screen must apply the anti-chasing gate")
+
+
 class TestModelMetricsContract(unittest.TestCase):
     """Guards against the fake/hardcoded-AUC regression."""
 
@@ -1604,6 +1703,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffProduction))
     suite.addTests(loader.loadTestsFromTestCase(TestProblemLifecycle))
     suite.addTests(loader.loadTestsFromTestCase(TestTechShortPod))
+    suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
