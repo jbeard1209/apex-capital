@@ -603,6 +603,46 @@ class TestAgentRegistry(unittest.TestCase):
 # =============================================================================
 class TestWiringContracts(unittest.TestCase):
 
+    def test_international_analyst_is_actually_scheduled(self):
+        """The agent that watches foreign markets must be RUN by something.
+
+        It tracks ^KS11 (KOSPI) and has five wired consumers, but was scheduled
+        nowhere and crashed on import under Python 3.9 — so it produced zero
+        reports for the firm's entire history and the firm never saw the July
+        2026 Korean crash. Guard both halves: it must import, and main.py must
+        actually call it.
+        """
+        import importlib
+        mod = importlib.import_module("international_analyst")   # must not raise on py3.9
+        self.assertTrue(hasattr(mod, "run"))
+        main_src = (Path(__file__).parent / "main.py").read_text()
+        self.assertIn("international_analyst", main_src,
+                      "international_analyst is not invoked by main.py — it is an agent "
+                      "that never comes to work")
+
+    def test_orphan_agent_check_actually_detects_orphans(self):
+        """wiring_audit must catch a producer that is scheduled nowhere.
+
+        check_orphan_queues() only inspects files that already EXIST and match a
+        queue/log/pending glob, so it is structurally blind to an agent that has
+        never run once. check_orphan_agents() closes that hole; this proves it
+        fires rather than merely existing.
+        """
+        import wiring_audit
+        sources = {
+            "main.py": "import canary_agent\n",
+            "canary_agent.py": "x = 1\n",
+            # ghost_agent writes a report that a real consumer reads, but nothing
+            # anywhere runs ghost_agent -> must be flagged.
+            "ghost_agent.py": 'p = "data/ghost_report.json"\njson.dump(d, open(p, "w"))\n',
+            "consumer_agent.py": 'r = load("data/ghost_report.json")\n',
+        }
+        wiring_audit.problems = []
+        wiring_audit.check_orphan_agents(sources)
+        self.assertTrue(
+            any("ghost_agent.py" in p for p in wiring_audit.problems),
+            f"orphan-agent check did not flag an unscheduled producer: {wiring_audit.problems}")
+
     def test_every_logic_rule_has_a_handler(self):
         """Every rule the Logic Team can emit must resolve to an implementation handler.
 

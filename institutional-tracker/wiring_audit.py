@@ -155,6 +155,72 @@ def check_glob_consumers_have_producers(sources: dict):
                     f"and none exist on disk — this consumer is blind (silent default)")
 
 
+def check_orphan_agents(sources: dict):
+    """An AGENT that produces a report nobody ever runs — the orphan-agent variant
+    of the producer/consumer bug class.
+
+    check_orphan_queues() can only see files that ALREADY EXIST and match a
+    queue/log/pending glob. It is structurally blind to a producer that has never
+    run even once: no file, no glob match, nothing to flag. That blindness let
+    international_analyst.py — which tracks ^KS11 (KOSPI) and had FIVE wired
+    consumers — sit unscheduled and crash-on-import for the firm's entire history,
+    producing zero reports. The firm was therefore blind to the July 2026 Korean
+    market crash despite owning exactly the right agent for it.
+
+    Detection: build the reachability closure over the import graph starting from
+    the real scheduler roots (main.py + the cron manifest). Any module that writes
+    a data/*.json output which other modules READ, but that is NOT reachable from
+    any scheduler root, is an agent that never comes to work.
+    """
+    roots = {"main.py"}
+    cron = BASE_DIR / "new_crontab.txt"
+    cron_txt = cron.read_text() if cron.exists() else ""
+    for name in sources:
+        if name in cron_txt:
+            roots.add(name)
+
+    # Fixpoint over "module A mentions module B's stem" (import or subprocess call).
+    reachable, frontier = set(roots), set(roots)
+    while frontier:
+        nxt = set()
+        for cur in frontier:
+            txt = sources.get(cur, "")
+            for name in sources:
+                if name in reachable:
+                    continue
+                stem = name[:-3]
+                if re.search(rf"\b{re.escape(stem)}\b", txt):
+                    nxt.add(name)
+        reachable |= nxt
+        frontier = nxt
+
+    # Which modules declare a data/*.json output, and who reads each output?
+    # Tolerate a directory prefix: both os.path.join(DATA_DIR, "x.json") and the
+    # equally common "data/x.json" must match, or the check silently misses half
+    # the producers in the codebase.
+    out_re = re.compile(r'["\'](?:[\w.\-/]*/)?([a-z0-9_]+\.json)["\']')
+    for name, txt in sources.items():
+        if name in reachable or name.startswith("test_"):
+            continue
+        # only consider modules that look like agents writing a report
+        if not re.search(r'open\([^)]*,\s*["\']w["\']|\.write_text\(|json\.dump\(', txt):
+            continue
+        outs = {m for m in out_re.findall(txt) if "data" in txt.split(m)[0][-120:]}
+        for out in outs:
+            readers = [n for n, t in sources.items()
+                       if n != name and not n.startswith("test_") and out in t]
+            if not readers:
+                continue
+            exists = (DATA_DIR / out).exists()
+            problems.append(
+                f"[orphan-agent] {name} writes {out} (read by {len(readers)} module(s): "
+                f"{', '.join(sorted(readers)[:3])}) but is NOT reachable from main.py or "
+                f"the cron manifest — it is scheduled NOWHERE"
+                + ("" if exists else f", and {out} has NEVER been produced")
+            )
+            break   # one finding per orphan module is enough
+
+
 def run_checks() -> dict:
     """Run all wiring checks and return {problems, notes} without exiting.
 
@@ -169,6 +235,7 @@ def run_checks() -> dict:
     check_proposal_categories()
     check_glob_consumers_have_producers(sources)
     check_orphan_queues(sources)
+    check_orphan_agents(sources)
     return {"problems": list(problems), "notes": list(notes)}
 
 

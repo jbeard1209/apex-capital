@@ -1051,6 +1051,24 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             )
         except Exception as e:
             logger.warning(f"  Geopolitical Research Team error: {e}")
+        # International Analyst (IMI) — foreign indices/FX/commodities feeding US
+        # implications. It has five wired consumers but was scheduled NOWHERE, so
+        # it had never produced a single report; the firm was structurally blind to
+        # foreign-market shocks (missed the July 2026 KOSPI crash entirely). See
+        # wiring_audit.check_orphan_agents(), which now guards this class of bug.
+        try:
+            import international_analyst as _intl
+            # universe=None -> the module's own STOCK_UNIVERSE. Do NOT pass
+            # _ctx_sectors: those can be sector NAMES, and _watch_tickers()
+            # intersects against ticker lists, so it would silently return [].
+            _intl_result = _intl.run(universe=None)
+            logger.info(
+                f"  International Analyst: {_intl_result.get('sentiment', '?')} "
+                f"({len(_intl_result.get('notable', []))} notable move(s), "
+                f"{len(_intl_result.get('watch_tickers', []))} watch ticker(s)) ✓"
+            )
+        except Exception as e:
+            logger.warning(f"  International Analyst error: {e}")
     else:
         logger.info(
             f"\nStep 3d: Context agents — skipped "
