@@ -751,13 +751,22 @@ class TestWiringContracts(unittest.TestCase):
         self.assertEqual([r["name"] for r in ia._notable(rows, threshold=0.8)], ["DAX"])
         self.assertIn("KOSPI", [r["name"] for r in rows if r["pct"] is None])
 
-        # And the live report must carry the honest list + be strict-JSON clean.
-        report = Path(__file__).parent / "data" / "international_report.json"
-        if report.exists():
-            raw = report.read_text()
-            self.assertNotIn("NaN", raw, "report contains bare NaN — not valid JSON")
-            self.assertIn("unreadable", json.loads(raw),
-                          "report must name the instruments it could not read")
+        # A freshly built report must carry the honest list and be strict-JSON clean.
+        # Built from the code, NOT read off disk: the first version of this assertion
+        # read data/international_report.json, which passed on the Mac (report
+        # regenerated after the fix) and FAILED on the VM, where the last cron run
+        # predated the deploy by 90 minutes. Asserting on a mutable runtime artifact
+        # tests when the agent last ran, not whether the code is correct.
+        with patch.object(ia, "_pct_change", side_effect=lambda t: None if t == "^KS11" else 1.0), \
+             patch.object(ia, "_last_price", return_value=100.0):
+            fresh = ia.run(universe=["AAPL"])
+        self.assertIn("unreadable", fresh,
+                      "report must name the instruments it could not read")
+        self.assertIn("^KS11", [r["ticker"] for r in fresh["unreadable"]],
+                      "an unreadable index must be NAMED, not silently dropped")
+        raw = json.dumps(fresh, default=str)
+        self.assertNotIn("NaN", raw, "report contains bare NaN — not valid JSON")
+        self.assertEqual(json.loads(raw)["unreadable"][0]["ticker"], "^KS11")
 
     def test_hr_attendance_audit_is_wired_and_actually_fires(self):
         """HR must take attendance, and the result must reach the review report.
