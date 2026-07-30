@@ -21,6 +21,12 @@ from pathlib import Path
 import numpy as np
 
 BASE_DIR = Path(__file__).parent
+
+# One constant, resolved from this file. This path was written out as a VM-absolute
+# literal in 19 separate sqlite3.connect() calls; on the Mac every one of them
+# would have silently created an EMPTY database rather than failing — sqlite3
+# happily creates a missing file — so the loop would "run" and learn from nothing.
+HISTORICAL_13F_DB = str(BASE_DIR / "data" / "historical_13f.db")
 DATA_DIR = BASE_DIR / "data"
 LOG_FILE = DATA_DIR / "ml_improvement_log.json"
 
@@ -1499,7 +1505,7 @@ def idea_spy_relative_target(idea_id: int) -> tuple[float | None, float | None, 
     # meta has 'snapshot_date' and 'ticker'
 
     # Load raw outcome_20d values (not binarized)
-    conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+    conn = sqlite3.connect(HISTORICAL_13F_DB)
     raw = conn.execute(
         "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
     ).fetchall()
@@ -1920,7 +1926,7 @@ def idea_risk_adj_optuna(idea_id: int) -> tuple:
 
     # Build risk-adjusted target (same logic as idea 28)
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2018,7 +2024,7 @@ def idea_sector_relative_risk_adj(idea_id: int) -> tuple:
         "Energy": "XLE", "Materials": "XLB", "Utilities": "XLU", "Real Estate": "XLRE",
     }
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d, sector FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2091,7 +2097,7 @@ def idea_sharpe60(idea_id: int) -> tuple:
     X_st, y_raw, meta = fe.build_feature_matrix(target="outcome_20d")
 
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2148,7 +2154,7 @@ def idea_lt_risk_adj(idea_id: int) -> tuple:
     X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
 
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_365d FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
         ).fetchall()
@@ -2216,7 +2222,7 @@ def idea_risk_adj_no_market(idea_id: int) -> tuple:
 
     # Risk-adjusted target
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2270,7 +2276,7 @@ def idea_beta_neutral(idea_id: int) -> tuple:
     import feature_engineer as fe, numpy as np, sqlite3, pandas as pd, yfinance as yf
     X_st, y_raw, meta = fe.build_feature_matrix(target="outcome_20d")
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute("SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL").fetchall()
         conn.close()
         ret_df = pd.DataFrame(raw, columns=["snapshot_date", "ticker", "outcome_20d"])
@@ -2495,7 +2501,7 @@ def idea_rank_percentile(idea_id: int) -> tuple:
 
     X_st, y_raw, meta = fe.build_feature_matrix(target="outcome_20d")
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2524,7 +2530,7 @@ def idea_rank_percentile(idea_id: int) -> tuple:
     X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
     # Apply same ranking logic to LT
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw_lt = conn.execute(
             "SELECT snapshot_date, ticker, outcome_365d FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
         ).fetchall()
@@ -2570,7 +2576,7 @@ def idea_triple_combo(idea_id: int) -> tuple:
 
     # Risk-adjusted target
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2771,7 +2777,7 @@ def idea_institutional_sharpe(idea_id: int) -> tuple:
 
     # Step 3: Risk-adjusted (Sharpe) target
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -2834,7 +2840,7 @@ def idea_edgar_features(idea_id: int) -> tuple:
         # Fall back: try loading EDGAR features from the data directly
         try:
             import sqlite3, pandas as pd
-            conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+            conn = sqlite3.connect(HISTORICAL_13F_DB)
             # Check if EDGAR columns exist
             cols = [row[1] for row in conn.execute("PRAGMA table_info(pipeline_snapshots)").fetchall()]
             edgar_cols = [c for c in cols if c.startswith("edgar_") or c in
@@ -2950,7 +2956,7 @@ def idea_precomputed_sharpe(idea_id: int) -> tuple:
     X_st, y_raw, meta = fe.build_feature_matrix(target="outcome_20d")
 
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         rows = conn.execute(
             "SELECT snapshot_date, ticker, risk_adjusted_20d FROM pipeline_snapshots "
             "WHERE risk_adjusted_20d IS NOT NULL"
@@ -2979,7 +2985,7 @@ def idea_precomputed_sharpe(idea_id: int) -> tuple:
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
     # For LT: use risk_adjusted_5d as proxy (available) or standard
     try:
-        conn2 = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn2 = sqlite3.connect(HISTORICAL_13F_DB)
         rows2 = conn2.execute(
             "SELECT snapshot_date, ticker, risk_adjusted_20d FROM pipeline_snapshots "
             "WHERE risk_adjusted_20d IS NOT NULL"
@@ -3052,7 +3058,7 @@ def idea_sharpe_ortho_clean(idea_id: int) -> tuple:
 
     # Step 3: Pre-computed Sharpe target
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         rows = conn.execute(
             "SELECT snapshot_date, ticker, risk_adjusted_20d FROM pipeline_snapshots WHERE risk_adjusted_20d IS NOT NULL"
         ).fetchall()
@@ -3092,7 +3098,7 @@ def idea_cs_sharpe_rank(idea_id: int) -> tuple:
 
     X_st, y_raw, meta = fe.build_feature_matrix(target="outcome_20d")
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         rows = conn.execute(
             "SELECT snapshot_date, ticker, risk_adjusted_20d FROM pipeline_snapshots WHERE risk_adjusted_20d IS NOT NULL"
         ).fetchall()
@@ -3161,7 +3167,7 @@ def idea_sharpe_ortho_optuna(idea_id: int) -> tuple:
 
     # CS Sharpe rank target
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         rows = conn.execute(
             "SELECT snapshot_date, ticker, risk_adjusted_20d FROM pipeline_snapshots WHERE risk_adjusted_20d IS NOT NULL"
         ).fetchall()
@@ -3291,7 +3297,7 @@ def idea_beta_neutral_fixed(idea_id: int) -> tuple:
     ci = {c: i for i, c in enumerate(fe.FEATURE_COLS)}
 
     try:
-        conn = sqlite3.connect('/home/jackbeard/institutional-tracker/data/historical_13f.db')
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_20d FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL"
         ).fetchall()
@@ -3381,7 +3387,7 @@ def idea_lt_rank_pct(idea_id: int) -> tuple:
     # LT rank percentile: use LT_FEATURE_COLS, rank_percentile_365d target
     X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
     try:
-        conn = sqlite3.connect("/home/jackbeard/institutional-tracker/data/historical_13f.db")
+        conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
             "SELECT snapshot_date, ticker, outcome_365d FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
         ).fetchall()

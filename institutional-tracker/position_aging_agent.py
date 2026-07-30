@@ -11,6 +11,8 @@ This enforces the "no research = no hold" rule across the portfolio.
 Schedule: daily 08:00 ET via crontab
 """
 
+from __future__ import annotations   # PEP 604 (`str | None`) on Python 3.9 (Mac host)
+
 import json
 import logging
 import os
@@ -77,7 +79,11 @@ def get_last_research_date(ticker: str, research_report: dict) -> str | None:
             return report_date
     # 3. Sector assignments watchlists
     import os as _os, json as _j
-    sa_path = "/home/jackbeard/institutional-tracker/data/sector_assignments.json"
+    # Resolved from this file, not a host literal: on the Mac the old absolute
+    # path simply did not exist, so this lookup silently returned nothing and the
+    # agent under-reported position age — no error, just a quieter wrong answer.
+    sa_path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)),
+                            "data", "sector_assignments.json")
     if _os.path.exists(sa_path):
         try:
             sa = _j.load(open(sa_path))

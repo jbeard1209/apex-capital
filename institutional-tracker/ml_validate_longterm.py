@@ -24,7 +24,12 @@ warnings.filterwarnings('ignore')
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-BASE = Path('/home/jackbeard/institutional-tracker')
+# Resolve from this file, never a hardcoded host path. This used to be an
+# absolute path naming the VM's home directory, so the module could only ever run
+# on the VM — on the Mac it raised OSError at IMPORT time (it mkdir()s at module
+# scope), and every consumer's try/except quietly wrote it off. Two hosts, one
+# codebase: a path that names one host is a bug on the other.
+BASE = Path(__file__).resolve().parent
 REPORT_PATH = BASE / 'data' / 'longterm_validation_report.json'
 LOG_DIR = BASE / 'logs'
 LOG_DIR.mkdir(parents=True, exist_ok=True)

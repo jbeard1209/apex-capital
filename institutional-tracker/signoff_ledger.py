@@ -35,11 +35,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import fnmatch
+import socket
 import tempfile
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(BASE, "data")
@@ -56,6 +58,9 @@ SHADOW_LOG_PATH = os.path.join(DATA, "signoff_shadow_log.json")
 # manual toggle: see set_mode(). Default is always SHADOW if the file is absent.
 _VALID_MODES = ("SHADOW", "ENFORCE")
 _FLIP_APPROVERS_REQUIRED = {"BOARD", "CIT"}   # both must approve to enforce
+# Turning the gate back OFF is also accountable (red team X3), but the Chairman
+# alone suffices — a human must always be able to kill a misfiring guardrail.
+_DOWNGRADE_APPROVERS = {"CHAIRMAN"}
 
 # --- HARD LINE: files an autonomous change may never self-clear -------------
 # Red team RT-09/RT-10 (2026-07-29) evaded an exact-name glob with a renamed
@@ -142,7 +147,18 @@ def _save(path, obj):
 
 
 def _now() -> str:
-    return datetime.now().isoformat()
+    """UTC, always. Red team X10: `datetime.now()` is LOCAL, so the Mac (EDT)
+    and the VM (UTC) rolled the daily deploy budget 4 hours apart — a change
+    blocked by budget on one host was clearable on the other."""
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _today() -> str:
+    return datetime.now(timezone.utc).date().isoformat()
+
+
+def _host() -> str:
+    return socket.gethostname().split(".")[0]
 
 
 def _git_head() -> str | None:
@@ -154,6 +170,29 @@ def _git_head() -> str | None:
         return r.stdout.strip() or None
     except Exception:
         return None
+
+
+def _files_fingerprint(files: list) -> str:
+    """SHA of the CONTENT of every declared file.
+
+    Red team X9: the staleness guard used to compare git HEAD, and the GCP VM is
+    not a git checkout (deploy.sh rsyncs with --exclude=.git/). So `_git_head()`
+    returned None there, the `if head and tc` check short-circuited, and the
+    "green tests must have run against the deployed code" guardrail silently did
+    not exist on the always-on host running 63 cron jobs. A content hash needs no
+    git — and is strictly stronger, because it also catches an uncommitted edit
+    made between the test run and the deploy."""
+    h = hashlib.sha256()
+    for f in sorted(str(x) for x in (files or [])):
+        h.update(f.encode("utf-8", "replace") + b"\0")
+        p = f if os.path.isabs(f) else os.path.join(BASE, os.path.basename(f))
+        try:
+            with open(p, "rb") as fh:
+                h.update(hashlib.sha256(fh.read()).digest())
+        except Exception:
+            h.update(b"<absent>")          # a file that does not exist yet
+        h.update(b"\n")
+    return h.hexdigest()[:16]
 
 
 def _ledger() -> dict:
@@ -192,9 +231,17 @@ def blast_radius_ok(files: list, added: int, removed: int) -> bool:
     return len(files or []) <= MAX_BLAST_FILES and lines <= MAX_BLAST_LINES
 
 
-def _deployed_today_records() -> list:
-    today = date.today().isoformat()
-    return [c for c in _ledger().values()
+def _deployed_today_records(led: dict | None = None) -> list:
+    """Deploys in the current UTC day, counted across EVERY host present in the
+    ledger.
+
+    Red team X10/X11: this used local `date.today()` (Mac EDT vs VM UTC — the
+    budget window differed by 4h between the two brains) and the ledger itself
+    is per-host uncommitted state, so each host granted itself a full budget.
+    Counting host-stamped deploys keeps the cap firm-wide once data/ is synced;
+    until then the residual per-host exposure is documented in DAILY_DEPLOY_BUDGET."""
+    today = _today()
+    return [c for c in (led if led is not None else _ledger()).values()
             if (c.get("deployed_at") or "")[:10] == today]
 
 
@@ -217,6 +264,7 @@ def propose_change(change_id: str, title: str, files: list,
     literal 'PASS' (smoke + audit both green) for the change to be clearable."""
     led = _ledger()
     hard = touches_hard_line(files)
+    prev = led.get(change_id)
     rec = {
         "change_id":   change_id,
         "title":       title,
@@ -228,23 +276,69 @@ def propose_change(change_id: str, title: str, files: list,
         "proposed_at": _now(),
         "signatures":  [],                    # [{role, agent, rationale, at}]
         "veto":        None,                  # {role, agent, reason, at}
+        "vetoes":      [],                    # full history; see veto()
         "hard_line_hits": hard,
         "status":      "ROUTE_TO_HUMAN" if hard else "AWAITING_SIGNOFF",
         "outcome":     None,                  # HELD | REVERTED | REGRESSED
         "deployed_at": None,
     }
+    # A PASS supplied at propose time is a real API path (most actuators use it),
+    # so it must be fingerprinted here too — otherwise the X9 staleness guard
+    # rejects it forever for "no fingerprint" and nothing on that path can ever
+    # clear. Caught by RT-24 reporting a bypass that was actually total paralysis.
+    if test_result is not None:
+        rec["test_commit"] = _git_head()
+        rec["test_fingerprint"] = _files_fingerprint(rec["files"])
+
+    if prev is not None:
+        # Red team X1 — THE most serious hole found: re-proposing an existing
+        # change_id used to overwrite the record wholesale, which silently
+        # erased a standing veto. Any actuator could defeat Canary by calling
+        # propose_change() twice with the same id. A veto, a deploy stamp and a
+        # scored outcome are FACTS ABOUT THE PAST; a new proposal cannot unmake
+        # them.
+        for k in ("veto", "vetoes", "deployed_at", "deploy_host", "outcome",
+                  "outcome_at", "outcome_reported_by", "outcome_audit",
+                  "scored_outcome", "blocked_signatures", "board_escalation"):
+            if prev.get(k) is not None:
+                rec[k] = prev[k]
+        rec["proposed_at"] = prev.get("proposed_at", rec["proposed_at"])
+        rec["reproposed_at"] = _now()
+        # Signatures attach to a SPECIFIC payload. If the payload moved, the
+        # signers reviewed something else — void their sign-off and the green
+        # test rather than letting a new diff inherit old approvals.
+        same_payload = (
+            sorted(str(f) for f in (prev.get("files") or [])) == sorted(str(f) for f in (files or []))
+            and int(prev.get("added", 0)) == int(added or 0)
+            and int(prev.get("removed", 0)) == int(removed or 0)
+        )
+        if same_payload:
+            rec["signatures"] = prev.get("signatures", [])
+            rec["test_result"] = test_result if test_result is not None else prev.get("test_result")
+            rec["test_commit"] = prev.get("test_commit")
+            rec["test_fingerprint"] = prev.get("test_fingerprint")
+        else:
+            rec["payload_changed_at"] = _now()
+        _refresh_status(rec)
+
     led[change_id] = rec
     _save(LEDGER_PATH, led)
     return rec
 
 
 def attach_test_result(change_id: str, result: str) -> None:
-    """Record a green/red test result AND the commit it ran against, so a PASS
-    can't be reused after the code moves on (red team RT-16, staleness angle)."""
+    """Record a green/red test result AND a fingerprint of the code it ran
+    against, so a PASS can't be reused after the code moves on (red team RT-16
+    staleness angle; X9 for the no-git host)."""
     led = _ledger()
     if change_id in led:
         led[change_id]["test_result"] = result
         led[change_id]["test_commit"] = _git_head()
+        led[change_id]["test_fingerprint"] = _files_fingerprint(led[change_id].get("files"))
+        # X14: without this the cached `status` stayed AWAITING_SIGNOFF after the
+        # last missing precondition was met, so --report and the board briefing
+        # showed a state that disagreed with is_cleared().
+        _refresh_status(led[change_id])
         _save(LEDGER_PATH, led)
 
 
@@ -275,16 +369,71 @@ def sign(change_id: str, agent: str, role: str, rationale: str) -> dict:
     return rec
 
 
+# A CANARY veto is a system-health kill switch and is never board-overridable;
+# an IRM veto is a risk judgement the board may override at a hard bar. So the
+# ACTIVE veto must always be the most severe one on record, never the most
+# recent — see veto().
+_VETO_SEVERITY = {"CANARY": 3, "CIT": 2, "IRM": 1}
+
+
+def _strongest_veto(vetoes: list):
+    live = [v for v in (vetoes or []) if not v.get("cleared_at")]
+    if not live:
+        return None
+    return max(live, key=lambda v: (_VETO_SEVERITY.get(v.get("role"), 0), v.get("at", "")))
+
+
 def veto(change_id: str, agent: str, reason: str, role: str = "CANARY") -> dict:
+    """Record a veto. Vetoes ACCUMULATE — a later one never replaces an earlier
+    one.
+
+    Red team X2: `rec["veto"]` was a single slot that each call overwrote. So a
+    non-overridable CANARY health veto could be laundered into a board-
+    overridable IRM veto simply by calling veto() again with role='IRM' — and
+    the board could then override the Canary kill switch it is explicitly never
+    allowed to override. Keeping every veto and surfacing the most severe one
+    makes that downgrade impossible."""
     led = _ledger()
     rec = led.get(change_id)
     if rec is None:
         raise KeyError(f"unknown change {change_id}")
-    rec["veto"] = {"role": role.upper(), "agent": agent,
-                   "reason": reason[:400], "at": _now()}
+    rec.setdefault("vetoes", [])
+    if rec.get("veto") and rec["veto"] not in rec["vetoes"]:
+        rec["vetoes"].append(rec["veto"])      # migrate a pre-existing single veto
+    rec["vetoes"].append({"role": role.upper(), "agent": agent,
+                          "reason": reason[:400], "at": _now()})
+    rec["veto"] = _strongest_veto(rec["vetoes"])
     rec["status"] = "VETOED_ROUTE_TO_HUMAN"
     _save(LEDGER_PATH, led)
     return rec
+
+
+def clear_veto(change_id: str, agent: str, reason: str, role: str | None = None) -> dict:
+    """Withdraw vetoes, attributably.
+
+    Red team X13: there was no way to lift a veto once conditions changed (e.g.
+    Canary recovers to GREEN), so the only escape was the X1 re-propose hole —
+    a legitimate need served by an illegitimate mechanism. Withdrawal is now
+    explicit, named, and logged; `role=None` withdraws all of them."""
+    led = _ledger()
+    rec = led.get(change_id)
+    if rec is None:
+        raise KeyError(f"unknown change {change_id}")
+    if not (reason or "").strip():
+        raise ValueError("clearing a veto requires a stated reason")
+    want = role.upper() if role else None
+    n = 0
+    for v in rec.get("vetoes", []):
+        if v.get("cleared_at"):
+            continue
+        if want and v.get("role") != want:
+            continue
+        v["cleared_at"] = _now(); v["cleared_by"] = agent; v["cleared_reason"] = reason[:400]
+        n += 1
+    rec["veto"] = _strongest_veto(rec.get("vetoes"))
+    _refresh_status(rec)
+    _save(LEDGER_PATH, led)
+    return {"cleared": n, "status": rec["status"]}
 
 
 def escalate_veto_to_board(change_id: str, note: str = "") -> dict:
@@ -411,10 +560,20 @@ def _clearance_reasons(rec: dict) -> tuple[bool, list]:
     if rec.get("test_result") != "PASS":
         reasons.append(f"no green test+audit on record (test_result={rec.get('test_result')})")
     else:
-        # The green result must have run against the code being deployed. If
-        # HEAD has moved since the tests passed, the PASS is stale — re-test.
+        # The green result must have run against the code being deployed.
+        # Content fingerprint first: it works on the VM, which has no .git, and
+        # it also catches an uncommitted edit inside the same commit. A PASS with
+        # no fingerprint at all predates this guard and is treated as stale
+        # rather than trusted — fail toward re-testing (red team X9).
+        fp_now, fp_test = _files_fingerprint(files), rec.get("test_fingerprint")
         head, tc = _git_head(), rec.get("test_commit")
-        if head and tc and head != tc:
+        if not fp_test:
+            reasons.append("green tests carry no code fingerprint — re-run tests "
+                           "so the PASS can be tied to the code being deployed")
+        elif fp_now != fp_test:
+            reasons.append(f"green tests are stale — ran against code fingerprint "
+                           f"{fp_test} but the declared files now hash {fp_now}; re-run tests")
+        elif head and tc and head != tc:
             reasons.append(f"green tests are stale — ran against {tc} but HEAD is now "
                            f"{head}; re-run tests before deploy")
     if not blast_radius_ok(rec.get("files"), rec.get("added"), rec.get("removed")):
@@ -455,33 +614,74 @@ def is_cleared(change_id: str) -> tuple[bool, list]:
     return (ok, reasons)
 
 
+class _DeployLock:
+    """Advisory inter-PROCESS lock around the reserve→deploy critical section.
+
+    Honest about its limit (red team X8: the old docstring claimed atomicity
+    the code did not provide): flock serialises the ~63 cron jobs on a single
+    host, which is where the real race is. It does NOT synchronise the Mac
+    against the VM — they have separate filesystems — so the firm-wide budget
+    still rests on both hosts sharing data/ via sync_to_cloud."""
+
+    def __init__(self):
+        self.fh = None
+
+    def __enter__(self):
+        try:
+            import fcntl
+            os.makedirs(DATA, exist_ok=True)
+            self.fh = open(os.path.join(DATA, ".signoff_deploy.lock"), "w")
+            fcntl.flock(self.fh.fileno(), fcntl.LOCK_EX)
+        except Exception:
+            self.fh = None            # locking unavailable — proceed unserialised
+        return self
+
+    def __exit__(self, *exc):
+        try:
+            if self.fh:
+                import fcntl
+                fcntl.flock(self.fh.fileno(), fcntl.LOCK_UN)
+                self.fh.close()
+        except Exception:
+            pass
+        return False
+
+
 def reserve_and_deploy(change_id: str) -> tuple[bool, list]:
-    """Atomically re-check clearance + budget and stamp deployed in ONE
-    load→verify→save, so two racing deployers can't both slip past the budget
-    (red team RT-20). This is the only sanctioned way to mark a deploy."""
-    ok, reasons = is_cleared(change_id)
-    if not ok:
-        return (False, reasons)
-    led = _ledger()                       # re-read immediately before writing
-    rec = led.get(change_id)
-    if rec is None:
-        return (False, ["unknown change"])
-    if len([c for c in led.values()
-            if (c.get("deployed_at") or "")[:10] == date.today().isoformat()]) >= DAILY_DEPLOY_BUDGET:
-        return (False, ["budget consumed by a concurrent deploy — queues for Chairman"])
-    rec["deployed_at"] = _now()
-    rec["status"] = "DEPLOYED"
-    _save(LEDGER_PATH, led)
-    return (True, [])
-
-
-def mark_deployed(change_id: str) -> None:
-    """Thin wrapper; prefer reserve_and_deploy() which enforces the budget."""
-    led = _ledger()
-    if change_id in led:
-        led[change_id]["deployed_at"] = _now()
-        led[change_id]["status"] = "DEPLOYED"
+    """Re-check clearance + budget and stamp deployed inside a host-level lock,
+    so two racing deployers can't both slip past the budget (red team RT-20).
+    This is the only sanctioned way to mark a deploy."""
+    with _DeployLock():
+        ok, reasons = is_cleared(change_id)
+        if not ok:
+            return (False, reasons)
+        led = _ledger()                   # re-read inside the lock, before writing
+        rec = led.get(change_id)
+        if rec is None:
+            return (False, ["unknown change"])
+        # Both budgets (count AND the anti-split line cap) are enforced by the
+        # is_cleared() call above, which re-reads the ledger from disk INSIDE this
+        # lock — so it already sees any concurrent deploy that landed since the
+        # caller last checked. An earlier version of this function re-verified the
+        # line cap here as well; mutation testing proved that branch could never
+        # fire, and its comment claimed it was closing a hole that is_cleared()
+        # already closes. Dead code carrying a false safety claim is worse than no
+        # code: it makes the next reader think two things are guarding the door.
+        rec["deployed_at"] = _now()
+        rec["deploy_host"] = _host()
+        rec["status"] = "DEPLOYED"
         _save(LEDGER_PATH, led)
+        return (True, [])
+
+
+def mark_deployed(change_id: str) -> tuple[bool, list]:
+    """Deprecated alias for reserve_and_deploy().
+
+    Red team X6: this used to stamp DEPLOYED directly, skipping every budget
+    check — an unguarded door standing next to the guarded one. It had no
+    production callers, so rather than leave the hole for a future actuator to
+    find, it now delegates. Kept only so existing call sites keep working."""
+    return reserve_and_deploy(change_id)
 
 
 def record_outcome(change_id: str, outcome: str, reported_by: str = "unattributed") -> dict:
@@ -497,6 +697,13 @@ def record_outcome(change_id: str, outcome: str, reported_by: str = "unattribute
     outcome = outcome.upper()
     if outcome not in _OUTCOME_SIGNAL:
         raise ValueError(f"outcome must be one of {list(_OUTCOME_SIGNAL)}")
+    # X12: `reported_by` defaulted to the literal string "unattributed", so the
+    # attribution requirement was satisfied by not attributing. An outcome that
+    # moves reputation must name who reported it.
+    reporter = (reported_by or "").strip()
+    if not reporter or reporter.lower() in {"unattributed", "unknown", "none", "n/a"}:
+        raise ValueError("record_outcome requires a named reporter — reputation "
+                         "moves on this, so an anonymous outcome is not acceptable")
     led = _ledger()
     rec = led.get(change_id)
     if rec is None:
@@ -505,10 +712,20 @@ def record_outcome(change_id: str, outcome: str, reported_by: str = "unattribute
         raise ValueError(f"cannot record an outcome for {change_id}: it never deployed")
     rec["outcome"] = outcome
     rec["outcome_at"] = _now()
-    rec["outcome_reported_by"] = reported_by
+    rec["outcome_reported_by"] = reporter
     rec.setdefault("outcome_audit", []).append(
-        {"outcome": outcome, "by": reported_by, "at": _now()})
+        {"outcome": outcome, "by": reporter, "at": _now()})
+
+    # X5: reputation used to move on EVERY call, so reporting "HELD" on one
+    # deployed change twelve times scored the signers twelve times — free
+    # reputation from a single fix, which is exactly the rubber-stamp incentive
+    # this ledger exists to remove. Score only on a genuine CHANGE of outcome
+    # (HELD → REVERTED must still burn the signers), never on a repeat.
+    already = rec.get("scored_outcome")
+    rec["scored_outcome"] = outcome
     _save(LEDGER_PATH, led)
+    if already == outcome:
+        return rec
     signal = _OUTCOME_SIGNAL[outcome]
     for s in rec.get("signatures", []):
         _apply_reputation(s["agent"], signal, change_id, outcome)
@@ -516,11 +733,18 @@ def record_outcome(change_id: str, outcome: str, reported_by: str = "unattribute
 
 
 def _apply_reputation(agent: str, signal: float, change_id: str, outcome: str) -> None:
+    # X4: reputation was keyed on the RAW agent string while the distinct-signer
+    # check normalised — so "CIT-Bot" carrying an ewma of -0.9 could sign again
+    # as "cit-bot " and present a clean record. Identity must mean the same thing
+    # everywhere, or a bad reputation is opt-out.
+    key = _norm_agent(agent)
     rep = _load(REPUTATION_PATH, {})
     if not isinstance(rep, dict):
         rep = {}
-    r = rep.get(agent) or {"ewma": 0.0, "n_signed": 0, "n_held": 0,
-                           "n_burned": 0, "history": []}
+    r = rep.get(key) or rep.get(agent) or {"ewma": 0.0, "n_signed": 0, "n_held": 0,
+                                           "n_burned": 0, "history": []}
+    rep.pop(agent, None)                       # fold any legacy raw-name record in
+    r["display_name"] = agent
     r["ewma"] = round((1 - _EWMA_ALPHA) * r["ewma"] + _EWMA_ALPHA * signal, 4)
     r["n_signed"] += 1
     if outcome == "HELD":
@@ -531,7 +755,7 @@ def _apply_reputation(agent: str, signal: float, change_id: str, outcome: str) -
         {"change_id": change_id, "outcome": outcome, "signal": signal, "at": _now()}
     ])[-50:]
     r["last_update"] = _now()
-    rep[agent] = r
+    rep[key] = r
     _save(REPUTATION_PATH, rep)
 
 
@@ -555,7 +779,10 @@ def reputation(agent: str | None = None):
     if not isinstance(rep, dict):
         rep = {}
     if agent:
-        return rep.get(agent, {"ewma": 0.0, "n_signed": 0, "n_held": 0, "n_burned": 0})
+        # Look up on the same normalised identity the ledger scores on (X4), with
+        # a raw-name fallback for records written before that fix.
+        return (rep.get(_norm_agent(agent)) or rep.get(agent)
+                or {"ewma": 0.0, "n_signed": 0, "n_held": 0, "n_burned": 0})
     return rep
 
 
@@ -579,18 +806,31 @@ def set_mode(mode: str, approvals: list, note: str = "") -> tuple[bool, str]:
     mode = str(mode).upper()
     if mode not in _VALID_MODES:
         return (False, f"mode must be one of {_VALID_MODES}")
+    got = {str(a).strip().upper() for a in (approvals or [])}
+    prev = get_mode()
     if mode == "ENFORCE":
-        got = {str(a).strip().upper() for a in (approvals or [])}
         missing = _FLIP_APPROVERS_REQUIRED - got
         if missing:
             return (False, f"ENFORCE requires joint approval from {', '.join(sorted(missing))} "
                            f"(have: {', '.join(sorted(got)) or 'none'})")
+    elif prev == "ENFORCE":
+        # Red team X3 — the gate could switch itself off. Downgrading was
+        # unconditional on the reasoning that "de-risking is never gated", which
+        # is true for a human and false for the actuator being gated: any code
+        # blocked by ENFORCE could call set_mode("SHADOW", []) and walk straight
+        # through. Turning the gate OFF is now as accountable as turning it on,
+        # with a Chairman fast-path so a misfiring gate can still be killed.
+        if not (got & _DOWNGRADE_APPROVERS) and not _FLIP_APPROVERS_REQUIRED <= got:
+            return (False, "leaving ENFORCE requires CHAIRMAN, or joint BOARD+CIT "
+                           f"(have: {', '.join(sorted(got)) or 'none'})")
     _save(MODE_PATH, {
         "mode": mode,
-        "approvals": sorted({str(a).strip().upper() for a in (approvals or [])}),
+        "approvals": sorted(got),
         "note": note[:400],
         "set_at": _now(),
         "set_head": _git_head(),
+        "previous_mode": prev,
+        "set_host": _host(),
     })
     return (True, f"gate mode set to {mode}")
 

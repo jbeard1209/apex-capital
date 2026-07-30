@@ -216,3 +216,16 @@ try:
 except Exception as _mge:
     import logging as _lg
     _lg.getLogger("config").warning(f"mail_guard not installed: {_mge}")
+
+# --- ORDER ATTRIBUTION (2026-07-30) ---
+# Same chokepoint idea, applied to trading: stamp every order this firm places
+# with a signed client_order_id so foreign_order_detector can tell OUR orders
+# from a second actor's by ID rather than by guessing from symbol+day. 16 call
+# sites submit orders; patching the shared client covers all of them, including
+# VM-only scripts. See order_ledger.py header.
+try:
+    import order_ledger as _order_ledger
+    _order_ledger.install()
+except Exception as _ole:
+    import logging as _lg
+    _lg.getLogger("config").warning(f"order_ledger not installed: {_ole}")

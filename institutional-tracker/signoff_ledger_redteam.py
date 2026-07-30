@@ -30,6 +30,13 @@ def _fresh_ledger():
     d = tempfile.mkdtemp(prefix="redteam_")
     L.LEDGER_PATH = os.path.join(d, "led.json")
     L.REPUTATION_PATH = os.path.join(d, "rep.json")
+    # MODE_PATH/SHADOW_LOG_PATH must be sandboxed HERE, not per-attack. They were
+    # redirected inside attack_r3_migration() only, so any attack calling
+    # set_mode()/preflight() without repeating those two lines would have written
+    # the LIVE gate mode — a red team run could have flipped the firm into
+    # ENFORCE. Nothing had tripped it yet; sandboxing centrally removes the trap.
+    L.MODE_PATH = os.path.join(d, "mode.json")
+    L.SHADOW_LOG_PATH = os.path.join(d, "shadow.json")
     return L
 
 
@@ -460,11 +467,148 @@ def attack_r6_loops():
            "a drop with no resolution must be surfaced to the Chairman")
 
 
+# ── R7: state-machine, identity and budget attacks (round 2, 2026-07-30) ────
+# The first red team pass reported 48/48 held — but it was written by the same
+# session that wrote the guardrails, so it only probed what that session had
+# already thought of. This round attacks the LIFECYCLE instead of the policy:
+# what happens when a call is repeated, replayed, or made out of order.
+def attack_r7_lifecycle():
+    L = _fresh_ledger()
+
+    def clean(cid, files=("notes_agent.py",), added=5, removed=5):
+        L.propose_change(cid, "t", list(files), added, removed)
+        L.attach_test_result(cid, "PASS")
+        L.sign(cid, "CIT-Bot", "CIT", "checked"); L.sign(cid, "IRM-Bot", "IRM", "checked")
+        return cid
+
+    # X1 — re-proposing an existing change_id must not erase a standing veto.
+    clean("x1"); L.veto("x1", "Canary", "system RED", role="CANARY")
+    L.propose_change("x1", "t", ["notes_agent.py"], 5, 5)
+    L.attach_test_result("x1", "PASS")
+    L.sign("x1", "CIT-Bot", "CIT", "ok"); L.sign("x1", "IRM-Bot", "IRM", "ok")
+    _check("R7 replay", "re-propose the same change_id to erase a veto", "CRITICAL",
+           True, L.is_cleared("x1")[0], "a veto is a fact about the past")
+
+    # X1b — a changed payload must void signatures that reviewed the old one.
+    clean("x1b")
+    L.propose_change("x1b", "t", ["notes_agent.py", "other_agent.py"], 30, 30)
+    _check("R7 replay", "swap the payload under existing sign-offs", "HIGH",
+           True, L.is_cleared("x1b")[0], "signers reviewed a different diff")
+
+    # X2 — a CANARY veto must not be downgradable to an overridable IRM veto.
+    clean("x2")
+    L.veto("x2", "Canary", "system RED", role="CANARY")
+    L.veto("x2", "IRM-Bot", "meh", role="IRM")
+    _check("R7 veto-launder", "downgrade a CANARY veto via a second veto() call", "CRITICAL",
+           True, bool(L.escalate_veto_to_board("x2").get("ok")),
+           "board must never be able to override the health kill switch")
+
+    # X3 — the gate must not be switchable off by the code it gates.
+    L.set_mode("ENFORCE", ["BOARD", "CIT"])
+    downgraded = L.set_mode("SHADOW", [])[0]
+    clean("x3"); L.veto("x3", "Canary", "RED", role="CANARY")
+    _check("R7 self-disable", "actuator turns ENFORCE off, then proceeds", "CRITICAL",
+           True, downgraded and L.preflight("x3", actuator="rogue")["allow"],
+           "leaving ENFORCE requires CHAIRMAN or joint BOARD+CIT")
+    L.set_mode("SHADOW", ["CHAIRMAN"], "restore")
+
+    # X4 — reputation must key on the same identity the signer check normalises.
+    clean("x4"); L.reserve_and_deploy("x4")
+    L.record_outcome("x4", "REGRESSED", reported_by="HR")
+    _check("R7 identity", "shed a burned reputation via a name case variant", "HIGH",
+           True, L.reputation("cit-bot ").get("n_signed", 0) == 0,
+           f"'CIT-Bot' ewma={L.reputation('CIT-Bot').get('ewma')}")
+
+    # X5 — reporting the same outcome repeatedly must not re-score the signers.
+    clean("x5"); L.reserve_and_deploy("x5")
+    for _ in range(12):
+        L.record_outcome("x5", "HELD", reported_by="self")
+    _check("R7 incentive", "farm reputation by re-reporting one HELD 12x", "HIGH",
+           True, L.reputation("IRM-Bot").get("n_signed", 0) > 3,
+           f"n_signed={L.reputation('IRM-Bot').get('n_signed')} from 2 deployed changes")
+
+    # X6 — every deploy path must consume budget, including the legacy alias.
+    L2 = _fresh_ledger()
+    for i in range(6):
+        cid = f"x6_{i}"
+        L2.propose_change(cid, "t", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+        L2.sign(cid, "C", "CIT", "ok"); L2.sign(cid, "I", "IRM", "ok")
+        L2.mark_deployed(cid)
+    _check("R7 budget", "mark_deployed() as an unguarded deploy door", "HIGH",
+           True, L2.deploys_today() > L2.DAILY_DEPLOY_BUDGET,
+           f"deploys_today()={L2.deploys_today()} vs budget {L2.DAILY_DEPLOY_BUDGET}")
+
+    # X9 — the staleness guard must survive on a host with no git (the GCP VM).
+    L3 = _fresh_ledger()
+    victim = os.path.join(os.path.dirname(L3.LEDGER_PATH), "victim_agent.py")
+    open(victim, "w").write("# v1\n")
+    real_head, L3._git_head = L3._git_head, lambda: None
+    try:
+        L3.propose_change("x9", "t", [victim], 5, 5)
+        L3.attach_test_result("x9", "PASS")
+        L3.sign("x9", "C", "CIT", "ok"); L3.sign("x9", "I", "IRM", "ok")
+        was_clear = L3.is_cleared("x9")[0]
+        open(victim, "w").write("# v2 changed after the green test\n")
+        _check("R7 staleness", "edit the code after the green test, with no git", "HIGH",
+               True, L3.is_cleared("x9")[0],
+               f"content fingerprint must catch it (cleared before edit={was_clear})")
+    finally:
+        L3._git_head = real_head
+
+    # X12 — an outcome that moves reputation must name who reported it.
+    L4 = _fresh_ledger()
+    L4.propose_change("x12", "t", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+    L4.sign("x12", "C", "CIT", "ok"); L4.sign("x12", "I", "IRM", "ok")
+    L4.reserve_and_deploy("x12")
+    try:
+        L4.record_outcome("x12", "HELD")
+        anon = True
+    except ValueError:
+        anon = False
+    _check("R7 attribution", "score an outcome with no named reporter", "MEDIUM",
+           True, anon, "the default 'unattributed' used to satisfy the check")
+
+    # X13 — withdrawing a veto must be possible, named, and reasoned.
+    L5 = _fresh_ledger()
+    L5.propose_change("x13", "t", ["z.py"], 1, 0, "BUG_FIX", "PASS")
+    L5.sign("x13", "C", "CIT", "ok"); L5.sign("x13", "I", "IRM", "ok")
+    L5.veto("x13", "Canary", "RED", role="CANARY")
+    try:
+        L5.clear_veto("x13", "Canary", "")
+        unnamed = True
+    except ValueError:
+        unnamed = False
+    _check("R7 veto-withdrawal", "withdraw a veto with no stated reason", "MEDIUM",
+           True, unnamed, "withdrawal must be attributable or it is just deletion")
+
+    # X14 — the cached `status` must not lie about a record that is now clear.
+    # sign() reads rec["status"] to decide whether a signature has any authority,
+    # and --report / the board briefing render it. If attach_test_result() meets
+    # the last precondition without refreshing, the stored status keeps saying
+    # AWAITING_SIGNOFF while is_cleared() says otherwise — an operator reading the
+    # ledger sees a different firm than the gate does.
+    L6 = _fresh_ledger()
+    L6.propose_change("x14", "t", ["z.py"], 1, 0)
+    L6.sign("x14", "C", "CIT", "ok"); L6.sign("x14", "I", "IRM", "ok")
+    L6.attach_test_result("x14", "PASS")          # last precondition met here
+    rec = L6._ledger()["x14"]
+    _check("R7 stale-status", "read a ledger status that disagrees with the gate", "MEDIUM",
+           True, (rec["status"] == "CLEARED") != L6.is_cleared("x14")[0],
+           f"stored status {rec['status']!r} must track is_cleared()")
+
+    # X14b — and the same after the fact that CLEARS it is withdrawn.
+    L6.veto("x14", "Canary", "RED", role="CANARY")
+    rec = L6._ledger()["x14"]
+    _check("R7 stale-status", "veto a CLEARED record and leave it reading CLEARED", "MEDIUM",
+           True, rec["status"] == "CLEARED",
+           "a veto must move the stored status off CLEARED, not just block the gate")
+
+
 def run():
     for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
                attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
                attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation,
-               attack_r5_production, attack_r6_loops):
+               attack_r5_production, attack_r6_loops, attack_r7_lifecycle):
         try:
             fn()
         except Exception as e:

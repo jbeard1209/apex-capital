@@ -104,24 +104,48 @@ REGION_EXPOSURE = {
 # DATA COLLECTION
 # =============================================================================
 
+def _finite(x):
+    """None unless x is a real, finite number.
+
+    Why this exists — 2026-07-30: KOSPI (^KS11) came back with `pct: NaN` on the
+    very day the Chairman was watching Korea. yfinance can hand back a Close row
+    that is NaN (holiday / half session / stale index row); `float(nan)` is a
+    perfectly good float, so it sailed through every `pct is not None` guard, and
+    then failed EVERY threshold test downstream, because `abs(nan) >= 0.8` is
+    False — as is every other comparison against NaN. Result: the one index that
+    mattered most was structurally incapable of being flagged notable. Not an
+    alarm that misfired; an alarm that could not fire. Same class as the NaN RSI
+    the Data Integrity Sentinel was built for: bad data that is silent, not loud.
+    Normalising NaN -> None here, at the single choke point, fixes every consumer
+    at once (`_sentiment`, `_notable`, `_us_implications` all key off `is None`).
+    """
+    if x is None:
+        return None
+    try:
+        f = float(x)
+    except (TypeError, ValueError):
+        return None
+    return None if (f != f or f in (float("inf"), float("-inf"))) else f
+
+
 def _pct_change(ticker: str) -> float | None:
-    """Return today's % change for a ticker. Returns None on failure."""
+    """Return today's % change for a ticker. Returns None on failure or bad data."""
     try:
         t = yf.Ticker(ticker)
         hist = t.history(period="2d", interval="1d")
         if len(hist) < 2:
             # Try fast_info for indices that don't have 2-day history readily
             info = t.fast_info
-            prev = getattr(info, "previous_close", None)
-            last = getattr(info, "last_price", None)
+            prev = _finite(getattr(info, "previous_close", None))
+            last = _finite(getattr(info, "last_price", None))
             if prev and last and prev > 0:
-                return (last - prev) / prev * 100
+                return _finite((last - prev) / prev * 100)
             return None
-        prev_close = float(hist["Close"].iloc[-2])
-        last_close = float(hist["Close"].iloc[-1])
-        if prev_close == 0:
+        prev_close = _finite(hist["Close"].iloc[-2])
+        last_close = _finite(hist["Close"].iloc[-1])
+        if not prev_close or last_close is None:
             return None
-        return (last_close - prev_close) / prev_close * 100
+        return _finite((last_close - prev_close) / prev_close * 100)
     except Exception:
         return None
 
@@ -129,7 +153,7 @@ def _pct_change(ticker: str) -> float | None:
 def _last_price(ticker: str) -> float | None:
     try:
         info = yf.Ticker(ticker).fast_info
-        return getattr(info, "last_price", None)
+        return _finite(getattr(info, "last_price", None))
     except Exception:
         return None
 
@@ -137,8 +161,13 @@ def _last_price(ticker: str) -> float | None:
 def _collect(instruments: dict) -> list[dict]:
     results = []
     for name, ticker in instruments.items():
-        pct = _pct_change(ticker)
-        price = _last_price(ticker)
+        # Belt and braces: _pct_change/_last_price already normalise, but a NaN
+        # that reaches the report is worse than a missing one — Python's json
+        # module happily WRITES bare `NaN`, which is not legal JSON, so any
+        # strict parser downstream (the dashboard's JSON.parse) throws on the
+        # whole file. One bad index would blank the entire international panel.
+        pct = _finite(_pct_change(ticker))
+        price = _finite(_last_price(ticker))
         results.append({
             "name":   name,
             "ticker": ticker,
@@ -371,6 +400,19 @@ def run(universe: list | None = None) -> dict:
     implications      = _us_implications(indices, currencies, commodities, sentiment, universe)
     watch             = _watch_tickers(indices, commodities, currencies, universe)
 
+    # An index we cannot read is not the same as an index that did not move, and
+    # until now the report could not tell the difference — both simply failed the
+    # threshold tests and vanished. Name them, so "quiet" and "blind" look different.
+    unreadable = [
+        {"name": r["name"], "ticker": r["ticker"]}
+        for r in (indices + currencies + commodities)
+        if r["pct"] is None
+    ]
+    if unreadable:
+        logger.warning(
+            "  [IMI] no reading for: %s — absent from this report, NOT quiet",
+            ", ".join(r["ticker"] for r in unreadable))
+
     report = {
         "generated_at":        datetime.now(timezone.utc).isoformat(),
         "session":             session,
@@ -385,6 +427,7 @@ def run(universe: list | None = None) -> dict:
         "notable_commodities": notable_commodities,
         "us_implications":     implications,
         "watch_tickers":       watch,
+        "unreadable":          unreadable,
     }
 
     # ── Fable 5 overnight read — gated to risk-off or notable moves ───────

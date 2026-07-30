@@ -620,6 +620,144 @@ class TestWiringContracts(unittest.TestCase):
                       "international_analyst is not invoked by main.py — it is an agent "
                       "that never comes to work")
 
+    # Agents with live downstream consumers. Every one of these was found
+    # scheduled-nowhere on 2026-07-30; two of them could not even be imported,
+    # and nothing noticed for months precisely because nothing ran them. An
+    # unscheduled agent hides a broken agent — that is the accountability cost
+    # of tolerating orphans, so the import half is now enforced here.
+    WIRED_AGENTS = [
+        "macro_regime_model", "fi_cit_agent", "dynamic_position_sizer",
+        "institution_performance_tracker", "ml_longterm_improvement_agent",
+        "ml_longterm_experiment_runner", "position_aging_agent",
+        "apex_system_cit_agent", "ml_improvement_loop", "ml_validate_longterm",
+        "edgar_transcript_agent", "international_analyst",
+    ]
+
+    def test_every_wired_agent_imports_on_this_host(self):
+        """An agent with consumers must at least be loadable.
+
+        position_aging_agent.py feeds sector_assignments.json to 13 modules and
+        died on `str | None` under Python 3.9 — the identical bug that had already
+        bitten international_analyst.py. ml_validate_longterm.py hardcoded
+        '/home/jackbeard/...' and mkdir()s at module scope, so it raised OSError on
+        import on the Mac. Both failures are invisible while the agent is
+        unscheduled: the consumers' try/except just sees "no data today".
+        """
+        import importlib
+        broken = []
+        for name in self.WIRED_AGENTS:
+            try:
+                importlib.import_module(name)
+            except Exception as e:
+                broken.append(f"{name}: {type(e).__name__}: {e}")
+        self.assertEqual(broken, [], "wired agents that cannot be imported:\n  " +
+                                     "\n  ".join(broken))
+
+    def test_no_host_literal_paths_in_wired_agents(self):
+        """A path naming one host is a bug on the other. Two brains, one codebase."""
+        offenders = []
+        for name in self.WIRED_AGENTS:
+            src = (Path(__file__).parent / f"{name}.py").read_text()
+            if "/home/jackbeard" in src or "/Users/jackbeard" in src:
+                offenders.append(name)
+        self.assertEqual(offenders, [],
+                         f"hardcoded host path(s) in wired agent(s): {offenders} — "
+                         "resolve from __file__ instead")
+
+    def test_unknown_order_is_foreign_even_if_we_traded_that_symbol_today(self):
+        """The v1 bar — "we touched this ticker today" — must not explain an order.
+
+        2026-07-30: a BUY of 163 XLE took five hours and a two-host forensic sweep
+        to attribute, and the detector had called it EXPLAINED the whole time —
+        because some local record mentioned XLE that day. That is the precise
+        failure this pins. An order the firm cannot prove it placed is foreign even
+        when the firm traded that same symbol, that same side, that same day; only
+        an order-level match (apex stamp, or the id in our own submission ledger)
+        clears it.
+        """
+        import foreign_order_detector as F
+        import order_ledger as OL
+
+        class Order:
+            def __init__(self, oid, sym, coid="", side="buy", qty="1"):
+                self.id, self.symbol, self.client_order_id = oid, sym, coid
+                self.side, self.qty, self.status = side, qty, "filled"
+                # well after STRICT_FROM, so the pre-cutover heuristic cannot apply
+                self.submitted_at = "2099-01-01T15:36:21Z"
+
+        with tempfile.TemporaryDirectory() as d:
+            F.REPORT = Path(d) / "r.json"
+            F.CHAIRMAN = Path(d) / "c.json"          # never touch the live queue
+            # The firm demonstrably traded XLE today, on this very day.
+            F._local_decision_index = lambda: {("XLE", "2099-01-01")}
+            F._known_ids = lambda: {"ours-123"}
+
+            ours = Order("ours-123", "XLE")                        # in our ledger
+            stamped = Order("x", "XLE", coid=OL.make_stamp("manager_agent"))
+            ghost = Order("nobody-knows-me", "XLE")                # SAME symbol, same day
+            hedge_ghost = Order("also-unknown", "SH")              # the old symbol whitelist
+
+            out = F.run_check(orders=[ours, stamped, ghost, hedge_ghost])
+
+            foreign = {f["symbol"] for f in out["foreign"]}
+            self.assertEqual(out["orders_seen"], 4)
+            self.assertEqual(len(out["attributed"]), 2,
+                             "an id in our ledger and a valid apex stamp must both clear")
+            self.assertIn("XLE", foreign,
+                          "an unknown order id was explained away by same-symbol/same-day "
+                          "activity — this is exactly the v1 bug")
+            self.assertIn("SH", foreign,
+                          "an unstamped hedge ticker must no longer pass on symbol alone")
+            self.assertEqual(out["status"], "FOREIGN_ORDERS")
+            self.assertEqual(out["legacy_explained"], 0,
+                             "post-cutover orders must never reach the v1 heuristic")
+
+    def test_order_stamp_cannot_be_forged_or_collide(self):
+        """The stamp is the attribution primitive — it must be unique and checkable."""
+        import order_ledger as OL
+        ids = {OL.make_stamp("manager_agent") for _ in range(500)}
+        self.assertEqual(len(ids), 500, "client_order_id collision — attribution would alias")
+        good = OL.parse_stamp(next(iter(ids)))
+        self.assertIsNotNone(good)
+        self.assertIn("host", good)
+        self.assertIn("source", good)
+        for forged in ("", "apex", "apex-x", "notapex-h-s-abc", "apex--s-abc", None):
+            self.assertIsNone(OL.parse_stamp(forged),
+                              f"{forged!r} must not parse as a firm-signed order")
+
+    def test_nan_market_move_is_missing_not_quiet(self):
+        """A NaN % change must normalise to None, never reach a threshold test.
+
+        2026-07-30: KOSPI came back `pct: NaN` on the day the Chairman was
+        watching Korea. NaN is a float, so it passed every `pct is not None`
+        guard; then `abs(nan) >= 0.8` is False — as is every comparison against
+        NaN — so the index silently dropped out of `notable_indices`. "Crashing"
+        and "flat" produced identical output. Bare NaN is also illegal JSON, so
+        one bad index can break a strict parser reading the whole report.
+        """
+        import international_analyst as ia
+        for bad in (float("nan"), float("inf"), float("-inf"), "n/a", None):
+            self.assertIsNone(ia._finite(bad), f"{bad!r} must normalise to None")
+        self.assertEqual(ia._finite(-4.25), -4.25)   # real moves survive intact
+        self.assertEqual(ia._finite(0.0), 0.0)       # a genuine flat day is not "missing"
+
+        # The whole point: a NaN reading must not be able to hide inside a
+        # threshold filter. It must be absent-and-named, not absent-and-silent.
+        rows = [
+            {"name": "KOSPI", "ticker": "^KS11", "pct": ia._finite(float("nan"))},
+            {"name": "DAX",   "ticker": "^GDAXI", "pct": 2.0},
+        ]
+        self.assertEqual([r["name"] for r in ia._notable(rows, threshold=0.8)], ["DAX"])
+        self.assertIn("KOSPI", [r["name"] for r in rows if r["pct"] is None])
+
+        # And the live report must carry the honest list + be strict-JSON clean.
+        report = Path(__file__).parent / "data" / "international_report.json"
+        if report.exists():
+            raw = report.read_text()
+            self.assertNotIn("NaN", raw, "report contains bare NaN — not valid JSON")
+            self.assertIn("unreadable", json.loads(raw),
+                          "report must name the instruments it could not read")
+
     def test_orphan_agent_check_actually_detects_orphans(self):
         """wiring_audit must catch a producer that is scheduled nowhere.
 
@@ -995,8 +1133,14 @@ class TestSignoffLedger(unittest.TestCase):
         self.assertEqual(L.get_mode(), "SHADOW")
         self.assertTrue(L.set_mode("ENFORCE", ["BOARD", "CIT"])[0], "joint vote should flip")
         self.assertEqual(L.get_mode(), "ENFORCE")
-        # de-risking back to SHADOW is always allowed
-        self.assertTrue(L.set_mode("SHADOW", [])[0])
+        # Red team X3: leaving ENFORCE used to be free, so any actuator the gate
+        # blocked could call set_mode("SHADOW", []) and walk through. Turning the
+        # gate off is now as accountable as turning it on...
+        self.assertFalse(L.set_mode("SHADOW", [])[0], "unattributed downgrade allowed")
+        self.assertEqual(L.get_mode(), "ENFORCE")
+        # ...with a Chairman fast-path, so a misfiring gate can still be killed.
+        self.assertTrue(L.set_mode("SHADOW", ["CHAIRMAN"])[0])
+        self.assertEqual(L.get_mode(), "SHADOW")
 
     def test_enforce_preflight_blocks_uncleared(self):
         L = self.L
@@ -1158,20 +1302,45 @@ class TestSignoffLedger(unittest.TestCase):
         self.assertLessEqual(shipped, L.DAILY_DEPLOY_BUDGET)
 
     def test_stale_green_tests_do_not_clear(self):
-        """Red team RT-16 (staleness): a PASS recorded against an old commit must
-        not clear once HEAD has moved past it."""
+        """Red team RT-16 (staleness) + X9 (the no-git host): a PASS must stop
+        clearing as soon as the code it ran against changes.
+
+        The original guard compared git HEAD, and the GCP VM is not a git
+        checkout — `_git_head()` returned None there and the whole check
+        short-circuited, so the always-on host had no staleness guard at all.
+        This asserts the content-fingerprint path with git forced unavailable."""
+        import os, tempfile
+        L = self.L
+        victim = os.path.join(tempfile.mkdtemp(), "victim_agent.py")
+        with open(victim, "w") as fh:
+            fh.write("# v1\n")
+        real_head, L._git_head = L._git_head, lambda: None       # simulate the VM
+        try:
+            L.propose_change("a", "x", [victim], 2, 0, "BUG_FIX", None)
+            L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
+            L.attach_test_result("a", "PASS")
+            self.assertTrue(L.is_cleared("a")[0], "green + signed should clear")
+            with open(victim, "w") as fh:                        # code moves on
+                fh.write("# v2 - changed after the green test\n")
+            ok, reasons = L.is_cleared("a")
+            self.assertFalse(ok, "stale green tests cleared with no git present")
+            self.assertTrue(any("stale" in r for r in reasons), reasons)
+        finally:
+            L._git_head = real_head
+
+    def test_green_test_with_no_fingerprint_does_not_clear(self):
+        """A PASS carrying no fingerprint at all predates the X9 guard. It must
+        fail toward re-testing, not be trusted — otherwise the migration window
+        is a hole you can drive any change through."""
         L = self.L
         L.propose_change("a", "x", ["z.py"], 2, 0, "BUG_FIX", None)
         L.sign("a", "CIT1", "CIT", "ok"); L.sign("a", "IRM1", "IRM", "ok")
         rec = L._ledger()
-        rec["a"]["test_result"] = "PASS"
-        rec["a"]["test_commit"] = "deadbee"      # a commit that is not HEAD
+        rec["a"]["test_result"] = "PASS"          # green, but no fingerprint
         L._save(L.LEDGER_PATH, rec)
         ok, reasons = L.is_cleared("a")
-        # Only asserts when git is present (test_commit vs real HEAD differ).
-        if L._git_head():
-            self.assertFalse(ok, "stale green tests cleared")
-            self.assertTrue(any("stale" in r for r in reasons))
+        self.assertFalse(ok, "unfingerprinted PASS cleared")
+        self.assertTrue(any("fingerprint" in r for r in reasons), reasons)
 
     def test_outcome_requires_deploy(self):
         """Red team RT-21: cannot score a fix that never shipped."""
@@ -1226,10 +1395,10 @@ class TestSignoffLedger(unittest.TestCase):
         L = self.L
         L.propose_change("g", "good", ["z.py"], 2, 0, "BUG_FIX", "PASS")
         L.sign("g", "S", "CIT", "ok"); L.sign("g", "IRM-x", "IRM", "ok")
-        L.reserve_and_deploy("g"); L.record_outcome("g", "HELD")
+        L.reserve_and_deploy("g"); L.record_outcome("g", "HELD", reported_by="HR")
         L.propose_change("b", "bad", ["z.py"], 2, 0, "BUG_FIX", "PASS")
         L.sign("b", "S", "CIT", "ok"); L.sign("b", "IRM-x", "IRM", "ok")
-        L.reserve_and_deploy("b"); L.record_outcome("b", "REVERTED")
+        L.reserve_and_deploy("b"); L.record_outcome("b", "REVERTED", reported_by="HR")
         self.assertLess(L.reputation("S")["ewma"], 0.0,
                         "a hold then a revert should net NEGATIVE (burn weighs 3x)")
 
