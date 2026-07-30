@@ -1528,6 +1528,190 @@ class TestTechShortPod(unittest.TestCase):
                       "short book must consume tech_short_pod.load_candidates()")
 
 
+class TestThesisWatch(unittest.TestCase):
+    """The DO-NOT-SHORT verdict has two named flip conditions. A verdict with
+    flip conditions and nobody watching them is a stale opinion, so the pod
+    re-tests both every run.
+
+    The trap this class exists to pin: the first version used ABSOLUTE
+    thresholds and fired both conditions on its very first run — because ORCL
+    was already -61.5% off its high and ORCL/PLTR/SMCI were already the
+    candidate set ON THE DAY THE VERDICT WAS WRITTEN. A fact the verdict was
+    made from cannot be evidence against the verdict. Only movement is news."""
+
+    def setUp(self):
+        import tempfile, tech_short_pod as T
+        from pathlib import Path as _P
+        self.T = T
+        self.tmp = _P(tempfile.mkdtemp())
+        self._orig = (T.BASELINE_PATH, T.CHAIRMAN_PATH, T._credit_channel, T._hist)
+        T.BASELINE_PATH = self.tmp / "baseline.json"
+        T.CHAIRMAN_PATH = self.tmp / "chairman.json"
+        self.base = {
+            "as_of": "2026-07-30", "verdict": "DO NOT SHORT",
+            "kr_signal_level": "ACUTE",
+            "candidates": ["ORCL", "PLTR", "SMCI"],
+            "excluded_too_extended": {"QCOM": 0.0, "VRT": 0.4},
+            "hy_minus_ig_60d_pct": 1.67, "orcl_drawdown_pct": -61.5,
+        }
+        T.BASELINE_PATH.write_text(json.dumps(self.base))
+        self._set_credit(cracking=False)
+
+    def tearDown(self):
+        import shutil
+        (self.T.BASELINE_PATH, self.T.CHAIRMAN_PATH,
+         self.T._credit_channel, self.T._hist) = self._orig
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _set_credit(self, cracking, measurable=True):
+        self.T._credit_channel = lambda base=None: {
+            "measurable": measurable, "cracking": cracking, "detail": "stub"}
+
+    @staticmethod
+    def _report(cands):
+        return {"signal": {"level": "ACUTE"},
+                "candidates": [{"ticker": t, "extension_pctile": p} for t, p in cands]}
+
+    def _chairman(self):
+        try:
+            return json.loads(self.T.CHAIRMAN_PATH.read_text())
+        except Exception:
+            return []
+
+    def test_unchanged_state_does_not_fire(self):
+        """THE key test: the exact verdict-day state must read VERDICT STANDS."""
+        rep = self._report([("ORCL", 40), ("PLTR", 35), ("SMCI", 30)])
+        w = self.T.thesis_watch(rep)
+        self.assertEqual(w["triggers"], [],
+                         "fired on the same facts the verdict was made from")
+        self.assertFalse(w["entry_window_open"])
+        self.assertIn("VERDICT STANDS", w["status"])
+        self.assertEqual(self._chairman(), [], "must not escalate the status quo")
+
+    def test_excluded_name_recovering_opens_the_entry_window(self):
+        """QCOM was excluded at the 0.0th pctile (squeeze risk). It rallying back
+        toward its 50MA IS the entry the verdict named."""
+        rep = self._report([("ORCL", 40), ("QCOM", 35)])
+        w = self.T.thesis_watch(rep)
+        self.assertTrue(w["entry_window_open"])
+        self.assertEqual([t["condition"] for t in w["triggers"]], ["ENTRY_WINDOW"])
+        self.assertIn("QCOM", w["triggers"][0]["detail"])
+        self.assertEqual(len(self._chairman()), 1)
+
+    def test_a_newly_qualifying_name_fires(self):
+        rep = self._report([("ORCL", 40), ("NVDA", 45)])
+        w = self.T.thesis_watch(rep)
+        self.assertTrue(w["entry_window_open"])
+        self.assertIn("NVDA", w["triggers"][0]["detail"])
+
+    def test_still_extended_excluded_name_does_not_fire(self):
+        """QCOM back to only the 5th pctile is still in the squeeze zone —
+        below ENTRY_PCTILE_RECOVERY it is not an entry."""
+        rep = self._report([("QCOM", 5)])
+        self.assertEqual(self.T.thesis_watch(rep)["triggers"], [])
+
+    def test_credit_channel_fires_and_is_high_severity(self):
+        self._set_credit(cracking=True)
+        w = self.T.thesis_watch(self._report([("ORCL", 40)]))
+        conds = [t["condition"] for t in w["triggers"]]
+        self.assertIn("CREDIT_CHANNEL", conds)
+        sev = [t["severity"] for t in w["triggers"] if t["condition"] == "CREDIT_CHANNEL"][0]
+        self.assertEqual(sev, "HIGH", "credit is the channel that would actually crack")
+
+    def test_escalation_is_idempotent(self):
+        """The pod runs 3x/weekday. A persisting condition must inform once,
+        not flood the Chairman queue 15x a week."""
+        self._set_credit(cracking=True)
+        rep = self._report([("QCOM", 35)])
+        first = self.T.thesis_watch(rep)
+        self.assertEqual(len(first["escalated"]), 2)
+        for _ in range(5):
+            again = self.T.thesis_watch(rep)
+            self.assertEqual(again["escalated"], [], "re-escalated a known condition")
+        self.assertEqual(len(self._chairman()), 2)
+
+    def test_missing_baseline_is_inert_not_loud(self):
+        """No baseline means every reading looks like a change. Fail SILENT."""
+        self.T.BASELINE_PATH.unlink()
+        w = self.T.thesis_watch(self._report([("QCOM", 35), ("NVDA", 40)]))
+        self.assertFalse(w["entry_window_open"])
+        self.assertEqual(self._chairman(), [], "an absent baseline must not alarm")
+
+    def test_data_outage_does_not_manufacture_an_alarm(self):
+        self._set_credit(cracking=False, measurable=False)
+        w = self.T.thesis_watch(self._report([("ORCL", 40)]))
+        self.assertEqual(w["triggers"], [])
+
+    def test_watch_runs_on_the_pods_existing_schedule(self):
+        """Wiring contract: the watch must be invoked by run(), which cron
+        already calls 3x/weekday — else it is an orphan that never fires.
+
+        Asserted behaviourally, not by grep: an earlier version of this test
+        searched the source for 'thesis_watch(report' and was satisfied by the
+        function DEFINITION, so deleting the call site survived it."""
+        import tech_short_pod as T
+        called = {}
+        orig_watch, orig_screen = T.thesis_watch, T.screen
+        try:
+            T.screen = lambda *a, **k: self._report([("ORCL", 40)])
+            T.thesis_watch = lambda rep, escalate=True: called.setdefault("hit", True) and {}
+            rep = T.run(write=False)
+        finally:
+            T.thesis_watch, T.screen = orig_watch, orig_screen
+        self.assertTrue(called.get("hit"), "run() never invoked thesis_watch")
+        self.assertIn("thesis_watch", rep, "run() must publish the watch in its report")
+
+    # -- the real _credit_channel, with prices injected (no network) ---------
+    def _stub_hist(self, hyg_ret, lqd_ret, orcl_dd):
+        """Build synthetic 60-bar series producing the requested readings."""
+        import pandas as pd
+
+        def mk(ret_pct, dd_pct=0.0):
+            start = 100.0
+            end = start * (1 + ret_pct / 100)
+            close = [start] * 61
+            close[-1] = end
+            if dd_pct:                       # push the 52w high up to force drawdown
+                close[0] = end / (1 + dd_pct / 100)
+            return pd.DataFrame({"Close": close})
+
+        series = {"HYG": mk(hyg_ret), "LQD": mk(lqd_ret), "ORCL": mk(0.0, orcl_dd)}
+        self.T._hist = lambda tk, period="300d": series.get(tk)
+
+    def test_credit_unchanged_from_baseline_is_not_cracking(self):
+        self.T._credit_channel = self._orig[2]        # restore the real function
+        self._stub_hist(hyg_ret=1.67, lqd_ret=0.0, orcl_dd=-61.5)
+        c = self.T._credit_channel(self.base)
+        self.assertTrue(c["measurable"])
+        self.assertFalse(c["cracking"], "baseline-identical credit must not alarm")
+
+    def test_credit_cracks_when_hy_deteriorates_below_baseline_and_turns_negative(self):
+        self.T._credit_channel = self._orig[2]
+        self._stub_hist(hyg_ret=-2.0, lqd_ret=0.0, orcl_dd=-61.5)   # -2.0 vs +1.67 = -3.67
+        self.assertTrue(self.T._credit_channel(self.base)["cracking"])
+
+    def test_credit_does_not_crack_while_spread_is_still_positive(self):
+        """M5 guard: a 3pt fall that leaves HY still OUTPERFORMING IG is not
+        credit stress — the spread must actually turn negative."""
+        self.T._credit_channel = self._orig[2]
+        self._stub_hist(hyg_ret=-1.5, lqd_ret=-3.0, orcl_dd=-61.5)  # spread +1.5, still positive
+        c = self.T._credit_channel(self.base)
+        self.assertFalse(c["cracking"], "HY outperforming IG is not credit stress")
+
+    def test_credit_cracks_on_further_orcl_drawdown(self):
+        self.T._credit_channel = self._orig[2]
+        self._stub_hist(hyg_ret=1.67, lqd_ret=0.0, orcl_dd=-75.0)   # -13.5pts vs baseline
+        self.assertTrue(self.T._credit_channel(self.base)["cracking"])
+
+    def test_real_credit_channel_fails_safe_on_missing_data(self):
+        """M8 guard: a data outage must report measurable=False and NOT cracking."""
+        self.T._credit_channel = self._orig[2]
+        self.T._hist = lambda tk, period="300d": None
+        c = self.T._credit_channel(self.base)
+        self.assertFalse(c["measurable"])
+        self.assertFalse(c["cracking"], "a yfinance outage must never manufacture an alarm")
+
+
 class TestShortBookCanClose(unittest.TestCase):
     """A short book that can OPEN but never CLOSE is a one-way risk machine.
 
@@ -1703,6 +1887,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestSignoffProduction))
     suite.addTests(loader.loadTestsFromTestCase(TestProblemLifecycle))
     suite.addTests(loader.loadTestsFromTestCase(TestTechShortPod))
+    suite.addTests(loader.loadTestsFromTestCase(TestThesisWatch))
     suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     runner = unittest.TextTestRunner(verbosity=2)

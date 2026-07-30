@@ -1,0 +1,18 @@
+{
+  "_comment": "Verdict-time state for STRAT-2026-0730-kr-tech-short (DO NOT SHORT). thesis_watch fires on CHANGE FROM THIS BASELINE, never on an absolute level \u2014 these readings were ALREADY TRUE when the verdict was written, so they cannot be evidence against it. Only the board may move this baseline (a new verdict).",
+  "verdict": "DO NOT SHORT",
+  "verdict_id": "STRAT-2026-0730-kr-tech-short",
+  "as_of": "2026-07-30",
+  "kr_signal_level": "ACUTE",
+  "candidates": [
+    "ORCL",
+    "PLTR",
+    "SMCI"
+  ],
+  "excluded_too_extended": {
+    "QCOM": 0.0,
+    "VRT": 0.4
+  },
+  "hy_minus_ig_60d_pct": 1.67,
+  "orcl_drawdown_pct": -61.5
+}

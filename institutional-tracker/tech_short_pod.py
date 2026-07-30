@@ -28,6 +28,10 @@ complex is too stretched to short — an empty slate is a valid, honest answer.
   Rank    : structural damage (drop from 52w high) + relative weakness vs SMH
   Output  : data/tech_short_candidates.json — consumed by the short book in
             alpaca_trader.get_momentum_short_candidates() when KR stress is on.
+  Watch   : thesis_watch() re-tests the two conditions that would overturn the
+            DO-NOT-SHORT verdict, as DELTAS vs data/kr_thesis_baseline.json (the
+            verdict-day state). Escalates to the Chairman queue, idempotently.
+            It alerts; it never trades.
 
 Paper trading only. This is firm research output, not investment advice.
 """
@@ -227,8 +231,215 @@ def screen(signal: dict | None = None) -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Thesis watch — keep the DO-NOT-SHORT verdict under review instead of filing it.
+#
+# The 2026-07-30 research verdict was DO NOT SHORT, but it named two specific
+# conditions that would flip it. A verdict with named flip conditions and nobody
+# watching them is just a stale opinion, so the pod re-tests both on every run
+# (it is already scheduled 3x/weekday — no new cron, no new orphan file).
+#
+#   1. ENTRY_WINDOW — the whole complex was excluded as TOO EXTENDED (squeeze
+#      risk). The documented entry is a rally back TOWARD the 50MA while the
+#      downtrend still holds. That is exactly what a non-empty `candidates`
+#      list now means, so the screen itself is the detector.
+#   2. CREDIT_CHANNEL — the real risk migrated from AI-capex DEMAND to how it is
+#      FUNDED (debt share of capex went 9% -> 32%). Demand is not rolling over;
+#      credit is the channel that would actually crack. Proxy: high-yield (HYG)
+#      underperforming investment-grade (LQD) — the classic risk-repricing tell —
+#      plus drawdown in ORCL, the named concentrated-credit story.
+#
+# Escalates into data/chairman_action_required.json (read by 20 modules incl.
+# the app inbox and the decision-SLA escalation). Deduped per condition per
+# month so a persisting condition informs without flooding. This ALERTS; it
+# never trades — opening shorts still requires the live KR-stress gate in
+# load_candidates(), which stays fail-closed.
+# ---------------------------------------------------------------------------
+CHAIRMAN_PATH  = DATA / "chairman_action_required.json"
+BASELINE_PATH  = DATA / "kr_thesis_baseline.json"
+
+# Thresholds are DELTAS FROM THE VERDICT-TIME BASELINE, not absolute levels.
+# This distinction is the whole design. The first version of this watch used
+# absolute triggers and fired both conditions on its very first run — because
+# ORCL was already -61.5% off its high and ORCL/PLTR/SMCI were already the
+# candidate set ON THE DAY THE VERDICT WAS WRITTEN. A fact the verdict was made
+# from cannot be evidence against the verdict. Only movement is news.
+CREDIT_SPREAD_DETERIORATION = -3.0   # HY-minus-IG must fall this many pts vs baseline
+CREDIT_SPREAD_MUST_BE_NEG   = True   # ...and actually turn negative (HY underperforming)
+ORCL_FURTHER_DRAWDOWN_PCT   = -10.0  # ORCL this much FURTHER off its high than baseline
+ENTRY_PCTILE_RECOVERY       = 15.0   # an excluded name back to this pctile == the entry
+
+
+def _baseline() -> dict:
+    """Verdict-time state. Missing baseline => fail-SILENT (no alerts), never
+    fail-loud: an unknown baseline means every reading looks like a change."""
+    try:
+        return json.loads(BASELINE_PATH.read_text())
+    except Exception:
+        return {}
+
+
+def _credit_channel(base: dict | None = None) -> dict:
+    """Has the AI-capex CREDIT channel deteriorated SINCE THE VERDICT? Returns a
+    measured reading, or measurable=False when data is unavailable — a data
+    outage must never manufacture an alarm."""
+    out = {"measurable": False, "cracking": False, "detail": "data unavailable"}
+    try:
+        rets = {}
+        for tk in ("HYG", "LQD"):
+            df = _hist(tk, period="90d")
+            if df is None or len(df) < 60:
+                return out
+            rets[tk] = (float(df["Close"].iloc[-1]) / float(df["Close"].iloc[-60]) - 1) * 100
+        spread = rets["HYG"] - rets["LQD"]
+
+        orcl_dd = 0.0
+        df = _hist("ORCL")
+        if df is not None and len(df) >= 60:
+            m = _metrics(df)
+            if m:
+                orcl_dd = m["pct_from_high"]
+
+        out = {
+            "measurable": True, "cracking": False,
+            "hy_minus_ig_60d_pct": round(spread, 2),
+            "orcl_drawdown_pct": round(orcl_dd, 1),
+        }
+
+        base = base if base is not None else _baseline()
+        if not base:
+            out["detail"] = "no verdict baseline on file — watch is inert"
+            return out
+
+        b_spread = float(base.get("hy_minus_ig_60d_pct", spread))
+        b_orcl   = float(base.get("orcl_drawdown_pct", orcl_dd))
+        d_spread = spread - b_spread
+        d_orcl   = orcl_dd - b_orcl
+
+        hy_cracking = (d_spread <= CREDIT_SPREAD_DETERIORATION
+                       and (spread < 0 or not CREDIT_SPREAD_MUST_BE_NEG))
+        orcl_cracking = d_orcl <= ORCL_FURTHER_DRAWDOWN_PCT
+
+        out["cracking"] = bool(hy_cracking or orcl_cracking)
+        out["detail"] = (
+            f"HY-IG 60d {spread:+.2f}pts vs baseline {b_spread:+.2f} ({d_spread:+.2f}pts; "
+            f"trigger {CREDIT_SPREAD_DETERIORATION}pts AND negative) | "
+            f"ORCL {orcl_dd:+.1f}% off high vs baseline {b_orcl:+.1f}% ({d_orcl:+.1f}pts; "
+            f"trigger {ORCL_FURTHER_DRAWDOWN_PCT}pts)"
+        )
+    except Exception as e:      # pragma: no cover - defensive
+        out["detail"] = f"error: {e}"
+    return out
+
+
+def _append_deduped(path: Path, entry: dict) -> bool:
+    """Append only if no existing item shares the id. Same idempotency contract
+    the Problem Lifecycle Sentinel uses — a persisting condition must not flood."""
+    try:
+        items = json.loads(path.read_text())
+        if not isinstance(items, list):
+            return False
+    except Exception:
+        items = []
+    if any(isinstance(i, dict) and i.get("id") == entry["id"] for i in items):
+        return False
+    items.append(entry)
+    path.write_text(json.dumps(items, indent=2))
+    return True
+
+
+def thesis_watch(report: dict, escalate: bool = True) -> dict:
+    """Re-test the two conditions that would overturn the DO-NOT-SHORT verdict.
+
+    Every test is a DELTA vs the verdict-time baseline. With no baseline on file
+    the watch is inert by design — it would otherwise read the status quo as
+    breaking news."""
+    period   = datetime.now(timezone.utc).strftime("%Y-%m")
+    base     = _baseline()
+    credit   = _credit_channel(base)
+    cands    = report.get("candidates", [])
+    triggers = []
+
+    # ENTRY_WINDOW — the documented entry is a name that was excluded as TOO
+    # EXTENDED rallying back toward its 50MA into tradeable range, or a name
+    # entering the candidate set that was not in it at verdict time. Names
+    # already on the baseline list were judged NOT a trade on those same
+    # readings, so their continued presence is not a signal.
+    b_cands    = set(base.get("candidates", []))
+    b_excluded = base.get("excluded_too_extended", {})
+    new_names, recovered = [], []
+    for c in cands:
+        tk, pct = c["ticker"], c.get("extension_pctile", 50.0)
+        if tk in b_excluded:
+            # A name excluded at verdict time only becomes news once it has
+            # genuinely climbed out of the squeeze zone. Still-extended is the
+            # status quo, NOT a "newly qualifying" name — do not fall through.
+            if pct >= ENTRY_PCTILE_RECOVERY:
+                recovered.append(f"{tk} ({b_excluded[tk]:.0f}th -> {pct:.0f}th pctile)")
+        elif tk not in b_cands:
+            new_names.append(f"{tk} ({pct:.0f}th pctile)")
+
+    entry = bool(base) and bool(recovered or new_names)
+    if entry:
+        bits = []
+        if recovered:
+            bits.append("recovered out of the squeeze zone: " + ", ".join(recovered))
+        if new_names:
+            bits.append("newly qualifying: " + ", ".join(new_names))
+        triggers.append({
+            "condition": "ENTRY_WINDOW",
+            "id": f"kr-short-entry-{period}",
+            "severity": "MEDIUM",
+            "detail": (f"The rally-back-toward-the-50MA entry the 2026-07-30 verdict named has "
+                       f"appeared — {'; '.join(bits)}. KR-stress signal is "
+                       f"{report.get('signal', {}).get('level', '?')}."),
+        })
+    if credit.get("cracking"):
+        triggers.append({
+            "condition": "CREDIT_CHANNEL",
+            "id": f"kr-short-credit-{period}",
+            "severity": "HIGH",
+            "detail": (f"AI-capex CREDIT channel is repricing — the risk the verdict flagged as "
+                       f"the one that would actually crack. {credit['detail']}"),
+        })
+
+    raised = []
+    if escalate:
+        for t in triggers:
+            entry_rec = {
+                "id": t["id"],
+                "source": "Tech-Short Pod (thesis watch)",
+                "severity": t["severity"],
+                "description": (
+                    f"[{t['condition']}] The DO-NOT-SHORT verdict on the Korea/AI-hardware "
+                    f"thesis (STRAT-2026-0730-kr-tech-short) has a flip condition firing. "
+                    f"{t['detail']} Re-examine the thesis; this is an alert, not a trade — "
+                    f"the short book still requires the live KR-stress gate."
+                ),
+                "status": "awaiting_chairman",
+                "ts": datetime.now(timezone.utc).isoformat(),
+            }
+            if _append_deduped(CHAIRMAN_PATH, entry_rec):
+                raised.append(t["id"])
+
+    return {
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "verdict_under_review": "STRAT-2026-0730-kr-tech-short (DO NOT SHORT)",
+        "baseline_as_of": base.get("as_of", "MISSING — watch inert"),
+        "entry_window_open": entry,
+        "credit_channel": credit,
+        "triggers": triggers,
+        "escalated": raised,
+        "status": ("VERDICT STANDS — no flip condition has moved since "
+                   f"{base.get('as_of', '?')}") if not triggers else "FLIP CONDITION FIRING",
+    }
+
+
 def run(write: bool = True) -> dict:
     report = screen()
+    # The watch reads the finished screen, so a non-empty candidate list is
+    # itself the ENTRY_WINDOW signal — one definition, no duplicated logic.
+    report["thesis_watch"] = thesis_watch(report, escalate=write)
     if write:
         OUTPUT_PATH.write_text(json.dumps(report, indent=2))
     return report
