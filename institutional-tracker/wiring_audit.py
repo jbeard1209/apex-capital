@@ -172,6 +172,7 @@ def check_orphan_agents(sources: dict):
     a data/*.json output which other modules READ, but that is NOT reachable from
     any scheduler root, is an agent that never comes to work.
     """
+    found_orphans = set()
     roots = {"main.py"}
     cron = BASE_DIR / "new_crontab.txt"
     cron_txt = cron.read_text() if cron.exists() else ""
@@ -212,13 +213,45 @@ def check_orphan_agents(sources: dict):
             if not readers:
                 continue
             exists = (DATA_DIR / out).exists()
-            problems.append(
+            msg = (
                 f"[orphan-agent] {name} writes {out} (read by {len(readers)} module(s): "
                 f"{', '.join(sorted(readers)[:3])}) but is NOT reachable from main.py or "
                 f"the cron manifest — it is scheduled NOWHERE"
                 + ("" if exists else f", and {out} has NEVER been produced")
             )
+            # RATCHET: the 11 orphans this check found on day one are pre-existing
+            # and are with the full board for SCHEDULE/RETIRE/DELETE triage
+            # (ARCH-2026-0730-orphan-agents). Hard-failing on them would block every
+            # push until that triage lands — including the push that ships this very
+            # detector. So known orphans are loud notes, and only NEW ones are hard
+            # failures. The list may only ever shrink: see check_orphan_baseline_shrinks().
+            (notes if name in _orphan_baseline() else problems).append(
+                msg + (" [known — pending board triage]" if name in _orphan_baseline() else "")
+            )
+            found_orphans.add(name)
             break   # one finding per orphan module is enough
+
+    # A module that got fixed must be REMOVED from the baseline, or the ratchet
+    # silently loosens and a future regression would be waved through.
+    stale = _orphan_baseline() - found_orphans
+    for name in sorted(stale):
+        problems.append(
+            f"[orphan-agent] {name} is in {_BASELINE_PATH.name} but is no longer an orphan — "
+            f"remove it from the baseline so the ratchet cannot loosen")
+
+
+_BASELINE_PATH = BASE_DIR / "data" / "orphan_agents_baseline.json"
+
+
+def _orphan_baseline() -> set:
+    """Modules already known to be unscheduled, accepted only until the board triages
+    them. New entries must never be added to silence a finding — that is the exact
+    'flagged but never solved' loop the firm has been burned by."""
+    try:
+        d = json.loads(_BASELINE_PATH.read_text())
+        return set(d.get("known_orphans", []))
+    except Exception:
+        return set()
 
 
 def run_checks() -> dict:

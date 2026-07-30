@@ -1,0 +1,18 @@
+{
+  "_comment": "Agents known to be scheduled nowhere as of 2026-07-30, when check_orphan_agents() first ran. Accepted ONLY until the full board triages each one SCHEDULE/RETIRE/DELETE under proposal ARCH-2026-0730-orphan-agents. This list may only ever SHRINK. Never add an entry to silence a new finding \u2014 a new orphan is a hard failure by design.",
+  "created": "2026-07-30",
+  "board_proposal": "ARCH-2026-0730-orphan-agents",
+  "known_orphans": [
+    "apex_system_cit_agent.py",
+    "dynamic_position_sizer.py",
+    "edgar_transcript_agent.py",
+    "fi_cit_agent.py",
+    "institution_performance_tracker.py",
+    "macro_regime_model.py",
+    "ml_improvement_loop.py",
+    "ml_longterm_experiment_runner.py",
+    "ml_longterm_improvement_agent.py",
+    "ml_validate_longterm.py",
+    "position_aging_agent.py"
+  ]
+}

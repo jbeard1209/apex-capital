@@ -643,6 +643,40 @@ class TestWiringContracts(unittest.TestCase):
             any("ghost_agent.py" in p for p in wiring_audit.problems),
             f"orphan-agent check did not flag an unscheduled producer: {wiring_audit.problems}")
 
+    def test_orphan_baseline_is_a_ratchet_that_only_tightens(self):
+        """The known-orphan baseline must never be usable to silence a NEW finding.
+
+        A baseline is how 'flagged but never solved' normally creeps back in: someone
+        appends to it instead of fixing. Two properties keep it honest — a brand-new
+        orphan hard-fails even though 11 are baselined, and an entry that is no longer
+        an orphan hard-fails until it is removed (so the list can only shrink).
+        """
+        import wiring_audit, pathlib, tempfile
+        src = wiring_audit._py_sources()
+
+        src2 = dict(src)
+        src2["brand_new_ghost.py"] = 'json.dump(d, open("data/brand_new_ghost_out.json", "w"))\n'
+        src2["ghost_reader.py"] = 'x = load("data/brand_new_ghost_out.json")\n'
+        wiring_audit.problems, wiring_audit.notes = [], []
+        wiring_audit.check_orphan_agents(src2)
+        self.assertTrue(any("brand_new_ghost" in p for p in wiring_audit.problems),
+                        "a NEW orphan must hard-fail, not be absorbed by the baseline")
+
+        real = wiring_audit._BASELINE_PATH
+        try:
+            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+                json.dump({"known_orphans": ["canary_agent.py"]}, fh)   # not an orphan
+                wiring_audit._BASELINE_PATH = pathlib.Path(fh.name)
+            wiring_audit.problems, wiring_audit.notes = [], []
+            wiring_audit.check_orphan_agents(src)
+            self.assertTrue(
+                any("canary_agent.py" in p and "no longer an orphan" in p
+                    for p in wiring_audit.problems),
+                "a baseline entry that is no longer an orphan must hard-fail so the "
+                "ratchet cannot silently loosen")
+        finally:
+            wiring_audit._BASELINE_PATH = real
+
     def test_every_logic_rule_has_a_handler(self):
         """Every rule the Logic Team can emit must resolve to an implementation handler.
 
