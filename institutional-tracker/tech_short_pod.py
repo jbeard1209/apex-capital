@@ -7,18 +7,25 @@ month on record — triggered July 28 when China began mass-producing homegrown
 DUV chip-making tools, gutting the memory/foundry moat of Samsung & SK Hynix
 after a 116% AI-driven run-up. That is a SEMICONDUCTOR / AI-HARDWARE shock, and
 it transmits to the US names most levered to the same AI-hardware capex cycle.
-Blow-off-top unwinds punish the most-stretched names hardest.
 
 This pod does NOT presuppose which US names crack — it SCREENS a KR/AI-hardware
 exposed universe against real prices and RANKS the most vulnerable short
 candidates, gated by a live Korea-stress signal (so it only fires when the KR
 channel is actually under stress, not on a static hunch).
 
+CORRECTED 2026-07-30 after measuring it: the original design ranked the MOST
+extended names as the BEST shorts. The 5-year evidence says that is backwards —
+from this much extension the average forward 20-day return is +6.99% and shorts
+win only 39.1% of the time. Extension is now a hard DISQUALIFIER, not a bonus
+(see MIN_EXTENSION_PCTILE). The pod screens for structural damage and relative
+weakness instead, and will legitimately return an EMPTY list when the whole
+complex is too stretched to short — an empty slate is a valid, honest answer.
+
   Signal  : composite of EWY (iShares MSCI South Korea) + SMH (semis ETF)
             distance below their 50/200-day MAs -> NONE / ELEVATED / STRESS / ACUTE
-  Screen  : reuse the firm's confirmed-downtrend rule (price < 50MA AND < 200MA)
-  Rank    : downtrend depth + blow-off-top unwind (drop from 52w high) +
-            relative weakness vs SMH. Worst (most vulnerable) first.
+  Screen  : confirmed-downtrend rule (price < 50MA AND < 200MA), then EXCLUDE
+            anything below MIN_EXTENSION_PCTILE (mean-reversion/squeeze risk)
+  Rank    : structural damage (drop from 52w high) + relative weakness vs SMH
   Output  : data/tech_short_candidates.json — consumed by the short book in
             alpaca_trader.get_momentum_short_candidates() when KR stress is on.
 
@@ -116,14 +123,41 @@ def korea_stress_signal() -> dict:
             "ts": datetime.now(timezone.utc).isoformat()}
 
 
+# --- ANTI-CHASING GUARD (empirical, 2026-07-30) ------------------------------
+# Measured over 5y of history for every name in this universe: when price closed
+# at or below its CURRENT distance beneath the 50MA, the average forward 20-day
+# return was **+6.99%** and shorts won only **39.1%** of the time (need >50% to
+# pay, before borrow). Every single candidate mean-reverted; MU failed 75% of the
+# time. Shorting maximum downside extension is therefore fighting mean reversion,
+# not riding a trend. So extension is a DISQUALIFIER past a threshold, never a
+# reward. Do not "improve" the ranking by re-adding an extension bonus without
+# re-running scratch study extension_study.py and beating these numbers.
+MIN_EXTENSION_PCTILE = 5.0    # below this percentile == historically unprecedented -> squeeze risk
+
+
+def _extension_pctile(close, ext_today: float) -> float:
+    """Where today's distance-below-50MA sits in this name's own 5y history.
+    Low percentile == extremely stretched to the downside == squeeze-prone."""
+    try:
+        ma50 = close.rolling(50).mean()
+        ext = ((close / ma50 - 1) * 100).dropna()
+        if len(ext) < 100:
+            return 50.0          # not enough history to judge -> neutral
+        return float((ext < ext_today).mean() * 100)
+    except Exception:
+        return 50.0
+
+
 def _rank_score(m: dict, smh_ret: float, name_ret: float) -> float:
-    """Lower (more negative) == more vulnerable, so it sorts worst-first.
-      - downtrend depth: how far below the moving averages
-      - blow-off-top: distance from the 52-week high (stretched names fall more)
-      - relative weakness: underperformance vs the semis ETF over the window
+    """Lower (more negative) == better short candidate, so it sorts worst-first.
+
+    Ranks on STRUCTURAL damage and relative weakness — NOT on how far price has
+    already fallen below its moving averages (see the empirical note above; that
+    is a mean-reversion trap). Extreme extension is handled as a hard exclusion
+    in screen(), not as a score bonus.
     """
     rel_weak = name_ret - smh_ret        # negative == underperforming semis
-    return (m["pct_from_50"] + m["pct_from_200"]) + 0.5 * m["pct_from_high"] + rel_weak
+    return 0.5 * m["pct_from_high"] + rel_weak
 
 
 def screen(signal: dict | None = None) -> dict:
@@ -139,7 +173,7 @@ def screen(signal: dict | None = None) -> dict:
     if smh is not None and len(smh) >= 60:
         smh_ret = (float(smh["Close"].iloc[-1]) / float(smh["Close"].iloc[-60]) - 1) * 100
 
-    ranked = []
+    ranked, excluded = [], []
     for ticker in KR_SHORT_UNIVERSE:
         df = _hist(ticker)
         if df is None:
@@ -150,6 +184,18 @@ def screen(signal: dict | None = None) -> dict:
         # confirmed downtrend gate — same rule the short book already uses
         if not (m["price"] < m["ma50"] and m["price"] < m["ma200"]):
             continue
+        # anti-chasing gate — a name already at an historically unprecedented
+        # distance below its 50MA is a squeeze risk, not a short (see the
+        # empirical note on MIN_EXTENSION_PCTILE). Excluded, and recorded so the
+        # rejection is auditable rather than silent.
+        pctile = _extension_pctile(df["Close"], m["pct_from_50"])
+        if pctile < MIN_EXTENSION_PCTILE:
+            excluded.append({
+                "ticker": ticker, "extension_pctile": round(pctile, 1),
+                "reason": (f"{m['pct_from_50']:+.1f}% vs 50MA is the {pctile:.1f}th percentile "
+                           f"of its own history — mean-reversion/squeeze risk, not a short"),
+            })
+            continue
         name_ret = 0.0
         if len(df) >= 60:
             name_ret = (m["price"] / float(df["Close"].iloc[-60]) - 1) * 100
@@ -157,6 +203,7 @@ def screen(signal: dict | None = None) -> dict:
         ranked.append({
             "ticker": ticker,
             "score": round(score, 2),
+            "extension_pctile": round(pctile, 1),
             "pct_from_50": round(m["pct_from_50"], 1),
             "pct_from_200": round(m["pct_from_200"], 1),
             "pct_from_high": round(m["pct_from_high"], 1),
@@ -175,6 +222,7 @@ def screen(signal: dict | None = None) -> dict:
         "active": active,
         "smh_60d_return_pct": round(smh_ret, 1),
         "candidates": ranked,
+        "excluded_too_extended": excluded,
         "tickers": [c["ticker"] for c in ranked],
     }
 

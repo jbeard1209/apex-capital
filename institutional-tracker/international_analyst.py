@@ -14,6 +14,8 @@
 # Also callable standalone: python3 international_analyst.py
 # =============================================================================
 
+from __future__ import annotations   # PEP 604 (`float | None`) on Python 3.9 (Mac host)
+
 import json
 import logging
 import os
