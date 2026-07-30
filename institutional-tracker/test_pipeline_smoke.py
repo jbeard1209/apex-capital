@@ -20,6 +20,7 @@ import sys
 import os
 import json
 import tempfile
+import shutil
 import unittest
 from unittest.mock import patch, MagicMock
 from pathlib import Path
@@ -757,6 +758,167 @@ class TestWiringContracts(unittest.TestCase):
             self.assertNotIn("NaN", raw, "report contains bare NaN — not valid JSON")
             self.assertIn("unreadable", json.loads(raw),
                           "report must name the instruments it could not read")
+
+    def test_hr_attendance_audit_is_wired_and_actually_fires(self):
+        """HR must take attendance, and the result must reach the review report.
+
+        HR audited its 39-name ROSTER, so an agent that could not even import was
+        never marked absent — it wasn't on the roster, so nobody was there to mark
+        absent. audit_attendance() closes that, but a checker nothing calls is just
+        a longer way of not checking, so assert the wiring too.
+        """
+        import inspect, textwrap, importlib, sys as _sys
+        import hr_agent
+
+        # 1. Wired: the review report must actually carry the attendance result.
+        src = inspect.getsource(hr_agent.run_hr_review)
+        self.assertIn('report["attendance"]', src,
+                      "run_hr_review must publish the attendance audit, not orphan it")
+
+        # 2. Fires: a module that cannot import must be reported CANNOT_START.
+        #    Planted on sys.path, not in the repo, so the repo stays clean.
+        sandbox = Path(tempfile.mkdtemp())
+        (sandbox / "hr_absent_probe.py").write_text("raise ImportError('probe')\n")
+        (sandbox / "hr_present_probe.py").write_text("ok = True\n")
+        import wiring_audit
+        real_modules = getattr(wiring_audit, "AGENT_MODULES", None)
+        _sys.path.insert(0, str(sandbox))
+        try:
+            wiring_audit.AGENT_MODULES = ["hr_absent_probe", "hr_present_probe"]
+            res = hr_agent.audit_attendance()
+        finally:
+            _sys.path.remove(str(sandbox))
+            if real_modules is None:
+                delattr(wiring_audit, "AGENT_MODULES")
+            else:
+                wiring_audit.AGENT_MODULES = real_modules
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+        broken = [f["agent"] for f in res["cannot_start"]]
+        self.assertIn("hr_absent_probe", broken,
+                      "a module that raises on import must be reported CANNOT_START")
+        self.assertNotIn("hr_present_probe", broken,
+                         "a module that imports fine must not be branded broken")
+        self.assertEqual(res["status"], "ATTENTION")
+
+        # 3. Attendance is a MANAGEMENT finding. A module nobody scheduled has done
+        #    nothing wrong, so this must never reach into ratings or the PIP path.
+        self.assertFalse({"rating", "ratings", "pip", "pip_status"} & set(res),
+                         "attendance must not carry performance/PIP fields")
+
+    def test_a_test_file_cannot_make_an_agent_look_scheduled(self):
+        """Naming a module in a test must never count as employing it.
+
+        2026-07-30: check_orphan_agents() barred test files from being scheduler
+        ROOTS, but not from the reachability walk — so any production module that
+        merely mentioned a test's name dragged it into `reachable`, and the frontier
+        then expanded from the test's own text. Adding a WIRED_AGENTS list to this
+        very file reclassified NINE baselined orphans as "scheduled", and the audit
+        asked to delete them from the baseline. The ratchet would have loosened
+        itself on the strength of a list that exists only inside a test.
+        """
+        import wiring_audit
+        sources = {
+            # main.py mentions the test file (a docstring reference is enough).
+            "main.py": "import canary_agent\n# see test_fake_suite.py for coverage\n",
+            "canary_agent.py": "x = 1\n",
+            "test_fake_suite.py": "import ghost_agent\n",
+            # An orphan that only the TEST names. It must still be caught.
+            "ghost_agent.py": (
+                'import json\n'
+                'OUT = "data/ghost_report.json"\n'
+                'json.dump({}, open(OUT, "w"))\n'
+            ),
+            "consumer.py": 'open("data/ghost_report.json")\n',
+        }
+        wiring_audit.problems = []
+        wiring_audit.check_orphan_agents(sources)
+        self.assertTrue(
+            any("ghost_agent.py" in p for p in wiring_audit.problems),
+            "an agent reachable ONLY via a test file must still be an orphan; "
+            f"got {wiring_audit.problems}")
+
+    def test_orphan_agent_check_names_the_file_the_agent_really_writes(self):
+        """The 'writes X' in a finding must be an output, and must not change per run.
+
+        It used to be any .json literal near the word "data", iterated out of a SET —
+        so the named file was a coin flip across processes, and inputs were reported
+        as outputs (dynamic_position_sizer.py "writes positions.json", which it only
+        reads). The flagged agents were right; every explanation naming a file was not.
+        """
+        import wiring_audit
+        out_re = wiring_audit.re.compile(r'["\'](?:[\w.\-/]*/)?([a-z0-9_]+\.json)["\']')
+        src = (
+            'IN_PATH  = "data/positions.json"\n'         # read only
+            'OUT_PATH = "data/position_sizes.json"\n'     # the real output
+            'raw = open(IN_PATH).read()\n'
+            'json.dump(sizes, open(OUT_PATH, "w"))\n'
+        )
+        outs = wiring_audit._declared_outputs(src, out_re)
+        self.assertEqual(outs, ["position_sizes.json"],
+                         "must report the written file, not the read one")
+        self.assertEqual(outs, wiring_audit._declared_outputs(src, out_re),
+                         "output attribution must be deterministic")
+
+    def test_orphan_check_reads_the_canonical_prod_schedule(self):
+        """'Scheduled' must be judged against the VM's live crontab, not a template.
+
+        new_crontab.txt's own header says the VM's live crontab is canonical and that
+        file is only the Mac-path template — and it had drifted 10 agents behind prod,
+        so agents running every 4h in production were reported as scheduled NOWHERE.
+        """
+        import wiring_audit
+        snap = Path(__file__).parent / "data" / "vm_crontab_snapshot.txt"
+        template = Path(__file__).parent / "new_crontab.txt"
+        self.assertTrue(snap.exists(), "canonical prod-schedule snapshot is missing")
+
+        # Pick agents that prove the point: scheduled in the LIVE crontab and absent
+        # from the template. If the check consults only the template, these are
+        # branded orphans even though they run every few hours in production.
+        snap_txt, tmpl_txt = snap.read_text(), template.read_text()
+        provers = [a for a in ("data_integrity_sentinel", "tech_short_pod",
+                               "problem_lifecycle_sentinel", "metric_sanity_sentinel")
+                   if a in snap_txt and a not in tmpl_txt]
+        self.assertTrue(provers,
+                        "snapshot no longer differs from the template — refresh it "
+                        "(scripts/refresh_crontab_snapshot.sh) or this guard proves nothing")
+
+        # Behavioural, and deliberately NOT run against the real tree. A source-string
+        # grep was the first attempt and a comment mentioning the snapshot satisfied it
+        # with the snapshot wired out. Running it over the real repo is no better: the
+        # agents the snapshot rescues happen not to declare a read-by-others output, so
+        # the flagged set is identical either way — a real fix with no live consequence
+        # yet. So point BASE_DIR at a fixture where the two files disagree, which is the
+        # exact condition prod was in (template 10 agents behind the VM).
+        sandbox = Path(tempfile.mkdtemp())
+        (sandbox / "data").mkdir()
+        (sandbox / "new_crontab.txt").write_text("0 6 * * * python3 canary_agent.py\n")
+        (sandbox / "data" / "vm_crontab_snapshot.txt").write_text(
+            "0 6 * * * python3 canary_agent.py\n"
+            "20 */4 * * * python3 snapshot_only_agent.py\n")   # live, template-invisible
+        sources = {
+            "main.py": "import canary_agent\n",
+            "canary_agent.py": "x = 1\n",
+            "snapshot_only_agent.py": (
+                'OUT = "data/snap_report.json"\n'
+                'json.dump(d, open(OUT, "w"))\n'
+            ),
+            "consumer.py": 'r = load("data/snap_report.json")\n',
+        }
+        real_base = wiring_audit.BASE_DIR
+        try:
+            wiring_audit.BASE_DIR = sandbox
+            wiring_audit.problems = []
+            wiring_audit.check_orphan_agents(sources)
+            flagged = " ".join(wiring_audit.problems)
+        finally:
+            wiring_audit.BASE_DIR = real_base
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+        self.assertNotIn(
+            "snapshot_only_agent.py", flagged,
+            "an agent scheduled in the canonical live crontab was called an orphan — "
+            "the check is judging prod against the stale Mac template")
 
     def test_orphan_agent_check_actually_detects_orphans(self):
         """wiring_audit must catch a producer that is scheduled nowhere.

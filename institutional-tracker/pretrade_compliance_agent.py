@@ -14,6 +14,8 @@ Returns APPROVED / FLAGGED / BLOCKED for each proposed trade,
 with reasons. ManagerAgent imports this before calling the executor.
 """
 
+from __future__ import annotations   # PEP 604 (`dict | None`) on Python 3.9 (Mac host)
+
 import json
 import logging
 import os

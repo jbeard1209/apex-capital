@@ -2,17 +2,21 @@
   "_comment": "Agents known to be scheduled nowhere as of 2026-07-30, when check_orphan_agents() first ran. Accepted ONLY until the full board triages each one SCHEDULE/RETIRE/DELETE under proposal ARCH-2026-0730-orphan-agents. This list may only ever SHRINK. Never add an entry to silence a new finding \u2014 a new orphan is a hard failure by design.",
   "created": "2026-07-30",
   "board_proposal": "ARCH-2026-0730-orphan-agents",
+  "change_log": [
+    "2026-07-30 REMOVED dynamic_position_sizer.py, position_aging_agent.py — they no longer trip the check: neither writes an output that another module reads. (Both are still unscheduled; they are a lesser problem and stay in the ARCH triage.)",
+    "2026-07-30 ADDED ml_feature_drift_monitor.py, ml_longterm_label_checker.py — NOT a new regression and NOT a silenced finding. Two bugs in check_orphan_agents() were hiding them on the day this baseline was written: (1) test files were barred from being scheduler ROOTS but could still be pulled into the reachability set and relay from there, so the WIRED_AGENTS list added to test_pipeline_smoke.py made nine baselined orphans look scheduled; (2) the audit read only new_crontab.txt, a Mac-path TEMPLATE that had drifted 10 agents behind the VM's live crontab. Both are fixed; these two were always day-one orphans and belong in the same board triage."
+  ],
   "known_orphans": [
     "apex_system_cit_agent.py",
-    "dynamic_position_sizer.py",
     "edgar_transcript_agent.py",
     "fi_cit_agent.py",
     "institution_performance_tracker.py",
     "macro_regime_model.py",
+    "ml_feature_drift_monitor.py",
     "ml_improvement_loop.py",
     "ml_longterm_experiment_runner.py",
     "ml_longterm_improvement_agent.py",
-    "ml_validate_longterm.py",
-    "position_aging_agent.py"
+    "ml_longterm_label_checker.py",
+    "ml_validate_longterm.py"
   ]
 }

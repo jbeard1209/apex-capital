@@ -155,6 +155,46 @@ def check_glob_consumers_have_producers(sources: dict):
                     f"and none exist on disk — this consumer is blind (silent default)")
 
 
+def _declared_outputs(txt: str, out_re) -> list:
+    """The data/*.json files a module actually WRITES, in stable order.
+
+    2026-07-30: this used to be `{every .json literal near the word "data"}`, which
+    conflated inputs with outputs and then iterated a SET — so the same module was
+    reported as writing a different file on each run (Python randomises str hashing
+    per process). dynamic_position_sizer.py was reported as writing positions.json,
+    which it only READS; it writes position_sizes.json. The set of flagged agents was
+    right, but every explanation naming a file was a coin flip, and a triager chasing
+    the named artifact would find a file the agent never touches.
+
+    So: resolve `SOME_PATH = .../"x.json"` constants, then keep a filename only if it
+    (or its variable) appears at a write site. If nothing resolves, fall back to the
+    old broad set — sorted — so a parsing miss loses determinism, not findings.
+    """
+    var_of = {}                      # VARNAME -> filename.json
+    for m in re.finditer(r'^\s*([A-Za-z_]\w*)\s*=\s*([^\n]+)$', txt, re.M):
+        hit = out_re.search(m.group(2))
+        if hit:
+            var_of[m.group(1)] = hit.group(1)
+
+    write_ctx = []
+    for m in re.finditer(r'open\(([^)]*),\s*["\']w["\']|([\w.\[\]"\']+)\.write_text\(|'
+                         r'json\.dump\((?:[^()]|\([^()]*\))*\)|os\.replace\(([^)]*)\)',
+                         txt):
+        write_ctx.append(m.group(0))
+    blob = "\n".join(write_ctx)
+
+    written = set()
+    for var, fname in var_of.items():
+        if re.search(rf'\b{re.escape(var)}\b', blob):
+            written.add(fname)
+    for fname in out_re.findall(blob):
+        written.add(fname)
+
+    if written:
+        return sorted(written)
+    return sorted({m for m in out_re.findall(txt) if "data" in txt.split(m)[0][-120:]})
+
+
 def check_orphan_agents(sources: dict):
     """An AGENT that produces a report nobody ever runs — the orphan-agent variant
     of the producer/consumer bug class.
@@ -174,8 +214,21 @@ def check_orphan_agents(sources: dict):
     """
     found_orphans = set()
     roots = {"main.py"}
-    cron = BASE_DIR / "new_crontab.txt"
-    cron_txt = cron.read_text() if cron.exists() else ""
+    # Scheduler ground truth = the VM's LIVE crontab, mirrored into
+    # data/vm_crontab_snapshot.txt, UNION the new_crontab.txt template.
+    #
+    # 2026-07-30: this used to read new_crontab.txt alone — a file whose own header
+    # says "THE VM'S LIVE CRONTAB IS CANONICAL FOR PROD — this file is the Mac-path
+    # template". It had drifted 10 agents behind prod, so agents that run every four
+    # hours in production (data_integrity_sentinel, tech_short_pod, problem_lifecycle_
+    # sentinel, ...) were being reported as scheduled NOWHERE. An audit that judges
+    # reality against a stale document produces confident, wrong findings.
+    # Both are read, so the audit still works on a host with no snapshot.
+    cron_txt = ""
+    for fname in ("data/vm_crontab_snapshot.txt", "new_crontab.txt"):
+        f = BASE_DIR / fname
+        if f.exists():
+            cron_txt += "\n" + f.read_text()
     for name in sources:
         # Test files are NOT scheduler roots even when cron runs them: a test
         # importing an agent does not mean the agent does its job in production.
@@ -185,12 +238,23 @@ def check_orphan_agents(sources: dict):
             roots.add(name)
 
     # Fixpoint over "module A mentions module B's stem" (import or subprocess call).
+    #
+    # Test files are excluded from the traversal ENTIRELY, not just from the root
+    # seeding above. 2026-07-30: barring them as roots was only half the guard —
+    # a test could still be dragged into `reachable` by any production module that
+    # merely mentioned its name, and once inside, the frontier expanded from its
+    # text like any other module. Adding a 12-name WIRED_AGENTS list to
+    # test_pipeline_smoke.py therefore silently reclassified NINE baselined orphans
+    # as "scheduled", and the audit dutifully asked to delete them from the
+    # baseline — the ratchet would have loosened itself on the strength of a list
+    # that exists only inside a test. Being named by a test is not employment.
+    prod = {n for n in sources if not n.startswith("test_")}
     reachable, frontier = set(roots), set(roots)
     while frontier:
         nxt = set()
         for cur in frontier:
             txt = sources.get(cur, "")
-            for name in sources:
+            for name in prod:
                 if name in reachable:
                     continue
                 stem = name[:-3]
@@ -210,7 +274,7 @@ def check_orphan_agents(sources: dict):
         # only consider modules that look like agents writing a report
         if not re.search(r'open\([^)]*,\s*["\']w["\']|\.write_text\(|json\.dump\(', txt):
             continue
-        outs = {m for m in out_re.findall(txt) if "data" in txt.split(m)[0][-120:]}
+        outs = _declared_outputs(txt, out_re)
         for out in outs:
             readers = [n for n, t in sources.items()
                        if n != name and not n.startswith("test_") and out in t]

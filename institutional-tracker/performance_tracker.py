@@ -22,6 +22,29 @@ import config
 # ------------------------------------------------------------------
 # Lane config
 # ------------------------------------------------------------------
+def _lane_capital(name: str) -> float:
+    """Per-lane notional, or STARTING_CAPITAL if the Chairman hasn't split it yet.
+
+    2026-07-30: ML_SHORTTERM_CAPITAL / ML_LONGTERM_CAPITAL / FIRST_EAGLE_LANE_CAPITAL
+    are referenced here but have never existed in config.py, so this module raised
+    AttributeError at IMPORT time — it has never run once, despite the crontab line
+    in the docstring above (which is also not installed on either host).
+
+    Note what the "capital" field actually does today: NOTHING reads it. Every return
+    below is computed from position values, not from lane notional. So the fallback
+    cannot misstate a number — but a silent getattr default would let a lane sit
+    permanently unfunded-on-paper without anyone noticing, which is exactly how this
+    stayed broken. Fallbacks are recorded and printed in the report instead.
+    """
+    val = getattr(config, name, None)
+    if val is None:
+        LANE_CAPITAL_FALLBACKS.append(name)
+        return config.STARTING_CAPITAL
+    return val
+
+
+LANE_CAPITAL_FALLBACKS: list = []
+
 LANES = {
     "institutional_tracker": {
         "label":     "Institutional",
@@ -31,19 +54,19 @@ LANES = {
     },
     "ml_shortterm": {
         "label":     "ML Short-term",
-        "capital":   config.ML_SHORTTERM_CAPITAL,
+        "capital":   _lane_capital("ML_SHORTTERM_CAPITAL"),
         "benchmark": "QQQ",
         "bench_label": "QQQ",
     },
     "ml_longterm": {
         "label":     "ML Long-term",
-        "capital":   config.ML_LONGTERM_CAPITAL,
+        "capital":   _lane_capital("ML_LONGTERM_CAPITAL"),
         "benchmark": "QQQ",
         "bench_label": "QQQ",
     },
     "first_eagle": {
         "label":     "First Eagle",
-        "capital":   config.FIRST_EAGLE_LANE_CAPITAL,
+        "capital":   _lane_capital("FIRST_EAGLE_LANE_CAPITAL"),
         "benchmark": "BRK-B",
         "bench_label": "BRK-B",
     },
@@ -236,6 +259,11 @@ def build_email(date_str, lane_results, overall_wtd, overall_bench_wtd, pnl_summ
     lines.append("Total Deployed: ${:,.0f}  |  Current Value: ${:,.0f}  |  Total Return: {}{:.1f}%".format(
         total_deployed, total_value, sign, total_ret))
 
+    if LANE_CAPITAL_FALLBACKS:
+        lines.append("")
+        lines.append("CONFIG GAP -- these lane capitals are undefined in config.py and are")
+        lines.append("defaulting to STARTING_CAPITAL: {}".format(", ".join(sorted(set(LANE_CAPITAL_FALLBACKS)))))
+
     return "\n".join(lines)
 
 
@@ -291,14 +319,15 @@ def main():
         if worst_t and worst_p is not None and (worst_t, worst_p, lane_cfg["label"]) not in all_movers:
             all_movers.append((worst_t, worst_p, lane_cfg["label"]))
 
-    # Overall WTD: weighted by lane capital
-    # Compute across all open positions
+    # Overall WTD: every open position treated as one pool, weighted by position
+    # value (NOT by lane capital — the old comment here claimed that, but no lane
+    # weighting has ever been applied). This used to call lane_wtd() twice with
+    # identical arguments, doubling the yfinance downloads for an identical result.
     all_positions = tracker.get_current_positions()
-    overall_wtd_val, ob, obp, ow, owp = lane_wtd("__all__", all_positions) if all_positions else (None, None, None, None, None)
-    # Recompute overall treating all positions as one pool
-    all_positions_dummy = all_positions
-    if all_positions_dummy:
-        overall_wtd_val, ob, obp, ow, owp = lane_wtd("__all__", all_positions_dummy)
+    if all_positions:
+        overall_wtd_val, ob, obp, ow, owp = lane_wtd("__all__", all_positions)
+    else:
+        overall_wtd_val, ob, obp, ow, owp = (None, None, None, None, None)
 
     overall_bench_wtd = benchmark_wtd("SPY")
 

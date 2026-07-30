@@ -932,6 +932,80 @@ def _cross_audit_hrdo(hrdo_assessments: dict) -> dict:
 # ORCHESTRATOR
 # =============================================================================
 
+def audit_attendance() -> dict:
+    """Which agents never come to work, and which cannot work at all?
+
+    THE GAP THIS CLOSES (Chairman question, 2026-07-29): "how did you or HR not
+    catch this?" — international_analyst.py had five wired consumers, tracked the
+    KOSPI, and was scheduled nowhere while also crashing on import under Python
+    3.9. HR gave the firm a clean bill of health the whole time.
+
+    The reason is structural, not careless. HR evaluated the 39 names on its
+    ROSTER, and every one of them looked fine, because HR's inputs are the
+    *outputs* agents produce — picks, decisions, reports. An agent that never runs
+    produces no bad output. It produces no output at all, which HR's scoring read
+    as "not applicable" rather than "absent without leave". The roster was never
+    checked against the set of agents the firm actually executes.
+
+    So this is an ATTENDANCE check, deliberately separate from performance review:
+      - CANNOT_START — the module does not import. It is not underperforming, it
+        is broken, and no amount of coaching or PIP fixes that.
+      - NEVER_SCHEDULED — importable, has downstream consumers, but no scheduler
+        root reaches it. Consumers see "no data today", forever.
+
+    Both are firm/management failures, not agent failures, so they are reported
+    as such and never feed an agent's performance rating or PIP status.
+    """
+    import importlib
+    here = os.path.dirname(os.path.abspath(__file__))
+
+    main_src = ""
+    cron_src = ""
+    try:
+        with open(os.path.join(here, "main.py")) as fh:
+            main_src = fh.read()
+    except Exception:
+        pass
+    try:
+        with open(os.path.join(here, "new_crontab.txt")) as fh:
+            cron_src = fh.read()
+    except Exception:
+        pass
+
+    findings = {"cannot_start": [], "never_scheduled": [], "checked": 0}
+    try:
+        import wiring_audit
+        watched = list(getattr(wiring_audit, "AGENT_MODULES", []) or [])
+    except Exception:
+        watched = []
+    if not watched:
+        # Fall back to the modules HR can see on disk that look like agents.
+        watched = sorted(
+            f[:-3] for f in os.listdir(here)
+            if f.endswith(".py") and not f.startswith("test_")
+            and any(f.endswith(sfx) for sfx in ("_agent.py", "_analyst.py",
+                                                "_model.py", "_tracker.py",
+                                                "_runner.py", "_sizer.py"))
+        )
+
+    for name in watched:
+        findings["checked"] += 1
+        try:
+            importlib.import_module(name)
+        except Exception as e:
+            findings["cannot_start"].append({"agent": name,
+                                             "error": f"{type(e).__name__}: {e}"[:180]})
+            continue
+        if name not in main_src and name not in cron_src:
+            findings["never_scheduled"].append({"agent": name})
+
+    findings["status"] = ("ATTENTION" if (findings["cannot_start"] or
+                                          findings["never_scheduled"]) else "OK")
+    findings["note"] = ("Attendance is a MANAGEMENT finding, not a performance "
+                        "one — these never affect an agent's rating or PIP.")
+    return findings
+
+
 def run_hr_review(send_email: bool = False) -> dict:
     """
     Full HR review cycle. Both officers evaluate all agents, then cross-audit
@@ -1347,6 +1421,16 @@ def run_hr_review(send_email: bool = False) -> dict:
         report["performance_ledger"] = get_all_agent_stats()
     except Exception:
         pass
+
+    # Attendance audit. HR historically audited its 39-name ROSTER, which is why an
+    # agent that could not even import (international_analyst, for a month) was never
+    # marked absent — it wasn't on the roster, so there was no one to mark absent.
+    # This is a MANAGEMENT finding about wiring, never an agent rating: a module that
+    # is never scheduled has done nothing wrong, so it must not touch PIP or ratings.
+    try:
+        report["attendance"] = audit_attendance()
+    except Exception as _att_e:
+        logger.debug(f"  [HR] Attendance audit error (non-fatal): {_att_e}")
 
     return report
 
