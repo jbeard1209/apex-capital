@@ -272,10 +272,26 @@ def _us_implications(
             _note(f"Copper {copper['pct']:+.1f}% — global growth concern; watch industrials/materials downside.")
 
     if gold and gold["pct"] is not None:
+        # A gold bid is a RISK-OFF tell. The original text read "flight-to-safety
+        # bid; consistent with {sentiment}" and printed that verbatim even when
+        # sentiment was RISK_ON — which is a contradiction, not a reading. Gold up
+        # against a RISK_ON tape is a genuine DIVERGENCE, and saying so is more
+        # useful than pretending the two agree.
         if gold["pct"] >= 1.0:
-            _note(f"Gold +{gold['pct']:.1f}% — flight-to-safety bid; consistent with {sentiment} reading.")
+            if sentiment == "RISK_ON":
+                _note(f"Gold +{gold['pct']:.1f}% — a risk-OFF bid against a {sentiment} tape. "
+                      f"Equities and the safe-haven bid disagree; treat the {sentiment} reading "
+                      f"as unconfirmed and size accordingly.")
+            else:
+                _note(f"Gold +{gold['pct']:.1f}% — flight-to-safety bid, corroborating the "
+                      f"{sentiment} reading.")
         elif gold["pct"] <= -1.0:
-            _note(f"Gold {gold['pct']:+.1f}% — risk appetite improving; less defensive positioning needed.")
+            if sentiment == "RISK_OFF":
+                _note(f"Gold {gold['pct']:+.1f}% — safe havens being sold against a {sentiment} "
+                      f"tape; the risk-off signal is not corroborated by the haven bid.")
+            else:
+                _note(f"Gold {gold['pct']:+.1f}% — risk appetite improving; less defensive "
+                      f"positioning needed.")
 
     if not implications:
         implications.append("International session shows no outsized moves. US open likely to be driven by domestic catalysts.")
