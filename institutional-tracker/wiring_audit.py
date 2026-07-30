@@ -177,7 +177,11 @@ def check_orphan_agents(sources: dict):
     cron = BASE_DIR / "new_crontab.txt"
     cron_txt = cron.read_text() if cron.exists() else ""
     for name in sources:
-        if name in cron_txt:
+        # Test files are NOT scheduler roots even when cron runs them: a test
+        # importing an agent does not mean the agent does its job in production.
+        # (It also stops a test that merely *names* a module from making that
+        # module look reachable — which is how this check first fooled itself.)
+        if name in cron_txt and not name.startswith("test_"):
             roots.add(name)
 
     # Fixpoint over "module A mentions module B's stem" (import or subprocess call).

@@ -652,25 +652,47 @@ class TestWiringContracts(unittest.TestCase):
         an orphan hard-fails until it is removed (so the list can only shrink).
         """
         import wiring_audit, pathlib, tempfile
-        src = wiring_audit._py_sources()
 
-        src2 = dict(src)
-        src2["brand_new_ghost.py"] = 'json.dump(d, open("data/brand_new_ghost_out.json", "w"))\n'
-        src2["ghost_reader.py"] = 'x = load("data/brand_new_ghost_out.json")\n'
-        wiring_audit.problems, wiring_audit.notes = [], []
-        wiring_audit.check_orphan_agents(src2)
-        self.assertTrue(any("brand_new_ghost" in p for p in wiring_audit.problems),
-                        "a NEW orphan must hard-fail, not be absorbed by the baseline")
-
+        # Hermetic fixture — never _py_sources(). This test's own text mentions its
+        # fixture names, and a test file used to count as a scheduler root, so real
+        # sources made the fixtures look reachable and the test silently passed
+        # nothing. Both halves are fixed; keep the fixture synthetic regardless.
+        src = {
+            "main.py":        "import scheduled_agent\n",
+            "scheduled_agent.py": 'json.dump(d, open("data/sched_out.json", "w"))\n',
+            "known_ghost.py": 'json.dump(d, open("data/known_ghost_out.json", "w"))\n',
+            "new_ghost.py":   'json.dump(d, open("data/new_ghost_out.json", "w"))\n',
+            "reader.py":      'a = load("data/known_ghost_out.json")\n'
+                              'b = load("data/new_ghost_out.json")\n',
+        }
         real = wiring_audit._BASELINE_PATH
+        tmp = None
         try:
-            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
-                json.dump({"known_orphans": ["canary_agent.py"]}, fh)   # not an orphan
-                wiring_audit._BASELINE_PATH = pathlib.Path(fh.name)
+            def _baseline(entries):
+                nonlocal tmp
+                with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+                    json.dump({"known_orphans": entries}, fh)
+                    tmp = fh.name
+                wiring_audit._BASELINE_PATH = pathlib.Path(tmp)
+
+            # (a) known_ghost is baselined -> note; new_ghost is not -> hard failure.
+            _baseline(["known_ghost.py"])
+            wiring_audit.problems, wiring_audit.notes = [], []
+            wiring_audit.check_orphan_agents(src)
+            self.assertTrue(any("new_ghost.py" in p for p in wiring_audit.problems),
+                            "a NEW orphan must hard-fail, not be absorbed by the baseline")
+            self.assertFalse(any("known_ghost.py" in p for p in wiring_audit.problems),
+                             "a baselined orphan must be a note, not a hard failure")
+            self.assertTrue(any("known_ghost.py" in n for n in wiring_audit.notes),
+                            "a baselined orphan must still be reported loudly as a note")
+
+            # (b) a baseline entry that is no longer an orphan must hard-fail, so the
+            #     list can only ever shrink.
+            _baseline(["known_ghost.py", "scheduled_agent.py"])
             wiring_audit.problems, wiring_audit.notes = [], []
             wiring_audit.check_orphan_agents(src)
             self.assertTrue(
-                any("canary_agent.py" in p and "no longer an orphan" in p
+                any("scheduled_agent.py" in p and "no longer an orphan" in p
                     for p in wiring_audit.problems),
                 "a baseline entry that is no longer an orphan must hard-fail so the "
                 "ratchet cannot silently loosen")
