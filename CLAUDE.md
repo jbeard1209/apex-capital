@@ -10,8 +10,21 @@ Claude session. Read it before making changes.
   - **GCP VM** `apex-capital-495523` (ssh alias `apex-capital`): ALWAYS-ON second brain with its
     own crontab (~63 jobs incl. main.py 6×/day) trading the SAME Alpaca paper account as the Mac.
     Its repo does NOT auto-pull — deploy via `gcp_setup/deploy.sh` or it runs stale code (it ran
-    June-3 code for a month → phantom alert emails + divergent trading vs the Mac). Every audit
-    MUST check it: `ssh apex-capital 'cd ~/institutional-tracker && git log -1 && uptime'`.
+    June-3 code for a month → phantom alert emails + divergent trading vs the Mac).
+    **The VM is NOT a git checkout** — `deploy.sh` rsyncs with `--exclude=.git/`, so any
+    `git log` there fails with "not a git repository". (CLAUDE.md told every session to run
+    exactly that until 2026-07-30; the freshness check had been silently erroring out.)
+    Its Python is `~/venv/bin/python3`, NOT bare `python3` — bare python3 has no `dotenv`
+    and every test will ImportError. Every audit MUST check it:
+    ```
+    ssh apex-capital 'cat ~/institutional-tracker/deploy_stamp.json; uptime'
+    ```
+    `deploy_stamp.json` is written by `deploy.sh` only, so a hand-`scp` leaves it stale
+    (under-reporting drift) — it is a hint, **not** proof. The ground truth is a checksum
+    diff of the changed files:
+    ```
+    ssh apex-capital 'cd ~/institutional-tracker && md5sum main.py alpaca_trader.py'
+    ```
   - **Railway** — DECOMMISSIONED 2026-07-10 (paid tier declined). Local dashboard: `python3 dashboard_server.py` → port 5050.
 - **GitHub:** https://github.com/jbeard1209/apex-capital
 - **Owner:** Jack Beard, Co-Chairman (learning finance — explain reasoning, don't just emit code)
