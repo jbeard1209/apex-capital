@@ -2786,6 +2786,79 @@ class TestModelMetricsContract(unittest.TestCase):
             tmp.unlink(missing_ok=True)
 
 
+class TestFormatSpecsAreReachable(unittest.TestCase):
+    """No f-string may carry a format spec that can never format anything.
+
+    Everything after the ':' in an f-string replacement field is the FORMAT
+    SPEC, not code. So this, which reads perfectly:
+
+        f"W3: {corr_w3:.4f if corr_w3 is not None else 'N/A'}"
+
+    does not mean what it says — it asks Python to format corr_w3 with the spec
+    ".4f if corr_w3 is not None else 'N/A'" and raises ValueError: Invalid
+    format specifier. Four of these were live: two in ml_alpha_decay_monitor's
+    suggestion rationale, two in backtest_predictive's per-quarter log line.
+
+    The shape is worse than an ordinary typo because the line only executes on
+    the interesting path. The decay monitor's raise sat inside the loop over
+    DECAYING features, uncaught all the way up through run() — so it wrote its
+    report, then died before adding a suggestion or sending an alert, and only
+    ever on the runs where it had found something. Green until it mattered.
+
+    Caught by nothing else: it is valid syntax, so it compiles, imports, and
+    passes any check short of executing that exact branch.
+    """
+
+    #: values a spec might legitimately be meant for.
+    PROBES = (1.0, 1, "x", timedelta(days=1))
+
+    #: datetime is deliberately NOT a probe. datetime.__format__ hands the spec
+    #: straight to strftime, which accepts ARBITRARY text and returns it with
+    #: any % directives substituted — so format(datetime, ".4f if x else 'y'")
+    #: succeeds and returns that literal string. Probing with a datetime makes
+    #: this check pass on every input, which is what it did on the first pass
+    #: here: three known-bad specs and it reported clean. A strftime spec is
+    #: recognised by its % directives instead.
+    STRFTIME_RE = re.compile(r"%[a-zA-Z]")
+
+    @classmethod
+    def _unusable(cls, spec):
+        for probe in cls.PROBES:
+            try:
+                format(probe, spec)
+                return False
+            except (ValueError, TypeError):
+                continue
+        return not cls.STRFTIME_RE.search(spec)
+
+    def test_no_unformattable_format_spec_anywhere(self):
+        import ast
+        root = Path(__file__).parent
+        offenders = []
+        for path in sorted(root.rglob("*.py")):
+            if ".git" in path.parts:
+                continue
+            try:
+                tree = ast.parse(path.read_text())
+            except (SyntaxError, UnicodeDecodeError):
+                continue
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.FormattedValue) or node.format_spec is None:
+                    continue
+                vals = getattr(node.format_spec, "values", [])
+                # a spec built at runtime ({x:{width}}) can't be judged statically
+                if not all(isinstance(v, ast.Constant) for v in vals):
+                    continue
+                spec = "".join(v.value for v in vals)
+                if spec and self._unusable(spec):
+                    offenders.append(
+                        f"{path.relative_to(root)}:{node.lineno}  {{...:{spec}}}")
+        self.assertEqual(
+            offenders, [],
+            "format spec(s) no value can satisfy — this raises at runtime, on "
+            "whatever path reaches the line:\n  " + "\n  ".join(offenders))
+
+
 class TestLabelColumnContract(unittest.TestCase):
     """Every label column the code queries must actually exist in the DB.
 
@@ -3396,6 +3469,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestThesisWatch))
     suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
     suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))

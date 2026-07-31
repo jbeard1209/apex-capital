@@ -386,11 +386,23 @@ def add_decay_suggestions(
             log.debug("Skipping duplicate suggestion for feature '%s'.", name)
             continue
 
+        # A conditional cannot live inside a format spec: everything after the
+        # ':' is the spec, so ".4f if corr_w3 is not None else 'N/A'" is parsed
+        # as a format spec and raises ValueError: Invalid format specifier. It
+        # raised for W3/W4, and TypeError for W1 (.get() can return None there
+        # too, which the original didn't guard at all). The raise is uncaught up
+        # through run(), so the monitor died here — after writing its report,
+        # before adding a single suggestion or sending its alert. It only ever
+        # reached this line when `decaying` was non-empty, i.e. exactly when it
+        # had something to say. Format first, interpolate after.
+        def _f(v):
+            return "N/A" if v is None else f"{v:.4f}"
+
         rationale = (
             f"Spearman correlation with outcome_20d has significantly weakened. "
-            f"W1 (last 30d): {corr_w1:.4f}. "
-            f"W3 (91–180d): {corr_w3:.4f if corr_w3 is not None else 'N/A'}. "
-            f"W4 (181–365d): {corr_w4:.4f if corr_w4 is not None else 'N/A'}. "
+            f"W1 (last 30d): {_f(corr_w1)}. "
+            f"W3 (91–180d): {_f(corr_w3)}. "
+            f"W4 (181–365d): {_f(corr_w4)}. "
             f"Decay ratio vs reference window: {decay_ratio:.2f} (threshold: {DECAY_THRESHOLD}). "
             f"Model importance: {feat.get('importance', 'N/A')}. "
             f"Recommend: (1) audit data pipeline for this feature, (2) consider removing or "

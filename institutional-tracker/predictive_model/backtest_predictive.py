@@ -238,8 +238,14 @@ def run_backtest(n_quarters: int = 8) -> dict:
             "ml_enhanced":     _stats(ml_returns,    "ML_ENHANCED") if ml_returns else {"label": "ML_ENHANCED", "n": 0},
         }
         results.append(quarter_result)
-        logger.info(f"  {qdate}  conviction_mean={conv_returns and np.mean(conv_returns):.3f or 'N/A'}  "
-                    f"spy={spy_ret:.3f if spy_ret else 'N/A'}")
+        # Both halves of the old line were invalid format specs — everything
+        # after ':' is the spec, so ".3f or 'N/A'" and ".3f if spy_ret else
+        # 'N/A'" each raise ValueError: Invalid format specifier. This is the
+        # per-quarter progress line, so the backtest blew up on quarter one,
+        # after the work and before any aggregate. Decide the text first.
+        conv_txt = f"{np.mean(conv_returns):.3f}" if conv_returns else "N/A"
+        spy_txt  = f"{spy_ret:.3f}" if spy_ret else "N/A"
+        logger.info(f"  {qdate}  conviction_mean={conv_txt}  spy={spy_txt}")
 
     # Aggregate
     def _agg(key):
