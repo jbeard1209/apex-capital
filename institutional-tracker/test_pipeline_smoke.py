@@ -2970,6 +2970,92 @@ class TestFormatSpecsAreReachable(unittest.TestCase):
             "whatever path reaches the line:\n  " + "\n  ".join(offenders))
 
 
+class TestLiveSnapshotPathActuallyRecords(unittest.TestCase):
+    """main.py -> collect_snapshot: a producer that never reached its consumer.
+
+    main.py builds signals_df, ML-enhances it, then called collect_snapshot()
+    with no arguments — so the collector went looking for data/signals.json,
+    which no code in this repo writes and which exists on neither host. The
+    tell is in the data: all 383,129 rows of pipeline_snapshots carry
+    signal_type 'HISTORICAL_13F' (the backfill's value) and not one carries
+    the 'BUY' this path writes. It never inserted a row, and it said so with
+    an INFO line that reads exactly like a quiet day.
+    """
+
+    LIVE = [{"ticker": "AAPL", "institutions": "Citadel, Point72",
+             "n_institutions": 2, "conviction_score": 4.0,
+             "signal_type": "BUY", "high_conviction": True}]
+
+    def _collect(self, signals, price=123.45):
+        """Run collect_snapshot against a throwaway DB, no network."""
+        import tempfile, sqlite3, shutil
+        from predictive_model import data_collector as DC
+        tmp = tempfile.mkdtemp()
+        db = Path(tmp) / "t.db"
+        def _tmp_db():
+            # Match the real get_db(): _fill_price_outcomes subscripts rows by
+            # column name, so the row factory is part of the contract.
+            c = sqlite3.connect(db)
+            c.row_factory = sqlite3.Row
+            return c
+
+        orig_db, orig_px = DC.get_db, DC._get_current_price
+        DC.get_db = _tmp_db
+        DC._get_current_price = lambda t: price
+        try:
+            n = DC.collect_snapshot(signals) if signals is not None \
+                else DC.collect_snapshot()
+            con = sqlite3.connect(db)
+            try:
+                rows = con.execute(
+                    "SELECT ticker, institution, signal_type, entry_price "
+                    "FROM pipeline_snapshots").fetchall()
+            finally:
+                con.close()
+            return n, rows
+        finally:
+            DC.get_db, DC._get_current_price = orig_db, orig_px
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_signals_passed_in_memory_are_recorded(self):
+        n, rows = self._collect(self.LIVE)
+        self.assertEqual(n, 1, "a live signal was handed over and not recorded")
+        self.assertEqual(len(rows), 1)
+
+    def test_the_recorded_row_is_the_live_kind_not_the_backfill_kind(self):
+        _, rows = self._collect(self.LIVE)
+        self.assertEqual(rows[0][2], "BUY",
+                         "live rows must be distinguishable from HISTORICAL_13F")
+        self.assertEqual(rows[0][3], 123.45, "live rows carry a real entry price")
+
+    def test_the_plural_institutions_key_is_not_dropped(self):
+        """signal_engine emits 'institutions'; the collector read 'institution'."""
+        _, rows = self._collect(self.LIVE)
+        self.assertEqual(rows[0][1], "Citadel, Point72",
+                         "confluence institutions were written as an empty string")
+
+    def test_main_hands_its_signals_over(self):
+        """The wiring contract. A no-arg call is the bug, restored.
+
+        Asserted on main.py's AST: the call must pass at least one argument.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).parent / "main.py").read_text())
+        calls = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call)
+                 and isinstance(n.func, ast.Name)
+                 and n.func.id in ("collect_snapshot", "_collect_snap")]
+        self.assertTrue(calls, "main.py no longer collects snapshots at all")
+        for c in calls:
+            self.assertTrue(c.args or c.keywords,
+                            "collect_snapshot() called with no signals — it will "
+                            "fall back to data/signals.json, which nothing writes")
+
+    def test_an_empty_signal_list_records_nothing_and_does_not_raise(self):
+        n, rows = self._collect([])
+        self.assertEqual((n, rows), (0, []))
+
+
 class TestLabelColumnContract(unittest.TestCase):
     """Every label column the code queries must actually exist in the DB.
 
@@ -3664,6 +3750,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestThesisWatch))
     suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestLiveSnapshotPathActuallyRecords))
     suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
     suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))

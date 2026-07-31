@@ -1673,9 +1673,18 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # snapshots. Retraining only fires if new data materially improves the model.
     try:
         from predictive_model.data_collector import collect_snapshot as _collect_snap
-        _snap_n = _collect_snap()
+        # Hand over the signals we already hold. Calling this with no argument
+        # made it read data/signals.json, which nothing in this repo writes, so
+        # the live snapshot path never recorded a single row — every row in
+        # pipeline_snapshots comes from the historical backfill.
+        _sigs = signals_df.to_dict("records") if not signals_df.empty else []
+        _snap_n = _collect_snap(_sigs)
         if _snap_n:
             logger.info(f"  Predictive model: {_snap_n} snapshot(s) logged")
+        elif _sigs:
+            # Signals existed and none were recorded. Previously invisible.
+            logger.warning(f"  Predictive model: {len(_sigs)} signal(s) produced but "
+                           f"0 snapshot(s) logged — snapshot path may be broken")
 
         # Weekly retrain attempt (every 7 days) — only trains if data is ready
         _last_train = state.get("last_model_train", "")

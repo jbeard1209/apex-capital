@@ -123,10 +123,23 @@ def _get_current_price(ticker: str) -> Optional[float]:
     return None
 
 
-def collect_snapshot() -> int:
+def collect_snapshot(signals=None) -> int:
     """
     Log current pipeline signals as a snapshot record.
     Returns number of rows inserted.
+
+    `signals` is the live signal list. Callers that already hold it in memory
+    should pass it; omitting it falls back to reading SIGNALS_PATH.
+
+    That fallback is the historical bug: main.py builds signals_df, enhances
+    it, and then called collect_snapshot() with no arguments, so this function
+    went looking for data/signals.json — a file no code in this repo has ever
+    written. Every row in pipeline_snapshots carries signal_type
+    'HISTORICAL_13F' (the backfill's value); not one carries the 'BUY' this
+    function writes, which is the proof that it has never inserted anything.
+    The failure was silent: an absent file reads as "no signals today", which
+    is indistinguishable from a genuinely quiet day, and main.py only logged
+    the result when it was non-zero.
     """
     conn = get_db()
     _ensure_collector_tables(conn)
@@ -134,11 +147,19 @@ def collect_snapshot() -> int:
     today = date.today().isoformat()
     now   = datetime.now().isoformat()
 
-    signals = _load_json(SIGNALS_PATH)
+    from_file = signals is None
+    if from_file:
+        signals = _load_json(SIGNALS_PATH)
     if isinstance(signals, dict):
         signals = signals.get("signals", [])
     if not signals:
-        logger.info("  data_collector: no signals to snapshot today")
+        if from_file and not SIGNALS_PATH.exists():
+            logger.warning(
+                "  data_collector: no signals passed and %s does not exist — "
+                "nothing will be snapshotted. Callers holding signals in memory "
+                "should pass them to collect_snapshot(signals=...).", SIGNALS_PATH)
+        else:
+            logger.info("  data_collector: no signals to snapshot today")
         conn.close()
         return 0
 
@@ -186,7 +207,12 @@ def collect_snapshot() -> int:
                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
             (
                 today, now, ticker,
-                sig.get("institution", ""),
+                # signal_engine's confluence rows name this "institutions"
+                # (comma-joined, since a confluence signal is by definition
+                # several); the backfill path names it "institution". Accept
+                # both — reading only the singular would have written an empty
+                # string for every live signal.
+                sig.get("institution") or sig.get("institutions", ""),
                 sig.get("conviction_score", sig.get("score", 0.0)),
                 sig.get("n_institutions", 1),
                 sig.get("signal_type", sig.get("type", "")),
