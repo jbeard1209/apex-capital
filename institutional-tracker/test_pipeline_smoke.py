@@ -3159,6 +3159,165 @@ class TestLabelColumnContract(unittest.TestCase):
                          f"LT_TARGETS names columns that do not exist: {bad}")
 
 
+class TestPerformanceSnapshotProducer(unittest.TestCase):
+    """performance_history.json finally has a writer — keep it honest.
+
+    The file had three readers and no producer, which is what left the
+    loss-attribution alarm reading one hand-written row from 2026-06-09
+    forever. This writer supplies the facts. What it must never do is supply
+    the *explanation*: auto-filling loss_attribution would re-satisfy the alarm
+    with a generated sentence and reproduce the original bug one layer up.
+    """
+
+    REVIEW = {
+        "generated_at": None,      # set per test
+        "account": {"portfolio_value": 97500.0, "cash": 30000.0,
+                    "pnl_today": -250.0, "pnl_today_pct": -0.25,
+                    "n_positions": 3},
+        "recommendations": [
+            {"ticker": "WIN", "side": "long",  "qty": 100.0,
+             "avg_entry": 10.0, "current_price": 12.0, "unrealized_pnl_pct": 20.0},
+            {"ticker": "LOSE", "side": "long", "qty": 50.0,
+             "avg_entry": 20.0, "current_price": 15.0, "unrealized_pnl_pct": -25.0},
+            {"ticker": "SHRT", "side": "short", "qty": 30.0,
+             "avg_entry": 40.0, "current_price": 30.0, "unrealized_pnl_pct": 25.0},
+        ],
+    }
+
+    def _sandbox(self, review_stamp, history=None):
+        """Point the module at a temp dir. Returns (module, tmpdir Path)."""
+        import json as _json, tempfile, performance_snapshot as PS
+        tmp = Path(tempfile.mkdtemp())
+        review = _json.loads(_json.dumps(self.REVIEW))
+        review["generated_at"] = review_stamp
+        (tmp / "review.json").write_text(_json.dumps(review))
+        (tmp / "registry.json").write_text(
+            _json.dumps({"agents": [{"status": "active"}, {"status": "retired"}]}))
+        if history is not None:
+            (tmp / "history.json").write_text(_json.dumps(history))
+        self._orig = (PS.HISTORY_PATH, PS.REVIEW_PATH, PS.REGISTRY_PATH)
+        self.addCleanup(self._restore, PS)
+        PS.HISTORY_PATH  = tmp / "history.json"
+        PS.REVIEW_PATH   = tmp / "review.json"
+        PS.REGISTRY_PATH = tmp / "registry.json"
+        return PS, tmp
+
+    def _restore(self, PS):
+        PS.HISTORY_PATH, PS.REVIEW_PATH, PS.REGISTRY_PATH = self._orig
+
+    @staticmethod
+    def _today_stamp():
+        from zoneinfo import ZoneInfo
+        return datetime.now(ZoneInfo("America/New_York")).replace(tzinfo=None).isoformat()
+
+    def test_it_never_writes_loss_attribution(self):
+        PS, _ = self._sandbox(self._today_stamp())
+        row = PS.write_snapshot()
+        self.assertIsNotNone(row)
+        self.assertNotIn("loss_attribution", row,
+                         "the writer is filling in the judgment the alarm exists "
+                         "to demand -- that re-disarms it")
+
+    def test_a_human_written_attribution_survives_the_next_run(self):
+        """main.py runs 4-6x a day; run five must not erase what the board wrote."""
+        PS, _ = self._sandbox(self._today_stamp())
+        first = PS.write_snapshot()
+        import json as _json
+        hist = _json.loads(PS.HISTORY_PATH.read_text())
+        hist["snapshots"][-1]["loss_attribution"] = {"primary_driver": "board wrote this"}
+        PS.HISTORY_PATH.write_text(_json.dumps(hist))
+
+        PS.write_snapshot()
+        hist = _json.loads(PS.HISTORY_PATH.read_text())
+        self.assertEqual(len(hist["snapshots"]), 1, "same day must upsert, not append")
+        self.assertEqual(hist["snapshots"][-1]["loss_attribution"]["primary_driver"],
+                         "board wrote this")
+        self.assertEqual(hist["snapshots"][-1]["snapshot_date"], first["snapshot_date"])
+
+    def test_a_stale_or_broken_pipeline_writes_no_row(self):
+        """A $0 row from a failed run reads as a -100% drawdown, forever."""
+        PS, _ = self._sandbox("2026-06-09T20:00:00")          # yesterday's numbers
+        self.assertIsNone(PS.write_snapshot())
+        self.assertFalse(PS.HISTORY_PATH.exists())
+
+        import json as _json
+        PS, _ = self._sandbox(self._today_stamp())
+        bad = _json.loads(PS.REVIEW_PATH.read_text())
+        bad["account"]["portfolio_value"] = 0
+        PS.REVIEW_PATH.write_text(_json.dumps(bad))
+        self.assertIsNone(PS.write_snapshot())
+
+    def test_shorts_are_signed_off_side_not_qty(self):
+        """The review agent reports short quantities positive."""
+        PS, _ = self._sandbox(self._today_stamp())
+        drivers = {d["ticker"]: d["pnl_usd"] for d in PS.write_snapshot()["pnl_drivers"]}
+        self.assertEqual(drivers["SHRT"], 300.0,   # short 30 @40 now 30 = +$300
+                         "a profitable short is being recorded as a loss")
+        self.assertEqual(drivers["LOSE"], -250.0)
+        self.assertEqual(drivers["WIN"], 200.0)
+
+    def test_trimming_never_drops_an_attributed_row(self):
+        """A naive cap would eventually delete the only rows the alarm reads."""
+        import json as _json
+        old = [{"snapshot_date": "2020-01-01", "portfolio_value": 1,
+                "loss_attribution": {"primary_driver": "keep me"}}]
+        old += [{"snapshot_date": "2021-%02d-%02d" % (m, d), "portfolio_value": 1}
+                for m in range(1, 13) for d in range(1, 29)]
+        self.assertGreater(len(old), 0)
+        PS, _ = self._sandbox(self._today_stamp(),
+                              history={"snapshots": old})
+        PS.MAX_ROWS, orig = 10, PS.MAX_ROWS
+        self.addCleanup(setattr, PS, "MAX_ROWS", orig)
+        PS.write_snapshot()
+        kept = _json.loads(PS.HISTORY_PATH.read_text())["snapshots"]
+        self.assertTrue(any(s.get("loss_attribution") for s in kept),
+                        "the attributed row was trimmed away")
+
+    def test_it_reads_no_file_without_a_live_producer(self):
+        """position_aging_report.json is written by an agent scheduled nowhere.
+
+        Depending on it would have made this module a fresh instance of the
+        bug it exists to close. Comments are invisible to ast, so the comment
+        explaining the rejection does not trip this.
+        """
+        import ast, performance_snapshot as PS
+        tree = ast.parse(Path(PS.__file__).read_text())
+        docstrings = set()
+        for node in ast.walk(tree):
+            body = getattr(node, "body", None)
+            if (isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef,
+                                  ast.AsyncFunctionDef))
+                    and body and isinstance(body[0], ast.Expr)
+                    and isinstance(body[0].value, ast.Constant)
+                    and isinstance(body[0].value.value, str)):
+                docstrings.add(id(body[0].value))
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Constant) and isinstance(n.value, str)
+                    and id(n) not in docstrings):
+                self.assertNotIn("position_aging", n.value)
+
+    def test_the_pipeline_actually_calls_it(self):
+        """An unreferenced producer is just another orphan.
+
+        Both halves are required. Merely seeing the name somewhere in main.py
+        is not enough -- a local `write_snapshot = lambda: None` satisfies that
+        and writes nothing, which mutation testing demonstrated.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).parent / "main.py").read_text())
+        imported = any(isinstance(n, ast.ImportFrom)
+                       and n.module == "performance_snapshot"
+                       and any(a.name == "write_snapshot" for a in n.names)
+                       for n in ast.walk(tree))
+        called = any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                     and n.func.id == "write_snapshot" for n in ast.walk(tree))
+        self.assertTrue(imported, "main.py no longer imports write_snapshot from "
+                                  "performance_snapshot")
+        self.assertTrue(called, "main.py imports the snapshot writer but never "
+                                "calls it -- performance_history.json is back to "
+                                "having no producer")
+
+
 class TestLossAttributionMustBeCurrent(unittest.TestCase):
     """The "why is the firm down?" alarm must not be disarmed by an old file.
 
@@ -4029,6 +4188,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
     suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestPerformanceSnapshotProducer))
     suite.addTests(loader.loadTestsFromTestCase(TestLossAttributionMustBeCurrent))
     suite.addTests(loader.loadTestsFromTestCase(TestFICITReachesTheChairman))
     suite.addTests(loader.loadTestsFromTestCase(TestHostSpecificChecksStayOnTheirHost))

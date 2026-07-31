@@ -1097,6 +1097,25 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception as e:
         logger.warning(f"  Review Agent error: {e}")
 
+    # Daily P&L snapshot — runs here because it reads what the review agent
+    # just wrote, so its numbers and the review's can never be from different
+    # moments. data/performance_history.json had three readers and no writer
+    # at all until 2026-07-31; the single hand-written 2026-06-09 row in it
+    # was what kept the "why are we down?" alarm permanently satisfied. It is
+    # deliberately in the pipeline rather than on its own cron: no new
+    # scheduled job to drift, and it is idempotent per date across the four to
+    # six runs a day. It never writes loss_attribution — see the module
+    # docstring for why that field stays human.
+    try:
+        from performance_snapshot import write_snapshot
+        _snap = write_snapshot()
+        if _snap:
+            logger.info(
+                f"  P&L snapshot: ${_snap['portfolio_value']:,.2f} "
+                f"({_snap['pnl_inception_pct']:+.2f}% inception)")
+    except Exception as e:
+        logger.warning(f"  Performance snapshot error: {e}")
+
     # -----------------------------------------------------------------------
     # Step 4c: Manager Agent — Evaluate recommendations, execute, report
     # -----------------------------------------------------------------------
