@@ -35,6 +35,8 @@ import sys
 from collections import Counter
 from datetime import datetime, timedelta
 
+import chairman_queue
+
 # -- Working directory --------------------------------------------------------
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_SCRIPT_DIR)
@@ -435,18 +437,14 @@ def review_research_agent_diversity(proposals):
 # =============================================================================
 
 def _update_chairman_queue(proposals):
-    existing = []
-    raw = _load_json(_CHAIRMAN_PATH)
-    if isinstance(raw, list):
-        existing = raw
-
-    combined = existing + proposals
-    combined = combined[-_CHAIRMAN_MAX_ENTRIES:]
-
-    os.makedirs(_DATA_DIR, exist_ok=True)
-    with open(_CHAIRMAN_PATH, "w") as f:
-        json.dump(combined, f, indent=2, default=str)
-    logger.info("  Updated %s (%d entries total).", _CHAIRMAN_PATH, len(combined))
+    # Delegates to chairman_queue.submit(). This used to do
+    # `combined = combined[-_CHAIRMAN_MAX_ENTRIES:]`, which caps the *shared*
+    # queue -- so this agent silently evicted other producers' open items
+    # (one run took the file from 153 entries to 20 on 2026-07-31). An agent
+    # may only ever cap its OWN entries.
+    chairman_queue.submit(proposals, "apex_improvement_board",
+                          path=_CHAIRMAN_PATH,
+                          max_entries=_CHAIRMAN_MAX_ENTRIES)
 
 
 # =============================================================================

@@ -44,6 +44,8 @@ import os
 import sys
 from datetime import datetime, timedelta
 
+import chairman_queue
+
 # ── Working directory ─────────────────────────────────────────────────────────
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(_SCRIPT_DIR)
@@ -437,16 +439,7 @@ def _update_chairman_queue(issues: list, now_iso: str):
     another producer's still-unresolved item. Cap only this agent's own
     entries; never touch entries from other sources.
     """
-    existing: list = []
-    raw = _load_json(_CHAIRMAN_PATH)
-    if isinstance(raw, list):
-        existing = raw
-
     own_source = "cit_pipeline_integrity_agent"
-    existing_keys = {
-        e.get("dedup_key") for e in existing
-        if e.get("source") == own_source and e.get("status") == "awaiting_chairman"
-    }
 
     run_id = _run_id()
     new_entries = []
@@ -454,8 +447,6 @@ def _update_chairman_queue(issues: list, now_iso: str):
         if iss["severity"] not in ("CRITICAL", "HIGH"):
             continue
         key = iss["check"]
-        if key in existing_keys:
-            continue
         entry = {
             "id":          f"{run_id}-{iss['check'][:20]}",
             "dedup_key":   key,
@@ -466,18 +457,14 @@ def _update_chairman_queue(issues: list, now_iso: str):
             "status":      "awaiting_chairman",
         }
         new_entries.append(entry)
-        existing_keys.add(key)
         logger.info(f"  Queued to chairman: [{iss['severity']}] {iss['check']}")
 
-    combined = existing + new_entries
-    own_indices = [i for i, e in enumerate(combined) if e.get("source") == own_source]
-    if len(own_indices) > _CHAIRMAN_MAX_ENTRIES:
-        drop = set(own_indices[: len(own_indices) - _CHAIRMAN_MAX_ENTRIES])
-        combined = [e for i, e in enumerate(combined) if i not in drop]
-
-    with open(_CHAIRMAN_PATH, "w") as f:
-        json.dump(combined, f, indent=2, default=str)
-    logger.info(f"  Updated {_CHAIRMAN_PATH} ({len(combined)} entries)")
+    # This agent had the only correct merge policy (own-entries-only cap +
+    # dedup_key); it now lives in chairman_queue so the other five writers share
+    # it instead of each keeping a copy that drifts.
+    chairman_queue.submit(new_entries, own_source,
+                          path=_CHAIRMAN_PATH,
+                          max_entries=_CHAIRMAN_MAX_ENTRIES)
 
 
 # =============================================================================
