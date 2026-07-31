@@ -3159,6 +3159,59 @@ class TestLabelColumnContract(unittest.TestCase):
                          f"LT_TARGETS names columns that do not exist: {bad}")
 
 
+class TestEveryDecisionCarriesItsOriginator(unittest.TestCase):
+    """Every manager decision must name who originated the pick.
+
+    evaluate_recommendation() computed `rec.get("source_agent", "ReviewAgent")`
+    and then discarded it -- all nine return sites spread `{**rec, ...}`, and a
+    review-agent recommendation has no source_agent of its own. So decisions
+    born on the review path reached manager_decisions.json with no originator:
+    119 BUY decisions in one VM cycle on 2026-07-31. hr_agent.py:328 keys
+    per-agent productivity off that field, so those all counted as "unknown"
+    and the agents whose picks the firm actually bought were indistinguishable
+    from agents that produced nothing.
+    """
+
+    ACCOUNT = {"portfolio_value": 100000, "buying_power": 50000, "n_positions": 5}
+    REVIEW_REC = {"ticker": "ABC", "side": "long", "qty": 10, "avg_entry": 10.0,
+                  "current_price": 11.0, "unrealized_pnl_pct": 10.0,
+                  "hold_days": 3, "weight_pct": 2.0}
+
+    def _decide(self, **overrides):
+        import manager_agent
+        rec = dict(self.REVIEW_REC)
+        rec.update(overrides.pop("rec", {}))
+        return manager_agent.evaluate_recommendation(rec, dict(self.ACCOUNT),
+                                                     **overrides)
+
+    def test_a_review_born_pick_is_attributed_not_blank(self):
+        for action in ("BUY_NEW", "ADD", "SELL", "TRIM", "HOLD", "WATCH"):
+            d = self._decide(rec={"action": action})
+            self.assertTrue(d.get("source_agent"),
+                            f"{action} decision reached the log with no originator")
+
+    def test_a_research_picks_own_agent_is_not_overwritten(self):
+        d = self._decide(rec={"action": "BUY_NEW", "source_agent": "Agent 7"})
+        self.assertEqual(d["source_agent"], "Agent 7")
+
+    def test_the_early_defensive_return_is_attributed_too(self):
+        """The canary path returns before most of the function runs."""
+        d = self._decide(rec={"action": "BUY_NEW"},
+                         canary_alert={"level": "RED", "triggers": ["test"]})
+        self.assertTrue(d.get("source_agent"),
+                        "the defensive-mode early return drops attribution")
+
+    def test_hr_reads_the_field_the_manager_writes(self):
+        """A rename on either side would silently un-attribute the whole firm."""
+        import ast
+        src = (Path(__file__).parent / "hr_agent.py").read_text()
+        consts = {n.value for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+        self.assertIn("source_agent", consts,
+                      "hr_agent no longer reads source_agent -- per-agent "
+                      "productivity is measuring something else now")
+
+
 class TestPerformanceSnapshotProducer(unittest.TestCase):
     """performance_history.json finally has a writer — keep it honest.
 
@@ -4188,6 +4241,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
     suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestEveryDecisionCarriesItsOriginator))
     suite.addTests(loader.loadTestsFromTestCase(TestPerformanceSnapshotProducer))
     suite.addTests(loader.loadTestsFromTestCase(TestLossAttributionMustBeCurrent))
     suite.addTests(loader.loadTestsFromTestCase(TestFICITReachesTheChairman))

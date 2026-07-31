@@ -200,6 +200,15 @@ def evaluate_recommendation(rec: dict, account: dict,
     buying_power    = account["buying_power"]
     n_positions     = account["n_positions"]
     source_agent    = rec.get("source_agent", "ReviewAgent")
+    # Write the resolved value back into rec. Every return below spreads
+    # `{**rec, ...}`, so without this the fallback is computed and thrown away:
+    # a review-agent recommendation carries no source_agent of its own, and the
+    # decision reached manager_decisions.json with no originator at all — 119
+    # BUY decisions in a single VM cycle on 2026-07-31. hr_agent.py:328 keys
+    # per-agent productivity off exactly this field and bucketed all of them as
+    # "unknown", so the agents whose picks the firm actually bought looked
+    # identical to agents that produced nothing.
+    rec["source_agent"] = source_agent
 
     # ── Streak context ─────────────────────────────────────────────────────
     _streak = streak_context or {}
