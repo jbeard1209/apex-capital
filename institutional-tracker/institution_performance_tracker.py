@@ -47,6 +47,28 @@ DB_PATH     = DATA_DIR / "historical_13f.db"
 REPORT_PATH = DATA_DIR / "institution_performance.json"
 
 # ---------------------------------------------------------------------------
+# Sample-size floors
+# ---------------------------------------------------------------------------
+# Every statistic here is an estimate, and an estimate off a handful of
+# observations is noise wearing a number's clothes. Live output on the VM had
+# Two Sigma ranking FIRST by Sharpe on N=9, ahead of AQR on N=7004 — while its
+# conviction_auc printed as a bare "nan". Ranking on that is not a close call.
+#
+# Floors, weakest statistic to strongest:
+MIN_TICKER_N  = 2    # a per-ticker mean (existing behaviour, kept explicit)
+MIN_AUC_N     = 10   # an AUC (existing behaviour, kept explicit)
+MIN_RANKING_N = 30   # ORDERING institutions against each other
+#
+# 30 is the conventional point where the sampling distribution of a mean is
+# near-normal — which is exactly the assumption the mean/std "sharpe_like"
+# ratio leans on, so it is the weakest floor that makes the ranked statistic
+# mean anything. Note it is still generous: SE(Sharpe) ~ sqrt(1/N) is ~0.18 at
+# N=30, wider than the entire observed spread between institutions (0.117-0.270).
+# The floor stops the absurd cases; it does not make thin comparisons rigorous.
+# Institutions below it are still fully REPORTED — they are excluded from the
+# ORDERING, with the reason recorded, never silently dropped.
+
+# ---------------------------------------------------------------------------
 # Logging
 # ---------------------------------------------------------------------------
 LOGS_DIR.mkdir(parents=True, exist_ok=True)
@@ -88,7 +110,7 @@ def _compute_stats(df: pd.DataFrame, label: str) -> dict:
             df.groupby("ticker")["outcome_20d"]
             .agg(["mean", "count"])
             .rename(columns={"mean": "mean_ret", "count": "n"})
-            .query("n >= 2")
+            .query(f"n >= {MIN_TICKER_N}")
             .sort_values("mean_ret", ascending=False)
         )
         best_tickers  = per_ticker.head(3).reset_index().to_dict("records")
@@ -120,7 +142,15 @@ def _add_model_accuracy(stats: dict, df: pd.DataFrame, all_df: pd.DataFrame) -> 
     (the actual ML proba is not stored in pipeline_snapshots, but higher
     conviction_score → higher predicted probability).
     """
-    if len(df) < 10 or "conviction_score" not in df.columns or "outcome_20d" not in df.columns:
+    # An AUC we cannot compute is reported as an explicit reason, never as a
+    # number-shaped blank. `nan` printed into a report reads as a value; it
+    # passes every `is not None` guard and fails every threshold silently
+    # (see the `nan-is-not-none` memory), so it is worse than saying nothing.
+    if len(df) < MIN_AUC_N:
+        stats["conviction_auc_note"] = f"not computed: N={len(df)} < {MIN_AUC_N}"
+        return stats
+    if "conviction_score" not in df.columns or "outcome_20d" not in df.columns:
+        stats["conviction_auc_note"] = "not computed: conviction_score/outcome_20d missing"
         return stats
 
     try:
@@ -128,13 +158,50 @@ def _add_model_accuracy(stats: dict, df: pd.DataFrame, all_df: pd.DataFrame) -> 
         scores   = df["conviction_score"].fillna(0)
         labels   = (df["outcome_20d"] > 0).astype(int)
         if labels.nunique() < 2:
+            stats["conviction_auc_note"] = (
+                "not computed: all outcomes the same sign — AUC undefined")
             return stats
         auc = float(roc_auc_score(labels, scores))
+        if not np.isfinite(auc):
+            stats["conviction_auc_note"] = "not computed: AUC came back non-finite"
+            return stats
         stats["conviction_auc"] = round(auc, 4)
-    except Exception:
-        pass
+    except Exception as exc:
+        stats["conviction_auc_note"] = f"not computed: {type(exc).__name__}"
 
     return stats
+
+
+def _auc_display(stats: dict) -> str:
+    """Render conviction_auc for humans — a reason, never a bare 'nan'."""
+    auc = stats.get("conviction_auc")
+    if auc is None or not np.isfinite(auc):
+        return stats.get("conviction_auc_note", "n/a")
+    return f"{auc:.4f}"
+
+
+def _ranking_eligibility(stats: dict) -> tuple[bool, str]:
+    """May this institution be ORDERED against the others?
+
+    Returns (eligible, reason). The reason is stored on the record so an
+    excluded institution is visibly excluded rather than quietly missing.
+    """
+    n = stats.get("n", 0)
+    if n < MIN_RANKING_N:
+        return False, f"N={n}, below ranking floor of {MIN_RANKING_N}"
+    return True, ""
+
+
+def _sort_key(stats: dict, field: str) -> float:
+    """Descending sort key that sends missing/NaN to the bottom, not the top.
+
+    `-float('nan')` is still NaN, and NaN compares False against everything,
+    so an unguarded key lets a NaN land wherever the sort happens to leave it.
+    """
+    v = stats.get(field)
+    if v is None or not np.isfinite(v):
+        return float("inf")          # ascending sort on the negated value
+    return -float(v)
 
 
 # ---------------------------------------------------------------------------
@@ -211,39 +278,61 @@ def run(lookback_days: int = 365, recent_days: int = 90) -> dict:
             ]
             stats["recent"] = _compute_stats(grp_recent, f"{inst_name} (last {recent_days}d)")
 
+            eligible, reason = _ranking_eligibility(stats)
+            stats["ranking_eligible"] = eligible
+            if not eligible:
+                stats["ranking_exclusion_reason"] = reason
+
             institutions[str(inst_name)] = stats
 
             log.info(
-                "  %-22s  N=%4d  win=%.0f%%  μ=%.3f%%  sharpe=%.3f  conviction_auc=%s",
+                "  %-22s  N=%4d  win=%.0f%%  μ=%.3f%%  sharpe=%.3f  conviction_auc=%s%s",
                 inst_name,
                 stats["n"],
                 stats["win_rate"] * 100,
                 stats["mean_ret_20d"] * 100,
                 stats["sharpe_like"],
-                f"{stats.get('conviction_auc', float('nan')):.4f}",
+                _auc_display(stats),
+                "" if eligible else f"   [UNRANKED — {reason}]",
             )
 
     # ------------------------------------------------------------------
     # 3. Rankings
     # ------------------------------------------------------------------
-    ranked_by_win_rate   = sorted(institutions, key=lambda k: -institutions[k].get("win_rate",   0))
-    ranked_by_sharpe     = sorted(institutions, key=lambda k: -institutions[k].get("sharpe_like", 0))
+    # Only institutions that cleared MIN_RANKING_N may be ordered. Everything
+    # below the floor stays in `institutions` with its full stats and its
+    # exclusion reason — reported, but never ranked.
+    rankable = [k for k in institutions if institutions[k].get("ranking_eligible")]
+    excluded = {k: institutions[k]["ranking_exclusion_reason"]
+                for k in institutions if not institutions[k].get("ranking_eligible")}
+
+    ranked_by_win_rate   = sorted(rankable, key=lambda k: _sort_key(institutions[k], "win_rate"))
+    ranked_by_sharpe     = sorted(rankable, key=lambda k: _sort_key(institutions[k], "sharpe_like"))
     ranked_by_conviction = sorted(
-        [k for k in institutions if "conviction_auc" in institutions[k]],
-        key=lambda k: -institutions[k].get("conviction_auc", 0),
+        [k for k in rankable if np.isfinite(institutions[k].get("conviction_auc") or np.nan)],
+        key=lambda k: _sort_key(institutions[k], "conviction_auc"),
     )
 
     log.info("")
-    log.info("Rankings by win rate:    %s", " > ".join(ranked_by_win_rate[:5]))
-    log.info("Rankings by Sharpe:      %s", " > ".join(ranked_by_sharpe[:5]))
+    log.info("Ranked institutions: %d of %d (floor: N >= %d)",
+             len(rankable), len(institutions), MIN_RANKING_N)
+    log.info("Rankings by win rate:    %s", " > ".join(ranked_by_win_rate[:5]) or "(none)")
+    log.info("Rankings by Sharpe:      %s", " > ".join(ranked_by_sharpe[:5]) or "(none)")
     if ranked_by_conviction:
         log.info("Rankings by conv. AUC:  %s", " > ".join(ranked_by_conviction[:5]))
+    else:
+        log.info("Rankings by conv. AUC:  (none — no ranked institution has a computable AUC)")
+    for name, reason in excluded.items():
+        log.info("  excluded from rankings: %-22s %s", name, reason)
 
     # ── Fable 5 institution read (one call/run) ───────────────────────────
     # The LLM knows these institutions' actual strategies — it can explain
     # WHY a manager's 13F signals work or don't in the current market.
+    # It reads ranked_by_sharpe, so it inherits the floor — asking the model to
+    # explain why a 9-observation manager "leads" would just launder noise into
+    # confident prose. No rankable institutions means nothing worth asking about.
     llm_read = None
-    if institutions:
+    if rankable:
         try:
             from apex_llm import reason as _r, is_available
             if is_available("institution_tracker"):
@@ -274,6 +363,11 @@ def run(lookback_days: int = 365, recent_days: int = 90) -> dict:
         "recent_days":           recent_days,
         "overall":               overall,
         "institutions":          institutions,
+        # Anything consuming a ranking should be able to see the floor it was
+        # built under, and which institutions it left out and why, without
+        # having to re-derive that from the per-institution records.
+        "ranking_floor_n":       MIN_RANKING_N,
+        "ranking_excluded":      excluded,
         "ranking_win_rate":      ranked_by_win_rate,
         "ranking_sharpe":        ranked_by_sharpe,
         "ranking_conviction_auc": ranked_by_conviction,

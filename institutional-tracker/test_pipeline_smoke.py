@@ -3189,6 +3189,116 @@ class TestPIPLifecycleNotDeadlocked(unittest.TestCase):
                          "credit was assigned to an agent that earned nothing")
 
 
+class TestInstitutionRankingFloor(unittest.TestCase):
+    """An institution cannot lead a ranking off a handful of observations.
+
+    Live VM output had Two Sigma ranked FIRST by Sharpe on N=9, ahead of AQR
+    Capital on N=7004, with its conviction_auc printed as a bare "nan". Nothing
+    reads the ranked lists today (dynamic_position_sizer.py takes the `overall`
+    aggregate), so it was misleading report output rather than a live sizing
+    bug — but it is one consumer away from being real.
+    """
+
+    def _run_against(self, rows):
+        """Drive the real run() over a temp DB so the actual ranking code runs."""
+        import sqlite3, tempfile, importlib
+        import institution_performance_tracker as ipt
+
+        td = tempfile.mkdtemp()
+        db = Path(td) / "historical_13f.db"
+        conn = sqlite3.connect(str(db))
+        conn.execute("""CREATE TABLE pipeline_snapshots (
+                            snapshot_date TEXT, institution TEXT, ticker TEXT,
+                            outcome_20d REAL, conviction_score REAL)""")
+        conn.executemany(
+            "INSERT INTO pipeline_snapshots VALUES (?,?,?,?,?)", rows)
+        conn.commit(); conn.close()
+
+        orig_db, orig_report, orig_data = ipt.DB_PATH, ipt.REPORT_PATH, ipt.DATA_DIR
+        try:
+            ipt.DB_PATH     = db
+            ipt.DATA_DIR    = Path(td)
+            ipt.REPORT_PATH = Path(td) / "institution_performance.json"
+            return ipt.run(lookback_days=3650, recent_days=90)
+        finally:
+            ipt.DB_PATH, ipt.REPORT_PATH, ipt.DATA_DIR = orig_db, orig_report, orig_data
+
+    def _rows(self):
+        """Tiny-N institution with the BEST raw Sharpe, vs a large-N one."""
+        import random
+        random.seed(7)
+        rows = []
+        # Tiny: 9 observations, tight and positive -> a huge, meaningless Sharpe
+        # (mean 5%, std ~1.2% => sharpe ~4.3). Spread must clear the std_ret>0.01
+        # guard in _compute_stats, or the ratio floors to 0 and proves nothing.
+        for i, r in enumerate([0.03, 0.04, 0.05, 0.06, 0.07,
+                               0.05, 0.04, 0.06, 0.05]):
+            rows.append((f"2026-0{i%9+1}-01", "Two Sigma", f"T{i}", r, 3.0))
+        # Large: 200 observations, genuinely noisy -> a modest, real Sharpe.
+        for i in range(200):
+            rows.append((f"2026-0{i%9+1}-01", "AQR Capital", f"A{i%40}",
+                         random.gauss(0.01, 0.08), random.uniform(1, 5)))
+        return rows
+
+    def test_tiny_n_institution_cannot_appear_in_any_ranking(self):
+        import institution_performance_tracker as ipt
+        report = self._run_against(self._rows())
+
+        insts = report["institutions"]
+        self.assertIn("Two Sigma", insts, "tiny-N institution was silently dropped "
+                                          "instead of reported-but-unranked")
+        self.assertEqual(insts["Two Sigma"]["n"], 9)
+
+        # It has the best raw Sharpe, so an unfloored ranking WOULD lead with it.
+        self.assertGreater(insts["Two Sigma"]["sharpe_like"],
+                           insts["AQR Capital"]["sharpe_like"],
+                           "test premise broken: tiny-N must out-Sharpe large-N here")
+
+        for name in ("ranking_sharpe", "ranking_win_rate", "ranking_conviction_auc"):
+            self.assertNotIn("Two Sigma", report[name],
+                             f"N=9 institution appears in {name}")
+        self.assertIn("AQR Capital", report["ranking_sharpe"],
+                      "the floor excluded a legitimately large sample")
+
+    def test_exclusion_is_visible_not_silent(self):
+        report = self._run_against(self._rows())
+        self.assertFalse(report["institutions"]["Two Sigma"]["ranking_eligible"])
+        reason = report["institutions"]["Two Sigma"]["ranking_exclusion_reason"]
+        self.assertIn("N=9", reason)
+        self.assertIn("Two Sigma", report["ranking_excluded"])
+        self.assertEqual(report["ranking_floor_n"],
+                         __import__("institution_performance_tracker").MIN_RANKING_N)
+
+    def test_uncomputable_auc_reports_a_reason_not_a_nan(self):
+        """NaN passes every `is not None` guard and fails every threshold."""
+        import math
+        import institution_performance_tracker as ipt
+        report = self._run_against(self._rows())
+
+        ts = report["institutions"]["Two Sigma"]
+        self.assertNotIn("conviction_auc", ts,
+                         "emitted a conviction_auc for a 9-row sample")
+        self.assertIn("conviction_auc_note", ts,
+                      "AUC absent with no explanation — a number-shaped blank")
+        self.assertIn("N=9", ts["conviction_auc_note"])
+
+        # And the human-facing rendering must never be the string "nan".
+        self.assertNotEqual(ipt._auc_display(ts).lower(), "nan")
+        self.assertIn("N=9", ipt._auc_display(ts))
+
+        # No NaN may reach the serialized report at all.
+        def walk(o):
+            if isinstance(o, dict):  return any(walk(v) for v in o.values())
+            if isinstance(o, list):  return any(walk(v) for v in o)
+            return isinstance(o, float) and math.isnan(o)
+        self.assertFalse(walk(report), "a NaN reached the emitted report")
+
+    def test_floor_is_at_least_the_auc_floor(self):
+        """Ordering institutions is a stronger claim than scoring one."""
+        import institution_performance_tracker as ipt
+        self.assertGreaterEqual(ipt.MIN_RANKING_N, ipt.MIN_AUC_N)
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -3217,6 +3327,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
     suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))
+    suite.addTests(loader.loadTestsFromTestCase(TestInstitutionRankingFloor))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)
