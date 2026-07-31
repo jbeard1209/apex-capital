@@ -5,11 +5,16 @@ Claude session. Read it before making changes.
 
 - **Local dev:** `/Users/jackbeard/Claude investment strategy/` (most code under `institutional-tracker/`)
 - **INFRASTRUCTURE.md is the single source of truth for every host/account — read it
-  before assuming where anything runs. Code is NOT live until `bash gcp_setup/ship.sh`.**
+  before assuming where anything runs. Code is NOT live until you deploy — and both
+  scripts live under `institutional-tracker/`, not the repo root, so run them from there:
+  `cd institutional-tracker && bash gcp_setup/deploy.sh`. (Written as `bash gcp_setup/ship.sh`
+  here since the scripts were committed; from the "Local dev" directory two lines above,
+  that path does not exist and the command fails instantly — the same shape as the VM
+  freshness check below, which was documented for a month and could never have run.)**
 - **Cloud (CRITICAL — two hosts run this firm, do not forget the VM):**
   - **GCP VM** `apex-capital-495523` (ssh alias `apex-capital`): ALWAYS-ON second brain with its
     own crontab (~63 jobs incl. main.py 6×/day) trading the SAME Alpaca paper account as the Mac.
-    Its repo does NOT auto-pull — deploy via `gcp_setup/deploy.sh` or it runs stale code (it ran
+    Its repo does NOT auto-pull — deploy via `institutional-tracker/gcp_setup/deploy.sh` or it runs stale code (it ran
     June-3 code for a month → phantom alert emails + divergent trading vs the Mac).
     **The VM is NOT a git checkout** — `deploy.sh` rsyncs with `--exclude=.git/`, so any
     `git log` there fails with "not a git repository". (CLAUDE.md told every session to run

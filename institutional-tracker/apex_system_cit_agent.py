@@ -72,6 +72,25 @@ _EMAIL_LOOP_THRESHOLD   = 3
 _EDGAR_STALE_DAYS       = 30
 _CHAIRMAN_MAX_ENTRIES   = 20
 _KNOWN_GCP_IP           = "34.182.202.196"
+_GCP_METADATA_IP_URL    = ("http://metadata.google.internal/computeMetadata/v1/"
+                           "instance/network-interfaces/0/access-configs/0/external-ip")
+
+def _gcp_instance_external_ip():
+    """This instance's external IP per GCP metadata, or None if not on GCP.
+
+    Returns None rather than raising: "I am not the host that check is about"
+    is a normal outcome, not an error, and the caller skips on it.
+    """
+    try:
+        r = subprocess.run(
+            ["curl", "-s", "--max-time", "5",
+             "-H", "Metadata-Flavor: Google", _GCP_METADATA_IP_URL],
+            capture_output=True, text=True, timeout=10
+        )
+    except Exception:
+        return None
+    return (r.stdout.strip() or None) if r.returncode == 0 else None
+
 
 # -- Critical data files that must exist and be valid JSON --------------------
 _CRITICAL_FILES = [
@@ -498,22 +517,28 @@ def check_improvement_proposals(proposals):
                          "FE watchlist is empty -- add target-priced candidates")
 
     # GCP IP stability check
+    #
+    # Ask GCP's metadata server for THIS instance's external IP. The old check
+    # curl'd ifconfig.me, which answers from any host on the internet, so it
+    # was really asking "what is my IP?" and comparing that to the VM's. Run
+    # anywhere but the VM -- a laptop, most often -- it filed the operator's
+    # home IP as a HIGH "GCP IP changed" alert; two such false alerts reached
+    # the Chairman queue before this was caught. The metadata server is only
+    # routable from inside a GCP instance, which collapses "am I the host this
+    # check is about?" and "what is that host's IP?" into one question.
     try:
-        ip_result = subprocess.run(
-            ["curl", "-s", "--max-time", "5", "http://ifconfig.me"],
-            capture_output=True, text=True, timeout=10
-        )
-        current_ip = ip_result.stdout.strip()
-        logger.info("    External IP: %s (expected %s)", current_ip, _KNOWN_GCP_IP)
-        if current_ip and current_ip != _KNOWN_GCP_IP:
+        current_ip = _gcp_instance_external_ip()
+        if not current_ip:
+            logger.info("    Not on the GCP VM (no metadata server) -- external IP "
+                        "check skipped; only that host can answer it.")
+        elif current_ip != _KNOWN_GCP_IP:
+            logger.info("    External IP: %s (expected %s)", current_ip, _KNOWN_GCP_IP)
             _raise_issue(proposals, "HIGH", "BUG_FIX",
                          "GCP IP changed -- current external IP %s does not match "
                          "expected %s; update all SSH configs and health monitor"
                          % (current_ip, _KNOWN_GCP_IP))
-        elif current_ip == _KNOWN_GCP_IP:
-            logger.info("    GCP IP stable -- OK.")
         else:
-            logger.info("    Could not determine external IP.")
+            logger.info("    GCP IP stable (%s) -- OK.", current_ip)
     except Exception as e:
         logger.warning("    Could not check external IP: %s", e)
 

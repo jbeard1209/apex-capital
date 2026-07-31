@@ -3073,6 +3073,77 @@ class TestLabelColumnContract(unittest.TestCase):
                          f"LT_TARGETS names columns that do not exist: {bad}")
 
 
+class TestHostSpecificChecksStayOnTheirHost(unittest.TestCase):
+    """A check only one host can answer must stay silent on all the others.
+
+    apex_system_cit_agent asked ifconfig.me "what is my external IP?" and
+    compared the answer to the GCP VM's. ifconfig.me answers from anywhere, so
+    on a laptop the check compared the laptop's IP to the VM's, found them
+    different (of course), and filed a HIGH "GCP IP changed -- update all SSH
+    configs" against the Chairman. Two of those reached the queue. The check
+    was never wrong about the VM; it was wrong about which host it was on.
+    """
+
+    def _patched(self, ip):
+        """Run the improvement checks with the host probe forced to `ip`."""
+        import apex_system_cit_agent as A
+        orig = A._gcp_instance_external_ip
+        A._gcp_instance_external_ip = lambda: ip
+        try:
+            proposals = []
+            A.check_improvement_proposals(proposals)
+        finally:
+            A._gcp_instance_external_ip = orig
+        return [p for p in proposals if "GCP IP" in json.dumps(p, default=str)]
+
+    def test_off_gcp_the_ip_check_raises_nothing(self):
+        """The laptop case: no metadata server, so no opinion about the VM."""
+        self.assertEqual(self._patched(None), [],
+                         "a host that cannot see the VM filed a finding about it")
+
+    def test_on_gcp_a_matching_ip_raises_nothing(self):
+        import apex_system_cit_agent as A
+        self.assertEqual(self._patched(A._KNOWN_GCP_IP), [])
+
+    def test_on_gcp_a_drifted_ip_is_still_caught(self):
+        """The guard must not have bought silence by disabling the check."""
+        found = self._patched("203.0.113.7")
+        self.assertEqual(len(found), 1, "real IP drift went unreported")
+        self.assertIn("203.0.113.7", json.dumps(found[0], default=str))
+
+    def test_the_probe_is_the_metadata_server_not_a_public_echo(self):
+        """Regression guard: any 'what is my IP?' service reintroduces the bug.
+
+        Those services answer from every host on the internet, which is
+        precisely what made the check unable to tell the VM from a laptop.
+
+        Scans string *constants* via AST, not raw text — the comment above the
+        check names ifconfig.me to explain the bug, and a guard that cannot
+        tell a URL it calls from a URL it warns about would fail on its own
+        documentation. This asserts what the code uses.
+        """
+        import ast, apex_system_cit_agent as A
+        literals = [n.value for n in ast.walk(ast.parse(Path(A.__file__).read_text()))
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+        blob = "\n".join(literals)
+        for echo in ("ifconfig.me", "ipinfo.io", "icanhazip", "api.ipify.org",
+                     "checkip.amazonaws"):
+            self.assertNotIn(echo, blob,
+                             f"{echo} answers from any host — it cannot identify one")
+        self.assertIn("metadata.google.internal", blob)
+
+    def test_the_probe_returns_none_off_gcp_on_this_machine(self):
+        """Unpatched, on whatever host the suite is running on.
+
+        Passes on both: the Mac cannot resolve the metadata server (None), and
+        on the VM it returns that instance's real external IP.
+        """
+        import apex_system_cit_agent as A
+        ip = A._gcp_instance_external_ip()
+        self.assertTrue(ip is None or ip == A._KNOWN_GCP_IP,
+                        f"metadata probe returned an unexpected value: {ip!r}")
+
+
 class TestWrongfulRetirement(unittest.TestCase):
     """Retirement is the only irreversible thing HR does. It ran unchecked.
 
@@ -3207,15 +3278,28 @@ class TestWrongfulRetirement(unittest.TestCase):
         self.assertEqual(late[0]["severity"], "HIGH", "an overdue review is not MEDIUM")
         self.assertIn("OVERDUE", late[0]["description"])
 
-    def test_the_live_reinstatement_carries_a_review_date(self):
-        """The two agents reinstated for #43 must actually be on the hook."""
+    def test_a_vacated_retirement_is_always_on_the_hook(self):
+        """Invariant: whoever vacates a retirement must set a review date.
+
+        Asserted over whatever THIS host's history holds. hr_history.json is
+        gitignored runtime state and the two hosts carry divergent copies —
+        the Mac has the two #43 reinstatements, the VM has none of them — so
+        the first version of this test, which demanded that a vacated record
+        *exist*, passed here and failed on the VM. That is the same
+        assert-on-a-mutable-artifact mistake as ca61acc, made again.
+        Skip loudly when the host has nothing to check: a visible skip says
+        "I could not look here", which a silent pass does not.
+        """
         import hr_retirement_audit as A
         hist = json.load(open(Path(__file__).parent / "data" / "hr_history.json"))
         vacated = [(cn, ev)
                    for cn, rec in (hist.get("agent_records") or {}).items()
                    for ev in (rec.get("events") or [])
                    if ev.get("event") == "RETIREMENT_VACATED"]
-        self.assertTrue(vacated, "no vacated retirement on record")
+        if not vacated:
+            self.skipTest("no vacated retirement in this host's hr_history.json "
+                          "(%d agent records) — nothing to check here"
+                          % len(hist.get("agent_records") or {}))
         for cn, ev in vacated:
             self.assertTrue(ev.get("monitoring_review_by"),
                             f"{cn} was reinstated with no monitoring review date")
@@ -3583,6 +3667,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
     suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestHostSpecificChecksStayOnTheirHost))
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
     suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))
     suite.addTests(loader.loadTestsFromTestCase(TestInstitutionRankingFloor))
