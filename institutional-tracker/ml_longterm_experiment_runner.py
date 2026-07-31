@@ -308,6 +308,40 @@ def _load_results() -> list[dict]:
 # DATA LOADING
 # =============================================================================
 
+#: The only configurations this runner can actually produce. An unrecognised
+#: value used to fall through the `if feature_set == "LT_FEATURES_DB"` branch
+#: to the full set, so a typo ran the default under the experiment's name and
+#: reported the default's features as if they were the ones requested.
+KNOWN_FEATURE_SETS = ("LT_FEATURES", "LT_FEATURES_DB")
+
+
+def _experiment_config(exp: dict) -> tuple[str, str]:
+    """Resolve a queued experiment to a configuration this runner can execute.
+
+    Returns (feature_set, unrunnable_reason); exactly one is meaningful.
+
+    This runner has ONE lever: which feature set to load. It cannot add a
+    feature, drop one, filter by date, or reweight training — every one of the
+    nine ideas sitting in ml_longterm_suggestions.json asks for exactly those
+    things. Without this gate, bridging those ideas into the queue would run
+    the default config nine times and file nine 'results' under nine
+    hypotheses that were never tested. Refusing is the honest outcome: the
+    experiment is recorded as unrunnable, with the lever it needed named.
+    """
+    fs = exp.get("feature_override")
+    if fs is None:
+        return "", ("no feature_override declared. This runner can only select "
+                    "a feature set (%s); it cannot add/remove features, filter "
+                    "by date, or reweight samples. An experiment that does not "
+                    "declare a configuration this runner can build would be "
+                    "scored against the default config under its own name."
+                    % ", ".join(KNOWN_FEATURE_SETS))
+    if fs not in KNOWN_FEATURE_SETS:
+        return "", ("feature_override=%r is not one of %s"
+                    % (fs, ", ".join(KNOWN_FEATURE_SETS)))
+    return fs, ""
+
+
 def _load_longterm_data(feature_set: str = "LT_FEATURES"):
     """
     Load outcome_252d labeled rows from pipeline_snapshots.
@@ -318,6 +352,12 @@ def _load_longterm_data(feature_set: str = "LT_FEATURES"):
                  "LT_FEATURES_DB" (behavioral signals only, no EDGAR — better
                  when EDGAR coverage is sparse and zero-fills would add noise).
     """
+    if feature_set not in KNOWN_FEATURE_SETS:
+        # Silently defaulting here is how an experiment gets scored against a
+        # configuration it never asked for. Fail loudly instead.
+        raise ValueError("unknown feature_set %r (expected one of %s)"
+                         % (feature_set, ", ".join(KNOWN_FEATURE_SETS)))
+
     if not DB_PATH.exists():
         raise FileNotFoundError(f"Database not found: {DB_PATH}")
 
@@ -465,31 +505,13 @@ def run(force: bool = False) -> None:
             "id":     f"lt-fundamental-retrain-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M')}",
             "title":  "Retrain with rd_regime_bull + insider + earnings_surprise + EDGAR XBRL fundamentals",
             "status": "queued",
+            # declared explicitly — _experiment_config refuses anything that
+            # does not say which configuration it is asking for
+            "feature_override": "LT_FEATURES",
         }]
         logger.info("  --force: injecting synthetic experiment entry")
 
     logger.info(f"Running {len(queue)} long-term experiments")
-
-    # Load data — check if any experiment requests a specific feature set
-    # If multiple experiments are queued, we load data fresh per experiment
-    # (they may request different feature sets). For single-experiment queues,
-    # this is the same as before.
-    first_exp   = queue[0] if queue else {}
-    feature_set = first_exp.get("feature_override", "LT_FEATURES")
-    try:
-        X, y, features_used, tickers = _load_longterm_data(feature_set=feature_set)
-    except Exception as e:
-        logger.error(f"Failed to load long-term data: {e}")
-        return
-
-    n_labeled = len(y)
-    logger.info(f"Loaded {n_labeled} labeled rows, {len(features_used)} features: {features_used}")
-
-    if n_labeled < MIN_LABELED_ROWS:
-        logger.warning(
-            f"Only {n_labeled} labeled rows, minimum is {MIN_LABELED_ROWS} -- skipping experiments"
-        )
-        return
 
     existing_results = _load_results()
     existing_ids     = {r["id"] for r in existing_results}
@@ -500,6 +522,17 @@ def run(force: bool = False) -> None:
         queue_data = []
 
     newly_promoted   = 0
+    # feature_set -> loaded data. The load is deterministic for a given set, so
+    # caching is safe; what is NOT safe is what this used to do, which was load
+    # ONCE using queue[0]'s feature_override and score every later experiment
+    # against it. The comment above that code said "we load data fresh per
+    # experiment" — the code did the opposite, outside the loop. Two queued
+    # experiments requesting LT_FEATURES and LT_FEATURES_DB both ran on the
+    # 18-feature EDGAR set and returned the identical AUC 0.5201, each filed
+    # with `features_used` naming features the second one never saw.
+    data_cache: dict = {}
+    #: config fingerprint -> the experiment id that actually tested it
+    tested_configs: dict = {}
 
     for exp in queue:
         exp_id    = exp.get("id", "unknown")
@@ -510,12 +543,82 @@ def run(force: bool = False) -> None:
             logger.info(f"  Already have results for {exp_id} -- skipping")
             continue
 
+        feature_set, unrunnable = _experiment_config(exp)
+        if unrunnable:
+            logger.warning(f"  UNRUNNABLE {exp_id}: {unrunnable}")
+            existing_results.append({
+                "id": exp_id, "title": exp_title, "run_at": now_str,
+                "unrunnable": True, "reason": unrunnable, "promoted": False,
+            })
+            for entry in queue_data:
+                if entry.get("id") == exp_id:
+                    entry["status"] = "unrunnable"
+                    entry["reason"] = unrunnable
+            continue
+
+        # An experiment is only independent evidence if its configuration
+        # differs. Same config = the same measurement wearing a second name.
+        fingerprint = f"feature_set={feature_set}"
+        if fingerprint in tested_configs:
+            twin = tested_configs[fingerprint]
+            logger.warning(
+                f"  DUPLICATE CONFIG {exp_id}: identical configuration to "
+                f"{twin} ({fingerprint}) — recording as the same measurement, "
+                f"not as a second result.")
+            existing_results.append({
+                "id": exp_id, "title": exp_title, "run_at": now_str,
+                "duplicate_of": twin, "config": fingerprint, "promoted": False,
+            })
+            for entry in queue_data:
+                if entry.get("id") == exp_id:
+                    entry["status"]       = "duplicate_config"
+                    entry["duplicate_of"] = twin
+            continue
+
         try:
+            if feature_set not in data_cache:
+                data_cache[feature_set] = _load_longterm_data(feature_set=feature_set)
+            X, y, features_used, tickers = data_cache[feature_set]
+
+            n_labeled = len(y)
+            logger.info(f"  feature_set={feature_set}: {n_labeled} labeled rows, "
+                        f"{len(features_used)} features")
+
+            if n_labeled < MIN_LABELED_ROWS:
+                logger.warning(
+                    f"  Only {n_labeled} labeled rows, minimum is "
+                    f"{MIN_LABELED_ROWS} -- skipping {exp_id}")
+                existing_results.append({
+                    "id": exp_id, "title": exp_title, "run_at": now_str,
+                    "unrunnable": True, "promoted": False,
+                    "reason": f"only {n_labeled} labeled rows, minimum {MIN_LABELED_ROWS}",
+                })
+                continue
+
+            tested_configs[fingerprint] = exp_id
+
+            # A zero-variance column is a feature in name only — the model
+            # cannot split on it, so "18 features" and "10 features" here are
+            # the same model. On this Mac data/edgar_cache does not exist and
+            # all 8 edgar_* columns load as constant 0 (EDGAR coverage 0/269
+            # tickers); the VM has 84 cached filings and gets real values. Same
+            # code, same command, two different models — and the result record
+            # said "18 features" on both. Report what was actually informative.
+            inert = [f for i, f in enumerate(features_used)
+                     if float(np.std(X[:, i])) == 0.0]
+            if inert:
+                logger.warning(
+                    f"  {len(inert)} of {len(features_used)} features are constant "
+                    f"on this host and cannot affect the model: {inert}")
+
             aucs     = _walk_forward_cv(X, y, n_splits=6)
             mean_auc = float(np.mean(aucs)) if aucs else 0.0
             promoted = mean_auc > PRODUCTION_BASELINE
 
             result = {
+                "n_features_declared":   len(features_used),
+                "n_features_informative": len(features_used) - len(inert),
+                "constant_features":     inert,
                 "id":                exp_id,
                 "title":             exp_title,
                 "run_at":            now_str,
@@ -526,9 +629,14 @@ def run(force: bool = False) -> None:
                 "promotion_threshold": PRODUCTION_BASELINE,
                 "n_folds":           len(aucs),
                 "n_labeled":         n_labeled,
+                "feature_set":       feature_set,
                 "features_used":     features_used,
-                "new_features":      ["rd_regime_bull", "earnings_surprise_flag",
-                                      "insider_buy_dollars", "insider_is_ceo_cfo"] + LT_FEATURES_EDGAR,
+                # derived, not hardcoded: the old literal listed the EDGAR
+                # columns as "new" even on an LT_FEATURES_DB run that loaded
+                # none of them.
+                "new_features":      [f for f in ("rd_regime_bull", "earnings_surprise_flag",
+                                                  "insider_buy_dollars", "insider_is_ceo_cfo")
+                                      + tuple(LT_FEATURES_EDGAR) if f in features_used],
             }
 
             if promoted:
@@ -545,6 +653,10 @@ def run(force: bool = False) -> None:
                     "fold_aucs":       [round(a, 4) for a in aucs],
                     "features":        features_used,
                     "n_features":      len(features_used),
+                    # a model shipped with dead columns must say so, or the
+                    # next reader counts 18 and believes it
+                    "n_features_informative": len(features_used) - len(inert),
+                    "constant_features":      inert,
                     "baseline_auc":    PRODUCTION_BASELINE,
                     "edgar_tickers":   len([t for t in set(tickers)]),
                     "source":          "ml_longterm_experiment_runner v2 (with EDGAR + regime + insider + earnings)",
@@ -571,6 +683,8 @@ def run(force: bool = False) -> None:
                         "fold_aucs":    [round(a, 4) for a in aucs],
                         "features":     features_used,
                         "n_features":   len(features_used),
+                        "n_features_informative": len(features_used) - len(inert),
+                        "constant_features":      inert,
                         "baseline_auc": PRODUCTION_BASELINE,
                         "promoted":     False,
                         "force_saved":  True,

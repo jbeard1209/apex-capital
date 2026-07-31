@@ -2786,6 +2786,117 @@ class TestModelMetricsContract(unittest.TestCase):
             tmp.unlink(missing_ok=True)
 
 
+class TestLTExperimentsAreRealExperiments(unittest.TestCase):
+    """An experiment record must describe the run that actually happened.
+
+    ml_longterm_experiment_runner loaded its data ONCE, outside the loop, using
+    queue[0]'s feature_override, and then scored every other queued experiment
+    against it — under a comment that read "we load data fresh per experiment".
+    Proven live: two experiments requesting LT_FEATURES (18 cols) and
+    LT_FEATURES_DB (10 cols) both ran on the 18-col set and returned an
+    identical 0.5201, the second filed with `features_used` naming columns it
+    never saw.
+
+    That was harmless only because the queue was empty. The nine ideas sitting
+    in ml_longterm_suggestions.json ("add P/B ratio", "train post-2018 only",
+    "weight value 2x") declare no runnable config at all, so bridging them in
+    would have produced nine results for nine hypotheses none of which were
+    tested — manufactured evidence, promoted against a real baseline.
+    """
+
+    def _run_queue(self, entries):
+        import importlib
+        R = importlib.import_module("ml_longterm_experiment_runner")
+        tmp = Path(tempfile.mkdtemp())
+        orig = (R.QUEUE_FILE, R.RESULTS_FILE, R.MODEL_PATH, R.MODEL_META, R.DATA_DIR)
+        try:
+            R.DATA_DIR     = tmp
+            R.QUEUE_FILE   = tmp / "q.json"
+            R.RESULTS_FILE = tmp / "r.json"
+            R.MODEL_PATH   = tmp / "m.pkl"
+            R.MODEL_META   = tmp / "m.json"
+            R.QUEUE_FILE.write_text(json.dumps(entries))
+            R.run()
+            return json.loads(R.RESULTS_FILE.read_text()) if R.RESULTS_FILE.exists() else []
+        finally:
+            (R.QUEUE_FILE, R.RESULTS_FILE, R.MODEL_PATH, R.MODEL_META, R.DATA_DIR) = orig
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_an_undeclared_experiment_is_refused_not_silently_defaulted(self):
+        """The shape of all nine stranded ideas: prose, no runnable config."""
+        import ml_longterm_experiment_runner as R
+        fs, reason = R._experiment_config({"id": "lt_feature_pb_ratio",
+                                           "title": "Add P/B ratio as a feature"})
+        self.assertEqual(fs, "", "an idea with no declared config resolved to a config")
+        self.assertTrue(reason, "refused without saying why")
+        self.assertIn("feature_override", reason)
+
+    def test_an_unknown_feature_set_is_refused_at_both_gates(self):
+        import ml_longterm_experiment_runner as R
+        fs, reason = R._experiment_config({"id": "x", "feature_override": "LT_FEATURS"})
+        self.assertEqual(fs, "", "a typo'd feature set was accepted")
+        self.assertIn("LT_FEATURS", reason)
+        # and the loader itself must not fall through to the default
+        with self.assertRaises(ValueError):
+            R._load_longterm_data(feature_set="LT_FEATURS")
+
+    def test_declared_configs_are_accepted(self):
+        """The guard must not refuse the configs the runner really can build."""
+        import ml_longterm_experiment_runner as R
+        for fs in R.KNOWN_FEATURE_SETS:
+            got, reason = R._experiment_config({"id": "x", "feature_override": fs})
+            self.assertEqual((got, reason), (fs, ""), f"{fs} was wrongly refused")
+
+    def test_each_experiment_is_scored_on_the_data_it_asked_for(self):
+        """The load must be inside the loop, keyed on each experiment's own config."""
+        src = open(Path(__file__).parent / "ml_longterm_experiment_runner.py").read()
+        self.assertNotIn('first_exp.get("feature_override"', src,
+                         "data is still loaded once from queue[0]'s config")
+        i = src.find("for exp in queue:")
+        self.assertGreater(i, 0, "experiment loop not found")
+        body = src[i:]
+        self.assertIn("_load_longterm_data(feature_set=feature_set)", body,
+                      "the per-experiment load is not inside the loop")
+
+    def test_two_experiments_sharing_a_config_are_not_two_results(self):
+        """Same configuration = the same measurement wearing a second name."""
+        results = self._run_queue([
+            {"id": "e1", "title": "first", "status": "queued",
+             "feature_override": "LT_FEATURES_DB"},
+            {"id": "e2", "title": "identical config", "status": "queued",
+             "feature_override": "LT_FEATURES_DB"},
+        ])
+        by_id = {r["id"]: r for r in results}
+        self.assertIn("e1", by_id)
+        self.assertEqual(by_id["e2"].get("duplicate_of"), "e1",
+                         "a duplicate config was filed as independent evidence")
+        self.assertIsNone(by_id["e2"].get("mean_auc"),
+                          "a duplicate config was given its own AUC")
+
+    def test_a_constant_feature_is_not_counted_as_a_feature(self):
+        """18 declared features, 6 informative — the record must say both.
+
+        data/edgar_cache does not exist on this Mac (the VM has 84 filings), so
+        all 8 edgar_* columns load as constant 0. Four MORE are constant in the
+        database itself, on all 383,129 rows: herding_flag, quant_consensus,
+        insider_buy_dollars, insider_is_ceo_cfo. A model that cannot split on a
+        column does not have that feature, whatever the metadata counts.
+        """
+        results = self._run_queue([
+            {"id": "e1", "title": "full", "status": "queued",
+             "feature_override": "LT_FEATURES"},
+        ])
+        r = results[0]
+        self.assertIn("n_features_declared", r)
+        self.assertIn("n_features_informative", r)
+        self.assertLessEqual(r["n_features_informative"], r["n_features_declared"])
+        self.assertEqual(r["n_features_informative"],
+                         r["n_features_declared"] - len(r["constant_features"]))
+        for dead in ("herding_flag", "quant_consensus"):
+            self.assertIn(dead, r["constant_features"],
+                          f"{dead} is constant in the DB but was counted as a live feature")
+
+
 class TestFormatSpecsAreReachable(unittest.TestCase):
     """No f-string may carry a format spec that can never format anything.
 
@@ -3469,6 +3580,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestThesisWatch))
     suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
     suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
