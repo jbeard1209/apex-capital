@@ -2979,6 +2979,216 @@ class TestWrongfulRetirement(unittest.TestCase):
         self.assertEqual(dupes, [], f"duplicate registry records: {dupes}")
 
 
+class TestPIPLifecycleNotDeadlocked(unittest.TestCase):
+    """The zero-pick counter has to survive the cycle that incremented it.
+
+    _update_agent_performance() writes consecutive_zero_cycles onto EVERY agent
+    it reviews, but run() only saved the registry when the review returned a
+    stage EVENT — and a stage event can only happen once a counter is already
+    past a threshold. The counter needed the save; the save needed the counter:
+
+        czc advances -> only if saved -> only if perf_changes non-empty
+                     -> only if czc already >= PERF_NOTICE_CYCLES (8)
+
+    Nothing broke the cycle except an unrelated spawn calling _save_registry()
+    further down and flushing everyone's counters as a side effect. So when the
+    registry passed MAX_REGISTRY_AGENTS and spawning stopped for good, all four
+    PIP stages became unreachable — silently, while the factory kept logging a
+    healthy "Registry full. No new agents needed." every cycle.
+
+    Proven against prod's own 66-agent registry before the fix: four consecutive
+    run()s, in-memory czc=1 every time, 0 of 66 records ever written to disk.
+    The VM's registry had not been touched since 2026-05-28.
+    """
+
+    def _log(self, tmpdir, source_agent, decisions=None):
+        """A manager cycle. Default: one decision that is NOT an approved buy,
+        plus an ATTRIBUTED approval so the interlock stays disengaged and the
+        counter is free to move (that is what these tests are measuring)."""
+        p = os.path.join(tmpdir, "manager_decisions.json")
+        if decisions is None:
+            decisions = [
+                {"source_agent": source_agent,
+                 "manager_decision": "REJECTED", "manager_action": "NONE"},
+                {"source_agent": "SomebodyElse",
+                 "manager_decision": "APPROVED", "manager_action": "BUY"},
+            ]
+        with open(p, "w") as f:
+            json.dump([{"decisions": decisions}], f)
+        return p
+
+    def test_ordinary_review_marks_the_registry_dirty(self):
+        """No stage event, but a counter moved — that still has to be persisted."""
+        import types, tempfile
+        import chief_of_staff_agent as cos
+
+        stub = types.SimpleNamespace(
+            registry={"agents": [{"class_name": "QuietAgent", "status": "active",
+                                  "sector": "Small Cap"}]},
+            _registry_dirty=False)
+
+        with tempfile.TemporaryDirectory() as td:
+            original = cos.MANAGER_LOG
+            try:
+                cos.MANAGER_LOG = self._log(td, "quiet")
+                changed = cos.AgentFactory._update_agent_performance(stub)
+            finally:
+                cos.MANAGER_LOG = original
+
+        agent = stub.registry["agents"][0]
+        self.assertEqual(agent["consecutive_zero_cycles"], 1,
+                         "the review did not increment the counter at all")
+        self.assertEqual(changed, [],
+                         "test premise broken: czc=1 must not trigger a stage event")
+        self.assertTrue(stub._registry_dirty,
+                        "counter advanced in memory but nothing told run() to save it — "
+                        "this is the deadlock: the increment is discarded every cycle")
+
+    def test_run_saves_whenever_the_review_dirtied_the_registry(self):
+        """run() must not gate the save on stage events alone."""
+        src = open(Path(__file__).parent / "chief_of_staff_agent.py").read()
+        i = src.find("perf_changes = self._update_agent_performance()")
+        self.assertGreater(i, 0, "the performance review call site moved")
+        block = src[i:i + 400]
+        self.assertIn("_registry_dirty", block,
+                      "run() saves the registry only on stage events again — "
+                      "counters will freeze at 1 and no agent can ever reach Stage 1")
+
+    def test_counter_advances_across_consecutive_reviews(self):
+        """End to end: save, reload, review again — the counter must climb.
+
+        Uses a fresh last_checked each round to isolate persistence from the
+        once-per-day cap, which has its own test below.
+        """
+        import types, tempfile
+        import chief_of_staff_agent as cos
+
+        with tempfile.TemporaryDirectory() as td:
+            reg_path = os.path.join(td, "agent_registry.json")
+            registry = {"agents": [{"class_name": "QuietAgent", "status": "active",
+                                    "sector": "Small Cap"}]}
+            original = cos.MANAGER_LOG
+            try:
+                cos.MANAGER_LOG = self._log(td, "quiet")
+                for expected in (1, 2, 3):
+                    if os.path.exists(reg_path):
+                        with open(reg_path) as f:
+                            registry = json.load(f)
+                    registry["agents"][0].pop("last_checked", None)   # simulate a new day
+                    stub = types.SimpleNamespace(registry=registry, _registry_dirty=False)
+                    cos.AgentFactory._update_agent_performance(stub)
+                    # Stand-in for run()'s save condition.
+                    if stub._registry_dirty:
+                        with open(reg_path, "w") as f:
+                            json.dump(stub.registry, f)
+                    with open(reg_path) as f:
+                        on_disk = json.load(f)["agents"][0].get("consecutive_zero_cycles")
+                    self.assertEqual(
+                        on_disk, expected,
+                        f"after review {expected} the persisted counter is {on_disk} — "
+                        f"it is not advancing, so no agent can reach any PIP stage")
+            finally:
+                cos.MANAGER_LOG = original
+
+    def test_counter_ticks_at_most_once_per_calendar_day(self):
+        """4 pipeline runs a day must not burn 4 cycles of an agent's runway.
+
+        PERF_* thresholds are documented as "R&D cycles, each ~4 days" — Stage 4
+        at 30 cycles is meant to be ~120 days of runway. This review runs once
+        per main.py invocation, 4x per weekday on the VM, so an uncapped counter
+        turned that 120-day runway into about 8 trading days.
+        """
+        import types, tempfile
+        import chief_of_staff_agent as cos
+
+        agent = {"class_name": "QuietAgent", "status": "active", "sector": "Small Cap"}
+        stub  = types.SimpleNamespace(registry={"agents": [agent]}, _registry_dirty=False)
+
+        with tempfile.TemporaryDirectory() as td:
+            original = cos.MANAGER_LOG
+            try:
+                cos.MANAGER_LOG = self._log(td, "quiet")
+                for _ in range(4):                     # one trading day of pipeline runs
+                    cos.AgentFactory._update_agent_performance(stub)
+            finally:
+                cos.MANAGER_LOG = original
+
+        self.assertEqual(
+            agent["consecutive_zero_cycles"], 1,
+            f"4 runs in one day advanced the counter to "
+            f"{agent['consecutive_zero_cycles']} — an agent burns its entire "
+            f"runway {agent['consecutive_zero_cycles']}x too fast")
+
+    def test_no_attributed_approvals_exonerates_everyone(self):
+        """If nothing approved names an agent, nobody could have scored.
+
+        Prod's manager log, 50 cycles: 5,982 approved buys, none carrying a
+        source_agent, and all 4,210 attributed decisions REJECTED/HOLD. Every
+        agent's `hits` was structurally 0. Advancing counters on that evidence
+        penalises 66 agents for a broken attribution pipeline — and with the
+        registry-save fixed, marches all of them to Stage 4 with recovery
+        impossible.
+        """
+        import types, tempfile
+        import chief_of_staff_agent as cos
+
+        # Exactly prod's shape: approvals with no source_agent, attributed rejects.
+        unattributed = [
+            {"ticker": "LQD", "manager_decision": "APPROVED", "manager_action": "BUY"},
+            {"ticker": "XYZ", "source_agent": "Agent quiet",
+             "manager_decision": "REJECTED", "manager_action": "HOLD"},
+        ]
+        agent = {"class_name": "QuietAgent", "status": "active", "sector": "Small Cap"}
+        stub  = types.SimpleNamespace(registry={"agents": [agent]}, _registry_dirty=False)
+
+        with tempfile.TemporaryDirectory() as td:
+            original = cos.MANAGER_LOG
+            try:
+                cos.MANAGER_LOG = self._log(td, "quiet", decisions=unattributed)
+                cos.AgentFactory._update_agent_performance(stub)
+            finally:
+                cos.MANAGER_LOG = original
+
+        self.assertEqual(
+            agent.get("consecutive_zero_cycles"), 0,
+            "counter advanced in a cycle where no approval was attributable to "
+            "anyone — the whole firm gets penalised for an attribution outage")
+        self.assertEqual(agent.get("exoneration_count"), 1,
+                         "exoneration not recorded, so the pause is invisible")
+
+    def test_unattributed_approval_credits_nobody(self):
+        """An approval with no source_agent must not be bucketed as a hit.
+
+        It used to land under the literal key "unknown", which any agent whose
+        derived key was a substring of it would have matched.
+        """
+        import types, tempfile
+        import chief_of_staff_agent as cos
+
+        decisions = [
+            {"ticker": "LQD", "manager_decision": "APPROVED", "manager_action": "BUY"},
+            {"ticker": "ABC", "source_agent": "Agent real", "manager_decision": "APPROVED",
+             "manager_action": "BUY"},          # keeps the interlock disengaged
+        ]
+        # "unknown" contains "know", "now", "nkn"... any of these as a class key
+        # would previously have scored a free hit off the unattributed bucket.
+        agent = {"class_name": "NowAgent", "status": "active",
+                 "sector": "Small Cap", "consecutive_zero_cycles": 5}
+        stub  = types.SimpleNamespace(registry={"agents": [agent]}, _registry_dirty=False)
+
+        with tempfile.TemporaryDirectory() as td:
+            original = cos.MANAGER_LOG
+            try:
+                cos.MANAGER_LOG = self._log(td, "now", decisions=decisions)
+                cos.AgentFactory._update_agent_performance(stub)
+            finally:
+                cos.MANAGER_LOG = original
+
+        self.assertEqual(agent["consecutive_zero_cycles"], 6,
+                         "an unattributed approval reset an agent's counter — "
+                         "credit was assigned to an agent that earned nothing")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -3006,6 +3216,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
+    suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

@@ -98,9 +98,17 @@ PERF_PIP_CYCLES          = 14    # Stage 2 (new): formal PIP — intensified sup
 PERF_REASSIGN_CYCLES     = 20    # Stage 3: role reassignment to different sector
 PERF_REPLACE_CYCLES      = 30    # Stage 4: spawn fresh top-level replacement; agent retires
 # (cycles here = R&D cycles, each ~4 days → Stage 4 ≈ 120 days of runway)
+# The counter is capped at one tick per calendar day in _update_agent_performance();
+# without that cap this review ran once per main.py invocation (4x/weekday on the VM)
+# and the 120-day runway above collapsed to roughly 8 trading days.
 # CRO-block exoneration: if CRO is HIGH or CRITICAL, skip czc increment for that cycle
 # (agents should not be penalized for system-wide buy blocks)
 EXONERATE_WHEN_CRO_HIGH  = True
+# Attribution interlock: if NO approved decision in a cycle carries a source_agent,
+# no agent could have been credited, so nobody's counter advances. Prevents the
+# lifecycle from penalising the whole firm for a broken attribution pipeline —
+# which is the state prod has actually been in (see the interlock block below).
+ATTRIBUTION_INTERLOCK    = True
 
 
 # =============================================================================
@@ -1431,6 +1439,10 @@ class AgentFactory:
         os.makedirs(AGENTS_DIR, exist_ok=True)
         os.makedirs("data", exist_ok=True)
         self.registry = self._load_registry()
+        # Set by _update_agent_performance() whenever it mutates an agent record.
+        # Initialised here so callers that invoke the review directly (tests, the
+        # HR tooling) don't depend on run() having set it up first.
+        self._registry_dirty = False
 
     def _load_registry(self) -> dict:
         if os.path.exists(AGENT_REGISTRY):
@@ -1672,13 +1684,22 @@ class AgentFactory:
             latest    = history[-1] if isinstance(history, list) else history
             decisions = latest.get("decisions", [])
 
-            # Count approved picks per source agent this cycle
+            # Count approved picks per source agent this cycle.
+            # Unattributed approvals are dropped, not bucketed under "unknown":
+            # an approval that names no agent credits no agent. Bucketing them
+            # also made "unknown" a live key that any agent whose derived key
+            # happened to be a substring of it would have scored a hit against.
             approved_by_agent: dict[str, int] = {}
+            attributed_approvals = 0
             for d in decisions:
-                sa = d.get("source_agent", "unknown")
-                if (d.get("manager_decision") == "APPROVED" and
+                if not (d.get("manager_decision") == "APPROVED" and
                         d.get("manager_action") not in ("HOLD", "WATCH")):
-                    approved_by_agent[sa] = approved_by_agent.get(sa, 0) + 1
+                    continue
+                sa = (d.get("source_agent") or "").strip()
+                if not sa:
+                    continue
+                attributed_approvals += 1
+                approved_by_agent[sa] = approved_by_agent.get(sa, 0) + 1
 
             today = datetime.now().strftime("%Y-%m-%d")
 
@@ -1705,6 +1726,42 @@ class AgentFactory:
                 except Exception:
                     pass
 
+            # ── Attribution interlock ──────────────────────────────────────────
+            # The counter only resets when an agent is CREDITED with an approved
+            # buy. If no approved decision in this cycle carries a source_agent
+            # at all, then the recovery channel is dead — not "everyone
+            # underperformed", but "nobody could have scored regardless of what
+            # they produced". Penalising agents on that evidence is the same
+            # unfairness the CRO exoneration above exists to prevent, so it gets
+            # the same treatment.
+            #
+            # This is not hypothetical. Measured on prod's own manager log,
+            # 50 cycles / 10,192 decisions: 5,982 approved buys, ZERO carrying a
+            # source_agent (they come from the ETF/credit and position-management
+            # paths, which never had one), and all 4,210 attributed decisions were
+            # REJECTED/HOLD. So `hits` was 0 for all 66 agents in every cycle —
+            # structurally, not because the agents were bad.
+            #
+            # That interacts lethally with the deadlock fix in run(). While the
+            # counter could never be saved, none of this mattered. Un-deadlocking
+            # it without this interlock would have marched all 66 agents monotonically
+            # to Stage 4 retirement — with recovery impossible — at 4 pipeline runs
+            # per weekday, i.e. the whole firm retired inside ~8 trading days, for a
+            # reason none of them caused. The deadlock was the only thing preventing it.
+            #
+            # Self-releasing: the moment attributed approvals appear, the lifecycle
+            # resumes on its own. No flag to remember to flip back.
+            attribution_dead = False
+            if ATTRIBUTION_INTERLOCK and attributed_approvals == 0:
+                attribution_dead = True
+                logger.warning(
+                    f"  [AgentFactory] ATTRIBUTION INTERLOCK — {len(decisions)} decision(s) "
+                    f"this cycle, none of the approved ones carry a source_agent. No agent "
+                    f"could be credited, so zero-cycle counters will NOT increment "
+                    f"(all agents exonerated). The PIP lifecycle is paused until "
+                    f"manager approvals carry attribution again."
+                )
+
             for agent in self.registry["agents"]:
                 cn         = agent["class_name"]
                 old_status = agent.get("status", "active")
@@ -1723,6 +1780,7 @@ class AgentFactory:
                 agent_key = cn.lower().replace("agent", "").strip("_")
                 hits      = sum(v for k, v in approved_by_agent.items()
                                 if agent_key in k.lower())
+                counted_today = agent.get("last_checked") == today
 
                 if hits > 0:
                     # Recovery — reset everything
@@ -1742,16 +1800,41 @@ class AgentFactory:
                             "new_status": "active", "consecutive_zero_cycles": 0,
                             "event": "recovery",
                         })
-                elif cro_blocking_all:
-                    # CRO exoneration — do not increment czc; agent is not at fault
+                elif cro_blocking_all or attribution_dead:
+                    # Exonerated — do not increment czc; the agent is not at fault.
+                    # Either all buys were blocked system-wide (CRO), or no approval
+                    # this cycle was attributable to anyone (interlock above).
                     czc = agent.get("consecutive_zero_cycles", 0)
-                    agent.setdefault("exoneration_count",  0)
-                    agent["exoneration_count"] += 1
+                    if not counted_today:
+                        agent.setdefault("exoneration_count",  0)
+                        agent["exoneration_count"] += 1
+                        if attribution_dead:
+                            agent["last_exoneration_reason"] = "unattributed_approvals"
+                elif counted_today:
+                    # Already counted today. The thresholds are documented as
+                    # "R&D cycles, each ~4 days" (Stage 4 ≈ 120 days of runway),
+                    # but this review runs on every AgentFactory().run() — i.e.
+                    # once per main.py invocation, 4x per weekday on the VM. Left
+                    # uncapped, an agent burned 4 cycles a day and Stage 4's
+                    # 120-day runway collapsed to ~8 trading days.
+                    #
+                    # `last_checked` was already being written here every cycle and
+                    # read by nobody; this makes it load-bearing. One tick per
+                    # calendar day is the smallest unit that can be defended from
+                    # the code's own stated intent. NOTE it is still ~4x faster
+                    # than the "~4 days per cycle" the comment at PERF_* claims —
+                    # closing that last gap means retuning the thresholds, which
+                    # were set by Chairman direction 2026-06-09 and are his call.
+                    czc = agent.get("consecutive_zero_cycles", 0)
                 else:
                     czc = agent.get("consecutive_zero_cycles", 0) + 1
 
                 agent["consecutive_zero_cycles"] = czc
                 agent["last_checked"]            = today
+                # The review just mutated this agent whether or not it crossed a
+                # stage boundary. run() must know that, or the increment is
+                # thrown away — see the deadlock note at the `perf_changes` call.
+                self._registry_dirty = True
 
                 # ── Stage 4: Dignified Replacement ────────────────────────
                 if czc >= PERF_REPLACE_CYCLES and old_status == "reassigned":
@@ -1944,8 +2027,31 @@ class AgentFactory:
         (Chairman directive: only the most talented agents are spawned).
         """
         # ── Agent performance review ───────────────────────────────────────
+        # _update_agent_performance() writes consecutive_zero_cycles and
+        # last_checked onto EVERY agent it reviews, not only the ones that cross
+        # a stage boundary — so the save cannot be conditional on stage events.
+        # It was, and that deadlocked the entire PIP lifecycle:
+        #
+        #   a counter needs a save to advance
+        #     -> the save required perf_changes to be non-empty
+        #       -> perf_changes only fills once a counter is already past a
+        #          stage threshold
+        #         -> which it can never reach, because it is never saved.
+        #
+        # The one thing that ever broke the cycle was an unrelated spawn hitting
+        # _save_registry() further down and persisting everyone's counters as a
+        # side effect. So the moment the registry passed MAX_REGISTRY_AGENTS and
+        # spawning stopped for good, every zero-pick counter froze and Stages 1-4
+        # became unreachable — quietly, with the factory still logging a healthy
+        # "Registry full. No new agents needed." every cycle.
+        #
+        # Verified against prod's own registry and manager log before changing
+        # anything: four consecutive run()s, in-memory czc=1 every single time,
+        # 0 of 66 records ever written to disk. The VM's registry had not been
+        # touched since 2026-05-28.
+        self._registry_dirty = False
         perf_changes = self._update_agent_performance()
-        if perf_changes:
+        if perf_changes or self._registry_dirty:
             self._save_registry()
 
         # Retired agents free their slots.  Count only non-retired agents.
