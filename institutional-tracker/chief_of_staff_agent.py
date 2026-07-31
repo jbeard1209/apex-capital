@@ -1511,6 +1511,30 @@ class AgentFactory:
             f.write("\n".join(lines) + "\n")
         return fpath
 
+    def _genuine_replacement_exists(self, class_name: str, sector: str) -> bool:
+        """Is there a DIFFERENT catalog specialist that could take this sector?
+
+        Retirement is only meaningful if somebody else can do the job. The
+        replacement search in _spawn_replacements() looks for a catalog entry
+        whose sector matches and whose class_name is not currently active -- and
+        the agent being retired satisfies both, because retiring it is what
+        makes it inactive. So it re-spawns itself: same class_name, same file,
+        same sector, same ETF, same tier, consecutive_zero_cycles back to 0.
+
+        AGENT_CATALOG currently holds 31 entries across 31 distinct sectors, so
+        this returns False for every agent in the firm -- i.e. no retirement in
+        this system has ever replaced anyone. That is the point of checking.
+        """
+        return any(
+            s.get("sector") == sector
+            and s.get("class_name") != class_name
+            and not s.get("permanent")
+            and not any(a.get("class_name") == s.get("class_name")
+                        and a.get("status") != "retired"
+                        for a in self.registry["agents"])
+            for s in AGENT_CATALOG
+        )
+
     def _spawn_agent(self, spec: dict) -> dict:
         """Write file, register, return registry entry."""
         fpath = self._write_agent_file(spec)
@@ -1731,7 +1755,38 @@ class AgentFactory:
 
                 # ── Stage 4: Dignified Replacement ────────────────────────
                 if czc >= PERF_REPLACE_CYCLES and old_status == "reassigned":
-                    if is_permanent:
+                    if not self._genuine_replacement_exists(cn, agent.get("sector", "")):
+                        # Retiring here would spawn this agent's own catalog entry
+                        # straight back (the replacement search accepts any entry
+                        # for the sector "not already active", and a just-retired
+                        # agent qualifies BECAUSE it is retired). Same class, same
+                        # file, same sector -- the only thing that actually changes
+                        # is that consecutive_zero_cycles goes back to 0. That is a
+                        # counter reset wearing the costume of accountability, and
+                        # it is what happened to SmallCapGrowthAgent and
+                        # BiotechResearchAgent on 2026-05-14.
+                        logger.warning(
+                            f"  [AgentFactory] {cn}: Stage 4 threshold reached but the "
+                            f"catalog has no OTHER specialist for sector "
+                            f"'{agent.get('sector')}' — retiring would respawn an "
+                            f"identical agent. Retirement blocked; escalating instead."
+                        )
+                        agent["consecutive_zero_cycles"] = PERF_REASSIGN_CYCLES
+                        agent["retirement_blocked_at"]   = today
+                        agent["retirement_blocked_reason"] = (
+                            "No alternative specialist exists in AGENT_CATALOG for "
+                            "sector '%s'. Retirement would replace this agent with a "
+                            "copy of itself, which changes nothing except the "
+                            "zero-pick counter." % agent.get("sector")
+                        )
+                        changed.append({
+                            "class_name": cn, "old_status": old_status,
+                            "new_status": old_status,
+                            "consecutive_zero_cycles": PERF_REASSIGN_CYCLES,
+                            "event": "retirement_blocked_no_real_replacement",
+                            "needs_chairman": True,
+                        })
+                    elif is_permanent:
                         # Permanent agents cannot be retired without explicit
                         # Co-Chairman authorisation. Extend runway indefinitely
                         # and log for Co-Chairman awareness only.
@@ -1935,10 +1990,18 @@ class AgentFactory:
             if not retired_entry:
                 continue
             retired_sector = retired_entry.get("sector", "")
-            # Find best catalog match for the same sector that isn't already active
+            # Find best catalog match for the same sector that isn't already
+            # active -- and that is NOT the agent we just retired. Without that
+            # last clause the retired agent's own catalog entry matches (it is
+            # inactive precisely because we retired it) and gets respawned as
+            # its own "fresh specialist": identical class, file, sector and ETF,
+            # with the zero-pick counter back at 0. Stage 4 now refuses to
+            # retire when this is the only candidate, so reaching here with no
+            # `best` should be impossible; the guard stays as a second line.
             best = next(
                 (s for s in AGENT_CATALOG
                  if s["sector"] == retired_sector
+                 and s["class_name"] != ch["class_name"]
                  and not any(
                      a["class_name"] == s["class_name"]
                      and a.get("status") != "retired"
@@ -1947,6 +2010,12 @@ class AgentFactory:
                  and not s.get("permanent")),
                 None,
             )
+            if not best:
+                logger.warning(
+                    f"  [AgentFactory] No genuine replacement for retired "
+                    f"{ch['class_name']} in sector '{retired_sector}' — sector is "
+                    f"now uncovered. NOT respawning an identical agent."
+                )
             if best:
                 logger.info(
                     f"  [AgentFactory] Queuing replacement for retired {ch['class_name']} "

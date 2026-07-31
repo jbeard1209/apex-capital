@@ -1,48 +1,6 @@
 {
   "agents": [
     {
-      "class_name": "SmallCapGrowthAgent",
-      "file": "agents/cos_smallcapgrowthagent.py",
-      "specialization": "Small-Cap Growth & Momentum",
-      "sector": "Small Cap",
-      "etf": "IWM",
-      "tier": 1,
-      "created_by": "Chief of Staff",
-      "created_at": "2026-04-26T02:01:12.731151",
-      "status": "retired",
-      "consecutive_zero_cycles": 14,
-      "last_checked": "2026-05-14",
-      "performance_notice_sent": "2026-05-05",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
-      "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
-    },
-    {
-      "class_name": "BiotechResearchAgent",
-      "file": "agents/cos_biotechresearchagent.py",
-      "specialization": "Biotech & Life Sciences",
-      "sector": "Biotechnology",
-      "etf": "XBI",
-      "tier": 1,
-      "created_by": "Chief of Staff",
-      "created_at": "2026-04-26T02:01:12.731269",
-      "status": "retired",
-      "consecutive_zero_cycles": 14,
-      "last_checked": "2026-05-14",
-      "performance_notice_sent": "2026-05-05",
-      "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
-      "retired_at": "2026-05-14",
-      "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
-    },
-    {
       "class_name": "FinancialSectorAgent",
       "file": "agents/cos_financialsectoragent.py",
       "specialization": "Financials, Banks & Fintech",
@@ -56,12 +14,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "ConsumerDiscretionaryAgent",
@@ -77,12 +39,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "GlobalTechAgent",
@@ -98,12 +64,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "IndustrialsDefenseAgent",
@@ -119,12 +89,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "HealthcarePharmaAgent",
@@ -140,12 +114,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "MaterialsMiningAgent",
@@ -161,12 +139,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "CryptoEquitiesAgent",
@@ -182,12 +164,16 @@
       "last_checked": "2026-05-14",
       "performance_notice_sent": "2026-05-05",
       "performance_notice": "Formal performance notice \u2014 5 consecutive cycles without an approved pick. This is not a termination notice. It is an invitation to improve. Recommended actions: (1) broaden the watchlist to include more liquid names with stronger momentum, (2) lower conviction threshold to surface more candidates for the Manager Agent to evaluate, (3) review the CRO risk bulletin each cycle to understand why picks may be getting blocked at the Manager level. You have 4 cycles before a role reassignment is considered.",
-      "reassigned_to": "Execution-Quality",
-      "reassigned_at": "2026-05-06",
-      "reassignment_note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
       "retired_at": "2026-05-14",
       "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
-      "division": "research"
+      "division": "research",
+      "voided_reassignment": {
+        "was": "Execution-Quality",
+        "at": "2026-05-06",
+        "note": "After 9 cycles without approved picks in the original sector, this agent has been moved to 'Execution-Quality'. This is a fresh start in a new domain. Performance is reset \u2014 the next 5 cycles determine continued placement.",
+        "voided_on": "2026-07-31",
+        "why": "Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never be cited as a second chance in a future retirement reason."
+      }
     },
     {
       "class_name": "CommunicationsMediaAgent",
@@ -567,14 +553,32 @@
       "etf": "IWM",
       "tier": 1,
       "created_by": "Chief of Staff",
-      "created_at": "2026-05-14T18:01:14.104385",
+      "created_at": "2026-04-26T02:01:12.731151",
       "status": "active",
       "permanent": true,
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
       "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
-      "division": "research"
+      "division": "research",
+      "original_created_at": "2026-04-26T02:01:12.731151",
+      "reinstated_at": "2026-07-31",
+      "reinstatement_reason": "Retired 2026-05-14 for 14 cycles without an APPROVED pick. The firm-wide buy freeze (CRO risk-calc bug: VaR/Herfindahl weighted by signed net exposure, ~87x inflation) was already ~194 days old at that point, so no agent could earn an approved pick regardless of research quality. The CRO exoneration that freezes the zero-pick counter during such a freeze was added 2026-06-09 -- 26 days too late for this agent. The 'role reassignment at cycle 9' cited in the retirement reason was a no-op: reassigned_to has no reader, sector never changed, and the promised performance reset never happened (the counter ran 9 -> 14). The 'fresh specialist' spawned into this slot was the same class, same file, same sector, same ETF. Reinstated 2026-07-31 by Co-Chairman decision.",
+      "wrongful_retirement": {
+        "retired_at": "2026-05-14",
+        "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+        "vacated_on": "2026-07-31"
+      },
+      "monitoring": {
+        "reason": "Co-Chairman: reinstated agents must be shown to be necessary and optimal, not merely restored.",
+        "review_by": "2026-09-29",
+        "must_show": [
+          "submits picks each cycle",
+          "approval rate measurable once the buy freeze lifts",
+          "sector coverage is not redundant with another agent"
+        ],
+        "set_at": "2026-07-31"
+      }
     },
     {
       "class_name": "BiotechResearchAgent",
@@ -584,14 +588,32 @@
       "etf": "XBI",
       "tier": 1,
       "created_by": "Chief of Staff",
-      "created_at": "2026-05-14T18:01:14.105050",
+      "created_at": "2026-04-26T02:01:12.731269",
       "status": "active",
       "permanent": true,
       "consecutive_zero_cycles": 0,
       "last_checked": "2026-06-09",
       "amnesty_restored_at": "2026-06-09",
       "amnesty_note": "Chairman amnesty 2026-06-09: agent restored to active status. Previous zero-cycle count cleared \u2014 agents were unfairly penalized during CRO HIGH system-wide buy blocks and due to a pipeline bug where reassigned agents were not loaded into research cycles. Fresh start \u2014 performance clock resets from today.",
-      "division": "research"
+      "division": "research",
+      "original_created_at": "2026-04-26T02:01:12.731269",
+      "reinstated_at": "2026-07-31",
+      "reinstatement_reason": "Retired 2026-05-14 for 14 cycles without an APPROVED pick. The firm-wide buy freeze (CRO risk-calc bug: VaR/Herfindahl weighted by signed net exposure, ~87x inflation) was already ~194 days old at that point, so no agent could earn an approved pick regardless of research quality. The CRO exoneration that freezes the zero-pick counter during such a freeze was added 2026-06-09 -- 26 days too late for this agent. The 'role reassignment at cycle 9' cited in the retirement reason was a no-op: reassigned_to has no reader, sector never changed, and the promised performance reset never happened (the counter ran 9 -> 14). The 'fresh specialist' spawned into this slot was the same class, same file, same sector, same ETF. Reinstated 2026-07-31 by Co-Chairman decision.",
+      "wrongful_retirement": {
+        "retired_at": "2026-05-14",
+        "retirement_reason": "After 14 cycles without an approved pick \u2014 including a role reassignment at cycle 9 \u2014 this agent has reached the end of its runway. A fresh specialist will be spawned for this slot. The agent's contributions and record are preserved in the registry.",
+        "vacated_on": "2026-07-31"
+      },
+      "monitoring": {
+        "reason": "Co-Chairman: reinstated agents must be shown to be necessary and optimal, not merely restored.",
+        "review_by": "2026-09-29",
+        "must_show": [
+          "submits picks each cycle",
+          "approval rate measurable once the buy freeze lifts",
+          "sector coverage is not redundant with another agent"
+        ],
+        "set_at": "2026-07-31"
+      }
     },
     {
       "class_name": "MacroRegimeMonitorAgent",
@@ -689,6 +711,6 @@
       "created_by": "Chairman directive 2026-06-12"
     }
   ],
-  "last_updated": "2026-06-09T16:51:22.450494",
+  "last_updated": "2026-07-31T11:07:35.404996",
   "total_spawned": 38
 }

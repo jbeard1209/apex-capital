@@ -24,6 +24,7 @@ import sqlite3
 import tempfile
 import shutil
 import unittest
+from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
@@ -2888,6 +2889,96 @@ class TestLabelColumnContract(unittest.TestCase):
                          f"LT_TARGETS names columns that do not exist: {bad}")
 
 
+class TestWrongfulRetirement(unittest.TestCase):
+    """Retirement is the only irreversible thing HR does. It ran unchecked.
+
+    Two agents were retired 2026-05-14 for zero APPROVED picks during a
+    firm-wide buy freeze they neither caused nor could end, cited a role
+    reassignment that moved nothing as their second chance, and were 'replaced'
+    by a respawn of their own catalog entry.
+    """
+
+    def _stub(self, agents):
+        import types
+        return types.SimpleNamespace(registry={"agents": agents})
+
+    def test_retirement_blocked_when_replacement_would_be_a_clone(self):
+        """One specialist per sector means retiring only resets the counter."""
+        import chief_of_staff_agent as cos
+        stub = self._stub([{"class_name": "OnlyOne", "status": "retired"}])
+        original = cos.AGENT_CATALOG
+        try:
+            cos.AGENT_CATALOG = [{"class_name": "OnlyOne", "sector": "Small Cap", "tier": 1}]
+            self.assertFalse(
+                cos.AgentFactory._genuine_replacement_exists(stub, "OnlyOne", "Small Cap"),
+                "an agent must not count as its own replacement")
+
+            cos.AGENT_CATALOG = [
+                {"class_name": "OnlyOne", "sector": "Small Cap", "tier": 1},
+                {"class_name": "AnotherOne", "sector": "Small Cap", "tier": 2},
+            ]
+            self.assertTrue(
+                cos.AgentFactory._genuine_replacement_exists(stub, "OnlyOne", "Small Cap"),
+                "a genuinely different specialist for the sector IS a replacement")
+        finally:
+            cos.AGENT_CATALOG = original
+
+    def test_every_catalog_sector_is_checked_before_retiring(self):
+        """Stage 4 must consult _genuine_replacement_exists, not retire blind."""
+        src = open(Path(__file__).parent / "chief_of_staff_agent.py").read()
+        stage4 = src.split("Stage 4: Dignified Replacement", 1)
+        self.assertEqual(len(stage4), 2, "Stage 4 block not found")
+        head = stage4[1][:1200]
+        self.assertIn("_genuine_replacement_exists", head,
+                      "Stage 4 retires without checking a real replacement exists")
+
+    def test_replacement_search_excludes_the_agent_being_replaced(self):
+        """Belt to the Stage 4 brace: the search must skip its own class_name."""
+        src = open(Path(__file__).parent / "chief_of_staff_agent.py").read()
+        i = src.find("Find best catalog match for the same sector")
+        self.assertGreater(i, 0, "replacement search not found")
+        block = src[i:i + 900]
+        self.assertIn('s["class_name"] != ch["class_name"]', block,
+                      "replacement search can still respawn the retired agent itself")
+
+    def test_audit_catches_every_wrongful_retirement_shape(self):
+        import hr_retirement_audit as A
+        registry = {"agents": [
+            # retired original + identical clone, reassigned nowhere
+            {"class_name": "Ghost", "status": "retired", "file": "agents/ghost.py",
+             "sector": "Small Cap", "reassigned_to": "Execution-Quality",
+             "reassigned_at": "2026-05-06", "retired_at": "2026-05-14"},
+            {"class_name": "Ghost", "status": "active", "file": "agents/ghost.py",
+             "sector": "Small Cap"},
+        ]}
+        memo = {"buys_blocked": True, "cro_level": "LOW",
+                "generated_at": datetime.now().isoformat()}
+        checks = {f["check"] for f in A.audit(registry=registry, memo=memo, catalog={})}
+        for expected in ("DUPLICATE_RECORDS", "CLONE_REPLACEMENT",
+                         "FIRED_DURING_BLOCK", "HOLLOW_SECOND_CHANCE"):
+            self.assertIn(expected, checks, f"audit missed {expected}")
+
+    def test_audit_refuses_to_judge_on_stale_risk_evidence(self):
+        """A May retirement must not be graded against July's risk posture."""
+        import hr_retirement_audit as A
+        registry = {"agents": [{"class_name": "Ghost", "status": "retired",
+                                "file": "agents/ghost.py", "sector": "Small Cap"}]}
+        stale = {"buys_blocked": True, "cro_level": "HIGH",
+                 "generated_at": (datetime.now() - timedelta(days=45)).isoformat()}
+        checks = {f["check"] for f in A.audit(registry=registry, memo=stale, catalog={})}
+        self.assertIn("UNVERIFIABLE_RETIREMENT", checks)
+        self.assertNotIn("FIRED_DURING_BLOCK", checks,
+                         "asserted a wrongful firing from 45-day-old risk evidence")
+
+    def test_live_registry_has_no_duplicate_agent_records(self):
+        """Roster counts and per-agent evaluations both double-count duplicates."""
+        import collections
+        reg = json.load(open(Path(__file__).parent / "data" / "agent_registry.json"))
+        dupes = [cn for cn, n in collections.Counter(
+            a.get("class_name") for a in reg.get("agents", [])).items() if n > 1]
+        self.assertEqual(dupes, [], f"duplicate registry records: {dupes}")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -2914,6 +3005,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)
