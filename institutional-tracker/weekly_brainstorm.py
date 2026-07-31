@@ -61,8 +61,12 @@ def gather_ml_ideas() -> list[dict]:
     """Generate ML improvement ideas from experiment results and alpha decay."""
     ideas = []
     
-    # Failed experiments that might be revisited
-    ml_log = _load_json(os.path.join(DATA_DIR, "ml_improvement_log.json"), [])
+    # Failed experiments that might be revisited. NOT ml_improvement_log.json —
+    # that filename is ml_live_test_runner.py's live-pick-evaluation log (a
+    # different schema); this wants ml_improvement_loop.py's idea-testing log.
+    # The two used to collide on one filename — see ml_improvement_loop.py's
+    # LOG_FILE comment.
+    ml_log = _load_json(os.path.join(DATA_DIR, "ml_idea_experiment_log.json"), [])
     for entry in ml_log:
         if entry.get("st_result") == "FAILED" and entry.get("lt_result") == "FAILED":
             # Check if it was close to threshold

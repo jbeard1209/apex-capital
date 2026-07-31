@@ -966,11 +966,18 @@ def audit_attendance() -> dict:
             main_src = fh.read()
     except Exception:
         pass
-    try:
-        with open(os.path.join(here, "new_crontab.txt")) as fh:
-            cron_src = fh.read()
-    except Exception:
-        pass
+    # Ground truth = the VM's live crontab snapshot (see wiring_audit.py's
+    # check_orphan_agents for the full history: judging "scheduled" against
+    # new_crontab.txt, a hand-maintained Mac-path template, let it drift 10
+    # agents behind prod). new_crontab.txt is read only as a last resort on a
+    # fresh checkout with no snapshot yet.
+    for fname in ("data/vm_crontab_snapshot.txt", "new_crontab.txt"):
+        try:
+            with open(os.path.join(here, fname)) as fh:
+                cron_src = fh.read()
+            break
+        except Exception:
+            continue
 
     findings = {"cannot_start": [], "never_scheduled": [], "checked": 0}
     try:
@@ -1003,6 +1010,296 @@ def audit_attendance() -> dict:
                                           findings["never_scheduled"]) else "OK")
     findings["note"] = ("Attendance is a MANAGEMENT finding, not a performance "
                         "one — these never affect an agent's rating or PIP.")
+    return findings
+
+
+RATCHET_INTEGRITY_HISTORY_PATH = "data/ratchet_integrity_history.json"
+
+# Every shrink-only baseline the firm relies on, and how to independently
+# corroborate that an entry which vanished from it was actually fixed —
+# NOT just re-derived from the same detector that removed it.
+_RATCHET_SPECS = [
+    {"name": "orphan_agents", "baseline_path": "data/orphan_agents_baseline.json",
+     "entry_key": "known_orphans"},
+]
+
+# >1 simultaneous UNCORROBORATED disappearance from one baseline in one audit
+# cycle is the exact shape of the 2026-07-30 incident: nine baselined orphans
+# vanished at once because a test-root leak made the reachability graph lie,
+# not because nine agents got scheduled. One real fix landing at a time is
+# normal; a cluster landing at once is the tell that the DETECTOR changed, not
+# the code. Counted on the UNCORROBORATED subset on purpose — the board
+# triaging all eleven at once is the intended outcome, not an incident.
+_MASS_ALL_CLEAR_THRESHOLD = 1
+
+# Decisions the board may record in a baseline's `ratified_removals` to justify
+# an entry leaving the ratchet. SCHEDULE is deliberately absent: "we scheduled
+# it" is checkable against the live crontab and must be proven, not asserted.
+_RATIFIED_DECISIONS = ("RETIRE", "DELETE", "SUPERSEDED")
+
+# A crontab snapshot older than this proves nothing about today's schedule.
+_SNAPSHOT_MAX_AGE_DAYS = 14
+
+
+def _corroborate_ratchet_entry_resolved(entry: str, base_dir: str = None,
+                                        baseline_doc: dict = None):
+    """Independent second opinion that `entry` (an agent filename) really left
+    the ratchet for a legitimate reason. Returns a short reason string, or None
+    if the disappearance is unjustified.
+
+    Uses a DIFFERENT method than the detector that cleared it.
+    wiring_audit.check_orphan_agents() decides "scheduled" via a fuzzy,
+    regex-driven reachability walk over the whole import graph — exactly the
+    algorithm that once quietly reclassified nine orphans as scheduled because
+    of a graph-traversal bug. Nothing here calls that function.
+
+    Three ways an entry may legitimately leave, matching the three outcomes of
+    the board's SCHEDULE / RETIRE / DELETE triage:
+
+      "scheduled"  — the name appears literally in the VM's live crontab
+                     snapshot. Refuses to corroborate off a snapshot older than
+                     _SNAPSHOT_MAX_AGE_DAYS: stale evidence must not rubber-stamp
+                     a removal, so staleness fails CLOSED (stays an alarm).
+      "deleted"    — the module is simply gone from disk. A file that does not
+                     exist cannot be an unscheduled agent.
+      "ratified:X" — the board explicitly recorded the removal in the baseline's
+                     own `ratified_removals` list, with a decision and rationale.
+
+    That third channel exists because RETIRE and DELETE were previously
+    *unfalsifiable*: corroboration only accepted "now in the crontab", so
+    carrying out the board's own approved triage raised a false alarm forever.
+    Note its limit honestly — the ratification lives in the file being audited,
+    so it is not tamper-proof against something that can edit that file. What it
+    buys is that a removal can no longer be made QUIET: silence now requires a
+    written, dated, diffable claim that a human reviews in the commit.
+    """
+    import re
+    import time
+    here = base_dir or os.path.dirname(os.path.abspath(__file__))
+    stem = entry[:-3] if entry.endswith(".py") else entry
+
+    # (a) genuinely scheduled now — proven against the canonical prod schedule
+    snap_path = os.path.join(here, "data", "vm_crontab_snapshot.txt")
+    try:
+        age_days = (time.time() - os.stat(snap_path).st_mtime) / 86400.0
+        if age_days <= _SNAPSHOT_MAX_AGE_DAYS:
+            if re.search(rf"\b{re.escape(stem)}\b", open(snap_path).read()):
+                return "scheduled"
+    except Exception:
+        pass
+
+    # (b) the file is gone
+    if not os.path.exists(os.path.join(here, f"{stem}.py")):
+        return "deleted"
+
+    # (c) the board wrote down why
+    try:
+        for rec in (baseline_doc or {}).get("ratified_removals", []) or []:
+            if not isinstance(rec, dict):
+                continue
+            if os.path.basename(str(rec.get("entry", ""))) != os.path.basename(entry):
+                continue
+            decision = str(rec.get("decision", "")).upper()
+            if decision in _RATIFIED_DECISIONS and str(rec.get("rationale", "")).strip():
+                return f"ratified:{decision}"
+    except Exception:
+        pass
+
+    return None
+
+
+def audit_ratchet_integrity() -> dict:
+    """A shrinking ratchet is not itself proof anything got fixed.
+
+    THE GAP THIS CLOSES (Chairman directive, 2026-07-30): on the same day the
+    orphan-agent baseline was created, a bug in check_orphan_agents()'s own
+    reachability walk made NINE of the eleven baselined orphans look
+    "scheduled" in a single run — not because anyone fixed them, but because a
+    test file leaked into the import-graph traversal. The check that owns the
+    ratchet asked, in good faith, to delete all nine from the baseline. If
+    that recommendation had been accepted mechanically, the ratchet would have
+    loosened itself on the strength of the exact bug that made the finding.
+
+    So: nine disappearances at once is not nine fixes, it is the detector
+    changing its mind. This audit watches every registered shrink-only
+    baseline/ratchet across runs, and for any entry that vanished since the
+    last check, demands independent corroboration (a DIFFERENT check than the
+    one that cleared it — see _corroborate_ratchet_entry_resolved) before
+    treating the disappearance as legitimate. Corroborated fixes pass silently;
+    anything uncorroborated, or an uncorroborated burst above
+    _MASS_ALL_CLEAR_THRESHOLD in one cycle, is a MANAGEMENT finding for the
+    board — never an agent rating or PIP input, same as attendance.
+
+    THE FINDING IS STICKY, and that is the whole design. The first version of
+    this audit advanced its own high-water mark unconditionally: it reported the
+    nine-at-once incident on one cycle, wrote the shrunken list to history, and
+    said OK forever after. A watchdog that forgets what it saw turns "somebody
+    missed one email" into "permanently accepted", which is precisely the silent
+    loosening it exists to prevent. So an uncorroborated entry is KEPT in the
+    watermark and re-reported every single cycle until it is either genuinely
+    resolved or explicitly ratified. The alarm can only be cleared by fixing it
+    or by writing down why — never by waiting.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    history_path = os.path.join(here, RATCHET_INTEGRITY_HISTORY_PATH)
+    history = _safe_load(history_path)
+    if not isinstance(history, dict):
+        history = {}
+
+    findings = {"checked": 0, "vanished_uncorroborated": [], "mass_all_clear": [],
+                "ratified_removals": [], "status": "OK"}
+
+    for spec in _RATCHET_SPECS:
+        name = spec["name"]
+        findings["checked"] += 1
+        baseline_doc = _safe_load(os.path.join(here, spec["baseline_path"]))
+        current = set(baseline_doc.get(spec["entry_key"], []) if baseline_doc else [])
+        prior_rec = history.get(name, {})
+        prior = set(prior_rec.get("entries", []))
+
+        # Nothing to compare against on the very first audit of a ratchet.
+        unresolved = set()
+        if prior_rec:
+            vanished = prior - current
+            justified = {}
+            for e in sorted(vanished):
+                why = _corroborate_ratchet_entry_resolved(e, base_dir=here,
+                                                          baseline_doc=baseline_doc)
+                if why:
+                    justified[e] = why
+                else:
+                    unresolved.add(e)
+            if unresolved:
+                findings["vanished_uncorroborated"].append(
+                    {"ratchet": name, "entries": sorted(unresolved)})
+            if justified:
+                findings["ratified_removals"].append(
+                    {"ratchet": name, "entries": justified})
+            if len(unresolved) > _MASS_ALL_CLEAR_THRESHOLD:
+                findings["mass_all_clear"].append(
+                    {"ratchet": name, "count": len(unresolved),
+                     "entries": sorted(unresolved)})
+
+        # Carry unresolved disappearances forward so the finding recurs until
+        # someone actually deals with it (see the docstring — a watchdog that
+        # advances past an unexplained removal has silently accepted it).
+        history[name] = {"entries": sorted(current | unresolved),
+                         "unresolved": sorted(unresolved),
+                         "checked_at": datetime.now().isoformat()}
+
+    findings["status"] = ("ATTENTION" if (findings["vanished_uncorroborated"] or
+                                          findings["mass_all_clear"]) else "OK")
+    findings["note"] = ("A shrinking baseline is not proof of a fix — this never "
+                        "affects an agent's rating or PIP, same as attendance.")
+
+    try:
+        os.makedirs(os.path.dirname(history_path), exist_ok=True)
+        with open(history_path, "w") as f:
+            json.dump(history, f, indent=2, default=str)
+    except Exception as e:
+        logger.debug(f"  [HR] Could not persist ratchet integrity history: {e}")
+
+    return findings
+
+
+_RETIRED_STATUSES = ("retired", "decommissioned", "terminated")
+
+
+def audit_retirement_coverage() -> dict:
+    """A retirement is not just an agent leaving — it's a sector losing a voice.
+
+    THE GAP THIS CLOSES (Chairman directive, 2026-07-30, "it would be a shame
+    if we killed a perfectly useful agent"): the registry has always recorded
+    *that* an agent retired, but nothing has ever checked *what that leaves
+    uncovered*. The precedent that makes this non-hypothetical: three agents
+    once looked, by name, like they had international markets covered while
+    KOSPI went unwatched for months — a roster read as coverage when it
+    wasn't. A retirement with no replacement in the same sector/ETF lane is
+    the same failure mode, just faster and mechanical to catch.
+
+    For every agent that has ever carried a retired/decommissioned/terminated
+    status, check whether any currently-active agent shares its (sector, etf)
+    lane. If none does, that lane has zero live coverage — a MANAGEMENT
+    finding for the board, never an agent rating or PIP input. This does not
+    second-guess whether a retirement was justified (that's HR's ordinary
+    performance process) — it only asks whether the seat got refilled.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    registry = _safe_load(os.path.join(here, REGISTRY_PATH))
+    agents = registry.get("agents", []) if isinstance(registry, dict) else []
+
+    active_lanes = set()
+    for a in agents:
+        if str(a.get("status", "")).lower() not in _RETIRED_STATUSES:
+            sector = a.get("sector")
+            etf = a.get("etf")
+            if sector:
+                active_lanes.add((sector, etf))
+
+    seen_retired = {}
+    for a in agents:
+        if str(a.get("status", "")).lower() in _RETIRED_STATUSES:
+            sector = a.get("sector")
+            etf = a.get("etf")
+            if not sector:
+                continue
+            key = (a.get("class_name"), sector, etf)
+            # Same agent can appear more than once (retired + later re-hired
+            # under the same class_name); only the most recent retired record
+            # for a given class_name/lane matters for the coverage question.
+            seen_retired[key] = a
+
+    holes = []
+    for (class_name, sector, etf), a in seen_retired.items():
+        if (sector, etf) not in active_lanes:
+            holes.append({
+                "class_name": class_name,
+                "sector": sector,
+                "etf": etf,
+                "retired_at": a.get("retired_at") or a.get("last_checked"),
+                # The registry field is `retirement_reason`. The first version of
+                # this audit reported a.get("status") under the key "reason",
+                # which could only ever echo the tautology "retired" — a findings
+                # payload that looks answered and says nothing.
+                "reason": a.get("retirement_reason"),
+            })
+
+    # ── Was the remediation the agent was promised actually real? ────────────
+    # A retirement is only fair if the ladder that preceded it ran. The Chief of
+    # Staff's stage-3 reassignment writes `reassigned_to` and tells the agent it
+    # has been "moved to a fresh start in a new domain" — but it never updates
+    # the agent's own `sector`, and NOTHING in the firm reads `reassigned_to`
+    # (2026-07-31: two references in the whole codebase, both writes). So the
+    # move never happened; only the performance clock reset. Both agents retired
+    # to date were retired at cycle 14 after a cycle-9 "reassignment" that was a
+    # no-op, i.e. they were dismissed for failing the same job twice while being
+    # told they had been given a different one.
+    #
+    # This is a MANAGEMENT finding about the lifecycle machinery, never an agent
+    # rating or PIP input — the agents did nothing wrong here; the ladder did.
+    unfair = []
+    for (class_name, sector, etf), a in seen_retired.items():
+        promised = a.get("reassigned_to")
+        if promised and promised != sector:
+            unfair.append({
+                "class_name": class_name,
+                "promised_lane": promised,
+                "actual_lane_at_retirement": sector,
+                "reassigned_at": a.get("reassigned_at"),
+                "retired_at": a.get("retired_at"),
+                "defect": ("reassignment recorded but never applied — `sector` "
+                           "unchanged and no consumer reads `reassigned_to`"),
+            })
+
+    findings = {
+        "checked": len(seen_retired),
+        "coverage_holes": sorted(holes, key=lambda h: h["class_name"] or ""),
+        "unapplied_remediation": sorted(unfair, key=lambda h: h["class_name"] or ""),
+        "status": "ATTENTION" if (holes or unfair) else "OK",
+        "note": ("A retired agent's lane with no live cover is a hole; a retirement "
+                 "that followed a remediation step which never executed is unsound. "
+                 "Neither ever affects an agent's rating or PIP, same as attendance."),
+    }
     return findings
 
 
@@ -1431,6 +1728,23 @@ def run_hr_review(send_email: bool = False) -> dict:
         report["attendance"] = audit_attendance()
     except Exception as _att_e:
         logger.debug(f"  [HR] Attendance audit error (non-fatal): {_att_e}")
+
+    # Ratchet integrity: a shrink-only baseline (e.g. the orphan-agent list)
+    # that suddenly loses entries needs independent corroboration, not a
+    # rubber stamp from the same detector that cleared them. See
+    # audit_ratchet_integrity() for the 2026-07-30 incident this closes.
+    try:
+        report["ratchet_integrity"] = audit_ratchet_integrity()
+    except Exception as _ri_e:
+        logger.debug(f"  [HR] Ratchet integrity audit error (non-fatal): {_ri_e}")
+
+    # Retirement coverage: a retired agent's (sector, etf) lane going unfilled
+    # is a coverage hole, not a headcount detail. See audit_retirement_coverage()
+    # for the KOSPI precedent this generalizes.
+    try:
+        report["retirement_coverage"] = audit_retirement_coverage()
+    except Exception as _rc_e:
+        logger.debug(f"  [HR] Retirement coverage audit error (non-fatal): {_rc_e}")
 
     return report
 

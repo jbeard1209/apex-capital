@@ -142,6 +142,13 @@ LT_FEATURE_COLS = [
     "price_momentum_5d", "institution_hit_rate",
 ]
 
+# Targets that select LT_FEATURE_COLS above. The live long-term label is
+# outcome_252d (252 TRADING days ≈ 1 calendar year); "outcome_365d" was the
+# earlier calendar-day design and its column was never built into the DB —
+# it stays here only so legacy callers keep working. Anything training on a
+# long horizon must be listed, or it silently gets the short-term feature set.
+LT_TARGETS = frozenset({"outcome_252d", "risk_adjusted_252d", "outcome_365d"})
+
 
 _QUANT_FUNDS = {"Renaissance Tech", "Two Sigma", "D.E. Shaw", "AQR Capital"}
 
@@ -594,7 +601,17 @@ def build_feature_matrix(target: str = "outcome_20d", use_cache: bool = True) ->
     _cache_dir = _data_dir / "matrix_cache"
     _cache_dir.mkdir(exist_ok=True)
     _db_mtime = int(_db_path.stat().st_mtime) if _db_path.exists() else 0
-    _cache_key = hashlib.md5(f"{target}_{_db_mtime}".encode()).hexdigest()[:12]
+    # Resolve the feature set BEFORE the cache lookup, and key the cache on it.
+    #
+    # 2026-07-31: the key was md5(target + db_mtime) only. When the LT feature
+    # selection below was fixed, every cached matrix still had the OLD column
+    # set — same target, same db_mtime, so a stale 47-column matrix would be
+    # handed back to code now asking for 9 columns, with no error anywhere. A
+    # cache whose key omits an input it depends on doesn't just go stale, it
+    # silently defeats the fix that invalidated it.
+    _feat_cols = LT_FEATURE_COLS if target in LT_TARGETS else FEATURE_COLS
+    _cache_key = hashlib.md5(
+        f"{target}_{_db_mtime}_{','.join(_feat_cols)}".encode()).hexdigest()[:12]
     _cache_file = _cache_dir / f"matrix_{target}_{_cache_key}.pkl"
     if use_cache and _cache_file.exists():
         try:
@@ -616,7 +633,13 @@ def build_feature_matrix(target: str = "outcome_20d", use_cache: bool = True) ->
     else:
         y = (label_raw > 0).astype(int)
 
-    _feat_cols = LT_FEATURE_COLS if target == "outcome_365d" else FEATURE_COLS
+    # _feat_cols was resolved above the cache check (it is part of the cache
+    # key). It used to be decided here by `target == "outcome_365d"` — a column
+    # that was never built. The long-term label shipped as outcome_252d (252
+    # trading days), so that test was always False and the LT model silently
+    # trained on all 47 short-term features instead of its curated 9, on only
+    # ~17.6k labeled rows. No error, no warning: the `else` branch just handed
+    # back the wrong matrix.
     X    = snaps[_feat_cols].values.astype(float)
     meta = snaps[["ticker", "snapshot_date", "conviction_score"]].reset_index(drop=True)
 

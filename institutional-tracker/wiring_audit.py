@@ -215,7 +215,7 @@ def check_orphan_agents(sources: dict):
     found_orphans = set()
     roots = {"main.py"}
     # Scheduler ground truth = the VM's LIVE crontab, mirrored into
-    # data/vm_crontab_snapshot.txt, UNION the new_crontab.txt template.
+    # data/vm_crontab_snapshot.txt by scripts/refresh_crontab_snapshot.sh.
     #
     # 2026-07-30: this used to read new_crontab.txt alone — a file whose own header
     # says "THE VM'S LIVE CRONTAB IS CANONICAL FOR PROD — this file is the Mac-path
@@ -223,12 +223,18 @@ def check_orphan_agents(sources: dict):
     # hours in production (data_integrity_sentinel, tech_short_pod, problem_lifecycle_
     # sentinel, ...) were being reported as scheduled NOWHERE. An audit that judges
     # reality against a stale document produces confident, wrong findings.
-    # Both are read, so the audit still works on a host with no snapshot.
-    cron_txt = ""
-    for fname in ("data/vm_crontab_snapshot.txt", "new_crontab.txt"):
-        f = BASE_DIR / fname
-        if f.exists():
-            cron_txt += "\n" + f.read_text()
+    #
+    # 2026-08 (crontab consolidation): new_crontab.txt and gcp_setup/vm_crontab.txt
+    # are now demoted, hand-maintained templates that are NEVER read here — merging
+    # them in used to make an agent that was removed from prod but left in a stale
+    # template look "still scheduled", which is a false negative in the same
+    # direction as the false positive above. The snapshot alone is ground truth
+    # when it exists; new_crontab.txt is a last-resort fallback ONLY so a fresh
+    # checkout with no snapshot yet doesn't flag every agent as orphaned.
+    snap = BASE_DIR / "data/vm_crontab_snapshot.txt"
+    cron_txt = snap.read_text() if snap.exists() else (
+        (BASE_DIR / "new_crontab.txt").read_text()
+        if (BASE_DIR / "new_crontab.txt").exists() else "")
     for name in sources:
         # Test files are NOT scheduler roots even when cron runs them: a test
         # importing an agent does not mean the agent does its job in production.

@@ -544,6 +544,86 @@ class TestChairmanQueueDedup(unittest.TestCase):
             finally:
                 pia._CHAIRMAN_PATH, pia._CHAIRMAN_MAX_ENTRIES = orig_path, orig_max
 
+    # -- The above test guarded ONE writer. Six agents write this file, and the
+    # -- other five each kept a private copy of the merge that still trimmed the
+    # -- SHARED list. The three tests below guard the class, not the instance.
+
+    def test_no_agent_trims_the_shared_chairman_queue(self):
+        """A writer may cap its own entries, never the whole file.
+
+        `combined = combined[-_CHAIRMAN_MAX_ENTRIES:]` slices the shared queue,
+        so the last agent to run evicts other producers' still-open items. That
+        is what took the file from 153 entries to 20 on 2026-07-31. Any new
+        write site must go through chairman_queue.submit().
+        """
+        import glob as _glob
+        import re as _re
+
+        offenders = []
+        for path in _glob.glob(os.path.join(os.path.dirname(__file__), "*.py")):
+            name = os.path.basename(path)
+            if name.startswith("test_") or name == "chairman_queue.py":
+                continue
+            with open(path) as f:
+                src = f.read()
+            if "chairman_action_required" not in src:
+                continue
+            # a slice of the merged list, rather than of this agent's own rows
+            if _re.search(r"^\s*combined\s*=\s*combined\[[-:]", src, _re.M):
+                offenders.append(name)
+        self.assertEqual(offenders, [],
+            "these modules trim the shared Chairman queue and will silently "
+            "delete other producers' open decisions; call "
+            "chairman_queue.submit() instead: %s" % offenders)
+
+    def test_chairman_queue_cap_never_evicts_another_producer(self):
+        import chairman_queue as cq
+
+        with tempfile.TemporaryDirectory() as d:
+            target = os.path.join(d, "q.json")
+            with open(target, "w") as f:
+                json.dump([{"id": "CRO-1", "source": "logic_officer",
+                            "status": "awaiting_chairman",
+                            "description": "CRO has blocked ALL buys for 272 days"}], f)
+
+            # One agent floods well past its own cap.
+            cq.submit([{"id": "sys-%d" % i, "description": "finding %d" % i,
+                        "status": "awaiting_chairman"} for i in range(50)],
+                      "apex_system_cit_agent", path=target, max_entries=20)
+
+            with open(target) as f:
+                queue = json.load(f)
+
+            self.assertIn("CRO-1", [e["id"] for e in queue],
+                "another producer's open decision must survive any flood")
+            own = [e for e in queue if e["source"] == "apex_system_cit_agent"]
+            self.assertEqual(len(own), 20, "the flooding agent caps its OWN rows")
+
+    def test_chairman_queue_ids_stay_unique_for_the_sla_ingester(self):
+        """chairman_decision_sla.py::_ingest keys on `id` and skips ids it has
+        already seen. apex_system_cit_agent builds its id from
+        description[:30][:20], so ten different "Cron job stale on weekday:
+        <job>" findings shared one id -- nine never reached the inbox.
+        """
+        import chairman_queue as cq
+
+        with tempfile.TemporaryDirectory() as d:
+            target = os.path.join(d, "q.json")
+            stale = [{"id": "apex-sys-cit-20260731-0814-cron_job_stale_on_we",
+                      "description": "Cron job stale on weekday: %s" % job,
+                      "status": "awaiting_chairman"}
+                     for job in ("main.py", "hr_agent.py", "canary_agent.py")]
+            cq.submit(stale, "apex_system_cit_agent", path=target)
+
+            with open(target) as f:
+                queue = json.load(f)
+
+            self.assertEqual(len(queue), 3,
+                "three distinct findings must not collapse into one row")
+            ids = [e["id"] for e in queue]
+            self.assertEqual(len(set(ids)), 3,
+                "colliding ids make the SLA inbox drop items silently: %s" % ids)
+
 
 # =============================================================================
 # 7. System health check (module imports)
@@ -815,6 +895,353 @@ class TestWiringContracts(unittest.TestCase):
         self.assertFalse({"rating", "ratings", "pip", "pip_status"} & set(res),
                          "attendance must not carry performance/PIP fields")
 
+    def test_ratchet_integrity_flags_uncorroborated_all_clear(self):
+        """A shrink-only baseline losing entries is not itself proof of a fix.
+
+        2026-07-30: on the day the orphan baseline was created, a bug in
+        check_orphan_agents()'s reachability walk made NINE of eleven baselined
+        orphans look "scheduled" in one run — the detector, not the code, had
+        changed. If that recommendation had been applied mechanically the
+        ratchet would have loosened itself on the strength of the exact bug
+        that produced the finding. audit_ratchet_integrity() closes that: any
+        entry that vanishes from a watched baseline between two audits must be
+        independently corroborated (a DIFFERENT check than the one that
+        cleared it), or it is a MANAGEMENT finding for the board.
+        """
+        import hr_agent
+
+        real_specs = hr_agent._RATCHET_SPECS
+        real_history_path = hr_agent.RATCHET_INTEGRITY_HISTORY_PATH
+        real_corroborate = hr_agent._corroborate_ratchet_entry_resolved
+
+        sandbox = Path(tempfile.mkdtemp())
+        baseline_path = sandbox / "ratchet_baseline.json"
+        history_path = sandbox / "ratchet_history.json"
+
+        def _write_baseline(entries):
+            baseline_path.write_text(json.dumps({"known_orphans": entries}))
+
+        try:
+            hr_agent._RATCHET_SPECS = [
+                {"name": "orphan_agents", "baseline_path": str(baseline_path),
+                 "entry_key": "known_orphans"},
+            ]
+            hr_agent.RATCHET_INTEGRITY_HISTORY_PATH = str(history_path)
+
+            # Cycle 1: three entries baselined, no prior history to compare
+            # against -> establishes the snapshot, must not flag anything yet.
+            _write_baseline(["ghost_a.py", "ghost_b.py", "ghost_c.py"])
+            # Corroboration returns a REASON string, or None when the removal is
+            # unjustified — so the report can say *why* an entry was allowed to go.
+            hr_agent._corroborate_ratchet_entry_resolved = lambda e, **kw: None
+            res1 = hr_agent.audit_ratchet_integrity()
+            self.assertEqual(res1["status"], "OK",
+                             "first-ever audit of a ratchet has nothing to compare "
+                             "against and must not flag a false all-clear")
+
+            # Cycle 2: TWO entries vanish at once, corroboration unavailable for
+            # both — the exact 2026-07-30 shape. Must hard-flag as a mass
+            # all-clear AND name the uncorroborated entries.
+            _write_baseline(["ghost_a.py"])
+            res2 = hr_agent.audit_ratchet_integrity()
+            self.assertEqual(res2["status"], "ATTENTION",
+                             "two simultaneous, uncorroborated disappearances must "
+                             "not pass silently")
+            flagged = {e for grp in res2["vanished_uncorroborated"] for e in grp["entries"]}
+            self.assertEqual(flagged, {"ghost_b.py", "ghost_c.py"})
+            self.assertTrue(res2["mass_all_clear"],
+                            "a 2-at-once disappearance must trip the mass-all-clear guard")
+
+            # Cycles 3 and 4: NOTHING has been fixed and nothing ratified. The
+            # finding must repeat, unchanged, every cycle.
+            #
+            # This is the assertion that matters most. The first version of this
+            # audit advanced its watermark unconditionally: it reported the
+            # incident once, wrote the shrunken list to history, and returned OK
+            # forever after — so a single unread report silently converted a
+            # loosened ratchet into the new normal. That is the very failure the
+            # audit exists to prevent, reproduced inside the watchdog itself. An
+            # alarm you can clear by waiting is not an alarm.
+            for cycle in (3, 4):
+                res_n = hr_agent.audit_ratchet_integrity()
+                self.assertEqual(res_n["status"], "ATTENTION",
+                                 f"cycle {cycle}: the ratchet is still loosened and "
+                                 f"nothing was ratified — the watchdog must not forget")
+                still = {e for grp in res_n["vanished_uncorroborated"] for e in grp["entries"]}
+                self.assertEqual(still, {"ghost_b.py", "ghost_c.py"},
+                                 f"cycle {cycle}: must keep naming the same entries")
+
+            # Sanity: a real, independently corroborated fix must pass silently,
+            # and the report must record the reason it was accepted.
+            _write_baseline([])
+            hr_agent._corroborate_ratchet_entry_resolved = lambda e, **kw: "scheduled"
+            res5 = hr_agent.audit_ratchet_integrity()
+            self.assertEqual(res5["status"], "OK",
+                             "a corroborated fix must not be branded suspicious")
+            self.assertTrue(res5["ratified_removals"],
+                            "an accepted removal must be recorded with its reason, "
+                            "not merely omitted from the findings")
+
+            # MANAGEMENT finding only — never a rating/PIP input.
+            self.assertFalse({"rating", "ratings", "pip", "pip_status"} & set(res2))
+        finally:
+            hr_agent._RATCHET_SPECS = real_specs
+            hr_agent.RATCHET_INTEGRITY_HISTORY_PATH = real_history_path
+            hr_agent._corroborate_ratchet_entry_resolved = real_corroborate
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+        # Wired: the review report must actually carry the result.
+        import inspect
+        src = inspect.getsource(hr_agent.run_hr_review)
+        self.assertIn('report["ratchet_integrity"]', src,
+                      "run_hr_review must publish the ratchet integrity audit")
+
+    def test_ratchet_corroboration_will_not_accept_a_rubber_stamp(self):
+        """The corroboration rule itself, unstubbed.
+
+        The test above stubs `_corroborate_ratchet_entry_resolved` out to
+        exercise the audit's bookkeeping, which means the rule that decides
+        *what counts as proof* is not covered by it at all — sabotaging that
+        rule left all 149 tests green. This test covers the rule directly.
+
+        What it pins down is the asymmetry: an entry may leave the ratchet on
+        EVIDENCE (it is in the live crontab / the file is gone) or on a written,
+        dated board RATIFICATION — but never on an assertion that costs nothing
+        to make. A `decision` field with no rationale is a rubber stamp, and a
+        "we scheduled it" claim is checkable, so it must be checked rather than
+        believed. Stale evidence fails CLOSED for the same reason: a 40-day-old
+        snapshot describes a schedule that may no longer exist.
+        """
+        import shutil
+        import tempfile
+        import time
+        import hr_agent
+
+        sandbox = tempfile.mkdtemp(prefix="corrob_test_")
+        try:
+            os.makedirs(os.path.join(sandbox, "data"))
+            snap = os.path.join(sandbox, "data", "vm_crontab_snapshot.txt")
+            with open(snap, "w") as f:
+                f.write("30 13 * * 1-5 ~/venv/bin/python3 live_agent.py\n")
+            for mod in ("live_agent.py", "ghost.py"):
+                with open(os.path.join(sandbox, mod), "w") as f:
+                    f.write("# stub\n")
+
+            call = hr_agent._corroborate_ratchet_entry_resolved
+
+            # Evidence: literally in the live schedule, snapshot is fresh.
+            self.assertEqual(call("live_agent.py", base_dir=sandbox), "scheduled")
+
+            # Evidence: the module is gone. It cannot be an unscheduled agent.
+            self.assertEqual(call("deleted_agent.py", base_dir=sandbox), "deleted")
+
+            # No evidence at all — present on disk, absent from cron.
+            self.assertIsNone(call("ghost.py", base_dir=sandbox),
+                              "an entry that just vanished must not self-clear")
+
+            # Ratification WITH a written reason is accepted...
+            good = {"ratified_removals": [{
+                "entry": "ghost.py", "decision": "RETIRE", "date": "2026-07-31",
+                "rationale": "superseded by cit_director", "by": "board"}]}
+            self.assertEqual(call("ghost.py", base_dir=sandbox, baseline_doc=good),
+                             "ratified:RETIRE")
+
+            # ...but a bare decision with no rationale is a rubber stamp.
+            bare = {"ratified_removals": [{"entry": "ghost.py", "decision": "RETIRE"}]}
+            self.assertIsNone(call("ghost.py", base_dir=sandbox, baseline_doc=bare),
+                              "a decision with no written rationale is not a "
+                              "justification — it is a rubber stamp")
+
+            # "We scheduled it" is checkable, so asserting it proves nothing.
+            claim = {"ratified_removals": [{
+                "entry": "ghost.py", "decision": "SCHEDULE",
+                "rationale": "added to the VM crontab"}]}
+            self.assertIsNone(call("ghost.py", base_dir=sandbox, baseline_doc=claim),
+                              "a SCHEDULE claim must be proven against the live "
+                              "crontab, never accepted on assertion")
+
+            # Stale evidence must fail CLOSED, not rubber-stamp the removal.
+            old = time.time() - (hr_agent._SNAPSHOT_MAX_AGE_DAYS + 26) * 86400
+            os.utime(snap, (old, old))
+            self.assertIsNone(call("live_agent.py", base_dir=sandbox),
+                              "a snapshot older than the freshness window "
+                              "describes a schedule that may no longer exist")
+        finally:
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+    def test_retirement_coverage_flags_unfilled_lane(self):
+        """Retiring an agent must not silently blind a sector.
+
+        Chairman directive, 2026-07-30: "it would be a shame if we killed a
+        perfectly useful agent — it could harm the company and create holes."
+        The precedent is KOSPI: three agents once LOOKED like international
+        coverage while Korea went unwatched for months, because nobody checked
+        what a roster name actually watches versus what it claims to.
+        audit_retirement_coverage() makes the mechanical half of that check
+        automatic: when an agent retires, does anything active still share its
+        (sector, etf) lane?
+        """
+        import inspect
+        import hr_agent
+
+        real_registry_path = hr_agent.REGISTRY_PATH
+        sandbox = Path(tempfile.mkdtemp())
+        registry_path = sandbox / "registry.json"
+
+        def _write_registry(agents):
+            registry_path.write_text(json.dumps({"agents": agents}))
+
+        try:
+            hr_agent.REGISTRY_PATH = str(registry_path)
+
+            # Case 1: retired agent's lane has nothing active covering it -> hole.
+            _write_registry([
+                {"class_name": "SmallCapGrowthAgent", "sector": "Small Cap",
+                 "etf": "IWM", "status": "retired", "last_checked": "2026-05-14"},
+                {"class_name": "GlobalTechAgent", "sector": "Technology",
+                 "etf": "QQQ", "status": "active"},
+            ])
+            res1 = hr_agent.audit_retirement_coverage()
+            self.assertEqual(res1["status"], "ATTENTION",
+                             "a retired agent with no active same-lane coverage "
+                             "must be flagged")
+            holes = {h["class_name"] for h in res1["coverage_holes"]}
+            self.assertIn("SmallCapGrowthAgent", holes)
+
+            # Case 2: same retirement, but a fresh active agent covers the same
+            # (sector, etf) lane -> not a hole (this is the real 2026-05-14 shape:
+            # CoS retired and same-day re-spawned into the same slot).
+            _write_registry([
+                {"class_name": "SmallCapGrowthAgent", "sector": "Small Cap",
+                 "etf": "IWM", "status": "retired", "last_checked": "2026-05-14"},
+                {"class_name": "SmallCapGrowthAgent", "sector": "Small Cap",
+                 "etf": "IWM", "status": "active", "last_checked": "2026-06-09"},
+            ])
+            res2 = hr_agent.audit_retirement_coverage()
+            self.assertEqual(res2["status"], "OK",
+                             "a retirement backfilled in the same sector/etf lane "
+                             "must not be flagged as a hole")
+
+            # MANAGEMENT finding only — never a rating/PIP input.
+            self.assertFalse({"rating", "ratings", "pip", "pip_status"} & set(res1))
+        finally:
+            hr_agent.REGISTRY_PATH = real_registry_path
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+        # Wired: the review report must actually carry the result.
+        src = inspect.getsource(hr_agent.run_hr_review)
+        self.assertIn('report["retirement_coverage"]', src,
+                      "run_hr_review must publish the retirement coverage audit")
+
+    def test_market_event_monitor_escalates_to_board_queue(self):
+        """rd_market_event_monitor.py's producer side must land where the
+        board actually reads it.
+
+        rd_geopolitical_team.py imports yfinance but never calls it — it maps
+        static historical precedents, with no live detection. This new agent
+        is the missing live front end. A genuine threshold breach must reach
+        cit_pending_proposals.json (pod="main" forces this — fi/fe/etf have
+        no consumer per CLAUDE.md's producer/queue/consumer contract) with
+        confidence >= BOARD_CONFIDENCE_THRESHOLD and evidence text that
+        satisfies _PRECISE_EVIDENCE_RE, or the proposal is produced but never
+        acted on — the exact silent-mismatch bug class this file guards.
+        """
+        from datetime import datetime
+        import cit_director
+        import rd_market_event_monitor as rdmon
+
+        sandbox = Path(tempfile.mkdtemp())
+        real_data_dir = cit_director.DATA_DIR
+        real_cit_pending = cit_director.CIT_PENDING
+        real_pod_files = dict(cit_director._POD_PENDING_FILES)
+
+        try:
+            cit_director.DATA_DIR = sandbox
+            cit_director.CIT_PENDING = sandbox / "cit_pending_proposals.json"
+            cit_director._POD_PENDING_FILES = {
+                k: sandbox / v.name for k, v in real_pod_files.items()
+            }
+
+            fake_event = {
+                "rule": "INDEX_GAP", "ticker": "QQQ", "value_pct": 3.3,
+                "detail": "QQQ moved +3.30% in one session (threshold ±3.0%)",
+            }
+            escalated = rdmon.escalate([fake_event], {})
+            self.assertEqual(len(escalated), 1, "a fresh (not-on-cooldown) event must escalate")
+
+            self.assertTrue(cit_director.CIT_PENDING.exists(),
+                            "escalation must write to the board's actual pending-proposals file")
+            queued = json.loads(cit_director.CIT_PENDING.read_text())
+            match = [p for p in queued if p.get("agent") == "RDMarketEventMonitor"]
+            self.assertEqual(len(match), 1)
+            proposal = match[0]
+
+            self.assertEqual(proposal["routed_to_pod"], "main",
+                             "must land on the board queue, not a dead-letter pod")
+            self.assertGreaterEqual(proposal["confidence"], cit_director.BOARD_CONFIDENCE_THRESHOLD,
+                                    "must clear the board confidence gate")
+            self.assertTrue(cit_director._PRECISE_EVIDENCE_RE.search(proposal["evidence"]),
+                            "evidence must satisfy the precision gate or the board never sees it")
+
+            # Cooldown: the same (rule, ticker) must not re-escalate immediately.
+            history = {"INDEX_GAP:QQQ": {"last_fired_at": datetime.now().isoformat()}}
+            escalated_again = rdmon.escalate([fake_event], history)
+            self.assertEqual(len(escalated_again), 0,
+                             "an event on cooldown must not spam a second board proposal")
+        finally:
+            cit_director.DATA_DIR = real_data_dir
+            cit_director.CIT_PENDING = real_cit_pending
+            cit_director._POD_PENDING_FILES = real_pod_files
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+    def test_market_event_monitor_reports_blind_rules_instead_of_quiet(self):
+        """A failed fetch must never be reported as a calm market.
+
+        Found live on 2026-07-31: the monitor makes ~15 sequential yfinance
+        calls and the tail of that burst draws rate-limiting. TLT came back
+        empty, so CROSS_ASSET_STRESS — the flight-to-safety detector, which
+        needs SPY *and* TLT *and* GLD — could not fire at all. The report said
+        `status: QUIET`. Nothing anywhere said the rule had been switched off.
+
+        That is the dangerous direction of failure: not a wrong number, but no
+        output, which is indistinguishable from "nothing was wrong today". The
+        same shape hid the KOSPI signal through the Korea selloff.
+
+        Also pins the NaN half of it. `float('nan')` passes `is not None`,
+        fails every threshold comparison, and json.dump writes it as bare
+        `NaN` — invalid JSON that can make the whole report unreadable.
+        """
+        import rd_market_event_monitor as rdmon
+
+        real_fetch = rdmon._fetch_close_pair
+        try:
+            def fake(ticker, attempts=2):
+                if ticker == "TLT":            # transient rate-limit
+                    return None, None, "simulated: only 0 session(s) returned"
+                if ticker == "QQQ":            # NaN reaching the compute layer
+                    return float("nan"), 100.0, None
+                return 101.0, 100.0, None
+            rdmon._fetch_close_pair = fake
+            result = rdmon.detect_events()
+        finally:
+            rdmon._fetch_close_pair = real_fetch
+
+        self.assertIn("TLT", {u["ticker"] for u in result["unreadable"]},
+                      "a ticker that could not be read must appear SOMEWHERE; "
+                      "absence must never be the encoding for failure")
+        blind = {d["rule"] for d in result["degraded_rules"]}
+        self.assertIn("CROSS_ASSET_STRESS", blind,
+                      "a rule missing a required input is BLIND, not quiet")
+        self.assertIn("INDEX_GAP", blind,
+                      "a NaN input must also mark its rule blind, not silently "
+                      "fail the threshold comparison")
+        self.assertIsNone(result["inputs"]["qqq_pct"],
+                          "NaN must be converted to an explicit None, never "
+                          "compared against a threshold")
+
+        # The whole class, caught at the serialisation boundary.
+        json.dumps(result, allow_nan=False, default=str)
+
     def test_a_test_file_cannot_make_an_agent_look_scheduled(self):
         """Naming a module in a test must never count as employing it.
 
@@ -928,6 +1355,33 @@ class TestWiringContracts(unittest.TestCase):
             "snapshot_only_agent.py", flagged,
             "an agent scheduled in the canonical live crontab was called an orphan — "
             "the check is judging prod against the stale Mac template")
+
+    def test_vm_crontab_snapshot_is_not_stale(self):
+        """Drift between the snapshot and the live VM must become a test failure.
+
+        Three crontab documents used to disagree — new_crontab.txt (33 modules),
+        gcp_setup/vm_crontab.txt (32), and the live VM crontab (42) — and only the
+        live one was real, so a stale document was silently the ground truth every
+        orphan-agent audit measured against. A unit test cannot SSH the VM, but it
+        CAN refuse to trust a snapshot that hasn't been refreshed recently, which is
+        the same freshness gate hr_agent.py's ratchet-integrity corroboration uses
+        (see _corroborate_ratchet_entry_resolved) — staleness beyond that window is
+        drift by definition, not proof of anything.
+        """
+        import time
+        snap = Path(__file__).parent / "data" / "vm_crontab_snapshot.txt"
+        self.assertTrue(
+            snap.exists(),
+            "data/vm_crontab_snapshot.txt is missing — wiring_audit.py and "
+            "hr_agent.py both fall back to the stale new_crontab.txt template "
+            "when it's absent. Run scripts/refresh_crontab_snapshot.sh")
+        age_days = (time.time() - snap.stat().st_mtime) / 86400.0
+        self.assertLess(
+            age_days, 14,
+            f"data/vm_crontab_snapshot.txt is {age_days:.1f} days stale — the "
+            "orphan-agent audit and HR's attendance/ratchet checks are trusting a "
+            "schedule snapshot old enough to have drifted from prod. Refresh with "
+            "scripts/refresh_crontab_snapshot.sh before this can be trusted again")
 
     def test_orphan_agent_check_actually_detects_orphans(self):
         """wiring_audit must catch a producer that is scheduled nowhere.

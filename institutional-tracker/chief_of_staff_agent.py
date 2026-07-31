@@ -1770,9 +1770,20 @@ class AgentFactory:
 
                 # ── Stage 3: Role Reassignment ─────────────────────────────
                 elif czc >= PERF_REASSIGN_CYCLES and old_status == "pip":
-                    # Identify an alternative sector from the catalog not yet covered
-                    current_sectors = {a["sector"] for a in self.registry["agents"]
-                                       if a.get("status") != "retired"}
+                    # Identify an alternative sector from the catalog not yet covered.
+                    # A lane already HANDED OUT counts as covered, not just one an
+                    # agent's `sector` field names. Reassignment writes
+                    # `reassigned_to` and never updates `sector`, so without the
+                    # second set below this only ever sees the original lanes,
+                    # alternatives[0] returns the same answer every time, and every
+                    # agent reassigned in one pass is sent to the SAME place. That
+                    # is not hypothetical: on 2026-05-06 all nine reassignments
+                    # landed in 'Execution-Quality' in a single sweep.
+                    live = [a for a in self.registry["agents"]
+                            if a.get("status") != "retired"]
+                    current_sectors = {a.get("sector") for a in live if a.get("sector")}
+                    current_sectors |= {a.get("reassigned_to") for a in live
+                                        if a.get("reassigned_to")}
                     alternatives    = [s for s in AGENT_CATALOG
                                        if s["sector"] not in current_sectors
                                        and not s.get("permanent")]

@@ -28,7 +28,17 @@ BASE_DIR = Path(__file__).parent
 # happily creates a missing file — so the loop would "run" and learn from nothing.
 HISTORICAL_13F_DB = str(BASE_DIR / "data" / "historical_13f.db")
 DATA_DIR = BASE_DIR / "data"
-LOG_FILE = DATA_DIR / "ml_improvement_log.json"
+# NOT data/ml_improvement_log.json — that path collides with ml_live_test_runner.py
+# (scheduled daily, live in prod), which writes a totally different schema
+# ({"entries": [...]} of live-pick evaluations) to the same filename. Whichever
+# of the two ran most recently silently clobbered the other's data: this file's
+# own _load_log() would then do `{e["idea_id"] for e in log_entries}` over a
+# dict and crash with "string indices must be integers" — exactly what happened
+# during the 2026-07-30 orphan-agent scheduling triage, on an agent the triage
+# notes had listed as ready to schedule. Discovered by actually running it
+# rather than trusting the note. A distinct filename is the fix;
+# weekly_brainstorm.py's gather_ml_ideas() was updated to match.
+LOG_FILE = DATA_DIR / "ml_idea_experiment_log.json"
 
 ST_THRESHOLD = 0.55
 LT_THRESHOLD = 0.53
