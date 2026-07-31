@@ -24,7 +24,7 @@ import sqlite3
 import tempfile
 import shutil
 import unittest
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
@@ -2969,6 +2969,78 @@ class TestWrongfulRetirement(unittest.TestCase):
         self.assertIn("UNVERIFIABLE_RETIREMENT", checks)
         self.assertNotIn("FIRED_DURING_BLOCK", checks,
                          "asserted a wrongful firing from 45-day-old risk evidence")
+
+    def test_audit_refuses_to_call_a_blind_run_clean(self):
+        """'Clean' must mean "I looked and found nothing", never "I could not look".
+
+        The VM's 66-agent registry carries no lifecycle field at all — no
+        retirement, no reassignment, no counter — because the PIP lifecycle was
+        deadlocked and never ran there. Every check in this audit keys off one
+        of those fields, so it reported "no wrongful-retirement signals, 66
+        agents checked" every week: true, and worth nothing.
+        """
+        import hr_retirement_audit as A
+        inert = [{"class_name": "A%d" % i, "status": "active",
+                  "file": "agents/a%d.py" % i, "sector": "Tech"} for i in range(66)]
+        observable, reasons = A._lifecycle_is_observable(inert)
+        self.assertFalse(observable, "a registry the audit cannot see into read as auditable")
+        self.assertTrue(reasons, "declared unauditable without saying why")
+        checks = {f["check"] for f in A.audit(registry={"agents": inert},
+                                              memo={}, catalog={}, history={})}
+        self.assertIn("LIFECYCLE_UNAUDITABLE", checks,
+                      "blind audit produced a silent all-clear")
+
+        # ...and it must NOT fire on a registry where the lifecycle does run,
+        # or the finding is noise that gets muted and stops meaning anything.
+        live = inert[:5] + [{"class_name": "Ghost", "status": "retired",
+                             "file": "agents/ghost.py", "sector": "Tech",
+                             "retired_at": "2026-05-14",
+                             "consecutive_zero_cycles": 3}]
+        self.assertTrue(A._lifecycle_is_observable(live)[0],
+                        "a registry with a real retirement read as unauditable")
+
+    def test_reinstatement_monitoring_is_read_not_just_written(self):
+        """A vacated retirement promised monitoring. Nothing read that promise.
+
+        `monitoring_review_by` was written into hr_history.json by the
+        reinstatement and had zero readers anywhere in the codebase — a date in
+        a file is not a control. It has to come back and ask.
+        """
+        import hr_retirement_audit as A
+        hist = {"agent_records": {"Ghost": {"events": [
+            {"date": "2026-07-31", "event": "RETIREMENT_VACATED",
+             "summary": "retirement vacated during a buy freeze it did not cause.",
+             "monitoring_review_by": "2026-09-29"}]}}}
+
+        far = A._reinstatement_reviews(hist, today=date(2026, 8, 1))
+        self.assertEqual(far, [], "asked for the review two months early")
+
+        due = A._reinstatement_reviews(hist, today=date(2026, 9, 25))
+        self.assertEqual([f["check"] for f in due], ["REINSTATEMENT_REVIEW_DUE"])
+        self.assertEqual(due[0]["severity"], "MEDIUM")
+
+        late = A._reinstatement_reviews(hist, today=date(2026, 10, 5))
+        self.assertEqual(late[0]["severity"], "HIGH", "an overdue review is not MEDIUM")
+        self.assertIn("OVERDUE", late[0]["description"])
+
+    def test_the_live_reinstatement_carries_a_review_date(self):
+        """The two agents reinstated for #43 must actually be on the hook."""
+        import hr_retirement_audit as A
+        hist = json.load(open(Path(__file__).parent / "data" / "hr_history.json"))
+        vacated = [(cn, ev)
+                   for cn, rec in (hist.get("agent_records") or {}).items()
+                   for ev in (rec.get("events") or [])
+                   if ev.get("event") == "RETIREMENT_VACATED"]
+        self.assertTrue(vacated, "no vacated retirement on record")
+        for cn, ev in vacated:
+            self.assertTrue(ev.get("monitoring_review_by"),
+                            f"{cn} was reinstated with no monitoring review date")
+        # and the reader must fire on them once that date arrives
+        latest = max(date.fromisoformat(str(ev["monitoring_review_by"])[:10])
+                     for _, ev in vacated)
+        fired = A._reinstatement_reviews(hist, today=latest)
+        self.assertEqual(len(fired), len(vacated),
+                         "review dates exist but nothing raises them")
 
     def test_live_registry_has_no_duplicate_agent_records(self):
         """Roster counts and per-agent evaluations both double-count duplicates."""
