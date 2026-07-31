@@ -386,17 +386,23 @@ class PerformanceLogicAgent:
         starting_capital = 100_000
         pnl_pct = ((portfolio_value - starting_capital) / starting_capital * 100) if portfolio_value > 0 else 0
 
-        # R9: Down >3% with no written attribution
+        # R9: Down >3% with no CURRENT written attribution.
+        # This asked `any(s.get("loss_attribution") for s in snapshots)` -- one
+        # attributed snapshot anywhere in the file, however old, disarmed the
+        # alarm permanently. There is exactly one, dated 2026-06-09, and nothing
+        # writes more. See loss_attribution.py.
+        import loss_attribution
         perf_history = state.get("performance_history", {}) or {}
         snapshots    = perf_history.get("snapshots", []) if isinstance(perf_history, dict) else []
-        has_attribution = any(s.get("loss_attribution") for s in snapshots)
+        attrib          = loss_attribution.status(perf_history)
+        has_attribution = attrib["current"]
 
         if pnl_pct < -3 and not has_attribution:
             findings.append(_finding(
                 rule="loss_no_attribution",
                 severity="HIGH",
-                title=f"Portfolio {pnl_pct:.1f}% below start with no written loss attribution",
-                observation=f"Portfolio is at ${portfolio_value:,.0f} (-${abs(portfolio_value - starting_capital):,.0f} from $100k start). No loss attribution is documented.",
+                title=f"Portfolio {pnl_pct:.1f}% below start with no current loss attribution ({attrib['label']})",
+                observation=f"Portfolio is at ${portfolio_value:,.0f} (-${abs(portfolio_value - starting_capital):,.0f} from $100k start). {attrib['detail']}",
                 why="Jack explicitly said he wants to know why the firm is down. Undocumented losses mean we can't learn from them or prevent recurrence.",
                 suggestion=(
                     "Run `python3 logic_officer.py` to generate a loss attribution from trade history, "

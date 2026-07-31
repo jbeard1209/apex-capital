@@ -324,21 +324,21 @@ def _rule_portfolio_unexplained_loss(state: dict) -> Optional[dict]:
     if pnl_pct > -3:
         return None   # within acceptable range
 
-    perf_history = state.get("performance_history", {})
-    snapshots    = perf_history.get("snapshots", []) if isinstance(perf_history, dict) else []
-    has_attribution = bool(snapshots and snapshots[-1].get("loss_attribution"))
+    # Currency, not presence. `snapshots[-1].get("loss_attribution")` was true
+    # of a single hand-written 2026-06-09 record and stayed true forever, so
+    # this rule reported "attribution provided" for every later drawdown --
+    # including to the board on 2026-07-07, about a loss a month newer than the
+    # document it cited. See loss_attribution.py.
+    import loss_attribution
+    attrib = loss_attribution.status(state.get("performance_history", {}))
 
     return {
         "rule":        "unexplained_loss",
         "severity":    "HIGH" if pnl_pct < -5 else "MEDIUM",
-        "title":       f"Portfolio is {pnl_pct:.1f}% below starting capital — attribution {'provided' if has_attribution else 'MISSING'}",
+        "title":       f"Portfolio is {pnl_pct:.1f}% below starting capital — attribution {attrib['label']}",
         "observation": (
             f"Portfolio value is ${portfolio_value:,.0f}, which is {pnl_pct:.1f}% "
-            f"below the $100,000 starting capital. "
-            + ("Loss attribution is documented in performance_history.json."
-               if has_attribution else
-               "No loss attribution has been documented. Jack does not know why "
-               "the firm is down, which is unacceptable.")
+            f"below the $100,000 starting capital. " + attrib["detail"]
         ),
         "why_its_wrong": (
             "Every loss should have an explanation. If we don't know why we're losing, "

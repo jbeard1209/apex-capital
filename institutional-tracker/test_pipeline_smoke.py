@@ -3159,6 +3159,281 @@ class TestLabelColumnContract(unittest.TestCase):
                          f"LT_TARGETS names columns that do not exist: {bad}")
 
 
+class TestLossAttributionMustBeCurrent(unittest.TestCase):
+    """The "why is the firm down?" alarm must not be disarmed by an old file.
+
+    Both guards asked a presence question -- logic_officer checked
+    snapshots[-1].get("loss_attribution"), logic_team checked any() over all
+    snapshots. data/performance_history.json contains exactly one snapshot,
+    dated 2026-06-09, and no module in the repo writes it (three read it). So
+    from that date both alarms answered "attribution provided" for every later
+    drawdown, forever. On 2026-07-07 the Logic Officer told the board
+    "-10.7% below starting capital -- attribution provided", citing a document a
+    month older than the loss, and the board approved it.
+    """
+
+    JUNE = {"snapshots": [{"snapshot_date": "2026-06-09",
+                           "loss_attribution": {"driver": "QQQ short"}}]}
+
+    def test_a_month_old_attribution_is_not_an_explanation(self):
+        import loss_attribution
+        st = loss_attribution.status(self.JUNE, today=date(2026, 7, 31))
+        self.assertFalse(st["current"])
+        self.assertEqual(st["label"], "STALE")
+        self.assertEqual(st["as_of"], "2026-06-09")
+        self.assertEqual(st["age_days"], 52)
+
+    def test_a_fresh_attribution_counts(self):
+        import loss_attribution
+        st = loss_attribution.status(
+            {"snapshots": [{"snapshot_date": "2026-07-29",
+                            "loss_attribution": {"driver": "x"}}]},
+            today=date(2026, 7, 31))
+        self.assertTrue(st["current"])
+        self.assertEqual(st["label"], "provided")
+
+    def test_absent_and_undated_both_fail_closed(self):
+        """Undated is not 'assume fine' -- it cannot say which loss it explains."""
+        import loss_attribution
+        for payload, label in (
+                ({}, "MISSING"),
+                ({"snapshots": []}, "MISSING"),
+                ({"snapshots": [{"snapshot_date": "2026-07-30"}]}, "MISSING"),
+                (None, "MISSING"),
+                ({"snapshots": [{"loss_attribution": {"d": 1}}]}, "STALE")):
+            st = loss_attribution.status(payload, today=date(2026, 7, 31))
+            self.assertFalse(st["current"], f"{payload} passed as current")
+            self.assertEqual(st["label"], label, f"wrong label for {payload}")
+
+    def test_newest_wins_regardless_of_list_order(self):
+        """The file is hand-maintained; nothing guarantees append order."""
+        import loss_attribution
+        out_of_order = {"snapshots": [
+            {"snapshot_date": "2026-07-29", "loss_attribution": {"d": 1}},
+            {"snapshot_date": "2026-06-09", "loss_attribution": {"d": 2}}]}
+        st = loss_attribution.status(out_of_order, today=date(2026, 7, 31))
+        self.assertEqual(st["as_of"], "2026-07-29")
+        self.assertTrue(st["current"])
+
+    def test_both_guards_ask_the_shared_helper(self):
+        """Neither may go back to its own inline presence check."""
+        import ast
+        for mod in ("logic_officer.py", "logic_team.py"):
+            tree = ast.parse((Path(__file__).parent / mod).read_text())
+            calls = [n for n in ast.walk(tree)
+                     if isinstance(n, ast.Call)
+                     and isinstance(n.func, ast.Attribute)
+                     and n.func.attr == "status"
+                     and isinstance(n.func.value, ast.Name)
+                     and n.func.value.id == "loss_attribution"]
+            self.assertTrue(calls,
+                            f"{mod} no longer calls loss_attribution.status() -- "
+                            "it is back to judging attribution on its own")
+
+    def test_the_officer_rule_reports_stale_end_to_end(self):
+        """The rule, run against the June record, must not say 'provided'."""
+        import logic_officer
+        rule = next(r for r in logic_officer.ALL_RULES
+                    if r.__name__ == "_rule_portfolio_unexplained_loss")
+        out = rule({"portfolio_value": 89343, "performance_history": self.JUNE})
+        self.assertIsNotNone(out, "a -10.7% drawdown must still raise something")
+        self.assertNotIn("attribution provided", out["title"])
+        self.assertIn("2026-06-09", out["observation"])
+
+
+class TestFICITReachesTheChairman(unittest.TestCase):
+    """fi_cit_agent's findings must land in the queue the consumers read.
+
+    It wrote to BASE_DIR/chairman_action_required.json -- the repo root, one
+    directory above data/. Nothing reads that path, so every finding it ever
+    raised, including a HIGH "fi_pipeline.py has not run", went into a private
+    file and died there. It was broken twice over: the real queue is a JSON
+    *list*, and the old writer called existing.get("fi_pod") on it, which raises
+    AttributeError outside its try -- so simply correcting the path would have
+    crashed instead of working. Both halves are asserted here.
+    """
+
+    def _agent(self):
+        import fi_cit_agent
+        return fi_cit_agent
+
+    ISSUES = [{"severity": "HIGH", "type": "PIPELINE_NOT_RUN",
+               "message": "fi_pipeline.py has not run in 47.6 hours"}]
+
+    def test_it_writes_to_the_queue_the_consumers_read(self):
+        """The path, asserted against the consumers' own constant."""
+        A = self._agent()
+        import chairman_queue
+        self.assertEqual(Path(A.CHAIRMAN_FILE).name,
+                         Path(chairman_queue.DEFAULT_PATH).name)
+        self.assertEqual(Path(A.CHAIRMAN_FILE).parent.name, "data",
+                         "FI CIT is writing outside data/ -- no consumer reads "
+                         "that path; this is the original bug")
+
+    def test_entries_match_the_shape_the_sla_ingester_keys_on(self):
+        """chairman_decision_sla keys on id; a missing field drops the item."""
+        A = self._agent()
+        entries = A._to_queue_entries(self.ISSUES, [])
+        self.assertEqual(len(entries), 1)
+        for field in ("id", "severity", "description", "source", "ts",
+                      "status", "dedup_key"):
+            self.assertIn(field, entries[0], f"entry is missing {field}")
+        self.assertEqual(entries[0]["source"], "fi_cit_agent")
+        self.assertEqual(entries[0]["status"], "awaiting_chairman")
+
+    def test_dedup_key_is_the_finding_type_not_the_message(self):
+        """The messages embed a growing age in hours.
+
+        Keying on rendered text means the same open issue is re-raised every
+        run and the queue buries itself -- the bug already fixed in seven other
+        writers. Two runs of the same finding, hours apart, must collide.
+        """
+        A = self._agent()
+        older = [dict(self.ISSUES[0], message="fi_pipeline.py has not run in 47.6 hours")]
+        newer = [dict(self.ISSUES[0], message="fi_pipeline.py has not run in 71.9 hours")]
+        self.assertEqual(A._to_queue_entries(older, [])[0]["dedup_key"],
+                         A._to_queue_entries(newer, [])[0]["dedup_key"])
+
+    def test_a_real_submit_survives_the_live_list_shaped_queue(self):
+        """End-to-end against a list-shaped file, in a temp dir.
+
+        This is the half that used to raise AttributeError. Existing entries
+        from another producer must still be there afterwards.
+        """
+        import tempfile, shutil
+        A = self._agent()
+        tmp = tempfile.mkdtemp()
+        try:
+            q = Path(tmp) / "chairman_action_required.json"
+            other = [{"id": "someone-else-1", "severity": "HIGH",
+                      "description": "not mine", "source": "board_meeting",
+                      "ts": "2026-07-01T00:00:00", "status": "awaiting_chairman"}]
+            q.write_text(json.dumps(other))
+            orig = A.CHAIRMAN_FILE
+            A.CHAIRMAN_FILE = q
+            try:
+                n = A._update_chairman_file(self.ISSUES, [], on_fi_host=True)
+            finally:
+                A.CHAIRMAN_FILE = orig
+            after = json.loads(q.read_text())
+            self.assertIsInstance(after, list, "the queue must stay a list")
+            self.assertEqual(n, 1)
+            self.assertEqual(len(after), 2, "it clobbered another producer's item")
+            self.assertTrue(any(e["source"] == "fi_cit_agent" for e in after))
+            self.assertTrue(any(e["id"] == "someone-else-1" for e in after))
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_off_the_pipeline_host_it_files_nothing(self):
+        """Same host-identity rule as the GCP IP check below.
+
+        The freshness checks read whichever host's data/ they run on, so off
+        the host that schedules fi_pipeline.py they describe a directory nobody
+        feeds. Unknown counts as off-host: a false HIGH costs more than a day's
+        delay, which the right host re-detects anyway.
+        """
+        import tempfile, shutil
+        A = self._agent()
+        for host_state in (False, None):
+            tmp = tempfile.mkdtemp()
+            try:
+                q = Path(tmp) / "chairman_action_required.json"
+                q.write_text("[]")
+                orig = A.CHAIRMAN_FILE
+                A.CHAIRMAN_FILE = q
+                try:
+                    n = A._update_chairman_file(self.ISSUES, [],
+                                                on_fi_host=host_state)
+                finally:
+                    A.CHAIRMAN_FILE = orig
+                self.assertEqual(n, 0, f"filed a finding with on_fi_host={host_state}")
+                self.assertEqual(json.loads(q.read_text()), [])
+            finally:
+                shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_spreads_come_from_a_file_something_actually_writes(self):
+        """Producer↔consumer, asserted against the producer's own constant.
+
+        It read data/fi_spread_cache.json, which nothing in the repo writes --
+        the reader was left behind when the producer was renamed. Its last
+        write was 2026-07-03, so for four weeks the spread-regime and duration
+        checks ran on frozen numbers (HY 274bps "TIGHT") while the live book
+        was HY 333bps "NORMAL", and the staleness alarm they raised about it
+        could not be cleared by any code that exists.
+        """
+        A = self._agent()
+        import fi_credit_monitor
+        self.assertEqual(Path(A.SPREADS_PATH).name,
+                         Path(fi_credit_monitor.CACHE_PATH).name,
+                         "FI CIT reads a spreads file its producer does not write")
+
+    def test_freshness_comes_from_the_payload_not_the_mtime(self):
+        """rsync rewrites mtimes; a month-old snapshot must not read as fresh."""
+        import tempfile, shutil
+        A = self._agent()
+        tmp = tempfile.mkdtemp()
+        try:
+            p = Path(tmp) / "fi_credit_conditions.json"
+            p.write_text(json.dumps({
+                "fetched_at": "2026-07-03T09:00:06.911798",
+                "spreads": {"hy_spread": 274.0, "spread_regime": "TIGHT"},
+            }))
+            orig = A.SPREADS_PATH
+            A.SPREADS_PATH = p
+            try:
+                spreads, age = A._load_credit_conditions()
+            finally:
+                A.SPREADS_PATH = orig
+            self.assertEqual(spreads.get("hy_spread"), 274.0,
+                             "the spreads live under the 'spreads' key")
+            self.assertGreater(age, 24 * 20,
+                               "a just-written file with a July 3 stamp read as "
+                               "fresh — that is the mtime, not the payload")
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_the_host_probe_asks_this_hosts_own_crontab(self):
+        """It must resolve to a real True/False/None here, without raising."""
+        A = self._agent()
+        self.assertIn(A._host_runs_fi_pipeline(), (True, False, None))
+
+    def test_no_alert_hardcodes_a_cron_schedule(self):
+        """The old text said "Check cron at 0 11 * * *"; the real one is 30 14.
+
+        A schedule copied into an alert string is a second source of truth that
+        nothing updates, so it goes stale silently and sends the reader to a
+        cron line that does not exist.
+
+        Docstrings are excluded. A docstring naming the real schedule is
+        documentation, not an alert, and a guard that cannot tell the two apart
+        fails on its own explanation -- the same mistake as grepping raw text
+        for ifconfig.me in the class below.
+        """
+        import ast, re, fi_cit_agent as A
+        tree = ast.parse(Path(A.__file__).read_text())
+        docstrings = set()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.ClassDef,
+                                 ast.FunctionDef, ast.AsyncFunctionDef)):
+                body = getattr(node, "body", None)
+                if (body and isinstance(body[0], ast.Expr)
+                        and isinstance(body[0].value, ast.Constant)
+                        and isinstance(body[0].value.value, str)):
+                    docstrings.add(id(body[0].value))
+        # Five whitespace-separated cron fields. No trailing \b: a cron ends in
+        # '*' far more often than not, '*' is not a word character, and the
+        # first version of this regex therefore matched "30 14 * * 1-5" but
+        # sailed straight past "0 11 * * *" -- exactly the string it exists to
+        # catch. Mutation testing found that; reading it did not.
+        cron_re = re.compile(r"(?<!\S)[\d*][\d*/,\-]*(?:\s+[\d*][\d*/,\-]*){4}")
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Constant) and isinstance(n.value, str)
+                    and id(n) not in docstrings):
+                self.assertIsNone(cron_re.search(n.value),
+                                  "alert text hardcodes a cron schedule: "
+                                  f"{n.value[:80]!r}")
+
+
 class TestHostSpecificChecksStayOnTheirHost(unittest.TestCase):
     """A check only one host can answer must stay silent on all the others.
 
@@ -3754,6 +4029,8 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
     suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
     suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestLossAttributionMustBeCurrent))
+    suite.addTests(loader.loadTestsFromTestCase(TestFICITReachesTheChairman))
     suite.addTests(loader.loadTestsFromTestCase(TestHostSpecificChecksStayOnTheirHost))
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
     suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))
