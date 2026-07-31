@@ -142,12 +142,22 @@ LT_FEATURE_COLS = [
     "price_momentum_5d", "institution_hit_rate",
 ]
 
-# Targets that select LT_FEATURE_COLS above. The live long-term label is
-# outcome_252d (252 TRADING days ≈ 1 calendar year); "outcome_365d" was the
-# earlier calendar-day design and its column was never built into the DB —
-# it stays here only so legacy callers keep working. Anything training on a
-# long horizon must be listed, or it silently gets the short-term feature set.
-LT_TARGETS = frozenset({"outcome_252d", "risk_adjusted_252d", "outcome_365d"})
+#: The long-term label column. Import this instead of hardcoding the string.
+#
+# "outcome_365d" was the original calendar-day design. build_365d_labels.py was
+# written to ALTER TABLE it into existence and never ran once (no
+# logs/build_365d_labels.log, in no crontab, called by nothing) -- so the column
+# has never existed. Nine modules queried it anyway for months. Four of them
+# guard with `if "outcome_365d" not in cols: skip`, so they ran clean and
+# reported nothing, forever; the rest raised. The live label is outcome_252d
+# (252 TRADING days ~= 1 calendar year), built by
+# predictive_model/historical_label_builder_fast.py -- 17,652 labeled rows.
+# Guarded by test_pipeline_smoke.py::test_every_label_column_referenced_exists.
+LT_TARGET = "outcome_252d"
+
+# Targets that select LT_FEATURE_COLS above. Anything training on a long
+# horizon must be listed, or it silently gets the short-term feature set.
+LT_TARGETS = frozenset({LT_TARGET, "risk_adjusted_252d"})
 
 
 _QUANT_FUNDS = {"Renaissance Tech", "Two Sigma", "D.E. Shaw", "AQR Capital"}

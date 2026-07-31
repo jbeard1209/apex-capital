@@ -2,10 +2,10 @@
 """
 APEX CAPITAL -- ML LONG-TERM DATA WATCHDOG
 ==========================================
-Reports on outcome_365d data quality:
+Reports on outcome_252d data quality:
   - Total labeled rows
   - % coverage (labeled / total snapshots)
-  - Tickers with NULL outcome_365d despite old snapshot dates (stale, should be labeled by now)
+  - Tickers with NULL outcome_252d despite old snapshot dates (stale, should be labeled by now)
   - Last backfill date
 
 Writes data/ml_longterm_data_quality_report.json.
@@ -30,7 +30,7 @@ LOGS_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH     = DATA_DIR / "historical_13f.db"
 REPORT_PATH = DATA_DIR / "ml_longterm_data_quality_report.json"
 
-# Snapshots older than this many days should have outcome_365d filled in
+# Snapshots older than this many days should have outcome_252d filled in
 STALE_THRESHOLD_DAYS = 400
 
 logging.basicConfig(
@@ -62,10 +62,10 @@ def run() -> dict:
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cols = {row[1] for row in conn.execute("PRAGMA table_info(pipeline_snapshots)")}
-            if "outcome_365d" not in cols:
+            if "outcome_252d" not in cols:
                 report["status"] = "skipped"
-                report["reason"] = "outcome_365d column not present"
-                logger.warning("outcome_365d column missing")
+                report["reason"] = "outcome_252d column not present"
+                logger.warning("outcome_252d column missing")
                 with open(REPORT_PATH, "w") as f:
                     json.dump(report, f, indent=2)
                 return report
@@ -78,19 +78,19 @@ def run() -> dict:
 
             # Labeled rows
             labeled_row = conn.execute(
-                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
             ).fetchone()
             total_labeled = labeled_row[0] if labeled_row else 0
 
             coverage_pct = round(100.0 * total_labeled / total_snapshots, 2) if total_snapshots > 0 else 0.0
 
-            # Stale nulls: snapshots old enough that outcome_365d should exist
+            # Stale nulls: snapshots old enough that outcome_252d should exist
             cutoff_date = (datetime.now(timezone.utc) - timedelta(days=STALE_THRESHOLD_DAYS)).strftime("%Y-%m-%d")
             stale_rows = conn.execute(
                 """
                 SELECT ticker, snapshot_date
                 FROM pipeline_snapshots
-                WHERE outcome_365d IS NULL
+                WHERE outcome_252d IS NULL
                   AND snapshot_date < ?
                 ORDER BY snapshot_date ASC
                 LIMIT 50
@@ -103,15 +103,15 @@ def run() -> dict:
                 """
                 SELECT COUNT(DISTINCT ticker)
                 FROM pipeline_snapshots
-                WHERE outcome_365d IS NULL AND snapshot_date < ?
+                WHERE outcome_252d IS NULL AND snapshot_date < ?
                 """,
                 (cutoff_date,),
             ).fetchone()
             stale_ticker_count = stale_count_row[0] if stale_count_row else 0
 
-            # Last backfill date: most recent snapshot_date that has outcome_365d filled
+            # Last backfill date: most recent snapshot_date that has outcome_252d filled
             last_backfill_row = conn.execute(
-                "SELECT MAX(snapshot_date) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+                "SELECT MAX(snapshot_date) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
             ).fetchone()
             last_backfill_date = last_backfill_row[0] if last_backfill_row else None
 

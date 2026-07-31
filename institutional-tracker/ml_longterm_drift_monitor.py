@@ -2,10 +2,10 @@
 """
 APEX CAPITAL -- ML LONG-TERM DRIFT MONITOR
 ===========================================
-Checks outcome_365d positive rate over time.
+Checks outcome_252d positive rate over time.
 Splits data pre/post 2020 and pre/post 2022 to detect label distribution shift.
 Writes data/ml_longterm_drift_report.json.
-Handles missing outcome_365d gracefully.
+Handles missing outcome_252d gracefully.
 
 Run: python3 ml_longterm_drift_monitor.py
 """
@@ -41,9 +41,9 @@ def _query_period(conn: sqlite3.Connection, start: str, end: str) -> dict:
         """
         SELECT
             COUNT(*) as total,
-            SUM(CASE WHEN outcome_365d > 0 THEN 1 ELSE 0 END) as positive
+            SUM(CASE WHEN outcome_252d > 0 THEN 1 ELSE 0 END) as positive
         FROM pipeline_snapshots
-        WHERE outcome_365d IS NOT NULL
+        WHERE outcome_252d IS NOT NULL
           AND snapshot_date >= ? AND snapshot_date < ?
         """,
         (start, end),
@@ -75,26 +75,26 @@ def run() -> dict:
 
     try:
         with sqlite3.connect(DB_PATH) as conn:
-            # Check if outcome_365d column exists
+            # Check if outcome_252d column exists
             cols = {row[1] for row in conn.execute("PRAGMA table_info(pipeline_snapshots)")}
-            if "outcome_365d" not in cols:
+            if "outcome_252d" not in cols:
                 report["status"] = "skipped"
-                report["reason"] = "outcome_365d column not present"
-                logger.warning("outcome_365d column missing -- skipping")
+                report["reason"] = "outcome_252d column not present"
+                logger.warning("outcome_252d column missing -- skipping")
                 with open(REPORT_PATH, "w") as f:
                     json.dump(report, f, indent=2)
                 return report
 
             total_row = conn.execute(
-                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
             ).fetchone()
             total_labeled = total_row[0] if total_row else 0
             report["total_labeled"] = total_labeled
 
             if total_labeled == 0:
                 report["status"] = "no_data"
-                report["reason"] = "No labeled outcome_365d rows"
-                logger.warning("No labeled outcome_365d rows")
+                report["reason"] = "No labeled outcome_252d rows"
+                logger.warning("No labeled outcome_252d rows")
                 with open(REPORT_PATH, "w") as f:
                     json.dump(report, f, indent=2)
                 return report

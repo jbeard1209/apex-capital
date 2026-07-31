@@ -19,6 +19,8 @@ Tests:
 import sys
 import os
 import json
+import re
+import sqlite3
 import tempfile
 import shutil
 import unittest
@@ -2783,6 +2785,109 @@ class TestModelMetricsContract(unittest.TestCase):
             tmp.unlink(missing_ok=True)
 
 
+class TestLabelColumnContract(unittest.TestCase):
+    """Every label column the code queries must actually exist in the DB.
+
+    outcome_365d was specified, wired into nine modules, and never built:
+    build_365d_labels.py was supposed to ALTER TABLE it into existence and never
+    ran once. Four consumers guard with `if "outcome_365d" not in cols: skip`,
+    so for months they ran green and reported nothing -- a monitor that cannot
+    see its data is indistinguishable from a monitor that sees no problem. The
+    rest raised into a cron log nobody read.
+    """
+
+    #: the naming family that drifted -- outcome_20d, risk_adjusted_252d, ...
+    LABEL_RE = re.compile(r'\b((?:outcome|risk_adjusted)_\d+d)\b')
+
+    DB_PATH = Path(__file__).parent / "data" / "historical_13f.db"
+
+    @staticmethod
+    def _code_only(txt):
+        """Strip docstrings and # comments.
+
+        A historical note explaining a past bug ("it used to say outcome_365d")
+        is documentation, not a query. Scanning raw text would make it
+        impossible to ever write down what went wrong.
+        """
+        txt = re.sub(r'""".*?"""', '', txt, flags=re.S)
+        txt = re.sub(r"'''.*?'''", '', txt, flags=re.S)
+        return re.sub(r'#[^\n]*', '', txt)
+
+    def test_every_label_column_referenced_exists(self):
+        if not self.DB_PATH.exists():
+            self.skipTest("historical_13f.db absent -- no schema to check against")
+
+        con = sqlite3.connect(self.DB_PATH)
+        try:
+            tables = {r[0] for r in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'")}
+            self.assertIn("pipeline_snapshots", tables,
+                          "pipeline_snapshots is gone -- every label consumer is broken")
+            real = {r[1] for r in con.execute("PRAGMA table_info(pipeline_snapshots)")}
+        finally:
+            con.close()
+
+        # Sanity: the check is only meaningful if the schema actually carries
+        # labels. An empty `real` would make every assertion below vacuous.
+        self.assertTrue(self.LABEL_RE.findall(" ".join(real)),
+                        "no label-shaped columns in pipeline_snapshots -- "
+                        "this test would pass vacuously")
+
+        root = Path(__file__).parent
+        offenders = {}
+        for path in sorted(root.glob("*.py")) + sorted(root.glob("predictive_model/*.py")):
+            if path.name == Path(__file__).name:
+                continue
+            code = self._code_only(path.read_text(errors="ignore"))
+            # A builder is allowed to name a column it is in the act of
+            # creating; consumers are not.
+            if re.search(r'ADD\s+COLUMN', code, re.I):
+                continue
+            missing = {lbl for lbl in self.LABEL_RE.findall(code) if lbl not in real}
+            if missing:
+                offenders[path.name] = sorted(missing)
+
+        self.assertEqual(
+            offenders, {},
+            "these modules query label columns that do not exist in "
+            "pipeline_snapshots:\n" +
+            "\n".join(f"  {k}: {v}" for k, v in sorted(offenders.items())) +
+            "\nEither build the column or repoint to the live label "
+            "(feature_engineer.LT_TARGET).")
+
+    def test_lt_target_is_a_real_column(self):
+        """The exported constant itself must name a live, populated column."""
+        if not self.DB_PATH.exists():
+            self.skipTest("historical_13f.db absent")
+        import feature_engineer
+        con = sqlite3.connect(self.DB_PATH)
+        try:
+            real = {r[1] for r in con.execute("PRAGMA table_info(pipeline_snapshots)")}
+            self.assertIn(feature_engineer.LT_TARGET, real,
+                          "feature_engineer.LT_TARGET names a nonexistent column")
+            n = con.execute("SELECT COUNT(%s) FROM pipeline_snapshots"
+                            % feature_engineer.LT_TARGET).fetchone()[0]
+        finally:
+            con.close()
+        # A column that exists but is entirely NULL trains nothing.
+        self.assertGreater(n, 0,
+                           f"{feature_engineer.LT_TARGET} exists but has no labeled rows")
+
+    def test_lt_targets_all_resolve(self):
+        """Every LT target selects LT_FEATURE_COLS *and* is a real column."""
+        if not self.DB_PATH.exists():
+            self.skipTest("historical_13f.db absent")
+        import feature_engineer
+        con = sqlite3.connect(self.DB_PATH)
+        try:
+            real = {r[1] for r in con.execute("PRAGMA table_info(pipeline_snapshots)")}
+        finally:
+            con.close()
+        bad = sorted(t for t in feature_engineer.LT_TARGETS if t not in real)
+        self.assertEqual(bad, [],
+                         f"LT_TARGETS names columns that do not exist: {bad}")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -2808,6 +2913,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestThesisWatch))
     suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
     suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
+    suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

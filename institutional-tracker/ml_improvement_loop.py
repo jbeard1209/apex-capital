@@ -161,7 +161,7 @@ LT_ROW_CAP = 400_000
 
 def _load_matrix(target: str, feature_override: list[str] | None = None):
     """Load feature matrix. If feature_override, select only those columns.
-    LT matrix (outcome_365d) is capped at LT_ROW_CAP rows to prevent OOM.
+    LT matrix (outcome_252d) is capped at LT_ROW_CAP rows to prevent OOM.
     """
     sys.path.insert(0, str(BASE_DIR))
     import feature_engineer as fe
@@ -169,7 +169,7 @@ def _load_matrix(target: str, feature_override: list[str] | None = None):
 
     X, y, meta = fe.build_feature_matrix(target=target)
     # Cap LT matrix to prevent OOM on 4GB VM
-    if target == "outcome_365d" and len(X) > LT_ROW_CAP:
+    if target == "outcome_252d" and len(X) > LT_ROW_CAP:
         import numpy as np
         idx = np.linspace(0, len(X)-1, LT_ROW_CAP, dtype=int)
         X, y = X[idx], y[idx]
@@ -264,7 +264,7 @@ def idea_qqq_xlu_ratios(idea_id: int) -> tuple[float | None, float | None, str]:
 
     # Get base matrix first to know how many rows / snapshot dates
     X_base_st, y_st, meta_st = fe.build_feature_matrix(target="outcome_20d")
-    X_base_lt, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_base_lt, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_252d")
 
     def _make_extra(meta, target):
         # meta is a DataFrame with snapshot_date column
@@ -285,7 +285,7 @@ def idea_qqq_xlu_ratios(idea_id: int) -> tuple[float | None, float | None, str]:
     st_auc = _wf_cv(X_st, y_st)
 
     log.info("  Running LT (365-day) experiment with QQQ/XLU ratio features...")
-    qqq_lt, xlu_lt = _make_extra(meta_lt, "outcome_365d")
+    qqq_lt, xlu_lt = _make_extra(meta_lt, "outcome_252d")
     X_lt = np.column_stack([X_base_lt, qqq_lt, xlu_lt])
     lt_auc = _wf_cv(X_lt, y_lt)
 
@@ -399,7 +399,7 @@ def idea_shap_top8(idea_id: int) -> tuple[float | None, float | None, str]:
     st_auc = _wf_cv(X_st, y_st)
 
     log.info(f"  LT experiment: top-8 SHAP features only")
-    X_lt, y_lt, meta_lt = _load_matrix("outcome_365d", feature_override=top8)
+    X_lt, y_lt, meta_lt = _load_matrix("outcome_252d", feature_override=top8)
     lt_auc = _wf_cv(X_lt, y_lt)
 
     notes = (f"Top-8 SHAP features only (dropped {38-8} near-zero features). "
@@ -447,7 +447,7 @@ def idea_spy_200ma(idea_id: int) -> tuple[float | None, float | None, str]:
     st_auc = _wf_cv(X_st, y_st)
 
     log.info("  LT experiment: SPY 200d MA features")
-    X_lt, y_lt, _ = _inject("outcome_365d")
+    X_lt, y_lt, _ = _inject("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     notes = (f"Added spy_pct_from_200d_ma + spy_above_200d binary flag. "
@@ -470,7 +470,7 @@ def idea_optuna_75(idea_id: int) -> tuple[float | None, float | None, str]:
     from sklearn.metrics import roc_auc_score
 
     X_st, y_st, _ = _load_matrix("outcome_20d")
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
 
     def _optuna_cv(X, y, n_trials=75):
         n = len(X)
@@ -540,7 +540,7 @@ def idea_vol_adj_momentum(idea_id: int) -> tuple[float | None, float | None, str
         X, y, meta = _load_matrix(target)
         sys.path.insert(0, str(BASE_DIR))
         import feature_engineer as fe
-        cols = fe.LT_FEATURE_COLS if target == "outcome_365d" else fe.FEATURE_COLS
+        cols = fe.LT_FEATURE_COLS if target == "outcome_252d" else fe.FEATURE_COLS
         col_idx = {c: i for i, c in enumerate(cols)}
         mom = X[:, col_idx["price_momentum_20d"]]
         vol = X[:, col_idx["volatility_20d"]]
@@ -553,7 +553,7 @@ def idea_vol_adj_momentum(idea_id: int) -> tuple[float | None, float | None, str
     st_auc = _wf_cv(X_st, y_st)
 
     log.info("  LT experiment: vol-adjusted momentum")
-    X_lt, y_lt, _ = _inject("outcome_365d")
+    X_lt, y_lt, _ = _inject("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     notes = f"Vol-adj momentum = price_momentum_20d / volatility_20d. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
@@ -594,7 +594,7 @@ def idea_iwm_spy(idea_id: int) -> tuple[float | None, float | None, str]:
     st_auc = _wf_cv(X_st, y_st)
 
     log.info("  LT experiment: IWM/SPY ratio")
-    X_lt, y_lt, _ = _inject("outcome_365d")
+    X_lt, y_lt, _ = _inject("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     notes = f"IWM/SPY 20d z-score (small-cap rotation signal). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
@@ -646,7 +646,7 @@ def idea_lgb_xgb_ensemble(idea_id: int) -> tuple[float | None, float | None, str
     log.info("  ST experiment: LGB+XGB ensemble")
     st_auc = _lgb_xgb_cv(X_st, y_st)
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     log.info("  LT experiment: LGB+XGB ensemble")
     lt_auc = _lgb_xgb_cv(X_lt, y_lt)
 
@@ -692,7 +692,7 @@ def idea_vix_regime(idea_id: int) -> tuple[float | None, float | None, str]:
     X_st_aug = _inject(X_st, meta_st, "ST")
     st_auc = _wf_cv(X_st_aug, y_st)
 
-    X_lt, y_lt, meta_lt = _load_matrix("outcome_365d")
+    X_lt, y_lt, meta_lt = _load_matrix("outcome_252d")
     log.info("  LT experiment: adding VIX level + 20d change...")
     X_lt_aug = _inject(X_lt, meta_lt, "LT")
     lt_auc = _wf_cv(X_lt_aug, y_lt)
@@ -738,7 +738,7 @@ def idea_credit_spread(idea_id: int) -> tuple[float | None, float | None, str]:
     X_st_aug = _inject(X_st, meta_st, "ST")
     st_auc = _wf_cv(X_st_aug, y_st)
 
-    X_lt, y_lt, meta_lt = _load_matrix("outcome_365d")
+    X_lt, y_lt, meta_lt = _load_matrix("outcome_252d")
     log.info("  LT experiment: adding HYG/LQD credit spread z-score...")
     X_lt_aug = _inject(X_lt, meta_lt, "LT")
     lt_auc = _wf_cv(X_lt_aug, y_lt)
@@ -792,7 +792,7 @@ def idea_qqq_xlu_fullhist(idea_id: int) -> tuple[float | None, float | None, str
     X_st_aug = _inject(X_st, meta_st, "ST")
     st_auc = _wf_cv(X_st_aug, y_st)
 
-    X_lt, y_lt, meta_lt = _load_matrix("outcome_365d")
+    X_lt, y_lt, meta_lt = _load_matrix("outcome_252d")
     log.info("  LT experiment: QQQ/XLU ratios (full history)...")
     X_lt_aug = _inject(X_lt, meta_lt, "LT")
     lt_auc = _wf_cv(X_lt_aug, y_lt)
@@ -817,7 +817,7 @@ def idea_macro_regime_conditioned(idea_id: int) -> tuple[float | None, float | N
     X_st, y_st, _ = _load_matrix("outcome_20d")
     log.info(f"  ST: {X_st.shape[1]} features (including 4 macro_regime_* features)")
     st_auc = _wf_cv(X_st, y_st)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
     notes = f"Full feature set including macro_regime_* (4 regime indicators). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -831,7 +831,7 @@ def idea_macro_regime_conditioned(idea_id: int) -> tuple[float | None, float | N
 )
 def idea_qoq_margin_zscore(idea_id: int) -> tuple[float | None, float | None, str]:
     X_st, y_st, meta_st = _load_matrix("outcome_20d")
-    X_lt, y_lt, meta_lt = _load_matrix("outcome_365d")
+    X_lt, y_lt, meta_lt = _load_matrix("outcome_252d")
 
     def _add_margin(X, meta, label):
         if not (hasattr(meta, "columns") and "edgar_net_margin" in meta.columns):
@@ -864,7 +864,7 @@ def idea_lt_expanding(idea_id: int) -> tuple[float | None, float | None, str]:
     X_st, y_st, _ = _load_matrix("outcome_20d")
     st_auc = _wf_cv(X_st, y_st)
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     n = len(y_lt)
     N_FOLDS = 8
     MIN_TRAIN = max(int(n * 0.4), 50000)
@@ -925,7 +925,7 @@ def idea_calibrated(idea_id: int) -> tuple[float | None, float | None, str]:
 
     X_st, y_st, _ = _load_matrix("outcome_20d")
     st_auc = _cal_cv(X_st, y_st)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _cal_cv(X_lt, y_lt)
     notes = ("Platt-calibrated probabilities. ST: " + (f"{st_auc:.4f}" if st_auc else 'N/A') + ". LT: " + (f"{lt_auc:.4f}" if lt_auc else 'N/A') + ".")
     return st_auc, lt_auc, notes
@@ -953,7 +953,7 @@ def idea_feature_pruning(idea_id: int) -> tuple[float | None, float | None, str]
     X_st_p = X_st[:, keep]
     st_auc = _wf_cv(X_st_p, y_st)
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     try:
@@ -979,7 +979,7 @@ def idea_multihorizon(idea_id: int) -> tuple[float | None, float | None, str]:
     from sklearn.metrics import roc_auc_score
 
     X_st, y_st, _ = _load_matrix("outcome_20d")
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     min_len = min(len(X_st), len(X_lt))
     X_st, y_st = X_st[:min_len], y_st[:min_len]
     X_lt, y_lt = X_lt[:min_len], y_lt[:min_len]
@@ -1028,7 +1028,7 @@ def idea_sector_relative(idea_id: int) -> tuple[float | None, float | None, str]
     else:
         X_st_aug = X_st
     st_auc = _wf_cv(X_st_aug, y_st)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
     notes = f"Global z-scored momentum+vol features (+2). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -1056,7 +1056,7 @@ def idea_herding_quality(idea_id: int) -> tuple[float | None, float | None, str]
     else:
         X_st_aug = X_st
     st_auc = _wf_cv(X_st_aug, y_st)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
     notes = f"Herding quality continuous score (2/1/0.5). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -1070,7 +1070,7 @@ def idea_herding_quality(idea_id: int) -> tuple[float | None, float | None, str]
 def idea_macro_crypto_boost(idea_id: int):
     X_st, y_st, _ = _load_matrix("outcome_20d")
     st_auc = _wf_cv(X_st, y_st, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=6)
     notes = ("43-feature baseline (macro+crypto). ST: " +
              (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " +
@@ -1084,7 +1084,7 @@ def idea_lt_macro_expanded(idea_id: int):
     import feature_engineer as fe, numpy as np, json as _j, pandas as pd
     # Build full 46-feature ST matrix and LT matrix separately, then row-align
     X_st_full, y_st, meta_st = fe.build_feature_matrix(target="outcome_20d")
-    X_lt_base, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt_base, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_252d")
     ci_full = {c: i for i, c in enumerate(fe.FEATURE_COLS)}
     ci_lt   = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
     # Align LT rows to ST rows by (ticker, snapshot_date)
@@ -1129,7 +1129,7 @@ def idea_crypto_regime_interaction(idea_id: int):
         extras.append(X_st[:, ci["crypto_fear_greed"]] * (1 - X_st[:, ci["rd_spy_rsi"]] / 100))
     X_aug = np.column_stack([X_st] + extras) if extras else X_st
     st_auc = _wf_cv(X_aug, y_st, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=6)
     notes = ("Crypto x equity (" + str(len(extras)) + " features). ST: " +
              (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " +
@@ -1154,7 +1154,7 @@ def idea_sector_relative_momentum(idea_id: int):
     X_aug = np.column_stack([X_st] + extras) if extras else X_st
     log.info(f"  Added {len(extras)} sector-relative features")
     st_auc = _wf_cv(X_aug, y_st, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=6)
     notes = ("Sector-z-scores (" + str(len(extras)) + "). ST: " +
              (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " +
@@ -1183,7 +1183,7 @@ def idea_regime_ensemble(idea_id: int) -> tuple[float | None, float | None, str]
     if not regime_cols:
         # fall back to standard walk-forward if no regime features
         st_auc = _wf_cv(X_st, y_st)
-        X_lt, y_lt, _ = _load_matrix("outcome_365d")
+        X_lt, y_lt, _ = _load_matrix("outcome_252d")
         lt_auc = _wf_cv(X_lt, y_lt)
         notes = "No regime features found — used standard WF CV. ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " + (f"{lt_auc:.4f}" if lt_auc else "N/A") + "."
         return st_auc, lt_auc, notes
@@ -1226,7 +1226,7 @@ def idea_regime_ensemble(idea_id: int) -> tuple[float | None, float | None, str]
         return float(np.mean(aucs)) if aucs else None
 
     st_auc = _regime_wf_cv(X_st, y_st, n_splits=6)
-    X_lt, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)  # LT has no regime cols
     notes = ("Regime-conditioned ensemble (" + str(len(regime_cols)) + " regimes). ST: " +
              (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " +
@@ -1260,7 +1260,7 @@ def idea_earnings_accel(idea_id: int) -> tuple[float | None, float | None, str]:
 
     if not extras:
         st_auc = _wf_cv(X_base, y_st)
-        X_lt, y_lt, _ = _load_matrix("outcome_365d")
+        X_lt, y_lt, _ = _load_matrix("outcome_252d")
         lt_auc = _wf_cv(X_lt, y_lt)
         notes = "No edgar margin cols found — fallback. ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " + (f"{lt_auc:.4f}" if lt_auc else "N/A") + "."
         return st_auc, lt_auc, notes
@@ -1268,7 +1268,7 @@ def idea_earnings_accel(idea_id: int) -> tuple[float | None, float | None, str]:
     X_aug = np.column_stack([X_base] + extras)
     st_auc = _wf_cv(X_aug, y_st)
 
-    X_lt_base, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt_base, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)} if hasattr(fe, "LT_FEATURE_COLS") else {}
     lt_extras = []
     for col in ["edgar_net_margin", "edgar_fcf_margin"]:
@@ -1317,7 +1317,7 @@ def idea_regime_momentum(idea_id: int) -> tuple[float | None, float | None, str]
 
     if not extras:
         st_auc = _wf_cv(X_st, y_st)
-        X_lt, y_lt, _ = _load_matrix("outcome_365d")
+        X_lt, y_lt, _ = _load_matrix("outcome_252d")
         lt_auc = _wf_cv(X_lt, y_lt)
         notes = "No interaction features — fallback. ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " + (f"{lt_auc:.4f}" if lt_auc else "N/A") + "."
         return st_auc, lt_auc, notes
@@ -1325,7 +1325,7 @@ def idea_regime_momentum(idea_id: int) -> tuple[float | None, float | None, str]
     X_aug = np.column_stack([X_st] + extras)
     st_auc = _wf_cv(X_aug, y_st)
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     notes = ("Regime×momentum interactions (" + str(len(extras)) + " terms). ST: " +
@@ -1363,13 +1363,13 @@ def idea_conviction_composite(idea_id: int) -> tuple[float | None, float | None,
 
     if not extras:
         st_auc = _wf_cv(X_st, y_st)
-        X_lt, y_lt, _ = _load_matrix("outcome_365d")
+        X_lt, y_lt, _ = _load_matrix("outcome_252d")
         lt_auc = _wf_cv(X_lt, y_lt)
         return st_auc, lt_auc, "No composite features. ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " + (f"{lt_auc:.4f}" if lt_auc else "N/A") + "."
 
     X_aug = np.column_stack([X_st] + extras)
     st_auc = _wf_cv(X_aug, y_st)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
     return st_auc, lt_auc, "Conviction composites (" + str(len(extras)) + " terms). ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") + ". LT: " + (f"{lt_auc:.4f}" if lt_auc else "N/A") + "."
 
@@ -1442,7 +1442,7 @@ def idea_deep_optuna(idea_id: int) -> tuple[float | None, float | None, str]:
     st_auc, st_params = _optuna_cv(X_st, y_st, n_trials=50)
     log.info("  ST best AUC: " + (f"{st_auc:.4f}" if st_auc else "N/A"))
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     log.info(f"  Running 300-trial Optuna on LT ({X_lt.shape[1]} features)...")
     lt_auc, lt_params = _optuna_cv(X_lt, y_lt, n_trials=50)
     log.info("  LT best AUC: " + (f"{lt_auc:.4f}" if lt_auc else "N/A"))
@@ -1491,7 +1491,7 @@ def idea_risk_adjusted_target(idea_id: int) -> tuple[float | None, float | None,
             st_auc = st_auc_ext
 
     # LT uses standard target
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     return st_auc, lt_auc, ("Risk-adj target. ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") +
@@ -1570,7 +1570,7 @@ def idea_spy_relative_target(idea_id: int) -> tuple[float | None, float | None, 
         log.warning(f"  SPY-relative failed: {e} — falling back to standard")
         st_auc = _wf_cv(X_st, y_raw_binary)
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt)
 
     return st_auc, lt_auc, ("SPY-relative neutral ST: " + (f"{st_auc:.4f}" if st_auc else "N/A") +
@@ -1711,7 +1711,7 @@ def idea_drop_market_direction(idea_id: int) -> tuple:
     keep = [i for c, i in ci.items() if c not in drop]
     X_st_pruned = X_st[:, keep]
     st_auc = _wf_cv(X_st_pruned, y_st, n_splits=6)
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)  # LT_FEATURE_COLS already curated (8 features)
     notes = (f"Dropped {len(drop)} market-direction features from ST (SHAP-identified). "
              f"Remaining ST {X_st_pruned.shape[1]} features. ST: {st_auc:.4f}. LT: {lt_auc:.4f}.")
@@ -1743,7 +1743,7 @@ def idea_conviction_trajectory(idea_id: int) -> tuple:
         extras.append(holder_growth)
     X_aug = np.column_stack([X_st] + extras) if extras else X_st
     st_auc = _wf_cv(X_aug, y_st, n_splits=6)
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
     extras_lt = []
     if "avg_conviction_3q" in ci_lt:
@@ -1789,7 +1789,7 @@ def idea_institutional_interactions(idea_id: int) -> tuple:
         extras.append(np.clip(hs, 0, 12) * pw)
     X_aug = np.column_stack([X_st] + extras) if extras else X_st
     st_auc = _wf_cv(X_aug, y_st, n_splits=6)
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
     def _get_lt(name): return X_lt[:, ci_lt[name]] if name in ci_lt else None
     extras_lt = []
@@ -1821,7 +1821,7 @@ def idea_conviction_filter(idea_id: int) -> tuple:
         X_filt, y_filt = X_st, y_st
     n_kept = len(y_filt)
     st_auc = _wf_cv(X_filt, y_filt, n_splits=6) if n_kept >= 500 else None
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
     if "avg_conviction_3q" in ci_lt:
         conv_lt = X_lt[:, ci_lt["avg_conviction_3q"]]
@@ -1869,7 +1869,7 @@ def idea_time_decay_weights(idea_id: int) -> tuple:
         return float(np.mean(aucs)) if aucs else None
 
     st_auc = _wf_cv_weighted(X_st, y_st, w, n_splits=6)
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     w_lt = np.linspace(1.0, 3.0, len(y_lt))
     lt_auc = _wf_cv_weighted(X_lt, y_lt, w_lt, n_splits=8)
     notes = (f"Time-decay sample weights (1x→3x linear). ST: {st_auc:.4f}. "
@@ -1906,7 +1906,7 @@ def idea_pure_institutional_alpha(idea_id: int) -> tuple:
         extras.append(np.clip(ib, 0, 1e7) / 1e6 * np.clip(cv, 0, 5))
     X_aug = np.column_stack([X_base] + extras) if extras else X_base
     st_auc = _wf_cv(X_aug, y_st, n_splits=6)
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
     def _get_lt(name): return X_lt[:, ci_lt[name]] if name in ci_lt else None
     extras_lt = []
@@ -2010,7 +2010,7 @@ def idea_risk_adj_optuna(idea_id: int) -> tuple:
     # Full walk-forward CV with best params
     st_auc = _wf_cv(X_v, y_v, n_splits=6, lgb_params={**best, "class_weight": "balanced", "random_state": 42, "n_jobs": -1, "verbose": -1})
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Risk-adj target + Optuna 300 trials. Best: {best}. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2089,7 +2089,7 @@ def idea_sector_relative_risk_adj(idea_id: int) -> tuple:
         X_v, y_v = X_st, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Sector-relative excess return target. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2146,7 +2146,7 @@ def idea_sharpe60(idea_id: int) -> tuple:
         X_v, y_v = X_st, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"60d vol Sharpe target (smoother than 20d). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2155,25 +2155,25 @@ def idea_sharpe60(idea_id: int) -> tuple:
 @idea(
     39,
     "lt_risk_adjusted_target",
-    "Apply risk-adjusted target to LT model: binarize (outcome_365d / annualized_vol) > threshold. "
+    "Apply risk-adjusted target to LT model: binarize (outcome_252d / annualized_vol) > threshold. "
     "LT barely passes 0.53; risk normalization may provide extra signal."
 )
 def idea_lt_risk_adj(idea_id: int) -> tuple:
     import feature_engineer as fe, numpy as np, sqlite3, pandas as pd
 
-    X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_252d")
 
     try:
         conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
-            "SELECT snapshot_date, ticker, outcome_365d FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+            "SELECT snapshot_date, ticker, outcome_252d FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
         ).fetchall()
         raw_v = conn.execute(
             "SELECT snapshot_date, ticker, volatility_60d FROM pipeline_snapshots WHERE volatility_60d IS NOT NULL"
         ).fetchall()
         conn.close()
 
-        ret_df = pd.DataFrame(raw, columns=["snapshot_date", "ticker", "outcome_365d"])
+        ret_df = pd.DataFrame(raw, columns=["snapshot_date", "ticker", "outcome_252d"])
         ret_df["snapshot_date"] = pd.to_datetime(ret_df["snapshot_date"])
         vol_df = pd.DataFrame(raw_v, columns=["snapshot_date", "ticker", "vol_60d"])
         vol_df["snapshot_date"] = pd.to_datetime(vol_df["snapshot_date"])
@@ -2185,7 +2185,7 @@ def idea_lt_risk_adj(idea_id: int) -> tuple:
         sharpe_map = {}
         for _, row in merged.iterrows():
             av = float(row["annual_vol"])
-            ret = float(row["outcome_365d"])
+            ret = float(row["outcome_252d"])
             if av > 0.05:
                 sharpe_map[row["key"]] = ret / av
 
@@ -2267,7 +2267,7 @@ def idea_risk_adj_no_market(idea_id: int) -> tuple:
         X_v, y_v = X_pruned, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Risk-adj target + no market-direction features. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2341,7 +2341,7 @@ def idea_beta_neutral(idea_id: int) -> tuple:
         X_v, y_v = X_st, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Beta-neutralized residual target. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2410,7 +2410,7 @@ def idea_two_stage(idea_id: int) -> tuple:
     st_auc = float(np.mean(st_aucs)) if st_aucs else 0.0
     log.info(f"    Mean AUC: {st_auc:.4f} ({len(st_aucs)} folds)")
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Two-stage: linear market + LGB institutional. {len(inst_features)} inst features. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2433,7 +2433,7 @@ def idea_conviction_decile(idea_id: int) -> tuple:
     if conv_idx is None:
         log.warning("  conviction_score not in features — using standard")
         st_auc = _wf_cv(X_st, y_st, n_splits=6)
-        X_lt, y_lt, _ = _load_matrix("outcome_365d")
+        X_lt, y_lt, _ = _load_matrix("outcome_252d")
         lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
         return st_auc, lt_auc, f"Fallback (no conviction). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
 
@@ -2494,7 +2494,7 @@ def idea_conviction_decile(idea_id: int) -> tuple:
     st_auc = float(np.mean(aucs)) if aucs else 0.0
     log.info(f"    Mean AUC: {st_auc:.4f} ({len(aucs)} folds)")
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Conviction-decile segmented model. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2537,17 +2537,17 @@ def idea_rank_percentile(idea_id: int) -> tuple:
         X_v, y_v = X_st, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_252d")
     # Apply same ranking logic to LT
     try:
         conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw_lt = conn.execute(
-            "SELECT snapshot_date, ticker, outcome_365d FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+            "SELECT snapshot_date, ticker, outcome_252d FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
         ).fetchall()
         conn.close()
-        lt_df = pd.DataFrame(raw_lt, columns=["snapshot_date", "ticker", "outcome_365d"])
+        lt_df = pd.DataFrame(raw_lt, columns=["snapshot_date", "ticker", "outcome_252d"])
         lt_df["snapshot_date"] = pd.to_datetime(lt_df["snapshot_date"])
-        lt_df["rank_pct"] = lt_df.groupby("snapshot_date")["outcome_365d"].rank(pct=True)
+        lt_df["rank_pct"] = lt_df.groupby("snapshot_date")["outcome_252d"].rank(pct=True)
         lt_df["key"] = lt_df["snapshot_date"].dt.strftime("%Y-%m-%d") + "|" + lt_df["ticker"]
         rank_lt = dict(zip(lt_df["key"], lt_df["rank_pct"]))
         meta_lt_r = meta_lt.reset_index(drop=True)
@@ -2641,7 +2641,7 @@ def idea_triple_combo(idea_id: int) -> tuple:
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6,
                     lgb_params={**best, "class_weight": "balanced", "random_state": 42, "n_jobs": -1, "verbose": -1})
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Triple combo (risk-adj + drop-mkt + Optuna200). Best: {best}. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2685,7 +2685,7 @@ def idea_feature_ortho(idea_id: int) -> tuple:
     log.info(f"  Orthogonalized {X_clean.shape[1]} features (removed {len(mkt_idx)} market factors)")
 
     st_auc = _wf_cv(X_clean, y_st, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Feature orthogonalization vs QQQ/XLU/SPY. {X_clean.shape[1]} clean features. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2729,7 +2729,7 @@ def idea_random_forest(idea_id: int) -> tuple:
     st_auc = float(np.mean(aucs)) if aucs else 0.0
     log.info(f"    Mean AUC: {st_auc:.4f} ({len(aucs)} folds)")
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     n2 = len(X_lt)
     fs2 = n2 // 9
     aucs2 = []
@@ -2816,7 +2816,7 @@ def idea_institutional_sharpe(idea_id: int) -> tuple:
         X_v, y_v = X_clean, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Inst-only + Sharpe target + feature ortho ({X_v.shape[1]} features). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2878,7 +2878,7 @@ def idea_edgar_features(idea_id: int) -> tuple:
             log.info(f"  EDGAR manual load failed: {e2}. Using base features.")
 
     st_auc = _wf_cv(X_st, y_st, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"EDGAR fundamental features ({X_st.shape[1]} total). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -2945,7 +2945,7 @@ def idea_three_way_stack(idea_id: int) -> tuple:
     st_auc = float(np.mean(aucs)) if aucs else 0.0
     log.info(f"    Mean AUC: {st_auc:.4f} ({len(aucs)} folds)")
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     n_models = 2 + (1 if HAS_XGB else 0)
     notes = f"LGB+RF+{'XGB' if HAS_XGB else 'LGB2'} {n_models}-way ensemble. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
@@ -3001,7 +3001,7 @@ def idea_precomputed_sharpe(idea_id: int) -> tuple:
             "WHERE risk_adjusted_20d IS NOT NULL"
         ).fetchall()
         conn2.close()
-        X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+        X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_252d")
         ra_df2 = pd.DataFrame(rows2, columns=["snapshot_date", "ticker", "ra"])
         ra_df2["key"] = ra_df2["snapshot_date"].astype(str) + "|" + ra_df2["ticker"]
         ra_map2 = dict(zip(ra_df2["key"], ra_df2["ra"]))
@@ -3017,7 +3017,7 @@ def idea_precomputed_sharpe(idea_id: int) -> tuple:
             lt_auc = _wf_cv(X_lt, y_lt_raw, n_splits=8)
     except Exception as e:
         log.warning(f"  LT risk-adj fallback: {e}")
-        X_lt, y_lt, _ = _load_matrix("outcome_365d")
+        X_lt, y_lt, _ = _load_matrix("outcome_252d")
         lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
 
     notes = f"Pre-computed risk_adjusted_20d from DB. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
@@ -3090,7 +3090,7 @@ def idea_sharpe_ortho_clean(idea_id: int) -> tuple:
         X_v, y_v = X_clean, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Sharpe+PCA-ortho+NoMkt ({X_v.shape[1]} features). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -3134,7 +3134,7 @@ def idea_cs_sharpe_rank(idea_id: int) -> tuple:
         X_v, y_v = X_st, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Cross-sectional Sharpe rank target (top 30%). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -3226,7 +3226,7 @@ def idea_sharpe_ortho_optuna(idea_id: int) -> tuple:
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6,
                     lgb_params={**best, "class_weight": "balanced", "random_state": 42, "n_jobs": -1, "verbose": -1})
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"CS-Sharpe rank + ortho + Optuna150. Best: {best}. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -3285,7 +3285,7 @@ def idea_quantile_blend(idea_id: int) -> tuple:
     st_auc = float(np.mean(aucs)) if aucs else 0.0
     log.info(f"    Mean AUC: {st_auc:.4f} ({len(aucs)} folds)")
 
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"3-way class-weight blend (balanced+pos3x+neg3x). ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -3374,7 +3374,7 @@ def idea_beta_neutral_fixed(idea_id: int) -> tuple:
         X_v, y_v = X_st, y_raw
 
     st_auc = _wf_cv(X_v, y_v, n_splits=6)
-    X_lt, y_lt, _ = _load_matrix("outcome_365d")
+    X_lt, y_lt, _ = _load_matrix("outcome_252d")
     lt_auc = _wf_cv(X_lt, y_lt, n_splits=8)
     notes = f"Beta-neutral 50-ticker cap. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes
@@ -3395,16 +3395,16 @@ def idea_lt_rank_pct(idea_id: int) -> tuple:
     st_auc = _wf_cv(X_st, y_st, n_splits=6)
 
     # LT rank percentile: use LT_FEATURE_COLS, rank_percentile_365d target
-    X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt_raw, meta_lt = fe.build_feature_matrix(target="outcome_252d")
     try:
         conn = sqlite3.connect(HISTORICAL_13F_DB)
         raw = conn.execute(
-            "SELECT snapshot_date, ticker, outcome_365d FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+            "SELECT snapshot_date, ticker, outcome_252d FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
         ).fetchall()
         conn.close()
-        lt_df = pd.DataFrame(raw, columns=["snapshot_date","ticker","outcome_365d"])
+        lt_df = pd.DataFrame(raw, columns=["snapshot_date","ticker","outcome_252d"])
         lt_df["snapshot_date"] = pd.to_datetime(lt_df["snapshot_date"])
-        lt_df["rank_pct"] = lt_df.groupby("snapshot_date")["outcome_365d"].rank(pct=True)
+        lt_df["rank_pct"] = lt_df.groupby("snapshot_date")["outcome_252d"].rank(pct=True)
         lt_df["key"] = lt_df["snapshot_date"].dt.strftime("%Y-%m-%d") + "|" + lt_df["ticker"]
         rank_map = dict(zip(lt_df["key"], lt_df["rank_pct"]))
         meta_r = meta_lt.reset_index(drop=True)
@@ -3447,7 +3447,7 @@ def idea_lt_regime_v2(idea_id: int) -> tuple:
     X_st, y_st, _ = _load_matrix("outcome_20d")
     st_auc = _wf_cv(X_st, y_st, n_splits=6)
 
-    X_lt, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, meta_lt = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
     rd_regime_idx = ci_lt.get("rd_vix", 0)  # use rd_vix as macro proxy
 
@@ -3498,7 +3498,7 @@ def idea_lt_12_features(idea_id: int) -> tuple:
     st_auc = _wf_cv(X_st, y_st, n_splits=6)
 
     # Build LT matrix with expanded features
-    X_lt_base, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt_base, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     ci_lt = {c: i for i, c in enumerate(fe.LT_FEATURE_COLS)}
 
     # Add 4 extra features from the ST feature set
@@ -3536,7 +3536,7 @@ def idea_lt_optuna(idea_id: int) -> tuple:
     X_st, y_st, _ = _load_matrix("outcome_20d")
     st_auc = _wf_cv(X_st, y_st, n_splits=6)
 
-    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_365d")
+    X_lt, y_lt, _ = fe.build_feature_matrix(target="outcome_252d")
     n = len(X_lt); fs = n // 9
     X_tr, y_tr = X_lt[:fs*8], y_lt[:fs*8]
     X_te, y_te = X_lt[fs*8:], y_lt[fs*8:]

@@ -2,7 +2,7 @@
 """
 APEX CAPITAL -- ML LONG-TERM IMPROVEMENT AGENT
 ===============================================
-Generates experiment ideas for the 1-year horizon model (outcome_365d).
+Generates experiment ideas for the 1-year horizon model (outcome_252d).
 Focuses on fundamental features: P/B ratio, FCF yield, revenue growth rate,
 ROIC, net debt/EBITDA (all via yfinance fundamentals).
 Also generates structural ideas: remove short-term features, train on
@@ -155,7 +155,7 @@ def _get_labeled_count() -> int:
     try:
         with sqlite3.connect(DB_PATH) as conn:
             row = conn.execute(
-                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
             ).fetchone()
             return row[0] if row else 0
     except Exception:
@@ -168,7 +168,7 @@ def run() -> None:
     existing_ids = {e["id"] for e in existing}
 
     labeled_count = _get_labeled_count()
-    logger.info(f"outcome_365d labeled rows: {labeled_count}")
+    logger.info(f"outcome_252d labeled rows: {labeled_count}")
 
     now_str = datetime.now(timezone.utc).isoformat()
     added = 0

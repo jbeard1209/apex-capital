@@ -4,7 +4,7 @@ APEX CAPITAL -- LONG-TERM EXPERIMENT RUNNER
 ============================================
 Reads data/ml_longterm_experiment_queue.json.
 For each queued experiment:
-  - Loads outcome_365d rows from pipeline_snapshots
+  - Loads outcome_252d rows from pipeline_snapshots
   - Expanded features: conviction_score, n_institutions, herding_flag,
     quant_consensus, days_since_filing, portfolio_weight,
     rd_regime_bull (market regime), earnings_surprise_flag,
@@ -310,7 +310,7 @@ def _load_results() -> list[dict]:
 
 def _load_longterm_data(feature_set: str = "LT_FEATURES"):
     """
-    Load outcome_365d labeled rows from pipeline_snapshots.
+    Load outcome_252d labeled rows from pipeline_snapshots.
     Merges DB features with EDGAR XBRL fundamentals.
     Returns (X, y, feature_names) sorted by snapshot_date for walk-forward validity.
 
@@ -323,8 +323,8 @@ def _load_longterm_data(feature_set: str = "LT_FEATURES"):
 
     with sqlite3.connect(DB_PATH) as conn:
         cols_available = {row[1] for row in conn.execute("PRAGMA table_info(pipeline_snapshots)")}
-        if "outcome_365d" not in cols_available:
-            raise ValueError("outcome_365d column not in pipeline_snapshots")
+        if "outcome_252d" not in cols_available:
+            raise ValueError("outcome_252d column not in pipeline_snapshots")
 
         # Use DB features that are available
         db_feats_available = [c for c in LT_FEATURES_DB if c in cols_available]
@@ -335,15 +335,15 @@ def _load_longterm_data(feature_set: str = "LT_FEATURES"):
         col_sql = ", ".join(db_feats_available) if db_feats_available else "conviction_score"
         rows = conn.execute(
             f"""
-            SELECT ticker, {col_sql}, outcome_365d, snapshot_date
+            SELECT ticker, {col_sql}, outcome_252d, snapshot_date
             FROM pipeline_snapshots
-            WHERE outcome_365d IS NOT NULL
+            WHERE outcome_252d IS NOT NULL
             ORDER BY snapshot_date ASC
             """
         ).fetchall()
 
     if not rows:
-        raise ValueError("No labeled outcome_365d rows found")
+        raise ValueError("No labeled outcome_252d rows found")
 
     n_db = len(db_feats_available)
     tickers   = [r[0] for r in rows]

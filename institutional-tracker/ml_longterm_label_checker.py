@@ -2,7 +2,7 @@
 """
 APEX CAPITAL -- ML LONG-TERM LABEL CHECKER
 ==========================================
-Checks COUNT of outcome_365d IS NOT NULL vs yesterday's baseline.
+Checks COUNT of outcome_252d IS NOT NULL vs yesterday's baseline.
 If >5000 new rows have been labeled since last run: adds a "retrain"
 suggestion to ml_longterm_suggestions.json.
 Writes updated status to data/ml_longterm_label_status.json.
@@ -65,10 +65,10 @@ def _get_labeled_count() -> int:
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cols = {row[1] for row in conn.execute("PRAGMA table_info(pipeline_snapshots)")}
-            if "outcome_365d" not in cols:
+            if "outcome_252d" not in cols:
                 return 0
             row = conn.execute(
-                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL"
+                "SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL"
             ).fetchone()
             return row[0] if row else 0
     except Exception as e:
@@ -98,7 +98,7 @@ def run() -> None:
                 "id": retrain_id,
                 "title": f"Retrain long-term model ({new_rows} new labeled rows)",
                 "rationale": (
-                    f"{new_rows} new outcome_365d rows were labeled since last check "
+                    f"{new_rows} new outcome_252d rows were labeled since last check "
                     f"(total: {current}). Retraining will incorporate fresh ground truth."
                 ),
                 "category": "retrain",

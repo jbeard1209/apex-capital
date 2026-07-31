@@ -1,9 +1,9 @@
 """
-Long-Term Model Deep Validation Suite (outcome_365d)
+Long-Term Model Deep Validation Suite (outcome_252d)
 Run on GCP: python3 ml_validate_longterm.py
 
 Mirrors ml_validate_v2s.py exactly but adapted for 1-year horizon.
-- Target: outcome_365d (binarized: > 0 = 1)
+- Target: outcome_252d (binarized: > 0 = 1)
 - Trains a fresh LightGBM inline (no model_longterm.pkl required)
 - Runs 9 validation tests
 - Saves report to data/longterm_validation_report.json
@@ -86,7 +86,7 @@ FEATURES = [
     'portfolio_weight',
 ]
 
-TARGET = 'outcome_365d'
+TARGET = 'outcome_252d'
 
 LGB_PARAMS = dict(
     n_estimators=500,
@@ -190,7 +190,7 @@ def load_data():
 
     # Build X, y
     X = df[FEATURES].values.astype(float)
-    # Binarize: outcome_365d > 0 → 1 (positive 1-year return)
+    # Binarize: outcome_252d > 0 → 1 (positive 1-year return)
     y = (df[TARGET].values > 0).astype(int)
 
     pos_rate = y.mean()
@@ -621,11 +621,11 @@ def test_leakage(X, y):
 
 
 # ---------------------------------------------------------------------------
-# TEST 7 — Signal Decay: compare AUC predicting outcome_20d vs outcome_365d
+# TEST 7 — Signal Decay: compare AUC predicting outcome_20d vs outcome_252d
 # ---------------------------------------------------------------------------
 def test_signal_decay(X_365d, y_365d):
     log.info("=" * 70)
-    log.info("TEST 7: Signal Decay — compare model AUC on outcome_20d vs outcome_365d")
+    log.info("TEST 7: Signal Decay — compare model AUC on outcome_20d vs outcome_252d")
     log.info("  (Same features, same train/val split — does the model know what it's predicting?)")
 
     # Load outcome_20d from DB for same rows
@@ -633,9 +633,9 @@ def test_signal_decay(X_365d, y_365d):
         conn = sqlite3.connect(str(DB_PATH))
         query_20d = f"""
             SELECT conviction_score, n_institutions, herding_flag, quant_consensus,
-                   days_since_filing, portfolio_weight, outcome_20d, outcome_365d
+                   days_since_filing, portfolio_weight, outcome_20d, outcome_252d
             FROM pipeline_snapshots
-            WHERE outcome_365d IS NOT NULL AND conviction_score IS NOT NULL
+            WHERE outcome_252d IS NOT NULL AND conviction_score IS NOT NULL
               AND outcome_20d IS NOT NULL
             ORDER BY snapshot_date
         """
@@ -648,7 +648,7 @@ def test_signal_decay(X_365d, y_365d):
     if len(df_both) < 100:
         record('test7_signal_decay', 'WARN', {
             'n_rows': len(df_both),
-            'note': 'Too few rows with both outcome_20d and outcome_365d — skipped'
+            'note': 'Too few rows with both outcome_20d and outcome_252d — skipped'
         })
         return
 
@@ -659,7 +659,7 @@ def test_signal_decay(X_365d, y_365d):
 
     X_both = df_both[FEATURES].values.astype(float)
     y_20d = (df_both['outcome_20d'].values > 0).astype(int)
-    y_365d = (df_both['outcome_365d'].values > 0).astype(int)
+    y_365d = (df_both['outcome_252d'].values > 0).astype(int)
 
     N = len(y_20d)
     split = int(N * 0.80)
@@ -676,13 +676,13 @@ def test_signal_decay(X_365d, y_365d):
             mdl.fit(X_tr, y_tr_365d)
             proba = mdl.predict_proba(X_te)[:, 1]
             auc_365 = safe_auc(y_te_365d, proba)
-            horizon_aucs['outcome_365d'] = round(float(auc_365), 4)
+            horizon_aucs['outcome_252d'] = round(float(auc_365), 4)
             log.info(f"  Model trained on 365d labels → AUC on 365d test: {auc_365:.4f}")
         except Exception as e:
             log.warning(f"  365d model failed: {e}")
-            horizon_aucs['outcome_365d'] = None
+            horizon_aucs['outcome_252d'] = None
     else:
-        horizon_aucs['outcome_365d'] = None
+        horizon_aucs['outcome_252d'] = None
         log.warning("  365d: single class — skipped")
 
     # Train on 365d, eval on 20d (cross-horizon test)
@@ -713,7 +713,7 @@ def test_signal_decay(X_365d, y_365d):
             log.warning(f"  20d baseline model failed: {e}")
             horizon_aucs['outcome_20d_native'] = None
 
-    auc_365d = horizon_aucs.get('outcome_365d')
+    auc_365d = horizon_aucs.get('outcome_252d')
     auc_cross = horizon_aucs.get('outcome_20d_with_365d_model')
 
     # Does the long-term model predict long-term better than short-term?
@@ -834,21 +834,21 @@ def test_label_contamination(X, y, df_meta):
     nan_y = int(np.isnan(y.astype(float)).sum())
     log.info(f"  (b) NaN in X: {nan_X}, NaN in y: {nan_y}")
 
-    # c. Duplicate ticker+snapshot_date rows with different outcome_365d
+    # c. Duplicate ticker+snapshot_date rows with different outcome_252d
     dup_contamination = 0
     try:
         conn = sqlite3.connect(str(DB_PATH))
         df_check = pd.read_sql(
-            """SELECT ticker, snapshot_date, outcome_365d
+            """SELECT ticker, snapshot_date, outcome_252d
                FROM pipeline_snapshots
-               WHERE outcome_365d IS NOT NULL AND conviction_score IS NOT NULL
+               WHERE outcome_252d IS NOT NULL AND conviction_score IS NOT NULL
                ORDER BY snapshot_date""",
             conn
         )
         conn.close()
-        grouped = df_check.groupby(['ticker', 'snapshot_date'])['outcome_365d'].nunique()
+        grouped = df_check.groupby(['ticker', 'snapshot_date'])['outcome_252d'].nunique()
         dup_contamination = int((grouped > 1).sum())
-        log.info(f"  (c) Ticker+date pairs with conflicting outcome_365d: {dup_contamination}")
+        log.info(f"  (c) Ticker+date pairs with conflicting outcome_252d: {dup_contamination}")
     except Exception as e:
         log.warning(f"  (c) Duplicate check failed: {e}")
 
@@ -879,7 +879,7 @@ def test_label_contamination(X, y, df_meta):
         issues.append(f"NaN values found: X={nan_X}, y={nan_y}")
 
     if dup_contamination > 0:
-        issues.append(f"{dup_contamination} ticker+date pairs have conflicting outcome_365d values")
+        issues.append(f"{dup_contamination} ticker+date pairs have conflicting outcome_252d values")
 
     if autocorr > 0.5:
         issues.append(f"Lag-1 autocorrelation={autocorr:.4f} > 0.5 — possible contamination")
@@ -925,7 +925,7 @@ def print_summary():
     header = f"| {'Test':<50} | {'Result':^6} |"
     log.info("")
     log.info("=" * 64)
-    log.info("  LONG-TERM MODEL (outcome_365d) VALIDATION SUMMARY")
+    log.info("  LONG-TERM MODEL (outcome_252d) VALIDATION SUMMARY")
     log.info("=" * 64)
     log.info(line)
     log.info(header)
@@ -956,7 +956,7 @@ def print_summary():
 def write_report(start_time: datetime):
     elapsed = (datetime.now() - start_time).total_seconds()
     report = {
-        'model': 'LongTerm LightGBM (outcome_365d)',
+        'model': 'LongTerm LightGBM (outcome_252d)',
         'run_at': start_time.isoformat(),
         'elapsed_seconds': round(elapsed, 1),
         'log_file': str(LOG_PATH),

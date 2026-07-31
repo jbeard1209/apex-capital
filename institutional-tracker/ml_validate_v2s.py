@@ -775,10 +775,14 @@ def test_signal_decay(X_base, fc_for_interactions, params):
     log.info("=" * 70)
     log.info("TEST 7: Signal Decay Curve (1d, 5d, 10d, 20d targets)")
 
+    # Only columns that exist in pipeline_snapshots. 'outcome_10d' sat here and
+    # was never a real column -- build_feature_matrix raised, the except below
+    # logged a warning nobody read, and the 10d point of this decay curve has
+    # been None since the study was written. Guarded by
+    # test_pipeline_smoke.py::TestLabelColumnContract.
     horizons = [
         ('outcome_1d', '1d'),
         ('outcome_5d', '5d'),
-        ('outcome_10d', '10d'),
         ('outcome_20d', '20d'),
     ]
 

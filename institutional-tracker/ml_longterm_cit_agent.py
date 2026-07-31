@@ -6,14 +6,14 @@ Runs daily at noon UTC (cron: 0 12 * * *).
 
 PURPOSE
 -------
-Monitors the ML long-term pod (model_longterm.pkl, outcome_365d target,
+Monitors the ML long-term pod (model_longterm.pkl, outcome_252d target,
 ml_chain_lt*.py / ml_longterm*.py pipeline) and raises improvement proposals
 to chairman_action_required.json.
 
 CHECKS
 ------
   A) Model health       -- existence, age, walk-forward score
-  B) Label coverage     -- outcome_365d coverage in pipeline_snapshots
+  B) Label coverage     -- outcome_252d coverage in pipeline_snapshots
   C) Prediction health  -- output file freshness and validity
   D) Improvement proposals -- retraining, fundamental feature gap
 
@@ -59,8 +59,15 @@ _DATA_DIR           = "data"
 _MODEL_STALE_DAYS           = 90
 _MODEL_RETRAIN_SUGGESTION   = 60
 _WALK_FORWARD_FLOOR         = 0.535
-_LABEL_COVERAGE_FLOOR       = 0.50     # 50% minimum outcome_365d labeled
-_LABEL_CUTOFF_MAX_DAYS      = 400      # labels older than this are too stale
+_LABEL_COVERAGE_FLOOR       = 0.50     # 50% minimum outcome_252d labeled
+
+# A 252-TRADING-day label needs ~365 calendar days of forward prices, so the
+# newest snapshot that can ever carry one is ~1 year old. Measuring label age
+# against a flat constant therefore fires permanently once you drift past it
+# (it read "442 days old, threshold 400" while the backfill was only 77 days
+# behind). Measure the lag past the frontier instead.
+_LABEL_HORIZON_DAYS         = 365      # calendar days ~= 252 trading days
+_LABEL_BACKLOG_MAX_DAYS     = 90       # tolerated lag BEYOND the frontier
 _PREDICTION_STALE_HOURS     = 48
 _LOG_STALE_HOURS            = 48
 _CHAIRMAN_MAX_ENTRIES       = 20
@@ -202,7 +209,7 @@ def check_model_health(proposals):
 # =============================================================================
 
 def check_label_coverage(proposals):
-    logger.info("\n  [B] Long-term label coverage (outcome_365d)...")
+    logger.info("\n  [B] Long-term label coverage (outcome_252d)...")
 
     if not os.path.exists(_DB_PATH):
         _raise_issue(proposals, "HIGH", "BUG_FIX",
@@ -213,7 +220,7 @@ def check_label_coverage(proposals):
         conn = sqlite3.connect(_DB_PATH)
         c = conn.cursor()
 
-        # Check if pipeline_snapshots table has outcome_365d
+        # Check if pipeline_snapshots table has outcome_252d
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='pipeline_snapshots'")
         if not c.fetchone():
             logger.info("    pipeline_snapshots table not found -- skipping label coverage check.")
@@ -222,9 +229,9 @@ def check_label_coverage(proposals):
 
         c.execute("PRAGMA table_info(pipeline_snapshots)")
         cols = [row[1] for row in c.fetchall()]
-        if "outcome_365d" not in cols:
+        if "outcome_252d" not in cols:
             _raise_issue(proposals, "HIGH", "BUG_FIX",
-                         "outcome_365d column missing from pipeline_snapshots -- "
+                         "outcome_252d column missing from pipeline_snapshots -- "
                          "long-term labels have not been built")
             conn.close()
             return
@@ -232,11 +239,15 @@ def check_label_coverage(proposals):
         c.execute("SELECT COUNT(*) FROM pipeline_snapshots")
         total = c.fetchone()[0]
 
-        c.execute("SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL")
+        c.execute("SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL")
         labeled = c.fetchone()[0]
 
-        c.execute("SELECT MAX(snapshot_date) FROM pipeline_snapshots WHERE outcome_365d IS NOT NULL")
+        c.execute("SELECT MAX(snapshot_date) FROM pipeline_snapshots WHERE outcome_252d IS NOT NULL")
         latest_labeled = c.fetchone()[0]
+
+        # Rows we could ever label -- see the coverage block below.
+        c.execute("SELECT COUNT(*) FROM pipeline_snapshots WHERE outcome_20d IS NOT NULL")
+        labelable = c.fetchone()[0]
 
         conn.close()
 
@@ -245,29 +256,46 @@ def check_label_coverage(proposals):
                          "pipeline_snapshots is empty -- no data to train on")
             return
 
-        coverage_pct = labeled / total
-        logger.info("    outcome_365d coverage: %d/%d rows = %.1f%%",
-                    labeled, total, coverage_pct * 100)
+        # Coverage denominator is rows we could ever label, NOT every row in the
+        # table. 361k of the 383k snapshots have no forward price history at
+        # all, so dividing by `total` reported 4.6% and tripped the 50% floor
+        # forever; against rows that do have forward prices it is ~81%.
+        # outcome_20d is the honest proxy for "we have prices after this row".
+        if not labelable:
+            _raise_issue(proposals, "HIGH", "BUG_FIX",
+                         "no snapshot has any forward price history -- the outcome "
+                         "backfill has never run; long-term labels cannot exist")
+            return
+
+        coverage_pct = labeled / labelable
+        logger.info("    outcome_252d coverage: %d/%d labelable rows = %.1f%% "
+                    "(%d rows in table)", labeled, labelable, coverage_pct * 100, total)
 
         if coverage_pct < _LABEL_COVERAGE_FLOOR:
             _raise_issue(proposals, "MEDIUM", "BUG_FIX",
-                         "outcome_365d label coverage below %.0f%% (%d/%d rows = %.1f%%) -- "
-                         "model training data may be thin"
-                         % (_LABEL_COVERAGE_FLOOR * 100, labeled, total, coverage_pct * 100))
+                         "outcome_252d label coverage below %.0f%% (%d/%d labelable "
+                         "rows = %.1f%%) -- model training data may be thin"
+                         % (_LABEL_COVERAGE_FLOOR * 100, labeled, labelable,
+                            coverage_pct * 100))
 
-        # Check if latest labeled date is too old
+        # Is the backfill keeping up with the label frontier? Not "are the
+        # labels old" -- at a 1-year horizon they are always ~1 year old.
         if latest_labeled:
             try:
                 latest_dt = datetime.fromisoformat(latest_labeled)
-                days_since_label = (datetime.now() - latest_dt).days
-                logger.info("    Latest labeled snapshot_date: %s (%d days ago)",
-                            latest_labeled, days_since_label)
-                if days_since_label > _LABEL_CUTOFF_MAX_DAYS:
+                frontier = datetime.now() - timedelta(days=_LABEL_HORIZON_DAYS)
+                backlog_days = (frontier - latest_dt).days
+                logger.info("    Latest labeled: %s | frontier %s | backlog %d days",
+                            latest_labeled, frontier.date().isoformat(), backlog_days)
+                if backlog_days > _LABEL_BACKLOG_MAX_DAYS:
                     _raise_issue(proposals, "HIGH", "BUG_FIX",
-                                 "outcome_365d labels too old -- latest labeled snapshot_date "
-                                 "%s is %d days ago (threshold %dd); "
-                                 "forward prices may be stale"
-                                 % (latest_labeled, days_since_label, _LABEL_CUTOFF_MAX_DAYS))
+                                 "outcome_252d backfill is %d days behind the label "
+                                 "frontier (latest labeled %s, oldest labelable-but-"
+                                 "unlabeled ~%s, tolerance %dd) -- the label builder "
+                                 "is not keeping up"
+                                 % (backlog_days, latest_labeled,
+                                    frontier.date().isoformat(),
+                                    _LABEL_BACKLOG_MAX_DAYS))
             except Exception as e:
                 logger.warning("    Could not parse latest_labeled date: %s", e)
 
