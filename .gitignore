@@ -48,6 +48,7 @@ institutional-tracker/data/capital_efficiency_report.json
 institutional-tracker/data/chief_of_staff_report.json
 institutional-tracker/data/cos_advice_history.json
 institutional-tracker/data/hr_history.json
+institutional-tracker/data/ratchet_integrity_history.json
 institutional-tracker/data/hr_report.json
 institutional-tracker/data/hr_irm_sealed.json
 institutional-tracker/data/irm_daily_check.json
@@ -78,7 +79,6 @@ institutional-tracker/oracle_setup/oracle_attempts.log
 institutional-tracker/oracle_setup/try_oracle.py
 institutional-tracker/oracle_setup/deploy.py
 institutional-tracker/oracle_setup/setup_server.sh
-institutional-tracker/gcp_setup/
 
 # ── Generated reports (can be regenerated) ───────────────────────────────────
 institutional-tracker/reports/
