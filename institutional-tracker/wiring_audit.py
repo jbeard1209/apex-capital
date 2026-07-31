@@ -155,7 +155,19 @@ def check_glob_consumers_have_producers(sources: dict):
                     f"and none exist on disk — this consumer is blind (silent default)")
 
 
-def _declared_outputs(txt: str, out_re) -> list:
+def _code_only(txt: str) -> str:
+    """Module text with docstrings and # comments stripped.
+
+    Ordinary string literals are KEPT on purpose: a scheduler root invokes work
+    as subprocess.run(["python3", "some_agent.py"]), so dropping every string
+    would blind the reachability walk to exactly the calls it exists to find.
+    """
+    txt = re.sub(r'""".*?"""', '', txt, flags=re.S)
+    txt = re.sub(r"'''.*?'''", '', txt, flags=re.S)
+    return re.sub(r'#[^\n]*', '', txt)
+
+
+def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
     """The data/*.json files a module actually WRITES, in stable order.
 
     2026-07-30: this used to be `{every .json literal near the word "data"}`, which
@@ -176,11 +188,17 @@ def _declared_outputs(txt: str, out_re) -> list:
         if hit:
             var_of[m.group(1)] = hit.group(1)
 
-    write_ctx = []
-    for m in re.finditer(r'open\(([^)]*),\s*["\']w["\']|([\w.\[\]"\']+)\.write_text\(|'
-                         r'json\.dump\((?:[^()]|\([^()]*\))*\)|os\.replace\(([^)]*)\)',
-                         txt):
-        write_ctx.append(m.group(0))
+    patterns = [r'open\(([^)]*),\s*["\']w["\']', r'([\w.\[\]"\']+)\.write_text\(',
+                r'json\.dump\((?:[^()]|\([^()]*\))*\)', r'os\.replace\(([^)]*)\)']
+    # Handing the write to a shared helper is still a write, and the path the
+    # caller passes is still its declared output. Must be a CALL — `helper.fn(` —
+    # not a bare mention: chairman_inbox.py's docstring says "companion to
+    # chairman_decision_sla.py" and is a pure reader.
+    if writer_stems:
+        alt = "|".join(re.escape(s) for s in sorted(writer_stems))
+        patterns.append(rf'(?:{alt})\.\w+\((?:[^()]|\([^()]*\))*\)')
+
+    write_ctx = [m.group(0) for m in re.finditer("|".join(patterns), txt)]
     blob = "\n".join(write_ctx)
 
     written = set()
@@ -254,12 +272,21 @@ def check_orphan_agents(sources: dict):
     # as "scheduled", and the audit dutifully asked to delete them from the
     # baseline — the ratchet would have loosened itself on the strength of a list
     # that exists only inside a test. Being named by a test is not employment.
+    #
+    # And the traversal reads CODE, not prose. A docstring naming a module is
+    # not a call to it. 2026-07-31: chairman_queue.py's docstring explains which
+    # five agents used to carry duplicated copies of its merge; naming
+    # apex_system_cit_agent there was enough to pull that agent into `reachable`
+    # via a scheduled caller, and the audit promptly reported it "no longer an
+    # orphan" and asked for its removal from the baseline. It is still scheduled
+    # nowhere. Being named in a docstring is not employment either.
     prod = {n for n in sources if not n.startswith("test_")}
+    code = {n: _code_only(t) for n, t in sources.items()}
     reachable, frontier = set(roots), set(roots)
     while frontier:
         nxt = set()
         for cur in frontier:
-            txt = sources.get(cur, "")
+            txt = code.get(cur, "")
             for name in prod:
                 if name in reachable:
                     continue
@@ -274,15 +301,41 @@ def check_orphan_agents(sources: dict):
     # equally common "data/x.json" must match, or the check silently misses half
     # the producers in the codebase.
     out_re = re.compile(r'["\'](?:[\w.\-/]*/)?([a-z0-9_]+\.json)["\']')
+    write_re = re.compile(r'open\([^)]*,\s*["\']w["\']|\.write_text\(|json\.dump\(')
+
+    # A module that DELEGATES its write to a shared helper is still a producer.
+    # This gate used to test for a literal json.dump()/open(...,"w") in the
+    # module's own text, so on 2026-07-31 — when five agents' duplicated queue
+    # writes were consolidated into chairman_queue.py — apex_system_cit_agent.py
+    # stopped matching and the audit announced it was "no longer an orphan" and
+    # asked for its removal from the baseline. It had not been scheduled; the
+    # detector had merely stopped recognising it. That is the exact false
+    # all-clear the ratchet exists to prevent, and it would have loosened the
+    # net on the strength of a refactor.
+    #
+    # So: a module counts as a producer if it writes directly, or if it names a
+    # module that writes directly AND the two declare a common output. Requiring
+    # the shared output keeps this precise — merely importing something that
+    # happens to write a file is not producing that file.
+    writer_stems = {n[:-3] for n, t in sources.items()
+                    if not n.startswith("test_") and write_re.search(t)}
+
     for name, txt in sources.items():
         if name in reachable or name.startswith("test_"):
             continue
-        # only consider modules that look like agents writing a report
-        if not re.search(r'open\([^)]*,\s*["\']w["\']|\.write_text\(|json\.dump\(', txt):
+        others = writer_stems - {name[:-3]}
+        call_re = re.compile(r'(?:%s)\.\w+\(' % "|".join(re.escape(s) for s in sorted(others))) \
+            if others else None
+        if not write_re.search(txt) and not (call_re and call_re.search(txt)):
             continue
-        outs = _declared_outputs(txt, out_re)
+        outs = _declared_outputs(txt, out_re, writer_stems=others)
         for out in outs:
-            readers = [n for n, t in sources.items()
+            # Readers are counted in code too. This file's own docstrings name
+            # position_sizes.json while explaining a past bug, which was enough
+            # to make wiring_audit.py the sole "reader" of dynamic_position_sizer
+            # and promote it to a hard failure. A tool must not be a consumer of
+            # the thing it audits by virtue of describing it.
+            readers = [n for n, t in code.items()
                        if n != name and not n.startswith("test_") and out in t]
             if not readers:
                 continue
@@ -298,7 +351,8 @@ def check_orphan_agents(sources: dict):
             # (ARCH-2026-0730-orphan-agents). Hard-failing on them would block every
             # push until that triage lands — including the push that ships this very
             # detector. So known orphans are loud notes, and only NEW ones are hard
-            # failures. The list may only ever shrink: see check_orphan_baseline_shrinks().
+            # failures. The list may only ever shrink — enforced by the `stale`
+            # check below, which fails if a baselined entry stops being an orphan.
             (notes if name in _orphan_baseline() else problems).append(
                 msg + (" [known — pending board triage]" if name in _orphan_baseline() else "")
             )

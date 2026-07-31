@@ -1274,6 +1274,55 @@ class TestWiringContracts(unittest.TestCase):
             "an agent reachable ONLY via a test file must still be an orphan; "
             f"got {wiring_audit.problems}")
 
+    def test_a_docstring_mention_cannot_make_an_agent_look_scheduled(self):
+        """Prose naming a module is not a call to it.
+
+        2026-07-31: the reachability walk matched a module's stem anywhere in
+        another module's TEXT. chairman_queue.py's docstring names the five
+        agents that used to carry duplicated copies of its merge logic, and one
+        of those names, reached from a scheduled caller, was enough to mark
+        apex_system_cit_agent "reachable" — the audit then reported it "no
+        longer an orphan" and asked for its removal from the baseline, purely
+        because a refactor added a comment. Same failure as the test-file case
+        above: being described is not being scheduled.
+
+        Ordinary string literals must still count, or the walk goes blind to
+        subprocess.run(["python3", "agent.py"]) — the way half this firm runs.
+        """
+        import wiring_audit
+
+        sources = {
+            "main.py": 'import helper\n',
+            # A scheduled module that only DESCRIBES the orphan, in a docstring
+            # and a comment.
+            "helper.py": (
+                '"""Consolidates what ghost_agent.py used to duplicate."""\n'
+                '# ghost_agent.py previously wrote this itself\n'
+                'x = 1\n'
+            ),
+            "ghost_agent.py": (
+                'import json\n'
+                'OUT = "data/ghost_report.json"\n'
+                'json.dump({}, open(OUT, "w"))\n'
+            ),
+            "consumer.py": 'open("data/ghost_report.json")\n',
+        }
+        wiring_audit.problems = []
+        wiring_audit.check_orphan_agents(sources)
+        self.assertTrue(
+            any("ghost_agent.py" in p for p in wiring_audit.problems),
+            "an agent named only in prose must still be an orphan; "
+            f"got {wiring_audit.problems}")
+
+        # ...but a real invocation, in a string literal, does employ it.
+        sources["helper.py"] = 'subprocess.run(["python3", "ghost_agent.py"])\n'
+        wiring_audit.problems = []
+        wiring_audit.check_orphan_agents(sources)
+        self.assertFalse(
+            any("ghost_agent.py" in p for p in wiring_audit.problems),
+            "a module launched by subprocess IS scheduled and must not be "
+            f"flagged; got {wiring_audit.problems}")
+
     def test_orphan_agent_check_names_the_file_the_agent_really_writes(self):
         """The 'writes X' in a finding must be an output, and must not change per run.
 
