@@ -69,6 +69,18 @@ cat > "${LOCAL_DIR}deploy_stamp.json" <<STAMP
 STAMP
 echo "  Deploy stamp: $GIT_SHA @ $(date -u +%Y-%m-%d)"
 
+# ── 0b. Pull the live crontab BEFORE pushing anything ──────────────────────
+# data/vm_crontab_snapshot.txt is in the rsync allowlist below, so this deploy
+# is about to push the Mac's copy over the VM's. The VM refreshes that file
+# itself daily (11:10 UTC), which means a Mac copy that hasn't been refreshed
+# in a week would overwrite a fresher mirror with an older one — and the whole
+# point of the snapshot is to be the ground truth wiring_audit.py and hr_agent.py
+# measure prod against. Refreshing first makes the file we push identical to the
+# one already there. Non-fatal: a failed capture leaves the existing snapshot
+# alone (the script fails closed), and a stale mirror still beats no deploy.
+bash "${LOCAL_DIR}scripts/refresh_crontab_snapshot.sh" || \
+    echo "  WARNING: crontab snapshot refresh failed — pushing the existing copy."
+
 # ── 1. Sync project files ──────────────────────────────────────────────────
 echo ""
 echo "[1/3] Syncing project files..."

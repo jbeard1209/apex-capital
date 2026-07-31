@@ -1,0 +1,55 @@
+#!/bin/bash
+# =============================================================================
+# Apex Capital — pre-push gate.
+#
+# Blocks a push if the wiring audit or the contract tests fail. Catches the
+# silent producer/consumer bug class (a producer emits a rule/pod/category name
+# no consumer handles, .get()/try-except swallows it, output is produced but
+# never acted on) before it reaches prod, where the VM runs it 6x a day.
+#
+# Install (.git/hooks is not cloned, so every checkout must do this once):
+#   cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+#
+# CLAUDE.md has told every session to run exactly that command since the gate
+# was introduced — but scripts/git-hooks/pre-push has never existed in git. The
+# hook was written straight into .git/hooks on one Mac and never committed, so
+# the gate was real on that one machine and absent from every clone, including
+# the VM. Third instance of this shape found on 2026-07-31, after
+# build_365d_labels.py (referenced by nine modules, never ran) and
+# scripts/refresh_crontab_snapshot.sh (named by wiring_audit.py and by a test
+# that hard-fails without it, never written). A documented artifact is not a
+# built one.
+#
+# To bypass deliberately: git push --no-verify
+# =============================================================================
+
+TRACKER="$(git rev-parse --show-toplevel)/institutional-tracker"
+
+# Fail CLOSED. The original hook ended this line with `|| exit 0`, so anything
+# that made the cd fail — wrong layout, a worktree without the subdir — silently
+# allowed every push with a cheerful nothing. A gate that disables itself when
+# confused is the same failure this gate exists to catch. If the tree really is
+# unusual, --no-verify is the explicit escape hatch.
+cd "$TRACKER" || {
+    echo "[pre-push] BLOCKED: cannot cd to $TRACKER — the gate could not run."
+    echo "[pre-push] If this tree is intentionally laid out differently: git push --no-verify"
+    exit 1
+}
+
+echo "[pre-push] wiring audit + smoke tests..."
+
+python3 wiring_audit.py --quiet || {
+    echo "[pre-push] BLOCKED: wiring contract violation. Run: python3 wiring_audit.py"
+    exit 1
+}
+
+SMOKE_OUT="$(mktemp)"
+python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
+    echo "[pre-push] BLOCKED: smoke tests failed:"
+    tail -15 "$SMOKE_OUT"
+    rm -f "$SMOKE_OUT"
+    exit 1
+}
+rm -f "$SMOKE_OUT"
+
+echo "[pre-push] OK"

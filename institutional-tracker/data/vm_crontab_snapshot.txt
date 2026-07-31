@@ -1,6 +1,7 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-07-30T17:41:20Z from apex-capital via: ssh apex-capital 'crontab -l'
+# Captured 2026-07-31T15:19:46Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
+# Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
 APEX_HEALTHCHECK_URL=https://hc-ping.com/0ca2940f-74a7-4306-a5fe-c7078f7c79cc
 SHELL=/bin/bash
@@ -172,3 +173,50 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 55 */2 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 problem_lifecycle_sentinel.py >> logs/lifecycle_$(date +\%Y\%m\%d).log 2>&1
 # ── TECH-SHORT POD (Korea/AI-hardware regime shorts) — 3x/weekday ──
 20 13,17,20 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 tech_short_pod.py >> logs/tech_short_$(date +\%Y\%m\%d).log 2>&1
+
+# ── Scheduled 2026-07-31 (Co-Chairman authorised) ────────────────────────────
+# Five agents that were wired to consumers but scheduled on neither host, plus
+# two new ones. Each was smoke-run on this VM at exit 0 before being installed.
+
+# Risk-Limit Governor — 8:40 AM EDT = 12:40 UTC, Mon-Fri.
+# Governs the risk knobs (position size, open positions, stop-loss, deployment)
+# within a +/-10% band, one governed loosen per knob per day; tighten always
+# allowed. Runs before morning_briefing (13:15) so the briefing reads settled limits.
+40 12 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 risk_limit_governor.py >> logs/risk_governor_$(date +\%Y\%m\%d).log 2>&1
+
+# Macro Regime Model — 8:50 AM EDT = 12:50 UTC, Mon-Fri.
+# Emits the regime features (SPY momentum/MAs, VIX, yield curve, credit spreads,
+# breadth) that the briefing and pod3_macro read. Also before the 13:15 briefing.
+50 12 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 macro_regime_model.py >> logs/macro_regime_$(date +\%Y\%m\%d).log 2>&1
+
+# EDGAR Transcript Agent — 7:20 PM EDT = 23:20 UTC, daily.
+# Earnings transcripts land after the close, so this runs post-close and after
+# the 22:00 digest flush rather than competing with the trading day.
+20 23 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 edgar_transcript_agent.py >> logs/edgar_transcript_$(date +\%Y\%m\%d).log 2>&1
+
+# Institution Performance Tracker — Sunday 3:40 AM EDT = 07:40 UTC, weekly.
+# 13F-derived win rate / Sharpe / conviction-AUC per institution. The aggregate
+# feeds dynamic_position_sizer's Kelly estimate. 13F data moves quarterly, so
+# weekly is already generous.
+40 7 * * 0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 institution_performance_tracker.py >> logs/inst_perf_$(date +\%Y\%m\%d).log 2>&1
+
+# ML Improvement Loop — Saturday 2:30 AM EDT = 06:30 UTC, weekly.
+# Takes the next untested idea (60 queued) and runs Optuna + walk-forward CV.
+# Heavy: n_jobs=-1 on a 2-CPU VM. Saturday morning is the only window with no
+# main.py pipeline and no overnight_ml_runner (which ends its 0 3 * * 2-6 run
+# well before), so it cannot starve the trading path.
+30 6 * * 6 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_improvement_loop.py >> logs/ml_improve_$(date +\%Y\%m\%d).log 2>&1
+
+# HR Retirement Audit — Sunday 6:30 PM EDT = 22:30 UTC, weekly.
+# Runs 30 min after hr_agent's weekly pass so it audits a settled registry.
+# Catches wrongful firings: FIRED_DURING_BLOCK, CLONE_REPLACEMENT,
+# HOLLOW_SECOND_CHANCE, DUPLICATE_RECORDS. Findings go to the Chairman queue.
+30 22 * * 0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 hr_retirement_audit.py >> logs/hr_retire_audit_$(date +\%Y\%m\%d).log 2>&1
+
+# Crontab snapshot refresh — 7:10 AM EDT = 11:10 UTC, daily.
+# Mirrors THIS crontab into data/vm_crontab_snapshot.txt, which wiring_audit.py's
+# orphan check and hr_agent's attendance/ratchet checks measure reality against.
+# Nothing refreshed it before, and test_pipeline_smoke hard-fails once it passes
+# 14 days — daily keeps it green with a wide margin. Fails closed: a truncated
+# or failed capture leaves the old snapshot in place and exits non-zero.
+10 11 * * * cd "/home/jackbeard/institutional-tracker" && bash scripts/refresh_crontab_snapshot.sh >> logs/cron_snapshot_$(date +\%Y\%m\%d).log 2>&1
