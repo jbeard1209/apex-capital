@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-01T05:03:16Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-01T19:01:26Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -235,3 +235,14 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # has not reached anybody. Growth is fine (GREEN_GREW) — the ratchet only shrinks
 # by an explicit `--adopt` after a human has looked at what left.
 25 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 agent_roster.py --check >> logs/agent_roster_$(date +\%Y\%m\%d).log 2>&1
+
+# Reinstatement surveillance — one dated observation per weekday per agent under
+# watch (data/agent_probation_log.json), read by hr_retirement_audit.assess() at
+# the review date. The audit itself only runs WEEKLY (30 22 * * 0), which over a
+# one-month probation is ~4 observations against a MIN_OBSERVATIONS bar of 10 —
+# the verdict would have been NOT_ASSESSABLE forever and the promised review
+# could never have concluded. Weekdays only, and after the 20:15 main.py run:
+# a weekend row would count toward the evidence bar on a day the agent had no
+# opportunity to earn credit. Idempotent per (date, agent), so a double-fire or
+# a manual run cannot inflate the count.
+0 21 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 hr_retirement_audit.py --observe >> logs/hr_surveillance_$(date +\%Y\%m\%d).log 2>&1

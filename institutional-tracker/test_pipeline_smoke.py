@@ -4075,6 +4075,89 @@ class TestWrongfulRetirement(unittest.TestCase):
         self.assertEqual(late[0]["severity"], "HIGH", "an overdue review is not MEDIUM")
         self.assertIn("OVERDUE", late[0]["description"])
 
+    def test_probation_is_graded_on_the_window_not_on_all_history(self):
+        """A probation verdict may only read evidence from the probation.
+
+        THE DEFECT (caught 2026-08-01, before the first review ran).
+        _credit_channel() took a `since` argument and no caller passed it, so
+        assess() measured "was anyone being credited?" across all 50 cycles on
+        record while describing it, to the Chairman, as "during this window".
+        Against the live log those disagree completely: lifetime is 36 approved
+        / 7 attributed / alive, and 2026-08-01 onward is 0 / 0 / dead. Simulated
+        with a flawless month of surveillance, the unscoped version returned
+        TERMINATE for eight of the nine agents under watch — every one of them
+        convicted of earning nothing during a month in which the firm credited
+        nobody, on attributions that all predate their probation.
+
+        That is the 2026-05-14 wrongful retirement rebuilt inside the mechanism
+        written to prevent it, and it would have surfaced only at the review, a
+        month after anyone was looking.
+        """
+        import datetime as dt
+        import hr_retirement_audit as A
+
+        watched = {"GlobalTechAgent": (dt.date(2026, 9, 1),
+                                       {"date": "2026-08-01"})}
+        # Credit exists — but ALL of it lands before the window opens.
+        log = [{"timestamp": "2026-07-20T12:00:00", "decisions": [
+                    {"manager_decision": "APPROVED", "manager_action": "BUY",
+                     "source_agent": "Agent someoneelse_cos"},
+                    {"manager_decision": "APPROVED", "manager_action": "BUY",
+                     "source_agent": "Agent another_cos"}]}]
+        obs = [{"date": "2026-08-%02d" % d, "agent": "GlobalTechAgent"}
+               for d in range(1, 22)]          # 21 observations, well over the bar
+
+        ch = A._window_channels(watched, log)["GlobalTechAgent"]
+        self.assertEqual(ch["window_start"], "2026-08-01")
+        self.assertEqual(ch["cycles_scanned"], 0,
+                         "a cycle from before the window must not be scanned")
+        self.assertFalse(ch["alive"],
+                         "credit earned before anyone was watching cannot make "
+                         "the monitoring window's channel 'alive'")
+
+        v = A.assess("GlobalTechAgent", {"permanent": True}, obs, ch)
+        self.assertEqual(
+            v["verdict"], "NOT_ASSESSABLE",
+            "an agent must not be terminated on a window in which the firm "
+            "credited nobody — this is exactly why the 2026-05-14 retirements "
+            "were wrongful")
+
+        # Positive control: the guard must not have bought safety by making
+        # TERMINATE unreachable. Same agent, same log, credit INSIDE the window.
+        log2 = log + [{"timestamp": "2026-08-15T12:00:00", "decisions": [
+                          {"manager_decision": "APPROVED", "manager_action": "BUY",
+                           "source_agent": "Agent someoneelse_cos"}]}]
+        ch2 = A._window_channels(watched, log2)["GlobalTechAgent"]
+        self.assertTrue(ch2["alive"])
+        self.assertEqual(
+            A.assess("GlobalTechAgent", {"permanent": True}, obs, ch2)["verdict"],
+            "TERMINATE")
+
+        # ...and a credit to the agent ITSELF, inside the window, is a KEEP.
+        log3 = log2 + [{"timestamp": "2026-08-20T12:00:00", "decisions": [
+                           {"manager_decision": "APPROVED", "manager_action": "BUY",
+                            "source_agent": "Agent globaltechagent_cos"}]}]
+        ch3 = A._window_channels(watched, log3)["GlobalTechAgent"]
+        self.assertEqual(
+            A.assess("GlobalTechAgent", {"permanent": True}, obs, ch3)["verdict"],
+            "KEEP")
+
+        # A permanent agent's TERMINATE is a recommendation, never an execution.
+        self.assertTrue(
+            A.assess("GlobalTechAgent", {"permanent": True}, obs, ch2)
+             ["requires_chairman"],
+            "terminating a permanent agent needs explicit Co-Chairman sign-off")
+
+        # An unrecorded window start must fail toward NOT_ASSESSABLE, never
+        # toward a measured-and-empty window, which is what convicts.
+        blind = A._window_channels(
+            {"GlobalTechAgent": (dt.date(2026, 9, 1), {})}, log3)["GlobalTechAgent"]
+        self.assertIsNone(blind["window_start"])
+        self.assertFalse(blind["alive"])
+        self.assertEqual(
+            A.assess("GlobalTechAgent", {"permanent": True}, obs, blind)["verdict"],
+            "NOT_ASSESSABLE")
+
     def test_a_vacated_retirement_is_always_on_the_hook(self):
         """Invariant: whoever vacates a retirement must set a review date.
 

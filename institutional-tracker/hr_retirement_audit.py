@@ -300,10 +300,50 @@ def _credit_channel(manager_log=None, since=None):
         "approved": approved,
         "attributed": attributed,
         "credited": credited,
+        "window_start": str(since)[:10] if since else None,
         # ALIVE means "somebody, anybody, got credit". Not "picks happened" —
         # an approval nobody is credited for cannot exonerate or convict anyone.
         "alive": attributed > 0,
     }
+
+
+def _window_channels(watched, manager_log=None):
+    """One credit channel per agent, scoped to ITS OWN monitoring window.
+
+    THE BUG THIS FIXES, caught before the first review ran. `_credit_channel`
+    took a `since` argument and neither caller ever passed it, so the channel
+    was measured across all 50 cycles on record while `assess` described it —
+    in its own docstring and in the sentence it prints to the Chairman — as
+    "during this window". Those are not the same measurement, and here they
+    give opposite answers: lifetime is 36 approved / 7 attributed / alive,
+    while 2026-08-01 onward is 0 / 0 / dead.
+
+    Simulated against the real log with a flawless month of surveillance, that
+    gap returned TERMINATE for eight of the nine agents under watch — convicting
+    them of earning nothing during a window in which the firm credited nobody,
+    on the strength of attributions that all predate the probation. It is the
+    precise reasoning that made the 2026-05-14 retirements wrongful, rebuilt
+    inside the mechanism written to prevent them. The one KEEP was no better:
+    it rested on a credit earned before anyone was watching.
+
+    Windows differ per agent (the seven start 2026-08-01, Biotech 2026-07-31),
+    so this is per-agent, cached by start date.
+    """
+    cycles = manager_log if manager_log is not None else _load(MANAGER_LOG_PATH, [])
+    cache, out = {}, {}
+    for cn, (_due, ev) in watched.items():
+        since = str(ev.get("date") or "")[:10] or None
+        if since not in cache:
+            if since is None:
+                # No recorded start means we cannot say what the window contains.
+                # Fail toward NOT_ASSESSABLE: an unmeasurable window must never
+                # read as a measured-and-empty one, which is what convicts.
+                cache[since] = dict(_credit_channel(cycles, since="9999-12-31"),
+                                    window_start=None)
+            else:
+                cache[since] = _credit_channel(cycles, since=since)
+        out[cn] = cache[since]
+    return out
 
 
 def _credited_hits(class_name, credited):
@@ -336,7 +376,7 @@ def observe(registry=None, history=None, manager_log=None, today=None,
     if not watched:
         return {"observed": 0, "date": day, "agents": []}
 
-    channel = _credit_channel(manager_log)
+    channels = _window_channels(watched, manager_log)
     by_class = {a.get("class_name"): a for a in registry.get("agents", [])}
 
     log = _load(path, {})
@@ -347,6 +387,7 @@ def observe(registry=None, history=None, manager_log=None, today=None,
 
     for cn, (due, _ev) in watched.items():
         a = by_class.get(cn) or {}
+        channel = channels[cn]
         rows.append({
             "date": day,
             "agent": cn,
@@ -359,7 +400,13 @@ def observe(registry=None, history=None, manager_log=None, today=None,
             # count lets the review tell those two apart a month from now.
             "exoneration_count": a.get("exoneration_count", 0),
             "last_exoneration_reason": a.get("last_exoneration_reason"),
-            "credited_picks_to_date": _credited_hits(cn, channel["credited"]),
+            # All four are scoped to THIS agent's monitoring window, not to all
+            # history — "credited to date" meant lifetime until 2026-08-01, so a
+            # pick earned before anyone was watching read as work done under
+            # supervision, in both directions (a free KEEP, and an `alive`
+            # channel that licensed a TERMINATE).
+            "window_start": channel["window_start"],
+            "credited_picks_in_window": _credited_hits(cn, channel["credited"]),
             "channel_alive": channel["alive"],
             "channel_approved": channel["approved"],
             "channel_attributed": channel["attributed"],
@@ -390,6 +437,12 @@ def assess(class_name, agent, observations, channel):
       TERMINATE       the channel was alive, OTHER agents were credited, and
                       this one was credited with none.
 
+    `channel` MUST come from _window_channels(), which scopes every count to
+    this agent's own monitoring window. Handing this function an unscoped,
+    all-history channel silently converts every sentence below from "during the
+    month we watched" into "at any point on record" — see _window_channels for
+    what that did when simulated against the live log.
+
     TERMINATE is a recommendation, never an execution, for a `permanent` agent:
     chief_of_staff_agent.py holds that permanent agents cannot be retired
     without explicit Co-Chairman authorisation, and these seven are the reason
@@ -401,6 +454,11 @@ def assess(class_name, agent, observations, channel):
     ev = {
         "observations": len(mine),
         "credited_picks": hits,
+        # Every count below is scoped to the monitoring window. `channel` is
+        # built by _window_channels for THIS agent; passing an unscoped one is
+        # the defect that returned TERMINATE for eight of nine agents.
+        "window_start": channel.get("window_start"),
+        "window_cycles_scanned": channel["cycles_scanned"],
         "channel_alive": channel["alive"],
         "firm_approved_picks": channel["approved"],
         "firm_attributed_picks": channel["attributed"],
@@ -424,10 +482,12 @@ def assess(class_name, agent, observations, channel):
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
                 "evidence": ev,
                 "why": ("no agent anywhere in the firm was credited with an "
-                        "approved pick during this window (%d approved, %d "
-                        "attributed), so zero picks is evidence about the "
-                        "attribution channel, not about this agent"
-                        % (channel["approved"], channel["attributed"]))}
+                        "approved pick during this window (%s onward: %d cycles, "
+                        "%d approved, %d attributed), so zero picks is evidence "
+                        "about the attribution channel, not about this agent"
+                        % (channel.get("window_start") or "unknown start",
+                           channel["cycles_scanned"], channel["approved"],
+                           channel["attributed"]))}
     if not ev["other_agents_credited"]:
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
                 "evidence": ev,
@@ -460,14 +520,14 @@ def _reinstatement_reviews(history, today=None, registry=None,
     if observations is None:
         log = _load(PROBATION_LOG_PATH, {})
         observations = (log.get("observations") or []) if isinstance(log, dict) else []
-    channel = _credit_channel(manager_log)
+    channels = _window_channels(watched, manager_log)
 
     findings = []
     for cn, (due, ev) in watched.items():
         days_left = (due - today).days
         if days_left > REVIEW_LEAD_DAYS:
             continue
-        v = assess(cn, by_class.get(cn), observations, channel)
+        v = assess(cn, by_class.get(cn), observations, channels[cn])
         findings.append({
             "check": "REINSTATEMENT_REVIEW_DUE",
             "severity": "HIGH" if days_left < 0 else "MEDIUM",
