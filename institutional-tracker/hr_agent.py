@@ -1323,7 +1323,118 @@ except Exception:                                    # pragma: no cover
                     or a.get("retired_at") or a.get("retirement_reason"))
 
 
-def audit_retirement_coverage() -> dict:
+# =============================================================================
+# SWEEP QUEUE — HR's side of the weekly firm sweep
+# =============================================================================
+
+SWEEP_QUEUE_PATH = "data/hr_action_queue.json"
+
+# What HR *does* about each kind of sweep finding. This table is the whole point
+# of routing anything to HR: a queue that is only read is not a consumer, it is a
+# spectator. Every kind the taxonomy can send here has a disposition, so an item
+# can never land in HR's inbox with nobody knowing what to do with it.
+#
+# Dispositions are deliberately conservative on the first pass — the sweep sees
+# wiring, not work quality, and an agent that runs nowhere has done nothing
+# wrong. Only the kinds that mean "this agent is not doing its job" reach PIP.
+SWEEP_DISPOSITIONS = {
+    "AGENT_UNSCHEDULED":           ("NOT_AN_AGENT_FAULT", "Management defect: the agent is employed but scheduled nowhere. HR does not rate an agent for work it was never asked to do — CIT owns the cron fix; HR holds the headcount question until it runs."),
+    "AGENT_UNREVIEWED":            ("ENROL_IN_REVIEW",    "Agent has never been through an HR cycle. Add to the review roster; a rating cannot be earned without one."),
+    "AGENT_ISOLATED":              ("INVESTIGATE",        "Agent talks to nobody. Either its output was meant to be consumed and the wiring is broken (CIT), or it was never needed (headcount decision for HR + board)."),
+    "AGENT_OUTPUT_UNCONSUMED":     ("INVESTIGATE",        "The agent works and nobody reads it. Confirm whether the consumer was lost or never existed before judging the agent."),
+    "AGENT_INPUT_UNPRODUCED":      ("NOT_AN_AGENT_FAULT", "The agent is starved of an input nobody writes. Upstream defect — CIT owns it."),
+    "AGENT_OUTPUT_STALE":          ("PIP_CANDIDATE",      "Scheduled and silent: the agent is expected to produce and has stopped. This is the shape of an agent that has quietly died at its desk."),
+    "AGENT_OUTPUT_NEVER_PRODUCED": ("PIP_CANDIDATE",      "Employed since day one and has never produced anything. Verify it was ever wired, then decide employment."),
+    "AGENT_ZOMBIE":                ("TERMINATE_PROPERLY", "Retired on paper and still executing. This is the Oracle failure in miniature — stop it, then reconcile the three retirement records."),
+    "AGENT_FILE_MISSING":          ("CLEAN_ROSTER",       "The roster names a file that no longer exists. Either restore it or strike the row; a roster that lists ghosts under-reports every coverage gap."),
+    "AGENT_IMPORT_FAILS":          ("SUSPEND_PENDING_FIX","The agent cannot even load, so it has not worked since the day it broke. Suspend its rating until CIT restores it."),
+    "AGENT_IMPORT_TIMEOUT":        ("SUSPEND_PENDING_FIX","Hangs on import — same effect as broken, plus it can wedge whatever imports it."),
+    "AGENT_REPORT_FAILS":          ("INVESTIGATE",        "Runs but cannot report. Its work may be fine and invisible, which is indistinguishable from no work at all."),
+    "AGENT_WRITES_ON_IMPORT":      ("NOT_AN_AGENT_FAULT", "Mutates firm state merely by being imported — a code defect for CIT, not an employment matter."),
+}
+
+
+def review_sweep_queue(path: str = None, now: str = None) -> dict:
+    """Read the weekly sweep's HR queue, assign a disposition, escalate breaches.
+
+    THE CONTRACT: sweep_governance.py writes data/hr_action_queue.json; this is
+    its only consumer. If this function is deleted, that queue becomes exactly
+    the orphan the sweep exists to find — so test_pipeline_smoke asserts the pair.
+
+    HR is not asked to fix wiring; it is asked to decide what each finding means
+    for the AGENT. That decision is stamped back onto the queue so the next
+    sweep, the board packet, and problem_lifecycle_sentinel all read the same
+    record rather than three private opinions.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    path = path or os.path.join(here, SWEEP_QUEUE_PATH)
+    now = now or datetime.now().isoformat()
+
+    queue = _safe_load(path)
+    if not isinstance(queue, list):
+        return {"status": "NO_QUEUE", "open": 0, "triaged": 0, "overdue": [],
+                "note": "sweep queue absent or malformed — sweep_governance may not have run"}
+
+    triaged, overdue, unknown_kinds, by_disposition = 0, [], [], {}
+    changed = False
+    for e in queue:
+        if not isinstance(e, dict) or e.get("status") != "open":
+            continue
+        kind = e.get("kind")
+        disp, rationale = SWEEP_DISPOSITIONS.get(
+            kind,
+            # No silent default. An unmapped kind means the taxonomy grew and HR
+            # was not told, which is precisely the producer/consumer drift this
+            # firm keeps rediscovering — so it is surfaced as its own finding.
+            ("UNMAPPED_ESCALATE", "HR has no disposition for finding kind %r. "
+                                  "The taxonomy has outgrown HR's policy table." % kind))
+        if disp == "UNMAPPED_ESCALATE":
+            unknown_kinds.append(kind)
+        if e.get("hr_disposition") != disp:
+            e["hr_disposition"] = disp
+            e["hr_rationale"] = rationale
+            e["hr_reviewed_at"] = now
+            changed = True
+        triaged += 1
+        by_disposition[disp] = by_disposition.get(disp, 0) + 1
+
+        # SLA breach: HR flags it, but does not escalate to the Chairman itself —
+        # problem_lifecycle_sentinel owns that path, and two producers racing to
+        # escalate the same item is how the Chairman's queue got to 88.
+        try:
+            age = (datetime.fromisoformat(now)
+                   - datetime.fromisoformat(str(e.get("first_seen")))).days
+        except Exception:
+            age = 0
+        if age > int(e.get("sla_days") or 20):
+            e["sla_breached"] = True
+            overdue.append({"key": e.get("key"), "age_days": age,
+                            "disposition": disp, "severity": e.get("severity")})
+
+    if changed:
+        try:
+            tmp = path + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(queue, f, indent=2, default=str)
+            os.replace(tmp, path)
+        except Exception as _we:
+            logger.debug(f"  [HR] Could not write sweep queue triage: {_we}")
+
+    resolved = sum(1 for e in queue if isinstance(e, dict) and e.get("status") == "resolved")
+    return {
+        "status": "OK" if not unknown_kinds else "TAXONOMY_DRIFT",
+        "open": triaged, "resolved_to_date": resolved,
+        "triaged": triaged, "by_disposition": by_disposition,
+        "overdue": sorted(overdue, key=lambda x: -x["age_days"])[:20],
+        "overdue_count": len(overdue),
+        "unmapped_kinds": sorted(set(unknown_kinds)),
+        "pip_candidates": [e.get("subject") for e in queue
+                           if isinstance(e, dict) and e.get("status") == "open"
+                           and e.get("hr_disposition") == "PIP_CANDIDATE"],
+    }
+
+
+def audit_retirement_coverage(registry=None) -> dict:
     """A retirement is not just an agent leaving — it's a sector losing a voice.
 
     THE GAP THIS CLOSES (Chairman directive, 2026-07-30, "it would be a shame
@@ -1342,9 +1453,18 @@ def audit_retirement_coverage() -> dict:
     second-guess whether a retirement was justified (that's HR's ordinary
     performance process) — it only asks whether the seat got refilled.
     """
-    here = os.path.dirname(os.path.abspath(__file__))
-    registry = _safe_load(os.path.join(here, REGISTRY_PATH))
-    agents = registry.get("agents", []) if isinstance(registry, dict) else []
+    # `registry` is injectable so detector_mutation_harness can feed this a state
+    # with a planted uncovered lane and prove the audit still fires. A detector
+    # that can only ever read live disk cannot be mutation-tested, and an
+    # untestable detector is an unverified assurance — which is how this codebase
+    # shipped a coverage test that passed against a registry it wrote itself.
+    if registry is None:
+        here = os.path.dirname(os.path.abspath(__file__))
+        registry = _safe_load(os.path.join(here, REGISTRY_PATH))
+    if isinstance(registry, list):
+        agents = registry
+    else:
+        agents = registry.get("agents", []) if isinstance(registry, dict) else []
 
     active_lanes = set()
     for a in agents:
@@ -1984,6 +2104,14 @@ def run_hr_review(send_email: bool = False) -> dict:
         report["roster_coverage"] = audit_roster_coverage()
     except Exception as _rz_e:
         logger.debug(f"  [HR] Roster coverage audit error (non-fatal): {_rz_e}")
+
+    # Weekly firm sweep: HR's inbox. This is the ONLY consumer of
+    # data/hr_action_queue.json — without it the sweep would be routing findings
+    # into a file nobody opens, which is the exact bug class the sweep detects.
+    try:
+        report["sweep_queue"] = review_sweep_queue()
+    except Exception as _sq_e:
+        logger.debug(f"  [HR] Sweep queue review error (non-fatal): {_sq_e}")
 
     return report
 

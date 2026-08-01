@@ -4942,6 +4942,238 @@ class TestChairmanQueueCannotRefork(unittest.TestCase):
                              "Chairman is asked to decide something he already did")
 
 
+class TestSweepTaxonomyIsClosed(unittest.TestCase):
+    """No sweep finding may exist that nobody owns.
+
+    The firm's signature bug is a producer emitting an identifier no consumer
+    handles, swallowed by a `.get()` default. A weekly sweep is a machine for
+    emitting identifiers, so building one without closing that hole would have
+    industrialised the exact failure it was built to catch.
+
+    These tests assert the closure holds end to end: every kind has a route,
+    every route names a queue that exists, every queue has a real consumer, and
+    every category is one the deputy board actually recognises. If someone adds
+    a finding kind next year and stops here, the finding never reaches anyone.
+    """
+
+    def test_kinds_and_routes_are_a_bijection(self):
+        import sweep_taxonomy as tax
+        self.assertEqual(set(tax.KINDS), set(tax.ROUTES),
+                         "a declared kind has no route, or a route has no kind — "
+                         "either way a finding can be produced that reaches nobody")
+
+    def test_unknown_kind_raises_rather_than_defaulting(self):
+        """The single most important property: failure is loud, never silent."""
+        import sweep_taxonomy as tax
+        with self.assertRaises(tax.UnroutedFinding):
+            tax.route_for("A_KIND_NOBODY_DECLARED")
+        with self.assertRaises(tax.UnroutedFinding):
+            tax.make_finding("A_KIND_NOBODY_DECLARED", "subj", "detail")
+
+    def test_every_owner_queue_exists_and_has_a_consumer(self):
+        """A queue with no reader is a wastebasket with a nameplate."""
+        import sweep_taxonomy as tax
+        here = Path(__file__).parent
+        for owner, spec in tax.OWNERS.items():
+            qfile = Path(spec["queue"]).name
+            consumers = spec["consumer"]
+            self.assertTrue(consumers, f"{owner} has no declared consumer")
+            found = False
+            for c in consumers:
+                p = here / c
+                self.assertTrue(p.exists(), f"{owner}'s consumer {c} does not exist")
+                if qfile in p.read_text():
+                    found = True
+            self.assertTrue(found,
+                            f"{owner}'s queue {qfile} is named by no consumer in "
+                            f"{consumers} — findings routed there would be orphaned")
+
+    def test_every_category_is_one_the_deputy_board_recognises(self):
+        import sweep_taxonomy as tax
+        import deputy_board
+        known = (set(deputy_board.DEPUTY_CATEGORIES)
+                 | set(deputy_board.FULL_BOARD_ONLY_CATEGORIES)
+                 | set(deputy_board.AUTO_IMPLEMENT_CATEGORIES))
+        for kind, route in tax.ROUTES.items():
+            self.assertIn(route["category"], known,
+                          f"{kind} files under category {route['category']!r}, which "
+                          f"no deputy_board set handles — it would skip the vote")
+
+    def test_hr_has_a_disposition_for_every_kind_routed_to_it(self):
+        """HR's policy table must cover exactly what the taxonomy sends it."""
+        import sweep_taxonomy as tax
+        import hr_agent
+        hr_kinds = {k for k, r in tax.ROUTES.items() if r["to_hr"]}
+        missing = hr_kinds - set(hr_agent.SWEEP_DISPOSITIONS)
+        self.assertFalse(missing,
+                         f"HR receives {sorted(missing)} with no disposition — it "
+                         f"would land in HR's inbox with nobody knowing what to do")
+
+    def test_hr_queue_producer_and_consumer_agree_on_the_path(self):
+        """sweep_governance writes it; hr_agent reads it; same file or neither works."""
+        import sweep_governance, hr_agent
+        self.assertEqual(Path(sweep_governance.HR_QUEUE_PATH).name,
+                         Path(hr_agent.SWEEP_QUEUE_PATH).name)
+
+    def test_sweep_reuses_wiring_audits_regexes_rather_than_copying_them(self):
+        """One identity function per contract.
+
+        agent_sweep once carried its own near-identical copy of these patterns.
+        The copy required a literal `data/` prefix, so every `DATA / "x.json"`
+        was invisible to it and six well-wired agents were reported as speaking
+        to nobody. Identity, not equality — two objects that merely match today
+        drift apart the first time one is edited.
+        """
+        import re as _re
+        import agent_sweep, wiring_audit
+
+        src = {"probe_mod": 'json.dump(x, open("data/probe_marker.json", "w"))'}
+        baseline = agent_sweep._graph(src)
+        self.assertIn("probe_marker.json", baseline["writes"]["probe_mod"],
+                      "the shared pattern no longer recognises a plain data write")
+
+        # Swap wiring_audit's pattern for one that matches nothing. If agent_sweep
+        # kept a private copy, the graph is unchanged and it never learns about a
+        # fix made in wiring_audit — the drift that reported six well-wired agents
+        # as speaking to nobody.
+        original = wiring_audit.DATA_JSON_RE
+        wiring_audit.DATA_JSON_RE = _re.compile(r"(?!x)x")
+        try:
+            patched = agent_sweep._graph(src)
+        finally:
+            wiring_audit.DATA_JSON_RE = original
+        self.assertFalse(patched["writes"]["probe_mod"],
+                         "agent_sweep ignored wiring_audit's pattern — it is using a "
+                         "copy, which will drift the first time either side is edited")
+
+    def test_only_assurance_failures_reach_the_chairman(self):
+        """He asked to hear about serious decisions, not routine defects.
+
+        A queue nobody can drain is a queue nobody reads. Only the kinds meaning
+        "the assurance system itself is broken" escalate; everything else is
+        work for CIT with an SLA, and problem_lifecycle_sentinel escalates it
+        only if that SLA is blown.
+        """
+        import sweep_taxonomy as tax
+        escalating = {k for k, r in tax.ROUTES.items() if r["to_chairman"]}
+        self.assertEqual(escalating,
+                         {"DETECTOR_BLIND", "SWEEP_CRASHED",
+                          "SWEEP_DID_NOT_RUN", "UNROUTED_FINDING"})
+        crit = tax.make_finding("AGENT_IMPORT_FAILS", "x", "y")
+        self.assertFalse(crit["to_chairman"],
+                         "a routine CRITICAL escalated to the Chairman — this is how "
+                         "his queue refilled to 88 items the last time")
+
+    def test_governance_holds_items_open_when_a_collector_was_blind(self):
+        """Absence of evidence must not be recorded as evidence of repair.
+
+        Closure is by re-observation. If the collector that would have produced a
+        finding never ran, its silence proves nothing — and closing on it would
+        mark every open item fixed at the exact moment the firm went blind.
+        """
+        import sweep_governance as sg
+        crashed = sg._closable_kinds({"agent_sweep": {"error": "boom"}}, probe=True)
+        self.assertFalse([k for k in crashed if k.startswith("AGENT_")],
+                         "agent_sweep crashed, yet its findings were still closable")
+        healthy = sg._closable_kinds({"agent_sweep": {}}, probe=True)
+        self.assertIn("AGENT_ISOLATED", healthy)
+        static = sg._closable_kinds({"agent_sweep": {}}, probe=False)
+        self.assertNotIn("AGENT_IMPORT_FAILS", static,
+                         "a static-only run closed an import finding it never tested")
+
+    def test_closure_happens_by_re_observation_and_reopens_on_relapse(self):
+        """The full lifecycle, in one pass: open → close → reopen.
+
+        Closure has to be earned by the condition disappearing from a sweep that
+        actually looked, never by anyone declaring it fixed — that is the only
+        rule a band-aid cannot game. And a relapse must reopen the same key
+        rather than filing a fresh item, or a chronically broken agent looks
+        like a run of unrelated one-offs.
+        """
+        import tempfile
+        import sweep_governance as sg
+        import sweep_taxonomy as tax
+
+        f = tax.make_finding("AGENT_ISOLATED", "lonely_agent", "talks to nobody")
+        closable = {"AGENT_ISOLATED"}
+        with tempfile.TemporaryDirectory() as td:
+            original = sg.HR_QUEUE_PATH
+            sg.HR_QUEUE_PATH = Path(td) / "q.json"
+            try:
+                r1 = sg._reconcile([f], "2026-08-01T00:00:00", closable)
+                self.assertEqual(r1["open"], 1)
+
+                # A sweep that looked and did NOT find it: closed.
+                r2 = sg._reconcile([], "2026-08-08T00:00:00", closable)
+                self.assertEqual(r2["open"], 0)
+                self.assertEqual(len(r2["closed_this_run"]), 1)
+
+                # It comes back: same key reopens, with the relapse counted.
+                r3 = sg._reconcile([f], "2026-08-15T00:00:00", closable)
+                self.assertEqual(r3["open"], 1)
+                entries = json.loads(sg.HR_QUEUE_PATH.read_text())
+                self.assertEqual(len(entries), 1, "a relapse filed a duplicate item")
+                self.assertEqual(entries[0]["reopen_count"], 1)
+            finally:
+                sg.HR_QUEUE_PATH = original
+
+    def test_a_decision_already_made_is_not_re_litigated_weekly(self):
+        """Ask the board once, not every Monday until someone acts.
+
+        An approved proposal leaves the pending queue, so a naive weekly re-file
+        would put the same question back on the agenda forever — and append to
+        cos_meeting_requests.json, which is already 9,994 entries deep. But an
+        EXECUTED decision must not suppress anything: if the condition is still
+        there afterwards, the board is entitled to hear it again.
+        """
+        import sweep_governance as sg
+        outstanding = [{"dedup_key": "sweep-agent_unscheduled", "status": "awaiting_chairman"}]
+        self.assertEqual(sg._already_decided(outstanding), {"sweep-agent_unscheduled"})
+        for done in ("resolved", "closed", "implemented", "DONE"):
+            self.assertEqual(
+                sg._already_decided([{"dedup_key": "sweep-agent_unscheduled",
+                                      "status": done}]), set(),
+                f"status={done} still suppressed the finding — a fix that was "
+                f"applied and did not work would never be reported again")
+        # Someone else's queue entries must never silence the sweep.
+        self.assertEqual(sg._already_decided(
+            [{"dedup_key": "pip-integrity-2026", "status": "awaiting_chairman"}]), set())
+
+    def test_board_titles_dedup_across_weeks(self):
+        """cit_director dedups by title with digits collapsed to '#'.
+
+        So a headline that changes shape with the count — a plural 's', say —
+        files a second proposal the week a batch drops to one item, and the
+        board sees the same finding twice with no way to tell.
+        """
+        import re
+        import sweep_governance as sg
+        for kind in ("AGENT_UNSCHEDULED", "AGENT_ISOLATED"):
+            one = "Sweep: %d finding(s) — %s" % (1, sg._headline(kind))
+            many = "Sweep: %d finding(s) — %s" % (45, sg._headline(kind))
+            self.assertEqual(re.sub(r"\d+", "#", one), re.sub(r"\d+", "#", many))
+
+    def test_every_kind_has_a_board_headline(self):
+        """A kind with no headline crashes _batch on the week it first fires."""
+        import sweep_taxonomy as tax
+        import sweep_governance as sg
+        for kind in tax.KINDS:
+            self.assertTrue(sg._headline(kind))
+
+    def test_the_sweep_report_is_deadmanned(self):
+        """A weekly job that stops running must itself raise an alarm.
+
+        Without this the sweep's own disappearance is indistinguishable from a
+        clean week — the failure mode that let the Oracle host run unwatched for
+        69 days.
+        """
+        import cit_director
+        self.assertIn("agent_sweep_report.json",
+                      str(cit_director.CITPipelineMonitor.EXPECTED_FILES),
+                      "the weekly sweep's report is not freshness-monitored, so the "
+                      "sweep silently ceasing would look exactly like all-clear")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -4982,6 +5214,7 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestRosterMergeLosesNobody))
     suite.addTests(loader.loadTestsFromTestCase(TestHRSeesTheWholeFirm))
     suite.addTests(loader.loadTestsFromTestCase(TestChairmanQueueCannotRefork))
+    suite.addTests(loader.loadTestsFromTestCase(TestSweepTaxonomyIsClosed))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

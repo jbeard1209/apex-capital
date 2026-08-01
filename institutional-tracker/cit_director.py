@@ -707,6 +707,13 @@ class CITPipelineMonitor:
         "data/research_team_report.json":     96,
         "data/energy_research_report.json":   96,
         "data/cit_pending_proposals.json":    50,  # CIT itself should run every 12h
+        # Deadman for the weekly firm sweep (sweep_governance.py). Weekly = 168h;
+        # the staleness branch below fires at 1.5× the threshold, so 180 alarms
+        # at ~11 days — one missed run plus a few days of grace. Without this
+        # entry the sweep quietly ceasing would be indistinguishable from a
+        # clean week, which is precisely how the Oracle host ran unwatched for
+        # 69 days. Guarded by test_pipeline_smoke::test_the_sweep_report_is_deadmanned.
+        "data/agent_sweep_report.json":      180,
     }
 
     def analyze(self) -> list[dict]:

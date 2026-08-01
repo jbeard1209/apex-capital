@@ -29,6 +29,16 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
 
+# The canonical way this codebase recognises a data/*.json reference and a write
+# site, hoisted to module level 2026-08-01 so agent_sweep.py can IMPORT them
+# rather than keep its own copy. It kept one for about an hour: a near-identical
+# regex that required a literal `data/` prefix, which made every path built as
+# DATA / "x.json" invisible and reported six well-wired agents as speaking to
+# nobody. Two definitions of "an output" give the firm two answers about who
+# talks to whom, which is the same shape as the three definitions of "retired".
+DATA_JSON_RE = re.compile(r'["\'](?:[\w.\-/]*/)?([a-z0-9_]+\.json)["\']')
+WRITE_RE = re.compile(r'open\([^)]*,\s*["\']w["\']|\.write_text\(|json\.dump\(')
+
 problems = []   # hard contract violations -> nonzero exit
 notes    = []   # soft observations (worth a look, not a failure)
 
@@ -300,8 +310,7 @@ def check_orphan_agents(sources: dict):
     # Tolerate a directory prefix: both os.path.join(DATA_DIR, "x.json") and the
     # equally common "data/x.json" must match, or the check silently misses half
     # the producers in the codebase.
-    out_re = re.compile(r'["\'](?:[\w.\-/]*/)?([a-z0-9_]+\.json)["\']')
-    write_re = re.compile(r'open\([^)]*,\s*["\']w["\']|\.write_text\(|json\.dump\(')
+    out_re, write_re = DATA_JSON_RE, WRITE_RE
 
     # A module that DELEGATES its write to a shared helper is still a producer.
     # This gate used to test for a literal json.dump()/open(...,"w") in the
