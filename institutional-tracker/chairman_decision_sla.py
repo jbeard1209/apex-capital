@@ -38,6 +38,12 @@ from __future__ import annotations
 import json, argparse, datetime
 from pathlib import Path
 
+# One identity function for the whole Chairman-queue contract. If the ingest
+# de-duped on a different key than the reconciler merges on, every sync would be
+# undone by the next ingest — the producer/consumer mismatch this firm keeps
+# rediscovering. Imported, never re-implemented.
+from chairman_queue_sync import group_key as _group_key
+
 DATA = Path(__file__).resolve().parent / "data"
 CHAIR_ACTION  = DATA / "chairman_action_required.json"   # upstream producers
 QUEUE_PATH    = DATA / "chairman_decision_queue.json"     # the app-facing inbox (this agent owns it)
@@ -84,14 +90,32 @@ def _ingest(queue_by_id):
         return 0
     now = _now()
     added = 0
+
+    # Ingest de-dupes on the SAME identity chairman_queue_sync merges on, not on
+    # the raw id. Producers re-append one grievance every cycle with a bumped
+    # counter ("CRO at HIGH for 41 days" → "…42 days"), which is a distinct id
+    # and an identical decision; keying on id alone let 124 rows of one CRO
+    # complaint into the Chairman's inbox. Ids already folded into a queue entry
+    # (merged_ids) must not walk back in as new items either.
+    seen_keys = set()
+    seen_ids = set(queue_by_id)
+    for q in queue_by_id.values():
+        seen_keys.add(_group_key(q))
+        seen_ids.update(q.get("merged_ids") or [])
+
     for a in actions:
         if not isinstance(a, dict):
             continue
         if a.get("status") != "awaiting_chairman":
             continue
         aid = a.get("id")
-        if not aid or aid in queue_by_id:
+        if not aid or aid in seen_ids:
             continue
+        akey = _group_key(a)
+        if akey in seen_keys:
+            continue
+        seen_keys.add(akey)
+        seen_ids.add(aid)
         # The 50-day SLA clock starts when the item ENTERS this managed queue
         # (now), NOT from the upstream item's historical timestamp. Anchoring to
         # old first_seen values would retroactively blow the deadline on the
@@ -101,6 +125,12 @@ def _ingest(queue_by_id):
             "id": aid,
             "severity": a.get("severity", "MEDIUM"),
             "description": a.get("description", ""),
+            # dedup_key/title are carried through, not dropped: _group_key reads
+            # them, so an item that arrives with a producer-supplied dedup_key
+            # must keep it or it will hash differently on the next run and be
+            # re-ingested as a "new" decision forever.
+            "dedup_key": a.get("dedup_key"),
+            "title": a.get("title"),
             "source": a.get("source", "unknown"),
             "status": "awaiting_chairman",
             "first_surfaced": _iso(now),

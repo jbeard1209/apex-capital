@@ -1,0 +1,2486 @@
+{
+  "generated_at": "2026-08-01T04:41:40.002963",
+  "count": 155,
+  "agents": [
+    {
+      "name": "BiotechResearchAgent",
+      "kind": "registry",
+      "file": "agents/cos_biotechresearchagent.py",
+      "tier": 1,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CITArchitectureAdvisor",
+      "kind": "registry",
+      "file": "cit_director.py",
+      "tier": 0,
+      "team": "cit",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CITCodeInspector",
+      "kind": "registry",
+      "file": "cit_director.py",
+      "tier": 0,
+      "team": "cit",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CITDirector",
+      "kind": "registry",
+      "file": "cit_director.py",
+      "tier": 0,
+      "team": "cit",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CITPipelineMonitor",
+      "kind": "registry",
+      "file": "cit_director.py",
+      "tier": 0,
+      "team": "cit",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CITStrategyAnalyst",
+      "kind": "registry",
+      "file": "cit_director.py",
+      "tier": 0,
+      "team": "cit",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CanaryAgent",
+      "kind": "registry",
+      "file": "canary_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ChiefOfStaff",
+      "kind": "registry",
+      "file": "chief_of_staff.py",
+      "tier": 0,
+      "team": null,
+      "employment": "superseded",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CommunicationsMediaAgent",
+      "kind": "registry",
+      "file": "agents/cos_communicationsmediaagent.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ConsumerDiscretionaryAgent",
+      "kind": "registry",
+      "file": "agents/cos_consumerdiscretionaryagent.py",
+      "tier": 1,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "CryptoEquitiesAgent",
+      "kind": "registry",
+      "file": "agents/cos_cryptoequitiesagent.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "DividendDefensiveAgent",
+      "kind": "registry",
+      "file": "agents/cos_dividenddefensiveagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "DividendYieldAgent",
+      "kind": "registry",
+      "file": "agents/cos_dividendyieldagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "EarningsCatalystAgent",
+      "kind": "registry",
+      "file": "agents/cos_earningscatalystagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ExecutionAuditorAgent",
+      "kind": "registry",
+      "file": "agents/cos_executionauditoragent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FECITAgent",
+      "kind": "registry",
+      "file": "fe_cit_agent.py",
+      "tier": null,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FECapitalAllocationAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_capitalallocation_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEContrarianRecoveryAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_contrarianrecovery_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEFamilyBusinessAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_familybusiness_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEHardMoneyAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_hardmoney_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEHiddenAssetsAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_hiddenassets_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEInsuranceValueAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_insurance_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEInternationalValueAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_internationalvalue_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEPipeline",
+      "kind": "registry",
+      "file": "fe_pipeline.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FEQualityCompoundersAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_qualitycompounders_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FESmallMidCapValueAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_smallmidcapvalue_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FESpecialSituationsAgent",
+      "kind": "registry",
+      "file": "agents/cos_fe_specialsituations_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FICITAgent",
+      "kind": "registry",
+      "file": "fi_cit_agent.py",
+      "tier": 1,
+      "team": "infrastructure",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIConvertibleAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_convertible_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FICreditSpreadAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_creditspread_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIDistressedAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_distressed_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIDurationAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_duration_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIHighYieldAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_highyield_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIInvestmentGradeAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_investmentgrade_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIPipeline",
+      "kind": "registry",
+      "file": "fi_pipeline.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FIPreferredAgent",
+      "kind": "registry",
+      "file": "agents/cos_fi_preferred_agent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FinancialSectorAgent",
+      "kind": "registry",
+      "file": "agents/cos_financialsectoragent.py",
+      "tier": 1,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FirstEagleValueAgent",
+      "kind": "registry",
+      "file": "agents/cos_firsteaglevalueagent.py",
+      "tier": 1,
+      "team": "r_and_d",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "FraudWatchdog",
+      "kind": "registry",
+      "file": "fe_fraud_watchdog.py",
+      "tier": null,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "GeopoliticalRiskAnalyst",
+      "kind": "registry",
+      "file": "agents/cos_geopoliticalriskanalyst.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "GlobalMacroETFAgent",
+      "kind": "registry",
+      "file": "agents/cos_globalmacroetfagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "GlobalTechAgent",
+      "kind": "registry",
+      "file": "agents/cos_globaltechagent.py",
+      "tier": 1,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "HRDevelopmentOfficer",
+      "kind": "registry",
+      "file": "agents/cos_hrdevelopmentofficer.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "HRPerformanceOfficer",
+      "kind": "registry",
+      "file": "agents/cos_hrperformanceofficer.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "HealthcarePharmaAgent",
+      "kind": "registry",
+      "file": "agents/cos_healthcarepharmaagent.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "HistoricalContextAnalyst",
+      "kind": "registry",
+      "file": "agents/cos_historicalcontextanalyst.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "IPOMomentumAgent",
+      "kind": "registry",
+      "file": "agents/cos_ipomomentumagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "IndependentRiskManager",
+      "kind": "registry",
+      "file": "irm_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "superseded",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "IndustrialsDefenseAgent",
+      "kind": "registry",
+      "file": "agents/cos_industrialsdefenseagent.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "InternationalEmergingAgent",
+      "kind": "registry",
+      "file": "agents/cos_internationalemergingagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MacroPolicyHistorian",
+      "kind": "registry",
+      "file": "agents/cos_macropolicyhistorian.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MacroRatesSensitivityAgent",
+      "kind": "registry",
+      "file": "agents/cos_macroratessensitivityagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MacroRegimeMonitorAgent",
+      "kind": "registry",
+      "file": "agents/cos_macroregimemonitoragent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ManagementQualityAnalyzer",
+      "kind": "registry",
+      "file": "fe_management_quality.py",
+      "tier": null,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ManagerAgent",
+      "kind": "registry",
+      "file": "manager_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MaterialsMiningAgent",
+      "kind": "registry",
+      "file": "agents/cos_materialsminingagent.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "retired",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MicroCapAlphaAgent",
+      "kind": "registry",
+      "file": "agents/cos_microcapalphaagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MissedWinnersAgent",
+      "kind": "registry",
+      "file": "missed_winners_agent.py",
+      "tier": null,
+      "team": "analytics",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "MoatAnalyzer",
+      "kind": "registry",
+      "file": "fe_moat_analyzer.py",
+      "tier": null,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "OptionsFlowMonitorAgent",
+      "kind": "registry",
+      "file": "agents/cos_optionsflowmonitoragent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "QuantFactorScreenerAgent",
+      "kind": "registry",
+      "file": "agents/cos_quantfactorscreeneragent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "RiskManager",
+      "kind": "registry",
+      "file": "risk_manager.py",
+      "tier": 0,
+      "team": null,
+      "employment": "superseded",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ShortInterestMonitorAgent",
+      "kind": "registry",
+      "file": "agents/cos_shortinterestmonitoragent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "SmallCapGrowthAgent",
+      "kind": "registry",
+      "file": "agents/cos_smallcapgrowthagent.py",
+      "tier": 1,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "SystemPerformanceAnalyst",
+      "kind": "registry",
+      "file": "agents/cos_systemperformanceanalyst.py",
+      "tier": 2,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "TechnicalPatternAgent",
+      "kind": "registry",
+      "file": "agents/cos_technicalpatternagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ValueOpportunityAgent",
+      "kind": "registry",
+      "file": "agents/cos_valueopportunityagent.py",
+      "tier": 3,
+      "team": "research",
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "activist_investor_monitor",
+      "kind": "module",
+      "file": "fe_research_agents/activist_investor_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "apex_improvement_board",
+      "kind": "module",
+      "file": "apex_improvement_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "apex_system_cit_agent",
+      "kind": "module",
+      "file": "apex_system_cit_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "behavioral_analyst",
+      "kind": "module",
+      "file": "irm_board/behavioral_analyst.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "board_meeting",
+      "kind": "module",
+      "file": "board_meeting.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "capital_efficiency_agent",
+      "kind": "module",
+      "file": "capital_efficiency_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "chairman_decision_sla",
+      "kind": "module",
+      "file": "chairman_decision_sla.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "chairman_queue",
+      "kind": "module",
+      "file": "chairman_queue.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "chief_learning_officer",
+      "kind": "module",
+      "file": "teaching_division/chief_learning_officer.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "cit_implementation_agent",
+      "kind": "module",
+      "file": "cit_implementation_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "cit_pipeline_integrity_agent",
+      "kind": "module",
+      "file": "cit_pipeline_integrity_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "cit_watchdog",
+      "kind": "module",
+      "file": "cit_watchdog.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "cos_fi_municipal_agent",
+      "kind": "module",
+      "file": "agents/cos_fi_municipal_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "cos_fi_tips_agent",
+      "kind": "module",
+      "file": "agents/cos_fi_tips_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "creative_agent",
+      "kind": "module",
+      "file": "creative_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "crypto_signal_agent",
+      "kind": "module",
+      "file": "crypto_signal_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "data_integrity_sentinel",
+      "kind": "module",
+      "file": "data_integrity_sentinel.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "deputy_board",
+      "kind": "module",
+      "file": "deputy_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "deputy_monitor",
+      "kind": "module",
+      "file": "deputy_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "dynamic_position_sizer",
+      "kind": "module",
+      "file": "dynamic_position_sizer.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "edgar_transcript_agent",
+      "kind": "module",
+      "file": "edgar_transcript_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "energy_research_team",
+      "kind": "module",
+      "file": "energy_research_team.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "etf_pod_board",
+      "kind": "module",
+      "file": "etf_pod_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "etf_research_agent",
+      "kind": "module",
+      "file": "predictive_model/etf_research_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "fe_board",
+      "kind": "module",
+      "file": "fe_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "fe_cio_agent",
+      "kind": "module",
+      "file": "fe_cio_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "fi_board",
+      "kind": "module",
+      "file": "fi_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "fi_credit_monitor",
+      "kind": "module",
+      "file": "fi_credit_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "fi_position_monitor",
+      "kind": "module",
+      "file": "fi_position_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "fi_risk_monitor",
+      "kind": "module",
+      "file": "fi_risk_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "freshness_sentinel",
+      "kind": "module",
+      "file": "freshness_sentinel.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "head_agent",
+      "kind": "module",
+      "file": "head_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "hr_agent",
+      "kind": "module",
+      "file": "hr_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "hr_retirement_audit",
+      "kind": "module",
+      "file": "hr_retirement_audit.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "institution_performance_tracker",
+      "kind": "module",
+      "file": "institution_performance_tracker.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "international_analyst",
+      "kind": "module",
+      "file": "international_analyst.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "issue_tracker",
+      "kind": "module",
+      "file": "issue_tracker.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "log_review_agent",
+      "kind": "module",
+      "file": "log_review_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "logic_officer",
+      "kind": "module",
+      "file": "logic_officer.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "logic_team",
+      "kind": "module",
+      "file": "logic_team.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "logic_team_implementation_agent",
+      "kind": "module",
+      "file": "logic_team_implementation_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "logic_team_trainer",
+      "kind": "module",
+      "file": "logic_team_trainer.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "macro_analyst",
+      "kind": "module",
+      "file": "irm_board/macro_analyst.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "metric_sanity_sentinel",
+      "kind": "module",
+      "file": "metric_sanity_sentinel.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_alpha_decay_monitor",
+      "kind": "module",
+      "file": "ml_alpha_decay_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_alt_data_agent",
+      "kind": "module",
+      "file": "ml_alt_data_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_data_watchdog",
+      "kind": "module",
+      "file": "ml_data_watchdog.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_drift_monitor",
+      "kind": "module",
+      "file": "ml_drift_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_feature_drift_monitor",
+      "kind": "module",
+      "file": "ml_feature_drift_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_improvement_agent",
+      "kind": "module",
+      "file": "ml_improvement_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_live_test_runner",
+      "kind": "module",
+      "file": "ml_live_test_runner.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_longterm_cit_agent",
+      "kind": "module",
+      "file": "ml_longterm_cit_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_longterm_data_watchdog",
+      "kind": "module",
+      "file": "ml_longterm_data_watchdog.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_longterm_drift_monitor",
+      "kind": "module",
+      "file": "ml_longterm_drift_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_longterm_experiment_runner",
+      "kind": "module",
+      "file": "ml_longterm_experiment_runner.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_longterm_improvement_agent",
+      "kind": "module",
+      "file": "ml_longterm_improvement_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_longterm_label_checker",
+      "kind": "module",
+      "file": "ml_longterm_label_checker.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_pod_board",
+      "kind": "module",
+      "file": "ml_pod_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_rd_bridge_agent",
+      "kind": "module",
+      "file": "ml_rd_bridge_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_shortterm_cit_agent",
+      "kind": "module",
+      "file": "ml_shortterm_cit_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "ml_shortterm_experiment_runner",
+      "kind": "module",
+      "file": "ml_shortterm_experiment_runner.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "operations_director",
+      "kind": "module",
+      "file": "operations_director.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "overnight_ml_runner",
+      "kind": "module",
+      "file": "overnight_ml_runner.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "performance_tracker",
+      "kind": "module",
+      "file": "performance_tracker.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "pipeline_ops_analyst",
+      "kind": "module",
+      "file": "irm_board/pipeline_ops_analyst.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "pod_health_monitor",
+      "kind": "module",
+      "file": "pod_health_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "pod_macro_agent",
+      "kind": "module",
+      "file": "pod_macro_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "portfolio_attribution_agent",
+      "kind": "module",
+      "file": "portfolio_attribution_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "portfolio_tracker",
+      "kind": "module",
+      "file": "portfolio_tracker.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "position_aging_agent",
+      "kind": "module",
+      "file": "position_aging_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "position_risk_monitor",
+      "kind": "module",
+      "file": "position_risk_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "pretrade_compliance_agent",
+      "kind": "module",
+      "file": "pretrade_compliance_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "problem_lifecycle_sentinel",
+      "kind": "module",
+      "file": "problem_lifecycle_sentinel.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "quant_risk_analyst",
+      "kind": "module",
+      "file": "irm_board/quant_risk_analyst.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "quiver_signal_agent",
+      "kind": "module",
+      "file": "quiver_signal_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "rd_geopolitical_team",
+      "kind": "module",
+      "file": "rd_geopolitical_team.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "rd_historical_analyst",
+      "kind": "module",
+      "file": "rd_historical_analyst.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "rd_market_event_monitor",
+      "kind": "module",
+      "file": "rd_market_event_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "rd_pod_board",
+      "kind": "module",
+      "file": "rd_pod_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "research_team",
+      "kind": "module",
+      "file": "research_team.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "review_agent",
+      "kind": "module",
+      "file": "review_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "short_interest_monitor",
+      "kind": "module",
+      "file": "short_interest_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "st_daily_tracker",
+      "kind": "module",
+      "file": "st_daily_tracker.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "strategy_council",
+      "kind": "module",
+      "file": "strategy_council.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "synthesis_agent",
+      "kind": "module",
+      "file": "fe_research_agents/synthesis_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "tca_agent",
+      "kind": "module",
+      "file": "tca_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "tech_short_pod",
+      "kind": "module",
+      "file": "tech_short_pod.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "trade_review_team",
+      "kind": "module",
+      "file": "trade_review_team.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "mac",
+        "vm"
+      ],
+      "first_declared": "2026-08-01",
+      "last_seen": "2026-08-01",
+      "retired_at": null,
+      "retirement_reason": null
+    }
+  ]
+}

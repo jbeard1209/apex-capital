@@ -38,15 +38,37 @@ def load_pending():
     return [i for i in q if isinstance(i, dict) and i.get("status") == "awaiting_chairman"]
 
 
+def reconcile():
+    """Fold the VM's copy of the queue into this host's before reading it.
+
+    Until 2026-08-01 this reader showed the MAC's queue while chairman_decision_sla
+    ran only on the VM: Jack saw 10 items while 55 more sat on the other host, and
+    129 decisions he had already made were invisible to the escalator that was
+    about to hand them to the board. The inbox is only honest if it reconciles
+    first. Returns a warning string when it could not, because a reader that
+    silently falls back to a stale local file is the same blind spot again.
+    """
+    try:
+        from chairman_queue_sync import sync
+        sync(write=True)
+        return None
+    except Exception as e:
+        return f"could not reach the VM ({str(e)[:60]}) — this queue may be stale"
+
+
 def main():
     ap = argparse.ArgumentParser(description="Show decisions awaiting the Chairman (app inbox).")
     ap.add_argument("--limit", type=int, default=5)
     ap.add_argument("--quiet-if-empty", action="store_true",
                     help="print nothing at all when the queue is empty (for hooks)")
+    ap.add_argument("--no-sync", action="store_true",
+                    help="skip the cross-host reconcile (offline / tests)")
     args = ap.parse_args()
 
+    warning = None if args.no_sync else reconcile()
+
     pending = load_pending()
-    if not pending and args.quiet_if_empty:
+    if not pending and args.quiet_if_empty and not warning:
         return
 
     now = datetime.datetime.utcnow()
@@ -55,6 +77,8 @@ def main():
 
     n = len(pending)
     print("┌─ CHAIRMAN DECISION QUEUE " + "─" * 38)
+    if warning:
+        print(f"│  ⚠  {warning}")
     if n == 0:
         print("│  ✅ Nothing awaiting your decision, Jack.")
         print("└" + "─" * 63)

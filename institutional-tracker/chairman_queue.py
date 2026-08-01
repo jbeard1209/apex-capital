@@ -41,6 +41,9 @@ DEFAULT_MAX_ENTRIES = 20
 #: statuses that mean "the Chairman has not dealt with this yet"
 OPEN_STATUSES = frozenset({"awaiting_chairman", "open"})
 
+#: Eviction order when a source exceeds its cap — least severe goes first.
+SEVERITY_RANK = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
+
 
 def _load(path):
     """Fail-OPEN to an empty list only when the file genuinely isn't there.
@@ -120,12 +123,35 @@ def submit(new_entries, source, path=DEFAULT_PATH,
 
     combined = existing + added
 
-    # Cap ONLY our own entries, oldest first. Another producer's item is never
-    # a candidate for eviction, whatever the queue length.
+    # Cap ONLY our own entries. Another producer's item is never a candidate for
+    # eviction, whatever the queue length.
+    #
+    # Evict the LEAST severe first, oldest-first within a severity — not blind
+    # oldest. Straight FIFO threw away a HIGH "seven agents were retired and
+    # never stopped trading" to make room for a LOW "we cannot date the risk
+    # memo", because the HIGH happened to be submitted one position earlier in
+    # the same call. What the Chairman loses to a cap has to be the least
+    # important thing in the queue, not the earliest.
     own = [i for i, e in enumerate(combined) if e.get("source") == source]
+    evicted = []
     if len(own) > max_entries:
-        drop = set(own[: len(own) - max_entries])
+        ranked = sorted(own, key=lambda i: (SEVERITY_RANK.get(
+            str(combined[i].get("severity", "")).upper(), 0), i))
+        drop = set(ranked[: len(own) - max_entries])
+        evicted = [combined[i] for i in sorted(drop)]
         combined = [e for i, e in enumerate(combined) if i not in drop]
+
+    # Report what was WRITTEN, not what was offered. `len(added)` counted entries
+    # the cap had already thrown out one line later, so a dropped HIGH finding
+    # was logged as "raised" and the caller believed it had reached someone.
+    dropped_ids = {id(e) for e in evicted}
+    added = [e for e in added if id(e) not in dropped_ids]
+    if evicted:
+        logger.warning(
+            "  Chairman queue: %d %s entr(ies) EVICTED by the per-source cap of "
+            "%d and did NOT reach the Chairman: %s",
+            len(evicted), source, max_entries,
+            ", ".join("%s[%s]" % (e.get("id"), e.get("severity")) for e in evicted))
 
     _uniquify_ids(combined)
 

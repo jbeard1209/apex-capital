@@ -932,6 +932,39 @@ def _cross_audit_hrdo(hrdo_assessments: dict) -> dict:
 # ORCHESTRATOR
 # =============================================================================
 
+def _probe_import(name: str, rel: str, here: str):
+    """Import an agent the way its scheduler would, and raise if it can't.
+
+    Root-level modules import by name. Agents inside a package directory must
+    NOT: `teaching_division/` is shadowed by `teaching_division.py`, so
+    `import_module("teaching_division.chief_learning_officer")` raises
+    ModuleNotFoundError and the attendance audit would invent a broken agent
+    that in fact runs fine as `python3 teaching_division/chief_learning_officer.py`.
+    A false CANNOT_START is worse than none — it is a management finding that
+    sends someone to fix nothing, and it makes the real ones easier to dismiss.
+    So package-dir agents are loaded from their file with their own directory
+    on sys.path, which is exactly what running them as a script does.
+    """
+    import importlib.util
+    if not rel:
+        importlib.import_module(name)
+        return
+    path = os.path.join(here, rel)
+    spec = importlib.util.spec_from_file_location(f"_hr_probe_{name}", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"no import spec for {rel}")
+    mod = importlib.util.module_from_spec(spec)
+    pkg_dir = os.path.dirname(path)
+    sys.path.insert(0, pkg_dir)
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        try:
+            sys.path.remove(pkg_dir)
+        except ValueError:
+            pass
+
+
 def audit_attendance() -> dict:
     """Which agents never come to work, and which cannot work at all?
 
@@ -979,7 +1012,8 @@ def audit_attendance() -> dict:
         except Exception:
             continue
 
-    findings = {"cannot_start": [], "never_scheduled": [], "checked": 0}
+    findings = {"cannot_start": [], "never_scheduled": [], "missing_file": [],
+                "checked": 0}
     try:
         import wiring_audit
         watched = list(getattr(wiring_audit, "AGENT_MODULES", []) or [])
@@ -995,19 +1029,89 @@ def audit_attendance() -> dict:
                                                 "_runner.py", "_sizer.py"))
         )
 
-    for name in watched:
+    # ── Union in the canonical roster ────────────────────────────────────────
+    # The suffix scan above finds 48 modules. The roster (agent_roster.py, merged
+    # across both hosts) lists 72, and the 46 it adds are not marginal: the full
+    # board, the deputy board, the Logic Team, HR's own retirement audit, the
+    # Chairman SLA, and every ML drift monitor. Attendance was checking the
+    # agents whose FILENAMES happened to end in _agent.py — which is a naming
+    # convention, not a roster. `board_meeting.py` grades proposals and could
+    # have failed to import for a month without HR noticing, for no better
+    # reason than that it isn't called board_meeting_agent.py.
+    #
+    # Keyed by import target, not bare name: roster modules live in packages
+    # (fe_research_agents/, agents/), and `import_module("activist_investor_
+    # monitor")` would raise ModuleNotFoundError and be reported as CANNOT_START
+    # — a checker inventing its own broken agents.
+    targets = {n: None for n in watched}
+    runs_via, by_file = {}, {}
+    try:
+        roster = _safe_load(os.path.join(here, ROSTER_PATH))
+        for r in (roster.get("agents", []) if isinstance(roster, dict) else []):
+            if r.get("name") and r.get("runs_via"):
+                runs_via[r["name"]] = r["runs_via"]
+            if r.get("file"):
+                by_file[r["file"]] = r["name"]
+            f = r.get("file") or ""
+            if not f.endswith(".py"):
+                continue
+            if not r.get("file_exists", True):
+                # A superseded row pointing at a deleted predecessor is recorded
+                # history, not a missing agent — risk_manager.py was replaced by
+                # risk_manager_agent.py on purpose. Reporting those three every
+                # day would train the reader to ignore the field that is supposed
+                # to catch a real disappearance.
+                if r.get("employment") != "superseded":
+                    findings["missing_file"].append({"agent": r.get("name"), "file": f})
+                continue
+            if r.get("kind") != "module":
+                continue   # registry agents are exercised via research_team
+            targets[r.get("name")] = f if "/" in f else None
+    except Exception as _r_e:
+        logger.debug(f"  [HR] Roster unavailable to attendance audit: {_r_e}")
+
+    # Reconcile the suffix scan's names against the roster's. `fe_cit_agent.py`
+    # is the registry agent FECITAgent; left alone, HR would report one agent as
+    # absent under its module name while the roster reported it employed under
+    # its class name — two rows, one agent, and a headcount nobody can reconcile.
+    # The roster also records which agent-shaped files are NOT agents (wake_agent
+    # is a shell shim); that judgement lives in one place, not two.
+    try:
+        from agent_roster import NOT_AGENTS as _not_agents
+    except Exception:
+        _not_agents = set()
+    for stem in list(targets):
+        if f"{stem}.py" in _not_agents:
+            targets.pop(stem)
+        elif by_file.get(f"{stem}.py", stem) != stem:
+            targets.pop(stem)   # already on the roster under its class name
+
+    for name, rel in sorted(targets.items()):
         findings["checked"] += 1
         try:
-            importlib.import_module(name)
+            _probe_import(name, rel, here)
         except Exception as e:
             findings["cannot_start"].append({"agent": name,
                                              "error": f"{type(e).__name__}: {e}"[:180]})
             continue
-        if name not in main_src and name not in cron_src:
+        # ONE definition of "scheduled" for the whole firm. The roster's is
+        # strictly better than the substring test below it — word-boundary
+        # matched (so `risk_manager` isn't called scheduled because
+        # `risk_manager_agent.py` is in cron) and it follows one level of
+        # imports (so a module the pipeline calls but cron never names is
+        # correctly employed). Two definitions would give HR and the roster
+        # different headcounts for the same firm, which is how an audit ends up
+        # arguing with itself instead of with reality.
+        via = runs_via.get(name)
+        if via is not None:
+            if via == ["UNSCHEDULED"]:
+                findings["never_scheduled"].append({"agent": name})
+        elif name not in main_src and name not in cron_src:
             findings["never_scheduled"].append({"agent": name})
 
     findings["status"] = ("ATTENTION" if (findings["cannot_start"] or
-                                          findings["never_scheduled"]) else "OK")
+                                          findings["never_scheduled"] or
+                                          findings["missing_file"]) else "OK")
     findings["note"] = ("Attendance is a MANAGEMENT finding, not a performance "
                         "one — these never affect an agent's rating or PIP.")
     return findings
@@ -1300,6 +1404,117 @@ def audit_retirement_coverage() -> dict:
                  "that followed a remediation step which never executed is unsound. "
                  "Neither ever affects an agent's rating or PIP, same as attendance."),
     }
+    return findings
+
+
+ROSTER_PATH = "data/agent_roster.json"
+
+# The agents that grade, retire, and reinstate everyone else. Every one of them
+# is a MODULE agent — not one has ever had a registry row — so HR's review has
+# never once scored its own chain of command. That is the point of listing them
+# separately: "72 agents unreviewed" is a number, but "the officers who fire
+# people are themselves unaudited" is the finding.
+_GOVERNANCE_CHAIN = frozenset({
+    "hr_agent", "hr_retirement_audit", "logic_officer", "logic_team",
+    "logic_team_implementation_agent", "logic_team_trainer", "board_meeting",
+    "deputy_board", "deputy_monitor", "apex_improvement_board",
+    "chairman_decision_sla", "chairman_queue", "strategy_council",
+    "chief_of_staff_agent", "irm_review_agent", "canary_agent",
+})
+
+
+def audit_roster_coverage() -> dict:
+    """Does HR's review actually cover every agent the firm employs?
+
+    THE GAP THIS CLOSES (Chairman directive, 2026-08-01: "hr needs to be on top
+    of tracking all agents, including their own team ... we should never ever
+    lose track of an agent because it could be disastrous if a key agent
+    suddenly stops doing his job").
+
+    HR reviews `agent_registry.json` — the Chief-of-Staff factory's roll of
+    spawned research agents. On 2026-08-01 that file held 67 rows while the firm
+    actually ran 139 agents: 72 of them are hand-written modules the factory
+    never created, so no registry row exists, so HR has never evaluated them.
+    Among the 72 are HR itself, both Logic Team agents, the board, the deputy
+    board, the Chairman SLA and the Canary. The graders were ungraded.
+
+    This audit measures the registry HR reviews against the canonical roster
+    (agent_roster.py, merged across BOTH hosts — the Mac's registry had 37 rows
+    and the VM's 66, and the union is what "every agent" means). It reports:
+
+      unreviewed            — on the books, never scored by HRPO/HRDO
+      governance_unreviewed — the subset that judges other agents (worst case)
+      zombies               — retired on paper but still scheduled/loaded, i.e.
+                              still trading. Seven of these exist right now.
+      employed_unscheduled  — employed, importable, and run by nothing
+
+    All four are MANAGEMENT findings about the roster, never agent ratings —
+    same rule as attendance. An agent HR forgot to review has done nothing wrong.
+    """
+    here = os.path.dirname(os.path.abspath(__file__))
+    roster = _safe_load(os.path.join(here, ROSTER_PATH))
+    rows = roster.get("agents", []) if isinstance(roster, dict) else []
+
+    if not rows:
+        # Never silently pass. A missing roster file is exactly the state in
+        # which HR would report "all clear" while knowing nothing — build it
+        # live rather than grade an empty set as OK.
+        try:
+            import agent_roster
+            rows = agent_roster.build().get("agents", [])
+        except Exception as e:
+            return {
+                "status": "ATTENTION",
+                "checked": 0,
+                "error": f"no roster to audit against: {type(e).__name__}: {e}"[:200],
+                "note": ("HR cannot claim coverage without a roster. Run "
+                         "`python3 agent_roster.py --merge-remote --adopt`."),
+            }
+
+    registry = _safe_load(os.path.join(here, REGISTRY_PATH))
+    reviewed = {a.get("class_name") for a in (registry.get("agents", [])
+                                              if isinstance(registry, dict) else [])
+                if a.get("class_name")}
+
+    unreviewed, governance, zombies, unscheduled = [], [], [], []
+    for r in rows:
+        name = r.get("name")
+        if not name:
+            continue
+        if r.get("zombie"):
+            zombies.append({
+                "agent": name,
+                "retirement_reason": r.get("retirement_reason"),
+                "still_runs_via": r.get("runs_via"),
+                "registry_status": r.get("registry_status"),
+                "defect": ("retired on paper but still loaded/scheduled — the "
+                           "retirement was recorded and never enforced"),
+            })
+        if r.get("employment") == "employed" and r.get("runs_via") == ["UNSCHEDULED"]:
+            unscheduled.append({"agent": name, "file": r.get("file")})
+        if name not in reviewed:
+            entry = {"agent": name, "kind": r.get("kind"), "file": r.get("file"),
+                     "runs_via": r.get("runs_via")}
+            unreviewed.append(entry)
+            if name in _GOVERNANCE_CHAIN:
+                governance.append(entry)
+
+    findings = {
+        "checked": len(rows),
+        "reviewed_by_hr": len(reviewed),
+        "unreviewed": sorted(unreviewed, key=lambda x: x["agent"]),
+        "governance_unreviewed": sorted(governance, key=lambda x: x["agent"]),
+        "zombies": sorted(zombies, key=lambda x: x["agent"]),
+        "employed_unscheduled": sorted(unscheduled, key=lambda x: x["agent"]),
+        "roster_host": roster.get("host") if isinstance(roster, dict) else "built-live",
+        "roster_generated_at": roster.get("generated_at") if isinstance(roster, dict) else None,
+    }
+    findings["status"] = "ATTENTION" if (zombies or governance) else (
+        "WATCH" if unreviewed else "OK")
+    findings["note"] = (
+        f"{len(rows)} agents on the books; HR's registry review covers "
+        f"{len(reviewed)}. Coverage gaps and zombies are MANAGEMENT findings — "
+        "they never affect an agent's rating or PIP.")
     return findings
 
 
@@ -1745,6 +1960,16 @@ def run_hr_review(send_email: bool = False) -> dict:
         report["retirement_coverage"] = audit_retirement_coverage()
     except Exception as _rc_e:
         logger.debug(f"  [HR] Retirement coverage audit error (non-fatal): {_rc_e}")
+
+    # Roster coverage: does this review cover every agent the firm employs? The
+    # three audits above all read agent_registry.json, so all three inherit its
+    # blind spot — 67 rows against a 139-agent firm. This one measures HR
+    # against the canonical roster instead, and it is the only check in the
+    # building that can see HR itself.
+    try:
+        report["roster_coverage"] = audit_roster_coverage()
+    except Exception as _rz_e:
+        logger.debug(f"  [HR] Roster coverage audit error (non-fatal): {_rz_e}")
 
     return report
 

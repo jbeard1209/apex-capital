@@ -41,7 +41,7 @@ import json
 import logging
 import os
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 import chairman_queue
 
@@ -58,6 +58,9 @@ MEMO_MAX_AGE_DAYS = 2
 
 #: How early to start surfacing a reinstatement review before its due date.
 REVIEW_LEAD_DAYS = 7
+
+#: Which of two severities survives when a batch of findings collapses to one row.
+SEVERITY_RANK = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
 
 SOURCE = "hr_retirement_audit"
 
@@ -104,6 +107,43 @@ def _memo_is_fresh(memo):
     except ValueError:
         return False
     return age.days <= MEMO_MAX_AGE_DAYS
+
+
+def _memo_covers(memo, retired_at):
+    """Was this memo current when the retirement happened?
+
+    Returns (covers, gap_days). A missing date on either side is not coverage —
+    an unknown retirement date cannot be vouched for by any memo.
+    """
+    ts, when = memo.get("generated_at"), retired_at
+    if not ts or not when:
+        return False, None
+    try:
+        memo_day = dt.date.fromisoformat(str(ts)[:10])
+        ret_day = dt.date.fromisoformat(str(when)[:10])
+    except ValueError:
+        return False, None
+    gap = abs((memo_day - ret_day).days)
+    return gap <= MEMO_MAX_AGE_DAYS, gap
+
+
+def _is_retired(a):
+    """The firm's one definition of "this agent was retired".
+
+    Every check below used to key on `status == "retired"` alone. Not one agent
+    in the registry carries that status — the seven that were retired on
+    2026-05-14 carry `retired_at` + `retirement_reason` and `status: "active"`.
+    So `retired` was the empty list, checks A and B ran over nothing, and this
+    audit reported `clean: true` with seven tombstoned agents on the books.
+
+    Two spellings of one fact is the same defect the roster merge and the
+    Chairman queue both had: a producer writes the record one way and the
+    consumer looks for it another way, and the gap is silent. One function, used
+    everywhere, is the fix — including in the contradiction check itself, which
+    is the only place the two spellings are allowed to be told apart.
+    """
+    return bool(a.get("status") == "retired"
+                or (a.get("retired_at") and a.get("retirement_reason")))
 
 
 def _lifecycle_is_observable(agents):
@@ -225,13 +265,40 @@ def audit(registry=None, memo=None, catalog=None, history=None):
                     % (cn, len(recs), ", ".join(statuses))),
             })
 
-    retired = [a for a in agents if a.get("status") == "retired"]
+    retired = [a for a in agents if _is_retired(a)]
+
+    # E. the retirement was recorded and never enforced -----------------------
+    # A tombstone on a working agent is a live contradiction, not a tidy-up job.
+    # Whichever way it gets resolved, one of two real things is true today: seven
+    # sector agents were fired and never stopped trading, or they were spared and
+    # the firing was never withdrawn. Both are the Chairman's call, and until it
+    # is made, any code that starts honouring `retired_at` silently deletes seven
+    # sectors of coverage on its first run.
+    for a in agents:
+        if a.get("status") == "retired" or not a.get("retired_at"):
+            continue
+        findings.append({
+            "check": "RETIREMENT_NEVER_ENFORCED",
+            "severity": "HIGH",
+            "class_name": a.get("class_name"),
+            "batch": "retired-%s" % a.get("retired_at"),
+            "description": (
+                "%s carries retired_at=%s and a retirement reason, but status is "
+                "'%s'%s — so it is still loaded and still working. The retirement "
+                "was written down and never carried out. Decide it deliberately: "
+                "vacate the retirement (clear retired_at + retirement_reason, log a "
+                "RETIREMENT_VACATED event) or enforce it (status='retired', and "
+                "accept losing this agent's coverage). Leaving it contradictory means "
+                "the next reader of retired_at decides by accident."
+                % (a.get("class_name"), a.get("retired_at"), a.get("status"),
+                   " and permanent=true" if a.get("permanent") else "")),
+        })
 
     # B. clone replacement ---------------------------------------------------
     for a in retired:
         cn = a.get("class_name")
         clones = [o for o in by_class[cn]
-                  if o is not a and o.get("status") != "retired"
+                  if o is not a and not _is_retired(o)
                   and o.get("file") == a.get("file")]
         if clones:
             findings.append({
@@ -247,22 +314,36 @@ def audit(registry=None, memo=None, catalog=None, history=None):
             })
 
     # A. fired during a firm-wide block --------------------------------------
+    # The memo has to be contemporaneous with the RETIREMENT, not merely recent.
+    # `fresh` alone asks "is this memo current?", which is the wrong question for
+    # a retirement dated 2026-05-14: today's memo is maximally fresh and says
+    # nothing whatsoever about May. Until `retired` stopped being the empty list
+    # this never fired, so the gap never showed. There is no historical risk
+    # record on disk (risk_bulletin.json is current-state only), so a retirement
+    # older than the memo's window is genuinely unverifiable — say that instead of
+    # asserting a wrongful firing on evidence from 79 days after the fact. The
+    # audit exists to catch stale-evidence reasoning; it does not get an exemption.
     blocked = bool(memo.get("buys_blocked")) or memo.get("cro_level") in ("HIGH", "CRITICAL")
     fresh = _memo_is_fresh(memo)
     for a in retired:
         if not blocked:
             continue
-        if not fresh:
+        covers, gap = _memo_covers(memo, a.get("retired_at"))
+        if not fresh or not covers:
             # Refuse to judge on stale evidence rather than guess.
             findings.append({
                 "check": "UNVERIFIABLE_RETIREMENT",
                 "severity": "LOW",
                 "class_name": a.get("class_name"),
+                "batch": "retired-%s" % a.get("retired_at"),
                 "description": (
-                    "%s is retired but cit_hr_memo.json is stale (generated_at=%s), so "
-                    "whether buys were blocked at retirement time cannot be established. "
-                    "Not asserting a wrongful retirement on evidence this old."
-                    % (a.get("class_name"), memo.get("generated_at"))),
+                    "%s is retired (retired_at=%s) but cit_hr_memo.json cannot speak to "
+                    "that date (generated_at=%s%s), so whether buys were blocked at "
+                    "retirement time cannot be established. Not asserting a wrongful "
+                    "retirement on evidence that post-dates the decision."
+                    % (a.get("class_name"), a.get("retired_at", "?"),
+                       memo.get("generated_at"),
+                       "" if gap is None else ", %d day(s) apart" % gap)),
             })
             continue
         findings.append({
@@ -277,6 +358,34 @@ def audit(registry=None, memo=None, catalog=None, history=None):
                 % (a.get("class_name"), memo.get("cro_level"), memo.get("buys_blocked"))),
         })
 
+    # C2. the retirement still cites a second chance that has been voided ------
+    # The remediation for check C moves `reassigned_to` into `voided_reassignment`,
+    # which is correct — it stops the hollow move being cited as a fresh start
+    # ever again. But C keys on `reassigned_to`, so voiding it also switched C off:
+    # on 2026-07-31 all seven of these were voided and this audit went from finding
+    # them to reporting clean: true, with the retirements those hollow moves
+    # justified still standing. A fix that deletes the detector's input closes the
+    # finding without closing the problem. Read the void record too.
+    for a in agents:
+        void = a.get("voided_reassignment")
+        if not void or not a.get("retirement_reason"):
+            continue
+        if "reassignment" not in str(a.get("retirement_reason", "")).lower():
+            continue
+        findings.append({
+            "check": "RETIREMENT_CITES_VOIDED_CHANCE",
+            "severity": "HIGH",
+            "class_name": a.get("class_name"),
+            "batch": "retired-%s" % a.get("retired_at"),
+            "description": (
+                "%s's retirement reason rests on a role reassignment ('%s', %s) that "
+                "this firm itself voided on %s: %s. The stated grounds for the "
+                "retirement no longer hold, and the retirement is still on the record. "
+                "Vacate it or restate it on grounds that survive."
+                % (a.get("class_name"), void.get("was", "?"), void.get("at", "?"),
+                   void.get("voided_on", "?"), str(void.get("why", ""))[:160])),
+        })
+
     # C. hollow second chance ------------------------------------------------
     for a in agents:
         dest = a.get("reassigned_to")
@@ -287,7 +396,7 @@ def audit(registry=None, memo=None, catalog=None, history=None):
             continue        # the move actually landed
         findings.append({
             "check": "HOLLOW_SECOND_CHANCE",
-            "severity": "HIGH" if a.get("status") == "retired" else "MEDIUM",
+            "severity": "HIGH" if _is_retired(a) else "MEDIUM",
             "class_name": a.get("class_name"),
             "description": (
                 "%s was reassigned to '%s' on %s but its sector is still '%s'%s. "
@@ -321,6 +430,50 @@ def audit(registry=None, memo=None, catalog=None, history=None):
         })
 
     return findings
+
+
+def _as_decisions(findings):
+    """One row per DECISION, not one per agent.
+
+    Seven agents were retired on the same day, by the same batch, for the same
+    reason, and every question about them has one answer. Filed per-agent that is
+    21 rows in the Chairman queue for three decisions — and each row carries its
+    own 50-day board escalation, so one call would escalate 21 times. That is the
+    "124 rows of one complaint" shape this firm has now hit three times.
+
+    A finding carrying `batch` is part of one event and collapses with its
+    siblings; every affected agent is still named in the description, so nothing
+    is lost and nothing is counted twice. A finding with no `batch` (a duplicate
+    record, a reinstatement coming due) is genuinely about one agent and stays
+    its own row. Returns findings with a `subject` field — the id/dedup key.
+    """
+    out, groups = [], OrderedDict()
+    for f in findings:
+        if not f.get("batch"):
+            out.append(dict(f, subject=f["class_name"]))
+            continue
+        groups.setdefault((f["check"], f["batch"]), []).append(f)
+
+    for (check, batch), group in groups.items():
+        if len(group) == 1:
+            out.append(dict(group[0], subject=group[0]["class_name"]))
+            continue
+        names = sorted(g["class_name"] for g in group)
+        rep = next(g for g in group if g["class_name"] == names[0])
+        out.append({
+            "check": check,
+            "severity": max((g["severity"] for g in group),
+                            key=lambda s: SEVERITY_RANK.get(s, 0)),
+            "class_name": names[0],
+            "subject": batch,
+            # The representative's own wording, unedited — splicing a name out of
+            # a sentence written for one agent produces "7 agents ... is retired".
+            "description": ("%d agents share this finding, all retired in one batch "
+                            "(%s): %s. ONE decision covers all %d. Stated for %s:\n\n%s"
+                            % (len(names), batch, ", ".join(names), len(names),
+                               names[0], rep["description"])),
+        })
+    return out
 
 
 def main():
@@ -373,14 +526,14 @@ def main():
         "id": "hr-retire-%s-%s-%s" % (dt.date.today().strftime("%Y%m%d"),
                                       f["check"].lower(),
                                       re.sub(r"[^a-z0-9]+", "",
-                                             f["class_name"].lower())[:24]),
-        "dedup_key": "%s:%s" % (f["check"], f["class_name"]),
+                                             f["subject"].lower())[:24]),
+        "dedup_key": "%s:%s" % (f["check"], f["subject"]),
         "severity": f["severity"],
         "category": "GOVERNANCE",
         "description": f["description"],
         "status": "awaiting_chairman",
         "raised_at": dt.datetime.now().isoformat(),
-    } for f in findings]
+    } for f in _as_decisions(findings)]
     added, suppressed = chairman_queue.submit(entries, SOURCE)
     logger.info("%d finding(s): %d raised, %d already open.",
                 len(findings), added, suppressed)

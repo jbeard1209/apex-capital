@@ -3771,11 +3771,16 @@ class TestWrongfulRetirement(unittest.TestCase):
 
     def test_audit_catches_every_wrongful_retirement_shape(self):
         import hr_retirement_audit as A
+        # Retired TODAY, against a memo generated today: the only situation in
+        # which cit_hr_memo.json can actually testify to the risk posture at
+        # retirement time. Dating this fixture 2026-05-14 with a fresh memo was
+        # asserting a firing from evidence 79 days after the fact.
+        today = datetime.now().date().isoformat()
         registry = {"agents": [
             # retired original + identical clone, reassigned nowhere
             {"class_name": "Ghost", "status": "retired", "file": "agents/ghost.py",
              "sector": "Small Cap", "reassigned_to": "Execution-Quality",
-             "reassigned_at": "2026-05-06", "retired_at": "2026-05-14"},
+             "reassigned_at": "2026-05-06", "retired_at": today},
             {"class_name": "Ghost", "status": "active", "file": "agents/ghost.py",
              "sector": "Small Cap"},
         ]}
@@ -3785,6 +3790,141 @@ class TestWrongfulRetirement(unittest.TestCase):
         for expected in ("DUPLICATE_RECORDS", "CLONE_REPLACEMENT",
                          "FIRED_DURING_BLOCK", "HOLLOW_SECOND_CHANCE"):
             self.assertIn(expected, checks, f"audit missed {expected}")
+
+    def test_one_batch_retirement_is_one_decision_not_seven_rows(self):
+        """Seven agents, one batch, one answer — so one row, naming all seven.
+
+        Filed per-agent this was 21 rows in the Chairman queue for 3 decisions,
+        each carrying its own 50-day board escalation. Findings that are genuinely
+        about one agent must still stand alone.
+        """
+        import hr_retirement_audit as A
+        batch = [{"check": "RETIREMENT_NEVER_ENFORCED", "severity": "HIGH",
+                  "class_name": n, "batch": "retired-2026-05-14",
+                  "description": "%s carries retired_at=2026-05-14." % n}
+                 for n in ("GlobalTechAgent", "CryptoEquitiesAgent", "MaterialsMiningAgent")]
+        solo = {"check": "DUPLICATE_RECORDS", "severity": "MEDIUM",
+                "class_name": "Ghost", "description": "Ghost has 2 records."}
+        out = A._as_decisions(batch + [solo])
+        self.assertEqual(len(out), 2, "batch did not collapse, or the solo row was eaten")
+        rolled = next(d for d in out if d["check"] == "RETIREMENT_NEVER_ENFORCED")
+        for n in ("GlobalTechAgent", "CryptoEquitiesAgent", "MaterialsMiningAgent"):
+            self.assertIn(n, rolled["description"], f"{n} was dropped from the roll-up")
+        self.assertEqual(rolled["subject"], "retired-2026-05-14")
+        self.assertEqual(next(d for d in out if d["check"] == "DUPLICATE_RECORDS")["subject"],
+                         "Ghost", "a genuinely per-agent finding lost its own row")
+
+    def test_a_capped_queue_evicts_the_least_severe_and_says_so(self):
+        """The cap threw away a HIGH to keep a LOW, and reported it as raised.
+
+        `own[:len(own)-max]` is blind FIFO, so the HIGH "seven agents were retired
+        and never stopped trading" was evicted for being submitted one position
+        earlier than a LOW "we cannot date the risk memo" — then counted in
+        `len(added)` on the very next line, so the caller logged it as raised.
+        """
+        import chairman_queue, json, tempfile, os
+        entries = ([{"id": "hi", "dedup_key": "k-hi", "severity": "HIGH",
+                     "description": "seven agents still trading", "status": "awaiting_chairman"}]
+                   + [{"id": "lo%d" % i, "dedup_key": "k-lo%d" % i, "severity": "LOW",
+                       "description": "minor", "status": "awaiting_chairman"} for i in range(3)])
+        # A path that does not exist yet: _load fails OPEN only on a genuinely
+        # absent file, and deliberately raises on an empty/corrupt one.
+        d = tempfile.mkdtemp()
+        path = os.path.join(d, "queue.json")
+        try:
+            added, _ = chairman_queue.submit(entries, "tsrc", path=path, max_entries=2)
+            with open(path) as fh:
+                wrote = json.load(fh)
+            kept = {e["id"] for e in wrote}
+            self.assertIn("hi", kept, "the cap evicted a HIGH and kept LOWs")
+            self.assertEqual(len(wrote), 2)
+            self.assertEqual(added, len(wrote),
+                             "reported more raised than it actually wrote — an evicted "
+                             "finding was logged as having reached the Chairman")
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+
+    def test_the_audit_knows_retired_has_two_spellings(self):
+        """Not one agent in the registry has status 'retired'.
+
+        The seven retired on 2026-05-14 carry `retired_at` + `retirement_reason`
+        and `status: "active"`. Every check keyed on `status == "retired"`, so
+        `retired` was the empty list and this audit reported clean: true with
+        seven tombstoned agents on the books — the same producer/consumer
+        identity mismatch as the roster merge and the Chairman queue.
+        """
+        import hr_retirement_audit as A
+        tomb = {"class_name": "Ghost", "status": "active",
+                "retired_at": "2026-05-14", "retirement_reason": "ran out of runway"}
+        self.assertTrue(A._is_retired(tomb),
+                        "a retirement record with status 'active' read as not-retired")
+        self.assertTrue(A._is_retired({"class_name": "G", "status": "retired"}))
+        self.assertFalse(A._is_retired({"class_name": "G", "status": "active"}))
+        self.assertFalse(A._is_retired({"class_name": "G", "status": "active",
+                                        "retired_at": "2026-05-14"}),
+                         "a date with no reason is not a retirement record")
+
+    def test_a_recorded_but_unenforced_retirement_is_reported(self):
+        """Fired and still trading, or spared and never told. Both need deciding."""
+        import hr_retirement_audit as A
+        registry = {"agents": [{
+            "class_name": "GlobalTechAgent", "status": "active", "permanent": True,
+            "file": "agents/gt.py", "sector": "Technology",
+            "retired_at": "2026-05-14", "retirement_reason": "ran out of runway"}]}
+        out = [f for f in A.audit(registry=registry, memo={}, catalog={}, history={})
+               if f["check"] == "RETIREMENT_NEVER_ENFORCED"]
+        self.assertEqual(len(out), 1, "the live contradiction went unreported")
+        self.assertEqual(out[0]["severity"], "HIGH")
+        self.assertIn("2026-05-14", out[0]["description"])
+
+    def test_voiding_the_hollow_chance_does_not_switch_the_detector_off(self):
+        """The remediation for C moved `reassigned_to` into `voided_reassignment`.
+
+        Correct on its own terms — but C keys on `reassigned_to`, so voiding it
+        also stopped C finding anything. On 2026-07-31 all seven were voided and
+        the audit went from finding them to `clean: true`, with the retirements
+        those hollow moves justified still standing. A fix that deletes its own
+        detector's input closes the finding, not the problem.
+        """
+        import hr_retirement_audit as A
+        voided = {"class_name": "GlobalTechAgent", "status": "active",
+                  "file": "agents/gt.py", "sector": "Technology",
+                  "retired_at": "2026-05-14",
+                  "retirement_reason": ("After 14 cycles without an approved pick — "
+                                        "including a role reassignment at cycle 9 — …"),
+                  "voided_reassignment": {"was": "Execution-Quality", "at": "2026-05-06",
+                                          "voided_on": "2026-07-31",
+                                          "why": "Never took effect: reassigned_to has no reader."}}
+        checks = {f["check"] for f in A.audit(registry={"agents": [voided]},
+                                              memo={}, catalog={}, history={})}
+        self.assertNotIn("HOLLOW_SECOND_CHANCE", checks,
+                         "fixture still carries reassigned_to — not testing the void path")
+        self.assertIn("RETIREMENT_CITES_VOIDED_CHANCE", checks,
+                      "voiding the reassignment made the standing retirement invisible")
+
+    def test_a_memo_that_postdates_the_retirement_cannot_vouch_for_it(self):
+        """Fresh is not the same question as contemporaneous.
+
+        Today's memo is maximally fresh and says nothing about 2026-05-14. The
+        freshness gate only ever asked "is this memo current?", which passes
+        trivially for every old retirement — and there is no historical risk
+        record on disk to fall back on, so the honest answer is 'unverifiable'.
+        """
+        import hr_retirement_audit as A
+        registry = {"agents": [{"class_name": "Ghost", "status": "retired",
+                                "file": "agents/ghost.py", "sector": "Small Cap",
+                                "retired_at": "2026-05-14"}]}
+        fresh_memo = {"buys_blocked": True, "cro_level": "HIGH",
+                      "generated_at": datetime.now().isoformat()}
+        found = A.audit(registry=registry, memo=fresh_memo, catalog={}, history={})
+        checks = {f["check"] for f in found}
+        self.assertNotIn("FIRED_DURING_BLOCK", checks,
+                         "graded a May retirement against today's risk posture")
+        self.assertIn("UNVERIFIABLE_RETIREMENT", checks)
+        self.assertFalse(A._memo_covers(fresh_memo, "2026-05-14")[0])
+        self.assertTrue(A._memo_covers(fresh_memo,
+                                       datetime.now().date().isoformat())[0],
+                        "a retirement happening now must still be checkable")
 
     def test_audit_refuses_to_judge_on_stale_risk_evidence(self):
         """A May retirement must not be graded against July's risk posture."""
@@ -4212,6 +4352,429 @@ class TestInstitutionRankingFloor(unittest.TestCase):
         self.assertGreaterEqual(ipt.MIN_RANKING_N, ipt.MIN_AUC_N)
 
 
+class TestRosterMergeLosesNobody(unittest.TestCase):
+    """A merge may only ever ADD an agent. Losing one must take a decision.
+
+    THE INCIDENT (2026-08-01): data/agent_registry.json is written live on BOTH
+    hosts and is excluded from deploy.sh's rsync, so the two copies forked —
+    37 rows on the Mac, 66 on the VM. Nothing noticed for weeks. Reconciling
+    them was the fix, but a reconciler is exactly the kind of code that quietly
+    deletes what it was written to protect, so every failure mode it can have
+    is pinned here:
+
+      • "employed" outranking "retired"  — the first version of merge_rosters
+        re-hired all seven retired agents, because employment is the ABSENCE of
+        news and the merge treated it as a decision. Every sync would have
+        undone HR's firings.
+      • collapsing rows by file path     — five CIT agents share cit_director.py.
+        Keying the merge on `file` deleted four of them (67 → 63).
+      • not collapsing by file at all    — the Mac emits a module row for a file
+        the VM's registry names, which double-counted 24 phantom FE/FI agents.
+
+    Two of those three are silent data loss and one is silent invention. The
+    tests below are written as MUTATIONS: each asserts on the specific wrong
+    answer the bug produced, so re-introducing it fails loudly rather than
+    shifting a headcount nobody reads.
+    """
+
+    def test_retired_outranks_employed_in_a_merge(self):
+        """The mutation that re-hired seven fired agents."""
+        import agent_roster as ar
+        mac = {"agents": [{"name": "GlobalTechAgent", "kind": "registry",
+                           "file": "agents/g.py", "employment": "retired",
+                           "retirement_reason": "3 cycles of zero output",
+                           "research_cycle": True, "runs_via": ["research_team"],
+                           "hosts": ["mac"], "file_exists": True, "tier": 1,
+                           "team": "research", "lane": None, "specialization": None,
+                           "superseded_by": None, "registry_status": "retired",
+                           "permanent": False}]}
+        vm = json.loads(json.dumps(mac))
+        vm["agents"][0]["employment"] = "employed"   # the other host simply hasn't heard
+        vm["agents"][0]["hosts"] = ["vm"]
+
+        for a, b in ((mac, vm), (vm, mac)):          # order must not matter
+            merged = ar.merge_rosters(json.loads(json.dumps(a)),
+                                      json.loads(json.dumps(b)))
+            row = {r["name"]: r for r in merged["agents"]}["GlobalTechAgent"]
+            self.assertEqual(row["employment"], "retired",
+                             "a host's silence overrode HR's recorded retirement — "
+                             "every sync would re-hire everyone HR ever fired")
+            self.assertEqual(row["retirement_reason"], "3 cycles of zero output",
+                             "the reason survived the merge but the verdict did not")
+
+    def test_agents_sharing_one_file_are_not_collapsed(self):
+        """The mutation that deleted four of the five CIT agents."""
+        import agent_roster as ar
+        shared = []
+        for n in ("CITDirector", "CITCodeInspector", "CITSecurityAuditor",
+                  "CITDataQuality", "CITSelfImprovement"):
+            shared.append({"name": n, "kind": "registry", "file": "cit_director.py",
+                           "employment": "employed", "research_cycle": False,
+                           "runs_via": ["cron"], "hosts": ["vm"], "file_exists": True,
+                           "tier": 2, "team": "cit", "lane": None,
+                           "specialization": None, "superseded_by": None,
+                           "registry_status": "active", "permanent": True,
+                           "retirement_reason": None})
+        merged = ar.merge_rosters({"agents": shared}, {"agents": []})
+        names = sorted(r["name"] for r in merged["agents"])
+        self.assertEqual(len(names), 5,
+                         f"five agents sharing cit_director.py collapsed to {len(names)}: "
+                         f"{names} — dedup by file path deletes real agents")
+
+    def test_one_agent_named_twice_by_two_hosts_is_one_agent(self):
+        """The mutation that invented 24 phantom FE/FI agents."""
+        import agent_roster as ar
+        f = "agents/cos_fe_hardmoney_agent.py"
+        vm = {"agents": [{"name": "FEHardMoneyAgent", "kind": "registry", "file": f,
+                          "employment": "employed", "research_cycle": True,
+                          "runs_via": ["research_team"], "hosts": ["vm"],
+                          "file_exists": True, "tier": 1, "team": "fe", "lane": None,
+                          "specialization": None, "superseded_by": None,
+                          "registry_status": "active", "permanent": False,
+                          "retirement_reason": None}]}
+        mac = {"agents": [dict(vm["agents"][0], name="cos_fe_hardmoney_agent",
+                               kind="module", hosts=["mac"], team=None,
+                               research_cycle=False, registry_status=None)]}
+        merged = ar.merge_rosters(mac, vm)
+        names = [r["name"] for r in merged["agents"]]
+        self.assertEqual(names, ["FEHardMoneyAgent"],
+                         f"one file became {len(names)} agents ({names}) because the "
+                         "hosts disagreed about its name")
+        self.assertEqual(sorted(merged["agents"][0]["hosts"]), ["mac", "vm"])
+
+    def test_registry_merge_cannot_drop_a_class_name(self):
+        """sync_registry's own guard, exercised on the real live files."""
+        import agent_roster as ar
+        mac = ar._load(ar.REGISTRY_PATH, {})
+        merged = ar.merge_registries(mac, mac)
+        before = {a.get("class_name") for a in ar._registry_rows(mac)}
+        after = {a.get("class_name") for a in ar._registry_rows(merged)}
+        self.assertEqual(before - after, set(),
+                         f"merging the registry with itself lost {sorted(before - after)}")
+
+    def test_hr_history_survives_a_merge_the_vm_wins(self):
+        """VM wins operational fields; the Mac keeps the employment record.
+
+        The VM runs the pipeline, so its counters are fresher — but only the Mac
+        holds HR's retirement and reinstatement history. A merge that let the
+        fresher host win everything would erase why an agent was fired.
+        """
+        import agent_roster as ar
+        mac = {"agents": [{"class_name": "X", "status": "active",
+                           "consecutive_zero_cycles": 0,
+                           "retired_at": "2026-05-14",
+                           "retirement_reason": "zero output, 3 cycles",
+                           "reinstatement_reason": "whole-picture exoneration"}]}
+        vm = {"agents": [{"class_name": "X", "status": "active",
+                          "consecutive_zero_cycles": 9}]}
+        row = {a["class_name"]: a for a in
+               ar._registry_rows(ar.merge_registries(mac, vm))}["X"]
+        self.assertEqual(row["consecutive_zero_cycles"], 9,
+                         "the VM's live counter lost to the Mac's stale one")
+        self.assertEqual(row["retirement_reason"], "zero output, 3 cycles",
+                         "HR's retirement record was erased by the host that never had it")
+        self.assertEqual(row["reinstatement_reason"], "whole-picture exoneration")
+
+    def test_ratchet_reds_on_a_vanished_agent_and_greens_on_a_recorded_one(self):
+        import agent_roster as ar
+        declared = {"agents": [
+            {"name": "Kept", "file": "a.py"},
+            {"name": "Vanished", "file": "b.py"},
+            {"name": "ProperlyRetired", "file": "c.py",
+             "retired_at": "2026-05-14", "retirement_reason": "superseded by d.py"},
+        ]}
+        have = {"agents": [{"name": "Kept", "runs_via": ["cron"],
+                            "employment": "employed"}]}
+        res = ar.check(have, declared)
+        self.assertEqual(res["status"], "RED")
+        self.assertEqual([v["name"] for v in res["vanished"]], ["Vanished"],
+                         "a recorded retirement was treated as a loss, or a real "
+                         "loss was waved through")
+
+    def test_adopt_cannot_launder_a_vanished_agent_out_of_the_manifest(self):
+        """--adopt absorbs growth; it must not absorb a disappearance."""
+        import agent_roster as ar
+        prev = {"agents": [{"name": "Vanished", "file": "b.py",
+                            "first_declared": "2026-06-01"}]}
+        orig = ar.MANIFEST_PATH
+        td = Path(tempfile.mkdtemp())
+        try:
+            ar.MANIFEST_PATH = td / "m.json"
+            ar.MANIFEST_PATH.write_text(json.dumps(prev))
+            adopted = ar.adopt({"agents": [
+                {"name": "New", "kind": "module", "file": "n.py", "tier": 0,
+                 "team": None, "employment": "employed", "hosts": ["mac"]}]})
+        finally:
+            ar.MANIFEST_PATH = orig
+        names = sorted(a["name"] for a in adopted["agents"])
+        self.assertEqual(names, ["New", "Vanished"],
+                         "one --adopt erased an agent that had gone missing")
+        self.assertEqual(
+            [a for a in adopted["agents"] if a["name"] == "Vanished"][0]["first_declared"],
+            "2026-06-01", "adopt rewrote history instead of preserving it")
+
+    def test_the_schedule_is_both_hosts_not_just_this_one(self):
+        """"Scheduled" must mean scheduled ANYWHERE the firm runs.
+
+        Reading only `crontab -l` made a Mac-built roster call 74 agents
+        unscheduled where the merged view said 45 — the Mac has a handful of
+        jobs and the VM has 75. Same firm, two headcounts, decided by which host
+        last wrote the file. Both hosts must read the deployed snapshot.
+        """
+        import agent_roster as ar
+        snap = ar.DATA / "vm_crontab_snapshot.txt"
+        if not snap.exists():
+            self.skipTest("no crontab snapshot deployed")
+        cron = ar._crontab()
+        sample = [ln for ln in snap.read_text().splitlines()
+                  if ln.strip() and not ln.strip().startswith("#")]
+        self.assertTrue(sample, "the snapshot holds no job lines")
+        self.assertIn(sample[0], cron,
+                      "the roster judged 'scheduled' against this host's crontab "
+                      "alone — the VM's 75 jobs were invisible to it")
+
+    def test_the_live_manifest_still_declares_every_live_agent(self):
+        """The ratchet is only real if it runs against what is actually shipped."""
+        import agent_roster as ar
+        res = ar.check(ar._load(ar.ROSTER_PATH, {"agents": []}),
+                       ar._load(ar.MANIFEST_PATH, {"agents": []}))
+        self.assertNotEqual(res["declared"], 0,
+                            "no manifest — the shrink ratchet is not armed")
+        self.assertEqual(res["vanished"], [],
+                         f"agents on the books have disappeared with no recorded "
+                         f"retirement: {[v['name'] for v in res['vanished']]}")
+
+
+class TestHRSeesTheWholeFirm(unittest.TestCase):
+    """HR must audit the roster, not the registry it happens to be handed.
+
+    Chairman directive 2026-08-01: "hr needs to be on top of tracking all
+    agents, including their own team." HR reviewed agent_registry.json — 67
+    rows — while the firm ran 155 agents. Everything HR could not see was
+    everything the Chief-of-Staff factory did not create: the board, the deputy
+    board, the Logic Team, the Chairman SLA, and HR itself.
+    """
+
+    def test_hr_audits_the_roster_not_just_the_registry(self):
+        import hr_agent, agent_roster as ar
+        res = hr_agent.audit_roster_coverage()
+        roster_n = len(ar._load(ar.ROSTER_PATH, {"agents": []})["agents"])
+        self.assertEqual(res["checked"], roster_n,
+                         "HR checked a different population than the roster holds")
+        self.assertGreater(res["checked"], res["reviewed_by_hr"],
+                           "test premise broken: registry and roster now match")
+
+    def test_hr_reports_its_own_team_as_unreviewed(self):
+        """The specific blind spot: the graders were ungraded."""
+        import hr_agent
+        res = hr_agent.audit_roster_coverage()
+        gov = {g["agent"] for g in res["governance_unreviewed"]}
+        self.assertIn("hr_agent", gov,
+                      "HR did not name itself among the agents it never reviews")
+        self.assertEqual(res["status"], "ATTENTION",
+                         "an unaudited governance chain reported as OK")
+
+    def test_a_missing_roster_rebuilds_rather_than_passing(self):
+        """No file on disk must mean "go find out", not "all clear"."""
+        import hr_agent
+        orig = hr_agent.ROSTER_PATH
+        td = tempfile.mkdtemp()
+        try:
+            hr_agent.ROSTER_PATH = os.path.join(td, "nope.json")
+            res = hr_agent.audit_roster_coverage()
+        finally:
+            hr_agent.ROSTER_PATH = orig
+        self.assertGreater(res["checked"], 0,
+                           "HR reported on zero agents instead of rebuilding the roster")
+        self.assertNotEqual(res["status"], "OK",
+                            "HR certified full coverage with no roster to check against")
+
+    def test_an_unbuildable_roster_is_attention_never_ok(self):
+        """And if it cannot even rebuild, it must say so — not stay quiet.
+
+        This is the branch that matters: a clean bill of health issued by an
+        audit that checked nothing is worse than no audit, because it silences
+        the question. Driven by breaking the build, not just hiding the file.
+        """
+        import hr_agent
+        orig_path, orig_build = hr_agent.ROSTER_PATH, None
+        import agent_roster
+        orig_build = agent_roster.build
+        td = tempfile.mkdtemp()
+        try:
+            hr_agent.ROSTER_PATH = os.path.join(td, "nope.json")
+            agent_roster.build = lambda *a, **k: (_ for _ in ()).throw(
+                RuntimeError("disk gone"))
+            res = hr_agent.audit_roster_coverage()
+        finally:
+            hr_agent.ROSTER_PATH, agent_roster.build = orig_path, orig_build
+        self.assertEqual(res["checked"], 0)
+        self.assertEqual(res["status"], "ATTENTION",
+                         "HR could not see a single agent and did not raise its hand")
+        self.assertIn("disk gone", res.get("error", ""),
+                      "the failure was swallowed instead of reported")
+
+    def test_zombies_are_reported_and_never_touch_a_rating(self):
+        """Retired on paper, still loaded every cycle."""
+        import hr_agent
+        res = hr_agent.audit_roster_coverage()
+        for z in res["zombies"]:
+            self.assertNotEqual(z["still_runs_via"], ["UNSCHEDULED"],
+                                f"{z['agent']} flagged as a zombie but runs nowhere")
+        self.assertIn("never affect", res["note"].lower().replace("never affects", "never affect"),
+                      "roster findings are not marked as management-only, so they "
+                      "could leak into an agent's rating or PIP")
+
+    def test_attendance_and_the_roster_agree_on_who_is_scheduled(self):
+        """Two definitions of 'scheduled' would give one firm two headcounts."""
+        import hr_agent
+        att = {a["agent"] for a in hr_agent.audit_attendance()["never_scheduled"]}
+        ros = {a["agent"] for a in
+               hr_agent.audit_roster_coverage()["employed_unscheduled"]}
+        # The roster additionally covers registry agents, which attendance skips
+        # by design; attendance must not claim anyone the roster says is running.
+        self.assertEqual(att - ros, set(),
+                         f"HR called {sorted(att - ros)} unscheduled while the roster "
+                         "says they run — the audits disagree about the same firm")
+
+    def test_attendance_does_not_invent_broken_agents(self):
+        """A false CANNOT_START is worse than no check at all.
+
+        teaching_division/ is shadowed by teaching_division.py, so BOTH import
+        styles the naive probe could use fail on the agents inside it — dotted
+        ("teaching_division is not a package") and bare ("no module named
+        chief_learning_officer") — even though they run fine as scripts. The
+        probe must load from the file. Asserted directly on _probe_import so
+        the guard is about the probe, not about whichever agents happen to be
+        broken on the day the suite runs.
+        """
+        import hr_agent, importlib
+        here = os.path.dirname(os.path.abspath(hr_agent.__file__))
+        rel = "teaching_division/chief_learning_officer.py"
+        if not os.path.exists(os.path.join(here, rel)):
+            self.skipTest("no package-dir agent to probe")
+
+        with self.assertRaises(Exception):   # premise: a name import cannot work
+            importlib.import_module("teaching_division.chief_learning_officer")
+        with self.assertRaises(Exception):
+            importlib.import_module("chief_learning_officer")
+
+        hr_agent._probe_import("chief_learning_officer", rel, here)   # must not raise
+
+        res = hr_agent.audit_attendance()
+        self.assertNotIn("chief_learning_officer",
+                         {c["agent"] for c in res["cannot_start"]},
+                         "an agent that imports fine was reported broken because of "
+                         "the import style used to probe it")
+
+
+class TestChairmanQueueCannotRefork(unittest.TestCase):
+    """One identity function for the whole Chairman-queue contract.
+
+    The queue forked across hosts (188+54 action items, 139+55 decisions) and
+    the reconciler merged them to 108/96. That merge is undone the instant the
+    SLA ingest de-dupes on a different key than the reconciler merges on — the
+    producer/consumer identity mismatch this firm keeps rediscovering. So the
+    ingest imports group_key rather than owning a second copy of it.
+    """
+
+    def test_the_sla_ingest_uses_the_reconcilers_identity_function(self):
+        import chairman_decision_sla as sla, chairman_queue_sync as sync
+        self.assertIs(sla._group_key, sync.group_key,
+                      "the ingest has its own idea of which items are the same "
+                      "item — every reconcile will be undone by the next ingest")
+
+    def test_counter_bumped_restatements_are_one_decision(self):
+        import chairman_queue_sync as sync
+        a = {"id": "x-1", "title": "CRO at HIGH",
+             "description": "CRO has been at HIGH for 41 days"}
+        b = {"id": "x-2", "title": "CRO at HIGH",
+             "description": "CRO has been at HIGH for 42 days"}
+        self.assertEqual(sync.group_key(a), sync.group_key(b),
+                         "a re-stated grievance with a bumped day counter reads as "
+                         "a new decision — this is how 124 rows of one complaint "
+                         "reached the Chairman's inbox")
+
+    def test_a_producer_supplied_dedup_key_wins_over_the_text(self):
+        import chairman_queue_sync as sync
+        a = {"id": "1", "dedup_key": "buy-freeze", "description": "totally different text"}
+        b = {"id": "2", "dedup_key": "buy-freeze", "description": "also different"}
+        self.assertEqual(sync.group_key(a), sync.group_key(b))
+
+    def test_ingest_is_idempotent(self):
+        """Run twice, add nothing the second time."""
+        import chairman_decision_sla as sla
+        actions = [{"id": "a-1", "status": "awaiting_chairman", "severity": "HIGH",
+                    "description": "CRO has been at HIGH for 41 days",
+                    "title": "CRO at HIGH", "source": "test"},
+                   {"id": "a-2", "status": "awaiting_chairman", "severity": "HIGH",
+                    "description": "CRO has been at HIGH for 42 days",
+                    "title": "CRO at HIGH", "source": "test"}]
+        td = Path(tempfile.mkdtemp())
+        (td / "actions.json").write_text(json.dumps(actions))
+        orig = sla.CHAIR_ACTION
+        try:
+            sla.CHAIR_ACTION = td / "actions.json"
+            q = {}
+            first = sla._ingest(q)
+            second = sla._ingest(q)
+        finally:
+            sla.CHAIR_ACTION = orig
+        self.assertEqual(first, 1, "two restatements of one grievance became "
+                                   f"{first} separate Chairman decisions")
+        self.assertEqual(second, 0, "a second run re-ingested items already in the "
+                                    "queue — the inbox grows forever")
+
+    def test_an_already_merged_id_cannot_walk_back_in(self):
+        import chairman_decision_sla as sla
+        actions = [{"id": "a-2", "status": "awaiting_chairman",
+                    "description": "swallowed by the merge", "source": "test"}]
+        td = Path(tempfile.mkdtemp())
+        (td / "actions.json").write_text(json.dumps(actions))
+        orig = sla.CHAIR_ACTION
+        try:
+            sla.CHAIR_ACTION = td / "actions.json"
+            q = {"a-1": {"id": "a-1", "description": "the surviving record",
+                         "merged_ids": ["a-2"], "status": "awaiting_chairman"}}
+            added = sla._ingest(q)
+        finally:
+            sla.CHAIR_ACTION = orig
+        self.assertEqual(added, 0,
+                         "an id already folded into a queue entry was re-added as a "
+                         "new decision — the reconcile silently unwinds itself")
+
+    def test_the_merge_may_never_drop_an_id(self):
+        import chairman_queue_sync as sync
+        # Note the matched plurals: the digit is normalized to "#" but the words
+        # around it are not, so "1 day" and "2 days" stay distinct. That costs at
+        # most one extra row on a counter's first tick and is deliberate — a
+        # normalizer aggressive enough to fold singular into plural would start
+        # merging genuinely different complaints.
+        items = [{"id": "a-1", "title": "T", "description": "same thing 41 days"},
+                 {"id": "a-2", "title": "T", "description": "same thing 42 days"},
+                 {"id": "b-1", "title": "Other", "description": "unrelated"}]
+        merged = sync._collapse(items, sync.ACTION_RANK, sync.ACTION_TS_FIELDS, "action")
+        seen = set()
+        for m in merged:
+            seen.add(m["id"])
+            seen.update(m.get("merged_ids") or [])
+        self.assertEqual(seen, {"a-1", "a-2", "b-1"},
+                         f"collapsing dropped {{'a-1','a-2','b-1'}} - {seen}")
+        self.assertEqual(len(merged), 2)
+
+    def test_the_most_advanced_status_survives_a_collapse(self):
+        """A decision already made must not revert to awaiting_chairman."""
+        import chairman_queue_sync as sync
+        items = [{"id": "a-1", "title": "T", "description": "x", "status": "resolved"},
+                 {"id": "a-2", "title": "T", "description": "x",
+                  "status": "awaiting_chairman"}]
+        for order in (items, list(reversed(items))):
+            merged = sync._collapse(list(order), sync.ACTION_RANK, sync.ACTION_TS_FIELDS, "action")
+            self.assertEqual(merged[0]["status"], "resolved",
+                             "a resolved item reverted to awaiting_chairman — the "
+                             "Chairman is asked to decide something he already did")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
@@ -4249,6 +4812,9 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
     suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))
     suite.addTests(loader.loadTestsFromTestCase(TestInstitutionRankingFloor))
+    suite.addTests(loader.loadTestsFromTestCase(TestRosterMergeLosesNobody))
+    suite.addTests(loader.loadTestsFromTestCase(TestHRSeesTheWholeFirm))
+    suite.addTests(loader.loadTestsFromTestCase(TestChairmanQueueCannotRefork))
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

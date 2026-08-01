@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-07-31T15:19:46Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-01T05:03:16Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -220,3 +220,18 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # 14 days — daily keeps it green with a wide margin. Fails closed: a truncated
 # or failed capture leaves the old snapshot in place and exits non-zero.
 10 11 * * * cd "/home/jackbeard/institutional-tracker" && bash scripts/refresh_crontab_snapshot.sh >> logs/cron_snapshot_$(date +\%Y\%m\%d).log 2>&1
+0 13 * * *   cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 apex_system_cit_agent.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+30 13 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fi_cit_agent.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+0 23 * * 0   cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_longterm_label_checker.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+30 23 * * 0  cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_validate_longterm.py >> logs/cron_$(date +\%Y\%m\%d).log 2>&1
+
+# Agent roster ratchet — 7:25 AM EDT = 11:25 UTC, daily.
+# Runs 15 min after the crontab snapshot refresh above, so it judges "scheduled"
+# against a same-morning mirror of this crontab rather than yesterday's.
+# Compares the 155 agents DECLARED in data/agent_roster_manifest.json against the
+# ones actually discoverable on disk. An agent that disappears with no retired_at
+# + retirement_reason is RED: the run exits 1 AND files a CRITICAL row in
+# chairman_action_required.json, because a finding that only reaches a cron log
+# has not reached anybody. Growth is fine (GREEN_GREW) — the ratchet only shrinks
+# by an explicit `--adopt` after a human has looked at what left.
+25 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 agent_roster.py --check >> logs/agent_roster_$(date +\%Y\%m\%d).log 2>&1
