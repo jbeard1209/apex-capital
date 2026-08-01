@@ -141,6 +141,41 @@ echo ""
 echo "  Verifying remote install..."
 ssh "$SSH_TARGET" "cd ~/institutional-tracker && ~/venv/bin/python3 -c 'import pandas, yfinance, alpaca; print(\"  Dependencies OK\")' 2>/dev/null || python3 -c 'import pandas; print(\"  Core deps OK (venv not found, using system python)\")' 2>/dev/null || echo '  Skipping dep check'"
 
+# ── Stale-on-VM report ────────────────────────────────────────────────────
+# rsync here runs WITHOUT --delete, deliberately: the VM holds ~97 files that
+# were never committed from the Mac (see the `orphan_code_2026_07` memory,
+# incl. the agent_meeting.py governance system), and --delete would have
+# destroyed all of them the first time it ran. The cost of that safety is that
+# a file DELETED from the repo lives on in production forever. On 2026-08-01
+# new_crontab.txt survived its own deletion exactly this way — a stale schedule
+# document sitting in prod one day after the commit whose entire purpose was to
+# ensure only one schedule document exists.
+#
+# So: never delete automatically, but never let it be silent either. List what
+# is on the VM and not on the Mac and let a human decide. Only .py/.txt/.sh at
+# depth 1-2 — data/ and logs/ are legitimately VM-only and always will be.
+echo ""
+echo "  Checking for files that exist on the VM but not here..."
+# Non-fatal throughout: the deploy itself has already succeeded by this point,
+# and an unreachable VM or an odd `find` must not turn a good deploy into a
+# failed one under `set -e`.
+_local_list="$(cd "$LOCAL_DIR" && find . -maxdepth 2 \( -name '*.py' -o -name '*.txt' -o -name '*.sh' \) \
+    -not -path './data/*' -not -path './logs/*' -not -path './__pycache__/*' \
+    -not -path './.git/*' 2>/dev/null | sort || true)"
+_remote_list="$(ssh "$SSH_TARGET" "cd ~/institutional-tracker && find . -maxdepth 2 \( -name '*.py' -o -name '*.txt' -o -name '*.sh' \) \
+    -not -path './data/*' -not -path './logs/*' -not -path './__pycache__/*' \
+    -not -path './.git/*' 2>/dev/null | sort" || true)"
+_stale="$(comm -13 <(echo "$_local_list") <(echo "$_remote_list") || true)"
+if [ -z "$_remote_list" ]; then
+    echo "  ⚠ Could not list the VM's files — divergence UNKNOWN, not clean."
+elif [ -n "$_stale" ]; then
+    echo "  ⚠ VM-only file(s) — deleted here but still live in prod, or never committed:"
+    echo "$_stale" | sed 's/^/      /'
+    echo "      Decide each one: commit it back, or remove it on the VM."
+else
+    echo "  No VM-only files — both hosts carry the same modules."
+fi
+
 echo ""
 echo "=============================================="
 echo "  DEPLOY COMPLETE"
