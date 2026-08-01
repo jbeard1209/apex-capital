@@ -5173,6 +5173,49 @@ class TestSweepTaxonomyIsClosed(unittest.TestCase):
                       "the weekly sweep's report is not freshness-monitored, so the "
                       "sweep silently ceasing would look exactly like all-clear")
 
+    def test_attendance_is_gated_on_the_host_that_runs_the_agent(self):
+        """Output freshness is a claim about the agent only where it runs.
+
+        The Mac's crontab is empty by design; the VM runs everything. Measured
+        from the Mac, every VM agent's outputs are ancient, and the sweep
+        nominated six healthy agents as PIP candidates on that basis. The gate
+        has to be wired into collect() itself — proving runs_here() works in
+        isolation proves nothing if the caller ignores it.
+        """
+        import inspect, agent_sweep, agent_roster
+        src = inspect.getsource(agent_sweep.collect)
+        self.assertIn("runs_here", src,
+                      "collect() does not consult agent_roster.runs_here, so the "
+                      "staleness check is measuring whichever disk it happens to "
+                      "be running on")
+        self.assertIn("attendance_skipped_wrong_host", src,
+                      "a skipped attendance check must be counted; a check that "
+                      "quietly does nothing is the bug this sweep exists to find")
+        agents = [{"file": "somewhere_else_agent.py", "runs_via": ["cron"]}]
+        self.assertEqual(agent_roster.runs_here(agents, crontab_text=""), set())
+        self.assertEqual(
+            agent_roster.runs_here(
+                agents, crontab_text="0 5 * * * python3 somewhere_else_agent.py"),
+            {"somewhere_else_agent"})
+
+    def test_a_host_that_cannot_see_attendance_cannot_close_it(self):
+        """Same rule as the crashed-collector guard, one level down.
+
+        A sweep run from the wrong box looked at no attendance evidence, so it
+        must not conclude a silent agent recovered.
+        """
+        import sweep_governance as sg
+        blind = {"agent_sweep": {"stats": {"attendance_assessable": 0}},
+                 "detector_mutation_harness": {}}
+        seeing = {"agent_sweep": {"stats": {"attendance_assessable": 105}},
+                  "detector_mutation_harness": {}}
+        self.assertNotIn("AGENT_OUTPUT_STALE", sg._closable_kinds(blind, True))
+        self.assertNotIn("AGENT_OUTPUT_NEVER_PRODUCED", sg._closable_kinds(blind, True))
+        self.assertIn("AGENT_OUTPUT_STALE", sg._closable_kinds(seeing, True))
+        self.assertIn("AGENT_OUTPUT_NEVER_PRODUCED", sg._closable_kinds(seeing, True))
+        # ...and the guard must not have quietly disabled every other kind.
+        self.assertIn("AGENT_ISOLATED", sg._closable_kinds(blind, True))
+
 
 # =============================================================================
 # Runner

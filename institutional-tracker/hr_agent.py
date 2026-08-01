@@ -1421,6 +1421,25 @@ def review_sweep_queue(path: str = None, now: str = None) -> dict:
             logger.debug(f"  [HR] Could not write sweep queue triage: {_we}")
 
     resolved = sum(1 for e in queue if isinstance(e, dict) and e.get("status") == "resolved")
+
+    # An item the last sweep could not actually observe is not evidence against
+    # the agent. sweep_governance holds such items open and stamps them
+    # last_unverifiable rather than closing them — the honest state — but "open"
+    # then looks identical to a confirmed failure, and a PIP on an unverified
+    # observation is a disciplinary action taken on no evidence. Attendance is
+    # the case that bites: judged from the wrong host it condemns every agent
+    # the host doesn't run.
+    pip, withheld = [], []
+    for e in queue:
+        if not isinstance(e, dict) or e.get("status") != "open":
+            continue
+        if e.get("hr_disposition") != "PIP_CANDIDATE":
+            continue
+        if e.get("last_unverifiable"):
+            withheld.append(e.get("subject"))
+        else:
+            pip.append(e.get("subject"))
+
     return {
         "status": "OK" if not unknown_kinds else "TAXONOMY_DRIFT",
         "open": triaged, "resolved_to_date": resolved,
@@ -1428,9 +1447,8 @@ def review_sweep_queue(path: str = None, now: str = None) -> dict:
         "overdue": sorted(overdue, key=lambda x: -x["age_days"])[:20],
         "overdue_count": len(overdue),
         "unmapped_kinds": sorted(set(unknown_kinds)),
-        "pip_candidates": [e.get("subject") for e in queue
-                           if isinstance(e, dict) and e.get("status") == "open"
-                           and e.get("hr_disposition") == "PIP_CANDIDATE"],
+        "pip_candidates": pip,
+        "pip_withheld_unverifiable": sorted(withheld),
     }
 
 

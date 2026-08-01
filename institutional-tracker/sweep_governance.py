@@ -141,6 +141,11 @@ def _closable_kinds(meta: dict, probe: bool) -> set:
             closable |= kinds
     if not probe:
         closable -= probe_kinds
+    # Same rule one level down. Attendance is only assessable on the host that
+    # runs the agent, so a sweep from the wrong box looked at nothing and must
+    # not conclude anything — least of all that a silent agent recovered.
+    if not (meta.get("agent_sweep", {}).get("stats") or {}).get("attendance_assessable"):
+        closable -= {"AGENT_OUTPUT_STALE", "AGENT_OUTPUT_NEVER_PRODUCED"}
     return closable
 
 
@@ -584,8 +589,11 @@ def main(argv=None) -> int:
           % (rep["hr_queue"]["open"], len(rep["hr_queue"]["opened_this_run"]),
              len(rep["hr_queue"]["closed_this_run"])))
     if rep["hr_queue"]["held_open_unverifiable"]:
-        print("  held open (blind) : %d — a collector did not run, so their absence"
-              " proves nothing" % len(rep["hr_queue"]["held_open_unverifiable"]))
+        print("  held open (blind) : %d — this run could not observe them (a collector"
+              " failed, or\n                      they are only assessable on the host"
+              " that runs the agent), so\n                      their absence from the"
+              " findings proves nothing"
+              % len(rep["hr_queue"]["held_open_unverifiable"]))
     print("  to the Chairman   : %d" % (rep["chairman"].get("filed", 0)
                                         or rep["chairman"].get("would_file", 0)))
     und = (rep["board"].get("undelivered", 0) or 0) + (rep["chairman"].get("undelivered", 0) or 0)

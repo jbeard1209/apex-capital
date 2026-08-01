@@ -339,6 +339,13 @@ def collect(probe: bool = True, host: str = None, now: datetime.datetime = None,
     agents = roster.get("agents", [])
     findings, stats = [], {"agents_seen": 0, "probed": 0}
 
+    # Which agents does THIS box actually run? Everything below except attendance
+    # is host-independent — imports, the call graph and the roster read the same
+    # on either machine. Output freshness does not: it is a claim about the agent
+    # only where the agent runs. See agent_roster.runs_here.
+    local = agent_roster.runs_here(agents)
+    stats["attendance_assessable"] = len(local)
+
     hr_rated = set()
     try:
         hr = json.loads((DATA / "hr_history.json").read_text())
@@ -440,7 +447,14 @@ def collect(probe: bool = True, host: str = None, now: datetime.datetime = None,
                         % (stem, fl, host), [fl])
 
         # ── attendance: is its output actually moving? ─────────────────────
-        if scheduled and my_w:
+        # Only ask on the host that runs it. Anywhere else the answer is always
+        # "no" and it says nothing about the agent. Skipping is counted, not
+        # silent: a check that quietly does nothing everywhere is the failure
+        # this whole sweep exists to catch.
+        if scheduled and my_w and stem not in local:
+            stats["attendance_skipped_wrong_host"] = \
+                stats.get("attendance_skipped_wrong_host", 0) + 1
+        elif scheduled and my_w:
             ages = {fl: _age_days(fl, now) for fl in sorted(my_w)}
             if ages and all(v is None for v in ages.values()):
                 add("AGENT_OUTPUT_NEVER_PRODUCED", stem,

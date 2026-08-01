@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-01T19:01:26Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-01T20:24:55Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -246,3 +246,16 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # opportunity to earn credit. Idempotent per (date, agent), so a double-fire or
 # a manual run cannot inflate the count.
 0 21 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 hr_retirement_audit.py --observe >> logs/hr_surveillance_$(date +\%Y\%m\%d).log 2>&1
+
+# Quality Assurance Office — weekly firm sweep, Monday 7:40 AM EDT = 11:40 UTC.
+# Ordering is load-bearing. It runs AFTER the crontab snapshot refresh (10 11)
+# and the roster ratchet (25 11) so it judges "scheduled" against a same-morning
+# mirror, and 1h50m BEFORE the board meeting (30 13 * * 1-5) so the board votes
+# on findings collected the same day rather than last week's.
+# Probes all 155 agents in a write-blocked subprocess, batches one proposal per
+# finding kind into cit_pending_proposals.json, and fills data/hr_action_queue.json
+# for hr_agent.review_sweep_queue. Findings close only by RE-OBSERVATION: if a
+# collector crashes, its open items are held rather than silently marked fixed.
+# The report itself is freshness-monitored by cit_director (180h) — a sweep that
+# stops running must not look like a clean week. ~60s.
+40 11 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 sweep_governance.py >> logs/sweep_$(date +\%Y\%m\%d).log 2>&1

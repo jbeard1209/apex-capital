@@ -67,6 +67,8 @@ DETECTORS = [
     "hr_agent.review_sweep_queue",
     "sweep_governance.blind_closure_guard",
     "cit_director.sweep_deadman",
+    "agent_roster.attendance_host_gate",
+    "hr_agent.pip_evidence_guard",
 ]
 
 _CASES = {}
@@ -396,6 +398,77 @@ def _c_sweep_deadman():
                    str(f.get("title", "")).lower() for f in found)
 
     return run_with(60), run_with(1), "stale60=%s fresh1=%s" % (run_with(60), run_with(1))
+
+
+@case("agent_roster.attendance_host_gate")
+def _c_attendance_host_gate():
+    """Off the host that runs an agent, attendance must judge NOTHING.
+
+    The mutation here is the host, not the code. Output freshness is the one
+    check in the sweep whose answer depends on which box you ask from: the Mac
+    runs no agents, so every VM-scheduled agent's files sit untouched there
+    forever. Measured from the wrong machine, six healthy agents came back as
+    PIP candidates for having "stopped producing" — a firing offence
+    manufactured entirely by reading the wrong disk.
+
+    Both halves matter. Suppressing off-host is worthless if the gate also
+    suppresses on-host, which would silently retire the staleness check
+    everywhere and look exactly like a clean firm.
+    """
+    import agent_roster
+    agents = [
+        {"file": "vm_only_agent.py",  "runs_via": ["cron"]},
+        {"file": "child_agent.py",    "runs_via": ["called_by:vm_only_agent"]},
+        {"file": "main_child.py",     "runs_via": ["main"]},
+    ]
+    off_host = agent_roster.runs_here(agents, crontab_text="# no jobs here\n")
+    on_host = agent_roster.runs_here(
+        agents, crontab_text="0 5 * * * python3 vm_only_agent.py\n"
+                             "0 6 * * * python3 main.py\n")
+    # The gate "fires" by withholding judgement. Off-host it must withhold on
+    # everything; on-host it must withhold on nothing, including the agents that
+    # inherit their host from main.py and from a called_by: parent.
+    suppressed_off_host = not off_host
+    suppressed_on_host = not ({"vm_only_agent", "child_agent", "main_child"} <= on_host)
+    return (suppressed_off_host, suppressed_on_host,
+            "off_host=%d on_host=%d" % (len(off_host), len(on_host)))
+
+
+@case("hr_agent.pip_evidence_guard")
+def _c_pip_needs_verified_evidence():
+    """A PIP must rest on an observation somebody actually made.
+
+    sweep_governance holds an item open and stamps it last_unverifiable when the
+    run could not observe it. That is the honest state, but in the queue it then
+    looks exactly like a confirmed, still-failing agent — and the stamp is worth
+    nothing if the consumer never reads it. This is the presence-is-not-currency
+    trap in its most expensive form: the output is a disciplinary action.
+
+    BAD = an open PIP-disposition item whose last observation was unverifiable;
+    HR must withhold it. CONTROL = the same item genuinely observed; HR must
+    still nominate it, or the guard has quietly disabled attendance discipline
+    altogether.
+    """
+    import hr_agent
+    def row(**extra):
+        e = {"key": "AGENT_OUTPUT_STALE::a", "kind": "AGENT_OUTPUT_STALE",
+             "subject": "a", "owner": "HR", "severity": "HIGH", "detail": "d",
+             "remedy": "r", "why": "w", "sla_days": 10, "status": "open",
+             "first_seen": "2026-07-01T00:00:00", "last_seen": "2026-08-01T00:00:00"}
+        e.update(extra)
+        return [e]
+    with tempfile.TemporaryDirectory() as td:
+        pb = os.path.join(td, "blind.json")
+        json.dump(row(last_unverifiable="2026-08-01T00:00:00"), open(pb, "w"))
+        b = hr_agent.review_sweep_queue(path=pb, now="2026-08-02T00:00:00")
+
+        pg = os.path.join(td, "seen.json")
+        json.dump(row(), open(pg, "w"))
+        g = hr_agent.review_sweep_queue(path=pg, now="2026-08-02T00:00:00")
+    return (b["pip_candidates"] == [] and b["pip_withheld_unverifiable"] == ["a"],
+            g["pip_candidates"] != ["a"],
+            "unverified_pips=%s verified_pips=%s"
+            % (b["pip_candidates"], g["pip_candidates"]))
 
 
 # ===========================================================================

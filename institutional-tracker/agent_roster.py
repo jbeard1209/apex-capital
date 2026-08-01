@@ -158,18 +158,78 @@ def _crontab() -> str:
     deploy.sh's allowlist, and is already the ground truth wiring_audit.py and
     hr_agent.py measure against. One schedule, both hosts.
     """
-    parts = []
-    try:
-        r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=15)
-        if r.returncode == 0:
-            parts.append(r.stdout)
-    except Exception:
-        pass
+    parts = [local_crontab()]
     try:
         parts.append((DATA / "vm_crontab_snapshot.txt").read_text())
     except Exception:
         pass
     return "\n".join(parts)
+
+
+def local_crontab() -> str:
+    """This host's OWN crontab, with no VM snapshot mixed in.
+
+    _crontab() above deliberately unions both hosts so the roster and the shrink
+    ratchet see one firm — "is this agent employed anywhere?" is a firm-wide
+    question. Attendance is the opposite kind of question. An agent's output
+    freshness is evidence about the AGENT only on the host that actually runs
+    it; on any other box a perfectly healthy agent's files sit untouched
+    forever. The Mac has no crontab at all, so measuring VM-scheduled agents
+    against Mac mtimes nominated six working agents for a PIP.
+    """
+    try:
+        r = subprocess.run(["crontab", "-l"], capture_output=True, text=True, timeout=15)
+        if r.returncode == 0:
+            return r.stdout
+    except Exception:
+        pass
+    return ""
+
+
+def schedule_pattern(stem: str):
+    """The one matcher for "does this schedule text invoke this module".
+
+    Word-boundary, because the substring test calls `risk_manager` scheduled on
+    the strength of `risk_manager_agent.py`. Exported so callers import it
+    rather than re-typing the regex — a second copy of this exact pattern in
+    the sweep's isolation graph is what produced six false reports.
+    """
+    return re.compile(rf"\b{re.escape(stem)}\.py\b")
+
+
+def runs_here(agents: list, crontab_text: str = None) -> set:
+    """Stems whose invocation chain is rooted in THIS host's crontab.
+
+    Being on the firm's schedule is not the same as running on this box. An
+    agent qualifies if its own module is in the local crontab, or if whatever
+    invokes it is — main.py's agents, research_team's registry agents and
+    called_by: chains all inherit the host of the entry that starts them.
+    Returns stems, matching the sweep's identity for an agent.
+    """
+    txt = local_crontab() if crontab_text is None else crontab_text
+    direct = set()
+    for a in agents:
+        stem = os.path.basename(a.get("file") or "")[:-3]
+        if stem and schedule_pattern(stem).search(txt):
+            direct.add(stem)
+    if not direct:
+        # Nothing on this host's crontab: nothing here is attendance-assessable.
+        # Returning early keeps the empty case explicit rather than letting the
+        # closure below quietly conclude the same thing.
+        return set()
+
+    here = set(direct)
+    main_here = bool(schedule_pattern("main").search(txt))
+    for a in agents:
+        stem = os.path.basename(a.get("file") or "")[:-3]
+        if not stem or stem in here:
+            continue
+        for via in a.get("runs_via") or []:
+            if via in ("main", "research_team") and main_here:
+                here.add(stem)
+            elif via.startswith("called_by:") and via.split(":", 1)[1] in direct:
+                here.add(stem)
+    return here
 
 
 def _imports_of(base: Path, rel: str) -> set:
@@ -201,9 +261,7 @@ def build(base: Path = BASE, host: str = "local") -> dict:
     stems = {os.path.basename(f)[:-3]: f for f in files}
 
     def scheduled_in(stem):
-        # Word-boundary match: the substring test would call `risk_manager`
-        # scheduled because `risk_manager_agent.py` appears in cron.
-        pat = re.compile(rf"\b{re.escape(stem)}\.py\b")
+        pat = schedule_pattern(stem)
         via = []
         if pat.search(cron):
             via.append("cron")
