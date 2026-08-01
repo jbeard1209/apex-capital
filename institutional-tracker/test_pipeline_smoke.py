@@ -1125,6 +1125,47 @@ class TestWiringContracts(unittest.TestCase):
                              "a retirement backfilled in the same sector/etf lane "
                              "must not be flagged as a hole")
 
+            # Case 3: THE SHAPE THAT ACTUALLY OCCURS. Cases 1 and 2 both spell
+            # retirement `status: "retired"` — and not one agent in the live
+            # registry has ever carried that status. The seven retired on
+            # 2026-05-14 carry `retired_at` + `retirement_reason` with
+            # `status: "active"`, so this audit reported `checked: 0 / OK` for
+            # months while seven tombstoned agents sat in an unfilled lane. The
+            # test passed the whole time, because the test wrote the registry it
+            # wished for. Anything keyed on the status string alone re-opens it.
+            _write_registry([
+                {"class_name": "MaterialsMiningAgent", "sector": "Materials",
+                 "etf": "XLB", "status": "active",
+                 "retired_at": "2026-05-14",
+                 "retirement_reason": "0 approved picks across 14 cycles"},
+                {"class_name": "GlobalTechAgent", "sector": "Technology",
+                 "etf": "QQQ", "status": "active"},
+            ])
+            res3 = hr_agent.audit_retirement_coverage()
+            self.assertEqual(res3["checked"], 1,
+                             "a tombstoned agent (retired_at + retirement_reason, "
+                             "status still 'active') must be counted as retired — "
+                             "checked: 0 is how this audit hid seven of them")
+            self.assertEqual(res3["status"], "ATTENTION")
+            self.assertIn("MaterialsMiningAgent",
+                          {h["class_name"] for h in res3["coverage_holes"]})
+
+            # Case 4: a VACATED retirement is not a retirement. The tombstone is
+            # preserved for the record under `vacated_retirement`, but the agent
+            # is back at work and its lane is covered — by itself. If this ever
+            # reads as a hole, every reinstated agent files a permanent false
+            # coverage finding against a seat it is currently sitting in.
+            _write_registry([
+                {"class_name": "MaterialsMiningAgent", "sector": "Materials",
+                 "etf": "XLB", "status": "active",
+                 "vacated_retirement": {"retired_at": "2026-05-14",
+                                        "retirement_reason": "0 approved picks"}},
+            ])
+            res4 = hr_agent.audit_retirement_coverage()
+            self.assertEqual(res4["checked"], 0,
+                             "a vacated retirement must not count as retired")
+            self.assertEqual(res4["status"], "OK")
+
             # MANAGEMENT finding only — never a rating/PIP input.
             self.assertFalse({"rating", "ratings", "pip", "pip_status"} & set(res1))
         finally:
@@ -1135,6 +1176,49 @@ class TestWiringContracts(unittest.TestCase):
         src = inspect.getsource(hr_agent.run_hr_review)
         self.assertIn('report["retirement_coverage"]', src,
                       "run_hr_review must publish the retirement coverage audit")
+
+    def test_retired_has_exactly_one_definition(self):
+        """"Retired" must be one function, imported — never a second copy.
+
+        There were three live definitions at once: hr_agent kept a private
+        `_RETIRED_STATUSES` tuple, hr_retirement_audit had its own predicate, and
+        agent_roster.py a third. They disagreed, so the same seven agents were
+        retired to one reader and active to another, and each reader was
+        internally consistent enough to look correct. This is the same
+        producer/consumer identity mismatch that CLAUDE.md names as the system's
+        main bug class; the discipline is one identity function per contract.
+
+        hr_agent imports it under a try/except so a broken import degrades rather
+        than crashes — which also means a broken import is SILENT. This asserts
+        the real import won, not the fallback.
+        """
+        import hr_agent
+        import hr_retirement_audit
+
+        self.assertIs(
+            hr_agent._is_retired, hr_retirement_audit.is_retired,
+            "hr_agent must use hr_retirement_audit.is_retired itself. If this "
+            "fails, the except-branch fallback is live and the two modules can "
+            "now disagree about who works here without anything erroring.")
+
+        # And the predicate must accept BOTH spellings, because the registry
+        # contains both: an explicit status, and the tombstone pair.
+        yes = [{"status": "retired"}, {"status": "decommissioned"},
+               {"status": "terminated"},
+               {"status": "active", "retired_at": "2026-05-14",
+                "retirement_reason": "0 approved picks"}]
+        for a in yes:
+            self.assertTrue(hr_retirement_audit.is_retired(a), a)
+
+        no = [{"status": "active"}, {"status": "inactive"},   # inactive != retired
+              # A tombstone needs BOTH halves: a bare retired_at with no reason
+              # is a half-written record, not a termination.
+              {"status": "active", "retired_at": "2026-05-14"},
+              {"status": "active",
+               "vacated_retirement": {"retired_at": "2026-05-14",
+                                      "retirement_reason": "0 approved picks"}}]
+        for a in no:
+            self.assertFalse(hr_retirement_audit.is_retired(a), a)
 
     def test_market_event_monitor_escalates_to_board_queue(self):
         """rd_market_event_monitor.py's producer side must land where the

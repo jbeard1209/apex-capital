@@ -52,12 +52,19 @@ HR_MEMO_PATH = "data/cit_hr_memo.json"
 HR_HISTORY_PATH = "data/hr_history.json"
 CATALOG_SOURCE = "chief_of_staff_agent.py"
 REPORT_PATH = "data/hr_retirement_audit.json"
+MANAGER_LOG_PATH = "data/manager_decisions.json"
+PROBATION_LOG_PATH = "data/agent_probation_log.json"
 
 #: How stale the risk memo may be before we refuse to judge a retirement by it.
 MEMO_MAX_AGE_DAYS = 2
 
 #: How early to start surfacing a reinstatement review before its due date.
 REVIEW_LEAD_DAYS = 7
+
+#: Dated observations required before a monitoring review may reach a verdict.
+#: Fewer than this and the honest answer is "the log wasn't running", not
+#: "the agent produced nothing".
+MIN_OBSERVATIONS = 10
 
 #: Which of two severities survives when a batch of findings collapses to one row.
 SEVERITY_RANK = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
@@ -74,6 +81,17 @@ def _load(path, default):
     except (ValueError, OSError) as e:
         logger.warning("could not read %s: %s", path, e)
         return default
+
+
+def _write_json(path, obj):
+    """Atomic write. A half-written registry is worse than a stale one."""
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(obj, f, indent=2, default=str)
+    os.replace(tmp, path)
 
 
 def _catalog_sectors():
@@ -127,7 +145,13 @@ def _memo_covers(memo, retired_at):
     return gap <= MEMO_MAX_AGE_DAYS, gap
 
 
-def _is_retired(a):
+#: Every status the firm has ever used to mean "this agent is gone". hr_agent
+#: knew about the last two and this module did not; neither knew about the
+#: tombstone spelling. The union is the answer, in one place.
+RETIRED_STATUSES = frozenset({"retired", "decommissioned", "terminated"})
+
+
+def is_retired(a):
     """The firm's one definition of "this agent was retired".
 
     Every check below used to key on `status == "retired"` alone. Not one agent
@@ -141,9 +165,25 @@ def _is_retired(a):
     consumer looks for it another way, and the gap is silent. One function, used
     everywhere, is the fix — including in the contradiction check itself, which
     is the only place the two spellings are allowed to be told apart.
+
+    There were in fact THREE spellings live on 2026-08-01, not two:
+    hr_agent.audit_retirement_coverage() keyed on a status tuple that also
+    accepted 'decommissioned'/'terminated', so it was blind to the same seven
+    agents AND knew about two statuses this function did not. It now imports
+    this one. agent_roster.py's ratchet deliberately keeps a STRICTER bar —
+    see the note there; do not "unify" it into this.
+
+    A vacated retirement is not a retirement: `vacate()` moves both fields into
+    `vacated_retirement`, so a reinstated agent stops matching here without the
+    firm losing the record that it was once let go.
     """
-    return bool(a.get("status") == "retired"
+    return bool(a.get("status") in RETIRED_STATUSES
                 or (a.get("retired_at") and a.get("retirement_reason")))
+
+
+#: Kept so existing callers and tests that reached for the private name still
+#: resolve to the one definition rather than quietly growing a fourth.
+_is_retired = is_retired
 
 
 def _lifecycle_is_observable(agents):
@@ -183,17 +223,17 @@ def _lifecycle_is_observable(agents):
     return (not reasons), reasons
 
 
-def _reinstatement_reviews(history, today=None):
-    """Reinstated agents whose promised monitoring review has come due.
+def _monitored(history, today=None):
+    """class_name -> (review_due, event) for every agent currently under watch.
 
-    A vacated retirement records `monitoring_review_by`. Nothing read that field
-    — it was a promise written into a JSON file, which is how "flagged but never
-    solved" starts. This makes it load-bearing: when the date is within
-    REVIEW_LEAD_DAYS, the Chairman is asked to confirm the agent has earned its
-    place, which is the condition the reinstatement was granted on.
+    ONE definition of "who is being watched", shared by the surveillance writer
+    (`observe`) and the reviewer (`_reinstatement_reviews`). Two answers to that
+    question is how you end up logging agent A's work and grading agent B on it.
+
+    A second vacation supersedes the first — judge against the newest promise,
+    not whichever event happens to sit earliest in the list.
     """
-    today = today or dt.date.today()
-    findings = []
+    out = OrderedDict()
     for cn, rec in sorted((history.get("agent_records") or {}).items()):
         for ev in rec.get("events") or []:
             if ev.get("event") != "RETIREMENT_VACATED":
@@ -205,35 +245,256 @@ def _reinstatement_reviews(history, today=None):
                 due = dt.date.fromisoformat(str(due_raw)[:10])
             except ValueError:
                 continue
-            days_left = (due - today).days
-            if days_left > REVIEW_LEAD_DAYS:
+            if cn not in out or due > out[cn][0]:
+                out[cn] = (due, ev)
+    return out
+
+
+# ── The credit channel ───────────────────────────────────────────────────────
+# These two functions restate, deliberately, the Chief-of-Staff factory's own
+# definition of "an approved pick credited to an agent"
+# (chief_of_staff_agent.py, AgentFactory performance review). Importing that
+# module pulls the whole firm into a cron job, so the definition is duplicated
+# — and a duplicated definition is exactly the drift this codebase keeps
+# getting bitten by. TestProbationEvidence pins the two together: change the
+# factory's rule and that test fails pointing here.
+
+def _credit_channel(manager_log=None, since=None):
+    """Is the channel by which an agent earns credit actually alive?
+
+    A probation that grades an agent on approved picks is worthless — worse,
+    it is unjust — if no agent can be credited with an approved pick at all.
+    That is not hypothetical here: across 50 cycles / 3,941 decisions the log
+    holds 36 approved picks, 7 of them attributed, and none in the last five
+    cycles. The 2026-05-14 retirements happened for exactly that reason.
+
+    So the reviewer must be able to ask "was anyone being credited?" before it
+    is allowed to conclude "this agent produced nothing".
+    """
+    cycles = manager_log if manager_log is not None else _load(MANAGER_LOG_PATH, [])
+    if not isinstance(cycles, list):
+        cycles = []
+    approved = attributed = scanned = 0
+    credited = {}
+    for c in cycles:
+        if not isinstance(c, dict):
+            continue
+        day = str(c.get("timestamp") or c.get("generated_at") or "")[:10]
+        if since and day and day < str(since)[:10]:
+            continue
+        scanned += 1
+        for d in c.get("decisions") or []:
+            if not isinstance(d, dict):
                 continue
-            findings.append({
-                "check": "REINSTATEMENT_REVIEW_DUE",
-                "severity": "HIGH" if days_left < 0 else "MEDIUM",
-                "class_name": cn,
-                "description": (
-                    "%s was reinstated on %s after its %s retirement was vacated, on "
-                    "the condition that it be monitored and confirmed necessary. That "
-                    "review is due %s (%s). Confirm the agent has earned its place or "
-                    "retire it deliberately this time.%s"
-                    % (cn, ev.get("date", "?"),
-                       ev.get("summary", "").split(".")[0][:60] or "earlier",
-                       due.isoformat(),
-                       "OVERDUE by %d day(s)" % -days_left if days_left < 0
-                       else "in %d day(s)" % days_left,
-                       _productivity_caveat())),
-            })
+            if d.get("manager_decision") != "APPROVED":
+                continue
+            if d.get("manager_action") in ("HOLD", "WATCH"):
+                continue
+            approved += 1
+            sa = (d.get("source_agent") or "").strip()
+            if sa:
+                attributed += 1
+                credited[sa] = credited.get(sa, 0) + 1
+    return {
+        "cycles_scanned": scanned,
+        "approved": approved,
+        "attributed": attributed,
+        "credited": credited,
+        # ALIVE means "somebody, anybody, got credit". Not "picks happened" —
+        # an approval nobody is credited for cannot exonerate or convict anyone.
+        "alive": attributed > 0,
+    }
+
+
+def _credited_hits(class_name, credited):
+    """Approved picks credited to this agent, matched the factory's way."""
+    key = (class_name or "").lower().replace("agent", "").strip("_")
+    if not key:
+        return 0
+    return sum(v for k, v in credited.items() if key in k.lower())
+
+
+def observe(registry=None, history=None, manager_log=None, today=None,
+            path=PROBATION_LOG_PATH):
+    """Record one dated observation per monitored agent. Idempotent per day.
+
+    This is the "constant surveillance" half of a reinstatement. Without it the
+    review that comes due in a month has nothing to read but the registry's
+    current state, and "what does this agent look like today" is not the same
+    question as "what did this agent do over the month we were watching".
+
+    Idempotent on (date, agent): the VM runs the pipeline several times a day,
+    and a log that appends per run would report a month of work as a hundred
+    observations of one afternoon.
+    """
+    registry = registry if registry is not None else _load(REGISTRY_PATH, {})
+    history = history if history is not None else _load(HR_HISTORY_PATH, {})
+    today = today or dt.date.today()
+    day = today.isoformat()
+
+    watched = _monitored(history, today)
+    if not watched:
+        return {"observed": 0, "date": day, "agents": []}
+
+    channel = _credit_channel(manager_log)
+    by_class = {a.get("class_name"): a for a in registry.get("agents", [])}
+
+    log = _load(path, {})
+    if not isinstance(log, dict):
+        log = {}
+    rows = [r for r in (log.get("observations") or [])
+            if not (r.get("date") == day and r.get("agent") in watched)]
+
+    for cn, (due, _ev) in watched.items():
+        a = by_class.get(cn) or {}
+        rows.append({
+            "date": day,
+            "agent": cn,
+            "review_due": due.isoformat(),
+            "status": a.get("status"),
+            "in_registry": cn in by_class,
+            "consecutive_zero_cycles": a.get("consecutive_zero_cycles"),
+            # An agent exonerated by the CRO block or the attribution interlock
+            # did not fail — it was never given a scoreable turn. Recording the
+            # count lets the review tell those two apart a month from now.
+            "exoneration_count": a.get("exoneration_count", 0),
+            "last_exoneration_reason": a.get("last_exoneration_reason"),
+            "credited_picks_to_date": _credited_hits(cn, channel["credited"]),
+            "channel_alive": channel["alive"],
+            "channel_approved": channel["approved"],
+            "channel_attributed": channel["attributed"],
+            # Still carrying a tombstone after being reinstated would mean the
+            # vacation did not take. Cheap to record, and it is the exact defect
+            # that produced the zombies in the first place.
+            "still_tombstoned": bool(a.get("retired_at")),
+        })
+
+    log["observations"] = rows
+    log["last_observed"] = dt.datetime.now().isoformat()
+    _write_json(path, log)
+    return {"observed": len(watched), "date": day, "agents": sorted(watched)}
+
+
+def assess(class_name, agent, observations, channel):
+    """KEEP / TERMINATE / NOT_ASSESSABLE for one agent under monitoring.
+
+    The rule is written down BEFORE the month runs, because a standard invented
+    at review time is just a rationalisation of whatever the data happened to
+    show.
+
+      NOT_ASSESSABLE  fewer than MIN_OBSERVATIONS dated observations, or the
+                      credit channel was never alive across the window. You
+                      cannot convict an agent of producing nothing on a period
+                      in which nobody could be credited with anything.
+      KEEP            credited with at least one approved pick.
+      TERMINATE       the channel was alive, OTHER agents were credited, and
+                      this one was credited with none.
+
+    TERMINATE is a recommendation, never an execution, for a `permanent` agent:
+    chief_of_staff_agent.py holds that permanent agents cannot be retired
+    without explicit Co-Chairman authorisation, and these seven are the reason
+    that rule exists.
+    """
+    mine = [o for o in observations if o.get("agent") == class_name]
+    hits = _credited_hits(class_name, channel["credited"])
+    permanent = bool((agent or {}).get("permanent"))
+    ev = {
+        "observations": len(mine),
+        "credited_picks": hits,
+        "channel_alive": channel["alive"],
+        "firm_approved_picks": channel["approved"],
+        "firm_attributed_picks": channel["attributed"],
+        "other_agents_credited": sorted(
+            k for k in channel["credited"] if not _credited_hits(class_name, {k: 1})),
+        "exonerated_cycles": max(
+            [o.get("exoneration_count") or 0 for o in mine] or [0]),
+    }
+
+    if hits > 0:
+        return {"verdict": "KEEP", "requires_chairman": False, "evidence": ev,
+                "why": ("credited with %d approved pick(s) during monitoring"
+                        % hits)}
+    if len(mine) < MIN_OBSERVATIONS:
+        return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
+                "evidence": ev,
+                "why": ("only %d dated observation(s) on record (need %d) — the "
+                        "surveillance log, not the agent, is what came up short"
+                        % (len(mine), MIN_OBSERVATIONS))}
+    if not channel["alive"]:
+        return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
+                "evidence": ev,
+                "why": ("no agent anywhere in the firm was credited with an "
+                        "approved pick during this window (%d approved, %d "
+                        "attributed), so zero picks is evidence about the "
+                        "attribution channel, not about this agent"
+                        % (channel["approved"], channel["attributed"]))}
+    if not ev["other_agents_credited"]:
+        return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
+                "evidence": ev,
+                "why": ("this agent is the only one that could have been "
+                        "credited, so there is no comparison to judge it against")}
+    return {"verdict": "TERMINATE", "requires_chairman": permanent, "evidence": ev,
+            "why": ("%d dated observation(s), the credit channel was live and %d "
+                    "other agent(s) were credited, and this agent earned none"
+                    % (len(mine), len(ev["other_agents_credited"])))}
+
+
+def _reinstatement_reviews(history, today=None, registry=None,
+                           observations=None, manager_log=None):
+    """Reinstated agents whose promised monitoring review has come due.
+
+    A vacated retirement records `monitoring_review_by`. Nothing read that field
+    — it was a promise written into a JSON file, which is how "flagged but never
+    solved" starts. This makes it load-bearing: when the date is within
+    REVIEW_LEAD_DAYS, HR states a verdict on the recorded evidence and the
+    Chairman is asked to confirm it, which is the condition the reinstatement
+    was granted on.
+    """
+    today = today or dt.date.today()
+    watched = _monitored(history, today)
+    if not watched:
+        return []
+
+    registry = registry if registry is not None else _load(REGISTRY_PATH, {})
+    by_class = {a.get("class_name"): a for a in registry.get("agents", [])}
+    if observations is None:
+        log = _load(PROBATION_LOG_PATH, {})
+        observations = (log.get("observations") or []) if isinstance(log, dict) else []
+    channel = _credit_channel(manager_log)
+
+    findings = []
+    for cn, (due, ev) in watched.items():
+        days_left = (due - today).days
+        if days_left > REVIEW_LEAD_DAYS:
+            continue
+        v = assess(cn, by_class.get(cn), observations, channel)
+        findings.append({
+            "check": "REINSTATEMENT_REVIEW_DUE",
+            "severity": "HIGH" if days_left < 0 else "MEDIUM",
+            "class_name": cn,
+            "verdict": v["verdict"],
+            # Seven agents reinstated together, reviewed together, on one
+            # decision — but ONLY while they share a verdict. The moment one
+            # agent's evidence diverges it earns its own row, because "keep six,
+            # terminate one" is two decisions and must not be answered once.
+            "batch": "reinstated-%s:%s" % (due.isoformat(), v["verdict"]),
+            "description": (
+                "%s was reinstated on %s after its %s retirement was vacated, on "
+                "the condition that it be monitored and confirmed necessary. That "
+                "review is due %s (%s).\n\nHR's verdict on the recorded evidence: "
+                "%s — %s.%s\n\nEvidence: %s"
+                % (cn, ev.get("date", "?"),
+                   ev.get("summary", "").split(".")[0][:60] or "earlier",
+                   due.isoformat(),
+                   "OVERDUE by %d day(s)" % -days_left if days_left < 0
+                   else "in %d day(s)" % days_left,
+                   v["verdict"], v["why"],
+                   ("\n\nThis agent is PERMANENT — a termination needs explicit "
+                    "Co-Chairman authorisation and cannot be actioned by HR alone."
+                    if v["requires_chairman"] else ""),
+                   json.dumps(v["evidence"], sort_keys=True, default=str))),
+        })
     return findings
-
-
-def _productivity_caveat():
-    """State plainly what evidence the review can and cannot rest on."""
-    return (" NOTE: the natural evidence — approved picks credited to this agent — "
-            "is currently unavailable. No approved decision in the manager log "
-            "carries a source_agent, so per-agent productivity cannot be measured "
-            "and the PIP lifecycle is paused by the attribution interlock. Judge on "
-            "submitted work and coverage until attribution is repaired.")
 
 
 def audit(registry=None, memo=None, catalog=None, history=None):
@@ -468,7 +729,11 @@ def _as_decisions(findings):
             "subject": batch,
             # The representative's own wording, unedited — splicing a name out of
             # a sentence written for one agent produces "7 agents ... is retired".
-            "description": ("%d agents share this finding, all retired in one batch "
+            # "retired in one batch" was accurate when retirements were the only
+            # batched finding; reinstatement reviews batch too, and telling the
+            # Chairman seven reinstated agents were "retired in one batch" is the
+            # opposite of what happened.
+            "description": ("%d agents share this finding, from one event "
                             "(%s): %s. ONE decision covers all %d. Stated for %s:\n\n%s"
                             % (len(names), batch, ", ".join(names), len(names),
                                names[0], rep["description"])),
@@ -476,14 +741,120 @@ def _as_decisions(findings):
     return out
 
 
+def vacate(class_names, review_by, authority, reason, registry_path=REGISTRY_PATH,
+           history_path=HR_HISTORY_PATH, today=None):
+    """Undo a retirement WITHOUT erasing that it happened.
+
+    Clearing `retired_at` outright would delete the firm's only record that the
+    agent was ever terminated — and a termination record you can delete is not a
+    record. The retirement is moved into `vacated_retirement` instead: the
+    tombstone stops being load-bearing (nothing reads it, no reader can act on
+    it by accident) while remaining readable forever.
+
+    The reinstatement is only half a decision without the review that follows
+    it, so `monitoring_review_by` is mandatory: `_reinstatement_reviews` reads
+    it, `observe` logs against it, and `assess` grades on that log. Idempotent —
+    re-running repairs a partial application rather than stacking a second
+    vacation on top of the first.
+    """
+    today = today or dt.date.today()
+    registry = _load(registry_path, {})
+    history = _load(history_path, {})
+    agents = registry.get("agents", [])
+    by_class = {a.get("class_name"): a for a in agents}
+
+    dt.date.fromisoformat(str(review_by)[:10])   # fail loudly on a bad date
+
+    done, skipped = [], []
+    for cn in class_names:
+        a = by_class.get(cn)
+        if a is None:
+            skipped.append((cn, "not in the registry"))
+            continue
+        if a.get("retired_at") or a.get("retirement_reason"):
+            a["vacated_retirement"] = {
+                "retired_at": a.pop("retired_at", None),
+                "retirement_reason": a.pop("retirement_reason", None),
+                "vacated_on": today.isoformat(),
+                "vacated_by": authority,
+                "grounds": reason,
+            }
+            a["status"] = a.get("status") or "active"
+            if a["status"] == "retired":
+                a["status"] = "active"
+            done.append(cn)
+        elif not a.get("vacated_retirement"):
+            skipped.append((cn, "carries no retirement to vacate"))
+            continue
+
+        rec = history.setdefault("agent_records", {}).setdefault(cn, {})
+        events = rec.setdefault("events", [])
+        # One vacation, one event. Re-running must not stack a second promise
+        # the reviewer would then read as superseding the first.
+        already = next((e for e in events
+                        if e.get("event") == "RETIREMENT_VACATED"
+                        and str(e.get("monitoring_review_by", ""))[:10] == str(review_by)[:10]),
+                       None)
+        if already is None:
+            events.append({
+                "event": "RETIREMENT_VACATED",
+                "date": today.isoformat(),
+                "authority": authority,
+                "monitoring_review_by": str(review_by)[:10],
+                "summary": reason,
+            })
+
+    if done:
+        _write_json(registry_path, registry)
+    _write_json(history_path, history)
+    return {"vacated": done, "skipped": skipped, "review_by": str(review_by)[:10]}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--report", action="store_true",
                     help="print findings, do not touch the Chairman queue")
+    ap.add_argument("--observe", action="store_true",
+                    help="record today's surveillance observation for every "
+                         "agent under monitoring, then exit")
+    ap.add_argument("--vacate", nargs="+", metavar="CLASS",
+                    help="vacate the retirement of these agents (Chairman action)")
+    ap.add_argument("--review-by", metavar="YYYY-MM-DD",
+                    help="date the reinstatement review falls due (required "
+                         "with --vacate — a reinstatement with no review is how "
+                         "a zombie is made)")
+    ap.add_argument("--authority", default="Co-Chairman",
+                    help="who authorised the vacation")
+    ap.add_argument("--reason", default="", help="grounds for the vacation")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s  %(levelname)-8s %(name)s -- %(message)s")
+
+    if args.vacate:
+        if not args.review_by:
+            ap.error("--vacate requires --review-by: an agent brought back with "
+                     "no scheduled review is the exact state that produced the "
+                     "seven zombies this module exists to catch.")
+        res = vacate(args.vacate, args.review_by, args.authority, args.reason)
+        for cn, why in res["skipped"]:
+            logger.warning("  %s: %s", cn, why)
+        logger.info("Vacated %d retirement(s), review due %s: %s",
+                    len(res["vacated"]), res["review_by"],
+                    ", ".join(res["vacated"]) or "(none)")
+        # Lay down the first observation immediately. A monitoring window whose
+        # log starts whenever cron next happens to fire is a window with a hole
+        # at the front, and `assess` counts observations.
+        logger.info("Surveillance: %s", observe())
+        return 0
+
+    if args.observe:
+        logger.info("Surveillance: %s", observe())
+        return 0
+
+    # Every audit run is also an observation — the surveillance must not depend
+    # on one cron line surviving.
+    observe()
 
     findings = audit()
     agents = _load(REGISTRY_PATH, {}).get("agents", [])

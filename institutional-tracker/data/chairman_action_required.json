@@ -6,7 +6,7 @@
     "source": "chairman_checkup_2026-07-27",
     "ts": "2026-07-27T04:16:15.586598",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:decision needed the cro has blocked all buys for # days d)"
   },
   {
@@ -16,7 +16,7 @@
     "source": "chairman_checkup_2026-07-27",
     "ts": "2026-07-27T04:16:15.586598",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:resolved hidden #rd host oracle always free vm # # # # # )"
   },
   {
@@ -26,7 +26,7 @@
     "source": "chairman_checkup_2026-07-27",
     "ts": "2026-07-27T04:16:15.586598",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:watch items not blocking # state json shows # positions w)"
   },
   {
@@ -37,7 +37,7 @@
     "ts": "2026-06-30T20:50:01.080036",
     "status": "awaiting_chairman",
     "dedup_key": "Repeated email subjects in buffer (# unique subject(s) appear #+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun #, #\" \u00d7#",
-    "times_seen": 192,
+    "times_seen": 844424930131968,
     "first_seen_of_group": "2026-06-30T16:50:00.866216",
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:repeated email subjects in buffer (# unique subject(s) ap)"
   },
@@ -49,7 +49,7 @@
     "ts": "2026-07-02T00:50:01.076806",
     "status": "awaiting_chairman",
     "dedup_key": "pipeline_heartbeat.json is #.#h old on a weekday (threshold #h) \u2014 possible genuine pipeline outage or VM issue.",
-    "times_seen": 960,
+    "times_seen": 4222124650659840,
     "first_seen_of_group": "2026-06-30T18:50:00.761971",
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:pipeline_heartbeat.json is #.#h old on a weekday (thresho)"
   },
@@ -62,7 +62,7 @@
     "status": "awaiting_chairman",
     "times_approved": 42,
     "queued_at": "2026-07-01T13:30:00.842048",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia suspend ml driven buys model auc below random ml fin)"
   },
   {
@@ -74,7 +74,7 @@
     "status": "awaiting_chairman",
     "times_approved": 60,
     "queued_at": "2026-07-01T13:30:00.842048",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia expected agents silent check they re still running c)"
   },
   {
@@ -86,7 +86,7 @@
     "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
     "ts": "2026-07-02T01:49:06.406014",
     "dedup_key": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report #h old) but produced # qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python# fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still # \u2014 keep the #% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "first_seen_of_group": "2026-07-02T01:49:06.406014",
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[fe] zero_picks: first eagle value pod health \u2014 first eag)"
   },
@@ -106,7 +106,7 @@
     "merged_ids": [
       "PHM-20260702090133-ETF-e6e65a"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf zero picks macro etf pod health etf zero picks macro )"
   },
   {
@@ -116,7 +116,7 @@
     "status": "open",
     "ts": "2026-07-02T09:40:01.849001",
     "description": "[Audit] ml_research_team_leader / ml_data_watchdog orphaned \u2014 data_quality_report 469h stale \u2014 nothing invokes it (not in cron, not in overnight_ml_runner). Decide: schedule it, fold the data watchdog into an existing run, or retire the report (freshness_sentinel budget expects 54h).",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:audit ml research team leader ml data watchdog orphaned d)"
   },
   {
@@ -128,7 +128,7 @@
     "status": "awaiting_chairman",
     "times_approved": 4,
     "queued_at": "2026-07-02T09:58:42.283692",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe zero picks first eagle value pod health first eagle va)"
   },
   {
@@ -140,7 +140,7 @@
     "status": "awaiting_chairman",
     "times_approved": 48,
     "queued_at": "2026-07-02T13:30:16.041454",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia decide on idle pod capital ml quantitative # # capit)"
   },
   {
@@ -152,7 +152,7 @@
     "status": "awaiting_chairman",
     "times_approved": 48,
     "queued_at": "2026-07-02T13:30:16.041454",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia cit backlog bloat tighten proposal quality or action)"
   },
   {
@@ -167,7 +167,7 @@
     "status": "open",
     "fix_applied": true,
     "fix_description": "pip3 install pyarrow>=12.0.0; added pyarrow>=12.0.0 to requirements.txt",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ml v# v# v# fail every nightly run pyarrow never installe)"
   },
   {
@@ -181,7 +181,7 @@
     "source": "forensic_investigator",
     "ts": "2026-07-03T18:48:38.661806",
     "status": "open",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:logic team noon run missed when mac sleeps not in wakeup )"
   },
   {
@@ -197,7 +197,7 @@
     "status": "awaiting_chairman",
     "times_approved": 1,
     "queued_at": "2026-07-04T11:32:53.583050",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ml v# v# v# fail every run pyarrow never in requirements )"
   },
   {
@@ -213,7 +213,7 @@
     "status": "awaiting_chairman",
     "times_approved": 1,
     "queued_at": "2026-07-04T11:32:54.645966",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:wakeup recovery py missing logic team py catchup noon run)"
   },
   {
@@ -226,7 +226,7 @@
     "times_approved": 2,
     "queued_at": "2026-07-16T09:43:07.430496",
     "dedup_key": "CRO=HIGH for # cycles (# days) \u2014 board must vote",
-    "times_seen": 576,
+    "times_seen": 2533274790395904,
     "first_seen_of_group": "2026-07-15T09:46:13.573650",
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cro=high for # cycles (# days) \u2014 board must vote)"
   },
@@ -240,7 +240,7 @@
     "times_approved": 2,
     "queued_at": "2026-07-15T09:46:13.573650",
     "dedup_key": "CRO at HIGH for #+ days \u2014 firm has no buy strategy",
-    "times_seen": 384,
+    "times_seen": 1688849860263936,
     "first_seen_of_group": "2026-07-15T09:46:13.573650",
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cro at high for #+ days \u2014 firm has no buy strategy)"
   },
@@ -254,7 +254,7 @@
     "times_approved": 2,
     "queued_at": "2026-07-16T09:43:07.430496",
     "dedup_key": "[LTIA] Governance action: CRO=HIGH for # cycles (# days) \u2014 board must vote",
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "first_seen_of_group": "2026-07-15T09:46:13.573650",
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[ltia] governance action: cro=high for # cycles (# days) )"
   },
@@ -267,7 +267,7 @@
     "status": "awaiting_chairman",
     "times_approved": 4,
     "queued_at": "2026-07-15T09:46:13.573650",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia cro extended block needs a vote with explicit exit c)"
   },
   {
@@ -279,7 +279,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-15T09:46:13.573650",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia governance action # chairman action item s unresolve)"
   },
   {
@@ -289,7 +289,7 @@
     "description": "[FI] STALE: Fixed Income pod health \u2014 Fixed Income pipeline report is 214h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fi_pipeline.py\nOwner: FI Pod Board + Chairman. Auto-raised by pod_health_monitor.",
     "status": "open",
     "ts": "2026-07-23T11:25:01.794639",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fi stale fixed income pod health fixed income pipeline re)"
   },
   {
@@ -299,7 +299,7 @@
     "description": "[FE] STALE: First Eagle Value pod health \u2014 First Eagle Value pipeline report is 478h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
     "status": "open",
     "ts": "2026-07-23T11:25:01.800983",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe stale first eagle value pod health first eagle value p)"
   },
   {
@@ -309,7 +309,7 @@
     "description": "[ETF] STALE: Macro/ETF pod health \u2014 Macro/ETF pipeline report is 474h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 pod3_macro.py\nOwner: Macro Pod Board. Auto-raised by pod_health_monitor.",
     "status": "open",
     "ts": "2026-07-23T11:25:01.804414",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf stale macro etf pod health macro etf pipeline report )"
   },
   {
@@ -319,7 +319,7 @@
     "status": "open",
     "ts": "2026-07-23T11:25:02.979301",
     "description": "[ForeignOrders] 2026-07-23 \u2014 3 account order(s) with NO local decision record (SH). Either another host is trading this account (e.g. the GCP VM) or local decision logging broke. Both demand investigation.",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:foreignorders # # # # account order s with no local decis)"
   },
   {
@@ -331,7 +331,7 @@
     "status": "known_infrastructure",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:25:10.431313",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fi stale fixed income pod health)"
   },
   {
@@ -343,7 +343,7 @@
     "status": "known_infrastructure",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:25:10.431313",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe stale first eagle value pod health)"
   },
   {
@@ -355,7 +355,7 @@
     "status": "known_infrastructure",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:25:10.431313",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf stale macro etf pod health)"
   },
   {
@@ -409,7 +409,7 @@
       "LT-173017-cro_extended_no_review",
       "LT-175139-cro_extended_no_review"
     ],
-    "times_seen": 2624,
+    "times_seen": 11540474045136896,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro high for # cycles # days board must vote the cro has )"
   },
   {
@@ -462,7 +462,7 @@
       "LT-173017-cro_paralysis",
       "LT-175139-cro_paralysis"
     ],
-    "times_seen": 2560,
+    "times_seen": 11258999068426240,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro at high for # days firm has no buy strategy the cro h)"
   },
   {
@@ -474,7 +474,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:35:43.164168",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia reconcile contradicting risk signals cro high but ca)"
   },
   {
@@ -528,7 +528,7 @@
       "LO-20260724170745-extended_cro_high_no_review",
       "LO-20260724172904-extended_cro_high_no_review"
     ],
-    "times_seen": 2624,
+    "times_seen": 11540474045136896,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro has been at high for # cycles no board review the cro)"
   },
   {
@@ -542,7 +542,7 @@
     "merged_ids": [
       "apex-sys-cit-20260730-1720-email_buffer_overflo"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:email buffer overflow # unsent emails in buffer threshold)"
   },
   {
@@ -556,7 +556,7 @@
     "merged_ids": [
       "apex-sys-cit-20260730-1720-email_loop_detected_"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:email loop detected # subject s appear # times in buffer )"
   },
   {
@@ -567,7 +567,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T17:20:03.153851",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:edgar cache directory missing fe edgar fundamentals may n)"
   },
   {
@@ -578,7 +578,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T17:20:03.153889",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:deep research library directory missing data company rese)"
   },
   {
@@ -589,7 +589,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T17:20:03.153915",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe watchlist missing data fe watchlist json add target pr)"
   },
   {
@@ -602,7 +602,7 @@
     "status": "resolved",
     "resolution": "FALSE POSITIVE \u2014 raised by a local (non-GCP) run. The check curl'd ifconfig.me, which answers from any host, so it compared the running machine's IP (71.183.49.72) to the VM's. The VM's external IP is unchanged at 34.182.202.196 (verified via GCP metadata 2026-07-31). Check now probes the metadata server and skips off-VM; guarded by test_pipeline_smoke.TestHostSpecificChecksStayOnTheirHost.",
     "resolved_at": "2026-07-31T14:30:07.283141",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp ip changed current external ip # # # # does not match)"
   },
   {
@@ -615,7 +615,7 @@
     "status": "awaiting_chairman",
     "times_approved": 90,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:idle_pod_pod2_ml)"
   },
   {
@@ -631,7 +631,7 @@
     "merged_ids": [
       "LTIA-20260730101004"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cit_backlog_bloat)"
   },
   {
@@ -644,7 +644,7 @@
     "status": "awaiting_chairman",
     "times_approved": 90,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:stale_chairman_actions)"
   },
   {
@@ -660,7 +660,7 @@
     "merged_ids": [
       "LTIA-20260730101004-d9ebd5"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:agent_communication_silence)"
   },
   {
@@ -673,7 +673,7 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for fico \u2014 quarantine from valuat)"
   },
   {
@@ -686,7 +686,7 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for msci \u2014 quarantine from valuat)"
   },
   {
@@ -699,7 +699,7 @@
     "status": "awaiting_chairman",
     "times_approved": 6,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for sbac \u2014 quarantine from valuat)"
   },
   {
@@ -712,7 +712,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:korea/ai-hardware tech shorts \u2014 recommend no new shorts ()"
   },
   {
@@ -725,7 +725,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:# agents write reports that other modules read, but nothi)"
   },
   {
@@ -738,7 +738,7 @@
     "status": "awaiting_chairman",
     "times_approved": 4,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:irm_cro_contradiction)"
   },
   {
@@ -751,7 +751,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:zero_picks_anomaly)"
   },
   {
@@ -764,7 +764,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:live market event: index_gap on qqq)"
   },
   {
@@ -776,7 +776,7 @@
     "ts": "2026-07-31T10:58:08.603758",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:0344f5e388f4b157",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:0344f5e388f4b157)"
   },
   {
@@ -788,7 +788,7 @@
     "ts": "2026-07-31T10:58:08.665731",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:9efdff558c046948",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:9efdff558c046948)"
   },
   {
@@ -800,7 +800,7 @@
     "ts": "2026-07-31T14:21:33.531750",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:5581cc6b1bf98b19",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:5581cc6b1bf98b19)"
   },
   {
@@ -812,7 +812,7 @@
     "ts": "2026-07-31T14:21:33.531775",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:a45e0ac076e38cf6",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a45e0ac076e38cf6)"
   },
   {
@@ -824,7 +824,7 @@
     "ts": "2026-07-31T14:21:33.531796",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:5cb063ba317bff21",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:5cb063ba317bff21)"
   },
   {
@@ -836,7 +836,7 @@
     "ts": "2026-07-31T14:21:33.531813",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:9ea43ce1aee12ac7",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:9ea43ce1aee12ac7)"
   },
   {
@@ -848,7 +848,7 @@
     "ts": "2026-07-31T14:21:33.531830",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:a65cbbb5b636cb7c",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a65cbbb5b636cb7c)"
   },
   {
@@ -860,7 +860,7 @@
     "ts": "2026-07-31T14:21:33.531848",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:74312b3b449ea1f6",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:74312b3b449ea1f6)"
   },
   {
@@ -872,7 +872,7 @@
     "ts": "2026-07-31T14:21:33.531865",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:65ebb0fe8e0c31c7",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:65ebb0fe8e0c31c7)"
   },
   {
@@ -884,7 +884,7 @@
     "ts": "2026-07-31T14:21:33.531882",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:27d0b0c946504239",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:27d0b0c946504239)"
   },
   {
@@ -896,7 +896,7 @@
     "ts": "2026-07-31T14:21:33.531899",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:1acc6dda6bb512ed",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:1acc6dda6bb512ed)"
   },
   {
@@ -908,7 +908,7 @@
     "ts": "2026-07-31T14:21:33.531916",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:54d4549d6593879a",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:54d4549d6593879a)"
   },
   {
@@ -920,7 +920,7 @@
     "ts": "2026-07-31T14:21:33.538813",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:abe5725021bcb2f7",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:abe5725021bcb2f7)"
   },
   {
@@ -932,7 +932,7 @@
     "ts": "2026-07-31T14:21:33.539159",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:10ad4fe3155b76a7",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:10ad4fe3155b76a7)"
   },
   {
@@ -946,7 +946,7 @@
     "dedup_key": "sha1:8afd72d12e09de58",
     "resolution": "FALSE POSITIVE \u2014 raised by a local (non-GCP) run. The check curl'd ifconfig.me, which answers from any host, so it compared the running machine's IP (206.252.193.62) to the VM's. The VM's external IP is unchanged at 34.182.202.196 (verified via GCP metadata 2026-07-31). Check now probes the metadata server and skips off-VM; guarded by test_pipeline_smoke.TestHostSpecificChecksStayOnTheirHost.",
     "resolved_at": "2026-07-31T14:30:07.283180",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:8afd72d12e09de58)"
   },
   {
@@ -959,7 +959,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T15:15:10.621388",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:wiring contract violation \u2014 [orphan-agent] performance_sn)"
   },
   {
@@ -972,7 +972,7 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T15:15:10.621388",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:wiring_contract_violation)"
   },
   {
@@ -983,10 +983,9 @@
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
     "merged_ids": [
-      "data-integrity-2026-07-31",
       "data-integrity-2026-08-01"
     ],
-    "times_seen": 192,
+    "times_seen": 844426003890208,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:firm data integrity sweep is red fundamentals # issue s s)"
   },
   {
@@ -996,7 +995,7 @@
     "description": "'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T14:55:01.787673+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:pre trade devil s advocate adversarial challenge before h)"
   },
   {
@@ -1006,7 +1005,7 @@
     "description": "'Replace flat position sizing with conviction-weighted Kelly-derived sizing' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T14:55:01.787673+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:replace flat position sizing with conviction weighted kel)"
   },
   {
@@ -1017,7 +1016,7 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.681695",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:outcome #d labels too old latest labeled snapshot date # )"
   },
   {
@@ -1028,7 +1027,7 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.682098",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term ml output stale newest file ml longterm board r)"
   },
   {
@@ -1039,7 +1038,7 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.682879",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term model due for retraining cycle model longterm p)"
   },
   {
@@ -1050,7 +1049,7 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.683138",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term model predates fundamental features retrain rec)"
   },
   {
@@ -1061,7 +1060,7 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.685234",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:consider whether sec edgar xbrl expanded coverage could i)"
   },
   {
@@ -1072,7 +1071,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.144593",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp disk usage elevated # used threshold #)"
   },
   {
@@ -1083,7 +1082,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.195909",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml improvement agent log no log)"
   },
   {
@@ -1094,7 +1093,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.195974",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 140737488355328,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml data watchdog log no log fou)"
   },
   {
@@ -1105,7 +1104,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196015",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml drift monitor log no log fou)"
   },
   {
@@ -1116,7 +1115,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196051",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml alpha decay monitor log no l)"
   },
   {
@@ -1127,7 +1126,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196091",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml research team leader log no )"
   },
   {
@@ -1138,7 +1137,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196125",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday edgar scraper log no log found )"
   },
   {
@@ -1149,7 +1148,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196161",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe cit agent log no log found t)"
   },
   {
@@ -1160,7 +1159,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196199",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe watchlist monitor log no log)"
   },
   {
@@ -1171,7 +1170,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196236",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday portfolio risk dashboard log no)"
   },
   {
@@ -1182,7 +1181,7 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.217716",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:edgar cache partially stale # of # file s older than #d f)"
   },
   {
@@ -1192,7 +1191,7 @@
     "description": "'[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia decide on idle pod capital ml quantitative # # capit)"
   },
   {
@@ -1202,7 +1201,7 @@
     "description": "'[LTIA] Governance action: 4 Chairman action item(s) unresolved for >3 days' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia governance action # chairman action item s unresolve)"
   },
   {
@@ -1215,7 +1214,7 @@
     "merged_ids": [
       "lifecycle-drop-sig-a23422f0c07f"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:replace fixed r d cadence with event triggered research c)"
   },
   {
@@ -1228,7 +1227,7 @@
     "merged_ids": [
       "lifecycle-drop-sig-251d1fc4f07e"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for bbio quarantine from valuatio)"
   },
   {
@@ -1241,7 +1240,7 @@
     "merged_ids": [
       "lifecycle-drop-sig-3749e6ba26d6"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for fico quarantine from valuatio)"
   },
   {
@@ -1254,7 +1253,7 @@
     "merged_ids": [
       "lifecycle-drop-sig-fd6f04f8e589"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for msci quarantine from valuatio)"
   },
   {
@@ -1267,7 +1266,7 @@
     "merged_ids": [
       "lifecycle-drop-sig-aae92388eef4"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for tdg quarantine from valuation)"
   },
   {
@@ -1280,7 +1279,7 @@
     "merged_ids": [
       "lifecycle-drop-sig-bca7a3da0763"
     ],
-    "times_seen": 128,
+    "times_seen": 562949953421312,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for wing quarantine from valuatio)"
   },
   {
@@ -1290,7 +1289,7 @@
     "description": "'[LTIA] Reconcile contradicting risk signals: Canary=ORANGE but 15 positions stil' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia reconcile contradicting risk signals canary orange b)"
   },
   {
@@ -1300,7 +1299,7 @@
     "description": "'[ForeignOrders] 2026-07-28 \u2014 1 account order(s) with NO local decision record (FITB). Either another host is trading this account (e.g. the GCP VM) or local decision logging broke. Both demand investigation.' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:foreignorders # # # # account order s with no local decis)"
   },
   {
@@ -1310,7 +1309,7 @@
     "description": "'Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:LOW | Manager Grade:F | Jul 28, 2026\" \u00d710; \"Apex Capital \u2014 Chief of Staff Brief | Risk:LOW | Grade:F | Jul 28, 2026\" \u00d76; \"[IRM DAILY CHECK] 2026-07-28 \u2014 Risk Score 3/10 | 0 Red Flag(s) | HR: agents flagged\" \u00d76' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:repeated email subjects in buffer # unique subject s appe)"
   },
   {
@@ -1323,7 +1322,7 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T13:30:05.719508",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for bbio \u2014 quarantine from valuat)"
   },
   {
@@ -1336,7 +1335,7 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T13:30:05.719508",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for tdg \u2014 quarantine from valuati)"
   },
   {
@@ -1349,7 +1348,7 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T13:30:05.719508",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for wing \u2014 quarantine from valuat)"
   },
   {
@@ -1362,7 +1361,7 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T16:01:23.323687",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:canary_red_positions_open)"
   },
   {
@@ -1373,7 +1372,7 @@
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-07-31T16:50:01.962981",
     "status": "awaiting_chairman",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:email_loop_detection)"
   },
   {
@@ -1385,7 +1384,7 @@
     "ts": "2026-07-31T18:40:49.495907",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:e034dfd374f5b5e5",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:e034dfd374f5b5e5)"
   },
   {
@@ -1397,7 +1396,7 @@
     "ts": "2026-07-31T18:40:49.496192",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:bf8bd6f6afaea26d",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:bf8bd6f6afaea26d)"
   },
   {
@@ -1409,7 +1408,7 @@
     "ts": "2026-07-31T18:40:49.498053",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:aac4bd561e6a8f03",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:aac4bd561e6a8f03)"
   },
   {
@@ -1423,7 +1422,7 @@
     "dedup_key": "fi_cit:STALE_SPREAD_DATA",
     "resolved_at": "2026-07-31T18:55:31.890444+00:00",
     "resolution": "False alarm, raised minutes earlier by the pre-fix reader. It measured data/fi_spread_cache.json, which no producer writes (frozen 2026-07-03). The live file is data/fi_credit_conditions.json, 4.4h old. Reader repointed.",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:stale_spread_data)"
   },
   {
@@ -1435,7 +1434,7 @@
     "ts": "2026-07-31T18:55:19.298596+00:00",
     "status": "awaiting_chairman",
     "dedup_key": "fi_cit:improvement:DURATION",
-    "times_seen": 64,
+    "times_seen": 281474976710656,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:improvement:duration)"
   },
   {
@@ -1444,9 +1443,14 @@
     "severity": "HIGH",
     "category": "GOVERNANCE",
     "description": "7 agents share this finding, all retired in one batch (retired-2026-05-14): ConsumerDiscretionaryAgent, CryptoEquitiesAgent, FinancialSectorAgent, GlobalTechAgent, HealthcarePharmaAgent, IndustrialsDefenseAgent, MaterialsMiningAgent. ONE decision covers all 7. Stated for ConsumerDiscretionaryAgent:\n\nConsumerDiscretionaryAgent carries retired_at=2026-05-14 and a retirement reason, but status is 'active' and permanent=true \u2014 so it is still loaded and still working. The retirement was written down and never carried out. Decide it deliberately: vacate the retirement (clear retired_at + retirement_reason, log a RETIREMENT_VACATED event) or enforce it (status='retired', and accept losing this agent's coverage). Leaving it contradictory means the next reader of retired_at decides by accident.",
-    "status": "awaiting_chairman",
+    "status": "resolved",
     "raised_at": "2026-08-01T01:01:24.224414",
-    "source": "hr_retirement_audit"
+    "source": "hr_retirement_audit",
+    "times_seen": 2199023255552,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:retirement_never_enforced:retired-2026-05-14)",
+    "resolved_at": "2026-08-01T13:46:05",
+    "resolved_by": "Co-Chairman Jack Beard",
+    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage."
   },
   {
     "id": "hr-retire-20260801-unverifiable_retirement-retired20260514",
@@ -1454,9 +1458,14 @@
     "severity": "LOW",
     "category": "GOVERNANCE",
     "description": "7 agents share this finding, all retired in one batch (retired-2026-05-14): ConsumerDiscretionaryAgent, CryptoEquitiesAgent, FinancialSectorAgent, GlobalTechAgent, HealthcarePharmaAgent, IndustrialsDefenseAgent, MaterialsMiningAgent. ONE decision covers all 7. Stated for ConsumerDiscretionaryAgent:\n\nConsumerDiscretionaryAgent is retired (retired_at=2026-05-14) but cit_hr_memo.json cannot speak to that date (generated_at=2026-07-31T21:45:41.638123, 78 day(s) apart), so whether buys were blocked at retirement time cannot be established. Not asserting a wrongful retirement on evidence that post-dates the decision.",
-    "status": "awaiting_chairman",
+    "status": "resolved",
     "raised_at": "2026-08-01T01:01:24.224422",
-    "source": "hr_retirement_audit"
+    "source": "hr_retirement_audit",
+    "times_seen": 2199023255552,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:unverifiable_retirement:retired-2026-05-14)",
+    "resolved_at": "2026-08-01T13:46:05",
+    "resolved_by": "Co-Chairman Jack Beard",
+    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage."
   },
   {
     "id": "hr-retire-20260801-retirement_cites_voided_chance-retired20260514",
@@ -1464,8 +1473,37 @@
     "severity": "HIGH",
     "category": "GOVERNANCE",
     "description": "7 agents share this finding, all retired in one batch (retired-2026-05-14): ConsumerDiscretionaryAgent, CryptoEquitiesAgent, FinancialSectorAgent, GlobalTechAgent, HealthcarePharmaAgent, IndustrialsDefenseAgent, MaterialsMiningAgent. ONE decision covers all 7. Stated for ConsumerDiscretionaryAgent:\n\nConsumerDiscretionaryAgent's retirement reason rests on a role reassignment ('Execution-Quality', 2026-05-06) that this firm itself voided on 2026-07-31: Never took effect: reassigned_to has no reader, sector was never updated, and all nine 2026-05-06 reassignments collided into one lane. Cleared so it can never . The stated grounds for the retirement no longer hold, and the retirement is still on the record. Vacate it or restate it on grounds that survive.",
-    "status": "awaiting_chairman",
+    "status": "resolved",
     "raised_at": "2026-08-01T01:01:24.224427",
-    "source": "hr_retirement_audit"
+    "source": "hr_retirement_audit",
+    "times_seen": 2199023255552,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:retirement_cites_voided_chance:retired-2026-05-14)",
+    "resolved_at": "2026-08-01T13:46:05",
+    "resolved_by": "Co-Chairman Jack Beard",
+    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage."
+  },
+  {
+    "id": "apex-sys-cit-20260801-1300-gcp_disk_usage_eleva",
+    "severity": "MEDIUM",
+    "category": "IMPROVEMENT",
+    "description": "GCP disk usage elevated -- 77% used (threshold 70%)",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-01T13:00:01.212752",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:a12238c739c8b07a",
+    "times_seen": 2048,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a12238c739c8b07a)"
+  },
+  {
+    "id": "apex-sys-cit-20260801-1300-edgar_cache_partiall",
+    "severity": "MEDIUM",
+    "category": "IMPROVEMENT",
+    "description": "EDGAR cache partially stale -- 84 of 84 file(s) older than 30d; fe_edgar_fundamentals may not be refreshing data",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-01T13:00:01.312208",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:861ae3bd593437fd",
+    "times_seen": 2048,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:861ae3bd593437fd)"
   }
 ]

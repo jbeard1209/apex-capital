@@ -35,6 +35,19 @@ data/capital_efficiency_report.json
 data/chief_of_staff_report.json
 data/cos_advice_history.json
 data/hr_history.json
+# Live per-host employment state, written by the Chief-of-Staff factory on BOTH
+# hosts and deliberately excluded from deploy.sh's rsync. It was tracked until
+# 2026-08-01, which meant every branch carried its own snapshot of a file that
+# changes under you: main held 39 agents / 9 tombstoned, this branch 37 / 7, and
+# the live Mac 67 / 0. A plain `git checkout main` would therefore have deleted
+# 28 agents from the roster and silently re-retired the seven agents that had
+# just been reinstated — no error, no diff anyone would read.
+# The git-tracked declaration of who works here is data/agent_roster_manifest.json
+# (agent_roster.py's shrink-only ratchet); this file is the runtime state it
+# grades. Both readers fail-open to {"agents": []}, so a fresh clone is fine.
+data/agent_registry.json
+# Same shape: the surveillance log accrues one dated row per host per day.
+data/agent_probation_log.json
 data/hr_report.json
 data/hr_irm_sealed.json
 data/irm_daily_check.json

@@ -1306,7 +1306,21 @@ def audit_ratchet_integrity() -> dict:
     return findings
 
 
-_RETIRED_STATUSES = ("retired", "decommissioned", "terminated")
+# One definition of "retired", imported not copied. This module used to key on
+# a status tuple alone, so it was blind to the seven agents retired on
+# 2026-05-14 — they carry `retired_at` + `retirement_reason` with
+# `status: "active"`, and a status-only test reports zero retirements and a
+# clean coverage audit. hr_retirement_audit.is_retired() is the union of both
+# spellings; the fallback below keeps this module standing if that import ever
+# breaks, but it is deliberately the LOOSER of the two so a failure here can
+# only over-report, never under-report.
+try:
+    from hr_retirement_audit import is_retired as _is_retired
+except Exception:                                    # pragma: no cover
+    def _is_retired(a):
+        return bool(str(a.get("status", "")).lower()
+                    in ("retired", "decommissioned", "terminated")
+                    or a.get("retired_at") or a.get("retirement_reason"))
 
 
 def audit_retirement_coverage() -> dict:
@@ -1334,7 +1348,7 @@ def audit_retirement_coverage() -> dict:
 
     active_lanes = set()
     for a in agents:
-        if str(a.get("status", "")).lower() not in _RETIRED_STATUSES:
+        if not _is_retired(a):
             sector = a.get("sector")
             etf = a.get("etf")
             if sector:
@@ -1342,7 +1356,7 @@ def audit_retirement_coverage() -> dict:
 
     seen_retired = {}
     for a in agents:
-        if str(a.get("status", "")).lower() in _RETIRED_STATUSES:
+        if _is_retired(a):
             sector = a.get("sector")
             etf = a.get("etf")
             if not sector:
