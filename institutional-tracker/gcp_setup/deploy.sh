@@ -91,10 +91,19 @@ echo "[1/3] Syncing project files..."
 # running the audit against a missing schedule snapshot and a stale orphan
 # baseline. Config that changes behaviour has to travel with the code that reads
 # it. Includes MUST precede the exclude — rsync takes the first matching rule.
+#
+# DO NOT ADD data/agent_registry.json HERE. It is written live on both hosts by
+# the Chief-of-Staff factory, and the two copies had diverged to 37 rows on the
+# Mac and 66 on the VM. rsync is one-way, so allowlisting it would have deleted
+# 30 agents — the entire FE and FI pods — from production on the next deploy.
+# Reconcile it instead:  python3 agent_roster.py --sync-registry
+# (agent_roster_manifest.json below is safe: it is DECLARED, git-tracked, and
+# regenerated from the merged view of both hosts by --adopt.)
 rsync -avz --progress \
     --include="data/" \
     --include="data/orphan_agents_baseline.json" \
     --include="data/vm_crontab_snapshot.txt" \
+    --include="data/agent_roster_manifest.json" \
     --exclude="data/*" \
     --exclude="logs/" \
     --exclude="__pycache__/" \

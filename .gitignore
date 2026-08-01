@@ -107,3 +107,16 @@ institutional-tracker/data/historical_13f.db-journal
 # Claude scratch/diagnostic scripts (never commit)
 institutional-tracker/_*.py
 institutional-tracker/deploy_stamp.json
+
+# Pre-merge snapshots written by chairman_queue_sync.py before it touches
+# either host's queue. Local safety net, not firm history — the merged
+# queues themselves stay tracked.
+institutional-tracker/data/chairman_queue_archive/
+
+# Pre-merge registry snapshots from agent_roster.py --sync-registry.
+institutional-tracker/data/agent_roster_archive/
+
+# agent_roster.json is a per-host discovery snapshot (it regenerates every run
+# and its runs_via differs by crontab). The MANIFEST beside it is the declared
+# roster the shrink-ratchet measures against, so that one stays tracked.
+institutional-tracker/data/agent_roster.json

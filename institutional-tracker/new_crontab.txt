@@ -1,3 +1,12 @@
+# ⚠️  NOT GROUND TRUTH (2026-08 consolidation). This is a hand-maintained
+# bootstrap template for installing cron on the MAC, and it drifts from prod —
+# it was once 10 modules behind the live VM crontab. If you need to know what
+# is actually scheduled in production, read data/vm_crontab_snapshot.txt (a
+# verbatim pull of `ssh apex-capital crontab -l`, refreshed via
+# scripts/refresh_crontab_snapshot.sh) — that is the ONLY file wiring_audit.py
+# and hr_agent.py's attendance/ratchet-integrity checks trust, and a stale
+# snapshot now hard-fails test_pipeline_smoke.py rather than silently lying.
+#
 # ── ENVIRONMENT (CRITICAL — deleting these caused the July 4-5 outage) ─────────
 # Cron strips the environment. The 2026-07-03 migration dropped these three lines
 # and: healthchecks.io went DOWN (no ping URL), and pipeline slots began failing
