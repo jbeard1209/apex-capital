@@ -25,7 +25,8 @@
 #   python3 pod_health_monitor.py --quiet    # no firm-channel post
 # Exits nonzero if any CRITICAL problem is found (for cron alerting).
 #
-# Schedule: nightly, after the pod pipelines (see new_crontab.txt).
+# Schedule: nightly, after the pod pipelines (see data/vm_crontab_snapshot.txt,
+# the firm's single schedule document — generated from the live VM crontab).
 # =============================================================================
 
 import argparse

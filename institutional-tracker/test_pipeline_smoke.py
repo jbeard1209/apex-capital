@@ -898,6 +898,72 @@ class TestWiringContracts(unittest.TestCase):
         self.assertFalse({"rating", "ratings", "pip", "pip_status"} & set(res),
                          "attendance must not carry performance/PIP fields")
 
+    def test_attendance_with_no_schedule_document_judges_nobody(self):
+        """With the schedule unreadable, HR must say so — not mark the firm absent.
+
+        Until 2026-08-01 this audit fell back to new_crontab.txt, a hand-maintained
+        template 10 agents behind prod, so agents running every four hours in
+        production were reported as scheduled NOWHERE. Deleting the template fixed
+        the drift and created a new question: what happens when the one remaining
+        schedule document is missing?
+
+        The wrong answer is the tempting one — carry on with an empty string and
+        let `name not in cron_src` be true for everybody. That turns one missing
+        file into ~90 false absences against agents that run fine, which is worse
+        than the drift it replaced. The right answer is to report the missing file
+        once, as the firm-level failure it is, and judge no agent.
+
+        Both halves, because a check that only fails safe is a check that has
+        stopped checking:
+          BAD     — no snapshot: zero never_scheduled, explicit schedule_unreadable.
+          CONTROL — snapshot present: the unscheduled probe IS caught.
+        """
+        import sys as _sys
+        import hr_agent, wiring_audit
+
+        sandbox = Path(tempfile.mkdtemp())
+        (sandbox / "hr_sched_probe.py").write_text("ok = True\n")
+        (sandbox / "hr_unsched_probe.py").write_text("ok = True\n")
+        real_modules = getattr(wiring_audit, "AGENT_MODULES", None)
+        _sys.path.insert(0, str(sandbox))
+        try:
+            wiring_audit.AGENT_MODULES = ["hr_sched_probe", "hr_unsched_probe"]
+            blind = hr_agent.audit_attendance(base_dir=str(sandbox))
+
+            (sandbox / "data").mkdir()
+            (sandbox / "data" / "vm_crontab_snapshot.txt").write_text(
+                "0 6 * * * python3 hr_sched_probe.py\n")
+            seeing = hr_agent.audit_attendance(base_dir=str(sandbox))
+        finally:
+            _sys.path.remove(str(sandbox))
+            if real_modules is None:
+                delattr(wiring_audit, "AGENT_MODULES")
+            else:
+                wiring_audit.AGENT_MODULES = real_modules
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+        self.assertEqual(
+            blind["never_scheduled"], [],
+            "with no readable schedule HR cannot know anyone is absent — it must "
+            f"accuse nobody; got {blind['never_scheduled']}")
+        self.assertIn("vm_crontab_snapshot.txt",
+                      blind.get("schedule_unreadable") or "",
+                      "a missing schedule document must be reported explicitly, "
+                      "not swallowed")
+        self.assertEqual(blind["status"], "ATTENTION",
+                         "an unreadable schedule is itself a condition needing "
+                         "attention, not an OK report")
+
+        absent = {a["agent"] for a in seeing["never_scheduled"]}
+        self.assertIn("hr_unsched_probe", absent,
+                      "with the snapshot readable, a genuinely unscheduled agent "
+                      f"must still be caught; got {absent}")
+        self.assertNotIn("hr_sched_probe", absent,
+                         "an agent named in the live crontab is not absent")
+        self.assertIsNone(seeing.get("schedule_unreadable"),
+                          "the unreadable-schedule finding must clear once the "
+                          "snapshot is back")
+
     def test_ratchet_integrity_flags_uncorroborated_all_clear(self):
         """A shrink-only baseline losing entries is not itself proof of a fix.
 
@@ -1410,6 +1476,66 @@ class TestWiringContracts(unittest.TestCase):
             "a module launched by subprocess IS scheduled and must not be "
             f"flagged; got {wiring_audit.problems}")
 
+    def test_an_agent_that_escalates_instead_of_writing_is_still_an_orphan(self):
+        """An agent whose product is a routed item, not a file, must be caught.
+
+        2026-08-01: rd_market_event_monitor.py was built 2026-07-30 to Chairman
+        spec — a live event feed that "can quickly report to the board so that
+        they can act fast" — and then ran nowhere for two days while this audit
+        said the firm was clean. Two separate holes let it through, and a fix for
+        either one alone would still have missed it:
+
+          1. It escalates with `from cit_director import submit_to_pod_queue`
+             and a bare `submit_to_pod_queue(proposal)`. The producer gate looked
+             for `<module>.<fn>(`, which that never matches.
+          2. Its only named output, rd_market_event_report.json, has no readers,
+             so `if not readers: continue` skipped it anyway.
+
+        Both are reproduced below: the agent writes a file nobody reads AND
+        escalates via a bare from-imported call.
+        """
+        import wiring_audit
+
+        agent = (
+            'from cit_director import submit_to_pod_queue\n'
+            'import json\n'
+            'OUT = "data/ghost_events.json"\n'
+            'json.dump({}, open(OUT, "w"))\n'          # nobody reads this
+            'submit_to_pod_queue({"category": "STRATEGY"})\n'
+        )
+        base = {
+            "main.py": "import canary_agent\n",
+            "canary_agent.py": "x = 1\n",
+            "cit_director.py": "def submit_to_pod_queue(p):\n    return 'main'\n",
+            "ghost_events_agent.py": agent,
+        }
+
+        wiring_audit.problems, wiring_audit.notes = [], []
+        wiring_audit.check_orphan_agents(dict(base))
+        found = wiring_audit.problems + wiring_audit.notes
+        self.assertTrue(
+            any("ghost_events_agent.py" in p for p in found),
+            "an unscheduled agent that escalates to the board must be flagged "
+            f"even though nothing reads its file; got {found}")
+
+        # The module that DEFINES the entry point must never be accused of
+        # calling it — cit_director does not escalate to itself.
+        self.assertFalse(
+            any("cit_director.py" in p for p in found),
+            f"defining an escalation entry point is not calling it; got {found}")
+
+        # Healthy control: schedule it, and the finding must go away. A gate that
+        # fires on working code gets switched off, and then it protects nothing.
+        wired = dict(base)
+        wired["main.py"] = "import canary_agent\nimport ghost_events_agent\n"
+        wiring_audit.problems, wiring_audit.notes = [], []
+        wiring_audit.check_orphan_agents(wired)
+        self.assertFalse(
+            any("ghost_events_agent.py" in p
+                for p in wiring_audit.problems + wiring_audit.notes),
+            "a scheduled agent must not be reported as an orphan; got "
+            f"{wiring_audit.problems + wiring_audit.notes}")
+
     def test_orphan_agent_check_names_the_file_the_agent_really_writes(self):
         """The 'writes X' in a finding must be an output, and must not change per run.
 
@@ -1433,64 +1559,70 @@ class TestWiringContracts(unittest.TestCase):
                          "output attribution must be deterministic")
 
     def test_orphan_check_reads_the_canonical_prod_schedule(self):
-        """'Scheduled' must be judged against the VM's live crontab, not a template.
+        """'Scheduled' is judged against the live-crontab snapshot, and nothing else.
 
-        new_crontab.txt's own header says the VM's live crontab is canonical and that
-        file is only the Mac-path template — and it had drifted 10 agents behind prod,
-        so agents running every 4h in production were reported as scheduled NOWHERE.
+        There used to be three schedule documents. new_crontab.txt's own header said
+        the VM's live crontab was canonical and that it was only the Mac-path
+        template — and it had drifted 10 agents behind prod, so agents running every
+        4h in production were reported as scheduled NOWHERE. 2026-08-01 both
+        hand-maintained copies were deleted; the snapshot is generated, so the only
+        remaining question is what happens when it is absent.
+
+        Two halves, and the second is the one that matters:
+          1. an agent in the snapshot must NOT be called an orphan;
+          2. with NO snapshot the check must fail LOUD and judge nobody. The old
+             behaviour was to fall back to the stale template, which is answering a
+             question you cannot see the answer to — and here the answer condemns
+             working agents.
         """
         import wiring_audit
-        snap = Path(__file__).parent / "data" / "vm_crontab_snapshot.txt"
-        template = Path(__file__).parent / "new_crontab.txt"
-        self.assertTrue(snap.exists(), "canonical prod-schedule snapshot is missing")
 
-        # Pick agents that prove the point: scheduled in the LIVE crontab and absent
-        # from the template. If the check consults only the template, these are
-        # branded orphans even though they run every few hours in production.
-        snap_txt, tmpl_txt = snap.read_text(), template.read_text()
-        provers = [a for a in ("data_integrity_sentinel", "tech_short_pod",
-                               "problem_lifecycle_sentinel", "metric_sanity_sentinel")
-                   if a in snap_txt and a not in tmpl_txt]
-        self.assertTrue(provers,
-                        "snapshot no longer differs from the template — refresh it "
-                        "(scripts/refresh_crontab_snapshot.sh) or this guard proves nothing")
-
-        # Behavioural, and deliberately NOT run against the real tree. A source-string
-        # grep was the first attempt and a comment mentioning the snapshot satisfied it
-        # with the snapshot wired out. Running it over the real repo is no better: the
-        # agents the snapshot rescues happen not to declare a read-by-others output, so
-        # the flagged set is identical either way — a real fix with no live consequence
-        # yet. So point BASE_DIR at a fixture where the two files disagree, which is the
-        # exact condition prod was in (template 10 agents behind the VM).
-        sandbox = Path(tempfile.mkdtemp())
-        (sandbox / "data").mkdir()
-        (sandbox / "new_crontab.txt").write_text("0 6 * * * python3 canary_agent.py\n")
-        (sandbox / "data" / "vm_crontab_snapshot.txt").write_text(
-            "0 6 * * * python3 canary_agent.py\n"
-            "20 */4 * * * python3 snapshot_only_agent.py\n")   # live, template-invisible
-        sources = {
-            "main.py": "import canary_agent\n",
-            "canary_agent.py": "x = 1\n",
-            "snapshot_only_agent.py": (
-                'OUT = "data/snap_report.json"\n'
-                'json.dump(d, open(OUT, "w"))\n'
-            ),
-            "consumer.py": 'r = load("data/snap_report.json")\n',
-        }
-        real_base = wiring_audit.BASE_DIR
-        try:
-            wiring_audit.BASE_DIR = sandbox
-            wiring_audit.problems = []
-            wiring_audit.check_orphan_agents(sources)
-            flagged = " ".join(wiring_audit.problems)
-        finally:
-            wiring_audit.BASE_DIR = real_base
-            shutil.rmtree(sandbox, ignore_errors=True)
+        def run(with_snapshot):
+            sandbox = Path(tempfile.mkdtemp())
+            (sandbox / "data").mkdir()
+            if with_snapshot:
+                (sandbox / "data" / "vm_crontab_snapshot.txt").write_text(
+                    "0 6 * * * python3 canary_agent.py\n"
+                    "20 */4 * * * python3 cron_only_agent.py\n")
+            sources = {
+                "main.py": "import canary_agent\n",
+                "canary_agent.py": "x = 1\n",
+                "cron_only_agent.py": (
+                    'OUT = "data/snap_report.json"\n'
+                    'json.dump(d, open(OUT, "w"))\n'
+                ),
+                "consumer.py": 'r = load("data/snap_report.json")\n',
+            }
+            real_base = wiring_audit.BASE_DIR
+            try:
+                wiring_audit.BASE_DIR = sandbox
+                wiring_audit.problems, wiring_audit.notes = [], []
+                wiring_audit.check_orphan_agents(sources)
+                return " ".join(wiring_audit.problems + wiring_audit.notes)
+            finally:
+                wiring_audit.BASE_DIR = real_base
+                shutil.rmtree(sandbox, ignore_errors=True)
 
         self.assertNotIn(
-            "snapshot_only_agent.py", flagged,
-            "an agent scheduled in the canonical live crontab was called an orphan — "
-            "the check is judging prod against the stale Mac template")
+            "cron_only_agent.py", run(with_snapshot=True),
+            "an agent scheduled in the canonical live crontab was called an orphan")
+
+        blind = run(with_snapshot=False)
+        self.assertIn(
+            "vm_crontab_snapshot.txt", blind,
+            "a missing schedule snapshot must be reported as a hard problem, not "
+            f"silently worked around; got {blind!r}")
+        self.assertNotIn(
+            "cron_only_agent.py", blind,
+            "with no readable schedule the check cannot know an agent is unscheduled "
+            f"— it must judge nobody; got {blind!r}")
+
+        # And the real repo must actually have the snapshot, or the firm is running
+        # on the blind path above every single audit.
+        self.assertTrue((Path(__file__).parent / "data" /
+                         "vm_crontab_snapshot.txt").exists(),
+                        "canonical prod-schedule snapshot is missing — run "
+                        "scripts/refresh_crontab_snapshot.sh")
 
     def test_vm_crontab_snapshot_is_not_stale(self):
         """Drift between the snapshot and the live VM must become a test failure.
@@ -1498,7 +1630,9 @@ class TestWiringContracts(unittest.TestCase):
         Three crontab documents used to disagree — new_crontab.txt (33 modules),
         gcp_setup/vm_crontab.txt (32), and the live VM crontab (42) — and only the
         live one was real, so a stale document was silently the ground truth every
-        orphan-agent audit measured against. A unit test cannot SSH the VM, but it
+        orphan-agent audit measured against. The two hand-maintained copies are now
+        deleted (2026-08-01); this snapshot is the single schedule document, which
+        makes its freshness the whole ballgame. A unit test cannot SSH the VM, but it
         CAN refuse to trust a snapshot that hasn't been refreshed recently, which is
         the same freshness gate hr_agent.py's ratchet-integrity corroboration uses
         (see _corroborate_ratchet_entry_resolved) — staleness beyond that window is
@@ -1508,9 +1642,10 @@ class TestWiringContracts(unittest.TestCase):
         snap = Path(__file__).parent / "data" / "vm_crontab_snapshot.txt"
         self.assertTrue(
             snap.exists(),
-            "data/vm_crontab_snapshot.txt is missing — wiring_audit.py and "
-            "hr_agent.py both fall back to the stale new_crontab.txt template "
-            "when it's absent. Run scripts/refresh_crontab_snapshot.sh")
+            "data/vm_crontab_snapshot.txt is missing — it is the firm's ONLY "
+            "schedule document, so wiring_audit.py's orphan check and HR's "
+            "attendance audit both go blind and can judge no agent scheduled or "
+            "unscheduled. Run scripts/refresh_crontab_snapshot.sh")
         age_days = (time.time() - snap.stat().st_mtime) / 86400.0
         self.assertLess(
             age_days, 14,

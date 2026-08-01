@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-01T20:24:55Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-01T20:35:09Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -259,3 +259,20 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # The report itself is freshness-monitored by cit_director (180h) — a sweep that
 # stops running must not look like a clean week. ~60s.
 40 11 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 sweep_governance.py >> logs/sweep_$(date +\%Y\%m\%d).log 2>&1
+
+# --- R&D live market-event monitor (Chairman directive 2026-07-30) ----------
+# Built 2026-07-30 to give R&D a live event feed, then scheduled NOWHERE for
+# two days: rd_geopolitical_team.py maps 7 static historical precedents and
+# cannot tell you something is happening today, and this was the front end
+# that fixes that. It escalates via cit_director function calls rather than by
+# writing a file it names, so wiring_audit.py -- which recognises a producer
+# only through a filename at a write site -- was structurally blind to it.
+# agent_sweep.py caught it as AGENT_UNSCHEDULED (owner BOARD, 30-day SLA).
+#
+# :25 and :55 is deliberate. `rd_team_leader.py --triggered` runs at :00/:30
+# (line above), so an event detected here reaches a real R&D cycle within
+# ~5 minutes instead of waiting for the next scheduled slot. Market hours
+# only -- every rule is derived from live market data, so off-hours runs
+# re-read the same stale bar. A 12h per-(rule,ticker) cooldown inside the
+# agent stops an ongoing shock from re-proposing to the board every run.
+25,55 13-20 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 rd_market_event_monitor.py >> logs/rd_events_$(date +\%Y\%m\%d).log 2>&1

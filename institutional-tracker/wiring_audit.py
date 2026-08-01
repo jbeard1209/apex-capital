@@ -177,6 +177,41 @@ def _code_only(txt: str) -> str:
     return re.sub(r'#[^\n]*', '', txt)
 
 
+# The firm's documented escalation entry points: call one and your item lands in
+# a queue a board, pod or supervisor actually drains (see CLAUDE.md's
+# producer -> queue -> consumer section). {owner_module: (function, ...)}.
+#
+# Keyed by owner so a module that DEFINES one of these is never accused of
+# calling it — cit_director.py defines submit_to_pod_queue; it does not escalate
+# to itself. Everything else is matched on the bare function name, because
+# `from cit_director import submit_to_pod_queue` is how callers actually write
+# it and a `<module>.<fn>(` pattern misses that entirely.
+ESCALATION_ENTRYPOINTS = {
+    "cit_director":   ("submit_to_pod_queue", "trigger_rd_research",
+                       "route_proposal_to_pod"),
+    "chairman_queue": ("submit",),
+    "firm_channel":   ("post_task_request", "request_cos_meeting"),
+}
+
+
+def _escalation_path(name: str, code_txt: str):
+    """The escalation entry point this module calls, or None.
+
+    `code_txt` must be comment-stripped: a docstring explaining that some agent
+    "escalates via submit_to_pod_queue" is not a call, and this check has been
+    fooled by prose twice already (see check_orphan_agents' traversal notes).
+    """
+    stem = name[:-3]
+    for owner, fns in ESCALATION_ENTRYPOINTS.items():
+        if stem == owner:
+            continue          # defining it is not calling it
+        for fn in fns:
+            if re.search(rf"(?<![\w.]){re.escape(fn)}\s*\(", code_txt) or \
+               re.search(rf"\b{re.escape(owner)}\.{re.escape(fn)}\s*\(", code_txt):
+                return f"{owner}.{fn}()"
+    return None
+
+
 def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
     """The data/*.json files a module actually WRITES, in stable order.
 
@@ -252,17 +287,29 @@ def check_orphan_agents(sources: dict):
     # sentinel, ...) were being reported as scheduled NOWHERE. An audit that judges
     # reality against a stale document produces confident, wrong findings.
     #
-    # 2026-08 (crontab consolidation): new_crontab.txt and gcp_setup/vm_crontab.txt
-    # are now demoted, hand-maintained templates that are NEVER read here — merging
-    # them in used to make an agent that was removed from prod but left in a stale
-    # template look "still scheduled", which is a false negative in the same
-    # direction as the false positive above. The snapshot alone is ground truth
-    # when it exists; new_crontab.txt is a last-resort fallback ONLY so a fresh
-    # checkout with no snapshot yet doesn't flag every agent as orphaned.
+    # 2026-08-01 (crontab consolidation, Chairman directive 2026-07-30: "three
+    # crontab documents, one truth... find a solution that is both most efficient
+    # and most accurate"). There is now exactly ONE schedule document and it is
+    # GENERATED, never hand-maintained: new_crontab.txt and gcp_setup/vm_crontab.txt
+    # are deleted. A hand-maintained second copy drifts in both directions — an
+    # agent added to prod looks orphaned, and an agent removed from prod looks
+    # "still scheduled" — and a document that only a human remembers to update is
+    # the thing this audit kept measuring reality against.
+    #
+    # And there is no fallback. A missing snapshot used to fall back to the stale
+    # template, which is silently answering a question you could not see the answer
+    # to — the failure mode this firm has been burned by most. Fail loud instead:
+    # with no snapshot the reachability walk knows only main.py, so EVERY cron-only
+    # agent would be branded an orphan and the ratchet would fire on the whole
+    # firm. Report that as a hard problem and judge nobody.
     snap = BASE_DIR / "data/vm_crontab_snapshot.txt"
-    cron_txt = snap.read_text() if snap.exists() else (
-        (BASE_DIR / "new_crontab.txt").read_text()
-        if (BASE_DIR / "new_crontab.txt").exists() else "")
+    if not snap.exists():
+        problems.append(
+            "[orphan-agent] data/vm_crontab_snapshot.txt is missing — the schedule "
+            "ground truth is unreadable, so no agent can be judged scheduled or "
+            "orphaned. Run scripts/refresh_crontab_snapshot.sh")
+        return
+    cron_txt = snap.read_text()
     for name in sources:
         # Test files are NOT scheduler roots even when cron runs them: a test
         # importing an agent does not mean the agent does its job in production.
@@ -332,6 +379,37 @@ def check_orphan_agents(sources: dict):
     for name, txt in sources.items():
         if name in reachable or name.startswith("test_"):
             continue
+
+        # An agent whose product is a ROUTED ITEM, not a file, is an orphan the
+        # same way — and until 2026-08-01 this check could not see one.
+        #
+        # rd_market_event_monitor.py was built 2026-07-30 to Chairman spec ("a
+        # live event feed... make sure that this agent can quickly report to the
+        # board so that they can act fast"), then ran nowhere for two days and
+        # nothing here said a word. Two independent reasons, both worth keeping
+        # in mind before narrowing this check again:
+        #   1. It escalates with `from cit_director import submit_to_pod_queue`
+        #      and then a BARE `submit_to_pod_queue(proposal)`. The producer gate
+        #      below looks for `<module>.<fn>(`, which that never matches.
+        #   2. Its only named file output, rd_market_event_report.json, has zero
+        #      readers — so even once past the gate, `if not readers: continue`
+        #      skipped it. The narrowing is right for a report nobody consumes;
+        #      it is wrong when the agent's real output is a board proposal.
+        # Its queue's readers are not in question: these entry points are the
+        # firm's documented producer->queue->consumer contracts (see CLAUDE.md),
+        # every one of them lands in a queue a board or pod actually drains.
+        # So an unreachable module that calls one is an orphan by definition,
+        # and no reader search is needed to say so.
+        esc = _escalation_path(name, code[name])
+        if esc:
+            msg = (f"[orphan-agent] {name} escalates via {esc} but is NOT reachable "
+                   f"from main.py or the cron manifest — it is scheduled NOWHERE, so "
+                   f"nothing it would escalate ever reaches the board")
+            (notes if name in _orphan_baseline() else problems).append(
+                msg + (" [known — pending board triage]" if name in _orphan_baseline() else ""))
+            found_orphans.add(name)
+            continue
+
         others = writer_stems - {name[:-3]}
         call_re = re.compile(r'(?:%s)\.\w+\(' % "|".join(re.escape(s) for s in sorted(others))) \
             if others else None

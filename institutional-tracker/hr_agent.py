@@ -965,7 +965,7 @@ def _probe_import(name: str, rel: str, here: str):
             pass
 
 
-def audit_attendance() -> dict:
+def audit_attendance(base_dir: str = None) -> dict:
     """Which agents never come to work, and which cannot work at all?
 
     THE GAP THIS CLOSES (Chairman question, 2026-07-29): "how did you or HR not
@@ -990,7 +990,11 @@ def audit_attendance() -> dict:
     as such and never feed an agent's performance rating or PIP status.
     """
     import importlib
-    here = os.path.dirname(os.path.abspath(__file__))
+    # `base_dir` exists so the missing-snapshot path below can be exercised by a
+    # test without renaming a live repo file out from under the running firm
+    # (same escape hatch _corroborate_ratchet_entry_resolved already takes). An
+    # untested blind path is how a fail-safe quietly becomes a fail-silent.
+    here = base_dir or os.path.dirname(os.path.abspath(__file__))
 
     main_src = ""
     cron_src = ""
@@ -999,18 +1003,19 @@ def audit_attendance() -> dict:
             main_src = fh.read()
     except Exception:
         pass
-    # Ground truth = the VM's live crontab snapshot (see wiring_audit.py's
-    # check_orphan_agents for the full history: judging "scheduled" against
-    # new_crontab.txt, a hand-maintained Mac-path template, let it drift 10
-    # agents behind prod). new_crontab.txt is read only as a last resort on a
-    # fresh checkout with no snapshot yet.
-    for fname in ("data/vm_crontab_snapshot.txt", "new_crontab.txt"):
-        try:
-            with open(os.path.join(here, fname)) as fh:
-                cron_src = fh.read()
-            break
-        except Exception:
-            continue
+    # Ground truth = the VM's live crontab snapshot, and nothing else (see
+    # wiring_audit.py's check_orphan_agents for the full history: judging
+    # "scheduled" against new_crontab.txt, a hand-maintained Mac-path template,
+    # let it drift 10 agents behind prod). 2026-08-01: the template fallback is
+    # gone along with the template — falling back to a stale document is how this
+    # check answered a question it could not see, and here the answer becomes an
+    # HR finding against an agent that runs fine.
+    cron_missing = False
+    try:
+        with open(os.path.join(here, "data/vm_crontab_snapshot.txt")) as fh:
+            cron_src = fh.read()
+    except Exception:
+        cron_missing = True
 
     findings = {"cannot_start": [], "never_scheduled": [], "missing_file": [],
                 "checked": 0}
@@ -1106,12 +1111,24 @@ def audit_attendance() -> dict:
         if via is not None:
             if via == ["UNSCHEDULED"]:
                 findings["never_scheduled"].append({"agent": name})
+        elif cron_missing:
+            # No schedule document = no basis for the claim. Saying nothing about
+            # this agent is the honest answer; the missing snapshot is reported
+            # once, below, as the firm-level problem it actually is.
+            pass
         elif name not in main_src and name not in cron_src:
             findings["never_scheduled"].append({"agent": name})
 
+    if cron_missing:
+        findings["schedule_unreadable"] = (
+            "data/vm_crontab_snapshot.txt is missing — attendance could not be "
+            "checked for agents the roster has no runs_via for. Run "
+            "scripts/refresh_crontab_snapshot.sh")
+
     findings["status"] = ("ATTENTION" if (findings["cannot_start"] or
                                           findings["never_scheduled"] or
-                                          findings["missing_file"]) else "OK")
+                                          findings["missing_file"] or
+                                          cron_missing) else "OK")
     findings["note"] = ("Attendance is a MANAGEMENT finding, not a performance "
                         "one — these never affect an agent's rating or PIP.")
     return findings

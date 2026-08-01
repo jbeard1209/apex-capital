@@ -16,7 +16,9 @@ This agent is the governance backstop the Chairman asked for (2026-07-27):
   • Surface decision-needed items to Jack FIRST in the Claude APP, never email.
     It maintains data/chairman_decision_queue.json — a clean, deduped inbox that
     a Claude app session reads and presents. Email is deliberately NOT used here.
-  • Enforce a 50-DAY SLA. Any item still undecided 50 days after it was first
+  • Enforce the SLA_DAYS deadline — 20 days, per Chairman directive 2026-07-29,
+    tightened from the original 50. Any item still undecided that long after it
+    was first
     surfaced is auto-escalated to a BOARD VOTE (a STRATEGY proposal appended to
     data/cit_pending_proposals.json, consumed by deputy_board.py / board_meeting.py),
     and its status flips to "escalated_to_board". The firm never stalls on a
@@ -27,9 +29,9 @@ SOURCES it pulls decisions from:
   • (extensible) any producer that writes an awaiting_chairman item
 
 DECISION LIFECYCLE (status on each queue entry):
-  awaiting_chairman  → surfaced, clock running (deadline = first_surfaced + 50d)
+  awaiting_chairman  → surfaced, clock running (deadline = first_surfaced + SLA_DAYS)
   decided            → Chairman resolved it (set by the app session; we archive it)
-  escalated_to_board → 50d elapsed with no decision; board proposal filed
+  escalated_to_board → SLA_DAYS elapsed with no decision; board proposal filed
 
 This agent NEVER makes the decision itself and NEVER sends email. It only
 surfaces, tracks the clock, and — as a last resort — hands the call to the board.
@@ -84,7 +86,7 @@ def _iso(dt):
 
 def _ingest(queue_by_id):
     """Pull awaiting_chairman items from chairman_action_required.json into the
-    app-facing queue, stamping first_surfaced + a 50-day deadline exactly once."""
+    app-facing queue, stamping first_surfaced + an SLA_DAYS deadline exactly once."""
     actions = _load(CHAIR_ACTION, [])
     if not isinstance(actions, list):
         return 0
@@ -116,7 +118,7 @@ def _ingest(queue_by_id):
             continue
         seen_keys.add(akey)
         seen_ids.add(aid)
-        # The 50-day SLA clock starts when the item ENTERS this managed queue
+        # The SLA clock starts when the item ENTERS this managed queue
         # (now), NOT from the upstream item's historical timestamp. Anchoring to
         # old first_seen values would retroactively blow the deadline on the
         # whole existing backlog and flood the board with escalations on the
@@ -143,7 +145,7 @@ def _ingest(queue_by_id):
 
 
 def _escalate_to_board(item):
-    """Append a STRATEGY board-vote proposal for an item that blew its 50-day SLA."""
+    """Append a STRATEGY board-vote proposal for an item that blew its SLA."""
     pending = _load(CIT_PENDING, [])
     if not isinstance(pending, list):
         pending = []
@@ -218,7 +220,12 @@ def _days_left(item, now):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Surface Chairman decisions to the Claude app and enforce a 50-day board-escalation SLA.")
+    # Built from SLA_DAYS rather than typed, because the prose in this file said
+    # "50-day" for two days after the constant became 20 — the reader trusts the
+    # sentence, not the constant, so the sentence has to be derived from it.
+    ap = argparse.ArgumentParser(
+        description="Surface Chairman decisions to the Claude app and enforce "
+                    f"the {SLA_DAYS}-day board-escalation SLA.")
     ap.add_argument("--report", action="store_true", help="print the current queue without ingesting/escalating")
     args = ap.parse_args()
 

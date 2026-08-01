@@ -19,7 +19,8 @@
 #   python3 model_test_harness.py            # full evaluation
 #   python3 model_test_harness.py --quiet    # report file only, no channel post
 #
-# Schedule: weekly (see crontab / new_crontab.txt).
+# Schedule: weekly (see data/vm_crontab_snapshot.txt, the firm's single schedule
+# document — generated from the live VM crontab).
 # =============================================================================
 
 import argparse

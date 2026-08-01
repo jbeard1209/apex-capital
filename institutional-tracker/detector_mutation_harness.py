@@ -69,6 +69,8 @@ DETECTORS = [
     "cit_director.sweep_deadman",
     "agent_roster.attendance_host_gate",
     "hr_agent.pip_evidence_guard",
+    "wiring_audit.escalation_orphan",
+    "hr_agent.attendance_without_a_schedule",
 ]
 
 _CASES = {}
@@ -469,6 +471,94 @@ def _c_pip_needs_verified_evidence():
             g["pip_candidates"] != ["a"],
             "unverified_pips=%s verified_pips=%s"
             % (b["pip_candidates"], g["pip_candidates"]))
+
+
+@case("wiring_audit.escalation_orphan")
+def _c_escalation_orphan():
+    """An agent whose only product is a board proposal must not be invisible.
+
+    The orphan check recognises a producer by a data/*.json file it names at a
+    write site, and skips any output nothing reads. An agent that escalates
+    through `from cit_director import submit_to_pod_queue` names no file at all
+    — so on 2026-07-30 rd_market_event_monitor.py, built that day to report live
+    market events to the board "so that they can act fast", shipped unscheduled
+    and this audit reported the firm clean for two days running.
+
+    BAD = unreachable + escalates: must fire. CONTROL = the identical agent with
+    a scheduler root importing it: must stay silent, or the check condemns every
+    working agent that talks to the board and gets turned off within a week.
+    """
+    import wiring_audit
+    agent = ('from cit_director import submit_to_pod_queue\n'
+             'submit_to_pod_queue({"category": "STRATEGY"})\n')
+    common = {"canary_agent.py": "x = 1\n",
+              "cit_director.py": "def submit_to_pod_queue(p):\n    return 'main'\n",
+              "ghost_events_agent.py": agent}
+
+    def flagged(main_src):
+        wiring_audit.problems, wiring_audit.notes = [], []
+        wiring_audit.check_orphan_agents(dict(common, **{"main.py": main_src}))
+        return [p for p in wiring_audit.problems + wiring_audit.notes
+                if "ghost_events_agent.py" in p]
+
+    bad = flagged("import canary_agent\n")
+    good = flagged("import canary_agent\nimport ghost_events_agent\n")
+    return (bool(bad), bool(good),
+            "unscheduled_flagged=%d scheduled_flagged=%d" % (len(bad), len(good)))
+
+
+@case("hr_agent.attendance_without_a_schedule")
+def _c_attendance_without_a_schedule():
+    """Losing the schedule document must produce ONE finding, not ~90 false ones.
+
+    2026-08-01 the firm collapsed three drifting crontab documents into one
+    generated snapshot. That removed the drift and concentrated the risk: the
+    audit now has exactly one source of truth, so the interesting question is
+    what it does when that source is gone. Continuing with an empty string makes
+    `name not in cron_src` true for the entire firm and marks every working agent
+    absent — a bigger lie than the stale template it replaced.
+
+    BAD = no snapshot: nobody accused AND the missing file named explicitly (a
+    silent "all fine" is just as wrong as mass accusation). CONTROL = snapshot
+    present: the genuinely unscheduled agent is still caught, or the fail-safe
+    has quietly turned the attendance check off.
+    """
+    import sys as _sys
+    import tempfile
+    import shutil
+    import hr_agent
+    import wiring_audit
+
+    sandbox = tempfile.mkdtemp()
+    for stem in ("mut_sched_probe", "mut_unsched_probe"):
+        with open(os.path.join(sandbox, stem + ".py"), "w") as fh:
+            fh.write("ok = True\n")
+    real_modules = getattr(wiring_audit, "AGENT_MODULES", None)
+    _sys.path.insert(0, sandbox)
+    try:
+        wiring_audit.AGENT_MODULES = ["mut_sched_probe", "mut_unsched_probe"]
+        blind = hr_agent.audit_attendance(base_dir=sandbox)
+        os.makedirs(os.path.join(sandbox, "data"), exist_ok=True)
+        with open(os.path.join(sandbox, "data/vm_crontab_snapshot.txt"), "w") as fh:
+            fh.write("0 6 * * * python3 mut_sched_probe.py\n")
+        seeing = hr_agent.audit_attendance(base_dir=sandbox)
+    finally:
+        _sys.path.remove(sandbox)
+        if real_modules is None:
+            delattr(wiring_audit, "AGENT_MODULES")
+        else:
+            wiring_audit.AGENT_MODULES = real_modules
+        shutil.rmtree(sandbox, ignore_errors=True)
+
+    bad_ok = (not blind["never_scheduled"]
+              and "vm_crontab_snapshot.txt" in (blind.get("schedule_unreadable") or ""))
+    absent = {a["agent"] for a in seeing["never_scheduled"]}
+    control_noisy = ("mut_unsched_probe" not in absent
+                     or "mut_sched_probe" in absent)
+    return (bad_ok, control_noisy,
+            "blind_accused=%d blind_reported=%s seeing_absent=%s"
+            % (len(blind["never_scheduled"]),
+               bool(blind.get("schedule_unreadable")), sorted(absent)))
 
 
 # ===========================================================================
