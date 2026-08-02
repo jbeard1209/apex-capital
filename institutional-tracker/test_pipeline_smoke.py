@@ -4416,6 +4416,120 @@ class TestWrongfulRetirement(unittest.TestCase):
                              "must not land in the Chairman's queue, and the "
                              "escalation must")
 
+    def test_a_thin_log_that_is_still_filling_is_not_somebody_s_bug(self):
+        """"Too few observations" has two causes and only one is work.
+
+        THE DEFECT (caught 2026-08-02, on the VM, one day after reinstatement).
+        All nine monitored agents graded SURVEILLANCE_LOG_THIN and were filed to
+        CIT — correctly by the letter of the rule and uselessly in fact: the
+        window had opened the previous day, --observe was on cron and running,
+        and the only honest remedy was "wait twelve weekdays". A finding whose
+        remedy is "wait" is a finding people learn to close unread, and the kind
+        it belongs to goes with it. That is how a real dead channel gets missed.
+
+        The tell is whether the log is still being WRITTEN, not how long it is.
+        Three outcomes, and the third is one nobody was catching at all: a
+        window that is filling normally but cannot possibly reach the minimum
+        before the date HR promised the Chairman a verdict. Left alone that
+        surfaces on the morning of the review as "cannot tell" — exactly the
+        dead end this whole mechanism exists to remove, arriving through the
+        one door still open.
+        """
+        import datetime as dt
+        import hr_retirement_audit as A
+
+        agent = {"permanent": True}
+        ch = {"credited": {}, "alive": True, "approved": 5, "attributed": 5,
+              "cycles_scanned": 5, "window_start": "2026-08-01"}
+
+        def obs(n, ending):
+            """n dated observations, the newest on `ending`."""
+            return [{"date": (ending - dt.timedelta(days=i)).isoformat(),
+                     "agent": "Ghost"} for i in range(n)]
+
+        today = dt.date(2026, 8, 2)
+
+        # 1. Filling normally, five weeks of runway. Nothing is wrong.
+        v = A.assess("Ghost", agent, obs(2, today), ch, today=today,
+                     review_by=dt.date(2026, 9, 1))
+        self.assertEqual(v["verdict"], "NOT_ASSESSABLE")
+        self.assertIsNone(v["blocker"],
+                          "a one-day-old monitoring window was filed as a defect "
+                          "against CIT; its only remedy is to wait")
+        self.assertTrue(v["evidence"]["log_is_live"])
+
+        # 2. Same short log, but nothing has written it in two weeks.
+        v = A.assess("Ghost", agent, obs(2, dt.date(2026, 7, 19)), ch,
+                     today=today, review_by=dt.date(2026, 9, 1))
+        self.assertEqual(v["blocker"], "SURVEILLANCE_LOG_THIN",
+                         "a log that stopped being written must still be caught "
+                         "— that is the case this check exists for")
+
+        # 3. Filling normally, but the arithmetic does not work: 8 more
+        #    observations needed, and only weekends plus four weekdays left.
+        v = A.assess("Ghost", agent, obs(2, today), ch, today=today,
+                     review_by=dt.date(2026, 8, 8))
+        self.assertEqual(v["blocker"], "REVIEW_DATE_UNREACHABLE",
+                         "the review date is already impossible to meet and "
+                         "nothing said so until it came due")
+        self.assertIn(v["blocker"], A.REVIEW_BLOCKERS)
+
+        # Weekends are not evidence: --observe is a Mon-Fri cron, and counting
+        # calendar days would call an unreachable date reachable.
+        self.assertEqual(A._weekdays_between(dt.date(2026, 8, 7),
+                                             dt.date(2026, 8, 10)), 1)
+        self.assertEqual(A._weekdays_between(today, today), 0)
+
+        # With no `today` there is nothing to measure staleness against, so the
+        # answer must be the conservative one. "Live" on no evidence is how a
+        # dead channel gets reported healthy.
+        self.assertFalse(A._log_is_live(obs(5, today), None))
+
+        # 4. An EMPTY window is not a dead channel. `alive` is defined as
+        #    attributed > 0, so a window that has scanned zero manager cycles
+        #    reports the firm's attribution as dead by arithmetic. On 2026-08-02
+        #    that put all seven sector agents on CREDIT_CHANNEL_DEAD while the
+        #    window opened one day earlier showed 18 cycles, 7 approved and 7
+        #    attributed — CIT would have been sent to repair a working channel.
+        empty = {"credited": {}, "alive": False, "approved": 0, "attributed": 0,
+                 "cycles_scanned": 0, "window_start": "2026-08-01"}
+        v = A.assess("Ghost", agent, obs(12, today), empty, today=today,
+                     review_by=dt.date(2026, 9, 1))
+        self.assertIsNone(v["blocker"],
+                          "an empty window was reported as a dead attribution "
+                          "channel; the finding would close as could-not-"
+                          "reproduce and take the kind's credibility with it")
+
+        #    But the benign reading has to EXPIRE. A window that reaches its
+        #    review date having scanned nothing is not young, it is empty.
+        v = A.assess("Ghost", agent, obs(12, dt.date(2026, 9, 1)), empty,
+                     today=dt.date(2026, 9, 1), review_by=dt.date(2026, 9, 1))
+        self.assertEqual(v["blocker"], "CREDIT_CHANNEL_DEAD",
+                         "'the window is still filling' became a permanent "
+                         "excuse — it must expire when the review falls due")
+
+        #    And a scanned-but-unattributed window is still the real defect.
+        dead = dict(empty, cycles_scanned=18, approved=7, attributed=0)
+        self.assertEqual(A.assess("Ghost", agent, obs(12, today), dead,
+                                  today=today,
+                                  review_by=dt.date(2026, 9, 1))["blocker"],
+                         "CREDIT_CHANNEL_DEAD",
+                         "18 cycles and 7 approved picks that carry no "
+                         "source_agent IS the broken channel this catches")
+
+        # And the whole point: case 1 reaches nobody's queue, case 3 reaches CIT.
+        hist = {"agent_records": {"Ghost": {"events": [
+            {"date": "2026-08-01", "event": "RETIREMENT_VACATED", "summary": "s.",
+             "monitoring_review_by": "2026-09-01"}]}}}
+        reg = {"agents": [{"class_name": "Ghost", "permanent": True}]}
+        alive_log = [{"timestamp": "2026-08-02T12:00:00", "decisions": [
+            {"manager_decision": "APPROVED", "manager_action": "BUY",
+             "source_agent": "Agent someoneelse_cos"}]}]
+        self.assertEqual(
+            A.collect(history=hist, registry=reg, observations=obs(2, today),
+                      manager_log=alive_log, today=today)["findings"], [],
+            "the sweep filed a finding for a window that is simply young")
+
     def test_probation_is_graded_on_the_window_not_on_all_history(self):
         """A probation verdict may only read evidence from the probation.
 

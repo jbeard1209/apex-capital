@@ -84,9 +84,16 @@ MAX_REVIEW_DEFERRALS = 2
 #: none of them counts against the agent under review.
 REVIEW_BLOCKERS = {
     "SURVEILLANCE_LOG_THIN": (
-        "the surveillance log holds too few dated observations to grade against",
+        "the surveillance log holds too few dated observations to grade against, "
+        "and has stopped being written",
         "HR/CIT — confirm hr_retirement_audit.py --observe is on cron on the host "
         "that owns the log, then let the window refill."),
+    "REVIEW_DATE_UNREACHABLE": (
+        "the surveillance log IS being written, but cannot reach the minimum "
+        "number of observations before the review falls due",
+        "HR — move the review date out to the first date the evidence can "
+        "actually exist, or lower MIN_OBSERVATIONS deliberately and say so. Do "
+        "NOT let it come due and answer 'cannot tell'."),
     "CREDIT_CHANNEL_DEAD": (
         "no agent anywhere in the firm was credited with an approved pick during "
         "the window, so 'earned nothing' is a fact about the attribution channel",
@@ -471,7 +478,52 @@ def observe(registry=None, history=None, manager_log=None, today=None,
     return {"observed": len(watched), "date": day, "agents": sorted(watched)}
 
 
-def assess(class_name, agent, observations, channel):
+#: How stale the newest surveillance observation may be before the log counts as
+#: dead rather than merely young. --observe runs weekdays, so a healthy log can
+#: legitimately be 3 days old over a long weekend; 6 means two consecutive
+#: missed weekdays before anyone is paged.
+OBSERVATION_STALE_DAYS = 6
+
+
+def _log_is_live(mine, today=None):
+    """Is the surveillance log still being written, or has it stopped?
+
+    Distinguishes the two causes of a short log. Without a `today` there is
+    nothing to measure staleness against, so the honest answer is the
+    conservative one: treat it as not-live and let a human look. Saying "live"
+    on no evidence is how a dead channel gets reported as healthy.
+    """
+    if today is None:
+        return False
+    newest = None
+    for o in mine:
+        try:
+            d = dt.date.fromisoformat(str(o.get("date"))[:10])
+        except (TypeError, ValueError):
+            continue
+        if newest is None or d > newest:
+            newest = d
+    return newest is not None and (today - newest).days <= OBSERVATION_STALE_DAYS
+
+
+def _weekdays_between(start, end):
+    """Weekdays strictly after `start`, up to and including `end`.
+
+    --observe is a Mon-Fri cron, so calendar days overstate how much evidence
+    can still arrive — and overstating it is the dangerous direction: it says a
+    review date is reachable when it is not.
+    """
+    if not start or not end or end <= start:
+        return 0
+    n, d = 0, start + dt.timedelta(days=1)
+    while d <= end:
+        if d.weekday() < 5:
+            n += 1
+        d += dt.timedelta(days=1)
+    return n
+
+
+def assess(class_name, agent, observations, channel, today=None, review_by=None):
     """KEEP / TERMINATE / NOT_ASSESSABLE for one agent under monitoring.
 
     The rule is written down BEFORE the month runs, because a standard invented
@@ -482,6 +534,9 @@ def assess(class_name, agent, observations, channel):
                       credit channel was never alive across the window. You
                       cannot convict an agent of producing nothing on a period
                       in which nobody could be credited with anything.
+                      Carries a `blocker` naming who has to repair what — or
+                      `None`, meaning the window is simply still filling and
+                      there is nothing for anyone to do but wait.
       KEEP            credited with at least one approved pick.
       TERMINATE       the channel was alive, OTHER agents were credited, and
                       this one was credited with none.
@@ -528,12 +583,73 @@ def assess(class_name, agent, observations, channel):
     # owner — which is how this verdict silently ended the review it was meant
     # to protect. See REVIEW_BLOCKERS for who owns each one.
     if len(mine) < MIN_OBSERVATIONS:
+        # A thin log has two completely different causes and one of them is not
+        # a defect at all. A window that opened yesterday is SUPPOSED to be thin;
+        # filing that to CIT every week produces a finding whose only honest
+        # remedy is "wait", and a kind whose remedy is "wait" is a kind people
+        # learn to close unread. The tell is whether the log is still being
+        # WRITTEN: fresh-but-short means it is filling, stale means --observe
+        # died. Both are still NOT_ASSESSABLE — HR genuinely cannot grade yet —
+        # but only one of them is anybody's work.
+        fresh = _log_is_live(mine, today)
+        ev["newest_observation"] = max((str(o.get("date"))[:10] for o in mine),
+                                       default=None)
+        ev["log_is_live"] = fresh
+        if not fresh:
+            return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
+                    "blocker": "SURVEILLANCE_LOG_THIN", "evidence": ev,
+                    "why": ("only %d dated observation(s) on record (need %d) and "
+                            "the newest is %s — the log has stopped being written, "
+                            "so it is the surveillance, not the agent, that came "
+                            "up short"
+                            % (len(mine), MIN_OBSERVATIONS,
+                               ev["newest_observation"] or "never"))}
+        # The log is alive. The only remaining question is arithmetic: can it
+        # reach MIN_OBSERVATIONS before the date HR promised the Chairman a
+        # verdict? If yes, nothing is wrong and nobody should be paged. If no,
+        # the review date is already unachievable — and that is worth knowing
+        # NOW, not on the morning it comes due and answers "cannot tell".
+        need = MIN_OBSERVATIONS - len(mine)
+        if review_by and today and _weekdays_between(today, review_by) < need:
+            return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
+                    "blocker": "REVIEW_DATE_UNREACHABLE", "evidence": ev,
+                    "why": ("%d more observation(s) are needed and only %d "
+                            "weekday(s) remain before the review falls due on %s "
+                            "— the date cannot be met however well the agent "
+                            "performs"
+                            % (need, _weekdays_between(today, review_by),
+                               review_by))}
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
-                "blocker": "SURVEILLANCE_LOG_THIN", "evidence": ev,
-                "why": ("only %d dated observation(s) on record (need %d) — the "
-                        "surveillance log, not the agent, is what came up short"
-                        % (len(mine), MIN_OBSERVATIONS))}
+                "blocker": None, "evidence": ev,
+                "why": ("the monitoring window is still filling: %d of %d "
+                        "observation(s), newest %s, on track for the review due "
+                        "%s. Nothing to repair."
+                        % (len(mine), MIN_OBSERVATIONS, ev["newest_observation"],
+                           review_by or "(unscheduled)"))}
     if not channel["alive"]:
+        # "Nobody was credited" is only evidence about the channel if the
+        # channel was actually looked at. A window that has scanned ZERO
+        # manager cycles produces attributed==0 by arithmetic, not by failure —
+        # and `alive` is defined as attributed > 0, so a window opened this
+        # morning reports the attribution channel as dead. That is how all
+        # seven sector agents came out CREDIT_CHANNEL_DEAD on 2026-08-02 while
+        # the window that opened ONE DAY EARLIER shows 18 cycles, 7 approved
+        # and 7 attributed. Filing that would have sent CIT to repair a channel
+        # with nothing wrong with it, and the finding would have been closed as
+        # "could not reproduce" — which is how a kind stops being believed.
+        # …but only while the window still has time to fill. A window that
+        # REACHES its review date having scanned zero cycles is not young, it is
+        # empty, and that is a genuinely dead channel — the benign reading must
+        # expire, or it becomes a permanent excuse.
+        # Benign only when we can PROVE the window still has time — same rule as
+        # _log_is_live: never report healthy on absent evidence.
+        if not channel["cycles_scanned"] and today and review_by and today < review_by:
+            return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
+                    "blocker": None, "evidence": ev,
+                    "why": ("no manager cycle has run since the window opened "
+                            "on %s, so there is nothing yet to attribute either "
+                            "way. Nothing to repair."
+                            % (channel.get("window_start") or "an unknown date"))}
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
                 "blocker": "CREDIT_CHANNEL_DEAD", "evidence": ev,
                 "why": ("no agent anywhere in the firm was credited with an "
@@ -607,7 +723,8 @@ def _reinstatement_reviews(history, today=None, registry=None,
         days_left = (due - today).days
         if days_left > REVIEW_LEAD_DAYS:
             continue
-        v = assess(cn, by_class.get(cn), observations, channels[cn])
+        v = assess(cn, by_class.get(cn), observations, channels[cn],
+                   today=today, review_by=due)
         when = ("OVERDUE by %d day(s)" % -days_left if days_left < 0
                 else "in %d day(s)" % days_left)
         preamble = (
@@ -648,6 +765,34 @@ def _reinstatement_reviews(history, today=None, registry=None,
             continue
 
         blocker = v["blocker"]
+        # NOT_ASSESSABLE with nothing to repair means "the window is still
+        # filling on schedule" — which cannot be true here, because we only get
+        # this far once the review is within REVIEW_LEAD_DAYS, and assess()
+        # returns REVIEW_DATE_UNREACHABLE the moment the remaining weekdays
+        # cannot supply the missing observations. If it happens anyway the two
+        # functions disagree about time, and the reinstatement's condition is
+        # silently unenforceable — so it goes to the Chairman rather than
+        # crashing the audit or, worse, being skipped.
+        if blocker is None:
+            findings.append({
+                "check": "REINSTATEMENT_REVIEW_UNDECIDABLE",
+                "severity": "HIGH",
+                "class_name": cn,
+                "verdict": "UNDECIDABLE",
+                "blocker": "INTERNAL_INCONSISTENCY",
+                "requires_chairman": True,
+                "description": (
+                    "%s\n\nHR reached the review date and reports that nothing "
+                    "is broken and nothing needs repair — yet it still cannot "
+                    "return KEEP or TERMINATE. Those cannot both be true; the "
+                    "audit's own arithmetic is wrong, and until it is fixed the "
+                    "condition you attached to this reinstatement cannot be "
+                    "enforced. Treat this as a defect in hr_retirement_audit.py "
+                    "(assess/_reinstatement_reviews disagreeing about the "
+                    "review date), not as a finding about %s.\n\nEvidence: %s"
+                    % (preamble, cn, evidence)),
+            })
+            continue
         what, who = REVIEW_BLOCKERS[blocker]     # KeyError, never a silent .get
         if deferrals < MAX_REVIEW_DEFERRALS:
             new_due = today + dt.timedelta(days=REVIEW_EXTENSION_DAYS)
@@ -799,7 +944,11 @@ def collect(host=None, history=None, registry=None, observations=None,
 
     findings, blocked = [], 0
     for cn, (due, ev, deferrals) in watched.items():
-        v = assess(cn, by_class.get(cn), observations, channels[cn])
+        v = assess(cn, by_class.get(cn), observations, channels[cn],
+                   today=today, review_by=due)
+        # No blocker means either a real verdict or a window that is simply
+        # still filling on schedule. Neither is anybody's work, and filing the
+        # second one weekly would make this kind noise.
         if not v["blocker"]:
             continue
         blocked += 1
