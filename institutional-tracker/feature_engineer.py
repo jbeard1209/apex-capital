@@ -133,8 +133,33 @@ FEATURE_COLS = [
     "quiver_govcontract_flag",
 ]
 
-# Top-8 SHAP features for LT (365-day) model.
+# Top SHAP features for the LT (252-trading-day) model. Nine, not eight — the
+# "Top-8" this comment used to claim was never true of the list below it.
 # Promoted 2026-05-25: walk-forward AUC 0.5343 vs threshold 0.53 (baseline 0.5214).
+#
+# RE-MEASURED 2026-08-02 on the backfilled set (n=79,676, 58.2% positive, 5-fold
+# embargoed walk-forward) — A/B'd against simply handing LT the full 47-column
+# short-term FEATURE_COLS:
+#
+#     curated (9 cols)     0.5205 ± 0.0283   folds: .547 .523 .554 .477 .502
+#     status quo (47 cols) 0.5174 ± 0.0269   folds: .559 .516 .520 .474 .518
+#     delta = +0.0031
+#
+# NULL RESULT. The curated set "wins" by roughly one ninth of a fold standard
+# deviation — noise, not signal. Keep the 9 for parsimony, not because they were
+# shown to be better. Two things this DOES settle:
+#   - More ST features do not rescue the LT model. Do not re-run "just throw the
+#     short-term columns at it"; it has now been tried and measured.
+#   - Neither set is anywhere near the 0.57 live gate in ml_live_test_runner.py
+#     (LT_LIVE_AUC_GATE), so LT stays gated off and no live behaviour changes.
+# On a 58.2% base rate, 0.52 is close enough to random that feature selection is
+# not the binding constraint — labeled history is. See CLAUDE.md: more data beats
+# more features.
+#
+# Note for anyone reading ml_improvement_loop.py idea #20 ("expand LT beyond 8
+# features"): its promotion threshold is 0.53, which sits INSIDE the ±0.028 fold
+# noise measured above — a single lucky run clears it. See the orphan-write
+# problem in that function before acting on anything it produces.
 LT_FEATURE_COLS = [
     "price_vs_52w_high", "volatility_20d", "avg_conviction_3q",
     "conviction_velocity",                  # QoQ change in institutional conviction
