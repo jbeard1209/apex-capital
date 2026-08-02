@@ -71,6 +71,7 @@ DETECTORS = [
     "hr_agent.pip_evidence_guard",
     "wiring_audit.escalation_orphan",
     "hr_agent.attendance_without_a_schedule",
+    "hr_retirement_audit.review_dead_end",
 ]
 
 _CASES = {}
@@ -137,6 +138,63 @@ def _c_assess_window():
     return (str(v_blind.get("verdict")) == "NOT_ASSESSABLE",
             str(v_alive.get("verdict")) == "NOT_ASSESSABLE",
             "blind=%s measurable=%s" % (v_blind.get("verdict"), v_alive.get("verdict")))
+
+
+@case("hr_retirement_audit.review_dead_end")
+def _c_review_dead_end():
+    """A promised review that CANNOT conclude must not resolve to nothing.
+
+    The companion to _c_assess_window. That case proves the firm refuses to
+    convict on an unmeasurable window; this one proves the refusal goes
+    somewhere. NOT_ASSESSABLE set requires_chairman False, moved no date and
+    named no owner — so all seven reinstated sector agents would have reached
+    2026-09-01, been told "cannot tell", and stayed under a monitoring promise
+    that could never close. A verdict with no consequence is not a safeguard.
+
+    BAD      the blocker never clears -> the loop must terminate at a HIGH
+             Chairman decision, not defer forever and not go quiet.
+    CONTROL  the blocker clears -> an ordinary verdict, no escalation. An
+             escalation that also fires on a healthy review gets muted, and a
+             muted alarm protects nothing.
+    """
+    import datetime as dt
+    import hr_retirement_audit as hra
+
+    hist = lambda defers: {"agent_records": {"MutAgent": {"events": (
+        [{"date": "2026-08-01", "event": "RETIREMENT_VACATED", "summary": "s.",
+          "monitoring_review_by": "2026-09-01"}]
+        + [{"date": "2026-09-01", "event": "REINSTATEMENT_REVIEW_DEFERRED",
+            "granted_under": "2026-08-01", "monitoring_review_by": "2026-09-01"}
+           for _ in range(defers)])}}}
+    reg = {"agents": [{"class_name": "MutAgent", "permanent": True}]}
+    obs = [{"date": "2026-08-%02d" % d, "agent": "MutAgent"} for d in range(1, 22)]
+    dead = [{"timestamp": "2026-08-15T12:00:00", "decisions": []}]
+    alive = [{"timestamp": "2026-08-15T12:00:00", "decisions": [
+        {"manager_decision": "APPROVED", "manager_action": "BUY",
+         "source_agent": "Agent someoneelse_cos"}]}]
+
+    def review(defers, log):
+        f = hra._reinstatement_reviews(hist(defers), today=dt.date(2026, 9, 1),
+                                       registry=reg, observations=obs,
+                                       manager_log=log)
+        return f[0] if f else {}
+
+    first = review(0, dead)                       # first blocked review
+    spent = review(hra.MAX_REVIEW_DEFERRALS, dead)   # budget exhausted
+    good = review(0, alive)                       # the review can conclude
+
+    # BAD arm: it must move the date AND, once the budget is gone, escalate.
+    bad_ok = (first.get("check") == "REINSTATEMENT_REVIEW_BLOCKED"
+              and bool(first.get("defer_to"))
+              and spent.get("check") == "REINSTATEMENT_REVIEW_UNDECIDABLE"
+              and spent.get("severity") == "HIGH"
+              and bool(spent.get("requires_chairman")))
+    # CONTROL arm: a gradeable review is neither deferred nor escalated.
+    control_noisy = good.get("check") != "REINSTATEMENT_REVIEW_DUE"
+    return (bad_ok, control_noisy,
+            "blocked=%s exhausted=%s(chairman=%s) gradeable=%s"
+            % (first.get("check"), spent.get("check"),
+               spent.get("requires_chairman"), good.get("check")))
 
 
 @case("agent_roster.check")

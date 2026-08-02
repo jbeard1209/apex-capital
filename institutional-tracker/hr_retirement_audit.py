@@ -66,6 +66,39 @@ REVIEW_LEAD_DAYS = 7
 #: "the agent produced nothing".
 MIN_OBSERVATIONS = 10
 
+#: How far a monitoring review slips when HR genuinely cannot reach a verdict.
+#: Long enough for a repaired evidence channel to build a real window underneath
+#: it — a one-week slip on a dead attribution channel just re-asks the same
+#: unanswerable question seven days later.
+REVIEW_EXTENSION_DAYS = 30
+
+#: How many times a review may slip before "we still cannot tell" IS the answer.
+#: Unbounded deferral is the same dead end with extra steps: the promise made to
+#: the Chairman at reinstatement stays permanently open and nobody is ever
+#: accountable for the fact that it never closed.
+MAX_REVIEW_DEFERRALS = 2
+
+#: Why a review could not conclude, and who can actually fix that. The verdict
+#: NOT_ASSESSABLE is a statement about the FIRM's evidence, never about the
+#: agent — so every one of these routes to whoever owns the broken channel, and
+#: none of them counts against the agent under review.
+REVIEW_BLOCKERS = {
+    "SURVEILLANCE_LOG_THIN": (
+        "the surveillance log holds too few dated observations to grade against",
+        "HR/CIT — confirm hr_retirement_audit.py --observe is on cron on the host "
+        "that owns the log, then let the window refill."),
+    "CREDIT_CHANNEL_DEAD": (
+        "no agent anywhere in the firm was credited with an approved pick during "
+        "the window, so 'earned nothing' is a fact about the attribution channel",
+        "CIT — repair attribution so approved picks carry a source_agent "
+        "(manager_agent.py -> data/manager_log.json)."),
+    "NO_PEER_COMPARISON": (
+        "this agent is the only one that could have been credited, so there is no "
+        "peer group to judge it against",
+        "HR — widen the monitored cohort, or state explicitly that a solo agent "
+        "is graded on an absolute bar rather than a relative one."),
+}
+
 #: Which of two severities survives when a batch of findings collapses to one row.
 SEVERITY_RANK = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
 
@@ -224,29 +257,45 @@ def _lifecycle_is_observable(agents):
 
 
 def _monitored(history, today=None):
-    """class_name -> (review_due, event) for every agent currently under watch.
+    """class_name -> (review_due, vacation_event, deferrals) for every agent watched.
 
     ONE definition of "who is being watched", shared by the surveillance writer
     (`observe`) and the reviewer (`_reinstatement_reviews`). Two answers to that
     question is how you end up logging agent A's work and grading agent B on it.
 
-    A second vacation supersedes the first — judge against the newest promise,
-    not whichever event happens to sit earliest in the list.
+    A second vacation supersedes the first, and a REINSTATEMENT_REVIEW_DEFERRED
+    supersedes both — judge against the newest promise, not whichever event
+    happens to sit earliest in the list. Only the DATE moves: the event returned
+    is always the vacation, because that is what the reinstatement's terms are
+    written on and what the Chairman actually agreed to.
+
+    A deferral counts only against the vacation it was granted under
+    (`granted_under`). A NEWER vacation is a fresh promise with a fresh budget —
+    otherwise an agent reinstated a second time would inherit an exhausted
+    deferral count and be escalated as undecidable on its first day back.
     """
     out = OrderedDict()
     for cn, rec in sorted((history.get("agent_records") or {}).items()):
+        vac = vac_due = None
+        defers = []
         for ev in rec.get("events") or []:
-            if ev.get("event") != "RETIREMENT_VACATED":
-                continue
-            due_raw = ev.get("monitoring_review_by")
-            if not due_raw:
+            kind = ev.get("event")
+            if kind not in ("RETIREMENT_VACATED", "REINSTATEMENT_REVIEW_DEFERRED"):
                 continue
             try:
-                due = dt.date.fromisoformat(str(due_raw)[:10])
-            except ValueError:
+                due = dt.date.fromisoformat(str(ev.get("monitoring_review_by"))[:10])
+            except (TypeError, ValueError):
                 continue
-            if cn not in out or due > out[cn][0]:
-                out[cn] = (due, ev)
+            if kind == "RETIREMENT_VACATED":
+                if vac_due is None or due > vac_due:
+                    vac, vac_due = ev, due
+            else:
+                defers.append((due, ev))
+        if vac is None:
+            continue
+        mine = [(d, e) for d, e in defers
+                if e.get("granted_under") == vac.get("date")]
+        out[cn] = (max([vac_due] + [d for d, _e in mine]), vac, len(mine))
     return out
 
 
@@ -331,7 +380,7 @@ def _window_channels(watched, manager_log=None):
     """
     cycles = manager_log if manager_log is not None else _load(MANAGER_LOG_PATH, [])
     cache, out = {}, {}
-    for cn, (_due, ev) in watched.items():
+    for cn, (_due, ev, _defers) in watched.items():
         since = str(ev.get("date") or "")[:10] or None
         if since not in cache:
             if since is None:
@@ -385,7 +434,7 @@ def observe(registry=None, history=None, manager_log=None, today=None,
     rows = [r for r in (log.get("observations") or [])
             if not (r.get("date") == day and r.get("agent") in watched)]
 
-    for cn, (due, _ev) in watched.items():
+    for cn, (due, _ev, _defers) in watched.items():
         a = by_class.get(cn) or {}
         channel = channels[cn]
         rows.append({
@@ -469,18 +518,24 @@ def assess(class_name, agent, observations, channel):
     }
 
     if hits > 0:
-        return {"verdict": "KEEP", "requires_chairman": False, "evidence": ev,
+        return {"verdict": "KEEP", "requires_chairman": False, "blocker": None,
+                "evidence": ev,
                 "why": ("credited with %d approved pick(s) during monitoring"
                         % hits)}
+    # Every NOT_ASSESSABLE carries a `blocker`: the named, fixable reason HR
+    # cannot reach a verdict, and therefore the thing somebody has to repair
+    # before it can. Without it "not assessable" is a shrug, and a shrug has no
+    # owner — which is how this verdict silently ended the review it was meant
+    # to protect. See REVIEW_BLOCKERS for who owns each one.
     if len(mine) < MIN_OBSERVATIONS:
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
-                "evidence": ev,
+                "blocker": "SURVEILLANCE_LOG_THIN", "evidence": ev,
                 "why": ("only %d dated observation(s) on record (need %d) — the "
                         "surveillance log, not the agent, is what came up short"
                         % (len(mine), MIN_OBSERVATIONS))}
     if not channel["alive"]:
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
-                "evidence": ev,
+                "blocker": "CREDIT_CHANNEL_DEAD", "evidence": ev,
                 "why": ("no agent anywhere in the firm was credited with an "
                         "approved pick during this window (%s onward: %d cycles, "
                         "%d approved, %d attributed), so zero picks is evidence "
@@ -490,10 +545,11 @@ def assess(class_name, agent, observations, channel):
                            channel["attributed"]))}
     if not ev["other_agents_credited"]:
         return {"verdict": "NOT_ASSESSABLE", "requires_chairman": False,
-                "evidence": ev,
+                "blocker": "NO_PEER_COMPARISON", "evidence": ev,
                 "why": ("this agent is the only one that could have been "
                         "credited, so there is no comparison to judge it against")}
-    return {"verdict": "TERMINATE", "requires_chairman": permanent, "evidence": ev,
+    return {"verdict": "TERMINATE", "requires_chairman": permanent,
+            "blocker": None, "evidence": ev,
             "why": ("%d dated observation(s), the credit channel was live and %d "
                     "other agent(s) were credited, and this agent earned none"
                     % (len(mine), len(ev["other_agents_credited"])))}
@@ -509,6 +565,30 @@ def _reinstatement_reviews(history, today=None, registry=None,
     REVIEW_LEAD_DAYS, HR states a verdict on the recorded evidence and the
     Chairman is asked to confirm it, which is the condition the reinstatement
     was granted on.
+
+    THREE OUTCOMES, ALL OF WHICH RESOLVE. The original build had a fourth that
+    did not: `assess` can return NOT_ASSESSABLE, which set requires_chairman
+    False, moved no date and named no owner. Every one of the seven sector
+    agents graded exactly that (`channel_alive: false` on all seven), so the
+    review the Chairman granted the reinstatement on would have come due,
+    reported "cannot tell", and resolved to nothing — permanently, and quietly.
+    So:
+
+      KEEP / TERMINATE     REINSTATEMENT_REVIEW_DUE. A verdict; the Chairman
+                           confirms it. Unchanged.
+      NOT_ASSESSABLE,      REINSTATEMENT_REVIEW_BLOCKED. Not the agent's fault
+      budget remains       and not the Chairman's problem yet: the review slips
+                           REVIEW_EXTENSION_DAYS and the named blocker is routed
+                           to whoever owns that channel (see REVIEW_BLOCKERS and
+                           `collect`, which files it to CIT through the sweep).
+      NOT_ASSESSABLE,      REINSTATEMENT_REVIEW_UNDECIDABLE. After
+      budget spent         MAX_REVIEW_DEFERRALS, "we still cannot tell" is itself
+                           the finding. It goes to the Chairman as HIGH, because
+                           deciding an agent's fate on evidence the firm could
+                           not produce is exactly the call he does not delegate.
+
+    Nothing here writes. `apply_deferrals` persists the slip, so a --report run
+    reads a date it is not allowed to move.
     """
     today = today or dt.date.today()
     watched = _monitored(history, today)
@@ -523,38 +603,224 @@ def _reinstatement_reviews(history, today=None, registry=None,
     channels = _window_channels(watched, manager_log)
 
     findings = []
-    for cn, (due, ev) in watched.items():
+    for cn, (due, ev, deferrals) in watched.items():
         days_left = (due - today).days
         if days_left > REVIEW_LEAD_DAYS:
             continue
         v = assess(cn, by_class.get(cn), observations, channels[cn])
+        when = ("OVERDUE by %d day(s)" % -days_left if days_left < 0
+                else "in %d day(s)" % days_left)
+        preamble = (
+            "%s was reinstated on %s after its %s retirement was vacated, on the "
+            "condition that it be monitored and confirmed necessary. That review "
+            "is due %s (%s)."
+            % (cn, ev.get("date", "?"),
+               ev.get("summary", "").split(".")[0][:60] or "earlier",
+               due.isoformat(), when))
+        evidence = json.dumps(v["evidence"], sort_keys=True, default=str)
+
+        if v["verdict"] != "NOT_ASSESSABLE":
+            findings.append({
+                "check": "REINSTATEMENT_REVIEW_DUE",
+                "severity": "HIGH" if days_left < 0 else "MEDIUM",
+                "class_name": cn,
+                "verdict": v["verdict"],
+                # A field, not only a sentence in the description. All nine
+                # monitored agents are `permanent`, so every TERMINATE here needs
+                # explicit Co-Chairman authorisation — and a consumer that reads
+                # the flag rather than parsing the prose was getting False.
+                "requires_chairman": v["requires_chairman"],
+                # Seven agents reinstated together, reviewed together, on one
+                # decision — but ONLY while they share a verdict. The moment one
+                # agent's evidence diverges it earns its own row, because "keep
+                # six, terminate one" is two decisions and must not be answered
+                # once.
+                "batch": "reinstated-%s:%s" % (due.isoformat(), v["verdict"]),
+                "description": (
+                    "%s\n\nHR's verdict on the recorded evidence: %s — %s.%s"
+                    "\n\nEvidence: %s"
+                    % (preamble, v["verdict"], v["why"],
+                       ("\n\nThis agent is PERMANENT — a termination needs "
+                        "explicit Co-Chairman authorisation and cannot be "
+                        "actioned by HR alone." if v["requires_chairman"] else ""),
+                       evidence)),
+            })
+            continue
+
+        blocker = v["blocker"]
+        what, who = REVIEW_BLOCKERS[blocker]     # KeyError, never a silent .get
+        if deferrals < MAX_REVIEW_DEFERRALS:
+            new_due = today + dt.timedelta(days=REVIEW_EXTENSION_DAYS)
+            findings.append({
+                "check": "REINSTATEMENT_REVIEW_BLOCKED",
+                "severity": "MEDIUM",
+                "class_name": cn,
+                "verdict": "DEFERRED",
+                "blocker": blocker,
+                "requires_chairman": False,
+                # Consumed by apply_deferrals. Carried on the finding rather
+                # than recomputed there so the date the Chairman is told about
+                # and the date actually written are the same object.
+                "defer_to": new_due.isoformat(),
+                "granted_under": ev.get("date"),
+                "deferrals_used": deferrals + 1,
+                # Routine, and NOT a decision for him: the firm has to fix its
+                # own instrument before asking Jack to rule on what it measured.
+                "to_chairman": False,
+                "batch": "review-blocked-%s:%s" % (due.isoformat(), blocker),
+                "description": (
+                    "%s\n\nHR CANNOT reach a verdict, and the reason is the "
+                    "firm's, not the agent's: %s. Deferral %d of %d — the review "
+                    "moves to %s so a repaired channel has a real window under "
+                    "it.\n\nOWNER OF THE BLOCKER: %s\n\nThis agent is NOT under "
+                    "suspicion and this deferral is not a mark against it; "
+                    "convicting an agent on evidence the firm failed to collect "
+                    "is the precise reasoning that made the 2026-05-14 "
+                    "retirements wrongful.\n\nEvidence: %s"
+                    % (preamble, what, deferrals + 1, MAX_REVIEW_DEFERRALS,
+                       new_due.isoformat(), who, evidence)),
+            })
+            continue
+
         findings.append({
-            "check": "REINSTATEMENT_REVIEW_DUE",
-            "severity": "HIGH" if days_left < 0 else "MEDIUM",
+            "check": "REINSTATEMENT_REVIEW_UNDECIDABLE",
+            "severity": "HIGH",
             "class_name": cn,
-            "verdict": v["verdict"],
-            # Seven agents reinstated together, reviewed together, on one
-            # decision — but ONLY while they share a verdict. The moment one
-            # agent's evidence diverges it earns its own row, because "keep six,
-            # terminate one" is two decisions and must not be answered once.
-            "batch": "reinstated-%s:%s" % (due.isoformat(), v["verdict"]),
+            "verdict": "UNDECIDABLE",
+            "blocker": blocker,
+            "requires_chairman": True,
+            "deferrals_used": deferrals,
+            "batch": "review-undecidable-%s:%s" % (due.isoformat(), blocker),
             "description": (
-                "%s was reinstated on %s after its %s retirement was vacated, on "
-                "the condition that it be monitored and confirmed necessary. That "
-                "review is due %s (%s).\n\nHR's verdict on the recorded evidence: "
-                "%s — %s.%s\n\nEvidence: %s"
-                % (cn, ev.get("date", "?"),
-                   ev.get("summary", "").split(".")[0][:60] or "earlier",
-                   due.isoformat(),
-                   "OVERDUE by %d day(s)" % -days_left if days_left < 0
-                   else "in %d day(s)" % days_left,
-                   v["verdict"], v["why"],
-                   ("\n\nThis agent is PERMANENT — a termination needs explicit "
-                    "Co-Chairman authorisation and cannot be actioned by HR alone."
-                    if v["requires_chairman"] else ""),
-                   json.dumps(v["evidence"], sort_keys=True, default=str))),
+                "%s\n\nThis review has already been deferred %d time(s) — the "
+                "firm's deferral budget of %d is spent — and HR STILL cannot "
+                "reach a verdict: %s. The blocker was routed to its owner (%s) "
+                "on each deferral and has not been repaired, so the evidence "
+                "this reinstatement was conditioned on does not exist and will "
+                "not appear by waiting longer.\n\nCHAIRMAN DECISION REQUIRED, "
+                "one of:\n  (a) KEEP %s on the record, accepting that its value "
+                "was never demonstrated;\n  (b) TERMINATE it, accepting that it "
+                "is being retired on absent rather than adverse evidence;\n  (c) "
+                "order the blocker fixed with a named owner and a date, and "
+                "extend monitoring explicitly.\n\nDoing nothing is not a fourth "
+                "option: this finding re-raises every run until it is answered."
+                "\n\nEvidence: %s"
+                % (preamble, deferrals, MAX_REVIEW_DEFERRALS, what, who, cn,
+                   evidence)),
         })
     return findings
+
+
+def apply_deferrals(findings, history_path=HR_HISTORY_PATH, today=None):
+    """Persist the review extensions `_reinstatement_reviews` decided on.
+
+    Split from the decision deliberately. `audit()` is pure so tests can drive
+    it with fixtures, and a `--report` run must never move a date it was only
+    asked to read — an audit whose act of looking changes the thing it looked at
+    cannot be run twice to check itself.
+
+    Append-only: the vacation event is never edited, so the original promise and
+    every slip from it stay legible forever. `granted_under` ties each deferral
+    to the vacation it was granted against, which is what lets a re-reinstated
+    agent start with a fresh budget.
+
+    Idempotent two ways over. Re-running on the same day matches the existing
+    event and writes nothing; and once written, the review date is
+    REVIEW_EXTENSION_DAYS out, so the next run does not produce the finding at
+    all until it comes back around.
+    """
+    today = today or dt.date.today()
+    defers = [f for f in findings
+              if f.get("check") == "REINSTATEMENT_REVIEW_BLOCKED" and f.get("defer_to")]
+    if not defers:
+        return {"deferred": [], "already": []}
+
+    history = _load(history_path, {})
+    done, already = [], []
+    for f in defers:
+        cn = f["class_name"]
+        rec = history.setdefault("agent_records", {}).setdefault(cn, {})
+        events = rec.setdefault("events", [])
+        dup = next((e for e in events
+                    if e.get("event") == "REINSTATEMENT_REVIEW_DEFERRED"
+                    and e.get("granted_under") == f.get("granted_under")
+                    and str(e.get("monitoring_review_by", ""))[:10] == f["defer_to"]),
+                   None)
+        if dup is not None:
+            already.append(cn)
+            continue
+        events.append({
+            "event": "REINSTATEMENT_REVIEW_DEFERRED",
+            "date": today.isoformat(),
+            "authority": "HR (automatic, bounded by MAX_REVIEW_DEFERRALS)",
+            "monitoring_review_by": f["defer_to"],
+            "granted_under": f.get("granted_under"),
+            "blocker": f.get("blocker"),
+            "deferral": f.get("deferrals_used"),
+            "summary": ("Review could not conclude: %s. Extended %d day(s); the "
+                        "blocker is routed to its owner."
+                        % (REVIEW_BLOCKERS[f["blocker"]][0], REVIEW_EXTENSION_DAYS)),
+        })
+        done.append(cn)
+
+    if done:
+        _write_json(history_path, history)
+    return {"deferred": done, "already": already}
+
+
+def collect(host=None, history=None, registry=None, observations=None,
+            manager_log=None, today=None):
+    """Weekly-sweep collector: monitoring reviews that CANNOT conclude.
+
+    Deliberately NOT gated on REVIEW_LEAD_DAYS, unlike `_reinstatement_reviews`.
+    A deferral pushes the review date 30 days out; if the blocker were only
+    reported when the review is due, the deferral would hide the very condition
+    that caused it, and `sweep_governance._reconcile` would then close the open
+    item as "no longer observed" — declaring a broken evidence channel repaired
+    because HR had looked away. Reporting it continuously means the item closes
+    exactly when the channel actually recovers, and CIT hears about it ~30 days
+    before the verdict is needed instead of on the day it is already too late.
+
+    Routes to CIT with to_hr=True (sweep_taxonomy.REVIEW_BLOCKED). The Chairman
+    is NOT in this path: he is reached, once, by the UNDECIDABLE finding above.
+    """
+    import sweep_taxonomy as tax
+
+    history = history if history is not None else _load(HR_HISTORY_PATH, {})
+    registry = registry if registry is not None else _load(REGISTRY_PATH, {})
+    today = today or dt.date.today()
+    watched = _monitored(history, today)
+    if observations is None:
+        log = _load(PROBATION_LOG_PATH, {})
+        observations = (log.get("observations") or []) if isinstance(log, dict) else []
+
+    by_class = {a.get("class_name"): a for a in registry.get("agents", [])}
+    channels = _window_channels(watched, manager_log) if watched else {}
+
+    findings, blocked = [], 0
+    for cn, (due, ev, deferrals) in watched.items():
+        v = assess(cn, by_class.get(cn), observations, channels[cn])
+        if not v["blocker"]:
+            continue
+        blocked += 1
+        what, who = REVIEW_BLOCKERS[v["blocker"]]
+        findings.append(tax.make_finding(
+            "REVIEW_BLOCKED", cn,
+            "%s is under monitoring with a KEEP/TERMINATE review due %s, and HR "
+            "cannot reach a verdict because %s. %d of %d deferral(s) used. Owner "
+            "of the blocker: %s. Until it is repaired the review cannot conclude, "
+            "and the reinstatement's condition stays permanently open."
+            % (cn, due.isoformat(), what, deferrals, MAX_REVIEW_DEFERRALS, who),
+            evidence=["blocker=%s" % v["blocker"], "why=%s" % v["why"],
+                      "review_due=%s" % due.isoformat(),
+                      "vacated_on=%s" % ev.get("date")],
+            # At the cap this stops being routine: the Chairman now has an open
+            # decision he cannot make, so CIT's clock shortens with it.
+            severity="HIGH" if deferrals >= MAX_REVIEW_DEFERRALS else "MEDIUM",
+            host=host))
+
+    return {"findings": findings, "monitored": len(watched), "blocked": blocked,
+            "assessable": len(watched) - blocked}
 
 
 def audit(registry=None, memo=None, catalog=None, history=None):
@@ -950,6 +1216,28 @@ def main():
         logger.info("--report: %d finding(s), Chairman queue untouched.", len(findings))
         return 0
 
+    # Move the review dates the audit just decided to move. Before the Chairman
+    # filing, not after: if the submit below raises, the deferral has still been
+    # recorded and the next run resumes from the extended date instead of
+    # re-deciding the same slip forever.
+    slipped = apply_deferrals(findings)
+    if slipped["deferred"]:
+        logger.warning("Review deferred %d day(s) for %s — blocker routed to its "
+                       "owner, agent not at fault.",
+                       REVIEW_EXTENSION_DAYS, ", ".join(slipped["deferred"]))
+
+    # Not everything HR finds is a decision for Jack. A blocked review is the
+    # firm's own instrument being broken; it goes to CIT through the weekly
+    # sweep (see `collect`). He hears about it only if it is still unfixed after
+    # MAX_REVIEW_DEFERRALS, as REINSTATEMENT_REVIEW_UNDECIDABLE. Routine work in
+    # his queue is what took it to 88 rows nobody could drain.
+    for_chairman = [f for f in findings if f.get("to_chairman", True)]
+    if len(for_chairman) != len(findings):
+        logger.info("%d finding(s) withheld from the Chairman queue (owned "
+                    "elsewhere).", len(findings) - len(for_chairman))
+    if not for_chairman:
+        return 0
+
     entries = [{
         # class_name is part of the id, not just the dedup_key: two agents can
         # trip the same check on the same day (both reinstatements come due
@@ -964,10 +1252,10 @@ def main():
         "description": f["description"],
         "status": "awaiting_chairman",
         "raised_at": dt.datetime.now().isoformat(),
-    } for f in _as_decisions(findings)]
+    } for f in _as_decisions(for_chairman)]
     added, suppressed = chairman_queue.submit(entries, SOURCE)
-    logger.info("%d finding(s): %d raised, %d already open.",
-                len(findings), added, suppressed)
+    logger.info("%d finding(s) for the Chairman: %d raised, %d already open.",
+                len(for_chairman), added, suppressed)
     return 0
 
 

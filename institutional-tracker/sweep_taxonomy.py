@@ -216,6 +216,26 @@ ROUTES = {
         why="The graders were ungraded: agents HR never scores can never be found "
             "wanting, so poor performance in that set is structurally invisible."),
 
+    # ── Agent review: can a promised verdict ever actually land? ────────────
+    "REVIEW_BLOCKED": _route(
+        "CIT", "MEDIUM", "INTEGRATION",
+        "Repair the evidence channel named in the finding: put the surveillance "
+        "log back on cron, fix attribution so approved picks carry a "
+        "source_agent, or give a solo agent a peer group (or an explicit "
+        "absolute bar). HR re-runs the review by itself once the channel is "
+        "alive — do NOT resolve this by lowering the standard or by judging the "
+        "agent on the evidence that is missing.",
+        to_hr=True, sla_days=20,
+        why="Seven agents were reinstated on the Chairman's explicit condition "
+            "that HR review them and recommend KEEP or TERMINATE. Every one of "
+            "them graded NOT_ASSESSABLE — the credit channel was dead — which "
+            "set requires_chairman False, moved no date and named no owner. The "
+            "promised review would have come due, said 'cannot tell', and "
+            "resolved to nothing, permanently and quietly: 'flagged but never "
+            "solved' reproduced inside the mechanism built to prevent it. The "
+            "agent is never the defect in this finding; the instrument HR grades "
+            "it through is."),
+
     # ── Detector health: can the alarms actually fire? ──────────────────────
     "DETECTOR_BLIND": _route(
         "CIT", "CRITICAL", "LOGIC_ERROR",

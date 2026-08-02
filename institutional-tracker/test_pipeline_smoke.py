@@ -4198,17 +4198,223 @@ class TestWrongfulRetirement(unittest.TestCase):
             {"date": "2026-07-31", "event": "RETIREMENT_VACATED",
              "summary": "retirement vacated during a buy freeze it did not cause.",
              "monitoring_review_by": "2026-09-29"}]}}}
+        # Driven with fixtures, not the host's live files: the two hosts carry
+        # divergent hr_history/probation logs, and a test that reads them asserts
+        # on a mutable runtime artifact (ca61acc). Evidence good enough to reach a
+        # real verdict, so this test covers the DUE path; the NOT_ASSESSABLE path
+        # is test_a_blocked_review_defers_then_escalates_to_the_chairman.
+        kw = dict(registry={"agents": [{"class_name": "Ghost", "permanent": True}]},
+                  observations=[{"date": "2026-08-%02d" % d, "agent": "Ghost"}
+                                for d in range(1, 22)],
+                  manager_log=[{"timestamp": "2026-08-15T12:00:00", "decisions": [
+                      {"manager_decision": "APPROVED", "manager_action": "BUY",
+                       "source_agent": "Agent someoneelse_cos"}]}])
 
-        far = A._reinstatement_reviews(hist, today=date(2026, 8, 1))
+        far = A._reinstatement_reviews(hist, today=date(2026, 8, 1), **kw)
         self.assertEqual(far, [], "asked for the review two months early")
 
-        due = A._reinstatement_reviews(hist, today=date(2026, 9, 25))
+        due = A._reinstatement_reviews(hist, today=date(2026, 9, 25), **kw)
         self.assertEqual([f["check"] for f in due], ["REINSTATEMENT_REVIEW_DUE"])
         self.assertEqual(due[0]["severity"], "MEDIUM")
+        self.assertEqual(due[0]["verdict"], "TERMINATE")
 
-        late = A._reinstatement_reviews(hist, today=date(2026, 10, 5))
+        late = A._reinstatement_reviews(hist, today=date(2026, 10, 5), **kw)
         self.assertEqual(late[0]["severity"], "HIGH", "an overdue review is not MEDIUM")
         self.assertIn("OVERDUE", late[0]["description"])
+
+    def test_a_blocked_review_defers_then_escalates_to_the_chairman(self):
+        """NOT_ASSESSABLE must never be where a promised review comes to rest.
+
+        THE DEFECT (caught 2026-08-01, before the first review ran). `assess`
+        returns NOT_ASSESSABLE from three branches, every one of them with
+        requires_chairman False, and nothing anywhere extended the monitoring
+        window or escalated an agent the firm could never measure. All seven
+        sector agents graded exactly that — `channel_alive: false` on every one
+        — so the review the Chairman granted their reinstatement on
+        ("HR reviews the recorded evidence on 2026-09-01 and recommends KEEP or
+        TERMINATE") would have come due, said "cannot tell", and resolved to
+        nothing. Permanently, and silently: flagged-but-never-solved rebuilt
+        inside the mechanism written to prevent it.
+
+        Both halves, because a loop that always escalates is as useless as one
+        that never does:
+          BAD      the blocker persists -> deferral, deferral, then a HIGH
+                   Chairman decision. It terminates.
+          CONTROL  the blocker clears   -> an ordinary verdict, no escalation,
+                   and an agent that could be graded all along is never deferred.
+        """
+        import datetime as dt
+        import hr_retirement_audit as A
+
+        hist = {"agent_records": {"Ghost": {"events": [
+            {"date": "2026-08-01", "event": "RETIREMENT_VACATED",
+             "summary": "retirement vacated; monitored for a month.",
+             "monitoring_review_by": "2026-09-01"}]}}}
+        reg = {"agents": [{"class_name": "Ghost", "permanent": True}]}
+        obs = [{"date": "2026-08-%02d" % d, "agent": "Ghost"} for d in range(1, 22)]
+        dead = [{"timestamp": "2026-08-15T12:00:00", "decisions": []}]
+        alive = [{"timestamp": "2026-08-15T12:00:00", "decisions": [
+            {"manager_decision": "APPROVED", "manager_action": "BUY",
+             "source_agent": "Agent someoneelse_cos"}]}]
+
+        tmp = Path(tempfile.mkdtemp())
+        hp = str(tmp / "hr_history.json")
+        try:
+            def review(day, log):
+                return A._reinstatement_reviews(json.loads(json.dumps(hist)),
+                                                today=day, registry=reg,
+                                                observations=obs, manager_log=log)
+
+            # ── BAD: the credit channel stays dead ────────────────────────────
+            f1 = review(dt.date(2026, 9, 1), dead)
+            self.assertEqual([f["check"] for f in f1],
+                             ["REINSTATEMENT_REVIEW_BLOCKED"],
+                             "an unmeasurable review produced no blocked finding — "
+                             "it dead-ended at NOT_ASSESSABLE again")
+            self.assertEqual(f1[0]["blocker"], "CREDIT_CHANNEL_DEAD")
+            self.assertFalse(f1[0]["requires_chairman"],
+                             "a broken instrument is the firm's problem to fix "
+                             "before it is the Chairman's to rule on")
+            self.assertEqual(f1[0]["defer_to"], "2026-10-01",
+                             "the review date did not move, so the same "
+                             "unanswerable question is asked again tomorrow")
+
+            A._write_json(hp, hist)
+            self.assertEqual(A.apply_deferrals(f1, history_path=hp,
+                                               today=dt.date(2026, 9, 1))["deferred"],
+                             ["Ghost"])
+            hist.clear(); hist.update(A._load(hp, {}))
+
+            # Idempotent: the same day again neither re-defers nor re-raises.
+            self.assertEqual(A.apply_deferrals(f1, history_path=hp,
+                                               today=dt.date(2026, 9, 1))["already"],
+                             ["Ghost"])
+            self.assertEqual(review(dt.date(2026, 9, 2), dead), [],
+                             "the deferral did not take — the review is still due")
+
+            # Deferral 2, then the budget is spent.
+            f2 = review(dt.date(2026, 10, 1), dead)
+            self.assertEqual(f2[0]["check"], "REINSTATEMENT_REVIEW_BLOCKED")
+            self.assertEqual(f2[0]["deferrals_used"], A.MAX_REVIEW_DEFERRALS)
+            A.apply_deferrals(f2, history_path=hp, today=dt.date(2026, 10, 1))
+            hist.clear(); hist.update(A._load(hp, {}))
+
+            f3 = review(dt.date(2026, 10, 31), dead)
+            self.assertEqual([f["check"] for f in f3],
+                             ["REINSTATEMENT_REVIEW_UNDECIDABLE"],
+                             "the deferral budget is spent and nothing escalated — "
+                             "the review can now be deferred forever")
+            self.assertEqual(f3[0]["severity"], "HIGH")
+            self.assertTrue(f3[0]["requires_chairman"])
+            self.assertEqual(A.apply_deferrals(f3, history_path=hp,
+                                               today=dt.date(2026, 10, 31))["deferred"],
+                             [], "an undecidable review bought itself another slip")
+
+            # It must PERSIST. A finding that stops re-raising is a finding that
+            # got quietly dropped, which is the failure one level up.
+            self.assertEqual(review(dt.date(2026, 12, 25), dead)[0]["check"],
+                             "REINSTATEMENT_REVIEW_UNDECIDABLE")
+
+            # ── CONTROL: CIT repairs the channel ─────────────────────────────
+            self.assertEqual(review(dt.date(2026, 10, 31), alive)[0]["check"],
+                             "REINSTATEMENT_REVIEW_DUE",
+                             "a review that CAN conclude was escalated anyway — an "
+                             "escalation that fires on healthy input gets muted")
+
+            # ...and an agent that was gradeable from the start is never deferred.
+            fresh = {"agent_records": {"Ghost": {"events": [
+                {"date": "2026-08-01", "event": "RETIREMENT_VACATED",
+                 "summary": "s.", "monitoring_review_by": "2026-09-01"}]}}}
+            ok = A._reinstatement_reviews(fresh, today=dt.date(2026, 9, 1),
+                                          registry=reg, observations=obs,
+                                          manager_log=alive)
+            self.assertEqual(ok[0]["check"], "REINSTATEMENT_REVIEW_DUE")
+            self.assertEqual(A.apply_deferrals(ok, history_path=hp,
+                                               today=dt.date(2026, 9, 1))["deferred"],
+                             [])
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+    def test_a_blocked_review_reaches_cit_and_not_the_chairman(self):
+        """The blocker has an owner, and it is not Jack.
+
+        The whole point of naming the blocker is that somebody can fix it. Two
+        halves of one contract:
+          • `collect` files it to CIT through the weekly sweep's closed taxonomy,
+            ungated by the review date — otherwise the deferral hides the very
+            condition that caused it and the reconciler closes the item as
+            "no longer observed", declaring a dead channel repaired.
+          • the deferral itself is withheld from the Chairman queue. He asked to
+            hear about serious decisions; his queue reached 88 rows nobody could
+            drain by filing routine work there.
+        """
+        import datetime as dt
+        import hr_retirement_audit as A
+        import sweep_taxonomy as tax
+
+        hist = {"agent_records": {"Ghost": {"events": [
+            {"date": "2026-08-01", "event": "RETIREMENT_VACATED", "summary": "s.",
+             "monitoring_review_by": "2026-09-01"}]}}}
+        reg = {"agents": [{"class_name": "Ghost", "permanent": True}]}
+        obs = [{"date": "2026-08-%02d" % d, "agent": "Ghost"} for d in range(1, 22)]
+        dead = [{"timestamp": "2026-08-15T12:00:00", "decisions": []}]
+        alive = [{"timestamp": "2026-08-15T12:00:00", "decisions": [
+            {"manager_decision": "APPROVED", "manager_action": "BUY",
+             "source_agent": "Agent someoneelse_cos"}]}]
+
+        # Ungated by the review date: still reported six months early.
+        early = A.collect(history=hist, registry=reg, observations=obs,
+                          manager_log=dead, today=dt.date(2026, 8, 2))
+        self.assertEqual([f["kind"] for f in early["findings"]], ["REVIEW_BLOCKED"],
+                         "the blocker is only visible once the review is due, so a "
+                         "deferral hides it and the sweep then closes it as fixed")
+        self.assertEqual(early["findings"][0]["owner"], "CIT")
+        self.assertTrue(early["findings"][0]["to_hr"])
+        self.assertFalse(early["findings"][0]["to_chairman"])
+
+        # Control: the channel is alive, so nothing is reported at all.
+        self.assertEqual(A.collect(history=hist, registry=reg, observations=obs,
+                                   manager_log=alive,
+                                   today=dt.date(2026, 8, 2))["findings"], [],
+                         "a gradeable agent was filed as blocked — noise that gets "
+                         "the whole kind muted")
+
+        # The kind is genuinely routed, and closable by the collector that owns it.
+        import sweep_governance as SG
+        self.assertEqual(tax.route_for("REVIEW_BLOCKED")["owner"], "CIT")
+        self.assertIn("REVIEW_BLOCKED",
+                      SG.closable_owners()["hr_retirement_audit"])
+
+        # And the deferral does not reach the Chairman.
+        blocked = A._reinstatement_reviews(hist, today=dt.date(2026, 9, 1),
+                                           registry=reg, observations=obs,
+                                           manager_log=dead)
+        self.assertFalse(blocked[0].get("to_chairman", True),
+                         "a routine deferral was filed as a Chairman decision")
+        # …and the filter is enforced where it actually matters: at the submit
+        # call. A `to_chairman` flag that main() computes and then ignores is
+        # worse than no flag, because the code reads as if it were honoured.
+        import unittest.mock as mock
+        undecidable = {"check": "REINSTATEMENT_REVIEW_UNDECIDABLE",
+                       "class_name": "Ghost", "severity": "HIGH",
+                       "description": "cannot tell", "to_chairman": True}
+        for findings, expect in ((blocked, []),
+                                 (blocked + [undecidable], ["Ghost"])):
+            with mock.patch.object(A, "audit", lambda: list(findings)), \
+                 mock.patch.object(A, "observe", lambda: {}), \
+                 mock.patch.object(A, "apply_deferrals",
+                                   lambda *a, **k: {"deferred": [], "already": []}), \
+                 mock.patch.object(A, "REPORT_PATH",
+                                   os.path.join(tempfile.mkdtemp(), "r.json")), \
+                 mock.patch.object(A.chairman_queue, "submit",
+                                   return_value=(0, 0)) as sub, \
+                 mock.patch.object(sys, "argv", ["hr_retirement_audit.py"]):
+                A.main()
+            got = [e for c in sub.call_args_list for e in c.args[0]] if sub.called else []
+            self.assertEqual([g["dedup_key"].split(":")[1] for g in got], expect,
+                             "main() filed the wrong set: a deferral CIT owns "
+                             "must not land in the Chairman's queue, and the "
+                             "escalation must")
 
     def test_probation_is_graded_on_the_window_not_on_all_history(self):
         """A probation verdict may only read evidence from the probation.
@@ -4232,7 +4438,7 @@ class TestWrongfulRetirement(unittest.TestCase):
         import hr_retirement_audit as A
 
         watched = {"GlobalTechAgent": (dt.date(2026, 9, 1),
-                                       {"date": "2026-08-01"})}
+                                       {"date": "2026-08-01"}, 0)}
         # Credit exists — but ALL of it lands before the window opens.
         log = [{"timestamp": "2026-07-20T12:00:00", "decisions": [
                     {"manager_decision": "APPROVED", "manager_action": "BUY",
@@ -4286,7 +4492,7 @@ class TestWrongfulRetirement(unittest.TestCase):
         # An unrecorded window start must fail toward NOT_ASSESSABLE, never
         # toward a measured-and-empty window, which is what convicts.
         blind = A._window_channels(
-            {"GlobalTechAgent": (dt.date(2026, 9, 1), {})}, log3)["GlobalTechAgent"]
+            {"GlobalTechAgent": (dt.date(2026, 9, 1), {}, 0)}, log3)["GlobalTechAgent"]
         self.assertIsNone(blind["window_start"])
         self.assertFalse(blind["alive"])
         self.assertEqual(
@@ -5143,6 +5349,35 @@ class TestSweepTaxonomyIsClosed(unittest.TestCase):
         self.assertFalse(missing,
                          f"HR receives {sorted(missing)} with no disposition — it "
                          f"would land in HR's inbox with nobody knowing what to do")
+
+    def test_every_hr_routed_kind_has_a_collector_that_can_close_it(self):
+        """A finding nobody can DISPROVE never leaves HR's queue.
+
+        `_reconcile` only closes an open item when its kind is in
+        `_closable_kinds`, and that set is built by claiming kinds per collector
+        off a name prefix. A to_hr kind whose prefix matches no collector is
+        therefore filed, held open as "unverifiable" forever, and its times_seen
+        climbs for years after the condition was fixed — the mirror image of the
+        false all-clear, and just as misleading.
+
+        The prefixes are the fragile part. `REVIEW_BLOCKED` had to be named that
+        and not `AGENT_REVIEW_BLOCKED`, or agent_sweep's prefix would have
+        claimed it and closed it on a run where the collector that actually
+        produces it had crashed.
+        """
+        import sweep_taxonomy as tax, sweep_governance as SG
+        owners = SG.closable_owners()
+        claimed = set().union(*owners.values())
+        hr_kinds = {k for k, r in tax.ROUTES.items() if r["to_hr"]}
+        self.assertFalse(
+            hr_kinds - claimed,
+            "%s enter HR's queue and no collector claims them, so nothing is ever "
+            "in a position to close them" % sorted(hr_kinds - claimed))
+        overlap = [(a, b) for a in owners for b in owners
+                   if a < b and owners[a] & owners[b]]
+        self.assertFalse(overlap,
+                         "two collectors claim the same kind (%s); the crashed one "
+                         "no longer protects it" % overlap)
 
     def test_hr_queue_producer_and_consumer_agree_on_the_path(self):
         """sweep_governance writes it; hr_agent reads it; same file or neither works."""

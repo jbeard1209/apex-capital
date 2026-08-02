@@ -108,9 +108,14 @@ def _collect_all(host: str, probe: bool = True) -> tuple:
 
     import agent_sweep
     import detector_mutation_harness
+    import hr_retirement_audit
     findings += guarded("agent_sweep", lambda: agent_sweep.collect(probe=probe, host=host))
     findings += guarded("detector_mutation_harness",
                         lambda: detector_mutation_harness.collect(host=host))
+    # Reviews HR promised the Chairman and cannot conclude. Read-only — collect()
+    # never moves a review date; hr_retirement_audit's own cron owns that.
+    findings += guarded("hr_retirement_audit",
+                        lambda: hr_retirement_audit.collect(host=host))
     return findings, meta
 
 
@@ -119,6 +124,28 @@ def _collect_all(host: str, probe: bool = True) -> tuple:
 # ===========================================================================
 def _key(f) -> str:
     return "%s::%s" % (f["kind"], f["subject"])
+
+
+def closable_owners() -> dict:
+    """collector -> the kinds only IT is in a position to disprove.
+
+    The prefixes are load-bearing, not cosmetic. A kind named
+    `AGENT_REVIEW_BLOCKED` would be claimed by agent_sweep's prefix below and
+    then closed whenever agent_sweep succeeded — even on a run where the
+    collector that actually produces it had crashed. That is precisely the false
+    all-clear `_closable_kinds` exists to prevent, hidden inside a naming
+    convention. Hence `REVIEW_`, not `AGENT_REVIEW_`.
+
+    Public because a kind that no collector claims can enter HR's queue and
+    never leave it: nothing is ever in a position to close it, so it is held
+    open as "unverifiable" forever and its `times_seen` climbs while the
+    condition may have been fixed months ago. TestSweepTaxonomyIsClosed asserts
+    every to_hr kind is claimed here.
+    """
+    import sweep_taxonomy as tax
+    return {"agent_sweep": {k for k in tax.KINDS if k.startswith("AGENT_")},
+            "detector_mutation_harness": {k for k in tax.KINDS if k.startswith("DETECTOR_")},
+            "hr_retirement_audit": {k for k in tax.KINDS if k.startswith("REVIEW_")}}
 
 
 def _closable_kinds(meta: dict, probe: bool) -> set:
@@ -130,13 +157,10 @@ def _closable_kinds(meta: dict, probe: bool) -> set:
     moment the firm went blind to them — the failure mode this whole build
     exists to prevent, reproduced by its own closure logic.
     """
-    import sweep_taxonomy as tax
     probe_kinds = {"AGENT_IMPORT_FAILS", "AGENT_IMPORT_TIMEOUT",
                    "AGENT_WRITES_ON_IMPORT", "AGENT_REPORT_FAILS"}
-    owners = {"agent_sweep": {k for k in tax.KINDS if k.startswith("AGENT_")},
-              "detector_mutation_harness": {k for k in tax.KINDS if k.startswith("DETECTOR_")}}
     closable = set()
-    for collector, kinds in owners.items():
+    for collector, kinds in closable_owners().items():
         if not meta.get(collector, {}).get("error"):
             closable |= kinds
     if not probe:
@@ -336,6 +360,7 @@ def _headline(kind: str) -> str:
         "AGENT_FILE_MISSING": "roster entries naming a file that is gone",
         "AGENT_ZOMBIE": "agents retired on paper and still running",
         "AGENT_UNREVIEWED": "agents never reviewed by HR",
+        "REVIEW_BLOCKED": "promised HR verdicts the firm cannot reach",
         "DETECTOR_BLIND": "detectors that stayed green on a planted defect",
         "DETECTOR_FALSE_POSITIVE": "detectors that fire on healthy input",
         "DETECTOR_ERRORS": "detectors that crash when exercised",

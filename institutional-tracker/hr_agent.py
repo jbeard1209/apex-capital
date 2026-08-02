@@ -1368,6 +1368,7 @@ SWEEP_DISPOSITIONS = {
     "AGENT_IMPORT_TIMEOUT":        ("SUSPEND_PENDING_FIX","Hangs on import — same effect as broken, plus it can wedge whatever imports it."),
     "AGENT_REPORT_FAILS":          ("INVESTIGATE",        "Runs but cannot report. Its work may be fine and invisible, which is indistinguishable from no work at all."),
     "AGENT_WRITES_ON_IMPORT":      ("NOT_AN_AGENT_FAULT", "Mutates firm state merely by being imported — a code defect for CIT, not an employment matter."),
+    "REVIEW_BLOCKED":              ("NOT_AN_AGENT_FAULT", "HR owes a KEEP/TERMINATE verdict on a reinstated agent and cannot reach one: the evidence channel it grades through is broken. Grading the agent anyway is not a strict standard, it is a false one — CIT owns the channel, HR re-reviews the moment it is alive, and the deferral is not a mark against the agent."),
 }
 
 
