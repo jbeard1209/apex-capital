@@ -5799,7 +5799,23 @@ class TestReentrySlateCannotLieByOmission(unittest.TestCase):
         produced, never read. If the route is ever renamed or dropped, this fails
         instead of the page silently 404-ing.
         """
-        src = (Path(__file__).resolve().parent.parent / "dashboard_server.py").read_text()
+        # The dashboard lives at the REPO ROOT, one level above this tree, and
+        # deploy.sh rsyncs only institutional-tracker/ — so on the VM the file
+        # cannot exist and this assertion has nothing to measure. Skipping on
+        # "file missing" alone would be the wrong guard: it would also go quiet
+        # on the Mac if someone deleted the dashboard, which is precisely the
+        # failure this test exists to catch. Gate on the CHECKOUT instead — a
+        # repo root is where the file is supposed to be, and there its absence
+        # is a failure, not an excuse.
+        root = Path(__file__).resolve().parent.parent
+        if not (root / ".git").exists():
+            self.skipTest("no repo root on this host — the dashboard is not "
+                          "deployed here (see memory host_divergence_is_a_bug_class)")
+        dash = root / "dashboard_server.py"
+        self.assertTrue(dash.exists(),
+                        "dashboard_server.py is missing from the checkout — the "
+                        "/reentry route cannot be served")
+        src = dash.read_text()
         self.assertIn('path == "/reentry"', src,
                       "dashboard_server.py no longer routes /reentry")
         self.assertIn("reentry_slate.render_page()", src,
