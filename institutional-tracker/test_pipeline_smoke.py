@@ -5701,47 +5701,256 @@ class TestSweepTaxonomyIsClosed(unittest.TestCase):
         self.assertIn("AGENT_ISOLATED", sg._closable_kinds(blind, True))
 
 
+class TestReentrySlateCannotLieByOmission(unittest.TestCase):
+    """The re-entry slate must never render "nothing to report" for "I could not look".
+
+    The page exists so the Chairman can see, on one screen, what changed while he
+    was away. That makes its failure mode specific and dangerous: a section whose
+    source file is missing or corrupt renders as an empty list, an empty list
+    reads as all-clear, and the firm gets a clean bill of health from a broken
+    instrument. Same shape as the stale-doc and empty-log incidents. So every
+    section that cannot read its source must SAY so, and it must not be possible
+    to confuse that with a genuine zero.
+    """
+
+    def _slate(self):
+        import reentry_slate
+        return reentry_slate
+
+    def test_an_unreadable_source_is_not_an_empty_one(self):
+        R = self._slate()
+        tmp = tempfile.mkdtemp()
+        missing = os.path.join(tmp, "gone.json")
+        corrupt = os.path.join(tmp, "corrupt.json")
+        with open(corrupt, "w") as f:
+            f.write("{not json at all")
+
+        val, note = R._load(missing, [])
+        self.assertEqual(val, [])
+        self.assertIsNotNone(note, "a missing source must produce a note, not a "
+                                   "silent empty default")
+        val, note = R._load(corrupt, [])
+        self.assertIsNotNone(note, "an unparseable source must produce a note")
+
+        # A genuine empty file is a real zero and must NOT be flagged.
+        empty = os.path.join(tmp, "empty.json")
+        with open(empty, "w") as f:
+            f.write("[]")
+        val, note = R._load(empty, [])
+        self.assertEqual((val, note), ([], None))
+
+        # And the note has to reach the page, worded so it cannot be skimmed as
+        # an all-clear. Both halves matter: without the CONTROL case below, a
+        # _note() that returned the warning unconditionally would also pass.
+        warned = R._note({"note": "gone.json does not exist on this host"})
+        self.assertIn("UNREADABLE", warned)
+        self.assertIn("warnbox", warned)
+        self.assertEqual(R._note({"note": None}), "")
+
+    def test_every_section_states_its_source_and_its_age(self):
+        """A number with no provenance is how a stale reading gets trusted."""
+        R = self._slate()
+        d = R.collect()
+        for key in ("decisions", "firm", "monitored"):
+            sec = d[key]
+            self.assertIn("source", sec, "%s must name the file it read" % key)
+            self.assertIn("age_hours", sec, "%s must expose its staleness" % key)
+            line = R._source_line(sec)
+            self.assertIn(sec["source"], line)
+        # A source older than the threshold must be visibly marked, and a fresh
+        # one must not be — an always-on "STALE" badge is as useless as none.
+        old = {"source": "x.json", "age_hours": R.STALE_HOURS + 1}
+        new = {"source": "x.json", "age_hours": 0.5}
+        self.assertIn("STALE", R._source_line(old))
+        self.assertNotIn("STALE", R._source_line(new))
+        # Never written at all is its own state, not "0 hours old".
+        self.assertIn("never written", R._source_line({"source": "x", "age_hours": None}))
+
+    def test_the_page_renders_and_escapes_what_it_did_not_write(self):
+        R = self._slate()
+        page = R.render_page()
+        self.assertTrue(page.startswith("<!doctype html>"))
+        for heading in ("Waiting on you", "The firm is handling",
+                        "Agents under monitoring", "This host"):
+            self.assertIn(heading, page, "the slate lost a section: %s" % heading)
+
+        # Descriptions come from agent-written JSON, not from this file. If one
+        # ever contains markup it must render as text.
+        hostile = {"generated_at": "2026-08-01T00:00:00",
+                   "decisions": {"rows": [{"id": "x", "severity": "HIGH",
+                                           "source": "s", "age_days": 1,
+                                           "escalates_in": 3,
+                                           "description": "<script>x</script>"}],
+                                 "note": None, "age_hours": 1.0, "source": "q.json"},
+                   "firm": {"open": 0, "by_owner": {}, "kinds": {}, "overdue": [],
+                            "note": None, "age_hours": 1.0, "source": "h.json"},
+                   "monitored": {"rows": [], "note": None, "age_hours": 1.0,
+                                 "source": "m.json"},
+                   "hosts": {"stamp": {}, "note": None, "heartbeat_age_hours": 1.0,
+                             "heartbeat_note": None, "heartbeat": {}}}
+        out = R.render(hostile)
+        self.assertNotIn("<script>x</script>", out)
+        self.assertIn("&lt;script&gt;", out)
+
+    def test_the_dashboard_actually_serves_it(self):
+        """Producer -> consumer, asserted on code rather than on a comment.
+
+        A renderer nothing routes to is the firm's most common bug class: output
+        produced, never read. If the route is ever renamed or dropped, this fails
+        instead of the page silently 404-ing.
+        """
+        src = (Path(__file__).resolve().parent.parent / "dashboard_server.py").read_text()
+        self.assertIn('path == "/reentry"', src,
+                      "dashboard_server.py no longer routes /reentry")
+        self.assertIn("reentry_slate.render_page()", src,
+                      "the /reentry route no longer renders the slate live")
+        # Live generation is the whole point: serving a file on disk would put a
+        # dated snapshot in front of the Chairman and call it current.
+        route = src.split('path == "/reentry"', 1)[1][:800]
+        self.assertNotIn("read_bytes", route)
+        self.assertNotIn("read_text", route)
+
+    def test_the_audit_does_not_invent_a_producer_out_of_a_reader(self):
+        """A pure consumer must not be reported as writing what it reads.
+
+        wiring_audit's last-resort heuristic is "every .json literal near the
+        word data" — it fires when the precise pass finds no write site, and it
+        cannot tell an input from an output. reentry_slate.py reads eleven JSON
+        files and writes one .html, and was reported as WRITING hr_history.json:
+        a fabricated producer->consumer edge, raised as a CONTRACT VIOLATION.
+        strategy_council.py had the same false edge for two IRM inputs.
+
+        Both halves are asserted. Suppressing the heuristic whenever any write
+        site exists would have been the obvious fix and would have blinded the
+        audit for 41 modules whose JSON writes go through helpers the regex
+        cannot follow — so the control case matters more than the bug case.
+        """
+        import wiring_audit as W
+        reader = (
+            'DATA = Path("data")\n'
+            'OUT_PATH = DATA / "page.html"\n'
+            'def go():\n'
+            '    x = json.load(open("data/hr_history.json"))\n'
+            '    y = json.load(open("data/risk_bulletin.json"))\n'
+            '    with open(OUT_PATH, "w") as f:\n'
+            '        f.write(render(x, y))\n')
+        self.assertEqual(W._declared_outputs(reader, W.DATA_JSON_RE), [],
+                         "a module that writes only HTML was credited with "
+                         "writing a file it merely reads")
+
+        # CONTROL 1 — a module with no detectable write site at all still gets
+        # the benefit of the heuristic. This is the half that keeps the audit
+        # from going quiet on 41 real producers.
+        opaque = ('DATA = Path("data")\n'
+                  'REPORT = DATA / "some_report.json"\n'
+                  'def go():\n'
+                  '    _atomic(REPORT, payload)\n')
+        self.assertEqual(W._declared_outputs(opaque, W.DATA_JSON_RE),
+                         ["some_report.json"],
+                         "the fallback was disabled for a module whose write "
+                         "goes through an unrecognised helper")
+
+        # CONTROL 2 — a genuine JSON write is still detected precisely.
+        writer = ('DATA = Path("data")\n'
+                  'REPORT = DATA / "some_report.json"\n'
+                  'def go():\n'
+                  '    with open(REPORT, "w") as f:\n'
+                  '        json.dump(payload, f)\n')
+        self.assertEqual(W._declared_outputs(writer, W.DATA_JSON_RE),
+                         ["some_report.json"])
+
+        # CONTROL 3 — writing HTML does not excuse also writing JSON.
+        both = ('DATA = Path("data")\n'
+                'OUT_PATH = DATA / "page.html"\n'
+                'REPORT = DATA / "some_report.json"\n'
+                'def go():\n'
+                '    with open(OUT_PATH, "w") as f:\n'
+                '        f.write(page)\n'
+                '    with open(REPORT, "w") as f:\n'
+                '        json.dump(payload, f)\n')
+        self.assertEqual(W._declared_outputs(both, W.DATA_JSON_RE),
+                         ["some_report.json"])
+
+        # CONTROL 4 — an unrecognised extension must read as "unresolved", not
+        # as "safe to ignore". Silence on a file type nobody listed is how a
+        # detector shrinks without anyone deciding it should.
+        unknown = ('DATA = Path("data")\n'
+                   'OUT_PATH = DATA / "page.parquet"\n'
+                   'def go():\n'
+                   '    x = json.load(open("data/hr_history.json"))\n'
+                   '    with open(OUT_PATH, "w") as f:\n'
+                   '        f.write(x)\n')
+        self.assertEqual(W._declared_outputs(unknown, W.DATA_JSON_RE),
+                         ["hr_history.json"])
+
+    def test_the_suite_cannot_silently_drop_a_test_class(self):
+        """The runner must discover test classes, never enumerate them by hand.
+
+        This test exists because of how it was found: the class it lives in was
+        written, passed when run directly, and did not run in the suite at all —
+        the runner held a hand-maintained list of addTests() calls and nobody had
+        added the line. Two consecutive full runs reported 273 tests OK while six
+        of them never executed. An unregistered test does not fail, it is absent,
+        and absence reads as coverage. That is the firm's oldest bug class
+        (producer with no consumer) living inside the thing meant to catch it.
+        """
+        src = Path(__file__).read_text()
+        # rsplit, not split: the guard string appears in this test's own source
+        # too, and splitting on the first hit measures the test instead of the
+        # runner — which is how a self-check ends up checking itself.
+        runner = src.rsplit('if __name__ == "__main__":', 1)[1]
+        self.assertIn("loadTestsFromModule", runner,
+                      "the runner no longer discovers tests automatically")
+        self.assertNotIn("loadTestsFromTestCase", runner,
+                         "a hand-maintained test list came back — the next class "
+                         "written will silently not run")
+        # And discovery must actually see this class.
+        found = unittest.TestLoader().loadTestsFromModule(sys.modules[__name__])
+        names = {type(t).__name__ for grp in found for t in grp}
+        self.assertIn(type(self).__name__, names)
+        self.assertGreaterEqual(len(names), 34,
+                                "test classes disappeared from the module")
+
+    def test_monitored_agents_come_from_hr_not_from_a_second_opinion(self):
+        """The slate must not re-derive who is under watch.
+
+        Two answers to "who is being monitored" is how agent A's work gets logged
+        and agent B graded on it. The page reads HR's own _monitored().
+        """
+        R = self._slate()
+        import hr_retirement_audit as A
+        import datetime as _dt
+        hist = A._read(A.HR_HISTORY_PATH, {}) if hasattr(A, "_read") else None
+        if hist is None:
+            with open(A.HR_HISTORY_PATH) as f:
+                hist = json.load(f)
+        expected = sorted(A._monitored(hist, _dt.date.today()))
+        self.assertEqual(sorted(r["agent"] for r in R.agents_on_the_clock()["rows"]),
+                         expected)
+
+
 # =============================================================================
 # Runner
 # =============================================================================
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
-    loader  = unittest.TestLoader()
-    suite   = unittest.TestSuite()
-    suite.addTests(loader.loadTestsFromTestCase(TestEvaluateRecommendation))
-    suite.addTests(loader.loadTestsFromTestCase(TestEnforceRiskRules))
-    suite.addTests(loader.loadTestsFromTestCase(TestStateRoundTrip))
-    suite.addTests(loader.loadTestsFromTestCase(TestSignalSourceHelpers))
-    suite.addTests(loader.loadTestsFromTestCase(TestCITSpecificityGate))
-    suite.addTests(loader.loadTestsFromTestCase(TestCITScannerPrecision))
-    suite.addTests(loader.loadTestsFromTestCase(TestDeputyBoardRouting))
-    suite.addTests(loader.loadTestsFromTestCase(TestChairmanQueueDedup))
-    suite.addTests(loader.loadTestsFromTestCase(TestCriticalImports))
-    suite.addTests(loader.loadTestsFromTestCase(TestAgentRegistry))
-    suite.addTests(loader.loadTestsFromTestCase(TestWiringContracts))
-    suite.addTests(loader.loadTestsFromTestCase(TestSignoffLedger))
-    suite.addTests(loader.loadTestsFromTestCase(TestSignoffProduction))
-    suite.addTests(loader.loadTestsFromTestCase(TestProblemLifecycle))
-    suite.addTests(loader.loadTestsFromTestCase(TestTechShortPod))
-    suite.addTests(loader.loadTestsFromTestCase(TestThesisWatch))
-    suite.addTests(loader.loadTestsFromTestCase(TestShortBookCanClose))
-    suite.addTests(loader.loadTestsFromTestCase(TestModelMetricsContract))
-    suite.addTests(loader.loadTestsFromTestCase(TestLiveSnapshotPathActuallyRecords))
-    suite.addTests(loader.loadTestsFromTestCase(TestLTExperimentsAreRealExperiments))
-    suite.addTests(loader.loadTestsFromTestCase(TestFormatSpecsAreReachable))
-    suite.addTests(loader.loadTestsFromTestCase(TestLabelColumnContract))
-    suite.addTests(loader.loadTestsFromTestCase(TestEveryDecisionCarriesItsOriginator))
-    suite.addTests(loader.loadTestsFromTestCase(TestPerformanceSnapshotProducer))
-    suite.addTests(loader.loadTestsFromTestCase(TestLossAttributionMustBeCurrent))
-    suite.addTests(loader.loadTestsFromTestCase(TestFICITReachesTheChairman))
-    suite.addTests(loader.loadTestsFromTestCase(TestHostSpecificChecksStayOnTheirHost))
-    suite.addTests(loader.loadTestsFromTestCase(TestWrongfulRetirement))
-    suite.addTests(loader.loadTestsFromTestCase(TestPIPLifecycleNotDeadlocked))
-    suite.addTests(loader.loadTestsFromTestCase(TestInstitutionRankingFloor))
-    suite.addTests(loader.loadTestsFromTestCase(TestRosterMergeLosesNobody))
-    suite.addTests(loader.loadTestsFromTestCase(TestHRSeesTheWholeFirm))
-    suite.addTests(loader.loadTestsFromTestCase(TestChairmanQueueCannotRefork))
-    suite.addTests(loader.loadTestsFromTestCase(TestSweepTaxonomyIsClosed))
+    # Load EVERY TestCase in this module.
+    #
+    # This used to be a hand-maintained list of 34 addTests() calls, and on
+    # 2026-08-01 it did exactly what the firm's oldest bug class always does: a
+    # new test class was written, imported cleanly, passed when run directly —
+    # and never ran in the suite, because nobody added the line. The count stayed
+    # at 273 through two full green runs. A test that is not registered does not
+    # fail; it is silently absent, which is worse than a failing test because it
+    # reads as coverage. Same shape as a producer whose consumer does not exist.
+    #
+    # loadTestsFromModule cannot drop a class, so the registration step that
+    # could be forgotten no longer exists.
+    loader = unittest.TestLoader()
+    suite = loader.loadTestsFromModule(sys.modules[__name__])
+    n_classes = len({type(t).__name__ for t in suite._tests for t in t})
+    print("Discovered %d test class(es) in %s\n" % (n_classes, Path(__file__).name),
+          file=sys.stderr)
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

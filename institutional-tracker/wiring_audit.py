@@ -255,7 +255,63 @@ def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
 
     if written:
         return sorted(written)
+
+    # The fallback is a hedge against a PARSING MISS — "we found no write sites,
+    # so we probably failed to recognise one". It must not fire when write sites
+    # were found and simply produced no JSON: that is not a miss, it is the
+    # answer. A module that writes an .html page and reads a dozen .json files is
+    # a pure consumer, and running the fallback on it reports the file it reads
+    # MOST as the file it writes.
+    #
+    # Found 2026-08-01 by reentry_slate.py, which reads hr_history.json and was
+    # reported as writing it — a fabricated producer→consumer edge, raised as a
+    # CONTRACT VIOLATION, headed for the board. Same failure the docstring above
+    # already describes for dynamic_position_sizer.py, one layer further down:
+    # an auditor that guesses is worse than one that abstains, because the guess
+    # arrives with the authority of a finding. See memory `auditor_ground_truth`.
+    #
+    # But the hedge earns its keep: measured across the tree, 41 modules rely on
+    # it because their JSON writes go through helpers this regex cannot follow.
+    # Suppressing it whenever ANY write site exists would blind the audit to a
+    # third of the firm. So suppress it only when EVERY write target resolves to
+    # a known non-JSON file — then it is not a parsing miss, it is a module that
+    # demonstrably writes something else. One unresolvable target and the hedge
+    # stays on.
+    if write_ctx and _writes_only_non_json(write_ctx, txt, out_re):
+        return []
     return sorted({m for m in out_re.findall(txt) if "data" in txt.split(m)[0][-120:]})
+
+
+#: Extensions a module can write that are, by definition, not a JSON handoff to
+#: another module. Kept explicit: an unknown extension must read as "unresolved"
+#: so the fallback stays on, never as "safe to ignore".
+_NON_JSON_EXT = (".html", ".htm", ".csv", ".txt", ".md", ".log", ".png", ".svg")
+
+
+def _writes_only_non_json(write_ctx, txt, out_re) -> bool:
+    """True when every detected write site provably targets a non-JSON file.
+
+    Conservative on purpose. A target we cannot resolve returns False, which
+    leaves the broad fallback running — the audit keeps guessing rather than
+    going quiet, and a guess is recoverable where a blind spot is not.
+    """
+    var_ext = {}
+    for m in re.finditer(r'^\s*([A-Za-z_]\w*)\s*=\s*([^\n]+)$', txt, re.M):
+        hit = re.search(r'["\']([\w./-]+\.\w+)["\']', m.group(2))
+        if hit:
+            var_ext[m.group(1)] = hit.group(1)
+
+    for site in write_ctx:
+        if out_re.search(site):
+            return False                       # writes a data/*.json outright
+        names = re.findall(r'[A-Za-z_]\w*', site)
+        target = next((n for n in names if n in var_ext), None)
+        literal = re.search(r'["\']([\w./-]+\.\w+)["\']', site)
+        resolved = var_ext.get(target) if target else (
+            literal.group(1) if literal else None)
+        if not resolved or not resolved.lower().endswith(_NON_JSON_EXT):
+            return False                       # unresolved — do not go quiet
+    return True
 
 
 def check_orphan_agents(sources: dict):

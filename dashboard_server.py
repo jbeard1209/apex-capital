@@ -274,6 +274,25 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_html("<h1>apex_live_dashboard.html not found</h1>", 404)
             return
 
+        # Re-entry slate — "what happened while I was gone".
+        # Rendered per request, never served from a file: a slate composed once
+        # is accurate for a day and quietly misleading afterwards, which is the
+        # failure this page exists to prevent. Imported lazily so a breakage in
+        # the slate cannot stop the dashboard from booting.
+        if path == "/reentry":
+            try:
+                sys.path.insert(0, str(BASE_DIR / "institutional-tracker"))
+                import reentry_slate
+                self.send_html(reentry_slate.render_page())
+            except Exception as e:
+                import html as _html
+                self.send_html(
+                    "<h1>Re-entry slate unavailable</h1><p>%s: %s</p>"
+                    "<p>This page is generated live; it failed to generate. It is "
+                    "not empty — it is broken. Do not read it as 'nothing to "
+                    "report'.</p>" % (type(e).__name__, _html.escape(str(e))), 500)
+            return
+
         # API
         if path == "/api/all":
             # Record this login/refresh in last-seen tracker

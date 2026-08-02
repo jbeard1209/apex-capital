@@ -36,6 +36,12 @@ institutional-tracker/data/.*.lock
 institutional-tracker/data/.*_running
 institutional-tracker/data/.catch_up_running
 
+# Rendered snapshot of the re-entry slate. The page is generated live on every
+# request (dashboard_server /reentry); the file is only a convenience copy for
+# when the server is not running. Committing it would put a dated snapshot in
+# the repo that reads as current — the exact thing the page was built to avoid.
+institutional-tracker/data/reentry_slate.html
+
 # ── Runtime data (live trade state, PII, agent evaluations) ──────────────────
 # These are pushed directly to the cloud server via sync_to_cloud.py,
 # never stored in git.
