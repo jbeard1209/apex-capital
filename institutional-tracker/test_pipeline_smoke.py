@@ -3479,8 +3479,73 @@ class TestPerformanceSnapshotProducer(unittest.TestCase):
 
     @staticmethod
     def _today_stamp():
-        from zoneinfo import ZoneInfo
-        return datetime.now(ZoneInfo("America/New_York")).replace(tzinfo=None).isoformat()
+        """A naive stamp exactly as review_agent.py:508 writes one — this
+        host's wall clock, with no zone attached.
+
+        NOT `datetime.now(ET).replace(tzinfo=None)`, which is what this used
+        to be. That fabricates an *Eastern* wall clock on every host, and
+        `_et_date` reads a naive stamp in the HOST's zone (correctly: a naive
+        stamp means the writer's clock, and the writer is this host). So on
+        the UTC VM an 02:00 ET stamp was read as 02:00 UTC = 22:00 the
+        previous ET day, `build_snapshot` correctly refused to write a row
+        dated other than today, and three tests fell over — but only between
+        00:00 and 04:00 ET, and only on the VM. Green on the Mac at every
+        hour, red in production for four hours a night.
+
+        The contract itself is pinned by
+        test_a_naive_stamp_is_read_in_the_hosts_zone_not_as_ET.
+        See memory host_divergence_is_a_bug_class.
+        """
+        return datetime.now().isoformat()
+
+    def test_a_naive_stamp_is_read_in_the_hosts_zone_not_as_ET(self):
+        """A naive timestamp means the writer's clock — and the two hosts do
+        not share one (Mac: America/New_York, VM: UTC).
+
+        Pinned by moving TZ under the process rather than by reading the
+        host's real zone, so this asserts the same thing on both hosts
+        instead of only re-confirming whichever one it runs on.
+        """
+        import os, time, performance_snapshot as PS
+        orig = os.environ.get("TZ")
+
+        def _restore():
+            if orig is None:
+                os.environ.pop("TZ", None)
+            else:
+                os.environ["TZ"] = orig
+            time.tzset()
+        self.addCleanup(_restore)
+
+        os.environ["TZ"] = "UTC"; time.tzset()
+        self.assertEqual(
+            PS._et_date("2026-08-02T01:30:00"), "2026-08-01",
+            "01:30 on a UTC host is 21:30 the previous day in ET — reading a "
+            "naive stamp as if it were already ET would date it a day late")
+
+        os.environ["TZ"] = "America/New_York"; time.tzset()
+        self.assertEqual(
+            PS._et_date("2026-08-02T01:30:00"), "2026-08-02",
+            "the same wall clock written on an ET host is that ET day")
+
+        # And the fixture above must be this host's clock under ANY zone.
+        # Asserted as clock DRIFT, not as a matching date: a date comparison
+        # would only diverge during the few hours a night when the two zones
+        # straddle midnight, i.e. the guard against an hour-dependent flake
+        # would itself be an hour-dependent flake. Drift fires at every hour.
+        for zone in ("UTC", "America/New_York", "Asia/Tokyo"):
+            os.environ["TZ"] = zone; time.tzset()
+            dt = datetime.fromisoformat(self._today_stamp())
+            self.assertIsNone(dt.tzinfo,
+                              "review_agent writes a NAIVE stamp; a fixture "
+                              "carrying a zone stops exercising _et_date's "
+                              "naive path, which is where the bug lives")
+            drift = abs((dt.astimezone() - datetime.now().astimezone()).total_seconds())
+            self.assertLess(
+                drift, 5,
+                "under TZ=%s the fixture's wall clock is %.0fs off this host's "
+                "— it is fabricating some other host's clock, so the suite "
+                "would be green here and red in production" % (zone, drift))
 
     def test_it_never_writes_loss_attribution(self):
         PS, _ = self._sandbox(self._today_stamp())
@@ -5699,6 +5764,96 @@ class TestSweepTaxonomyIsClosed(unittest.TestCase):
         self.assertIn("AGENT_OUTPUT_NEVER_PRODUCED", sg._closable_kinds(seeing, True))
         # ...and the guard must not have quietly disabled every other kind.
         self.assertIn("AGENT_ISOLATED", sg._closable_kinds(blind, True))
+
+
+class TestThePushGateIsTheGateTheRepoShips(unittest.TestCase):
+    """The installed pre-push hook must be the one that is under version control.
+
+    `.git/hooks` is not cloned, so the hook has two copies: the tracked
+    `scripts/git-hooks/pre-push` that everyone reads, and the installed
+    `.git/hooks/pre-push` that actually runs. Nothing kept them equal. On
+    2026-08-02 they had silently diverged for weeks, and in the dangerous
+    direction: the installed hook was hardened (fail-closed, mktemp) while the
+    tracked one was still the original stub, so CLAUDE.md's documented install
+    command — `cp scripts/git-hooks/pre-push .git/hooks/pre-push` — would have
+    DOWNGRADED the gate to a fail-open one on any machine that followed it.
+
+    Same shape as build_365d_labels.py and refresh_crontab_snapshot.sh: a
+    documented artifact is not a built one. The new twist is that a built one
+    which is not the tracked one is worse, because the tracked one is what
+    every reader, every review and every new checkout believes is running.
+    """
+
+    def _paths(self):
+        root = Path(__file__).resolve().parent.parent
+        if not (root / ".git").exists():
+            self.skipTest("no repo root on this host — the VM gets an rsync of "
+                          "institutional-tracker/ and has no hooks to check "
+                          "(see memory host_divergence_is_a_bug_class)")
+        return root / "scripts" / "git-hooks" / "pre-push", root / ".git" / "hooks" / "pre-push"
+
+    def test_the_installed_hook_matches_the_tracked_one(self):
+        tracked, installed = self._paths()
+        self.assertTrue(tracked.exists(),
+                        "scripts/git-hooks/pre-push is missing — CLAUDE.md tells "
+                        "every session to install from it")
+        if not installed.exists():
+            # A fresh clone legitimately has no hook yet; that is the documented
+            # install step, not drift. Do not fail cloud checkouts over it.
+            self.skipTest("pre-push not installed in this checkout — run: "
+                          "cp scripts/git-hooks/pre-push .git/hooks/pre-push")
+        self.assertEqual(
+            installed.read_text(), tracked.read_text(),
+            "the installed pre-push hook differs from scripts/git-hooks/pre-push. "
+            "Whichever is better, the repo's copy is the one everyone reads, so "
+            "they must be equal. Re-install: cp scripts/git-hooks/pre-push "
+            ".git/hooks/pre-push && chmod +x .git/hooks/pre-push")
+
+    def test_the_gate_fails_closed_and_tests_the_production_zone(self):
+        """Two properties the gate cannot lose without going quiet."""
+        tracked, _ = self._paths()
+        src = tracked.read_text()
+        # Strip comments before looking for banned code. The hook DOCUMENTS the
+        # `|| exit 0` it used to have, in a comment explaining why it is gone,
+        # so a naive substring search matches the explanation and fails on the
+        # fixed file. Same trap as the runner guard's rsplit: when the string
+        # you are banning also appears in the prose about banning it, you have
+        # to measure the code (memory unregistered-test-is-absent).
+        code = "\n".join(ln for ln in src.splitlines()
+                         if not ln.lstrip().startswith("#"))
+
+        # Fail closed: `cd ... || exit 0` allowed every push when the cd failed.
+        self.assertNotIn("|| exit 0", code,
+                         "the gate exits 0 when it cannot run — a gate that "
+                         "disables itself when confused is the bug it guards against")
+
+        # Production zone: the VM runs UTC, this Mac runs ET, and a fixture that
+        # fabricated an ET wall clock was green here and red there for four
+        # hours a night. One local pass is not evidence the push is safe.
+        self.assertIn("TZ=UTC python3 test_pipeline_smoke.py", code,
+                      "the gate runs the suite only in the local zone — it cannot "
+                      "see host-divergent failures, which is how one shipped")
+
+        # Self-check: the hook verifies it is the tracked hook.
+        self.assertIn("cmp -s", code,
+                      "the hook no longer checks itself against the tracked copy, "
+                      "so the two can drift apart invisibly again")
+
+        # ...and it must compare an ABSOLUTE path. git invokes the hook as
+        # ".git/hooks/pre-push" relative to the repo root, and the gate cd's
+        # into institutional-tracker/ before the comparison — so a bare `$0`
+        # names a file that no longer exists, cmp returns non-zero, and the
+        # check reports two byte-identical files as drift. It blocked the push
+        # that introduced it. Fail-closed was right; the message was false.
+        self.assertNotIn('cmp -s "$0"', code,
+                         "the self-check compares $0, which is relative and is "
+                         "resolved after a cd — it will report drift on identical files")
+        self.assertIn('cmp -s "$HOOK_PATH"', code,
+                      "the self-check must compare the absolutised hook path")
+        self.assertLess(
+            code.index("HOOK_PATH="), code.index('cd "$TRACKER"'),
+            "$0 must be absolutised BEFORE the cd, or the path it captures is "
+            "already meaningless by the time it is used")
 
 
 class TestReentrySlateCannotLieByOmission(unittest.TestCase):

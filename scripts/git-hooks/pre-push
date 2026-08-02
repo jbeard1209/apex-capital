@@ -1,8 +1,107 @@
 #!/bin/bash
-# Apex Capital — pre-push gate. Blocks push if contract tests or wiring audit fail.
-# Catches the silent producer/consumer bug class before it ships.
-cd "$(git rev-parse --show-toplevel)/institutional-tracker" || exit 0
+# =============================================================================
+# Apex Capital — pre-push gate.
+#
+# Blocks a push if the wiring audit or the contract tests fail. Catches the
+# silent producer/consumer bug class (a producer emits a rule/pod/category name
+# no consumer handles, .get()/try-except swallows it, output is produced but
+# never acted on) before it reaches prod, where the VM runs it 6x a day.
+#
+# Install (.git/hooks is not cloned, so every checkout must do this once):
+#   cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+#
+# CLAUDE.md has told every session to run exactly that command since the gate
+# was introduced — but the hardened version of this file lived only in
+# .git/hooks on one Mac, while the copy in git stayed the original stub. So the
+# install command above, followed faithfully, DOWNGRADED the gate to a
+# fail-open one. Fourth instance of this shape, found 2026-08-02, after
+# build_365d_labels.py (referenced by nine modules, never ran),
+# scripts/refresh_crontab_snapshot.sh (named by wiring_audit.py and by a test
+# that hard-fails without it, never written), and this hook's own first miss.
+# A documented artifact is not a built one — and a built one that is not the
+# tracked one is worse, because everybody reads the tracked one.
+#
+# To bypass deliberately: git push --no-verify
+# =============================================================================
+
+ROOT="$(git rev-parse --show-toplevel)"
+TRACKER="$ROOT/institutional-tracker"
+TRACKED_HOOK="$ROOT/scripts/git-hooks/pre-push"
+
+# Absolutise $0 BEFORE the cd below. git invokes the hook as a path relative to
+# the repo root (".git/hooks/pre-push"), so after `cd "$TRACKER"` that path
+# resolves to nothing — and `cmp` against a missing file returns non-zero, which
+# the self-check would report as "your hook has drifted". It blocked the very
+# push that introduced it, on two byte-identical files. Fail-closed behaved
+# correctly; the message was a lie. Resolve the path while it still means
+# something.
+HOOK_PATH="$0"
+case "$HOOK_PATH" in
+    /*) ;;
+     *) HOOK_PATH="$PWD/$HOOK_PATH" ;;
+esac
+
+# Fail CLOSED. The original hook ended this line with `|| exit 0`, so anything
+# that made the cd fail — wrong layout, a worktree without the subdir — silently
+# allowed every push with a cheerful nothing. A gate that disables itself when
+# confused is the same failure this gate exists to catch. If the tree really is
+# unusual, --no-verify is the explicit escape hatch.
+cd "$TRACKER" || {
+    echo "[pre-push] BLOCKED: cannot cd to $TRACKER — the gate could not run."
+    echo "[pre-push] If this tree is intentionally laid out differently: git push --no-verify"
+    exit 1
+}
+
+# The gate checks that it IS the gate the repo ships. This file is not under
+# version control at its installed path, so it can drift from the tracked copy
+# indefinitely with nobody able to see it — which is exactly what happened.
+# Runs only where the hook is installed, so it cannot false-alarm on a clone.
+if [ -f "$TRACKED_HOOK" ]; then
+    if [ ! -r "$HOOK_PATH" ]; then
+        # Say what actually went wrong. "Cannot compare" is not "differs", and
+        # reporting it as drift sends the reader to re-install a hook that was
+        # never wrong — the same sin as an empty section rendering as all-clear.
+        echo "[pre-push] BLOCKED: cannot locate the running hook ($HOOK_PATH),"
+        echo "[pre-push] so the gate cannot confirm it matches the tracked copy."
+        echo "[pre-push] Deliberate bypass: git push --no-verify"
+        exit 1
+    fi
+    if ! cmp -s "$HOOK_PATH" "$TRACKED_HOOK"; then
+        echo "[pre-push] BLOCKED: the installed hook differs from scripts/git-hooks/pre-push."
+        echo "[pre-push] Your gate is not the repo's gate. Re-install it:"
+        echo "[pre-push]   cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push"
+        exit 1
+    fi
+fi
+
 echo "[pre-push] wiring audit + smoke tests..."
-python3 wiring_audit.py --quiet || { echo "[pre-push] BLOCKED: wiring contract violation. Run: python3 wiring_audit.py"; exit 1; }
-python3 test_pipeline_smoke.py >/tmp/apex_smoke.out 2>&1 || { echo "[pre-push] BLOCKED: smoke tests failed:"; tail -15 /tmp/apex_smoke.out; exit 1; }
-echo "[pre-push] OK"
+
+python3 wiring_audit.py --quiet || {
+    echo "[pre-push] BLOCKED: wiring contract violation. Run: python3 wiring_audit.py"
+    exit 1
+}
+
+SMOKE_OUT="$(mktemp)"
+python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
+    echo "[pre-push] BLOCKED: smoke tests failed:"
+    tail -15 "$SMOKE_OUT"
+    rm -f "$SMOKE_OUT"
+    exit 1
+}
+
+# Second pass in the PRODUCTION zone. The VM runs UTC and trades continuously;
+# this Mac runs America/New_York. A test that fabricated an Eastern wall clock
+# passed here at every hour and failed on the VM for four hours a night
+# (00:00-04:00 ET) — found 2026-08-02, green locally the whole time.
+# "Green on the Mac is not green" (memory host_divergence_is_a_bug_class);
+# the gate should measure the host that actually runs the money.
+TZ=UTC python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
+    echo "[pre-push] BLOCKED: smoke tests pass locally but FAIL under TZ=UTC,"
+    echo "[pre-push] which is the zone the GCP VM runs in. This would ship red."
+    tail -15 "$SMOKE_OUT"
+    rm -f "$SMOKE_OUT"
+    exit 1
+}
+rm -f "$SMOKE_OUT"
+
+echo "[pre-push] OK (local zone + TZ=UTC)"
