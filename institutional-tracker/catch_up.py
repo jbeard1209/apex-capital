@@ -60,6 +60,35 @@ LOCKFILE = DATA_DIR / ".catch_up_running"
 EDT_OFFSET_H = -4
 
 
+# Per-job wall clock. 600s was applied to every job, including main.py, and
+# main.py outgrew it: 211 of 437 pipeline runs were SIGKILLed at exactly 10:00,
+# in every hour of the day, ~50/50 with no time-of-day pattern.
+#
+# It is worth recording how that was misread, because the numbers invite it. The
+# median SUCCESSFUL run is 48s and p95 is 404s, which reads as "half the runs
+# hang" — and the fix for a hang is not a bigger budget. main.py's own log
+# (which survives the kill; the per-job log below does not) settles it: the
+# killed run logged 790 lines in its 10 minutes with no gap longer than 27s. It
+# was working the whole time — dozens of FE agents at ~40 candidates each, then
+# a large issue backlog. The fast runs are early exits (market closed, CRO
+# block, already ran). So the work really has outgrown the budget, and it keeps
+# growing: 155 agents now.
+#
+# The cost was never "the run restarts". main.py places orders near the END of
+# its work, so a kill at 10:00 lands AFTER trading and BEFORE the state save —
+# which is how data/state.json comes to show 0 positions while the broker holds
+# 16. Since 2026-08-07 the Mac is also the firm's only exit-capable host while
+# the VM is unreachable (see single_writer.py), and an exit path that is killed
+# half the time is not a safety net.
+#
+# 2700s is >4x the point at which runs were being truncated, and stays under
+# main.py's own 90-min hang watchdog so that inner, self-releasing bound stays
+# the real ceiling for a genuine hang. Overlap is safe: main.py holds an flock,
+# so a duplicate started by the next launchd tick exits immediately.
+DEFAULT_JOB_TIMEOUT_S = 600
+PIPELINE_TIMEOUT_S    = 2700
+
+
 # =============================================================================
 # JOB REGISTRY — mirrors the full crontab
 # =============================================================================
@@ -164,6 +193,7 @@ JOB_REGISTRY = [
     {
         "name":            "pipeline_0945",
         "script":          "main.py",
+        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
         "args":            [],
         "output_file":     None,            # checked via today's cron log
         "ttl_hours":       None,
@@ -177,6 +207,7 @@ JOB_REGISTRY = [
     {
         "name":            "pipeline_1200",
         "script":          "main.py",
+        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
         "args":            [],
         "output_file":     None,
         "ttl_hours":       None,
@@ -190,6 +221,7 @@ JOB_REGISTRY = [
     {
         "name":            "pipeline_1400",
         "script":          "main.py",
+        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
         "args":            [],
         "output_file":     None,
         "ttl_hours":       None,
@@ -203,6 +235,7 @@ JOB_REGISTRY = [
     {
         "name":            "pipeline_1615",
         "script":          "main.py",
+        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
         "args":            [],
         "output_file":     None,
         "ttl_hours":       None,
@@ -393,12 +426,13 @@ def _run(job: dict) -> bool:
     suffix = job["name"].replace(" ", "_")
     log  = LOG_DIR / f"catchup_{suffix}_{_now_edt().strftime('%Y%m%d_%H%M')}.log"
     LOG_DIR.mkdir(exist_ok=True)
+    timeout_s = job.get("timeout_s", DEFAULT_JOB_TIMEOUT_S)
 
     logger.info(f"  ▶ [{job['name']}]  {job['script']} {' '.join(job.get('args', []))}")
     try:
         result = subprocess.run(
             cmd, cwd=str(BASE_DIR),
-            capture_output=True, text=True, timeout=600,
+            capture_output=True, text=True, timeout=timeout_s,
         )
         with open(log, "w") as f:
             f.write(result.stdout + "\n" + result.stderr)
@@ -408,8 +442,29 @@ def _run(job: dict) -> bool:
         else:
             logger.warning(f"  ⚠ [{job['name']}] exited {result.returncode} — see {log.name}")
             return False
-    except subprocess.TimeoutExpired:
-        logger.error(f"  ❌ [{job['name']}] timed out after 10 min")
+    except subprocess.TimeoutExpired as e:
+        # Write what the job managed to say before it was killed. This branch
+        # used to discard it: the log file is only written in the success path
+        # above, so 968 timeouts produced no per-job log at all and the one
+        # question worth asking — where was it when the clock ran out? — had no
+        # artifact to answer it. TimeoutExpired carries the partial output when
+        # capture_output is set; keeping it costs nothing and makes the next
+        # timeout diagnosable instead of merely counted.
+        def _text(v):
+            # TimeoutExpired.stdout arrives as bytes or str depending on which
+            # branch of communicate() raised — coerce rather than assume, or the
+            # diagnostic is lost to a TypeError in the handler that exists to
+            # save it.
+            if v is None:
+                return ""
+            return v.decode("utf-8", "replace") if isinstance(v, bytes) else str(v)
+
+        try:
+            with open(log, "w") as f:
+                f.write(_text(e.stdout) + "\n" + _text(e.stderr))
+        except Exception:
+            pass
+        logger.error(f"  ❌ [{job['name']}] timed out after {timeout_s}s — see {log.name}")
         return False
     except Exception as e:
         logger.error(f"  ❌ [{job['name']}] failed to launch: {e}")

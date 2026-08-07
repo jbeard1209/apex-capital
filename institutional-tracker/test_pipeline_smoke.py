@@ -6395,6 +6395,67 @@ class TestSingleWriterGuard(unittest.TestCase):
                          "platform would recreate the blind spot it exists to close")
 
 
+class TestCatchUpJobBudget(unittest.TestCase):
+    """The Mac's runner must let main.py finish, and must say where it died.
+
+    600s applied to every job killed 211 of 437 pipeline runs at exactly 10:00.
+    main.py places orders near the END of its work, so those kills landed after
+    trading and before the state save — and since 2026-08-07 the Mac is the
+    firm's only exit-capable host while the VM is unreachable.
+    """
+
+    def test_every_main_py_job_gets_more_than_the_default_budget(self):
+        import catch_up
+        pipes = [j for j in catch_up.JOB_REGISTRY if j.get("script") == "main.py"]
+        self.assertTrue(pipes, "no main.py job found in the registry")
+        for j in pipes:
+            self.assertGreater(
+                j.get("timeout_s", catch_up.DEFAULT_JOB_TIMEOUT_S),
+                catch_up.DEFAULT_JOB_TIMEOUT_S,
+                f"{j['name']} is back on the default budget — it will be "
+                f"SIGKILLed mid-run again, after trading and before the save")
+
+    def test_the_budget_stays_under_main_pys_own_hang_watchdog(self):
+        """The inner, self-releasing bound must remain the real ceiling."""
+        import catch_up
+        src = (Path(__file__).resolve().parent / "main.py").read_text()
+        self.assertIn("_t.sleep(90 * 60)", src,
+                      "main.py's hang watchdog moved — re-derive the outer budget")
+        self.assertLess(catch_up.PIPELINE_TIMEOUT_S, 90 * 60,
+                        "the outer SIGKILL would pre-empt main.py's own watchdog, "
+                        "which is the bound that actually releases the flock")
+
+    def test_a_timed_out_job_still_writes_its_log(self):
+        """968 timeouts produced no per-job log, so none was ever diagnosable.
+
+        Behavioural, not a source grep: run a real child that outlives its
+        budget and assert the partial output survives on disk.
+        """
+        import catch_up, tempfile, importlib
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            (tmp / "slowpoke.py").write_text(
+                "import sys, time\n"
+                "print('reached the interesting part', flush=True)\n"
+                "sys.stdout.flush()\n"
+                "time.sleep(30)\n")
+            old_base, old_log = catch_up.BASE_DIR, catch_up.LOG_DIR
+            try:
+                catch_up.BASE_DIR = tmp
+                catch_up.LOG_DIR = tmp / "logs"
+                ok = catch_up._run({"name": "slowpoke", "script": "slowpoke.py",
+                                    "args": [], "timeout_s": 2})
+            finally:
+                catch_up.BASE_DIR, catch_up.LOG_DIR = old_base, old_log
+
+            self.assertFalse(ok, "a timed-out job must report failure")
+            logs = list((tmp / "logs").glob("catchup_slowpoke_*.log"))
+            self.assertTrue(logs, "the timeout branch wrote no log — the one "
+                                  "question worth asking (where was it?) has no artifact")
+            self.assertIn("reached the interesting part", logs[0].read_text(),
+                          "the log exists but lost the child's partial output")
+
+
 class TestDeployBudgetIsSingleHost(unittest.TestCase):
     """The deploy budget is per-host, so only one host may run the deployer.
 
