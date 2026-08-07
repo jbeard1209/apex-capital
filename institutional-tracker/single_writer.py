@@ -39,15 +39,21 @@ So:  opening or increasing exposure  -> designated host only
 and when the position lookup itself fails, the two directions fail differently:
 entries fail CLOSED, exits fail OPEN. Uncertainty must never trap a position.
 
-SHADOW MODE IS THE DEFAULT
---------------------------
+SHADOW IS THE DEFAULT; ENFORCE IS LIVE AS OF 2026-08-07
+-------------------------------------------------------
 With `APEX_TRADING_HOST` unset the guard allows everything and only records what
 it *would* have blocked, exactly like the sign-off ledger's shadow phase
 (memory `signoff_ledger_autonomy`). Turning a live two-host firm into a one-host
-firm is the Chairman's decision, not a side effect of deploying this file. Flip
-it by setting the env var on the designated host and only there:
+firm is the Chairman's decision, not a side effect of deploying this file — and
+on 2026-08-07 the Chairman made it: the VM is the writer.
 
-    APEX_TRADING_HOST=apexcapitalc
+    APEX_TRADING_HOST=apexcapitalc      # in .env, on BOTH hosts
+
+Firm-wide on purpose, and it is the same value everywhere. The var names WHICH
+host may open risk, it does not mean "I am that host" — the check compares it to
+`this_host()`. Setting it only on the designated host would leave every other
+host in shadow mode, i.e. unguarded, which is the exact inverse of the intent.
+`deploy.sh` scp's `.env` to the VM, so one edit covers both.
 
 Consumers: order_ledger.install() (the one submit_order choke point),
 cit_pipeline_integrity_agent.check_single_writer.
@@ -78,11 +84,31 @@ POSITION_TTL_S = 45.0
 _pos_cache = {"at": 0.0, "map": None}
 
 
+def _ensure_env_loaded() -> None:
+    """Load .env if nothing has yet. Cheap, idempotent, and load-order-proof.
+
+    The setting lives in .env, which config.py loads at import — but this guard
+    sits under the Alpaca SDK, and a caller that reaches submit_order without
+    importing config would read an unset variable and silently fall back to
+    shadow mode. Enforcement that quietly disables itself depending on import
+    order is worse than no enforcement, because the logs still say "enforce".
+    """
+    if os.environ.get("APEX_TRADING_HOST") is not None:
+        return
+    try:
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=str(Path(__file__).resolve().parent / ".env"),
+                    override=False)
+    except Exception:
+        pass
+
+
 def designated_host() -> str:
     """The host permitted to open risk, or "" for shadow mode."""
     from order_ledger import _clean
-    return _clean(os.getenv("APEX_TRADING_HOST", ""), 12) if os.getenv(
-        "APEX_TRADING_HOST", "").strip() else ""
+    _ensure_env_loaded()
+    raw = os.getenv("APEX_TRADING_HOST", "").strip()
+    return _clean(raw, 12) if raw else ""
 
 
 def this_host() -> str:
