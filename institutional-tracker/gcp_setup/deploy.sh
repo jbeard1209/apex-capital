@@ -99,7 +99,14 @@ echo "[1/3] Syncing project files..."
 # Reconcile it instead:  python3 agent_roster.py --sync-registry
 # (agent_roster_manifest.json below is safe: it is DECLARED, git-tracked, and
 # regenerated from the merged view of both hosts by --adopt.)
+#
+# data/.host_id is excluded FIRST, ahead of the includes, so it survives anyone
+# later broadening the allowlist. It is this host's stable trading identity; if
+# the Mac's copy reached the VM, both hosts would stamp orders `mac` and the
+# single-writer detector — whose entire job is counting distinct hosts — would
+# report one writer forever. A deploy must never be able to blind a detector.
 rsync -avz --progress \
+    --exclude="data/.host_id" \
     --include="data/" \
     --include="data/orphan_agents_baseline.json" \
     --include="data/vm_crontab_snapshot.txt" \

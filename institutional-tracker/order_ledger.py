@@ -40,6 +40,7 @@
 
 import json
 import logging
+import os
 import re
 import socket
 import uuid
@@ -63,6 +64,15 @@ MAX_LEDGER_ENTRIES = 5000
 _PREFIX = "apex"
 _INSTALLED = False
 
+
+class SingleWriterBlocked(RuntimeError):
+    """This host is not permitted to open exposure on the shared account.
+
+    Raised, not returned as None, on purpose: a caller that treats a blocked
+    order as a successful one would record a position the broker never opened,
+    and the local ledger would drift from the account. Loud beats silent —
+    that is the whole bug class this repo keeps re-learning."""
+
 # Modules that merely relay a submission; skip them when attributing a source so
 # the stamp names the agent that DECIDED, not the plumbing it went through.
 _RELAY_MODULES = {"order_ledger", "alpaca_trader"}
@@ -73,8 +83,59 @@ def _clean(s: str, limit: int) -> str:
     return (re.sub(r"[^a-z0-9]", "", str(s).lower()) or "unknown")[:limit]
 
 
+HOST_ID_FILE = DATA / ".host_id"
+
+
 def _host_tag() -> str:
-    return _clean(socket.gethostname().split(".")[0], 12)
+    """This host's STABLE identity. Assigned once, then never changes.
+
+    It used to be `_clean(socket.gethostname()...)`, read fresh on every call.
+    That is not an identity, it is a network condition. This laptop stamped
+    orders as `mac` and, on 2026-07-31, as `macbookair17` — its own local ledger
+    (a file no other machine can write) contains both, which is how we know they
+    are one machine. macOS had renamed it `Mac.lan` -> `MacBook-Air-173.local`
+    on a different network, and mDNS appends a collision suffix, so the name
+    changes without anything about the machine changing.
+
+    That broke attribution in both directions, and the second one is the one
+    that matters:
+      - one machine reads as several  -> a false "extra host" alarm, and it did
+        fire: the single-writer detector counted 3 hosts where there are 2;
+      - several machines read as one  -> `MacBook-Air-173` and `MacBook-Air-179`
+        both truncate to `macbookair17` at the 12-char limit, so a genuinely
+        foreign machine can inherit this one's identity and disappear into it.
+        A detector that silently merges hosts is worse than no detector.
+
+    So the tag is now persisted in `data/.host_id` (host-local, never synced,
+    never committed) and seeded once from whatever the machine is called at
+    first run. `APEX_HOST_ID` overrides it, which is also how a test or a
+    freshly-imaged host pins its identity deliberately.
+    """
+    override = os.getenv("APEX_HOST_ID", "").strip()
+    if override:
+        return _clean(override, 12)
+    try:
+        if HOST_ID_FILE.exists():
+            saved = _clean(HOST_ID_FILE.read_text().strip(), 12)
+            if saved and saved != "unknown":
+                return saved
+    except Exception:
+        pass
+
+    tag = _clean(socket.gethostname().split(".")[0], 12)
+    try:
+        DATA.mkdir(exist_ok=True)
+        HOST_ID_FILE.write_text(tag)
+        logger.info(f"  [order_ledger] host identity assigned: {tag} "
+                    f"(persisted to {HOST_ID_FILE.name}; hostname changes will "
+                    f"no longer change it)")
+    except Exception as e:
+        # An unwritable data dir must not stop trading, but it does mean the
+        # identity is only as stable as the hostname again — say so out loud
+        # rather than letting it look assigned.
+        logger.warning(f"  [order_ledger] could not persist host id: {e} — "
+                       f"falling back to the live hostname, which can change")
+    return tag
 
 
 def _caller_module() -> str:
@@ -183,6 +244,35 @@ def install():
         req = order_data if order_data is not None else kwargs.get("order_data")
         src = _caller_module()
         stamp = None
+
+        # Single-writer guard. This is the only point every order in the firm
+        # passes through, so it is the only place the check cannot be forgotten
+        # by a new caller. In shadow mode (the default) it allows everything and
+        # only records — see single_writer.py for why enforcement is a Chairman
+        # decision and why it is asymmetric between entries and exits.
+        try:
+            import single_writer
+            allowed, verdict, reason = single_writer.check(
+                symbol=getattr(req, "symbol", ""),
+                side=getattr(req, "side", ""),
+                qty=getattr(req, "qty", 0),
+            )
+            if verdict != "ALLOW_SHADOW":
+                single_writer.log(getattr(req, "symbol", ""),
+                                  getattr(req, "side", ""),
+                                  getattr(req, "qty", 0),
+                                  verdict, reason, allowed)
+            if not allowed:
+                logger.error(f"  [single_writer] BLOCKED {getattr(req, 'side', '')} "
+                             f"{getattr(req, 'qty', '')} {getattr(req, 'symbol', '')}: {reason}")
+                raise SingleWriterBlocked(reason)
+        except SingleWriterBlocked:
+            raise
+        except Exception as e:
+            # The guard must never be the reason an order fails to reach the
+            # broker. A guard that can take the firm offline is a bigger outage
+            # than the one it prevents.
+            logger.warning(f"  [order_ledger] single-writer guard unavailable: {e}")
         try:
             existing = getattr(req, "client_order_id", None)
             if req is not None and not existing:

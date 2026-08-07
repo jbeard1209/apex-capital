@@ -36,6 +36,12 @@ institutional-tracker/data/.*.lock
 institutional-tracker/data/.*_running
 institutional-tracker/data/.catch_up_running
 
+# This host's stable identity (order_ledger._host_tag). Per-host BY DEFINITION —
+# committing or rsyncing it would give every host the same tag, every order the
+# same stamp, and the single-writer detector would then see one writer forever.
+# The check exists to count hosts; sharing this file makes the count always 1.
+institutional-tracker/data/.host_id
+
 # Rendered snapshot of the re-entry slate. The page is generated live on every
 # request (dashboard_server /reentry); the file is only a convenience copy for
 # when the server is not running. Committing it would put a dated snapshot in

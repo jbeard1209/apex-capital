@@ -530,9 +530,11 @@ class TestChairmanQueueDedup(unittest.TestCase):
                                 "status": "awaiting_chairman"}], f)
 
                 issue = lambda check: {"check": check, "severity": "HIGH", "message": "x"}
-                pia._update_chairman_queue([issue("email_loop_detection")], "2026-07-24T16:00:00")
-                pia._update_chairman_queue([issue("email_loop_detection")], "2026-07-24T18:00:00")
-                pia._update_chairman_queue([issue("disk_pressure")], "2026-07-24T20:00:00")
+                # {} verdicts: nothing PASSed, so nothing is closed and this test
+                # stays about dedup + preservation rather than about clearing.
+                pia._update_chairman_queue([issue("email_loop_detection")], {}, "2026-07-24T16:00:00")
+                pia._update_chairman_queue([issue("email_loop_detection")], {}, "2026-07-24T18:00:00")
+                pia._update_chairman_queue([issue("disk_pressure")], {}, "2026-07-24T20:00:00")
 
                 with open(target) as f:
                     queue = json.load(f)
@@ -5854,6 +5856,543 @@ class TestThePushGateIsTheGateTheRepoShips(unittest.TestCase):
             code.index("HOOK_PATH="), code.index('cd "$TRACKER"'),
             "$0 must be absolutised BEFORE the cd, or the path it captures is "
             "already meaningless by the time it is used")
+
+
+class TestDeadmansSwitchHasOneDefinition(unittest.TestCase):
+    """One alarm, one definition — and it must read decisions, not file mtimes.
+
+    On 2026-08-06 three modules implemented this alarm and disagreed about the
+    same file on the same morning. manager_decisions.json had gained no decision
+    since Aug 4 17:49 — a 42h gap across the whole of Wednesday Aug 5, a trading
+    day, because the always-on VM was unreachable and the Mac (a laptop) slept
+    through the session. morning_briefing said "39h — DEAD-MAN'S SWITCH risk"
+    and was right; cit_pipeline_integrity_agent, the one wired to the Chairman
+    queue, said "OK — heartbeat and manager_decisions are consistent".
+    """
+
+    def _entries(self, *offsets_h):
+        now = datetime.now()
+        return [{"generated_at": (now - timedelta(hours=h)).isoformat(),
+                 "decisions": []} for h in offsets_h]
+
+    def test_age_comes_from_the_newest_decision_not_list_position(self):
+        import deadmans_switch as dms
+        # Deliberately out of order. Both previous callers read data[-1], an
+        # assumption about a producer's append order that nothing enforces —
+        # and when it breaks it under-reports age, i.e. hides the outage.
+        data = self._entries(50, 2, 30)
+        self.assertAlmostEqual(dms.decision_age_hours(data), 2, delta=0.2,
+                               msg="age must come from the newest decision by "
+                                   "value, not from the last list element")
+
+    def test_a_file_touch_cannot_silence_the_alarm(self):
+        """The mtime mask, which is what made the wrong answer look reassuring."""
+        import deadmans_switch as dms
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "manager_decisions.json")
+            data = self._entries(40)
+            with open(p, "w") as f:
+                json.dump(data, f)
+            os.utime(p, None)              # fresh mtime, zero new decisions
+
+            file_age_h = (datetime.now().timestamp() - os.path.getmtime(p)) / 3600
+            self.assertLess(file_age_h, 1, "precondition: mtime is fresh")
+
+            # The old computation was min(file_mtime_age, content_ts_age) — the
+            # YOUNGER of the two — so this file read as ~0h old and the alarm
+            # went quiet with a 40h gap sitting in it.
+            self.assertAlmostEqual(dms.decision_age_hours(data), 40, delta=0.2,
+                                   msg="age must ignore file mtime entirely; a "
+                                       "rewrite proves nothing about decisions")
+            self.assertTrue(dms.is_tripped(data)[0],
+                            "a 40h-old decision must trip the switch no matter "
+                            "how recently the file was written")
+
+    def test_weekend_hours_are_counted_as_hours_not_as_whole_days(self):
+        import deadmans_switch as dms
+        # Friday 23:00 -> Saturday 01:00. Two hours, of which one is weekend.
+        fri = datetime(2026, 8, 7, 23, 0)          # 2026-08-07 is a Friday
+        sat = datetime(2026, 8, 8, 1, 0)
+        self.assertEqual(dms.weekend_hours_between(fri, sat), 1.0)
+
+        # main.py added a flat 24h for every weekend DATE the interval grazed,
+        # so this 2h gap subtracted 24 and came out at 0 — over-subtraction,
+        # which makes a real outage look like an ordinary weekend.
+        data = [{"generated_at": fri.isoformat()}]
+        self.assertAlmostEqual(dms.effective_age_hours(data, now=sat), 1.0, delta=0.01)
+
+        # And the case the adjustment genuinely exists for: Fri 16:15 -> Mon
+        # 09:45 is 65.5 raw, 17.5 effective, and must NOT fire.
+        fri_pm = datetime(2026, 8, 7, 16, 15)
+        mon_am = datetime(2026, 8, 10, 9, 45)
+        self.assertEqual(dms.weekend_hours_between(fri_pm, mon_am), 48.0)
+        data = [{"generated_at": fri_pm.isoformat()}]
+        tripped, raw, eff = dms.is_tripped(data, now=mon_am)
+        self.assertAlmostEqual(raw, 65.5, delta=0.1)
+        self.assertAlmostEqual(eff, 17.5, delta=0.1)
+        self.assertFalse(tripped, "the normal weekend gap must not fire")
+
+    def test_never_decided_is_infinite_not_zero(self):
+        import deadmans_switch as dms
+        for empty in ([], [{}], [{"generated_at": ""}], None, "nonsense"):
+            self.assertEqual(dms.decision_age_hours(empty), float("inf"),
+                             f"{empty!r} must read as infinitely stale, never as fresh")
+            self.assertEqual(dms.effective_age_hours(empty), float("inf"),
+                             "no quantity of weekend explains a Manager that "
+                             "has never decided")
+
+    def test_all_three_callers_use_the_shared_policy(self):
+        """The point of the module is that nobody keeps a private copy."""
+        for mod in ("main.py", "morning_briefing.py", "cit_pipeline_integrity_agent.py"):
+            src = Path(__file__).with_name(mod).read_text()
+            code = "\n".join(ln for ln in src.splitlines()
+                             if not ln.lstrip().startswith("#"))
+            self.assertIn("deadmans_switch", code,
+                          f"{mod} must take the dead-man's switch from the shared "
+                          f"policy module, not reimplement it")
+            self.assertNotIn("_weekend_h += 24", code,
+                             f"{mod} still carries the flat-24h weekend subtraction")
+
+
+class TestPipelineIntegrityVerdicts(unittest.TestCase):
+    """A check that did not run must never close a Chairman finding.
+
+    The deadman finding pip-integrity-20260702-00-deadmans_switch_sani sat at
+    `awaiting_chairman` from 2026-06-30 to 2026-08-06 — five weeks past the
+    condition it described — counting down to a board escalation the whole time,
+    because _write_output only touched the queue `if has_critical_or_high`. An
+    alarm with no all-clear is a one-way door. The fix is a closing path, and
+    the trap inside the fix is closing on silence.
+    """
+
+    def test_every_check_name_is_declared(self):
+        import cit_pipeline_integrity_agent as pia
+        self.assertEqual(len(set(pia.CHECK_NAMES)), len(pia.CHECK_NAMES),
+                         "duplicate check name")
+        # A name the agent can raise but never close would sit in the Chairman
+        # queue forever — exactly the bug being fixed.
+        src = Path(pia.__file__).read_text()
+        raised = set(re.findall(r'"check":\s*"([a-z_]+)"', src))
+        raised |= set(re.findall(r'\bme\s*=\s*"([a-z_]+)"', src))
+        for name in raised:
+            self.assertIn(name, pia.CHECK_NAMES,
+                          f"{name} can be raised but is not in CHECK_NAMES, so "
+                          f"nothing is ever in a position to close it")
+
+    def test_skip_never_becomes_pass(self):
+        import cit_pipeline_integrity_agent as pia
+        v = pia._verdicts([], {"ml_model_health": "no model on this host"})
+        self.assertEqual(v["ml_model_health"], pia.SKIP)
+        self.assertEqual(v["deadmans_switch_sanity"], pia.PASS)
+
+        # A check that both skipped and (somehow) raised is SKIP, never PASS:
+        # the one thing it must not do is close its own open finding.
+        v = pia._verdicts([{"check": "peer_host_liveness", "severity": "HIGH"}],
+                          {"peer_host_liveness": "no ssh client"})
+        self.assertEqual(v["peer_host_liveness"], pia.SKIP)
+
+    def test_a_failing_check_cannot_report_pass(self):
+        import cit_pipeline_integrity_agent as pia
+        v = pia._verdicts([{"check": "deadmans_switch_sanity", "severity": "CRITICAL"}], {})
+        self.assertEqual(v["deadmans_switch_sanity"], pia.FAIL,
+                         "verdicts are derived from the issue list, so a check "
+                         "cannot claim PASS while holding a CRITICAL")
+
+    def test_resolve_closes_only_its_own_open_entries(self):
+        import chairman_queue
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "q.json")
+            with open(p, "w") as f:
+                json.dump([
+                    {"id": "a", "dedup_key": "deadmans_switch_sanity",
+                     "source": "cit_pipeline_integrity_agent",
+                     "status": "awaiting_chairman"},
+                    {"id": "b", "dedup_key": "deadmans_switch_sanity",
+                     "source": "some_other_agent",
+                     "status": "awaiting_chairman"},
+                    {"id": "c", "dedup_key": "email_loop_detection",
+                     "source": "cit_pipeline_integrity_agent",
+                     "status": "awaiting_chairman"},
+                ], f)
+
+            closed = chairman_queue.resolve(
+                ["deadmans_switch_sanity"], "cit_pipeline_integrity_agent", path=p)
+            self.assertEqual([e["id"] for e in closed], ["a"])
+
+            got = {e["id"]: e["status"] for e in json.load(open(p))}
+            self.assertEqual(got["a"], "resolved")
+            self.assertEqual(got["b"], "awaiting_chairman",
+                             "another producer's item is untouchable")
+            self.assertEqual(got["c"], "awaiting_chairman",
+                             "a key that did not clear stays open")
+
+    def test_resolve_is_idempotent_and_keeps_the_first_resolution_time(self):
+        import chairman_queue
+        with tempfile.TemporaryDirectory() as td:
+            p = os.path.join(td, "q.json")
+            with open(p, "w") as f:
+                json.dump([{"id": "a", "dedup_key": "k", "source": "s",
+                            "status": "awaiting_chairman"}], f)
+            first = chairman_queue.resolve(["k"], "s", path=p)
+            self.assertEqual(len(first), 1)
+            stamp = json.load(open(p))[0]["resolved_at"]
+
+            # This agent runs every 2h; re-resolving must not move the clock,
+            # or `resolved_at` stops meaning "when the condition cleared".
+            again = chairman_queue.resolve(["k"], "s", path=p)
+            self.assertEqual(again, [], "a resolved item is not re-resolved")
+            self.assertEqual(json.load(open(p))[0]["resolved_at"], stamp)
+
+    def test_the_queue_is_reconciled_even_when_nothing_is_wrong(self):
+        """The run with no findings is the run that has something to close."""
+        src = Path(__file__).with_name("cit_pipeline_integrity_agent.py").read_text()
+        code = "\n".join(ln for ln in src.splitlines()
+                         if not ln.lstrip().startswith("#"))
+        self.assertNotIn("if has_critical_or_high:", code,
+                         "gating the queue update on findings is what left a "
+                         "cleared alarm open for five weeks")
+        self.assertIn("chairman_queue.resolve(", code,
+                      "the agent must have a path that closes what it cleared")
+
+    def test_only_pass_is_closable(self):
+        src = Path(__file__).with_name("cit_pipeline_integrity_agent.py").read_text()
+        code = "\n".join(ln for ln in src.splitlines()
+                         if not ln.lstrip().startswith("#"))
+        m = re.search(r"cleared\s*=\s*\[([^\]]*)\]", code)
+        self.assertIsNotNone(m, "expected a `cleared = [...]` selection")
+        self.assertIn("== PASS", m.group(1),
+                      "only PASS may close; closing on SKIP is the false "
+                      "all-clear this whole design exists to prevent")
+
+    def test_peer_liveness_skips_rather_than_passes_off_the_wrong_host(self):
+        """The VM cannot ssh back, so from there this question is unanswerable."""
+        import unittest.mock as mock
+        import cit_pipeline_integrity_agent as pia
+        issues, skipped = [], {}
+        with mock.patch.object(pia.sys, "platform", "linux"):
+            pia.check_peer_host_liveness(issues, skipped)
+        self.assertIn("peer_host_liveness", skipped,
+                      "on the VM this must SKIP — a host that cannot reach its "
+                      "peer has not proved the peer is alive")
+        self.assertEqual(issues, [])
+        self.assertEqual(pia._verdicts(issues, skipped)["peer_host_liveness"],
+                         pia.SKIP)
+
+    def test_an_unreachable_peer_is_raised_not_swallowed(self):
+        import unittest.mock as mock
+        import cit_pipeline_integrity_agent as pia
+        issues, skipped = [], {}
+        long_ago = (datetime.now() - timedelta(hours=72)).isoformat()
+        with mock.patch.object(pia.sys, "platform", "darwin"), \
+             mock.patch.object(pia, "_probe_peer",
+                               return_value=(False, None, "ssh timed out")), \
+             mock.patch.object(pia, "_load_json", return_value={"last_ok": long_ago}), \
+             mock.patch.object(pia, "_write_liveness"):
+            pia.check_peer_host_liveness(issues, skipped)
+        self.assertEqual(len(issues), 1, "a 72h-dead always-on host must raise")
+        self.assertEqual(issues[0]["severity"], "CRITICAL")
+        self.assertNotIn("peer_host_liveness", skipped)
+
+    def test_a_single_failed_probe_is_not_an_outage(self):
+        import unittest.mock as mock
+        import cit_pipeline_integrity_agent as pia
+        issues, skipped = [], {}
+        recent = (datetime.now() - timedelta(minutes=20)).isoformat()
+        with mock.patch.object(pia.sys, "platform", "darwin"), \
+             mock.patch.object(pia, "_probe_peer",
+                               return_value=(False, None, "ssh timed out")), \
+             mock.patch.object(pia, "_load_json", return_value={"last_ok": recent}), \
+             mock.patch.object(pia, "_write_liveness"):
+            pia.check_peer_host_liveness(issues, skipped)
+        self.assertEqual(issues, [],
+                         "one dropped packet must not page the Chairman; the "
+                         "outage clock runs from the last CONFIRMED contact")
+
+    def test_a_missing_ssh_client_is_cannot_tell_not_host_is_down(self):
+        import unittest.mock as mock
+        import cit_pipeline_integrity_agent as pia
+        issues, skipped = [], {}
+        with mock.patch.object(pia.sys, "platform", "darwin"), \
+             mock.patch.object(pia, "_probe_peer",
+                               return_value=(None, None, "no ssh client on this host")):
+            pia.check_peer_host_liveness(issues, skipped)
+        self.assertIn("peer_host_liveness", skipped,
+                      "cannot-compare must not render as differs — reporting a "
+                      "missing tool as an outage sends the Chairman to restart "
+                      "a VM that was never off")
+        self.assertEqual(issues, [])
+
+
+class TestChairmanSyncMergeIsIdempotent(unittest.TestCase):
+    """merge(merge(a,b), merge(a,b)) == merge(a,b).
+
+    chairman_queue_sync writes its merged output back to BOTH hosts, so the next
+    run folds a group that already contains its own previous output. `times_seen`
+    was summed across that group, which doubles it every run: the live deadman
+    entry reached 647038720011615355072008362088471136167291466140973739546486645981184
+    — about 2^228 — before anyone read it.
+    """
+
+    def _item(self, n=1):
+        return {"id": "x", "dedup_key": "deadmans_switch_sanity",
+                "status": "awaiting_chairman", "description": "d", "times_seen": n}
+
+    def test_times_seen_does_not_grow_when_a_merge_is_re_merged(self):
+        import chairman_queue_sync as sync
+        a, b = self._item(3), self._item(3)
+        once = sync.merge_actions([a], [b])
+        self.assertEqual(len(once), 1)
+        seen_once = once[0]["times_seen"]
+
+        # The output is written to both sides, so this is what the NEXT run sees.
+        twice = sync.merge_actions(list(once), list(once))
+        thrice = sync.merge_actions(list(twice), list(twice))
+        self.assertEqual(twice[0]["times_seen"], seen_once)
+        self.assertEqual(thrice[0]["times_seen"], seen_once,
+                         "times_seen must be stable under re-merge; summing "
+                         "makes it 2^n in the number of syncs")
+
+    def test_it_stays_bounded_over_many_syncs(self):
+        import chairman_queue_sync as sync
+        cur = [self._item(1)]
+        for _ in range(30):
+            cur = sync.merge_actions(list(cur), list(cur))
+        self.assertLessEqual(cur[0]["times_seen"], 10,
+                             f"30 syncs produced times_seen={cur[0]['times_seen']}; "
+                             f"summing would give 2^30")
+
+    def test_a_genuinely_higher_count_still_wins(self):
+        import chairman_queue_sync as sync
+        out = sync.merge_actions([self._item(2)], [self._item(9)])
+        self.assertEqual(out[0]["times_seen"], 9,
+                         "max keeps the larger observed count")
+
+
+class TestSingleWriterGuard(unittest.TestCase):
+    """Two hosts traded the same account for weeks and every detector said OK.
+
+    The guard that stops it must fail in the right direction: an entry it cannot
+    justify is blocked, an exit it cannot justify is allowed. Getting that
+    backwards trades an opportunity cost for an unbounded one.
+    """
+
+    def setUp(self):
+        import single_writer
+        single_writer._pos_cache.update(at=0.0, map=None)
+
+    # ── the asymmetry ────────────────────────────────────────────────────────
+    def test_shadow_mode_is_the_default_and_blocks_nothing(self):
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.dict(os.environ, {"APEX_TRADING_HOST": ""}):
+            self.assertEqual(sw.mode(), "shadow")
+            allowed, verdict, _ = sw.check("AAPL", "buy", 100, positions={})
+            self.assertTrue(allowed, "shadow mode must not change today's behaviour")
+            self.assertEqual(verdict, "ALLOW_SHADOW")
+
+    def test_the_designated_host_may_open_risk(self):
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.dict(os.environ, {"APEX_TRADING_HOST": sw.this_host()}):
+            allowed, verdict, _ = sw.check("AAPL", "buy", 100, positions={})
+            self.assertTrue(allowed)
+            self.assertEqual(verdict, "ALLOW_DESIGNATED")
+
+    def test_a_second_host_cannot_open_risk(self):
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.dict(os.environ, {"APEX_TRADING_HOST": "someotherbox"}):
+            allowed, verdict, _ = sw.check("AAPL", "buy", 100, positions={})
+            self.assertFalse(allowed, "a non-designated host must not open exposure")
+            self.assertEqual(verdict, "BLOCK_ENTRY")
+
+    def test_a_second_host_may_always_close_risk(self):
+        """The whole point of the asymmetry: a stop-loss must never be blocked."""
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.dict(os.environ, {"APEX_TRADING_HOST": "someotherbox"}):
+            allowed, verdict, _ = sw.check("AAPL", "sell", 100, positions={"AAPL": 100.0})
+            self.assertTrue(allowed, "exiting a long must be allowed from any host")
+            self.assertEqual(verdict, "ALLOW_EXIT")
+            # and covering a short
+            allowed, verdict, _ = sw.check("SH", "buy", 50, positions={"SH": -150.0})
+            self.assertTrue(allowed, "covering a short is risk-reducing")
+            self.assertEqual(verdict, "ALLOW_EXIT")
+
+    def test_selling_past_flat_is_an_entry_not_an_exit(self):
+        """Sell 300 against a 100 long closes 100 and opens a 200 short."""
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.dict(os.environ, {"APEX_TRADING_HOST": "someotherbox"}):
+            allowed, verdict, _ = sw.check("AAPL", "sell", 300, positions={"AAPL": 100.0})
+            self.assertFalse(allowed,
+                             "an order that flips the sign of the position opens risk")
+            self.assertEqual(verdict, "BLOCK_ENTRY")
+
+    def test_an_unknown_position_blocks_buys_but_lets_sells_through(self):
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.dict(os.environ, {"APEX_TRADING_HOST": "someotherbox"}):
+            with mock.patch.object(sw, "_positions_map", return_value=None):
+                allowed, verdict, _ = sw.check("AAPL", "buy", 10)
+                self.assertFalse(allowed, "entries fail closed when we cannot tell")
+                self.assertEqual(verdict, "BLOCK_UNKNOWN")
+                allowed, verdict, _ = sw.check("AAPL", "sell", 10)
+                self.assertTrue(allowed, "exits fail open when we cannot tell")
+                self.assertEqual(verdict, "ALLOW_EXIT")
+
+    def test_a_broken_guard_never_stops_a_trade(self):
+        import unittest.mock as mock
+        import single_writer as sw
+        with mock.patch.object(sw, "designated_host", side_effect=RuntimeError("boom")):
+            allowed, _, _ = sw.check("AAPL", "buy", 10)
+            self.assertTrue(allowed,
+                            "a guard that can take the firm offline is worse than the "
+                            "outage it prevents")
+
+    def test_flat_positions_are_not_treated_as_an_exit(self):
+        import single_writer as sw
+        self.assertFalse(sw.is_risk_reducing("AAPL", "sell", 10, {}),
+                         "selling something we do not hold opens a short")
+
+    # ── the detector ─────────────────────────────────────────────────────────
+    def _order(self, coid, hours_ago=1):
+        from datetime import timezone
+        ts = (datetime.now(timezone.utc) - timedelta(hours=hours_ago)).isoformat()
+        return {"client_order_id": coid, "submitted_at": ts}
+
+    def test_two_hosts_on_one_account_is_critical(self):
+        import single_writer as sw
+        tally = sw.hosts_trading_recently([
+            self._order("apex-mac-manageragent-aaaaaaaaaaaa"),
+            self._order("apex-apexcapitalc-main-bbbbbbbbbbbb"),
+        ])
+        self.assertEqual(tally, {"mac": 1, "apexcapitalc": 1})
+        sev, msg = sw.divergence_verdict(tally)
+        self.assertEqual(sev, "CRITICAL")
+        self.assertIn("mac", msg)
+        self.assertIn("apexcapitalc", msg)
+
+    def test_one_host_passes(self):
+        import single_writer as sw
+        tally = sw.hosts_trading_recently([
+            self._order("apex-mac-main-aaaaaaaaaaaa"),
+            self._order("apex-mac-manageragent-bbbbbbbbbbbb"),
+        ])
+        sev, _ = sw.divergence_verdict(tally, expected="mac")
+        self.assertEqual(sev, "PASS", "same host, two modules, is one writer")
+
+    def test_no_orders_is_skip_not_pass(self):
+        """An empty window is evidence of nothing — it must not close the check."""
+        import single_writer as sw
+        sev, msg = sw.divergence_verdict({})
+        self.assertEqual(sev, "SKIP")
+        self.assertIn("cannot tell", msg)
+
+    def test_an_unstamped_order_is_raised_not_dropped(self):
+        import single_writer as sw
+        tally = sw.hosts_trading_recently([
+            self._order("apex-mac-main-aaaaaaaaaaaa"),
+            self._order("6d9d5c2d-5804-40f0-8f4f-f9dd647ca152"),
+        ])
+        self.assertEqual(tally.get("UNSTAMPED"), 1,
+                         "an unattributable order must be counted, not ignored")
+        sev, _ = sw.divergence_verdict(tally)
+        self.assertEqual(sev, "HIGH")
+
+    def test_the_wrong_host_trading_alone_is_still_wrong(self):
+        import single_writer as sw
+        tally = sw.hosts_trading_recently([self._order("apex-mac-main-aaaaaaaaaaaa")])
+        sev, msg = sw.divergence_verdict(tally, expected="apexcapitalc")
+        self.assertEqual(sev, "HIGH",
+                         "one writer is not enough — it must be the designated one")
+        self.assertIn("apexcapitalc", msg)
+
+    def test_orders_outside_the_window_do_not_count(self):
+        import single_writer as sw
+        tally = sw.hosts_trading_recently(
+            [self._order("apex-oldhost-main-aaaaaaaaaaaa", hours_ago=100)], hours=48)
+        self.assertEqual(tally, {})
+
+    # ── stable identity ──────────────────────────────────────────────────────
+    def test_the_host_tag_survives_a_hostname_change(self):
+        """`mac` and `macbookair17` were one laptop on two networks."""
+        import unittest.mock as mock
+        import order_ledger as ol
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch.dict(os.environ, {"APEX_HOST_ID": ""}), \
+                 mock.patch.object(ol, "DATA", Path(d)), \
+                 mock.patch.object(ol, "HOST_ID_FILE", Path(d) / ".host_id"):
+                with mock.patch.object(ol.socket, "gethostname", return_value="Mac.lan"):
+                    first = ol._host_tag()
+                self.assertEqual(first, "mac")
+                # macOS renames the machine on a different network.
+                with mock.patch.object(ol.socket, "gethostname",
+                                       return_value="MacBook-Air-173.local"):
+                    second = ol._host_tag()
+                self.assertEqual(second, "mac",
+                                 "a network rename must not create a new host identity")
+
+    def test_an_explicit_host_id_overrides_the_hostname(self):
+        import unittest.mock as mock
+        import order_ledger as ol
+        with mock.patch.dict(os.environ, {"APEX_HOST_ID": "apexcapitalc"}):
+            self.assertEqual(ol._host_tag(), "apexcapitalc")
+
+    def test_the_host_id_is_never_shipped_to_another_host(self):
+        """Two hosts sharing one identity makes the detector blind by construction."""
+        root = Path(__file__).resolve().parent.parent
+        ignored = (root / ".gitignore").read_text()
+        self.assertIn("data/.host_id", ignored,
+                      "a committed .host_id gives every host the same tag")
+        deploy = (Path(__file__).resolve().parent / "gcp_setup" / "deploy.sh").read_text()
+        self.assertIn('--exclude="data/.host_id"', deploy,
+                      "deploy.sh must not rsync this Mac's identity onto the VM")
+        # The exclude must precede the includes — rsync takes the first match.
+        self.assertLess(deploy.index('--exclude="data/.host_id"'),
+                        deploy.index('--include="data/orphan_agents_baseline.json"'),
+                        "an exclude after the includes would not fire")
+
+    def test_a_truncated_hostname_cannot_merge_two_machines_silently(self):
+        """MacBook-Air-173 and MacBook-Air-179 both truncate to macbookair17."""
+        import order_ledger as ol
+        a = ol._clean("MacBook-Air-173", 12)
+        b = ol._clean("MacBook-Air-179", 12)
+        self.assertEqual(a, b, "this collision is why the tag cannot be derived live")
+        # Which is exactly why identity is persisted rather than recomputed:
+        # the persisted value is assigned once and never re-derived from a name.
+        src = (Path(__file__).resolve().parent / "order_ledger.py").read_text()
+        i = src.index("def _host_tag(")
+        j = src.index("def make_stamp(")
+        self.assertIn("HOST_ID_FILE", src[i:j],
+                      "_host_tag must read the persisted id, not the live hostname")
+
+    # ── wiring ───────────────────────────────────────────────────────────────
+    def test_the_guard_sits_on_the_one_submit_choke_point(self):
+        src = Path(__file__).resolve().parent / "order_ledger.py"
+        body = src.read_text()
+        i = body.index("def _submit_order(")
+        j = body.index("TradingClient.submit_order = _submit_order")
+        hook = body[i:j]
+        self.assertIn("single_writer.check(", hook,
+                      "every order must pass the guard; a per-caller check is one "
+                      "new caller away from being forgotten")
+        self.assertIn("SingleWriterBlocked", hook,
+                      "a blocked order must raise, never return a fake success")
+
+    def test_the_detector_is_a_declared_check(self):
+        import cit_pipeline_integrity_agent as cit
+        self.assertIn("single_writer", cit.CHECK_NAMES,
+                      "an undeclared check cannot be closed or escalated")
+
+    def test_the_detector_runs_on_every_host(self):
+        """peer_host_liveness can only run on the Mac. This one must not be gated."""
+        src = (Path(__file__).resolve().parent / "cit_pipeline_integrity_agent.py").read_text()
+        i = src.index("def check_single_writer(")
+        j = src.index("def check_peer_host_liveness(")
+        self.assertNotIn("sys.platform", src[i:j],
+                         "the broker is visible from every host — gating this check by "
+                         "platform would recreate the blind spot it exists to close")
 
 
 class TestReentrySlateCannotLieByOmission(unittest.TestCase):

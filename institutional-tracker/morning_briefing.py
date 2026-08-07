@@ -364,7 +364,12 @@ def run_morning_briefing() -> dict:
     logger.info("\n  [12/15] Manager — last cycle decisions...")
     mgr_raw = _safe_load("data/manager_decisions.json")
     mgr_data = mgr_raw if isinstance(mgr_raw, dict) else (mgr_raw[-1] if isinstance(mgr_raw, list) and mgr_raw else {})
-    mgr_age_h  = _age_hours(mgr_data.get("generated_at", mgr_data.get("timestamp", "")))
+    # Age via the shared policy (deadmans_switch.py). This file used to compute
+    # its own, on data[-1] and with no weekend adjustment, against a threshold
+    # of 30h — one of three different implementations of one alarm.
+    import deadmans_switch as _dms
+    mgr_age_h = _dms.decision_age_hours(mgr_raw)
+    mgr_eff_h = _dms.effective_age_hours(mgr_raw)
     mgr_buys   = [d for d in mgr_data.get("decisions", []) if str(d.get("action","")).upper() in ("BUY","ADD")]
     mgr_sells  = [d for d in mgr_data.get("decisions", []) if str(d.get("action","")).upper() in ("SELL","TRIM","CLOSE")]
     mgr_holds  = [d for d in mgr_data.get("decisions", []) if str(d.get("action","")).upper() == "HOLD"]
@@ -378,8 +383,13 @@ def run_morning_briefing() -> dict:
         "top_sells":     mgr_sells[:3],
         "last_updated":  mgr_data.get("generated_at", mgr_data.get("timestamp", "")),
     }
-    if mgr_age_h > 30:
-        briefing["alerts"].append(f"🚨 Manager: decisions are {mgr_age_h:.0f}h old — DEAD-MAN'S SWITCH risk")
+    # Report BOTH ages. Printing only the weekend-adjusted one turns a real
+    # 65h Friday-to-Monday gap into "17h", which reads like nothing.
+    if mgr_eff_h > _dms.STALE_H:
+        briefing["alerts"].append(
+            f"🚨 Manager: no decision for {mgr_age_h:.0f}h "
+            f"({mgr_eff_h:.0f}h excl. weekends, threshold {_dms.STALE_H:.0f}h) "
+            f"— DEAD-MAN'S SWITCH")
     logger.info(f"    Manager: {len(mgr_buys)} buys | {len(mgr_sells)} sells | {len(mgr_holds)} holds | Age: {mgr_age_h:.1f}h")
 
     # ── 13. Review agent — recommendations ────────────────────────────────────

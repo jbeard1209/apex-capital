@@ -26,25 +26,67 @@ CHECKS
   2. Email loop detection — repeated subjects in email_buffer.json
   3. Agent file freshness — lighter version of deputy staleness check
   4. ML model health — AUC regression detection
+  5. Peer host liveness — is the OTHER host still alive? (see below)
+  6. Single writer — how MANY hosts are trading the shared account? (see below)
+
+EVERY CHECK DECLARES A VERDICT
+------------------------------
+PASS / FAIL / SKIP, never just "did it append to `issues`". Only a check that
+actually RAN and PASSED may close its own Chairman-queue entry. A check that
+could not be evaluated is SKIP and closes nothing — absence of a finding means
+"resolved" only if the thing that would have produced it really ran, otherwise
+the firm marks every open item fixed at the exact moment it goes blind to them.
+sweep_governance._closable_kinds learned this first; this agent now shares it.
+
+WHY 5 EXISTS
+------------
+Every deadman in this firm was a local-file freshness check running on the host
+it was watching, so when a host died its watcher died with it. On 2026-08-06 the
+GCP VM — the always-on host, ~63 cron jobs, main.py 6×/day, same Alpaca account
+— had been unreachable for days and NOTHING raised an alarm. `chairman_inbox`
+degraded to a printed "could not reach the VM"; `wakeup_recovery.py` reads
+/proc/uptime and so only ever runs *on* the VM, after it comes back. The firm
+found out via a downstream symptom: manager_decisions.json went 42h stale
+across a full trading day. A host cannot be its own deadman.
+
+WHY 6 EXISTS
+------------
+Check 5 asks "is the peer alive?" and can only answer from the Mac. On
+2026-08-06 it said the VM was unreachable, and the firm read that as the VM
+being down. It was not down — it was trading. Order stamps on the shared
+Alpaca account showed apexcapitalc placing orders on the same days the Mac
+did, including a full day the Mac slept through.
+
+So the dangerous question was never "is the other host alive" but "how many of
+us are there", and no host can answer that about itself. Check 6 asks it
+through the one medium every host shares — the broker's own order history —
+so it needs no ssh, no shared disk, and no cooperation from the other host.
+`foreign_order_detector` could not see this: it asks "is this order ours?",
+and every one of these was ours.
 
 OUTPUT
 ------
-  data/cit_pipeline_integrity.json   — full findings every run
-  data/chairman_action_required.json — appended on CRITICAL/HIGH (last 20)
+  data/cit_pipeline_integrity.json   — full findings + per-check verdicts
+  data/chairman_action_required.json — CRITICAL/HIGH raised, cleared ones closed
+  data/peer_host_liveness.json       — last time the peer host answered
 
 LOCKING
 -------
   data/.pipeline_integrity.lock      — fcntl.flock, prevents concurrent runs
 """
 
+from __future__ import annotations
+
 import fcntl
 import json
 import logging
 import os
+import subprocess
 import sys
 from datetime import datetime, timedelta
 
 import chairman_queue
+import deadmans_switch as dms
 
 # ── Working directory ─────────────────────────────────────────────────────────
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -68,20 +110,50 @@ _CANARY_PATH       = "data/canary_state.json"
 _MODEL_META_PATH   = "data/model_v2_meta.json"
 _OUTPUT_PATH       = "data/cit_pipeline_integrity.json"
 _CHAIRMAN_PATH     = "data/chairman_action_required.json"
+_LIVENESS_PATH     = "data/peer_host_liveness.json"
 _LOCK_PATH         = "data/.pipeline_integrity.lock"
 
 # ── Thresholds ────────────────────────────────────────────────────────────────
-_HEARTBEAT_FRESH_H      = 4    # pipeline_heartbeat age below this = pipeline running
-_HEARTBEAT_STALE_H      = 26   # pipeline_heartbeat age above this = genuine outage candidate
-                               # (raised from 16h: Mac pipeline runs once at ~4:15 PM;
-                               # 26h covers a full missed-day with ~2h buffer before alarming)
-_MANAGER_STALE_H        = 14   # manager_decisions age above this = suspect
+# The dead-man's switch numbers now come from deadmans_switch.py, which is the
+# firm's single definition of this alarm. Three modules used to carry their own
+# and disagreed about the same file on the same morning — see that module's
+# docstring. Aliased rather than inlined so the names below still read.
+_HEARTBEAT_FRESH_H      = dms.HEARTBEAT_FRESH_H
+_HEARTBEAT_STALE_H      = dms.HEARTBEAT_STALE_H
+_MANAGER_STALE_H        = dms.WIRING_BUG_STALE_H
 _AGENT_STALE_H          = 26   # research_team, risk_bulletin, canary max age
 _EMAIL_LOOP_THRESHOLD   = 5    # same subject N+ times = loop
                                # (raised from 3: R&D runs 4×/day; IRM REVIEW copies now excluded
                                # so threshold of 5 catches genuine loops while not flagging R&D)
 _MODEL_AUC_FLOOR        = 0.58 # below this = serious regression
 _CHAIRMAN_MAX_ENTRIES   = 20   # keep only the most recent N entries
+
+# ── Peer host ─────────────────────────────────────────────────────────────────
+_PEER_HOST          = "apex-capital"   # ssh alias of the GCP VM
+_PEER_BASE          = "~/institutional-tracker"
+_PEER_UNREACHABLE_H = 6.0   # no contact for this long on the always-on host = HIGH
+_PEER_DOWN_H        = 24.0  # ...and this long = CRITICAL, the firm is running on one leg
+_PEER_SSH_TIMEOUT_S = 20
+
+# ── Verdicts ──────────────────────────────────────────────────────────────────
+# Only PASS may close a Chairman-queue entry. SKIP is the honest verdict for
+# "this host could not evaluate that", and it closes nothing: a check that did
+# not run has disproved nothing, and treating its silence as an all-clear would
+# retire every open finding the moment the check broke.
+PASS, FAIL, SKIP = "PASS", "FAIL", "SKIP"
+
+#: every check this agent owns, and therefore every entry it may close.
+#: A name here that no check declares would never be closable and would sit in
+#: the Chairman queue forever; a check whose name is missing here can raise an
+#: item it can never retract. Guarded by TestPipelineIntegrityVerdicts.
+CHECK_NAMES = (
+    "deadmans_switch_sanity",
+    "email_loop_detection",
+    "agent_file_freshness",
+    "ml_model_health",
+    "peer_host_liveness",
+    "single_writer",
+)
 
 
 # =============================================================================
@@ -141,12 +213,44 @@ def _run_id() -> str:
     return f"pip-integrity-{datetime.now().strftime('%Y%m%d-%H')}"
 
 
+def _skip(skipped: dict, check: str, why: str) -> None:
+    """Declare that `check` could not be evaluated on this run, and why.
+
+    Distinct from passing. A check that returns without appending an issue looks
+    identical to one that ran and found nothing, and that ambiguity is what makes
+    a silent all-clear possible — so the not-evaluated case has to say so out
+    loud rather than be inferred from an empty list.
+    """
+    skipped[check] = why
+    logger.info(f"    SKIPPED — {why}")
+
+
+def _verdicts(issues: list, skipped: dict) -> dict:
+    """check name -> PASS / FAIL / SKIP for every check this agent owns.
+
+    Derived, not self-reported, so a check cannot claim PASS while having just
+    raised a CRITICAL. The only thing a check declares for itself is SKIP, which
+    is the one state that is not observable from the issue list.
+    """
+    failed = {i.get("check") for i in issues}
+    out = {}
+    for name in CHECK_NAMES:
+        if name in skipped:
+            out[name] = SKIP
+        elif name in failed:
+            out[name] = FAIL
+        else:
+            out[name] = PASS
+    return out
+
+
 # =============================================================================
 # CHECK 1 — DEAD-MAN'S SWITCH SANITY
 # =============================================================================
 
-def check_deadmans_switch(issues: list):
-    logger.info("\n  [1/4] Dead-man's switch sanity check...")
+def check_deadmans_switch(issues: list, skipped: dict):
+    logger.info("\n  [1/6] Dead-man's switch sanity check...")
+    me = "deadmans_switch_sanity"
 
     # --- pipeline_heartbeat.json ---
     hb_data = _load_json(_HEARTBEAT_PATH)
@@ -158,56 +262,55 @@ def check_deadmans_switch(issues: list):
         hb_age_h = _ts_age_hours(hb_ts) if hb_ts else _file_age_hours(_HEARTBEAT_PATH)
 
     # --- manager_decisions.json ---
-    # manager_decisions is a list; use file mtime as the freshness signal
-    # (each entry has a "timestamp" field but the file mtime is authoritative)
+    # Age comes from the newest DECISION, via the shared policy — never from the
+    # file mtime. This used to be `min(file_mtime_age, last_entry_ts_age)`, the
+    # YOUNGER of the two, so any process that rewrote the file reset the
+    # apparent age without a single new decision behind it. On 2026-08-06 that
+    # is exactly what happened: morning_briefing reported the Manager 39h stale
+    # (correctly — a 42h gap across the whole of Wednesday Aug 5, a trading day)
+    # while this check, the one wired to the Chairman queue, printed
+    # "OK — heartbeat and manager_decisions are consistent".
     mgr_data = _load_json(_MANAGER_PATH)
     if mgr_data is None:
         mgr_age_h = float("inf")
-        mgr_ts_age_h = float("inf")
+        mgr_eff_h = float("inf")
     else:
-        mgr_file_age_h = _file_age_hours(_MANAGER_PATH)
-        # Also try the most recent entry's timestamp as a cross-check
-        if isinstance(mgr_data, list) and mgr_data:
-            last_entry = mgr_data[-1]
-            entry_ts = _get_timestamp_from_json(last_entry, "timestamp", "generated_at", "ts")
-            mgr_ts_age_h = _ts_age_hours(entry_ts) if entry_ts else float("inf")
-        else:
-            mgr_ts_age_h = float("inf")
-        # Use the younger of file mtime vs last entry timestamp
-        mgr_age_h = min(mgr_file_age_h, mgr_ts_age_h)
+        mgr_age_h = dms.decision_age_hours(mgr_data)
+        mgr_eff_h = dms.effective_age_hours(mgr_data)
 
     logger.info(f"    pipeline_heartbeat age: {hb_age_h:.1f}h")
-    logger.info(f"    manager_decisions age:  {mgr_age_h:.1f}h")
+    logger.info(f"    manager_decisions age:  {mgr_age_h:.1f}h "
+                f"({mgr_eff_h:.1f}h excl. weekends)")
 
-    # If BOTH files are missing this agent is running on GCP (main.py runs on Mac).
-    # pipeline_heartbeat and manager_decisions only exist on the Mac host.
-    # Skip this check entirely — it cannot be evaluated from GCP.
+    # This host cannot see the pipeline's files at all. NOT the same statement
+    # as "the pipeline is fine", and not — as the comment here used to claim —
+    # proof that we are on GCP: "main.py runs on Mac" and "pipeline_heartbeat
+    # and manager_decisions only exist on the Mac host" both stopped being true
+    # when the firm migrated to the VM, which now runs main.py 6x a day. The
+    # honest verdict is SKIP: nothing was evaluated, so nothing is disproved and
+    # no open finding may be closed off the back of it.
     if hb_age_h == float("inf") and mgr_age_h == float("inf"):
-        logger.info("    Both files missing — running on GCP/remote host where Mac pipeline "
-                    "files are not present. DMS check skipped (not applicable).")
-        return
+        return _skip(skipped, me,
+                     "neither pipeline_heartbeat.json nor manager_decisions.json "
+                     "exists on this host — the pipeline does not run here")
 
-    # If manager_decisions.json has NEVER been written (missing, not just stale),
-    # this is the GCP host. main.py on Mac writes manager_decisions.json; GCP only
-    # runs ML agents and the integrity check. A stale heartbeat + absent manager file
-    # is the normal GCP steady-state, not a pipeline outage. Skip the check.
     if not os.path.exists(_MANAGER_PATH):
-        logger.info("    manager_decisions.json does not exist on this host — running on "
-                    "GCP/remote context. DMS check skipped (pipeline files are Mac-only).")
-        return
+        return _skip(skipped, me,
+                     "manager_decisions.json does not exist on this host, so the "
+                     "Manager's cadence cannot be assessed from here")
 
     # Pattern 1: heartbeat fresh, manager stale → wiring bug
     if hb_age_h < _HEARTBEAT_FRESH_H and mgr_age_h > _MANAGER_STALE_H:
         msg = (
-            f"Pipeline running (heartbeat {hb_age_h:.1f}h old) but "
-            f"manager_decisions.json is {mgr_age_h:.1f}h old (threshold {_MANAGER_STALE_H}h) — "
-            f"likely code wiring bug, not VM issue. "
+            f"Pipeline running (heartbeat {hb_age_h:.1f}h old) but the newest "
+            f"decision in manager_decisions.json is {mgr_age_h:.1f}h old "
+            f"(threshold {_MANAGER_STALE_H}h) — likely code wiring bug, not VM issue. "
             f"Check that main.py writes manager_decisions.json after every manager block."
         )
         logger.warning(f"    CRITICAL: {msg}")
         issues.append({
             "severity":   "CRITICAL",
-            "check":      "deadmans_switch_sanity",
+            "check":      me,
             "message":    msg,
             "auto_fixed": False,
         })
@@ -222,7 +325,28 @@ def check_deadmans_switch(issues: list):
         logger.warning(f"    HIGH: {msg}")
         issues.append({
             "severity":   "HIGH",
-            "check":      "deadmans_switch_sanity",
+            "check":      me,
+            "message":    msg,
+            "auto_fixed": False,
+        })
+        return
+
+    # Pattern 3: the pipeline started recently enough not to trip Pattern 2, but
+    # the Manager has still not decided in a working day. Nothing used to catch
+    # this: Pattern 1 needs a heartbeat under 4h and Pattern 2 only ever looks at
+    # the heartbeat, so a Manager that quietly stopped while the pipeline kept
+    # starting fell straight through the gap between them and this check printed
+    # "OK". Weekend-adjusted, because the pipeline is weekday-only.
+    if mgr_eff_h > dms.STALE_H:
+        msg = (
+            f"No Manager decision for {mgr_age_h:.1f}h ({mgr_eff_h:.1f}h excl. "
+            f"weekends, threshold {dms.STALE_H}h) while the pipeline heartbeat is "
+            f"{hb_age_h:.1f}h old — the Manager has stopped deciding on trading days."
+        )
+        logger.warning(f"    HIGH: {msg}")
+        issues.append({
+            "severity":   "HIGH",
+            "check":      me,
             "message":    msg,
             "auto_fixed": False,
         })
@@ -235,12 +359,20 @@ def check_deadmans_switch(issues: list):
 # CHECK 2 — EMAIL LOOP DETECTION
 # =============================================================================
 
-def check_email_loop(issues: list):
-    logger.info("\n  [2/4] Email loop detection...")
+def check_email_loop(issues: list, skipped: dict):
+    logger.info("\n  [2/6] Email loop detection...")
+    me = "email_loop_detection"
 
     buffer = _load_json(_EMAIL_BUFFER_PATH)
-    if not isinstance(buffer, list) or not buffer:
-        logger.info("    email_buffer.json is empty or missing — no loop possible.")
+    # An empty buffer and a missing buffer are different facts. An empty list is
+    # evaluable — there are no emails, so there is no loop, and that is a real
+    # PASS. A missing or unreadable file means the check saw nothing at all and
+    # must not be allowed to close an open loop finding on that basis.
+    if buffer is None or not isinstance(buffer, list):
+        return _skip(skipped, me,
+                     "email_buffer.json is missing or is not a list — nothing to read")
+    if not buffer:
+        logger.info("    email_buffer.json is empty — no loop possible.")
         return
 
     logger.info(f"    {len(buffer)} email(s) in buffer.")
@@ -315,8 +447,8 @@ def check_email_loop(issues: list):
 # CHECK 3 — AGENT FILE FRESHNESS
 # =============================================================================
 
-def check_agent_freshness(issues: list):
-    logger.info("\n  [3/4] Agent file freshness check...")
+def check_agent_freshness(issues: list, skipped: dict):
+    logger.info("\n  [3/6] Agent file freshness check...")
 
     watch_files = {
         _RESEARCH_PATH: "research_team_report.json",
@@ -361,24 +493,25 @@ def check_agent_freshness(issues: list):
 # CHECK 4 — ML MODEL HEALTH
 # =============================================================================
 
-def check_ml_model_health(issues: list):
-    logger.info("\n  [4/4] ML model health check...")
+def check_ml_model_health(issues: list, skipped: dict):
+    logger.info("\n  [4/6] ML model health check...")
+    me = "ml_model_health"
 
     meta = _load_json(_MODEL_META_PATH)
     if meta is None:
-        logger.info("    model_v2_meta.json not found — skipping (model not yet trained).")
-        return
+        return _skip(skipped, me,
+                     "model_v2_meta.json not found — no model to assess")
 
     auc = meta.get("auc") or meta.get("val_auc") or meta.get("best_auc")
     if auc is None:
-        logger.info("    No AUC field found in model_v2_meta.json — skipping AUC check.")
-        return
+        return _skip(skipped, me,
+                     "model_v2_meta.json carries no AUC field — nothing to compare")
 
     try:
         auc = float(auc)
     except (ValueError, TypeError):
-        logger.warning(f"    AUC value not numeric: {auc!r} — skipping.")
-        return
+        return _skip(skipped, me,
+                     f"AUC value is not numeric ({auc!r}) — cannot compare to the floor")
 
     logger.info(f"    Model AUC: {auc:.4f} (floor: {_MODEL_AUC_FLOOR})")
 
@@ -401,18 +534,239 @@ def check_ml_model_health(issues: list):
 
 
 # =============================================================================
+# CHECK 5 — PEER HOST LIVENESS
+# =============================================================================
+
+def _probe_peer() -> tuple:
+    """(reachable, remote_heartbeat_age_h_or_None, detail).
+
+    One ssh, short timeout, no writes. Returns rather than raises: an
+    unreachable host is the thing being measured, not an error.
+    """
+    cmd = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10",
+           _PEER_HOST, f"cat {_PEER_BASE}/data/pipeline_heartbeat.json 2>/dev/null || echo NOFILE"]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           timeout=_PEER_SSH_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        return (False, None, f"ssh to {_PEER_HOST} timed out after {_PEER_SSH_TIMEOUT_S}s")
+    except FileNotFoundError:
+        return (None, None, "no ssh client on this host")
+    if r.returncode != 0:
+        return (False, None, f"ssh to {_PEER_HOST} failed: {r.stderr.strip()[:160]}")
+
+    out = (r.stdout or "").strip()
+    if out == "NOFILE" or not out:
+        return (True, None, "host answered but has no pipeline_heartbeat.json")
+    try:
+        hb = json.loads(out)
+    except Exception:
+        return (True, None, "host answered but its pipeline_heartbeat.json is not valid JSON")
+    ts = _get_timestamp_from_json(hb, "last_started", "generated_at", "timestamp")
+    return (True, _ts_age_hours(ts) if ts else None, "host answered")
+
+
+def check_single_writer(issues: list, skipped: dict):
+    """How many hosts are trading this account?
+
+    Every other check in this file asks a host about itself, which is exactly
+    why the fork went unseen: `peer_host_liveness` above can only SKIP on the
+    VM, and on the Mac it reported the VM unreachable — from which the firm
+    concluded the VM was down. It was not down. It was trading.
+
+    This check asks the one question the others cannot, through the one medium
+    both hosts always share: the broker. Orders carry `apex-<host>-...` stamps,
+    so counting distinct hosts in the account's own order history needs no ssh
+    and no cooperation from the other host. On 2026-08-06 that count was 2 on
+    four consecutive trading days, and 3 across the month.
+
+    Unlike peer liveness this runs everywhere, because the account is visible
+    from everywhere — and an extra writer is precisely the thing a host cannot
+    be trusted to report about itself.
+    """
+    logger.info("\n  [6/6] Single-writer check...")
+    me = "single_writer"
+
+    try:
+        import single_writer as sw
+    except Exception as e:
+        return _skip(skipped, me, f"single_writer module unavailable: {e}")
+
+    # Load .env if a caller has not already. Without this the check SKIPs on
+    # every standalone run — honest, but permanently uninformative, and a check
+    # that can only ever say "cannot tell" is not a check.
+    if not os.environ.get("ALPACA_API_KEY"):
+        try:
+            from dotenv import load_dotenv
+            load_dotenv()
+        except Exception:
+            pass
+
+    key = os.environ.get("ALPACA_API_KEY")
+    secret = os.environ.get("ALPACA_SECRET_KEY")
+    if not (key and secret):
+        return _skip(skipped, me,
+                     "no Alpaca credentials on this host — the order history is "
+                     "the only cross-host evidence and it cannot be read here")
+
+    try:
+        import urllib.request
+        base = os.environ.get("ALPACA_BASE_URL",
+                              "https://paper-api.alpaca.markets").rstrip("/")
+        req = urllib.request.Request(
+            base + "/v2/orders?status=all&limit=500&direction=desc",
+            headers={"APCA-API-KEY-ID": key, "APCA-API-SECRET-KEY": secret})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            orders = json.load(r)
+    except Exception as e:
+        # Cannot reach the broker is cannot-tell, never all-clear.
+        return _skip(skipped, me, f"could not read order history: {type(e).__name__}: {str(e)[:120]}")
+
+    tally = sw.hosts_trading_recently(orders, hours=48)
+    severity, msg = sw.divergence_verdict(tally)
+    logger.info(f"    48h host tally: {tally or '(none)'}")
+
+    if severity == "SKIP":
+        return _skip(skipped, me, msg)
+    if severity == "PASS":
+        logger.info(f"    OK — {msg}")
+        return
+
+    full = (f"{msg} Guard mode is '{sw.mode()}'"
+            + (f", designated writer '{sw.designated_host()}'." if sw.designated_host()
+               else " — APEX_TRADING_HOST is unset, so nothing is being blocked."))
+    logger.warning(f"    {severity}: {full}")
+    issues.append({"severity": severity, "check": me,
+                   "message": full, "auto_fixed": False})
+
+
+def check_peer_host_liveness(issues: list, skipped: dict):
+    """Is the OTHER host still alive?
+
+    Every other deadman in this firm watches local files, so each host is its
+    own watcher and a host that dies takes its watcher with it. On 2026-08-06
+    the GCP VM — always-on, ~63 cron jobs, main.py 6x/day, trading the same
+    Alpaca paper account — had been unreachable for days and not one alarm
+    fired. The firm learned about it from a symptom two steps downstream.
+
+    Runs from the Mac only, and that asymmetry is real rather than incidental:
+    the Mac can ssh to the VM, the VM cannot ssh back (chairman_queue_sync says
+    the same). On the VM this is SKIP, which closes nothing — it must not look
+    like an all-clear for a question this host is in no position to answer.
+    """
+    logger.info("\n  [5/6] Peer host liveness...")
+    me = "peer_host_liveness"
+    now = _now_iso()
+
+    if sys.platform != "darwin":
+        return _skip(skipped, me,
+                     f"this host is {sys.platform}, not the Mac — only the Mac can "
+                     f"ssh to {_PEER_HOST}, so peer liveness is unanswerable here")
+
+    state = _load_json(_LIVENESS_PATH) or {}
+    if not isinstance(state, dict):
+        state = {}
+
+    reachable, remote_hb_h, detail = _probe_peer()
+    logger.info(f"    {_PEER_HOST}: {detail}")
+
+    # No ssh client at all is "cannot tell", not "the host is down". Reporting
+    # a missing tool as an outage would send the Chairman to restart a VM that
+    # was never off — cannot-compare is not differs.
+    if reachable is None:
+        return _skip(skipped, me, detail)
+
+    if reachable:
+        state.update({"host": _PEER_HOST, "last_ok": now, "last_checked": now,
+                      "consecutive_failures": 0,
+                      "remote_heartbeat_age_h": remote_hb_h})
+        _write_liveness(state)
+
+        # Reachable but its pipeline has stopped is a different failure from
+        # unreachable, and a quieter one — the box answers, so every ssh-based
+        # sync keeps working and nothing else notices.
+        if remote_hb_h is not None and remote_hb_h > _HEARTBEAT_STALE_H and _is_weekday():
+            msg = (f"{_PEER_HOST} is reachable but its pipeline_heartbeat.json is "
+                   f"{remote_hb_h:.1f}h old on a weekday (threshold {_HEARTBEAT_STALE_H}h) — "
+                   f"the always-on host is up but its pipeline has stopped.")
+            logger.warning(f"    HIGH: {msg}")
+            issues.append({"severity": "HIGH", "check": me,
+                           "message": msg, "auto_fixed": False})
+            return
+        logger.info("    OK — peer host is up and its pipeline is running.")
+        return
+
+    # Unreachable. Age the outage from the last CONFIRMED contact, never from
+    # this run: one failed ssh is a blip, and calling it an outage would page
+    # the Chairman over a dropped packet.
+    state["host"] = _PEER_HOST
+    state["last_checked"] = now
+    state["consecutive_failures"] = int(state.get("consecutive_failures") or 0) + 1
+    _write_liveness(state)
+
+    last_ok = state.get("last_ok")
+    if not last_ok:
+        # No successful contact has EVER been recorded. State the fact; do not
+        # invent a duration for it. A fabricated "0.0h" here would read as a
+        # blip and be ignored.
+        msg = (f"{_PEER_HOST} is unreachable ({detail}) and this firm has no record "
+               f"of it ever answering. The always-on VM runs main.py ~6x/day against "
+               f"the same Alpaca account; while it is down the Mac is the only host "
+               f"trading, and the Mac only runs while it is awake.")
+        logger.warning(f"    HIGH: {msg}")
+        issues.append({"severity": "HIGH", "check": me,
+                       "message": msg, "auto_fixed": False})
+        return
+
+    down_h = _ts_age_hours(str(last_ok))
+    logger.info(f"    last confirmed contact: {down_h:.1f}h ago "
+                f"({state['consecutive_failures']} consecutive failures)")
+
+    if down_h > _PEER_DOWN_H:
+        sev = "CRITICAL"
+    elif down_h > _PEER_UNREACHABLE_H:
+        sev = "HIGH"
+    else:
+        logger.info(f"    Not yet an outage — under the {_PEER_UNREACHABLE_H}h threshold.")
+        return
+
+    msg = (f"{_PEER_HOST} has been unreachable for {down_h:.1f}h "
+           f"(last contact {str(last_ok)[:19]}, {state['consecutive_failures']} consecutive "
+           f"failed probes; {detail}). This is the ALWAYS-ON host: ~63 cron jobs including "
+           f"main.py ~6x/day on the same Alpaca paper account. While it is down the Mac is "
+           f"the firm's only host and it only runs while awake. If the instance was "
+           f"restarted its external IP has changed — update it with "
+           f"gcp_setup/update_ip.sh <NEW_IP>.")
+    logger.warning(f"    {sev}: {msg}")
+    issues.append({"severity": sev, "check": me, "message": msg, "auto_fixed": False})
+
+
+def _write_liveness(state: dict) -> None:
+    os.makedirs("data", exist_ok=True)
+    tmp = _LIVENESS_PATH + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(state, f, indent=2, default=str)
+    os.replace(tmp, _LIVENESS_PATH)
+
+
+# =============================================================================
 # OUTPUT — write findings + update chairman queue
 # =============================================================================
 
-def _write_output(issues: list):
+def _write_output(issues: list, skipped: dict):
     now_iso = _now_iso()
-    has_critical_or_high = any(i["severity"] in ("CRITICAL", "HIGH") for i in issues)
     healthy = len(issues) == 0
+    verdicts = _verdicts(issues, skipped)
 
     report = {
         "checked_at": now_iso,
         "issues":     issues,
         "healthy":    healthy,
+        # Per-check verdicts are part of the record, not a debug aid: a reader
+        # of this file has to be able to tell "we looked and found nothing" from
+        # "we never looked", and `issues: []` alone says both.
+        "verdicts":   verdicts,
+        "skipped":    skipped,
     }
 
     os.makedirs("data", exist_ok=True)
@@ -420,11 +774,13 @@ def _write_output(issues: list):
         json.dump(report, f, indent=2, default=str)
     logger.info(f"\n  Wrote findings to {_OUTPUT_PATH}")
 
-    if has_critical_or_high:
-        _update_chairman_queue(issues, now_iso)
+    # ALWAYS reconcile — this used to run only `if has_critical_or_high`, which
+    # is why a cleared finding had no way out of the Chairman queue. A run in
+    # which everything passes is precisely the run that has something to close.
+    _update_chairman_queue(issues, verdicts, now_iso)
 
 
-def _update_chairman_queue(issues: list, now_iso: str):
+def _update_chairman_queue(issues: list, verdicts: dict, now_iso: str):
     """Append CRITICAL/HIGH issues to chairman_action_required.json.
 
     Dedup by check name, not by the id (which embeds the run hour): this
@@ -459,9 +815,18 @@ def _update_chairman_queue(issues: list, now_iso: str):
         new_entries.append(entry)
         logger.info(f"  Queued to chairman: [{iss['severity']}] {iss['check']}")
 
-    # This agent had the only correct merge policy (own-entries-only cap +
-    # dedup_key); it now lives in chairman_queue so the other five writers share
-    # it instead of each keeping a copy that drifts.
+    # Close first, then raise. A check that PASSED this run has actively
+    # disproved its own finding, so the entry goes out before anything new comes
+    # in — otherwise a queue at its cap could evict a live finding to make room
+    # for one that is about to be retired anyway.
+    #
+    # ONLY verdict == PASS closes. FAIL is still true and SKIP proved nothing;
+    # closing on SKIP is the false all-clear this whole build exists to prevent
+    # (sweep_governance._closable_kinds, same lesson).
+    cleared = [name for name in CHECK_NAMES if verdicts.get(name) == PASS]
+    if cleared:
+        chairman_queue.resolve(cleared, own_source, path=_CHAIRMAN_PATH)
+
     chairman_queue.submit(new_entries, own_source,
                           path=_CHAIRMAN_PATH,
                           max_entries=_CHAIRMAN_MAX_ENTRIES)
@@ -490,13 +855,32 @@ def main():
 
     try:
         issues: list = []
+        skipped: dict = {}
 
-        check_deadmans_switch(issues)
-        check_email_loop(issues)
-        check_agent_freshness(issues)
-        check_ml_model_health(issues)
+        # Each check is isolated. An exception used to take down the whole run
+        # before _write_output, so one broken check blinded the other three and
+        # left no report at all. Now it becomes that check's SKIP — which closes
+        # nothing — and the rest still run.
+        for name, fn in (
+            ("deadmans_switch_sanity", check_deadmans_switch),
+            ("email_loop_detection",   check_email_loop),
+            ("agent_file_freshness",   check_agent_freshness),
+            ("ml_model_health",        check_ml_model_health),
+            ("peer_host_liveness",     check_peer_host_liveness),
+            ("single_writer",          check_single_writer),
+        ):
+            try:
+                fn(issues, skipped)
+            except Exception as e:
+                logger.exception(f"  {name} raised — recording as SKIP")
+                _skip(skipped, name, f"check raised {type(e).__name__}: {str(e)[:160]}")
 
-        _write_output(issues)
+        _write_output(issues, skipped)
+
+        if skipped:
+            logger.info("\n  NOT EVALUATED this run (these close nothing):")
+            for k, v in skipped.items():
+                logger.info(f"    {k}: {v}")
 
         if not issues:
             logger.info("\n  ALL CLEAR — pipeline integrity looks healthy.")

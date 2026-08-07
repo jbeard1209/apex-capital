@@ -95,6 +95,77 @@ def _uniquify_ids(entries):
     return entries
 
 
+def resolve(dedup_keys, source, path=DEFAULT_PATH, note=None):
+    """Close `source`'s OPEN entries whose dedup_key is in `dedup_keys`.
+
+    The counterpart `submit()` never had. Without it an alarm is a one-way
+    door: `cit_pipeline_integrity_agent` only touched this queue when it found
+    a CRITICAL/HIGH, so a finding whose condition later cleared had no path
+    back out. `pip-integrity-20260702-00-deadmans_switch_sani` was still
+    `awaiting_chairman` on 2026-08-06 — five weeks after the fact it described,
+    counted down toward a board escalation the whole time, and re-surfaced in
+    every briefing and every session banner. Its own dedup logic kept it alive:
+    each run reported "+0 new, 1 suppressed as already-open", which is correct
+    behaviour for an item that is genuinely still open and indistinguishable
+    from this.
+
+    Three deliberate limits:
+
+      * only entries whose `source` matches — closing another producer's item
+        is exactly the cross-producer damage this module was written to stop,
+      * only entries currently in OPEN_STATUSES — a resolved item is never
+        re-resolved, so re-running is idempotent and `resolved_at` keeps
+        meaning the moment the condition actually cleared,
+      * the caller decides what has cleared. This function must never infer it
+        from an empty finding list. Absence of a finding means "resolved" ONLY
+        if the check that would have produced it actually ran — a crashed or
+        skipped collector reports nothing, and closing on that silence would
+        mark every open item fixed at the exact moment the firm went blind to
+        them. See sweep_governance._closable_kinds, which learned this first.
+
+    Returns the list of entries closed.
+    """
+    from datetime import datetime
+
+    wanted = {str(k) for k in dedup_keys}
+    if not wanted:
+        return []
+
+    existing = _load(path)
+    now = datetime.now().isoformat()
+
+    closed = []
+    for e in existing:
+        if e.get("source") != source:
+            continue
+        if e.get("status") not in OPEN_STATUSES:
+            continue
+        if _derive_dedup_key(e) not in wanted:
+            continue
+        e["status"] = "resolved"
+        e["resolved_at"] = now
+        e["resolved_by"] = note or (
+            "condition no longer observed by %s at %s — closed by "
+            "re-observation, not by declaration" % (source, now[:19]))
+        closed.append(e)
+
+    if not closed:
+        return []
+
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(existing, f, indent=2, default=str)
+    os.replace(tmp, path)
+
+    logger.info("  Chairman queue: %d %s entr(ies) CLOSED (condition cleared): %s",
+                len(closed), source,
+                ", ".join(str(e.get("id")) for e in closed))
+    return closed
+
+
 def submit(new_entries, source, path=DEFAULT_PATH,
            max_entries=DEFAULT_MAX_ENTRIES):
     """Merge `new_entries` into the shared Chairman queue on behalf of `source`.

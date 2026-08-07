@@ -246,36 +246,26 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     # Checks TWO signals:
     #   1. pipeline_heartbeat.json  — did the pipeline even start recently?
     #   2. manager_decisions.json   — did the Manager Agent complete a cycle?
-    # Threshold raised from 14h → 20h.
-    # The overnight gap between the last pipeline run (4:15 PM EDT) and the
-    # first next-day run (9:45 AM EDT) is 17.5h — the old 14h threshold fired
-    # every single weekday morning. 20h gives 2.5h of headroom above the
-    # expected overnight gap while still catching genuinely missed days.
-    # catch_up.py now handles the auto-remediation — this is a Chairman alert
-    # only. Pipeline continues regardless.
-    _DMS_THRESHOLD_H = 20
+    # Thresholds and the age computation both come from deadmans_switch.py now
+    # — the firm's one definition of this alarm. Three modules used to carry
+    # their own and disagreed about the same file on the same morning; the
+    # weekend subtraction below was local to this block and added a flat 24h per
+    # weekend DATE the gap so much as grazed, so a Friday 23:00 → Saturday 01:00
+    # gap of two hours came out at zero. Over-subtraction hides outages.
+    # catch_up.py handles the auto-remediation — this is a Chairman alert only.
+    # Pipeline continues regardless.
+    import deadmans_switch as _dms
+    _DMS_THRESHOLD_H = _dms.STALE_H
     try:
         _dm_path = Path(__file__).parent / "data" / "manager_decisions.json"
         if _dm_path.exists():
             import json as _dm_json
             with open(_dm_path) as _dm_f:
                 _dm_data = _dm_json.load(_dm_f)
-            _dm_raw = _dm_data[-1] if isinstance(_dm_data, list) else _dm_data
-            _dm_ts  = _dm_raw.get("generated_at") or _dm_raw.get("timestamp", "")
+            _dm_ts = _dms.latest_decision_ts(_dm_data)
             if _dm_ts:
-                _dm_age_h = (datetime.now() - datetime.fromisoformat(str(_dm_ts)[:19])).total_seconds() / 3600
-                # Subtract weekend hours — pipeline is weekday-only, so a gap spanning
-                # Saturday/Sunday is expected and should not fire the alert.
-                _last_run = datetime.fromisoformat(str(_dm_ts)[:19])
-                _now      = datetime.now()
-                _d        = _last_run.date()
-                _weekend_h = 0.0
-                while _d <= _now.date():
-                    if _d.weekday() >= 5:   # 5=Saturday, 6=Sunday
-                        _weekend_h += 24.0
-                    from datetime import timedelta as _td
-                    _d += _td(days=1)
-                _effective_age_h = max(0.0, _dm_age_h - _weekend_h)
+                _dm_age_h        = _dms.decision_age_hours(_dm_data)
+                _effective_age_h = _dms.effective_age_hours(_dm_data)
                 if _effective_age_h > _DMS_THRESHOLD_H:
                     logger.warning(
                         f"  🚨 DEAD-MAN'S SWITCH: manager_decisions.json is {_dm_age_h:.0f}h old "
@@ -302,8 +292,22 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                         f"  ✓ Dead-man's switch: {_dm_age_h:.1f}h old "
                         f"({_effective_age_h:.1f}h excl. weekends, threshold: {_DMS_THRESHOLD_H}h) — OK"
                     )
+            else:
+                logger.warning(
+                    "  ⚠ Dead-man's switch DID NOT RUN: manager_decisions.json carries "
+                    "no parseable decision timestamp. The switch is silent, not clear."
+                )
+        else:
+            logger.warning(
+                "  ⚠ Dead-man's switch DID NOT RUN: manager_decisions.json is missing. "
+                "The switch is silent, not clear."
+            )
+    # WARNING, not debug. This is the firm's dead-man's switch: if the check
+    # itself falls over, the one thing that must not happen is that it goes by
+    # unnoticed at a log level nobody reads. A quiet deadman is indistinguishable
+    # from a healthy one, which is the whole failure it exists to catch.
     except Exception as _dm_err:
-        logger.debug(f"  Dead-man's switch check error: {_dm_err}")
+        logger.warning(f"  ⚠ Dead-man's switch check FAILED to run: {_dm_err}")
 
     # ── Board meeting trigger state ────────────────────────────────────────
     # Tracks whether anything in this cycle warrants an automatic board meeting.

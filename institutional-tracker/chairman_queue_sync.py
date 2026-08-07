@@ -150,8 +150,22 @@ def _collapse(items, rank: dict, ts_fields, label: str) -> list:
         if folded:
             merged["merged_ids"] = folded
         if len(grp) > 1:
-            merged["times_seen"] = sum(
-                max(1, int(x.get("times_seen") or 1)) for x in grp)
+            # MAX, not SUM. This merge is not a one-shot: the merged record is
+            # written back to BOTH sides, so the next run folds a group that
+            # already contains its own previous output. Summing two copies of
+            # one lineage doubles the counter every single run — 2^n — and the
+            # deadman entry reached 6.47e68 (≈2^228) before anyone read it.
+            #
+            # The property that matters is idempotence:
+            #     merge(merge(a,b), merge(a,b)) == merge(a,b)
+            # `max` has it, `sum` cannot. It does under-count when two hosts
+            # genuinely observed the same complaint independently (3 + 5 reads
+            # as 5, not 8), and that trade is deliberate: `times_seen` is a
+            # recurrence hint, not an accounting figure, and a stable
+            # under-count is worth incomparably more than an unbounded one.
+            # Guarded by TestChairmanSyncMergeIsIdempotent.
+            merged["times_seen"] = max(
+                (max(1, int(x.get("times_seen") or 1)) for x in grp), default=1)
             merged["merge_note"] = (
                 f"{len(grp)} {label} record(s) folded by chairman_queue_sync "
                 f"(key={group_key(grp[0])[:60]})")
