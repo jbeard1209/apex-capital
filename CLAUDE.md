@@ -115,9 +115,16 @@ When you add a producer of routed items, add a `TestWiringContracts` case for it
 
 - **`data/` is selectively gitignored, on purpose.** Live trade state, PII, agent evaluations,
   and proposal *queues* (e.g. `cit_pending_proposals.json`, `*_pod_pending.json`, `state.json`)
-  are **cloud-synced via `sync_to_cloud.py`, not committed**. Most `data/*.json` (registries,
-  reports, briefings) ARE tracked. Don't `git add -f` an ignored runtime file — push state via
-  the cloud sync instead. If a code change needs a data migration, run it locally; it syncs separately.
+  are **not committed**. Most `data/*.json` (registries, reports, briefings) ARE tracked.
+  Don't `git add -f` an ignored runtime file.
+- **There is NO state sync between hosts.** This section said runtime state was
+  "cloud-synced via `sync_to_cloud.py`" until 2026-08-07; that script POSTed to Railway, which
+  was decommissioned 2026-07-10, and it is on neither host's scheduler. **The Mac's and the VM's
+  gitignored `data/` have been fully independent for a month.** Do not reason as if a value
+  written on one host is visible on the other — that assumption is what let two hosts trade the
+  same account while each read its own `state.json` (see `single_writer.py`), and what made
+  `signoff_ledger`'s "firm-wide" deploy budget per-host. The only medium both hosts share is the
+  broker. If a code change needs a data migration, it must be run **on each host separately**.
 - **Commit messages** end with the Co-Authored-By trailer for Claude.
 - Commit/push only when asked. Branch off `main` if not already on a feature branch.
 

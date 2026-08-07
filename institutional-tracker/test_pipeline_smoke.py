@@ -6395,6 +6395,79 @@ class TestSingleWriterGuard(unittest.TestCase):
                          "platform would recreate the blind spot it exists to close")
 
 
+class TestDeployBudgetIsSingleHost(unittest.TestCase):
+    """The deploy budget is per-host, so only one host may run the deployer.
+
+    DAILY_DEPLOY_BUDGET / MAX_DAILY_DEPLOY_LINES read data/signoff_ledger.json,
+    which is local to each machine — the Mac and the VM have separate
+    filesystems and, since Railway was decommissioned, no state sync at all.
+    Today only one host schedules the deployer, so the limit means what it says.
+    Nothing enforced that; it was true by accident. These tests make it true on
+    purpose, because the failure is silent: the firm would just quietly get
+    twice its own daily change budget, which is the two-brains bug wearing a
+    governance hat.
+    """
+
+    HERE = Path(__file__).resolve().parent
+    # Everything that can reach reserve_and_deploy. overnight_board_sprint calls
+    # run_implementation, so scheduling IT schedules the deployer too.
+    DEPLOYERS = ("cit_implementation_agent", "overnight_board_sprint")
+
+    def test_the_deployer_is_not_scheduled_on_the_second_host(self):
+        snap = self.HERE / "data/vm_crontab_snapshot.txt"
+        if not snap.exists():
+            self.skipTest("no VM crontab snapshot to check against")
+        cron = snap.read_text()
+        live = [d for d in self.DEPLOYERS if d in cron]
+        self.assertEqual(
+            live, [],
+            f"{live} is on the VM crontab while the deploy budget is still "
+            f"per-host — both hosts would each spend the full "
+            f"DAILY_DEPLOY_BUDGET. Either give the ledger a shared store or "
+            f"keep the deployer on one host.")
+
+    def test_the_budget_has_no_shared_store(self):
+        """If someone gives the ledger a shared store, this test must be revisited.
+
+        It asserts the CURRENT architecture rather than the desired one, on
+        purpose: the test above is only a valid guard while the ledger is local.
+        If the ledger ever grows a network backend, this fails and forces the
+        pair to be re-reasoned instead of silently over-constraining the VM.
+        """
+        import signoff_ledger as L
+        self.assertTrue(str(L.DATA).startswith("/"),
+                        "ledger path should be a local filesystem path")
+        src = (self.HERE / "signoff_ledger.py").read_text()
+        for net in ("requests.", "urllib.request", "boto3", "http.client"):
+            self.assertNotIn(net, src,
+                             f"signoff_ledger now speaks {net} — if the ledger is "
+                             f"shared across hosts, the single-host deployer "
+                             f"constraint above is obsolete and must be removed")
+
+    def test_no_production_module_depends_on_the_dead_railway_sync(self):
+        """sync_to_cloud POSTs to a Railway URL decommissioned 2026-07-10.
+
+        The docstring above used to hand the firm-wide budget to it. Prose can
+        be re-broken by any editor, so the durable check is structural: nothing
+        that runs may import it, and it must stay off both schedulers. If it is
+        ever scheduled again it will run, fail silently against a dead host, and
+        restore the illusion of shared state that this class exists to deny.
+        """
+        for mod in self.HERE.glob("*.py"):
+            if mod.name.startswith("test_"):
+                continue
+            src = mod.read_text(errors="ignore")
+            self.assertNotIn("import sync_to_cloud", src,
+                             f"{mod.name} imports sync_to_cloud, which targets a "
+                             f"decommissioned Railway URL")
+
+        snap = self.HERE / "data/vm_crontab_snapshot.txt"
+        if snap.exists():
+            self.assertNotIn("sync_to_cloud", snap.read_text(),
+                             "sync_to_cloud is scheduled on the VM but POSTs to a "
+                             "dead Railway URL — it would fail silently every run")
+
+
 class TestReentrySlateCannotLieByOmission(unittest.TestCase):
     """The re-entry slate must never render "nothing to report" for "I could not look".
 

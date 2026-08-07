@@ -618,10 +618,27 @@ class _DeployLock:
     """Advisory inter-PROCESS lock around the reserve→deploy critical section.
 
     Honest about its limit (red team X8: the old docstring claimed atomicity
-    the code did not provide): flock serialises the ~63 cron jobs on a single
+    the code did not provide): flock serialises the ~78 cron jobs on a single
     host, which is where the real race is. It does NOT synchronise the Mac
-    against the VM — they have separate filesystems — so the firm-wide budget
-    still rests on both hosts sharing data/ via sync_to_cloud."""
+    against the VM — they have separate filesystems.
+
+    2026-08-07: the sentence that used to end this docstring — "so the firm-wide
+    budget still rests on both hosts sharing data/ via sync_to_cloud" — named a
+    mechanism that does not exist. `sync_to_cloud.py` pushed to Railway, which
+    was decommissioned 2026-07-10; the surviving copies under dashboard/ and
+    cloud/ still POST to a dead URL. There is NO shared data/ between hosts and
+    has not been for a month, so DAILY_DEPLOY_BUDGET and MAX_DAILY_DEPLOY_LINES
+    are enforced PER HOST, not firm-wide.
+
+    That is currently harmless for one reason only: the sole production caller of
+    reserve_and_deploy is cit_implementation_agent (directly, and via
+    overnight_board_sprint), and neither is on the VM's crontab — so exactly one
+    host spends the budget. That is an accident of scheduling, not a guarantee.
+    Schedule the deployer on the VM and the firm silently gets 2x its own limit,
+    the same shape as the two-host trading fork (see single_writer.py). Guarded
+    by test_pipeline_smoke.py::TestDeployBudgetIsSingleHost, which fails if the
+    deployer ever appears in data/vm_crontab_snapshot.txt while the ledger is
+    still per-host."""
 
     def __init__(self):
         self.fh = None
