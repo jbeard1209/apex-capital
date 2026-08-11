@@ -272,6 +272,28 @@ JOB_REGISTRY = [
         "catchup_window":  (18.0, 24),      # only after 6 PM
         "once_per_wakeup": True,
     },
+
+    # ── CIT pipeline integrity (dead-man's switch / peer host liveness) ───────
+    # VM cron: "50 */2 * * *" — every 2h, round the clock, every day. This is
+    # host-agnostic (local file ages + an ssh probe to the peer), unlike
+    # apex_system_cit_agent.py's GCP-specific disk/memory checks, which is why
+    # only this one is mirrored here. Found 2026-08-11: this was the ONLY
+    # producer of deadmans_switch_sanity / peer_host_liveness / single_writer
+    # findings, it is VM-only in the crontab, and the VM had been unreachable
+    # for 5 days with zero Mac-side fallback — chairman_action_required.json
+    # took zero new entries in that entire window despite the outage.
+    {
+        "name":            "cit_pipeline_integrity",
+        "script":          "cit_pipeline_integrity_agent.py",
+        "args":            [],
+        "output_file":     "data/cit_pipeline_integrity.json",
+        "ttl_hours":       1.75,            # just under the 2h cron interval
+        "fire_times_edt":  [0.83, 2.83, 4.83, 6.83, 8.83, 10.83, 12.83,
+                             14.83, 16.83, 18.83, 20.83, 22.83],
+        "run_days":        "all",
+        "catchup_window":  (0, 24),
+        "once_per_wakeup": True,
+    },
 ]
 
 

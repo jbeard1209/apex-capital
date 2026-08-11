@@ -6456,6 +6456,47 @@ class TestCatchUpJobBudget(unittest.TestCase):
                           "the log exists but lost the child's partial output")
 
 
+class TestIntegrityWatchdogHasAMacFallback(unittest.TestCase):
+    """cit_pipeline_integrity_agent is the only producer of deadmans_switch_sanity
+    / peer_host_liveness / single_writer, and it was VM-only in the crontab.
+    Found 2026-08-11: the VM was unreachable for 5 days and this watchdog never
+    ran once in that window on either host — chairman_action_required.json took
+    zero new entries the entire time despite the outage. It is now mirrored into
+    catch_up.JOB_REGISTRY so the Mac covers it whenever the VM can't.
+
+    apex_system_cit_agent is deliberately NOT mirrored the same way: its GCP
+    health check runs bare `df`/`free` with no host guard, so running it on the
+    Mac would mislabel the Mac's own disk as "GCP disk usage" — the same
+    host-specific-check bug class TestHostSpecificChecksStayOnTheirHost guards
+    for gcp_ip_changed. cit_pipeline_integrity_agent has no such check.
+    """
+
+    def test_pipeline_integrity_agent_is_in_the_mac_catchup_registry(self):
+        import catch_up
+        jobs = [j for j in catch_up.JOB_REGISTRY
+                if j.get("script") == "cit_pipeline_integrity_agent.py"]
+        self.assertTrue(jobs, "cit_pipeline_integrity_agent.py has no Mac-side "
+                              "fallback — a VM outage goes fully unwatched again")
+        job = jobs[0]
+        self.assertEqual(job["catchup_window"], (0, 24),
+                         "this watchdog matters at any hour, same as on the VM")
+        self.assertEqual(job["run_days"], "all",
+                         "single_writer/peer_host_liveness matter on weekends too")
+
+    def test_apex_system_cit_agent_is_not_blindly_mirrored(self):
+        """It has an unguarded GCP-only check; mirroring it needs a host guard
+        first, not a bare registry entry. Documents the deliberate omission so
+        nobody 'closes the gap' by copy-pasting the integrity-agent entry."""
+        import catch_up
+        jobs = [j for j in catch_up.JOB_REGISTRY
+                if j.get("script") == "apex_system_cit_agent.py"]
+        self.assertFalse(jobs, "apex_system_cit_agent.py was added to the Mac "
+                               "catchup registry, but check_gcp_health() has no "
+                               "host guard (bare df/free) — it will mislabel "
+                               "the Mac's own disk as GCP disk usage; add a "
+                               "metadata-server host guard there first")
+
+
 class TestDeployBudgetIsSingleHost(unittest.TestCase):
     """The deploy budget is per-host, so only one host may run the deployer.
 
