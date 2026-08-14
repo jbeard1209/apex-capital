@@ -1035,6 +1035,20 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
         result["note"]     = "No trade executed per manager decision."
         return result
 
+    # ── Vocabulary check BEFORE the dry-run shortcut ──────────────────────────
+    # The whole point of a dry run is to find out what a live run would do. If
+    # the shortcut below answers first, an action with no branch in this
+    # function reports "[DRY RUN] Would execute WAT on ZZZZ", executed=True —
+    # a rehearsal that says the thing works and a live run that silently does
+    # nothing. Refuse the verb here, in both modes, or the dry run is a liar.
+    if action not in EXECUTABLE_ACTIONS:
+        result["error"] = (
+            f"unhandled action '{action}' — execute_decision has no branch for "
+            f"it. Executable actions are {EXECUTABLE_ACTIONS}. This is a "
+            f"wiring-contract violation, not a broker failure.")
+        logger.error(f"  ⚠ {ticker}: {result['error']}")
+        return result
+
     if dry_run:
         result["executed"] = True
         result["note"]     = f"[DRY RUN] Would execute {action} on {ticker}"
@@ -1168,10 +1182,12 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
             # perfect, silent no-op that reads downstream as an execution
             # failure — indistinguishable from a broker rejection.
             #
-            # Unreachable via evaluate_recommendation(), which now rejects
-            # unknown verbs at intake. Kept anyway: execute_decision() is called
-            # directly by tests and by the catch-up runner, and a guard that
-            # only holds on one path is not a guard.
+            # Now doubly unreachable: evaluate_recommendation() rejects unknown
+            # verbs at intake, and the EXECUTABLE_ACTIONS check above this try
+            # block catches anything that arrives by another route. Kept anyway,
+            # because this is the branch that catches the NEXT mistake — a verb
+            # added to EXECUTABLE_ACTIONS with no branch written for it here.
+            # That would pass the vocabulary check and land exactly here.
             result["error"] = (
                 f"unhandled action '{action}' — execute_decision has no branch "
                 f"for it. Executable actions are {EXECUTABLE_ACTIONS}. This is a "

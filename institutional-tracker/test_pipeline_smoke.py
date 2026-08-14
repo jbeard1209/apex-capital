@@ -820,13 +820,21 @@ class TestWiringContracts(unittest.TestCase):
     def test_execute_decision_never_fails_without_saying_why(self):
         """{"executed": False, "error": None} is the shape of the whole bug."""
         import manager_agent as ma
-        res = ma.execute_decision(
-            {"ticker": "ZZZZ", "manager_action": "BUY", "manager_decision": "APPROVED"},
-            trader=None, dry_run=False)
-        self.assertFalse(res["executed"])
-        self.assertTrue(res["error"], "a failed execution with error=None is "
-                                      "indistinguishable from a broker rejection")
-        self.assertIn("unhandled action", res["error"])
+        # Both modes. A dry run exists to tell you what a live run would do; if
+        # it reports "[DRY RUN] Would execute BUY", executed=True, for a verb
+        # the live path silently drops, the rehearsal is worse than no rehearsal.
+        for dry in (False, True):
+            with self.subTest(dry_run=dry):
+                res = ma.execute_decision(
+                    {"ticker": "ZZZZ", "manager_action": "BUY",
+                     "manager_decision": "APPROVED"},
+                    trader=None, dry_run=dry)
+                self.assertFalse(res["executed"],
+                                 "an unexecutable verb must never report executed")
+                self.assertTrue(res["error"],
+                                "a failed execution with error=None is "
+                                "indistinguishable from a broker rejection")
+                self.assertIn("unhandled action", res["error"])
 
     def test_the_report_never_renders_failed_none(self):
         """What the Chairman actually read, 118 times a day, for two months."""
