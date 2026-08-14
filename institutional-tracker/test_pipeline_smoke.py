@@ -6340,11 +6340,18 @@ class TestSingleWriterGuard(unittest.TestCase):
             self.assertEqual(ol._host_tag(), "apexcapitalc")
 
     def test_the_host_id_is_never_shipped_to_another_host(self):
-        """Two hosts sharing one identity makes the detector blind by construction."""
-        root = Path(__file__).resolve().parent.parent
-        ignored = (root / ".gitignore").read_text()
-        self.assertIn("data/.host_id", ignored,
-                      "a committed .host_id gives every host the same tag")
+        """Two hosts sharing one identity makes the detector blind by construction.
+
+        The .gitignore half is a property of the SOURCE repo, and the VM is not a
+        git checkout (deploy.sh rsyncs with --exclude=.git/), so there is no
+        .gitignore to read there. It used to raise FileNotFoundError on the VM —
+        an ERROR, not a failure, which is the shape that gets waved through as
+        "environment noise". Skip it where the repo does not exist, say so out
+        loud, and never skip the deploy.sh half: that file IS shipped, so the
+        rsync-ordering guarantee must hold on every host.
+        """
+        # deploy.sh ships to every host, so this half must hold everywhere and
+        # is asserted BEFORE any possible skip.
         deploy = (Path(__file__).resolve().parent / "gcp_setup" / "deploy.sh").read_text()
         self.assertIn('--exclude="data/.host_id"', deploy,
                       "deploy.sh must not rsync this Mac's identity onto the VM")
@@ -6352,6 +6359,14 @@ class TestSingleWriterGuard(unittest.TestCase):
         self.assertLess(deploy.index('--exclude="data/.host_id"'),
                         deploy.index('--include="data/orphan_agents_baseline.json"'),
                         "an exclude after the includes would not fire")
+
+        gitignore = Path(__file__).resolve().parent.parent / ".gitignore"
+        if not gitignore.exists():
+            self.skipTest("no .gitignore above the package — not a git checkout "
+                          "(i.e. the VM). The gitignore half is a property of the "
+                          "source repo and is enforced where the repo lives.")
+        self.assertIn("data/.host_id", gitignore.read_text(),
+                      "a committed .host_id gives every host the same tag")
 
     def test_a_truncated_hostname_cannot_merge_two_machines_silently(self):
         """MacBook-Air-173 and MacBook-Air-179 both truncate to macbookair17."""
