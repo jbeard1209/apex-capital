@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-01T20:35:09Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-14T18:41:32Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -276,3 +276,33 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # re-read the same stale bar. A 12h per-(rule,ticker) cooldown inside the
 # agent stops an ongoing shock from re-proposing to the board every run.
 25,55 13-20 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 rd_market_event_monitor.py >> logs/rd_events_$(date +\%Y\%m\%d).log 2>&1
+
+# --- KALSHI SECTOR (Chairman directive 2026-08-14) --------------------------
+# Event-contract wing. SHADOW MODE: no line here can transmit an order —
+# kalshi_client.place_order() raises KalshiNotArmed unless data/.kalshi_armed
+# exists and names the environment, and that file is a Chairman action.
+#
+# The three commands are CHAINED with && on purpose, not scheduled separately.
+# kalshi_board.py votes on whatever is in data/kalshi_scan_log.json; if the
+# scanner failed (rate limit, API change, network) a separate board line would
+# happily re-vote yesterday's scan and log a fresh timestamp on stale prices —
+# exactly the `presence-is-not-currency` failure. Chained, a failed scan means
+# no board session at all, which is visible, instead of a confident stale one.
+#
+# FOUR SLOTS, SPREAD ON PURPOSE. Kalshi is a 24/7 exchange and 94.4% of its
+# open markets have no order book at any given moment; the ones that do are
+# whatever is live RIGHT NOW. Scanning the same hour three times samples the
+# same population three times. 02:10 UTC (22:10 EDT) is the important one —
+# that is US sports in progress, which is where the near-certainty band the
+# Chairman described actually populates. Idempotent per (ticker, date), so
+# overlapping slots cannot inflate the calibration sample.
+10 2,14,18,22 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_scanner.py --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1 && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --record >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1 && /home/jackbeard/venv/bin/python3 kalshi_board.py --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
+
+# Settlement fill + verdict, daily. Separate from the scan because it reads the
+# EXCHANGE's settled outcomes, not our scan, so it must run even on a day every
+# scan failed — that is the day the ledger most needs closing out. 11:45 UTC
+# sits after the overnight settlements and after the 11:10 crontab-snapshot
+# refresh and 11:40 governance sweep, and 1h45m before the 13:30 board meeting.
+# The verdict will read NOT PROVEN — NOT YET for months (200 settled
+# observations minimum). That is the gate working, not the gate failing.
+45 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --resolve --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
