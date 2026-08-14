@@ -6342,29 +6342,45 @@ class TestSingleWriterGuard(unittest.TestCase):
     def test_the_host_id_is_never_shipped_to_another_host(self):
         """Two hosts sharing one identity makes the detector blind by construction.
 
-        The .gitignore half is a property of the SOURCE repo, and the VM is not a
-        git checkout (deploy.sh rsyncs with --exclude=.git/), so there is no
-        .gitignore to read there. It used to raise FileNotFoundError on the VM —
-        an ERROR, not a failure, which is the shape that gets waved through as
-        "environment noise". Skip it where the repo does not exist, say so out
-        loud, and never skip the deploy.sh half: that file IS shipped, so the
-        rsync-ordering guarantee must hold on every host.
+        Both halves are properties of the SOURCE repo — the host that runs the
+        deploy — not of the hosts it deploys to. On the VM this used to raise
+        FileNotFoundError, an ERROR rather than a failure, which is the shape
+        that gets waved through as environment noise. Where the repo is absent,
+        skip out loud and check the one thing that still matters there: that the
+        local deploy.sh cannot actually run.
         """
-        # deploy.sh ships to every host, so this half must hold everywhere and
-        # is asserted BEFORE any possible skip.
-        deploy = (Path(__file__).resolve().parent / "gcp_setup" / "deploy.sh").read_text()
+        here = Path(__file__).resolve().parent
+        deploy = (here / "gcp_setup" / "deploy.sh").read_text()
+        gitignore = here.parent / ".gitignore"
+
+        if not gitignore.exists():
+            # Not the deploying host. Both halves of the guarantee describe the
+            # SOURCE repo, and neither exists here: deploy.sh rsyncs with
+            # --exclude=".git/", so there is no .gitignore, and it also excludes
+            # "gcp_setup/", so the deploy.sh sitting next to us is a leftover
+            # from the original bootstrap that no deploy has touched since
+            # (2026-05-14 on the VM, three months stale). Asserting the guard
+            # against that copy fails on a file that is not the one that runs.
+            #
+            # There IS one thing worth checking here, and it is the thing that
+            # would actually hurt: a second host that can deploy. If this copy's
+            # hardcoded LOCAL_DIR resolves, this host can ship code — and then
+            # it must carry the guard like any other deploying host.
+            m = re.search(r'^LOCAL_DIR="([^"]+)"', deploy, re.M)
+            self.assertIsNotNone(m, "deploy.sh has no LOCAL_DIR to reason about")
+            self.assertFalse(Path(m.group(1)).is_dir(),
+                             f"{m.group(1)} exists here, so this host can run "
+                             f"deploy.sh — it is a deploying host and its copy "
+                             f"must carry the data/.host_id exclude")
+            self.skipTest("not the source repo (no .gitignore above the package) "
+                          "— verified instead that the local deploy.sh is inert")
+
         self.assertIn('--exclude="data/.host_id"', deploy,
                       "deploy.sh must not rsync this Mac's identity onto the VM")
         # The exclude must precede the includes — rsync takes the first match.
         self.assertLess(deploy.index('--exclude="data/.host_id"'),
                         deploy.index('--include="data/orphan_agents_baseline.json"'),
                         "an exclude after the includes would not fire")
-
-        gitignore = Path(__file__).resolve().parent.parent / ".gitignore"
-        if not gitignore.exists():
-            self.skipTest("no .gitignore above the package — not a git checkout "
-                          "(i.e. the VM). The gitignore half is a property of the "
-                          "source repo and is enforced where the repo lives.")
         self.assertIn("data/.host_id", gitignore.read_text(),
                       "a committed .host_id gives every host the same tag")
 

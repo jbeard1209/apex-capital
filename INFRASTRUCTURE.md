@@ -71,6 +71,16 @@ Code changes are NOT live until shipped to prod. One command from the Mac:
 bash gcp_setup/ship.sh        # = git push + deploy to VM + stamp + remote smoke test
 ```
 `deploy.sh` writes `deploy_stamp.json` (repo SHA + date) that ships with the code.
+
+**`deploy.sh` does not deploy itself.** The rsync carries `--exclude="gcp_setup/"`, so
+the VM's `~/institutional-tracker/gcp_setup/` is frozen at whatever the original
+bootstrap put there — on 2026-08-14 its `deploy.sh` was dated **2026-05-14**, three
+months behind the Mac's, with an exclude list predating the `data/.host_id` guard.
+It is inert (its `LOCAL_DIR` is a hardcoded Mac path that does not resolve on the VM)
+but it is a **decoy**: read it there and you get stale infrastructure facts. The
+deploy toolchain is a property of the *deploying* host only. `deploy.sh` and
+`~/.ssh/config` live on the Mac; read them there.
+
 **The VM checks its own staleness daily** (pod_health_monitor → deploy-drift check):
 if the repo has moved and the stamp is >3 days old, it escalates CRITICAL to the
 board + Chairman queue automatically. The weekly investigator independently
