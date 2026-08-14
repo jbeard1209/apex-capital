@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+"""
+APEX CAPITAL — KALSHI CLIENT (the read layer, and the armed-only write layer)
+=============================================================================
+Kalshi is a CFTC-regulated event exchange: contracts settle at $1.00 or $0.00.
+A price is therefore a probability, and a 96c ask is the market saying "96%".
+
+WHY THIS FILE IS MOSTLY DEFENSIVE PARSING
+-----------------------------------------
+Every published Kalshi tutorial reads `market["yes_ask"]` and treats it as an
+integer number of cents. Measured against the live API on 2026-08-14, that
+field returns **None** on every market. The live schema is `yes_ask_dollars`,
+and its value is a **string**: `'0.9600'`, not `0.96` and not `96`.
+
+Three ways that kills you, all of which we have shipped bugs shaped like before:
+
+  1. `m.get("yes_ask", 0)`      -> 0 cents -> "this contract is FREE, buy it"
+  2. `float(m["yes_ask"])`      -> TypeError on None, mid-scan, silently caught
+  3. `m["yes_ask_dollars"] < 1` -> TypeError: '<' not supported str vs int
+
+THE ZERO TRAP (this one is the expensive one)
+---------------------------------------------
+`yes_ask_dollars` is `'0.0000'` on an empty book, with `yes_ask_size_fp` of
+`'0.00'`. Zero is a perfectly valid float. It passes `is not None`, it passes
+`isinstance(x, float)`, and it reads as "you can buy YES for nothing" — an
+infinite-return arbitrage on every illiquid market on the exchange.
+
+**A price with no size behind it is not a price, it is the absence of one.**
+Measured 2026-08-14 across 12,000 open markets: **94.4% (11,331) had no real
+book.** A scanner without this filter finds eleven thousand fake free lunches.
+This is the same bug class as memory `nan-is-not-none`, wearing a new costume:
+the sentinel is `0.0` instead of `NaN`, and it is *more* dangerous because it
+survives arithmetic instead of poisoning it.
+
+So: `parse_price()` returns None for anything it cannot vouch for, and
+`tradeable()` requires a price AND a size AND a sane 0<p<1 range. Callers must
+branch on None. There is no default.
+
+AUTH AND THE ARM GATE
+---------------------
+Public market data needs no credentials at all (verified: HTTP 200 unauthed),
+so the entire research and calibration phase runs with zero secrets on disk.
+
+Order placement needs RSA-PSS request signing. Claude does not and will not
+handle those keys: `KALSHI_API_KEY_ID` and `KALSHI_PRIVATE_KEY_PATH` are read
+from the environment, which the Chairman populates himself. On top of that,
+`place_order()` refuses to do anything unless `data/.kalshi_armed` exists and
+names the same environment — the same shadow -> ENFORCE shape as
+`signoff_ledger`. Default is `shadow`, which cannot place an order at all.
+
+Usage:
+    python3 kalshi_client.py --report        # exchange snapshot + book health
+"""
+
+import json
+import os
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+
+DATA_DIR = Path(__file__).resolve().parent / "data"
+ARM_FILE = DATA_DIR / ".kalshi_armed"
+
+PROD_BASE = "https://api.elections.kalshi.com/trade-api/v2"
+DEMO_BASE = "https://demo-api.kalshi.co/trade-api/v2"
+
+USER_AGENT = "apex-capital/1.0 (research)"
+
+# Kalshi's published fee schedule. The fee is a DOME peaking at p=0.50 and
+# decaying toward both extremes, which is the one structural thing working in
+# favour of trading the tails: at 96c the taker fee is ceil(0.07*0.96*0.04*100)
+# = 1c per contract, against 2c at the midpoint.
+TAKER_FEE_RATE = 0.07
+MAKER_FEE_RATE = 0.0175
+
+
+class KalshiNotArmed(RuntimeError):
+    """Raised instead of returning None, so a caller cannot mistake a refused
+    order for a placed one. Same reasoning as SingleWriterBlocked."""
+
+
+def env_name() -> str:
+    """shadow | demo | live. Default is the one that cannot spend money."""
+    v = (os.environ.get("KALSHI_ENV") or "shadow").strip().lower()
+    return v if v in ("shadow", "demo", "live") else "shadow"
+
+
+def base_url() -> str:
+    return DEMO_BASE if env_name() == "demo" else PROD_BASE
+
+
+# ----------------------------------------------------------------- parsing --
+
+def parse_price(raw):
+    """A price in DOLLARS as a float in (0, 1), or None if not a real price.
+
+    Returns None — never 0.0 — for missing, unparseable, or out-of-range input.
+    0.0 and 1.0 are both rejected: they are what an empty book reports, and a
+    contract that truly cannot move is one nobody will fill you on anyway.
+    """
+    if raw is None:
+        return None
+    try:
+        v = float(raw)          # str '0.9600' and float 0.96 both land here
+    except (TypeError, ValueError):
+        return None
+    if v != v:                  # NaN — see memory `nan-is-not-none`
+        return None
+    if not (0.0 < v < 1.0):
+        return None
+    return v
+
+
+def parse_size(raw):
+    """Contracts resting at that price, or None. 0 means no book, not no data."""
+    if raw is None:
+        return None
+    try:
+        v = float(raw)
+    except (TypeError, ValueError):
+        return None
+    if v != v or v < 0:
+        return None
+    return v
+
+
+def fee_cents(price, contracts=1, maker=False):
+    """Kalshi trading fee in whole cents: ceil(rate * C * P * (1-P) * 100).
+
+    Charged on the trade, not on settlement. Rounded UP per Kalshi's schedule,
+    so a 1-contract trade at any price costs at least 1c — which is why tiny
+    position sizes are disproportionately taxed and why size discipline here is
+    not the same as size discipline in equities.
+    """
+    import math
+    p = parse_price(price)
+    if p is None or contracts <= 0:
+        return None
+    rate = MAKER_FEE_RATE if maker else TAKER_FEE_RATE
+    return math.ceil(rate * contracts * p * (1.0 - p) * 100.0)
+
+
+def breakeven_probability(price, maker=False):
+    """The true probability at which buying YES at `price` is EV-neutral.
+
+    Buying 1 contract at p costs p dollars plus the fee, and returns $1.00 if
+    it settles YES. So we need  q*1.00 - p - fee/100 = 0.
+
+    At 96c taker this is ~96.3%. The gap between the ask and this number is the
+    entire business: it is 0.3 percentage points wide, and it is the margin
+    inside which an estimate has to be right.
+    """
+    p = parse_price(price)
+    if p is None:
+        return None
+    f = fee_cents(p, 1, maker)
+    if f is None:
+        return None
+    return p + f / 100.0
+
+
+def tradeable(market):
+    """(yes_ask, yes_size) if this market has a real, buyable YES book, else None.
+
+    THE filter. 94.4% of open markets fail it. Callers that skip it are not
+    scanning an exchange, they are scanning a list of empty order books.
+    """
+    ask = parse_price(market.get("yes_ask_dollars", market.get("yes_ask")))
+    size = parse_size(market.get("yes_ask_size_fp"))
+    if ask is None or not size:
+        return None
+    return ask, size
+
+
+# -------------------------------------------------------------- transport --
+
+def _get(path, params=None, timeout=30, retries=2):
+    """GET against the public API. Raises on failure — never returns {}.
+
+    An empty dict would read downstream as "the exchange listed no markets",
+    which is indistinguishable from "we could not reach the exchange". Those
+    have opposite correct responses, so this must raise.
+    """
+    url = base_url() + path
+    if params:
+        url += "?" + urllib.parse.urlencode({k: v for k, v in params.items()
+                                             if v is not None})
+    last = None
+    for attempt in range(retries + 1):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.load(r)
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and attempt < retries:
+                time.sleep(2 ** attempt)
+                last = e
+                continue
+            raise
+        except Exception as e:
+            last = e
+            if attempt < retries:
+                time.sleep(1 + attempt)
+                continue
+            raise
+    raise last
+
+
+def iter_markets(status="open", max_pages=12, limit=1000):
+    """Yield every market page-by-page. Bounded: an unbounded cursor loop against
+    a paginated API is how a 'quick scan' becomes a rate-limit ban."""
+    cursor = None
+    for _ in range(max_pages):
+        d = _get("/markets", {"limit": limit, "status": status, "cursor": cursor})
+        for m in d.get("markets", []):
+            yield m
+        cursor = d.get("cursor")
+        if not cursor:
+            return
+
+
+def get_event(event_ticker):
+    return _get(f"/events/{urllib.parse.quote(event_ticker)}")
+
+
+def is_mutually_exclusive(event):
+    """Kalshi's own flag. The whole structural strategy is gated on this.
+
+    Without it, a set of outcomes that can EACH resolve YES will show a price
+    sum well over 100c, which is correct pricing and not an arbitrage. Buying
+    'the whole field' there is not a locked profit, it is a pile of longs.
+    """
+    ev = event.get("event", event) if isinstance(event, dict) else {}
+    return bool(ev.get("mutually_exclusive"))
+
+
+# ------------------------------------------------------------- write path --
+
+def armed_for(target_env):
+    """True only if data/.kalshi_armed exists AND names this environment.
+
+    Deliberately a file the Chairman creates, not a flag Claude can flip, and
+    deliberately environment-specific so arming demo never silently arms live.
+    """
+    try:
+        d = json.loads(ARM_FILE.read_text())
+    except Exception:
+        return False
+    return d.get("env") == target_env and bool(d.get("armed"))
+
+
+def place_order(**kwargs):
+    """Refuses unless explicitly armed. Not wired to a signer yet, on purpose.
+
+    The RSA-PSS signing path needs KALSHI_API_KEY_ID and a private key file that
+    only the Chairman installs. Until this firm has measured calibration on the
+    read-only path, an order function that works is a liability, not a feature.
+    """
+    env = env_name()
+    if env == "shadow":
+        raise KalshiNotArmed(
+            "KALSHI_ENV=shadow: this build observes and measures only. "
+            "Set KALSHI_ENV=demo and arm data/.kalshi_armed to place demo orders.")
+    if not armed_for(env):
+        raise KalshiNotArmed(
+            f"KALSHI_ENV={env} but data/.kalshi_armed does not authorise '{env}'. "
+            f"Arming is a Chairman action.")
+    raise KalshiNotArmed(
+        f"Armed for {env}, but no request signer is installed. Install "
+        f"KALSHI_API_KEY_ID + KALSHI_PRIVATE_KEY_PATH and implement RSA-PSS "
+        f"signing before this can transmit.")
+
+
+# ------------------------------------------------------------------ report --
+
+def exchange_snapshot(max_pages=12):
+    """How much of this exchange is actually a market? Answers with numbers."""
+    total = real = 0
+    band = []
+    for m in iter_markets(max_pages=max_pages):
+        total += 1
+        t = tradeable(m)
+        if not t:
+            continue
+        real += 1
+        ask, size = t
+        if 0.90 <= ask <= 0.99:
+            band.append({"ticker": m.get("ticker"), "ask": ask, "size": size,
+                         "volume": parse_size(m.get("volume_fp")) or 0.0,
+                         "title": str(m.get("title"))[:70],
+                         "close_time": m.get("close_time")})
+    band.sort(key=lambda x: -x["volume"])
+    return {"checked_at": datetime.now(timezone.utc).isoformat(),
+            "env": env_name(), "markets_seen": total, "with_real_book": real,
+            "empty_book_pct": round(100.0 * (total - real) / total, 1) if total else None,
+            "near_certainty_band": band}
+
+
+def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--report", action="store_true")
+    ap.add_argument("--pages", type=int, default=12)
+    args = ap.parse_args()
+
+    s = exchange_snapshot(max_pages=args.pages)
+    print(f"KALSHI EXCHANGE SNAPSHOT — env={s['env']}  {s['checked_at'][:19]}Z")
+    print(f"  markets seen      : {s['markets_seen']}")
+    print(f"  with a real book  : {s['with_real_book']}")
+    print(f"  empty book        : {s['empty_book_pct']}%  <- the filter that matters")
+    print(f"  90-99c band       : {len(s['near_certainty_band'])} tradeable")
+    for b in s["near_certainty_band"][:10]:
+        print(f"    {b['ask']*100:5.1f}c  size={b['size']:>8.0f} "
+              f"vol={b['volume']:>9.0f}  {b['title']}")
+    if not s["near_certainty_band"]:
+        print("    (none — the premise of the strategy is not visible right now)")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

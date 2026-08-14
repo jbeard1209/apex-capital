@@ -6606,6 +6606,245 @@ class TestVMStateMonitor(unittest.TestCase):
                         "vm_state_monitor imports this; it must exist")
 
 
+class TestKalshiSector(unittest.TestCase):
+    """The Kalshi wing, guarded at the three places it can quietly lose money.
+
+    None of these tests touch the network. They exist because the sector's
+    failure modes are all silent: a bad price parses, an empty book looks like
+    free money, and an unmeasured estimator is indistinguishable from a good
+    one right up until it has spent the sleeve.
+    """
+
+    # ---------------------------------------------------------- parsing --
+
+    def test_zero_is_not_a_price(self):
+        """The measured trap: 94.4% of open markets quote '0.0000' on an empty
+        book. Zero is a valid float, it passes `is not None`, and it reads as a
+        free contract. It must come back as None, not 0.0."""
+        import kalshi_client as kc
+        for raw in ("0.0000", 0.0, "1.0000", 1.0):
+            with self.subTest(raw=raw):
+                self.assertIsNone(kc.parse_price(raw),
+                                  f"{raw!r} is an empty book, not a price")
+
+    def test_a_real_price_string_parses_to_dollars(self):
+        """Kalshi returns prices as STRINGS. float() is mandatory, and the unit
+        is dollars — a scanner that reads 0.96 as 96 cents is off by 100x."""
+        import kalshi_client as kc
+        self.assertAlmostEqual(kc.parse_price("0.9600"), 0.96, places=6)
+        self.assertAlmostEqual(kc.parse_price(0.96), 0.96, places=6)
+
+    def test_the_legacy_field_is_none_and_must_not_default_to_zero(self):
+        """Every published tutorial reads `yes_ask`; the live API returns None
+        there. `.get("yes_ask", 0)` would price it at zero and buy the world."""
+        import kalshi_client as kc
+        self.assertIsNone(kc.parse_price(None))
+        self.assertIsNone(kc.parse_price(float("nan")),
+                          "NaN must not survive as a price — see nan-is-not-none")
+
+    def test_a_price_with_no_size_behind_it_is_not_tradeable(self):
+        """THE filter. Price and size are two facts and one does not imply the
+        other."""
+        import kalshi_client as kc
+        self.assertIsNone(kc.tradeable({"yes_ask_dollars": "0.9600",
+                                        "yes_ask_size_fp": "0.00"}),
+                          "a quote with nothing resting behind it is not a market")
+        self.assertIsNone(kc.tradeable({"yes_ask_dollars": "0.0000",
+                                        "yes_ask_size_fp": "500"}))
+        self.assertEqual(kc.tradeable({"yes_ask_dollars": "0.9600",
+                                       "yes_ask_size_fp": "500"}), (0.96, 500.0))
+
+    # ------------------------------------------------------------- fees --
+
+    def test_breakeven_is_strictly_worse_than_the_ask(self):
+        """The fee is charged on the trade, so the true probability needed is
+        always above the price paid. A scanner comparing p_hat to the raw ask
+        is systematically optimistic by exactly the fee."""
+        import kalshi_client as kc
+        ask = 0.96
+        be = kc.breakeven_probability(ask)
+        self.assertIsNotNone(be)
+        self.assertGreater(be, ask, "breakeven must exceed the ask")
+        self.assertLess(be, 0.98, "at 96c the fee is ~1c, not ~2c")
+
+    def test_the_fee_is_a_dome_peaking_at_the_midpoint(self):
+        """Fees decay toward both extremes — the one structural fact that
+        favours trading the tails. If this inverts, the sizing math inverts."""
+        import kalshi_client as kc
+        mid = kc.fee_cents(0.50, 100)
+        edge = kc.fee_cents(0.96, 100)
+        self.assertGreater(mid, edge,
+                           "fee at 50c must exceed fee at 96c for 100 contracts")
+
+    # -------------------------------------------------------- strategies --
+
+    def test_a_field_lock_requires_kalshis_own_mutex_flag(self):
+        """Outcomes that can EACH resolve YES legitimately sum over 100c.
+        Treating that as arbitrage buys a pile of unhedged longs. Cannot-tell
+        must read as 'not exclusive', never as permission."""
+        import kalshi_scanner as ks
+        markets = [
+            {"ticker": "A", "event_ticker": "E", "yes_ask_dollars": "0.30",
+             "yes_ask_size_fp": "500"},
+            {"ticker": "B", "event_ticker": "E", "yes_ask_dollars": "0.30",
+             "yes_ask_size_fp": "500"},
+        ]
+        self.assertEqual(ks.find_field_locks(markets, lambda e: False), [],
+                         "a non-exclusive event is not an arbitrage")
+
+        def raises(_):
+            raise RuntimeError("event lookup failed")
+        self.assertEqual(ks.find_field_locks(markets, raises), [],
+                         "an unreadable mutex flag must block, not permit")
+        self.assertEqual(len(ks.find_field_locks(markets, lambda e: True)), 1)
+
+    def test_a_pair_lock_needs_no_flag_but_must_clear_both_fees(self):
+        """YES+NO on one contract is exclusive by construction. The edge must
+        survive TWO fees, not one."""
+        import kalshi_scanner as ks
+        thin = [{"ticker": "A", "event_ticker": "E", "yes_ask_dollars": "0.50",
+                 "no_ask_dollars": "0.495", "yes_ask_size_fp": "500"}]
+        self.assertEqual(ks.find_pair_locks(thin), [],
+                         "a 0.5c gross edge cannot survive two fees at the "
+                         "midpoint, where fees are largest")
+
+    # ----------------------------------------------------- the quarantine --
+
+    def test_disagreement_is_never_sized_until_calibration_is_proven(self):
+        """The whole point of the sector. An unmeasured tail estimator that is
+        3 points optimistic loses on every trade while looking like one that
+        works, so it gets zero contracts until measured."""
+        import kalshi_scanner as ks
+        c = {"strategy": "DISAGREEMENT", "requires_estimate": True,
+             "p_hat": 0.99, "market_price": 0.96, "available_size": 5000}
+        for gate in (None, False):
+            with self.subTest(calibration_ok=gate):
+                n, why = ks.size_position(c, 10000, calibration_ok=gate)
+                self.assertEqual(n, 0, why)
+                self.assertIn("quarantine", why.lower())
+
+        n, _ = ks.size_position(c, 10000, calibration_ok=True)
+        self.assertGreater(n, 0, "a proven estimator must be allowed to size")
+
+    def test_structural_locks_size_without_any_estimator(self):
+        """Arithmetic does not need permission from the calibration gate."""
+        import kalshi_scanner as ks
+        c = {"strategy": "STRUCTURAL_PAIR", "requires_estimate": False,
+             "cost_cents": 96.0, "edge_cents": 3.0, "max_contracts": 400}
+        n, why = ks.size_position(c, 10000, calibration_ok=None)
+        self.assertGreater(n, 0, why)
+
+    def test_kelly_collapses_to_zero_as_the_estimate_meets_the_price(self):
+        """Sizing must vanish when the claimed edge does. If a 96c ask with a
+        true 96% still sizes, the sector is betting on the fee."""
+        import kalshi_scanner as ks
+        self.assertLessEqual(ks.kelly_fraction(0.96, 0.96), 1e-9)
+        self.assertLess(ks.kelly_fraction(0.94, 0.96), 0)
+        self.assertGreater(ks.kelly_fraction(0.99, 0.96), 0)
+
+    def test_the_calibration_verdict_starts_unproven_and_says_why(self):
+        import kalshi_calibration as cal
+        ok, why = cal.is_edge_proven([])
+        self.assertFalse(ok)
+        self.assertIn("NOT YET", why)
+
+    def test_being_right_is_not_the_bar_beating_the_price_is(self):
+        """An estimator that merely agrees with the market must NOT pass. This
+        is the Kalshi analogue of edge_over_baseline in model_test_harness."""
+        import kalshi_calibration as cal
+        rows = [{"settled": True, "outcome": 1, "p_hat": 0.97,
+                 "market_price": 0.97} for _ in range(300)]
+        ok, why = cal.is_edge_proven(rows)
+        self.assertFalse(ok, "agreeing with the price is not an edge")
+        self.assertIn("NO EDGE", why)
+
+    # ------------------------------------------------------- the arm gate --
+
+    def test_shadow_mode_cannot_place_an_order(self):
+        """Default posture must be the one that cannot spend money, and it must
+        RAISE rather than return None — a caller must not be able to record a
+        position the exchange never took (same reasoning as SingleWriterBlocked)."""
+        import os
+        import kalshi_client as kc
+        prev = os.environ.get("KALSHI_ENV")
+        try:
+            os.environ.pop("KALSHI_ENV", None)
+            self.assertEqual(kc.env_name(), "shadow",
+                             "default must be shadow, not live")
+            with self.assertRaises(kc.KalshiNotArmed):
+                kc.place_order(ticker="X", side="yes", count=1)
+            os.environ["KALSHI_ENV"] = "nonsense"
+            self.assertEqual(kc.env_name(), "shadow",
+                             "an unrecognised env must degrade to shadow")
+        finally:
+            os.environ.pop("KALSHI_ENV", None)
+            if prev is not None:
+                os.environ["KALSHI_ENV"] = prev
+
+    def test_arming_one_environment_does_not_arm_another(self):
+        import kalshi_client as kc
+        import unittest.mock as mock
+        with mock.patch.object(kc.Path, "read_text",
+                               return_value='{"env": "demo", "armed": true}'):
+            self.assertTrue(kc.armed_for("demo"))
+            self.assertFalse(kc.armed_for("live"),
+                             "arming demo must never imply arming live")
+
+    # -------------------------------------------------- board + contracts --
+
+    def test_an_abstain_blocks_because_it_is_not_consent(self):
+        import kalshi_board as kb
+        d = kb.vote({"strategy": "STRUCTURAL_PAIR", "requires_estimate": False,
+                     "max_contracts": 500, "rules_primary": ""})
+        self.assertFalse(d["approved"])
+        self.assertIn("Settlement Counsel", d["blocked_by"])
+
+    def test_any_single_seat_can_veto_a_structural_lock(self):
+        """A lock is claimed riskless; one dissent falsifies the claim."""
+        import kalshi_board as kb
+        d = kb.vote({"strategy": "STRUCTURAL_PAIR", "requires_estimate": False,
+                     "max_contracts": 5,     # below the liquidity floor
+                     "rules_primary": "Resolves YES if the official final score "
+                                      "published by the league shows Team A ahead."})
+        self.assertFalse(d["approved"])
+        self.assertIn("Liquidity Officer", d["blocked_by"])
+
+    def test_the_scanner_writes_what_the_consumers_read(self):
+        """Wiring contract. The scanner is a producer; two modules consume its
+        log by key. A renamed key is exactly the silent mismatch in
+        memory `wiring_contract_bugs` — output produced, never acted on."""
+        import kalshi_scanner as ks
+        import kalshi_calibration as cal
+        import kalshi_board as kb
+        self.assertEqual(cal.SCAN_LOG, ks.SCAN_LOG,
+                         "calibration must read the file the scanner writes")
+        self.assertEqual(kb.SCAN_LOG, ks.SCAN_LOG,
+                         "the board must vote on the scan that actually ran")
+
+        src = (Path(__file__).resolve().parent / "kalshi_scanner.py").read_text()
+        for key in ("structural_pair", "structural_field", "disagreement"):
+            self.assertIn(f'"{key}"', src,
+                          f"consumers read scan['{key}']; the producer must emit it")
+
+    def test_recording_the_same_scan_twice_does_not_double_count(self):
+        """main.py runs 4-6x/day. Re-recording one market as four observations
+        would make a single lucky settlement look like four confirmations."""
+        import kalshi_calibration as cal
+        import unittest.mock as mock
+        scan = {"disagreement": [{"ticker": "T1", "market_price": 0.96,
+                                  "title": "t", "breakeven_probability": 0.963}]}
+        store = {}
+
+        with mock.patch.object(cal, "_load_ledger",
+                               side_effect=lambda: store.get("rows", [])), \
+             mock.patch.object(cal, "_save_ledger",
+                               side_effect=lambda r: store.__setitem__("rows", r)):
+            first, _ = cal.record_from_scan(scan)
+            second, _ = cal.record_from_scan(scan)
+        self.assertEqual(first, 1)
+        self.assertEqual(second, 0, "same ticker, same day — must not re-add")
+
+
 class TestCatchUpJobBudget(unittest.TestCase):
     """The Mac's runner must let main.py finish, and must say where it died.
 
