@@ -408,19 +408,31 @@ def writer_silence_verdict(last_seen, expected=None, now=None,
             f"designated writer '{expected}' last traded {silence_h:.1f}h ago")
 
 
+def fetch_broker_orders(limit=500, timeout=30):
+    """Raw order list from Alpaca — the only medium every host shares.
+
+    Extracted so the CLI and vm_state_monitor.py cannot drift into two
+    different ideas of "the orders". Raises on failure: a caller must never
+    mistake "I could not ask the broker" for "the broker reports nothing",
+    which is the empty-window-reads-as-PASS trap.
+    """
+    from dotenv import load_dotenv
+    load_dotenv()
+    import urllib.request
+    base = os.environ.get("ALPACA_BASE_URL",
+                          "https://paper-api.alpaca.markets").rstrip("/")
+    req = urllib.request.Request(
+        base + f"/v2/orders?status=all&limit={limit}&direction=desc",
+        headers={"APCA-API-KEY-ID": os.environ["ALPACA_API_KEY"],
+                 "APCA-API-SECRET-KEY": os.environ["ALPACA_SECRET_KEY"]})
+    return json.load(urllib.request.urlopen(req, timeout=timeout))
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     print(f"host={this_host()}  designated={designated_host() or '(unset)'}  mode={mode()}")
     try:
-        from dotenv import load_dotenv
-        load_dotenv()
-        import urllib.request
-        base = os.environ.get("ALPACA_BASE_URL", "https://paper-api.alpaca.markets").rstrip("/")
-        req = urllib.request.Request(
-            base + "/v2/orders?status=all&limit=500&direction=desc",
-            headers={"APCA-API-KEY-ID": os.environ["ALPACA_API_KEY"],
-                     "APCA-API-SECRET-KEY": os.environ["ALPACA_SECRET_KEY"]})
-        orders = json.load(urllib.request.urlopen(req, timeout=30))
+        orders = fetch_broker_orders()
         tally = hosts_trading_recently(orders)
         sev, msg = divergence_verdict(tally)
         print(f"\n48h tally: {tally}\n[{sev}] {msg}")

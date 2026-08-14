@@ -6537,6 +6537,75 @@ class TestDesignatedWriterSilence(unittest.TestCase):
                                       expected="apexcapitalc")[0], "CRITICAL")
 
 
+class TestVMStateMonitor(unittest.TestCase):
+    """Nobody ever asked Google whether the machine was on. Eight days.
+
+    Every guard here defends the same property: this monitor must never report
+    OK for a reason other than "I asked, and the answer was good."
+    """
+
+    def _mod(self):
+        import vm_state_monitor
+        return vm_state_monitor
+
+    def test_unknown_power_state_is_not_ok(self):
+        """gcloud missing/unauthed must exit non-zero, not pass.
+
+        A monitor that goes quiet when its own plumbing breaks is precisely the
+        failure it exists to catch. This is the SKIP-is-not-PASS rule applied to
+        the monitor itself.
+        """
+        m = self._mod()
+        with patch.object(m, "_gcloud_status", return_value=(None, "no creds")), \
+             patch.object(m, "_writer_status", return_value=("PASS", "fine")):
+            worst, lines = m.check(escalate=False)
+        self.assertGreaterEqual(worst, 1, "unknown power state must not read as OK")
+        self.assertIn("UNKNOWN", " ".join(lines))
+
+    def test_a_stopped_instance_is_critical(self):
+        m = self._mod()
+        for state in ("TERMINATED", "STOPPING", "SUSPENDED", "STOPPED"):
+            with self.subTest(state=state):
+                with patch.object(m, "_gcloud_status", return_value=(state, state)), \
+                     patch.object(m, "_writer_status", return_value=("PASS", "fine")):
+                    worst, lines = m.check(escalate=False)
+                self.assertEqual(worst, 2, f"{state} must be CRITICAL")
+
+    def test_a_running_box_that_does_not_trade_is_still_broken(self):
+        """The 2026-08-14 lesson, one level up.
+
+        RUNNING answers "is it powered on", not "is the firm trading". The 18:00
+        run that day completed and pinged its heartbeat GREEN while 117 of 135
+        orders failed. Power and productivity are two questions.
+        """
+        m = self._mod()
+        with patch.object(m, "_gcloud_status", return_value=("RUNNING", "RUNNING")), \
+             patch.object(m, "_writer_status",
+                          return_value=("CRITICAL", "writer silent 202h")):
+            worst, _ = m.check(escalate=False)
+        self.assertEqual(worst, 2, "a running-but-silent writer must still be CRITICAL")
+
+    def test_all_good_is_the_only_zero(self):
+        m = self._mod()
+        with patch.object(m, "_gcloud_status", return_value=("RUNNING", "RUNNING")), \
+             patch.object(m, "_writer_status", return_value=("PASS", "traded 0.1h ago")):
+            worst, _ = m.check(escalate=False)
+        self.assertEqual(worst, 0)
+
+    def test_it_targets_the_instance_not_the_project(self):
+        """Naming the project as if it were the instance is why the VM could not
+        be looked up for months (INFRASTRUCTURE.md row 1)."""
+        m = self._mod()
+        self.assertEqual(m.INSTANCE, "apex-capital-configuration")
+        self.assertNotEqual(m.INSTANCE, m.PROJECT)
+
+    def test_the_broker_fetch_is_shared_not_duplicated(self):
+        """Two copies of "the orders" is how two definitions drift apart."""
+        import single_writer as sw
+        self.assertTrue(hasattr(sw, "fetch_broker_orders"),
+                        "vm_state_monitor imports this; it must exist")
+
+
 class TestCatchUpJobBudget(unittest.TestCase):
     """The Mac's runner must let main.py finish, and must say where it died.
 
