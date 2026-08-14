@@ -241,6 +241,29 @@ def log(symbol, side, qty, verdict, reason, allowed) -> None:
 # liveness check asked a host about itself; a host that cannot be reached cannot
 # answer, and silence was being read as absence. Orders cannot stay silent.
 
+def _stamped_orders(orders):
+    """Yield (timestamp, host_tag) for every order we can place in time.
+
+    Shared by the count-based and the recency-based checks below so the two can
+    never disagree about which orders exist or who placed them.
+    """
+    from order_ledger import parse_stamp
+    for o in orders or []:
+        get = o.get if isinstance(o, dict) else (lambda k, d=None: getattr(o, k, d))
+        raw = get("submitted_at") or get("created_at")
+        if not raw:
+            continue
+        try:
+            ts = raw if isinstance(raw, datetime) else datetime.fromisoformat(
+                str(raw).replace("Z", "+00:00"))
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+        st = parse_stamp(get("client_order_id"))
+        yield ts, (st["host"] if st else "UNSTAMPED")
+
+
 def hosts_trading_recently(orders, hours=48, now=None) -> dict:
     """{host_tag: order_count} over the window, from stamped client_order_ids.
 
@@ -248,28 +271,38 @@ def hosts_trading_recently(orders, hours=48, now=None) -> dict:
     counted under "UNSTAMPED" rather than dropped — dropping them is how a
     pre-cutover or foreign order becomes invisible to the very check meant to
     find extra writers.
+
+    This answers "how many of us are there?" and NOTHING else. It is a count
+    inside a window, so a host that traded at the start of the window and then
+    died is indistinguishable from one still working. For that, hosts_last_seen().
     """
-    from order_ledger import parse_stamp
     now = now or datetime.now(timezone.utc)
     cutoff = now - timedelta(hours=hours)
     tally = {}
-    for o in orders or []:
-        get = o.get if isinstance(o, dict) else (lambda k, d=None: getattr(o, k, d))
-        raw = get("submitted_at") or get("created_at")
-        if not raw:
-            continue
-        try:
-            ts = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
-            if ts.tzinfo is None:
-                ts = ts.replace(tzinfo=timezone.utc)
-        except Exception:
-            continue
+    for ts, tag in _stamped_orders(orders):
         if ts < cutoff:
             continue
-        st = parse_stamp(get("client_order_id"))
-        tag = st["host"] if st else "UNSTAMPED"
         tally[tag] = tally.get(tag, 0) + 1
     return tally
+
+
+def hosts_last_seen(orders, now=None) -> dict:
+    """{host_tag: datetime of that host's most recent order}. No window.
+
+    The question hosts_trading_recently() cannot answer, and the reason this
+    firm ran exit-only for eight days without noticing.
+
+    On 2026-08-06 the GCP VM stopped. Its last six orders still sat inside the
+    48h window, so the tally read `apexcapitalc=6` and was read as "the
+    designated writer is alive and trading". It had placed all six in a
+    ten-hour burst at the START of the window and then gone quiet for good.
+    **A count says a host WAS here; only a timestamp says it still IS.**
+    """
+    seen = {}
+    for ts, tag in _stamped_orders(orders):
+        if tag not in seen or ts > seen[tag]:
+            seen[tag] = ts
+    return seen
 
 
 def divergence_verdict(tally, expected=None) -> tuple:
@@ -302,6 +335,79 @@ def divergence_verdict(tally, expected=None) -> tuple:
     return ("PASS", f"single writer confirmed: {list(real)[0]}")
 
 
+# How long the designated writer may go without placing an order before the
+# silence is itself a finding. Generous on purpose: orders are bursty (the VM
+# averaged ~1.2/day over 21 days, with observed 14h gaps between them), so a
+# tight bound would cry wolf on an ordinary quiet afternoon. The sharp signal is
+# not the absolute silence — it is silence WHILE ANOTHER HOST WAS TRADING, which
+# needs no market calendar to interpret.
+DEFAULT_WRITER_GRACE_HOURS = 26.0
+
+
+def writer_silence_verdict(last_seen, expected=None, now=None,
+                           grace_hours=DEFAULT_WRITER_GRACE_HOURS) -> tuple:
+    """(severity, message) — has the designated writer stopped writing?
+
+    Deliberately a SEPARATE function from divergence_verdict(), which returns on
+    its first matching branch. On 2026-08-07 three hosts appeared in the window,
+    so it reported CRITICAL "3 hosts placed orders on the shared account" and
+    never reached the question of whether one of those three had died. It was
+    telling the truth about the fork while the writer's corpse sat in its own
+    tally. Both checks must run; neither may mask the other.
+
+    Corroboration beats the calendar. If another host placed an order well after
+    the writer's last one, the market was demonstrably open and the writer was
+    demonstrably absent — no holiday table required, and no way for a long
+    weekend to fake it. Without a second host to corroborate, an absolute bound
+    is all that is left, so the verdict downgrades to HIGH and says why rather
+    than claiming a confidence it has not earned.
+    """
+    now = now or datetime.now(timezone.utc)
+    expected = expected if expected is not None else designated_host()
+    if not expected:
+        return ("SKIP", "no designated writer (shadow mode) — nothing to watch")
+    if not last_seen:
+        return ("SKIP", "no orders on record — cannot tell whether the writer works")
+
+    writer_last = last_seen.get(expected)
+    others = {h: t for h, t in last_seen.items()
+              if h != expected and h != "UNSTAMPED"}
+    newest_other = max(others.values()) if others else None
+
+    if writer_last is None:
+        if newest_other is None:
+            return ("SKIP", f"no orders from '{expected}' and none from any other "
+                            f"host either — that is evidence of nothing")
+        return ("CRITICAL",
+                f"the designated writer '{expected}' has placed NO order on record "
+                f"while {sorted(others)} did (most recent "
+                f"{(now - newest_other).total_seconds() / 3600.0:.0f}h ago). The host "
+                f"that is supposed to open this firm's positions is absent.")
+
+    silence_h = (now - writer_last).total_seconds() / 3600.0
+
+    if newest_other is not None and newest_other > writer_last:
+        lag_h = (newest_other - writer_last).total_seconds() / 3600.0
+        if lag_h > grace_hours:
+            return ("CRITICAL",
+                    f"the designated writer '{expected}' has been silent "
+                    f"{silence_h:.0f}h (last order {writer_last.isoformat()[:16]}), "
+                    f"but {sorted(others)} kept trading for {lag_h:.0f}h after that — "
+                    f"the market was open and the writer was not there. The firm can "
+                    f"only REDUCE exposure until this host returns or another is "
+                    f"designated in APEX_TRADING_HOST.")
+
+    if silence_h > grace_hours:
+        return ("HIGH",
+                f"the designated writer '{expected}' has been silent {silence_h:.0f}h "
+                f"(last order {writer_last.isoformat()[:16]}) and no other host traded "
+                f"after it — so a market closure cannot be told apart from an outage "
+                f"from here. Verify the host directly.")
+
+    return ("PASS",
+            f"designated writer '{expected}' last traded {silence_h:.1f}h ago")
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     print(f"host={this_host()}  designated={designated_host() or '(unset)'}  mode={mode()}")
@@ -314,8 +420,21 @@ if __name__ == "__main__":
             base + "/v2/orders?status=all&limit=500&direction=desc",
             headers={"APCA-API-KEY-ID": os.environ["ALPACA_API_KEY"],
                      "APCA-API-SECRET-KEY": os.environ["ALPACA_SECRET_KEY"]})
-        tally = hosts_trading_recently(json.load(urllib.request.urlopen(req, timeout=30)))
+        orders = json.load(urllib.request.urlopen(req, timeout=30))
+        tally = hosts_trading_recently(orders)
         sev, msg = divergence_verdict(tally)
         print(f"\n48h tally: {tally}\n[{sev}] {msg}")
+
+        # Both, always. The count check answers "how many?" and the recency
+        # check answers "is the writer still here?" — one cannot stand in for
+        # the other, and reporting only the first is what hid an 8-day outage.
+        seen = hosts_last_seen(orders)
+        now = datetime.now(timezone.utc)
+        print("\nlast seen:")
+        for h, t in sorted(seen.items(), key=lambda kv: kv[1], reverse=True):
+            print(f"  {h:14} {t.isoformat()[:16]}  "
+                  f"({(now - t).total_seconds() / 3600.0:6.1f}h ago)")
+        sev2, msg2 = writer_silence_verdict(seen)
+        print(f"[{sev2}] {msg2}")
     except Exception as e:
         print(f"could not query broker: {e}")

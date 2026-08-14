@@ -6395,6 +6395,117 @@ class TestSingleWriterGuard(unittest.TestCase):
                          "platform would recreate the blind spot it exists to close")
 
 
+class TestDesignatedWriterSilence(unittest.TestCase):
+    """A count in a window cannot tell you a host has died.
+
+    2026-08-06: the VM placed six orders and stopped. For the next 48h the
+    tally still read `apexcapitalc=6`, so the firm read the designated writer
+    as alive. It was suspended. The firm ran exit-only for eight days and no
+    check said so — the multi-host branch of divergence_verdict() fired first
+    and returned CRITICAL about the fork, never reaching the liveness question.
+    """
+
+    def _seen(self, **kw):
+        """{host: datetime} from {host: hours_ago}."""
+        from datetime import timezone
+        now = datetime.now(timezone.utc)
+        return {h: now - timedelta(hours=n) for h, n in kw.items()}
+
+    def test_a_count_cannot_see_a_host_that_stopped(self):
+        """The exact 2026-08-06 shape: still in the window, already dead."""
+        from datetime import timezone
+        import single_writer as sw
+        now = datetime.now(timezone.utc)
+        orders = [{"client_order_id": "apex-apexcapitalc-main-aaaaaaaaaaaa",
+                   "submitted_at": (now - timedelta(hours=40)).isoformat()},
+                  {"client_order_id": "apex-mac-main-bbbbbbbbbbbb",
+                   "submitted_at": (now - timedelta(hours=1)).isoformat()}]
+        tally = sw.hosts_trading_recently(orders, hours=48)
+        self.assertEqual(tally.get("apexcapitalc"), 1,
+                         "the dead host is still inside the 48h window")
+        self.assertEqual(sw.divergence_verdict(tally)[0], "CRITICAL",
+                         "the count check reports the fork, not the death")
+        sev, msg = sw.writer_silence_verdict(sw.hosts_last_seen(orders),
+                                             expected="apexcapitalc")
+        self.assertEqual(sev, "CRITICAL", "the recency check must catch it")
+        self.assertIn("apexcapitalc", msg)
+
+    def test_another_host_trading_after_the_writer_proves_the_market_was_open(self):
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=201, mac=2), expected="apexcapitalc")
+        self.assertEqual(sev, "CRITICAL")
+        self.assertIn("REDUCE", msg, "the message must say what the firm can still do")
+
+    def test_uncorroborated_silence_downgrades_instead_of_guessing(self):
+        """Nobody traded after the writer — that may be a closed market."""
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=100, mac=120), expected="apexcapitalc")
+        self.assertEqual(sev, "HIGH", "no corroboration, so no CRITICAL claim")
+        self.assertIn("closure", msg)
+
+    def test_a_quiet_weekend_does_not_cry_wolf(self):
+        import single_writer as sw
+        sev, _ = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=6, mac=2), expected="apexcapitalc")
+        self.assertEqual(sev, "PASS")
+
+    def test_a_writer_that_never_traded_is_critical_not_pass(self):
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(mac=2), expected="apexcapitalc")
+        self.assertEqual(sev, "CRITICAL")
+        self.assertIn("absent", msg)
+
+    def test_an_empty_record_is_skip_not_pass(self):
+        import single_writer as sw
+        self.assertEqual(
+            sw.writer_silence_verdict({}, expected="apexcapitalc")[0], "SKIP",
+            "no orders is evidence of nothing (memory presence-is-not-currency)")
+
+    def test_shadow_mode_has_no_writer_to_watch(self):
+        import single_writer as sw
+        self.assertEqual(
+            sw.writer_silence_verdict(self._seen(mac=1), expected="")[0], "SKIP")
+
+    def test_unstamped_orders_cannot_corroborate(self):
+        """An order nobody can attribute must not stand in for a live peer."""
+        import single_writer as sw
+        sev, _ = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=100, UNSTAMPED=1), expected="apexcapitalc")
+        self.assertEqual(sev, "HIGH",
+                         "UNSTAMPED is not a known host, so it proves nothing "
+                         "about whether the market was open")
+
+    def test_the_consumer_runs_both_checks(self):
+        """Wiring contract: a detector nobody calls is not a detector."""
+        from pathlib import Path
+        src = (Path(__file__).resolve().parent
+               / "cit_pipeline_integrity_agent.py").read_text()
+        i = src.index("def check_single_writer(")
+        j = src.index("def check_peer_host_liveness(")
+        body = src[i:j]
+        self.assertIn("divergence_verdict", body)
+        self.assertIn("writer_silence_verdict", body,
+                      "the silence check must run alongside the count check")
+        self.assertIn("hosts_last_seen", body)
+
+    def test_neither_verdict_can_return_early_past_the_other(self):
+        """They must be separate calls, not branches of one function."""
+        import single_writer as sw
+        self.assertTrue(callable(sw.writer_silence_verdict))
+        self.assertTrue(callable(sw.divergence_verdict))
+        # A single dead-writer scenario must produce a finding from the silence
+        # check regardless of what the count check decides to report.
+        for tally_case in ({"apexcapitalc": 1, "mac": 1}, {"apexcapitalc": 1}):
+            self.assertIn(sw.divergence_verdict(tally_case, expected="apexcapitalc")[0],
+                          ("CRITICAL", "PASS"))
+        self.assertEqual(
+            sw.writer_silence_verdict(self._seen(apexcapitalc=201, mac=2),
+                                      expected="apexcapitalc")[0], "CRITICAL")
+
+
 class TestCatchUpJobBudget(unittest.TestCase):
     """The Mac's runner must let main.py finish, and must say where it died.
 

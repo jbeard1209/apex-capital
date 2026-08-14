@@ -622,22 +622,37 @@ def check_single_writer(issues: list, skipped: dict):
         # Cannot reach the broker is cannot-tell, never all-clear.
         return _skip(skipped, me, f"could not read order history: {type(e).__name__}: {str(e)[:120]}")
 
+    def _emit(sev, msg, suffix=""):
+        if sev == "SKIP":
+            _skip(skipped, me, msg)
+            return
+        if sev == "PASS":
+            logger.info(f"    OK — {msg}")
+            return
+        full = (f"{msg} Guard mode is '{sw.mode()}'"
+                + (f", designated writer '{sw.designated_host()}'." if sw.designated_host()
+                   else " — APEX_TRADING_HOST is unset, so nothing is being blocked.")
+                + suffix)
+        logger.warning(f"    {sev}: {full}")
+        issues.append({"severity": sev, "check": me,
+                       "message": full, "auto_fixed": False})
+
+    # Two independent questions. "How many hosts are writing?" is a COUNT in a
+    # window; "is the designated writer still writing?" is a TIMESTAMP. Running
+    # only the first is how the VM's death hid for eight days: it had traded
+    # inside the 48h window before it stopped, so the tally listed it as present
+    # and the multi-host branch returned CRITICAL about the fork long before
+    # anything could ask whether one of those hosts had gone quiet.
     tally = sw.hosts_trading_recently(orders, hours=48)
-    severity, msg = sw.divergence_verdict(tally)
     logger.info(f"    48h host tally: {tally or '(none)'}")
+    _emit(*sw.divergence_verdict(tally))
 
-    if severity == "SKIP":
-        return _skip(skipped, me, msg)
-    if severity == "PASS":
-        logger.info(f"    OK — {msg}")
-        return
-
-    full = (f"{msg} Guard mode is '{sw.mode()}'"
-            + (f", designated writer '{sw.designated_host()}'." if sw.designated_host()
-               else " — APEX_TRADING_HOST is unset, so nothing is being blocked."))
-    logger.warning(f"    {severity}: {full}")
-    issues.append({"severity": severity, "check": me,
-                   "message": full, "auto_fixed": False})
+    if hasattr(sw, "writer_silence_verdict"):
+        last_seen = sw.hosts_last_seen(orders)
+        logger.info("    last seen: " + (", ".join(
+            f"{h}={t.isoformat()[:16]}" for h, t in
+            sorted(last_seen.items(), key=lambda kv: kv[1], reverse=True)) or "(none)"))
+        _emit(*sw.writer_silence_verdict(last_seen))
 
 
 def check_peer_host_liveness(issues: list, skipped: dict):
