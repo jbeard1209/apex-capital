@@ -750,6 +750,159 @@ class TestWiringContracts(unittest.TestCase):
                          f"hardcoded host path(s) in wired agent(s): {offenders} — "
                          "resolve from __file__ instead")
 
+    # ── Action vocabulary: producer verb -> manager branch ─────────────────
+    # The most expensive instance of this firm's signature bug. Six FI agents
+    # emit action="BUY"; execute_decision() branched on BUY_NEW/ADD/SELL/TRIM
+    # and had no else, so "BUY" fell through the try block untouched and came
+    # back {"executed": False, "error": None}. The report rendered that as
+    # "✗ Failed: None" — 118 lines a day that read like broker rejections.
+    # 5,916 decisions across the 50 cycles still on file; the pod was created
+    # 2026-06-09, so fixed income never traded once in 66 days.
+
+    def test_every_action_a_producer_emits_is_one_the_manager_can_execute(self):
+        """Sweep the actual agent files. A verb with no branch is a dead pod.
+
+        Reads the source rather than a declared list, because the whole failure
+        was that nobody had ever compared the two sides. A hand-maintained list
+        of "actions we emit" would have said BUY_NEW and been wrong for 66 days.
+        """
+        import re
+        import manager_agent as ma
+        allowed = set(ma.KNOWN_ACTIONS) | set(ma.ACTION_ALIASES)
+        emitted = {}
+        for py in sorted((Path(__file__).parent / "agents").glob("*.py")):
+            for m in re.finditer(r'["\']action["\']\s*:\s*["\']([A-Za-z_]+)["\']',
+                                 py.read_text()):
+                emitted.setdefault(m.group(1).upper(), set()).add(py.name)
+        self.assertTrue(emitted, "found no action literals — the sweep regex broke, "
+                                 "which would make this test pass vacuously forever")
+        unhandled = {a: sorted(f)[:3] for a, f in emitted.items() if a not in allowed}
+        self.assertEqual(unhandled, {},
+                         "agent(s) emit an action the manager cannot execute — it will "
+                         "be silently no-op'd:\n  " + repr(unhandled))
+
+    def test_an_unknown_action_is_rejected_not_approved(self):
+        """The default verdict on a verb we cannot parse must be no.
+
+        `decision` is initialised to "APPROVED" at the top of
+        evaluate_recommendation, so any action that matches no branch exits
+        APPROVED with an empty rationale — no CRO gate, no regime cap, no bear
+        case, no position cap, no pod budget. 118 per cycle were marked
+        approved-and-failed. The execution bug was the only thing between that
+        and 118 unreviewed live orders.
+        """
+        import manager_agent as ma
+        account = {"portfolio_value": 100000.0, "buying_power": 300000.0,
+                   "cash": 40000.0, "n_positions": 5}
+        out = ma.evaluate_recommendation(
+            {"ticker": "ZZZZ", "action": "YOLO", "conviction": 5}, account)
+        self.assertEqual(out["manager_decision"], "REJECTED")
+        self.assertEqual(out["manager_action"], "HOLD")
+        self.assertTrue(any("WIRING" in r for r in out["manager_rationale"]),
+                        "a rejection with no stated reason is the same silence in "
+                        "a different costume")
+
+    def test_the_fi_dialect_is_translated_not_dropped(self):
+        """BUY is a real instruction. Understand it — and hold-aware."""
+        import manager_agent as ma
+        account = {"portfolio_value": 100000.0, "buying_power": 300000.0,
+                   "cash": 40000.0, "n_positions": 5}
+        fresh = ma.evaluate_recommendation(
+            {"ticker": "LQD", "action": "BUY", "conviction": 4}, account)
+        self.assertEqual(fresh["manager_action"], "BUY_NEW")
+        # Same verb on a name we already hold is an ADD: different sizing,
+        # different regime cap, and it must not consume the new-position budget.
+        held = ma.evaluate_recommendation(
+            {"ticker": "LQD", "action": "BUY", "conviction": 4,
+             "weight_pct": 4.2}, account)
+        self.assertEqual(held["manager_action"], "ADD")
+
+    def test_execute_decision_never_fails_without_saying_why(self):
+        """{"executed": False, "error": None} is the shape of the whole bug."""
+        import manager_agent as ma
+        res = ma.execute_decision(
+            {"ticker": "ZZZZ", "manager_action": "BUY", "manager_decision": "APPROVED"},
+            trader=None, dry_run=False)
+        self.assertFalse(res["executed"])
+        self.assertTrue(res["error"], "a failed execution with error=None is "
+                                      "indistinguishable from a broker rejection")
+        self.assertIn("unhandled action", res["error"])
+
+    def test_the_report_never_renders_failed_none(self):
+        """What the Chairman actually read, 118 times a day, for two months."""
+        import manager_agent as ma
+        account = {"portfolio_value": 1.0, "buying_power": 1.0, "cash": 1.0,
+                   "n_positions": 0, "pnl_today": 0.0, "pnl_today_pct": 0.0}
+        decisions = [{"ticker": "ZZZZ", "manager_decision": "APPROVED",
+                      "manager_action": "BUY_NEW", "manager_rationale": []}]
+        executions = [{"ticker": "ZZZZ", "executed": False, "order_id": None,
+                       "error": None}]
+        text = "\n".join(
+            ma.build_management_report(decisions, executions, account, False))
+        self.assertNotIn("Failed: None", text)
+
+    def test_one_pod_cannot_consume_the_whole_new_position_budget(self):
+        """The 2-per-cycle cap is a shared budget, not a queue position.
+
+        With the FI verb understood, its picks sit ahead of the equity book in
+        an unranked list and would take both slots every cycle, forever — with
+        every governor working exactly as specified and nothing reporting an
+        error.
+        """
+        src = (Path(__file__).parent / "manager_agent.py").read_text()
+        self.assertIn("MAX_NEW_POSITIONS_PER_POD", src)
+        self.assertIn("new_by_pod", src)
+
+    def test_an_fi_agent_with_no_spread_feed_has_no_opinion(self):
+        """Defaults turn a missing feed into a confident buy on the whole list.
+
+        Every subclass scores off `self.spreads.get("hy_spread_bps", 350)`. With
+        no context that reads as HY 350 / IG 120 -> NORMAL -> conviction 4 -> BUY,
+        for every ticker, unconditionally. On 2026-08-14 all 118 FI picks carried
+        "HY spread=350bps IG spread=120bps" verbatim while the live values were
+        315 and 158. Same family as `nan-is-not-none`.
+        """
+        import importlib.util
+        p = Path(__file__).parent / "agents" / "cos_fi_base.py"
+        spec = importlib.util.spec_from_file_location("cos_fi_base_t", p)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        class _A(mod.FIBaseAgent):
+            WATCHLIST = ["LQD", "HYG", "VCIT"]
+            SEGMENT = "credit_spread"
+
+        blind = _A().run()
+        self.assertEqual(blind["recommendations"], [],
+                         "an FI agent with no spread feed produced picks — those "
+                         "numbers came from this file, not from the market")
+        self.assertTrue(blind.get("abstained"))
+
+        seeing = _A(spread_context={"hy_spread_bps": 315.0, "ig_spread_bps": 158.0,
+                                    "spread_regime": "NORMAL"}).run()
+        self.assertTrue(seeing["recommendations"],
+                        "with live spreads the agent must still do its job")
+        self.assertFalse(seeing.get("abstained"))
+
+    def test_the_credit_regime_actually_reaches_the_fi_agents(self):
+        """fi_credit_monitor publishes `spread_regime`; the base read `regime`.
+
+        So self.regime was the literal default on every run — including through
+        fi_pipeline.py, which does pass live context. `if regime in ("WIDE",
+        "DISTRESSED")` in six subclasses has never once evaluated true.
+        """
+        import importlib.util
+        p = Path(__file__).parent / "agents" / "cos_fi_base.py"
+        spec = importlib.util.spec_from_file_location("cos_fi_base_t2", p)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        a = mod.FIBaseAgent(spread_context={"spread_regime": "DISTRESSED",
+                                            "hy_spread_bps": 800.0,
+                                            "ig_spread_bps": 250.0})
+        self.assertEqual(a.regime, "DISTRESSED")
+        # And an absent regime must not masquerade as a normal market.
+        self.assertEqual(mod.FIBaseAgent().regime, "UNKNOWN")
+
     def test_unknown_order_is_foreign_even_if_we_traded_that_symbol_today(self):
         """The v1 bar — "we touched this ticker today" — must not explain an order.
 

@@ -60,6 +60,70 @@ MANAGER_LOG  = "data/manager_decisions.json"
 
 
 # =============================================================================
+# ACTION VOCABULARY — the producer→consumer contract for what a pick can ask for
+# =============================================================================
+# This firm's signature bug is a producer emitting an identifier no consumer
+# handles, swallowed by a `.get()` or an if/elif chain with no `else`. On
+# 2026-08-14 this one was found in the most expensive place it could possibly
+# live: order execution.
+#
+# Every fixed-income agent emits `action: "BUY"`. execute_decision() branches on
+# SELL / TRIM / ADD / BUY_NEW / HOLD / WATCH — and nothing else. "BUY" matched no
+# branch, fell out of the try block untouched, and returned {"executed": False,
+# "error": None}, which the report printed as "✗ Failed: None". It looked like a
+# broker rejection. It was the firm not having a word for what it was asking.
+#
+# Worse: evaluate_recommendation() had no branch for "BUY" either, so `decision`
+# kept its initialiser "APPROVED" and `rationale` stayed empty. 118 orders per
+# cycle were marked APPROVED having passed no CRO gate, no regime cap, no bear
+# case, no position-count cap and no pod-ledger budget check. The execution bug
+# was the only thing standing between that and 118 unreviewed live orders.
+#
+# Measured: 5,916 such decisions across the 50 cycles still on file, and the FI
+# agents were created 2026-06-09 — so the entire fixed-income pod, six agents
+# across preferred / IG / duration / credit / HY / convertible, has never placed
+# a single trade in 66 days. Not blocked, not rejected, not unfunded: unheard.
+#
+# So the vocabulary is declared ONCE, here, and enforced at both ends.
+EXECUTABLE_ACTIONS  = ("BUY_NEW", "ADD", "SELL", "TRIM")
+NON_TRADING_ACTIONS = ("HOLD", "WATCH")
+KNOWN_ACTIONS       = EXECUTABLE_ACTIONS + NON_TRADING_ACTIONS
+
+# Dialects that mean something real. Translated at intake so the pick flows
+# through the FULL review path rather than round a side of it. Mapping "BUY"
+# straight to BUY_NEW would be wrong when we already hold the name — that is an
+# ADD — so the resolution is contextual; see _canonical_action().
+ACTION_ALIASES = {
+    "BUY":        "BUY_NEW",   # 6 cos_fi_* agents, every cycle since 2026-06-09
+    "ACCUMULATE": "ADD",
+    "REDUCE":     "TRIM",
+    "EXIT":       "SELL",
+    "SELL_ALL":   "SELL",
+    "CLOSE":      "SELL",
+}
+
+
+def _canonical_action(raw_action: str, weight_pct: float = 0.0) -> tuple[str, str]:
+    """(canonical_action, note). canonical_action is None if unrecognised.
+
+    Returning None rather than a best guess is the point. An action this firm
+    cannot name is a wiring bug, and the safe response to a wiring bug in the
+    order path is to refuse and say so — never to pick the nearest verb.
+    """
+    a = str(raw_action or "").strip().upper()
+    if a in KNOWN_ACTIONS:
+        return a, ""
+    if a in ACTION_ALIASES:
+        canon = ACTION_ALIASES[a]
+        # "BUY" on a name we already hold is an ADD, not a new position. Sizing,
+        # the regime cap and the 2-per-cycle new-position governor all differ.
+        if canon == "BUY_NEW" and (weight_pct or 0) > 0:
+            canon = "ADD"
+        return canon, f"action '{a}' normalised to '{canon}'"
+    return None, f"unrecognised action '{a}' — not in {KNOWN_ACTIONS}"
+
+
+# =============================================================================
 # BEAR CASE ADVERSARIAL CHECK
 # =============================================================================
 
@@ -200,6 +264,30 @@ def evaluate_recommendation(rec: dict, account: dict,
     buying_power    = account["buying_power"]
     n_positions     = account["n_positions"]
     source_agent    = rec.get("source_agent", "ReviewAgent")
+    # ── Normalise the action verb BEFORE any judgement is applied ──────────
+    # Everything below dispatches on `action`; a verb nothing matches walks the
+    # whole function untouched and exits as APPROVED with an empty rationale.
+    _canon, _action_note = _canonical_action(action, weight_pct)
+    if _canon is None:
+        # Refuse loudly. This is a wiring-contract violation, not a trade
+        # opinion, and the only honest verdict on a request we cannot parse is
+        # "no" plus the reason (memory `verdict-with-no-consequence`).
+        logger.error(
+            f"  ⚠ UNKNOWN ACTION for {ticker}: {_action_note}. Rejected. "
+            f"A producer is emitting a verb the manager cannot execute — fix the "
+            f"producer or add it to ACTION_ALIASES; do NOT let it reach execution."
+        )
+        return {**rec,
+                "manager_decision":  "REJECTED",
+                "manager_action":    "HOLD",
+                "manager_rationale": [
+                    f"[WIRING] {_action_note}. Rejected without evaluation: an "
+                    f"action the manager cannot execute must not be marked "
+                    f"APPROVED — that is how 118 orders/cycle were logged as "
+                    f"approved-and-failed for 66 days.",
+                ]}
+    action = _canon
+
     # Write the resolved value back into rec. Every return below spreads
     # `{**rec, ...}`, so without this the fallback is computed and thrown away:
     # a review-agent recommendation carries no source_agent of its own, and the
@@ -241,6 +329,11 @@ def evaluate_recommendation(rec: dict, account: dict,
     decision    = "APPROVED"
     exec_action = action
     rationale  : list[str] = []
+    if _action_note:
+        # Keep the translation in the audit trail. A pick whose verb we rewrote
+        # should say so on the record, or the next reader sees a BUY_NEW that no
+        # agent ever emitted and cannot reconcile it against the producer.
+        rationale.append(f"[WIRING] {_action_note}.")
 
     # Streak adjustments are recorded after rationale list is initialised
     # (rationale was referenced before assignment in the original streak block)
@@ -1068,6 +1161,24 @@ def execute_decision(decision: dict, trader, dry_run: bool = False) -> dict:
             else:
                 result["error"] = "submit_buy returned None"
 
+        else:
+            # The branch that did not exist, and whose absence cost 66 days of
+            # fixed-income trading. An if/elif chain over an identifier MUST end
+            # in an else that fails loudly, or an unrecognised value produces a
+            # perfect, silent no-op that reads downstream as an execution
+            # failure — indistinguishable from a broker rejection.
+            #
+            # Unreachable via evaluate_recommendation(), which now rejects
+            # unknown verbs at intake. Kept anyway: execute_decision() is called
+            # directly by tests and by the catch-up runner, and a guard that
+            # only holds on one path is not a guard.
+            result["error"] = (
+                f"unhandled action '{action}' — execute_decision has no branch "
+                f"for it. Executable actions are {EXECUTABLE_ACTIONS}. This is a "
+                f"wiring-contract violation, not a broker failure."
+            )
+            logger.error(f"  ⚠ {ticker}: {result['error']}")
+
     except Exception as e:
         result["error"] = str(e)
         logger.error(f"  Execution error for {ticker}: {e}")
@@ -1128,7 +1239,15 @@ def build_management_report(decisions: list[dict], executions: list[dict],
             ex    = exec_map.get(d["ticker"], {})
             ok    = ex.get("executed", False)
             oid   = ex.get("order_id", "—")
-            err   = ex.get("error", "")
+            # "✗ Failed: None" is what 118 lines a day looked like for two
+            # months, and it reads as a broker rejection with an empty message.
+            # A failure with no stated cause is a second bug on top of the
+            # first: never let the report render one.
+            err = (ex.get("error")
+                   or ex.get("note")
+                   or ("no execution record — the ticker never reached "
+                       "execute_decision()" if not ex else
+                       "no cause recorded — see execute_decision()"))
             status = f"✓ Executed  (order: {oid})" if ok else f"✗ Failed: {err}"
             lines.append(f"  [{d['manager_action']:<8}] {d['ticker']:<6}  {status}")
             for rat in d["manager_rationale"]:
@@ -1577,10 +1696,37 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
         from alpaca_trader import AlpacaTrader
         trader = AlpacaTrader()
 
+        # ── One new position per pod per cycle ────────────────────────────
+        # The loop takes decisions in list order, unranked, and stops at the
+        # 2-per-cycle cap. That was harmless only because one pod's picks were
+        # being silently discarded before they got here. Now that the FI pod's
+        # verb is understood, its 118 picks sit ahead of the equity book in the
+        # same list — and would take both slots, every cycle, forever. The
+        # equity book would simply stop growing, and nothing would report an
+        # error, because every governor involved would be working as specified.
+        #
+        # A cap that is always consumed by whoever is first in an arbitrary
+        # list is not a risk control, it is a queue position. So: the per-cycle
+        # budget is shared, one new name per pod, and the next cycle's ordering
+        # gives the others their turn.
+        MAX_NEW_POSITIONS_PER_POD = 1
         new_positions_this_cycle = 0
+        new_by_pod: dict[str, int] = {}
         for d in decisions:
             if d["manager_decision"] == "APPROVED" and d["manager_action"] not in ("HOLD", "WATCH"):
                 if d["manager_action"] == "BUY_NEW":
+                    _pod = _resolve_pod_id(d)
+                    if new_by_pod.get(_pod, 0) >= MAX_NEW_POSITIONS_PER_POD:
+                        d["manager_decision"]  = "REJECTED"
+                        d["manager_action"]    = "HOLD"
+                        d["manager_rationale"] = d.get("manager_rationale", []) + [
+                            f"[POD PACING] BUY_NEW for {d['ticker']} deferred — "
+                            f"{_pod} already opened its {MAX_NEW_POSITIONS_PER_POD} "
+                            f"new position(s) this cycle. The per-cycle budget is "
+                            f"shared across pods so one pod's queue cannot consume "
+                            f"it every cycle. Will reconsider next cycle."
+                        ]
+                        continue
                     if new_positions_this_cycle >= MAX_NEW_POSITIONS_PER_CYCLE:
                         d["manager_decision"]  = "REJECTED"
                         d["manager_action"]    = "HOLD"
@@ -1592,6 +1738,7 @@ def run_manager(dry_run: bool = False, skip_review: bool = False,
                         ]
                         continue
                     new_positions_this_cycle += 1
+                    new_by_pod[_pod] = new_by_pod.get(_pod, 0) + 1
                 ex = execute_decision(d, trader, dry_run=dry_run)
                 executions.append(ex)
         if new_positions_this_cycle >= MAX_NEW_POSITIONS_PER_CYCLE:

@@ -34,9 +34,25 @@ class FIBaseAgent:
     THESIS        = ""
     MIN_CONVICTION = 2   # Chairman directive: surface picks at 2+ so Manager can review
 
+    # Every reading in this pod derives from these three. If the context does not
+    # carry them, the agent has no opinion — see the note on run().
+    REQUIRED_SPREAD_KEYS = ("hy_spread_bps", "ig_spread_bps")
+
     def __init__(self, spread_context: dict = None):
         self.spreads = spread_context or {}
-        self.regime  = self.spreads.get("regime", "NORMAL")
+        # fi_credit_monitor publishes the regime under `spread_regime`. Reading
+        # `regime` alone meant self.regime was the literal string "NORMAL" on
+        # every run since 2026-06-09 — including through fi_pipeline.py, which
+        # DOES pass live context. A WIDE or DISTRESSED credit market has never
+        # once reached these agents, so `if regime in ("WIDE","DISTRESSED")`
+        # in seven subclasses is dead code that has never evaluated true.
+        self.regime = (self.spreads.get("spread_regime")
+                       or self.spreads.get("regime")
+                       or "UNKNOWN")
+        # Not "did somebody pass a dict?" but "does it carry the numbers?".
+        self.has_live_spreads = all(
+            self.spreads.get(k) is not None for k in self.REQUIRED_SPREAD_KEYS
+        )
 
     def _score_ticker(self, ticker: str) -> dict:
         """
@@ -72,6 +88,41 @@ class FIBaseAgent:
         }
 
     def run(self) -> dict:
+        # ── No live spreads => no picks. Not a softer opinion: NO opinion. ──
+        # Every subclass scores with `self.spreads.get("hy_spread_bps", 350)`.
+        # A missing feed therefore does not fail — it silently becomes "HY at
+        # 350bps, IG at 120bps", which scores NORMAL, which scores conviction 4,
+        # which BUYs. Every ticker. Unconditionally. The whole watchlist.
+        #
+        # That is exactly what happened: research_team.py constructs these
+        # agents with no spread_context, and on 2026-08-14 the manager received
+        # 118 fixed-income BUYs whose reasoning strings all read "HY spread=350bps
+        # IG spread=120bps" — the defaults, verbatim, on every pick, six times a
+        # day. Live spreads that hour were 315/158. The pod was not analysing the
+        # credit market; it was reciting two literals from this file.
+        #
+        # Same family as memory `nan-is-not-none` and `presence-is-not-currency`:
+        # a plausible fallback makes an absent input indistinguishable from a
+        # measured one, and confident output is the failure mode. A default is
+        # only safe when being wrong about it is cheap. Here it is a buy order.
+        if not self.has_live_spreads:
+            logger.warning(
+                f"  [{self.__class__.__name__}] no live spread context "
+                f"({', '.join(self.REQUIRED_SPREAD_KEYS)} absent) — 0 picks from "
+                f"{len(self.WATCHLIST)} candidates. Refusing to score off defaults."
+            )
+            return {
+                "agent":           self.__class__.__name__,
+                "segment":         self.SEGMENT,
+                "thesis":          self.THESIS,
+                "regime":          self.regime,
+                "recommendations": [],
+                "tickers_scanned": 0,
+                "abstained":       True,
+                "abstain_reason":  ("no live credit-spread context — scoring off "
+                                    "hardcoded defaults would fabricate a signal"),
+            }
+
         picks = []
         for ticker in self.WATCHLIST:
             try:
@@ -91,4 +142,5 @@ class FIBaseAgent:
             "regime":          self.regime,
             "recommendations": picks,
             "tickers_scanned": len(self.WATCHLIST),
+            "abstained":       False,
         }
