@@ -427,6 +427,30 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     paper_day  = state["paper_day"] + 1
     state["paper_day"] = paper_day
 
+    # ── Reconcile the position ledger against the broker ───────────────────
+    # Before ANY rule reads `entry_dates`, make it agree with what we actually
+    # hold. It had drifted three ways at once — TRIM popped the date off a
+    # position it only partially sold, positions opened on the other host were
+    # never recorded here (there is no state sync), and pre-cutover fills had no
+    # row at all — and the readers hid it by defaulting a missing date to
+    # "yesterday", so the max-hold exit simply never fired on 13 positions.
+    # Reconciling from fill history makes the ledger a projection of the one
+    # record both hosts share instead of a diary each keeps privately. It
+    # refuses (returns None) if either broker read fails, so a network blip
+    # cannot empty the ledger.
+    try:
+        from entry_date_ledger import reconcile_state_file
+        _recon = reconcile_state_file(state=state)   # mutates state in place
+        if _recon and (_recon["healed"] or _recon["dropped"] or _recon["unknown"]):
+            logger.info(
+                f"  Ledger reconciled — healed {len(_recon['healed'])}, "
+                f"dropped {len(_recon['dropped'])} phantom, "
+                f"{len(_recon['unknown'])} undatable")
+            for _s, _why in sorted(_recon["healed"].items()):
+                logger.info(f"    + {_s}: entry {_why}")
+    except Exception as _rec_e:
+        logger.warning(f"  Entry-date reconciliation failed: {_rec_e}")
+
     # Determine if full R&D cycle should run today (every 3 days)
     # 3-day cadence eliminates the 1-day "dark window" that existed with 4-day cadence
     # when research TTL is 72h (previously picks could expire before the next run).
@@ -1233,7 +1257,20 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                             "pnl_pct":       _pnl_pct,
                             "signal_source": _src,
                         })
-                        state["entry_dates"].pop(d["ticker"], None)
+                        if d["manager_action"] == "SELL":
+                            # Only a full exit clears the entry date. A TRIM sells
+                            # 40% (manager_agent.execute_decision) and BY
+                            # CONSTRUCTION always leaves a position behind, so
+                            # popping here orphaned every trimmed holding: the
+                            # broker still held it, the ledger no longer knew when
+                            # it was bought, and review_agent then read it as
+                            # "bought yesterday" forever, which is exactly the
+                            # state in which a max-hold exit can never fire.
+                            # entry_date_ledger.reconcile() re-derives this from
+                            # fill history and would undo a wrong pop anyway — this
+                            # branch is here so the ledger is never wrong in the
+                            # first place, not only wrong until the next run.
+                            state["entry_dates"].pop(d["ticker"], None)
                         # Record outcome in performance ledger for agent attribution
                         try:
                             from performance_ledger import record_outcome as _rec_outcome

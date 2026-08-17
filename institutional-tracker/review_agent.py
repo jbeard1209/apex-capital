@@ -204,6 +204,16 @@ def _momentum_score(df: pd.DataFrame) -> dict:
 # Core analysis
 # ---------------------------------------------------------------------------
 
+def _hold_str(hold_days: Optional[int]) -> str:
+    """Render a holding period, keeping "unknown" distinguishable from "0 days".
+
+    `f"{None}d"` prints "Noned"; worse, printing 0 would let a ledger gap read
+    as a position opened today. Anything a human or an LLM reads has to be able
+    to tell a measurement from the absence of one.
+    """
+    return "?d (entry date unknown)" if hold_days is None else f"{hold_days}d"
+
+
 def analyze_position(pos: dict, portfolio_value: float, entry_dates: dict) -> dict:
     """
     Full analysis of a single open position.
@@ -217,8 +227,16 @@ def analyze_position(pos: dict, portfolio_value: float, entry_dates: dict) -> di
     avg_entry   = pos["avg_entry"]
     cur_price   = pos["current_price"]
 
-    entry_dt  = entry_dates.get(ticker, datetime.now() - timedelta(days=1))
-    hold_days = (datetime.now() - entry_dt).days if isinstance(entry_dt, datetime) else 0
+    # An unknown entry date is UNKNOWN, not "yesterday". This used to default to
+    # `now - 1 day`, which made every unledgered position read as one day old on
+    # every run, forever — so the max-hold exit below could never fire on it and
+    # nothing ever said why. 13 of the account's positions were in that state
+    # (memory `fallback-that-means-act`: the constant a degraded read substitutes
+    # is itself a decision, and "1 day old" decides HOLD). None now, and the
+    # time-based rule abstains out loud instead of silently passing.
+    entry_dt  = entry_dates.get(ticker)
+    hold_days = ((datetime.now() - entry_dt).days
+                 if isinstance(entry_dt, datetime) else None)
 
     weight_pct = (market_val / portfolio_value * 100) if portfolio_value > 0 else 0
 
@@ -250,7 +268,15 @@ def analyze_position(pos: dict, portfolio_value: float, entry_dates: dict) -> di
         reasons.append(f"Take-profit target reached: {pnl_pct:.1f}% (target: +{TAKE_PROFIT_PCT*100:.0f}%)")
 
     # ── Rule: max hold duration ────────────────────────────────────────────
-    if action == "HOLD" and hold_days >= HOLD_DAYS_MAX:
+    if action == "HOLD" and hold_days is None:
+        # Cannot run the rule, so say that rather than quietly returning HOLD.
+        # `entry_date_ledger` heals this from broker fill history on the next
+        # pipeline run; a position still here afterwards is one the broker's
+        # order window cannot reach back far enough to date.
+        reasons.append(
+            "Entry date unknown — max-hold rule could not be evaluated for this "
+            "position (ledger gap; see entry_date_ledger)")
+    elif action == "HOLD" and hold_days >= HOLD_DAYS_MAX:
         action   = "SELL"
         priority = 2
         reasons.append(f"Max hold period exceeded: {hold_days} days (limit: {HOLD_DAYS_MAX})")
@@ -328,7 +354,7 @@ def analyze_position(pos: dict, portfolio_value: float, entry_dates: dict) -> di
     if not reasons:
         reasons.append(
             f"Within all parameters. P&L={pnl_pct:+.1f}%, "
-            f"hold={hold_days}d, weight={weight_pct:.1f}%, "
+            f"hold={_hold_str(hold_days)}, weight={weight_pct:.1f}%, "
             f"momentum={mom['trend']}"
         )
 
@@ -342,7 +368,7 @@ def analyze_position(pos: dict, portfolio_value: float, entry_dates: dict) -> di
             if is_available("review_agent"):
                 _ctx = (
                     f"{ticker} ({'short' if is_short else 'long'}) | P&L {pnl_pct:+.1f}% | "
-                    f"${avg_entry:.2f}→${cur_price:.2f} | {hold_days}d | {weight_pct:.1f}% wt | "
+                    f"${avg_entry:.2f}→${cur_price:.2f} | {_hold_str(hold_days)} | {weight_pct:.1f}% wt | "
                     f"{mom.get('trend','?')}, RSI {mom.get('rsi_14','?')}, "
                     f"{mom.get('pct_from_50ma',0):+.1f}% vs 50MA\n"
                     f"Rule says: {action} — {'; '.join(r[:80] for r in reasons[:3])}\n"
@@ -598,7 +624,7 @@ def _print_report(report: dict) -> None:
         }.get(rec["action"], rec["action"])
 
         pnl_str  = f"{rec['unrealized_pnl_pct']:+.1f}%" if rec["unrealized_pnl_pct"] is not None else "  —"
-        hold_str = f"{rec['hold_days']}d" if rec["hold_days"] else " —"
+        hold_str = "  ?d" if rec["hold_days"] is None else f"{rec['hold_days']}d"
         wt_str   = f"{rec['weight_pct']:.1f}%" if rec["weight_pct"] else " —"
 
         print(f"  {rec['ticker']:<6} {action_icon}  {pnl_str:>7}  {hold_str:>4}  {wt_str:>4}  {rec['reasons'][0][:50]}")

@@ -138,8 +138,12 @@ def check_position_research_freshness() -> list[dict]:
                             "days_since_research": 0, "last_research": "ETF",
                             "status": "ETF_NO_RESEARCH_NEEDED", "alert_level": None})
             continue
+        # A missing entry date used to leave hold_days at 0 — indistinguishable
+        # from a position opened this morning, and therefore never old enough to
+        # age. `None` keeps "we don't know" separate from "brand new"; the
+        # aging verdict below skips rather than clearing the position.
         entry_date_str = entry_dates.get(ticker)
-        hold_days = 0
+        hold_days = None
         if entry_date_str:
             try:
                 entry_dt = datetime.fromisoformat(entry_date_str)
@@ -195,6 +199,12 @@ def check_position_research_freshness() -> list[dict]:
     return results
 
 
+def _hold_str(hold_days) -> str:
+    """Holding period for display. `None` means the ledger could not date the
+    position — printing it as "None" or coercing it to 0 both read as facts."""
+    return "unknown" if hold_days is None else str(hold_days)
+
+
 def file_issues_and_alerts(staleness_results: list[dict]):
     """File issue tracker entries for stale research positions."""
     try:
@@ -212,11 +222,11 @@ def file_issues_and_alerts(staleness_results: list[dict]):
         days = result["days_since_research"]
         severity = result["alert_level"]
 
-        title = f"Position {ticker}: {days:.0f} days without R&D coverage (hold {result['hold_days']}d, PnL {result['pnl_pct']:+.1f}%)"
+        title = f"Position {ticker}: {days:.0f} days without R&D coverage (hold {_hold_str(result['hold_days'])}d, PnL {result['pnl_pct']:+.1f}%)"
         description = (
             f"Open position {ticker} has not had fresh R&D research in {days:.0f} days. "
             f"Last research: {result['last_research']}. "
-            f"Hold duration: {result['hold_days']} days. "
+            f"Hold duration: {_hold_str(result['hold_days'])} days. "
             f"P&L: {result['pnl_pct']:+.1f}%. "
             f"Action required: {'Emergency R&D request filed.' if severity == 'HIGH' else 'R&D coverage needed within 48h.'}"
         )
@@ -237,9 +247,9 @@ def file_issues_and_alerts(staleness_results: list[dict]):
             try:
                 from agent_meeting import manager_request_research
                 manager_request_research(
-                    topic=f"Urgent research update: {ticker} position held {result['hold_days']}d without fresh coverage",
+                    topic=f"Urgent research update: {ticker} position held {_hold_str(result['hold_days'])}d without fresh coverage",
                     context=(
-                        f"{ticker}: held {result['hold_days']} days, PnL {result['pnl_pct']:+.1f}%, "
+                        f"{ticker}: held {_hold_str(result['hold_days'])} days, PnL {result['pnl_pct']:+.1f}%, "
                         f"no R&D coverage in {days:.0f} days. Need fresh thesis review to justify continued hold."
                     ),
                     urgency="HIGH",

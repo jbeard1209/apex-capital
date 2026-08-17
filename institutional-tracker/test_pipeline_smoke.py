@@ -9023,6 +9023,224 @@ class TestMacDoesNotRunThePipeline(unittest.TestCase):
             "goes through the uncertain cooldown — including a confirmed dead VM")
 
 
+class TestEntryDateLedger(unittest.TestCase):
+    """The position ledger must agree with the broker, and say so when it can't.
+
+    `coherence_laws.law_positions_conserve` went VIOLATED on the VM with 13
+    broker positions carrying no entry date and 11 entry dates with no position.
+    Three independent causes, one shared consequence: `review_agent` substituted
+    `now - 1 day` for a missing date, so an unledgered position read as one day
+    old on every run and the max-hold exit could never fire on it.
+    """
+
+    # -- the write side ----------------------------------------------------
+
+    def test_a_trim_does_not_erase_the_entry_date(self):
+        """AST, because the postmortem comment beside it names both verbs.
+
+        `main.py` popped `entry_dates` for `("SELL", "TRIM")` alike. A TRIM sells
+        40% and BY CONSTRUCTION leaves a position behind, so every trimmed
+        holding was orphaned the moment it was trimmed. The pop must sit inside a
+        further test for a full exit, not directly in the SELL-or-TRIM branch.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).resolve().parent / "main.py").read_text())
+
+        pops = [n for n in ast.walk(tree)
+                if isinstance(n, ast.Call)
+                and isinstance(n.func, ast.Attribute) and n.func.attr == "pop"
+                and isinstance(n.func.value, ast.Subscript)
+                and isinstance(n.func.value.slice, ast.Constant)
+                and n.func.value.slice.value == "entry_dates"]
+        self.assertTrue(pops, "no entry_dates.pop found in main.py at all — if the "
+                              "clearing moved, this test has to move with it")
+
+        # Every pop must be reachable only through a test naming SELL and NOT TRIM.
+        for pop in pops:
+            guards = []
+            for node in ast.walk(tree):
+                if isinstance(node, ast.If) and any(pop is c for c in ast.walk(node)):
+                    guards.append(ast.dump(node.test))
+            sell_only = [g for g in guards if "'SELL'" in g and "'TRIM'" not in g]
+            self.assertTrue(
+                sell_only,
+                "an entry_dates.pop is reachable without a SELL-only guard: a TRIM "
+                "would clear the date of a position it only partially sold")
+
+    def test_the_ledger_is_reconciled_before_any_rule_reads_it(self):
+        """Healing after the rules have run is not healing, it is bookkeeping."""
+        import ast
+        src = (Path(__file__).resolve().parent / "main.py").read_text()
+        tree = ast.parse(src)
+
+        recon_lines = [n.lineno for n in ast.walk(tree)
+                       if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                       and n.func.id == "reconcile_state_file"]
+        review_lines = [n.lineno for n in ast.walk(tree)
+                        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                        and n.func.id == "run_review"]
+        self.assertTrue(recon_lines, "main.py never calls reconcile_state_file")
+        self.assertTrue(review_lines, "main.py never calls run_review")
+        self.assertLess(min(recon_lines), min(review_lines),
+                        "the ledger is reconciled after the review agent has "
+                        "already read it")
+
+    # -- the reconstruction ------------------------------------------------
+
+    def _fill(self, sym, side, qty, when):
+        return {"symbol": sym, "side": side, "filled_qty": str(qty),
+                "filled_at": when}
+
+    def test_a_trim_cannot_reset_or_erase_the_reconstructed_entry(self):
+        """The bug, restated as the property that forbids it."""
+        from entry_date_ledger import entry_from_fills, BASIS_FLAT_CROSSING
+        orders = [self._fill("CLOV", "buy", 2039, "2026-08-10T13:32:09Z"),
+                  self._fill("CLOV", "sell", 815, "2026-08-17T13:46:24Z")]
+        date, basis = entry_from_fills(orders, "CLOV", held_qty=1224)
+        self.assertEqual(date, "2026-08-10")
+        self.assertEqual(basis, BASIS_FLAT_CROSSING)
+
+    def test_a_closed_and_reopened_position_is_dated_from_the_reopen(self):
+        """"How long have we held this" means the current run, not the first buy."""
+        from entry_date_ledger import entry_from_fills
+        orders = [self._fill("X", "buy", 10, "2026-01-01T00:00:00Z"),
+                  self._fill("X", "sell", 10, "2026-02-01T00:00:00Z"),
+                  self._fill("X", "buy", 5, "2026-06-01T00:00:00Z")]
+        self.assertEqual(entry_from_fills(orders, "X", held_qty=5)[0], "2026-06-01")
+
+    def test_a_replay_that_does_not_match_the_broker_is_reported_as_a_bound(self):
+        """The order window is finite; a truncated walk still looks well-formed.
+
+        Replaying fills has to RECONSTRUCT the quantity the broker reports. When
+        it doesn't, the "flat crossing" the walk found is an artifact of where the
+        window begins — a confident date for a day we did not open the position.
+        """
+        from entry_date_ledger import entry_from_fills, BASIS_WINDOW_START
+        # Only a partial sell is visible; the opening buy predates the window.
+        orders = [self._fill("TRUNC", "sell", 40, "2026-05-05T00:00:00Z")]
+        date, basis = entry_from_fills(orders, "TRUNC", held_qty=60)
+        self.assertEqual(basis, BASIS_WINDOW_START,
+                         "an incomplete replay was reported as an exact crossing")
+        self.assertEqual(date, "2026-05-05")
+
+    def test_a_position_with_no_fill_history_is_left_undated_not_guessed(self):
+        from entry_date_ledger import entry_from_fills, reconcile
+        self.assertEqual(entry_from_fills([], "ZZZ", held_qty=5), (None, None))
+        rep = reconcile({}, [], {"ZZZ": 5})
+        self.assertIn("ZZZ", rep["unknown"])
+        self.assertNotIn("ZZZ", rep["entry_dates"],
+                         "an undatable position was given a date anyway")
+
+    def test_phantom_ledger_entries_are_dropped_and_real_ones_kept(self):
+        from entry_date_ledger import reconcile
+        orders = [self._fill("HELD", "buy", 3, "2026-07-01T00:00:00Z")]
+        rep = reconcile({"GONE": "2026-01-01", "KEPT": "2026-02-02"},
+                        orders, {"HELD": 3, "KEPT": 9})
+        self.assertEqual(rep["dropped"], ["GONE"])
+        self.assertEqual(rep["entry_dates"]["KEPT"], "2026-02-02",
+                         "an existing, still-held entry date was rewritten")
+        self.assertEqual(rep["entry_dates"]["HELD"], "2026-07-01")
+
+    def test_reconcile_refuses_when_the_broker_cannot_be_read(self):
+        """An unreadable broker is not a flat book. Refusing must clear nothing.
+
+        Reading `{}` as "we hold nothing" would drop the ENTIRE ledger in one
+        pass, which is the same class of mistake the ledger gap came from.
+        """
+        import entry_date_ledger, single_writer
+        state = {"entry_dates": {"AAPL": "2026-08-01"}}
+        orig = single_writer._positions_map
+        try:
+            single_writer._positions_map = lambda *a, **k: None
+            out = entry_date_ledger.reconcile_state_file(state=state, save=False)
+        finally:
+            single_writer._positions_map = orig
+        self.assertIsNone(out, "a failed broker read was treated as an answer")
+        self.assertEqual(state["entry_dates"], {"AAPL": "2026-08-01"},
+                         "the ledger was modified despite the refusal")
+
+    # -- the read side -----------------------------------------------------
+
+    def test_an_unknown_entry_date_does_not_read_as_bought_yesterday(self):
+        """AST: the defaulted `timedelta(days=1)` must be gone, not commented out."""
+        import ast
+        tree = ast.parse((Path(__file__).resolve().parent / "review_agent.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "analyze_position")
+        for call in ast.walk(fn):
+            if (isinstance(call, ast.Call) and isinstance(call.func, ast.Attribute)
+                    and call.func.attr == "get"
+                    and isinstance(call.func.value, ast.Name)
+                    and call.func.value.id == "entry_dates"):
+                self.assertEqual(
+                    len(call.args), 1,
+                    "entry_dates.get() still carries a default — a missing entry "
+                    "date is being substituted with a value the rules cannot "
+                    "distinguish from a measurement")
+
+    def test_the_max_hold_rule_abstains_out_loud_when_the_date_is_unknown(self):
+        """Silence and HOLD are the same output; only one of them is honest."""
+        from review_agent import analyze_position
+        pos = {"ticker": "UNKNOWNDT", "qty": 10, "side": "long",
+               "unrealized_pct": 1.0, "market_value": 1000.0,
+               "avg_entry": 100.0, "current_price": 101.0}
+        rec = analyze_position(pos, portfolio_value=100000.0, entry_dates={})
+        self.assertIsNone(rec["hold_days"],
+                          "a missing entry date produced a number for hold_days")
+        self.assertTrue(
+            any("entry date unknown" in r.lower() for r in rec["reasons"]),
+            f"the ledger gap was not surfaced in the rationale: {rec['reasons']}")
+
+    def test_a_dated_position_past_the_limit_still_exits(self):
+        """The abstain branch must not have swallowed the rule it guards."""
+        from review_agent import analyze_position
+        from config import HOLD_DAYS_MAX
+        old = datetime.now() - timedelta(days=HOLD_DAYS_MAX + 5)
+        pos = {"ticker": "OLDPOS", "qty": 10, "side": "long",
+               "unrealized_pct": 1.0, "market_value": 1000.0,
+               "avg_entry": 100.0, "current_price": 101.0}
+        rec = analyze_position(pos, portfolio_value=100000.0,
+                               entry_dates={"OLDPOS": old})
+        self.assertEqual(rec["action"], "SELL")
+        self.assertTrue(any("max hold" in r.lower() for r in rec["reasons"]))
+
+    def test_position_aging_does_not_read_a_ledger_gap_as_a_new_position(self):
+        """hold_days=0 and "we don't know" must not be the same value.
+
+        The aging agent initialised `hold_days = 0` before trying to parse the
+        entry date, so an unledgered position reported as opened today and could
+        never age. AST rather than grep: the postmortem comment beside the fix
+        contains the very literal a text search would look for.
+        """
+        import ast
+        tree = ast.parse(
+            (Path(__file__).resolve().parent / "position_aging_agent.py").read_text())
+
+        # The initialiser that immediately precedes the entry-date parse.
+        seeds = []
+        for fn in ast.walk(tree):
+            if not isinstance(fn, ast.FunctionDef):
+                continue
+            uses_entry_dates = any(
+                isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                and n.func.attr == "get" and isinstance(n.func.value, ast.Name)
+                and n.func.value.id == "entry_dates" for n in ast.walk(fn))
+            if not uses_entry_dates:
+                continue
+            for n in ast.walk(fn):
+                if (isinstance(n, ast.Assign)
+                        and any(isinstance(t, ast.Name) and t.id == "hold_days"
+                                for t in n.targets)
+                        and isinstance(n.value, ast.Constant)):
+                    seeds.append(n.value.value)
+
+        self.assertTrue(seeds, "no constant hold_days initialiser found — if the "
+                               "shape changed, this test has to change with it")
+        self.assertNotIn(0, seeds,
+                         "hold_days is still seeded to 0, so a position the ledger "
+                         "cannot date reads as one opened today and never ages")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
