@@ -300,7 +300,7 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # refresh and 11:40 governance sweep, and 1h45m before the 13:30 board meeting.
 # The verdict will read NOT PROVEN — NOT YET for months (200 settled
 # observations minimum). That is the gate working, not the gate failing.
-45 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --resolve --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
+45 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --resolve --report --email >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
 
 # --- FIXED INCOME MONITORS (added 2026-08-16) -------------------------------
 # Both were written, wired to consumers, and scheduled nowhere. Neither could
