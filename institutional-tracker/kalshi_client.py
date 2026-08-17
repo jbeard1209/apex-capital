@@ -251,9 +251,69 @@ def _get(path, params=None, timeout=30, retries=2):
     raise last
 
 
-def iter_markets(status="open", max_pages=12, limit=1000):
-    """Yield every market page-by-page. Bounded: an unbounded cursor loop against
-    a paginated API is how a 'quick scan' becomes a rate-limit ban."""
+def is_shard(market) -> bool:
+    """True for an auto-generated multivariate parlay leg, not a real market.
+
+    Kalshi mints `KXMVECROSSCATEGORY-SHARD*` combination markets in bulk — every
+    permutation of a handful of underlying legs. They are `is_provisional`, they
+    carry an `mve_collection_ticker`, and essentially none of them ever get a
+    quote. They are inventory, not an order book.
+    """
+    return bool(market.get("mve_collection_ticker") or market.get("is_provisional"))
+
+
+def iter_events(status="open", max_pages=25, limit=200):
+    """Yield open events WITH their markets nested. Bounded, like iter_markets.
+
+    This is the door onto the exchange. `/markets` is not — see iter_markets.
+    """
+    cursor = None
+    for _ in range(max_pages):
+        d = _get("/events", {"limit": limit, "status": status, "cursor": cursor,
+                             "with_nested_markets": "true"})
+        for e in d.get("events", []):
+            yield e
+        cursor = d.get("cursor")
+        if not cursor:
+            return
+
+
+def iter_markets(status="open", max_pages=25, limit=200):
+    """Yield every genuine market, walked through /events.
+
+    THIS FUNCTION USED TO WALK `/markets` DIRECTLY, AND THAT IS WHY THIS SECTOR
+    SPENT WEEKS CONCLUDING THE EXCHANGE HAD NO LIQUIDITY.
+
+    Measured 2026-08-17. Walking `/markets` with a cursor returns the multivariate
+    parlay shards first, and there are enough of them to swallow any bounded walk:
+    60 pages, 60,000 markets, **59,989 of them KXMVECROSSCATEGORY shards** and 11
+    real ones. Every scan we have ever run saw only shards. Shards have no book,
+    so the sector reported "12,000 markets, 0 with a two-sided book, no business
+    here" — and the number was accurate about the population it measured, which
+    was not the exchange.
+
+    Through `/events?with_nested_markets=true`, the same hour: 5,000 events,
+    48,199 genuine markets, **24,881 passing `two_sided()` unchanged**, 2,977 of
+    them in the 0.90-0.99 band. Not one gate was loosened to get there. The
+    filters were never too strict; they were being handed inventory.
+
+    The lesson is the one in `fallback-that-means-act`: we read an absence as a
+    fact about the world. "No two-sided books exist" and "we are not looking at
+    the exchange" produce the same zero, and only one of them is a finding.
+    """
+    for e in iter_events(status=status, max_pages=max_pages, limit=limit):
+        for m in (e.get("markets") or []):
+            if not is_shard(m):
+                yield m
+
+
+def iter_markets_flat(status="open", max_pages=12, limit=1000):
+    """The raw `/markets` walk. NOT the way to enumerate the exchange.
+
+    Kept because it is the only way to ask "what does the flat endpoint return?",
+    which is exactly the question `feed_health()` needs to answer. Do not reach
+    for it to find something to trade — see iter_markets for what it returns.
+    """
     cursor = None
     for _ in range(max_pages):
         d = _get("/markets", {"limit": limit, "status": status, "cursor": cursor})
@@ -262,6 +322,36 @@ def iter_markets(status="open", max_pages=12, limit=1000):
         cursor = d.get("cursor")
         if not cursor:
             return
+
+
+def feed_health(sample_pages=2):
+    """Is the market feed showing us the exchange, or a pile of shards?
+
+    A scan that finds nothing has two very different explanations — the exchange
+    is quiet, or we are reading the wrong population — and they call for opposite
+    responses. This measures which one is true instead of letting a zero speak
+    for itself, and it is why `scan()` can say CANNOT_TELL rather than "no
+    opportunities".
+    """
+    genuine = shards = 0
+    for m in iter_markets_flat(max_pages=sample_pages):
+        if is_shard(m):
+            shards += 1
+        else:
+            genuine += 1
+    seen = genuine + shards
+    ev_markets = ev_genuine = 0
+    for e in iter_events(max_pages=2):
+        for m in (e.get("markets") or []):
+            ev_markets += 1
+            if not is_shard(m):
+                ev_genuine += 1
+    return {
+        "flat_seen": seen, "flat_genuine": genuine, "flat_shards": shards,
+        "flat_shard_pct": round(100.0 * shards / seen, 1) if seen else None,
+        "events_markets": ev_markets, "events_genuine": ev_genuine,
+        "healthy": ev_genuine > 0,
+    }
 
 
 def get_event(event_ticker):
@@ -318,26 +408,34 @@ def place_order(**kwargs):
 
 # ------------------------------------------------------------------ report --
 
-def exchange_snapshot(max_pages=12):
-    """How much of this exchange is actually a market? Answers with numbers."""
-    total = real = 0
+def exchange_snapshot(max_pages=25):
+    """How much of this exchange is actually a market? Answers with numbers.
+
+    Counts against `two_sided()`, not `tradeable()`. `tradeable()` asks only
+    whether an ask exists, and the settled ledger already priced that question:
+    86 settlements at an average quote of 0.97 resolved YES 27% of the time.
+    A snapshot headline computed on the discredited gate would put a reassuring
+    number next to a strategy we know loses money.
+    """
+    total = booked = 0
     band = []
     for m in iter_markets(max_pages=max_pages):
         total += 1
-        t = tradeable(m)
+        t = two_sided(m)
         if not t:
             continue
-        real += 1
-        ask, size = t
+        booked += 1
+        bid, ask, size = t
         if 0.90 <= ask <= 0.99:
-            band.append({"ticker": m.get("ticker"), "ask": ask, "size": size,
+            band.append({"ticker": m.get("ticker"), "bid": bid, "ask": ask,
+                         "size": size, "breakeven": breakeven_probability(ask),
                          "volume": parse_size(m.get("volume_fp")) or 0.0,
                          "title": str(m.get("title"))[:70],
                          "close_time": m.get("close_time")})
     band.sort(key=lambda x: -x["volume"])
     return {"checked_at": datetime.now(timezone.utc).isoformat(),
-            "env": env_name(), "markets_seen": total, "with_real_book": real,
-            "empty_book_pct": round(100.0 * (total - real) / total, 1) if total else None,
+            "env": env_name(), "markets_seen": total, "with_real_book": booked,
+            "empty_book_pct": round(100.0 * (total - booked) / total, 1) if total else None,
             "near_certainty_band": band}
 
 

@@ -47,7 +47,7 @@ Usage:
 """
 
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -145,17 +145,51 @@ def find_pair_locks(markets):
 
 # ------------------------------------------------------- STRUCTURAL: field --
 
-def find_field_locks(markets, mutex_lookup):
-    """Sum of YES asks across ALL outcomes of a mutually-exclusive event < $1.
+# Series whose outcome set is COLLECTIVELY EXHAUSTIVE — one leg must resolve YES.
+#
+# Empty, and that is the finding, not an oversight. Adding a series here requires
+# evidence from the settlement rules that no residual outcome exists (e.g. an
+# explicit "any other" leg, or a rulebook clause that the event cannot resolve
+# all-No). Kalshi exposes no flag for this. Do NOT populate it by inferring from
+# a title, and do NOT populate it because the arithmetic looks attractive — the
+# attractive arithmetic IS the symptom of a non-exhaustive field.
+EXHAUSTIVE_SERIES = frozenset()
 
-    `mutex_lookup(event_ticker) -> bool` MUST come from Kalshi's own
-    `mutually_exclusive` flag. Skipping that gate is the classic false positive:
-    in an event where several outcomes can each resolve YES, a price sum over
-    100c is correct pricing, and "buying the field" is not a lock, it is a pile
-    of unhedged longs that can all lose.
+# A certified field cannot be cheap. If a series on the allow-list ever quotes a
+# large edge, the allow-list is wrong — nobody leaves 25c of guaranteed money on
+# a liquid exchange for days. The bound refuses the trade and indicts the entry.
+MAX_CREDIBLE_FIELD_EDGE_CENTS = 25.0
 
-    A missing or unknown flag is treated as NOT exclusive. Cannot-tell must
-    never read as permission (memory `verdict-with-no-consequence`).
+
+def find_field_locks(markets, mutex_lookup, stats=None):
+    """Buy every outcome of an event for < $1. Returns [] until a field is proven
+    EXHAUSTIVE, which Kalshi's API does not tell you.
+
+    `mutex_lookup(event_ticker) -> bool` comes from Kalshi's own
+    `mutually_exclusive` flag, and that flag is necessary but NOT sufficient.
+    It promises **at most one** leg resolves YES. The lock needs **exactly one**.
+
+    Measured 2026-08-17 across 1,591 fully-quoted mutex fields: median cost
+    110.0c, 1,129 above 105c, max 6,594c on a 256-leg field. Correct pricing,
+    no arbitrage. Every one of the 40 fields under 95c was a residual-outcome
+    event, and Kalshi says so in its own settlement text — `KXLAPRIMARY-01R26`
+    ("LA-01 Republican nominee?", 2 legs, 12.9c) carries the clause *"Otherwise,
+    all markets in this event will resolve to No."* Louisiana moved to a jungle
+    primary, so there may be no nominee at all. Buying both legs for 13c does
+    not buy $1; it buys two tickets that expire worthless together. Likewise
+    `KXSTATE51-29` ("What will be the 51st state?", 8 legs, 14.5c) — the market
+    is not mispriced, it is saying *there will not be a 51st state*.
+
+    Without this gate the first honest scan of the exchange would have handed the
+    Chairman fourteen "locked" fields averaging ~70c of "edge", every one of
+    which loses the entire stake. The mutex flag was itself added to stop the
+    previous version of this same mistake; the assumption simply moved up a
+    level, which is why the fix is an allow-list of PROVEN series and not another
+    inferred flag.
+
+    `stats` (optional dict) receives the denominators: a zero here means
+    "nothing certifiable", and the counts are what distinguish that from
+    "nothing looked at" (memory `presence-is-not-currency`).
     """
     by_event = defaultdict(list)
     for m in markets:
@@ -164,15 +198,34 @@ def find_field_locks(markets, mutex_lookup):
         if et and t:
             by_event[et].append((m, t))
 
+    # THE WHOLE FIELD, or it is not a field.
+    #
+    # `by_event` holds only the legs carrying an ask. Summing those and calling
+    # the shortfall an edge assumes the legs you can price ARE the outcome set —
+    # the same assumption that made us scan 12,000 shards and report on "the
+    # exchange". The first run against a real feed produced a 2-leg field at
+    # 83c edge: buy both for 17c, collect $1. That is not an arbitrage, it is an
+    # event with more outcomes than the two that happened to be quoted, and
+    # buying them is a naked pair. So a lock requires an ask on EVERY leg.
+    total_legs = Counter(m.get("event_ticker") for m in markets
+                         if m.get("event_ticker"))
+
     out = []
+    uncertifiable = []
+    partial_fields = 0
+    mutex_fields = 0
     for et, rows in by_event.items():
         if len(rows) < 2:
             continue
+        if len(rows) != total_legs.get(et, 0):
+            partial_fields += 1
+            continue        # some outcome has no ask — the field cannot be bought
         try:
             if not mutex_lookup(et):
                 continue
         except Exception:
             continue        # cannot tell -> not exclusive -> no trade
+        mutex_fields += 1
 
         cost_c = sum(t[0] for _, t in rows) * 100.0
         fees_c = sum(kc.fee_cents(t[0], 1) or 0 for _, t in rows)
@@ -183,15 +236,57 @@ def find_field_locks(markets, mutex_lookup):
         if min_size < MIN_LEG_SIZE:
             continue
 
+        # THE EXHAUSTIVENESS GATE. Everything above proves the field is cheap;
+        # nothing above proves it pays. Cheap and unproven is not a trade, it is
+        # a row in a list the Chairman can read.
+        series = (rows[0][0].get("series_ticker")
+                  or et.rsplit("-", 1)[0])
+        if series not in EXHAUSTIVE_SERIES:
+            uncertifiable.append({
+                "event_ticker": et, "series_ticker": series,
+                "legs": len(rows), "cost_cents": round(cost_c, 2),
+                "apparent_edge_cents": round(edge_c, 2),
+                "reason": ("mutually_exclusive proves at most one YES, not "
+                           "exactly one; this event may resolve all-No"),
+            })
+            continue
+        if edge_c > MAX_CREDIBLE_FIELD_EDGE_CENTS:
+            uncertifiable.append({
+                "event_ticker": et, "series_ticker": series,
+                "legs": len(rows), "cost_cents": round(cost_c, 2),
+                "apparent_edge_cents": round(edge_c, 2),
+                "reason": ("edge exceeds what a liquid exchange leaves standing "
+                           "— treat as evidence EXHAUSTIVE_SERIES is wrong"),
+            })
+            continue
+
+        # A field lock is arithmetic, so `tradeable()` (ask only) is the right
+        # gate here and NOT the discredited one it is elsewhere: you are buying
+        # the whole mutually-exclusive field, and $1 arrives no matter what the
+        # individual quotes "meant". What can still kill it is FILL RISK — the
+        # lock exists only if every leg fills. Legs quoted one-sided have a
+        # single resting counterparty, and an 11-leg field is eleven chances to
+        # end up holding a partial field, which is not a lock but a naked book.
+        # So the count travels with the row instead of being discovered later.
+        two_sided_legs = sum(1 for m, _ in rows if kc.two_sided(m))
         out.append({
             "strategy": "STRUCTURAL_FIELD", "event_ticker": et,
             "legs": len(rows),
+            "legs_two_sided": two_sided_legs,
+            "fill_risk": ("LOW" if two_sided_legs == len(rows) and len(rows) <= 3
+                          else "HIGH" if len(rows) > 5 or two_sided_legs < len(rows)
+                          else "MEDIUM"),
             "tickers": [m.get("ticker") for m, _ in rows],
             "cost_cents": round(cost_c, 2), "fees_cents": fees_c,
             "edge_cents": round(edge_c, 2),
             "max_contracts": int(min_size),
             "requires_estimate": False,
         })
+    if stats is not None:
+        stats["partial_fields_skipped"] = partial_fields
+        stats["mutex_fields_priced"] = mutex_fields
+        stats["uncertifiable"] = sorted(
+            uncertifiable, key=lambda x: -x["apparent_edge_cents"])
     return sorted(out, key=lambda x: -x["edge_cents"])
 
 
@@ -448,36 +543,72 @@ def size_position(candidate, sleeve_dollars, calibration_ok=None):
 
 # -------------------------------------------------------------------- scan --
 
-def scan(max_pages=12, estimator=None, check_mutex=True):
-    markets = list(kc.iter_markets(max_pages=max_pages))
+def scan(max_pages=25, estimator=None, check_mutex=True):
+    # ONE walk of /events, and everything downstream is derived from it.
+    #
+    # This used to walk markets, then call `kc.get_event()` once per event to
+    # read `mutually_exclusive` — 3,500+ extra HTTP round trips, and a scan that
+    # ran past ten minutes. The flag was already on every event object the walk
+    # had just downloaded. That runtime was not a detail: the cron budget is what
+    # decides whether this sector runs unattended 4x/day or only when a human
+    # remembers, and an unrunnable scan produces the same evidence as no scan.
+    events = list(kc.iter_events(max_pages=max_pages))
+    markets = [m for e in events for m in (e.get("markets") or [])
+               if not kc.is_shard(m)]
+    mutex_map = {e.get("event_ticker"): bool(e.get("mutually_exclusive"))
+                 for e in events if e.get("event_ticker")}
 
-    mutex_cache = {}
+    # A scan that finds nothing has two explanations with opposite responses:
+    # the exchange is quiet, or we are not reading the exchange. For weeks this
+    # returned the second while reporting the first — every market it walked was
+    # an auto-generated parlay shard (see kc.iter_markets). So the feed states
+    # its own health, and an empty result on a sick feed is CANNOT_TELL.
+    feed = {"events": len(events),
+            "genuine": len(markets),
+            "mutually_exclusive_events": sum(1 for v in mutex_map.values() if v),
+            "shards_excluded": True,
+            "healthy": len(markets) > 0}
+    if not feed["healthy"]:
+        report = {"scanned_at": _now(), "env": kc.env_name(),
+                  "verdict": "CANNOT_TELL", "feed": feed, "markets_seen": 0,
+                  "note": ("The feed returned no genuine markets. That is a "
+                           "statement about the read, NOT about the exchange — "
+                           "do not record it as 'no opportunities'.")}
+        _save(SCAN_LOG, report)
+        return report
 
     def mutex_lookup(event_ticker):
-        if not check_mutex:
-            return False
-        if event_ticker not in mutex_cache:
-            mutex_cache[event_ticker] = kc.is_mutually_exclusive(
-                kc.get_event(event_ticker))
-        return mutex_cache[event_ticker]
+        # An event the walk never saw is NOT exclusive. Same rule as everywhere
+        # else here: cannot-tell is not permission.
+        return bool(check_mutex and mutex_map.get(event_ticker))
 
+    field_stats = {}
     pairs = find_pair_locks(markets)
-    # Only pay for event lookups where a field lock could possibly exist.
-    fields = find_field_locks(markets, mutex_lookup) if check_mutex else []
+    fields = find_field_locks(markets, mutex_lookup, stats=field_stats) if check_mutex else []
     disagree = find_disagreement_candidates(markets, estimator)
     # `markets`, not `disagree`: the ladder is judged whole. See drop_incoherent.
     disagree, incoherent, unchecked = drop_incoherent(disagree, markets=markets)
 
     report = {
         "scanned_at": _now(), "env": kc.env_name(),
+        "feed": feed,
         "markets_seen": len(markets),
         "with_real_book": sum(1 for m in markets if kc.tradeable(m)),
         # The gap between these two is the whole finding. `with_real_book`
         # counts markets you could buy; `two_sided` counts markets whose price
-        # means something. On 2026-08-17 those were 7 and 0 out of 10,000.
+        # means something. Through the shard feed those were 7 and 0 of 10,000;
+        # through the events feed, the same hour, 24,881 of 48,199 are two-sided.
         "two_sided": sum(1 for m in markets if kc.two_sided(m)),
         "structural_pair": pairs,
         "structural_field": fields,
+        # The denominators for the field scan. `structural_field: 0` with these
+        # at 428/1591/14 means "1,591 mutex fields were priced, 14 were cheap,
+        # and none is provably exhaustive" — a fact about the rulebook. At
+        # 0/0/0 it would mean nothing was looked at. Same zero, opposite
+        # meanings, which is why all three travel with it.
+        "field_partial_skipped": field_stats.get("partial_fields_skipped", 0),
+        "field_mutex_priced": field_stats.get("mutex_fields_priced", 0),
+        "field_uncertifiable": field_stats.get("uncertifiable", []),
         "disagreement": disagree,
         "dropped_incoherent": incoherent,
         # Held apart from `disagreement` on purpose. Folding these in would make
@@ -518,11 +649,21 @@ def main():
         print(f"    +{c['edge_cents']:>5.1f}c  yes {c['yes_ask']*100:.0f}c + "
               f"no {c['no_ask']*100:.0f}c  x{c['max_contracts']}  {c['title'][:52]}")
 
-    print(f"  [STRUCTURAL] field locks (mutex-gated): "
-          f"{len(r['structural_field'])}")
+    unc = r.get("field_uncertifiable", [])
+    print(f"  [STRUCTURAL] field locks (exhaustiveness-gated): "
+          f"{len(r['structural_field'])} certified of "
+          f"{r.get('field_mutex_priced', 0)} mutex fields priced "
+          f"({r.get('field_partial_skipped', 0)} skipped: not every leg quoted)")
     for c in r["structural_field"][:5]:
-        print(f"    +{c['edge_cents']:>5.1f}c  {c['legs']} legs  "
-              f"x{c['max_contracts']}  {c['event_ticker']}")
+        print(f"    +{c['edge_cents']:>5.1f}c  {c['legs']} legs "
+              f"({c.get('legs_two_sided', '?')} two-sided, fill risk "
+              f"{c.get('fill_risk', '?')})  x{c['max_contracts']}  {c['event_ticker']}")
+    if unc:
+        print(f"    {len(unc)} cheap field(s) REFUSED — no proof the outcome set "
+              f"is exhaustive, so 'buy the field' can lose 100%:")
+        for c in unc[:5]:
+            print(f"      would-be +{c['apparent_edge_cents']:>5.1f}c  "
+                  f"{c['legs']} legs  {c['event_ticker']}")
 
     print(f"\n  [DISAGREEMENT] near-certainty band 90-99c: "
           f"{len(r['disagreement'])} coherent, "

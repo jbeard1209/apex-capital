@@ -7166,7 +7166,57 @@ class TestKalshiSector(unittest.TestCase):
             raise RuntimeError("event lookup failed")
         self.assertEqual(ks.find_field_locks(markets, raises), [],
                          "an unreadable mutex flag must block, not permit")
-        self.assertEqual(len(ks.find_field_locks(markets, lambda e: True)), 1)
+
+    def test_the_mutex_flag_alone_does_not_certify_a_field(self):
+        """`mutually_exclusive` promises AT MOST one YES. A lock needs EXACTLY
+        one. Kalshi exposes no exhaustiveness flag, and the difference is the
+        whole stake: KXLAPRIMARY-01R26 quoted 2 legs at 12.9c total under an
+        explicit rule that all markets may resolve No. Cheap must not read as
+        certified — but it must still be COUNTED, or a refusal is
+        indistinguishable from a scan that looked at nothing."""
+        import kalshi_scanner as ks
+        markets = [
+            {"ticker": "A", "event_ticker": "E", "series_ticker": "S",
+             "yes_ask_dollars": "0.06", "yes_ask_size_fp": "500"},
+            {"ticker": "B", "event_ticker": "E", "series_ticker": "S",
+             "yes_ask_dollars": "0.07", "yes_ask_size_fp": "500"},
+        ]
+        stats = {}
+        self.assertEqual(ks.find_field_locks(markets, lambda e: True, stats), [],
+                         "an unproven outcome set is not a lock at any price")
+        self.assertEqual(1, stats["mutex_fields_priced"],
+                         "the field was priced — say so, or zero means nothing")
+        self.assertEqual(1, len(stats["uncertifiable"]),
+                         "the refusal must survive as a readable row")
+
+        with patch.object(ks, "EXHAUSTIVE_SERIES", frozenset({"S"})):
+            self.assertEqual(len(ks.find_field_locks(markets, lambda e: True)), 0,
+                             "87c of 'edge' on a liquid exchange indicts the "
+                             "allow-list; it must never become a trade")
+            # 44c + 44c + two fees = a 8c edge: real, small, and the size an
+            # exchange plausibly leaves standing for a moment.
+            cheap = [dict(m, yes_ask_dollars="0.44") for m in markets]
+            self.assertEqual(len(ks.find_field_locks(cheap, lambda e: True)), 1,
+                             "a proven-exhaustive field at a credible edge is "
+                             "the one case that IS a lock")
+
+    def test_a_field_lock_requires_every_leg_to_be_quoted(self):
+        """`by_event` holds only legs carrying an ask. Summing those and calling
+        the shortfall an edge assumes the legs you can price are the outcome
+        set — that produced an 83c 'edge' on the first real feed."""
+        import kalshi_scanner as ks
+        markets = [
+            {"ticker": "A", "event_ticker": "E", "series_ticker": "S",
+             "yes_ask_dollars": "0.10", "yes_ask_size_fp": "500"},
+            {"ticker": "B", "event_ticker": "E", "series_ticker": "S",
+             "yes_ask_dollars": "0.10", "yes_ask_size_fp": "500"},
+            {"ticker": "C", "event_ticker": "E", "series_ticker": "S"},  # no ask
+        ]
+        stats = {}
+        with patch.object(ks, "EXHAUSTIVE_SERIES", frozenset({"S"})):
+            self.assertEqual(ks.find_field_locks(markets, lambda e: True, stats), [],
+                             "you cannot buy a field with an unquoted outcome")
+        self.assertEqual(1, stats["partial_fields_skipped"])
 
     def test_a_pair_lock_needs_no_flag_but_must_clear_both_fees(self):
         """YES+NO on one contract is exclusive by construction. The edge must
