@@ -8537,6 +8537,57 @@ class TestCoherenceLaws(unittest.TestCase):
         self.assertEqual(detail["legacy"]["settled"], 216)
         self.assertIn("NOT evidence", why)
 
+    def test_waiting_for_data_eventually_becomes_a_decision(self):
+        """"Not yet" must expire, or the heartbeat becomes the sound of a
+        decision nobody is making.
+
+        The honest gate rejects a one-sided book, and the scan of 2026-08-17
+        found ZERO two-sided books in 12,000 open markets. So the sample this
+        function is waiting for may not be late — it may not be coming, which is
+        an answer about the business rather than a reason to keep waiting.
+        Memory `verdict-with-no-consequence`: a verdict that can only ever say
+        "keep collecting" has no consequence attached to it.
+        """
+        import kalshi_calibration as kcal
+        real = kcal.REGIME_START
+        try:
+            # inside the patience window: still an ordinary wait
+            kcal.REGIME_START = (date.today()
+                                 - timedelta(days=2)).isoformat()
+            _, why, _ = kcal.is_premise_alive([])
+            self.assertNotIn("DECISION DUE", why)
+
+            # past it, with nothing to show: it escalates and says why
+            kcal.REGIME_START = (
+                date.today()
+                - timedelta(days=kcal.SAMPLE_PATIENCE_DAYS + 5)).isoformat()
+            verdict, why, detail = kcal.is_premise_alive([])
+            self.assertEqual(verdict, kcal.UNDECIDED)
+            self.assertIn("DECISION DUE", why)
+            self.assertIn("never at this rate", why)
+            self.assertGreaterEqual(detail["regime_days"],
+                                    kcal.SAMPLE_PATIENCE_DAYS)
+        finally:
+            kcal.REGIME_START = real
+
+    def test_a_healthy_collection_rate_is_not_escalated(self):
+        """The deadline is for a sample that is not coming, not a slow one."""
+        import kalshi_calibration as kcal
+        real = kcal.REGIME_START
+        try:
+            kcal.REGIME_START = (
+                date.today()
+                - timedelta(days=kcal.SAMPLE_PATIENCE_DAYS + 5)).isoformat()
+            rows = [{"settled": True, "outcome": 1, "market_price": 0.97,
+                     "yes_bid": 0.94}] * 100
+            _, why, detail = kcal.is_premise_alive(rows)
+            self.assertNotIn("DECISION DUE", why,
+                             "escalated a cohort that is filling up fine")
+            self.assertGreater(detail["settled_per_day"],
+                               kcal.MIN_RATE_TO_BE_WORTH_WAITING)
+        finally:
+            kcal.REGIME_START = real
+
     def test_the_two_cohorts_are_never_averaged_together(self):
         """Pooling two selection rules measures neither.
 

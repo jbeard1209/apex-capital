@@ -62,6 +62,22 @@ SCAN_LOG = DATA_DIR / "kalshi_scan_log.json"
 # only just inside the gap we are trying to resolve.
 MIN_SETTLED_FOR_VERDICT = 200
 
+# The two-sided rule went live 2026-08-17. Everything before it was selected by
+# `tradeable()` and is a different experiment (see `_is_current_regime`).
+REGIME_START = "2026-08-17"
+
+# How long the current rule gets to produce a measurable sample before "not yet"
+# stops being an acceptable answer. This exists because of memory
+# `verdict-with-no-consequence`: a gate that can only ever say "keep waiting" is
+# a project that runs forever on "we just need more data", and the honest gate
+# here is strict enough that the sample may never arrive at all — the scan of
+# 2026-08-17 12:23 found ZERO two-sided books in 12,000 open markets. If the
+# rate says the sample is decades away, that is an answer about the business,
+# not a reason to keep the tab open. At that point it becomes a Chairman
+# decision rather than a wait.
+SAMPLE_PATIENCE_DAYS = 45
+MIN_RATE_TO_BE_WORTH_WAITING = 1.0    # settled current-regime rows per day
+
 # Buckets for the reliability curve. Deliberately fine at the top, because the
 # entire strategy lives in the last two.
 BUCKETS = [(0.0, 0.5), (0.5, 0.7), (0.7, 0.8), (0.8, 0.9),
@@ -313,6 +329,21 @@ def _is_current_regime(row) -> bool:
     return row.get("yes_bid") is not None
 
 
+def _regime_age_and_rate(settled_now: int):
+    """(days the current rule has been live, settled rows per day).
+
+    Anchored on REGIME_START rather than on the ledger's own earliest row: an
+    empty cohort has no earliest row, and "no data yet" is exactly the state
+    this needs to be able to time.
+    """
+    try:
+        start = datetime.fromisoformat(REGIME_START).replace(tzinfo=timezone.utc)
+        days = max(0.0, (datetime.now(timezone.utc) - start).total_seconds() / 86400.0)
+    except ValueError:
+        return 0.0, 0.0
+    return round(days, 1), (round(settled_now / days, 3) if days >= 1 else 0.0)
+
+
 def split_by_regime(rows=None):
     """(current, legacy). Two cohorts that must never share a statistic.
 
@@ -419,6 +450,21 @@ def is_premise_alive(rows=None):
                     f"YES {lg['realised']:.1%}) are NOT evidence here — none of "
                     f"them could pass today's gate, which is why the gate "
                     f"changed. Pooling them would measure neither rule.")
+
+        # "Not yet" has to expire. Otherwise this reads CANNOT_TELL every week
+        # forever and the heartbeat email becomes the sound of a decision nobody
+        # is making.
+        days, rate = _regime_age_and_rate(len(settled))
+        detail.update({"regime_days": days, "settled_per_day": rate})
+        if days >= SAMPLE_PATIENCE_DAYS and rate < MIN_RATE_TO_BE_WORTH_WAITING:
+            eta = ("never at this rate" if rate <= 0 else
+                   f"~{(MIN_SETTLED_FOR_VERDICT - len(settled)) / rate:.0f} more days")
+            why += (f" DECISION DUE: the current rule has been live {days} days "
+                    f"and has produced {len(settled)} settled observation(s) "
+                    f"({rate:.2f}/day, {eta}). The sample is not late, it is not "
+                    f"coming — a gate honest enough to reject a one-sided book "
+                    f"rejects essentially this entire exchange. Whether to keep "
+                    f"the sector open is a Chairman decision, not a wait.")
         return UNDECIDED, why, detail
 
     # ---- A. settlement ----------------------------------------------------
