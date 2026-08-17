@@ -1803,6 +1803,10 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             logger.warning(f"  ? CANNOT_TELL {_r.name}: {_r.detail}")
         if _cl_bad:
             coherence_laws.escalate_violations(_cl_results)
+            # The queue is per-host and Jack reads the Mac's. main.py runs on the
+            # VM, so without this the two laws that can only run there report
+            # into a file nobody opens. Deduped on the violation set.
+            coherence_laws.notify_violations(_cl_results)
         logger.info(f"  {len(_cl_results)} law(s): "
                     f"{len(_cl_results) - len(_cl_bad) - len(_cl_unk)} hold, "
                     f"{len(_cl_bad)} violated, {len(_cl_unk)} cannot tell")

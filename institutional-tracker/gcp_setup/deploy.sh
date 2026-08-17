@@ -83,7 +83,7 @@ bash "${LOCAL_DIR}scripts/refresh_crontab_snapshot.sh" || \
 
 # ── 1. Sync project files ──────────────────────────────────────────────────
 echo ""
-echo "[1/3] Syncing project files..."
+echo "[1/2] Syncing project files..."
 # data/ is runtime state (cloud-synced, not deployed) — EXCEPT for a short
 # allowlist of tracked CONFIG files that code reads to make decisions. Excluding
 # data/ wholesale meant wiring_audit.py passed clean on the Mac and reported 4
@@ -117,6 +117,15 @@ echo "[1/3] Syncing project files..."
 # and restore_crontab.sh — whose own header says "run this ON THE VM, after
 # deploy.sh has rsynced the repo across" — had never been deployed at all.
 # A repair that cannot travel to the machine it repairs is not deployed.
+#
+# The Oracle provisioning kit is excluded below, and that exclusion is the rare
+# kind that is correct: it is the tooling that CREATES a third host, plus the
+# private key that authenticates to the account. A forgotten Oracle instance
+# already ran a full parallel firm against this same Alpaca account for 69 days
+# (terminated 2026-07-27). The kit is gitignored, so it reached the VM without
+# ever passing a review, and nothing there schedules or imports it. Shipping the
+# means to rebuild the incident, to the host that would rebuild it, buys
+# nothing. It stays on the Mac, where Jack runs it by hand or not at all.
 rsync -avz --progress \
     --exclude="data/.host_id" \
     --include="data/" \
@@ -128,7 +137,7 @@ rsync -avz --progress \
     --exclude="__pycache__/" \
     --exclude="*.pyc" \
     --exclude=".git/" \
-    --exclude="oracle_setup/oracle_attempts.log" \
+    --exclude="oracle_setup/" \
     "$LOCAL_DIR" \
     "$REMOTE_DIR"
 
@@ -136,7 +145,7 @@ echo "  Project files synced."
 
 # ── 2. Sync .env (credentials) ────────────────────────────────────────────
 echo ""
-echo "[2/3] Syncing .env credentials..."
+echo "[2/2] Syncing .env credentials..."
 if [ -f "${LOCAL_DIR}.env" ]; then
     scp "${LOCAL_DIR}.env" "$SSH_TARGET:~/institutional-tracker/.env"
     echo "  .env deployed."
@@ -145,14 +154,11 @@ else
     echo "  SSH in and run: nano ~/institutional-tracker/.env"
 fi
 
-# ── 3. Sync Oracle setup ──────────────────────────────────────────────────
-echo ""
-echo "[3/3] Syncing Oracle provisioning script..."
-rsync -avz \
-    "${LOCAL_DIR}oracle_setup/" \
-    "$SSH_TARGET:~/institutional-tracker/oracle_setup/" \
-    --exclude="oracle_attempts.log"
-echo "  Oracle setup synced."
+# ── 3. (removed 2026-08-17) Oracle setup is deliberately NOT deployed ─────
+# This step used to push oracle_setup/ — provisioning scripts and oci_key.pem —
+# to production on every deploy. See the note above rsync in step 1. The VM's
+# copy was quarantined to ~/quarantine_oracle_20260817/ the same day; the
+# originals remain on the Mac.
 
 # ── Verify ────────────────────────────────────────────────────────────────
 echo ""
@@ -202,7 +208,6 @@ echo ""
 echo "  SSH in:            ssh apex-capital"
 echo "  Check cron:        crontab -l"
 echo "  Tail pipeline log: tail -f ~/institutional-tracker/logs/cron_\$(date +%Y%m%d).log"
-echo "  Tail Oracle log:   tail -f ~/institutional-tracker/oracle_setup/oracle_attempts.log"
 echo ""
 echo "  To redeploy after code changes, just run this script again."
 echo ""

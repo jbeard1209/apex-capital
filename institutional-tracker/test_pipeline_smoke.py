@@ -8371,6 +8371,92 @@ class TestCoherenceLaws(unittest.TestCase):
                 and n.attr == "exit_on_violation_only"]
         self.assertTrue(srcs, "main() never reads --exit-on-violation-only")
 
+    # -- notification: the finding has to cross the host boundary -------------
+
+    def _notify_with(self, tmpdir, results, sent):
+        """Run notify_violations against a scratch state file, capturing sends."""
+        cl = self._law_sources()
+        import email_buffer
+        state = Path(tmpdir) / "coherence_notified.json"
+        real_state, real_buf = cl.NOTIFY_STATE, email_buffer.buffer_email
+        try:
+            cl.NOTIFY_STATE = state
+            email_buffer.buffer_email = lambda **kw: sent.append(kw) or True
+            return cl.notify_violations(results)
+        finally:
+            cl.NOTIFY_STATE, email_buffer.buffer_email = real_state, real_buf
+
+    def test_a_violation_is_mailed_because_the_queue_does_not_cross_hosts(self):
+        """positions_conserve can ONLY run on the VM, and Jack reads the Mac.
+
+        escalate_violations writes to the local chairman queue, and there is no
+        state sync between hosts — so a VM finding would sit in a file nobody
+        opens. Email is the only medium both hosts share with Jack.
+        """
+        sent = []
+        with tempfile.TemporaryDirectory() as d:
+            fired = self._notify_with(d, [self._violation("positions_conserve")], sent)
+        self.assertTrue(fired)
+        self.assertEqual(len(sent), 1)
+        self.assertIn("positions_conserve", json.dumps(sent[0]))
+
+    def test_the_same_violation_is_not_mailed_twice(self):
+        """A law broken since Tuesday is not news on Wednesday.
+
+        Re-mailing every run trains Jack to filter the sender, which is the exact
+        failure this layer exists to prevent — and is how the 2026-07 email flood
+        made real alerts invisible.
+        """
+        sent = []
+        v = [self._violation("positions_conserve")]
+        with tempfile.TemporaryDirectory() as d:
+            self._notify_with(d, v, sent)
+            second = self._notify_with(d, v, sent)
+        self.assertFalse(second)
+        self.assertEqual(len(sent), 1, "the same violation mailed twice")
+
+    def test_a_newly_broken_law_is_news_even_while_another_is_still_broken(self):
+        """Dedupe is on the violation SET, not on 'have I ever mailed'."""
+        sent = []
+        a = [self._violation("positions_conserve")]
+        b = a + [self._violation("broker_host_census")]
+        with tempfile.TemporaryDirectory() as d:
+            self._notify_with(d, a, sent)
+            self._notify_with(d, b, sent)
+        self.assertEqual(len(sent), 2)
+        self.assertIn("broker_host_census", json.dumps(sent[1]))
+
+    def test_a_clean_run_sends_nothing(self):
+        cl = self._law_sources()
+        sent = []
+        with tempfile.TemporaryDirectory() as d:
+            fired = self._notify_with(
+                d, [cl.LawResult("positions_conserve", cl.HOLDS, "ok", ("A", "B"))],
+                sent)
+        self.assertFalse(fired)
+        self.assertEqual(sent, [])
+
+    def test_the_layer_never_opens_its_own_smtp_connection(self):
+        """AST, not grep: the docstring above notify_violations says 'smtplib'.
+
+        ~20 scripts opening their own smtplib connection IS the email flood, and
+        mail_guard only holds because senders go through email_buffer. A text
+        search for 'smtplib' in this file matches the comment explaining why it
+        must not be here — an import node cannot be a comment.
+        """
+        import ast
+        cl = self._law_sources()
+        tree = ast.parse(Path(cl.__file__).read_text())
+        imported = set()
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Import):
+                imported.update(a.name.split(".")[0] for a in n.names)
+            elif isinstance(n, ast.ImportFrom) and n.module:
+                imported.add(n.module.split(".")[0])
+        self.assertNotIn("smtplib", imported)
+        self.assertIn("email_buffer", imported,
+                      "notification must go through the buffered, guarded path")
+
     # -- the Mac is where the deploy law can run ------------------------------
 
     def test_the_mac_schedules_the_coherence_laws(self):

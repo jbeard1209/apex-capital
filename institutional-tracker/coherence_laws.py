@@ -54,6 +54,7 @@ Exit code: 0 if every law HOLDS, 1 if any is VIOLATED or CANNOT_TELL (CI-friendl
 
 import argparse
 import json
+import logging
 import re
 import sys
 from collections import defaultdict
@@ -991,6 +992,91 @@ def escalate_violations(results: List[LawResult]) -> int:
     return written
 
 
+NOTIFY_STATE = DATA_DIR / "coherence_notified.json"
+
+
+def notify_violations(results: List[LawResult]) -> bool:
+    """Buffer ONE digest email when the set of violations changes. Returns sent.
+
+    escalate_violations() writes to this host's chairman queue — and there is no
+    state sync between hosts, so a violation the VM finds lands in a queue Jack
+    never opens. The two laws that can only run on the VM (positions_conserve,
+    and the Kalshi ones, which need the live scan) are exactly the ones whose
+    findings would die there. The only medium that crosses hosts is email.
+
+    It goes through email_buffer, which is the mail_guard-sanctioned path: the
+    message joins the once-a-day digest instead of opening its own smtplib
+    connection. That distinction is not cosmetic — the email flood of 2026-07
+    was scripts doing precisely that.
+
+    Deduped on the violation SIGNATURE, not the run. A law that has been broken
+    since Tuesday is not news on Wednesday; re-mailing it every run would train
+    Jack to filter the sender, which is the failure mode this whole layer exists
+    to prevent. A new law breaking, or a known one changing its detail, is news.
+    """
+    violated = sorted((r.name, r.detail) for r in results if r.verdict == VIOLATED)
+    signature = json.dumps(violated)
+
+    try:
+        prior = json.loads(NOTIFY_STATE.read_text()).get("signature")
+    except (OSError, ValueError, AttributeError):
+        prior = None
+
+    if signature == prior:
+        return False
+
+    # Record BEFORE sending. If the buffer write throws, the alternative is a
+    # retry loop that mails on every run — the failure mode is worse than the
+    # miss, and the report on disk still carries the violation either way.
+    try:
+        NOTIFY_STATE.write_text(json.dumps({
+            "signature": signature, "at": datetime.now().isoformat()}))
+    except OSError:
+        pass
+
+    if not violated:
+        return False        # everything cleared: the retired queue row says so
+
+    try:
+        import socket
+        host = socket.gethostname().split(".")[0]
+    except Exception:
+        host = "unknown-host"
+
+    rows = "".join(
+        f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eee'><b>{r.name}</b><br>"
+        f"<span style='color:#666;font-size:12px'>A: {r.sources[0]} &nbsp;|&nbsp; "
+        f"B: {r.sources[1]}</span></td>"
+        f"<td style='padding:6px 10px;border-bottom:1px solid #eee'>{r.detail}</td></tr>"
+        for r in results if r.verdict == VIOLATED)
+
+    body = (
+        f"<p>{len(violated)} coherence law(s) violated on <b>{host}</b>. Each law "
+        f"compares two independently-sourced measurements of the same quantity; a "
+        f"violation means the two disagree, so at least one subsystem is wrong "
+        f"about the world.</p>"
+        f"<table style='border-collapse:collapse;font-family:system-ui,sans-serif'>"
+        f"<tr><th align='left' style='padding:6px 10px'>Law</th>"
+        f"<th align='left' style='padding:6px 10px'>Disagreement</th></tr>"
+        f"{rows}</table>"
+        f"<p style='color:#666;font-size:12px'>Full evidence: "
+        f"data/coherence_report.json on {host}.</p>")
+
+    try:
+        from email_buffer import buffer_email
+        buffer_email(
+            subject=f"Coherence: {len(violated)} law(s) violated on {host}",
+            html_body=body,
+            sender_name="Coherence Layer",
+            key_metrics={"violated": len(violated), "host": host,
+                         "laws": [n for n, _ in violated]},
+        )
+        return True
+    except Exception as e:                       # noqa: BLE001 — never break main
+        logging.getLogger("coherence_laws").warning(f"notify failed: {e}")
+        return False
+
+
 def _write_report(results: List[LawResult]) -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(json.dumps({
@@ -1023,6 +1109,7 @@ def main() -> int:
     _write_report(results)
     if not args.no_escalate:
         escalate_violations(results)
+        notify_violations(results)
 
     bad = [r for r in results if r.verdict != HOLDS]
     if not args.quiet:
