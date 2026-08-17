@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Apex Capital — Wake-Up Catch-Up Runner
+       Fires every time the Mac logs in OR wakes from sleep.
+       Checks which scheduled jobs were missed and runs them.
+       Also fires once at startup via StartInterval as a belt-and-suspenders. -->
+
+  <key>Label</key>
+  <string>com.apexcapital.catchup</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/catch_up.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker</string>
+
+  <!-- Run on login (catches restart/power-on case) -->
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Also poll every 20 minutes as a safety net for wake-from-sleep
+       (macOS doesn't have a direct "on wake" LaunchAgent trigger) -->
+  <key>StartInterval</key>
+  <integer>1200</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/catchup_launchd.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/catchup_launchd.log</string>
+
+  <!-- Don't flood with retries if the script errors -->
+  <key>ThrottleInterval</key>
+  <integer>300</integer>
+
+</dict>
+</plist>

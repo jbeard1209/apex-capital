@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Apex Capital — VM State Monitor
+       Asks Google directly whether the instance is powered on, and the broker
+       whether the designated writer is still writing. Two independent
+       questions; neither substitutes for the other.
+
+       WHY LAUNCHD AND NOT A CLAUDE SCHEDULED TASK:
+       gcp-vm-health-monitor (a Claude scheduled task, every 15 min, still
+       showing "enabled") last actually ran 2026-08-08. cit-code-bug-fixer,
+       every 10 min, last ran 2026-08-07. Both silently stopped for 9 days
+       while continuing to report a nextRunAt. A liveness monitor that depends
+       on a scheduler which can stop without saying so is not a liveness
+       monitor. launchd is owned by the OS, survives logout, and runs whether
+       or not any app is open.
+
+       The monitor exits non-zero when it cannot tell (missing or
+       unauthenticated gcloud) rather than passing — see the module docstring. -->
+
+  <key>Label</key>
+  <string>com.apexcapital.vmstate</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/vm_state_monitor.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker</string>
+
+  <!-- gcloud lives in /opt/homebrew/bin, which is NOT on launchd's default
+       PATH. Without this the monitor would report "cannot tell" forever. -->
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <!-- Every 15 minutes. The VM being off for eight days undetected is the
+       failure this exists to prevent; 15 min is well inside that. -->
+  <key>StartInterval</key>
+  <integer>900</integer>
+
+  <key>StandardOutPath</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/vmstate_launchd.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/vmstate_launchd.log</string>
+
+  <key>ThrottleInterval</key>
+  <integer>300</integer>
+
+</dict>
+</plist>
