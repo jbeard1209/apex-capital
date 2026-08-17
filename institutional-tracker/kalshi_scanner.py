@@ -69,6 +69,15 @@ MIN_LEG_SIZE = 25
 # The band the Chairman asked about.
 NEAR_CERTAINTY_LO, NEAR_CERTAINTY_HI = 0.90, 0.99
 
+# The order size breakeven is quoted for. Kalshi rounds its fee UP to a whole
+# cent per ORDER, so the per-contract cost falls steeply with size: at 99c a
+# 1-contract order pays 1c (14x the true rate) and a 100-contract order pays
+# 0.07c each. Quoting breakeven at 1 contract made every 99c market require a
+# >100% win rate — impossible, so the band auto-rejected itself. 100 is chosen
+# because it is where the rounding stops dominating, not because it is a target
+# position; the row is always priced at min(resting size, this).
+REFERENCE_ORDER_CONTRACTS = 100
+
 # Never risk more than this share of the sleeve on one settlement rule, however
 # good the arithmetic looks. Kalshi and Polymarket resolved the *same* 2024
 # government-shutdown event in OPPOSITE directions on differing rule wording;
@@ -317,7 +326,16 @@ def find_disagreement_candidates(markets, estimator=None):
         if not (NEAR_CERTAINTY_LO <= ask <= NEAR_CERTAINTY_HI):
             continue
 
-        be = kc.breakeven_probability(ask)
+        # Breakeven is priced for the order we could ACTUALLY send: the whole
+        # resting size, capped at the reference order. Both numbers travel with
+        # the row because both are true — a market with 3 contracts resting
+        # really does cost the punitive 1c-rounded fee, and one with 500 really
+        # does not. Publishing only the 1-contract figure declared the entire
+        # 99c band mathematically impossible; publishing only the sized figure
+        # would hide that thin books are taxed. See kc.breakeven_probability.
+        order_n = max(1, min(int(size), REFERENCE_ORDER_CONTRACTS))
+        be = kc.breakeven_probability(ask, contracts=order_n)
+        be_one = kc.breakeven_probability(ask, contracts=1)
         row = {
             "strategy": "DISAGREEMENT", "ticker": m.get("ticker"),
             "event_ticker": m.get("event_ticker"),
@@ -338,6 +356,8 @@ def find_disagreement_candidates(markets, estimator=None):
             "cap_strike": m.get("cap_strike"),
             "yes_sub_title": m.get("yes_sub_title"),
             "breakeven_probability": round(be, 4) if be else None,
+            "breakeven_at_one_contract": round(be_one, 4) if be_one else None,
+            "priced_for_contracts": order_n,
             "payoff_against": round(ask / (1.0 - ask), 1),
             "volume": kc.parse_size(m.get("volume_fp")) or 0.0,
             "close_time": m.get("close_time"),
@@ -672,8 +692,11 @@ def main():
           f"(observed, never sized)")
     for c in r["disagreement"][:10]:
         be = c["breakeven_probability"]
-        print(f"    {c['market_price']*100:5.1f}c  need >{be*100:.1f}% to break "
-              f"even, {c['payoff_against']:.0f}:1 against  vol={c['volume']:.0f}")
+        be1 = c.get("breakeven_at_one_contract") or be
+        print(f"    {c['market_price']*100:5.1f}c  need >{be*100:.2f}% to break "
+              f"even at x{c.get('priced_for_contracts', 1)} "
+              f"({be1*100:.2f}% at x1), {c['payoff_against']:.0f}:1 against  "
+              f"vol={c['volume']:.0f}")
         print(f"           {c['title'][:70]}")
 
     if not r["structural_pair"] and not r["structural_field"]:

@@ -7137,6 +7137,38 @@ class TestKalshiSector(unittest.TestCase):
         self.assertGreater(be, ask, "breakeven must exceed the ask")
         self.assertLess(be, 0.98, "at 96c the fee is ~1c, not ~2c")
 
+    def test_breakeven_is_priced_for_the_order_not_for_one_contract(self):
+        """Kalshi rounds its fee UP to a whole cent per ORDER, so a 1-contract
+        order at 99c pays 1c against a true rate of 0.069c — 14x. Quoting
+        breakeven at 1 contract made every 99c market need a >100% win rate,
+        which is impossible, so the band the sector exists to trade rejected
+        itself with no reason ever stated. The fee must fall with size, and it
+        must never fall below the true rate."""
+        import kalshi_client as kc
+        one = kc.breakeven_probability(0.99, contracts=1)
+        hundred = kc.breakeven_probability(0.99, contracts=100)
+        self.assertAlmostEqual(1.00, one, places=4,
+                               msg="1 contract at 99c really does cost a full cent")
+        self.assertLess(hundred, 1.0,
+                        "at size, 99c must be beatable or the band is dead")
+        self.assertGreater(hundred, 0.99,
+                           "the fee is real — breakeven must exceed the ask")
+        for n in (1, 10, 100, 1000):
+            self.assertGreaterEqual(
+                kc.breakeven_probability(0.96, contracts=n), 0.96,
+                "no order size makes the fee negative")
+        self.assertLessEqual(kc.breakeven_probability(0.96, contracts=1000),
+                             kc.breakeven_probability(0.96, contracts=1),
+                             "per-contract cost must be monotone in size")
+
+    def test_a_degenerate_order_size_returns_none_not_a_free_trade(self):
+        """Zero or garbage contracts must not compute a breakeven of `price`
+        with no fee — that is a cost of zero, which reads as permission."""
+        import kalshi_client as kc
+        for bad in (0, -5, None, "many"):
+            self.assertIsNone(kc.breakeven_probability(0.96, contracts=bad),
+                              f"contracts={bad!r} must refuse, not discount")
+
     def test_the_fee_is_a_dome_peaking_at_the_midpoint(self):
         """Fees decay toward both extremes — the one structural fact that
         favours trading the tails. If this inverts, the sizing math inverts."""

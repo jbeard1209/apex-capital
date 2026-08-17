@@ -143,23 +143,43 @@ def fee_cents(price, contracts=1, maker=False):
     return math.ceil(rate * contracts * p * (1.0 - p) * 100.0)
 
 
-def breakeven_probability(price, maker=False):
-    """The true probability at which buying YES at `price` is EV-neutral.
+def breakeven_probability(price, maker=False, contracts=1):
+    """The true probability at which buying YES at `price` is EV-neutral,
+    FOR AN ORDER OF `contracts`. Order size is not a detail here — it moves the
+    answer by more than the entire margin the strategy trades in.
 
-    Buying 1 contract at p costs p dollars plus the fee, and returns $1.00 if
-    it settles YES. So we need  q*1.00 - p - fee/100 = 0.
+    Buying N contracts at p costs N*p dollars plus ONE rounded-up fee, and
+    returns N*$1.00 if it settles YES. So we need q - p - fee/(100*N) = 0.
 
-    At 96c taker this is ~96.3%. The gap between the ask and this number is the
-    entire business: it is 0.3 percentage points wide, and it is the margin
-    inside which an estimate has to be right.
+    Kalshi rounds the fee up to a whole cent PER ORDER. At 99c the true rate is
+    0.07 * 0.99 * 0.01 = 0.069c per contract, so a 1-contract order pays 1c —
+    fourteen times the rate — while a 100-contract order pays 7c, or 0.07c each.
+    Breakeven at 99c is therefore 100.00% for one contract and 99.07% for a
+    hundred. This default used to be hardcoded at 1, and the scanner printed
+    "need >100.0% to break even" against every 99c market on the exchange: not
+    a fact about Kalshi, an artifact of rounding a fee we were not going to pay,
+    and a mathematical impossibility that auto-rejected the band the sector
+    exists to trade. Fee models that overstate cost look prudent and are not —
+    they retire strategies without ever stating a reason ([[nan-is-not-none]]
+    for the same shape in the other direction).
+
+    The default stays 1 so no existing caller silently gets a rosier number;
+    callers that are sizing an order MUST pass the size they would actually
+    send, bounded by the resting size they could actually fill.
     """
     p = parse_price(price)
     if p is None:
         return None
-    f = fee_cents(p, 1, maker)
+    try:
+        n = int(contracts)
+    except (TypeError, ValueError):
+        return None
+    if n <= 0:
+        return None
+    f = fee_cents(p, n, maker)
     if f is None:
         return None
-    return p + f / 100.0
+    return p + f / (100.0 * n)
 
 
 def tradeable(market):
