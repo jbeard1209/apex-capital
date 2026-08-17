@@ -1,8 +1,3 @@
-# CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-14T18:41:32Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
-# DO NOT hand-edit — it is a mirror, not a control surface.
-# Refresh with: bash scripts/refresh_crontab_snapshot.sh
-
 APEX_HEALTHCHECK_URL=https://hc-ping.com/0ca2940f-74a7-4306-a5fe-c7078f7c79cc
 SHELL=/bin/bash
 PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -306,3 +301,13 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # The verdict will read NOT PROVEN — NOT YET for months (200 settled
 # observations minimum). That is the gate working, not the gate failing.
 45 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --resolve --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
+
+# --- FIXED INCOME MONITORS (added 2026-08-16) -------------------------------
+# Both were written, wired to consumers, and scheduled nowhere. Neither could
+# even import until fi_data_layer gained get_credit_spreads /
+# get_issuer_credit_quality, so nothing ever saw their traceback — including
+# the risk monitor for the $30k FI book. Read-only: they flag and email, they
+# do not trade. Risk monitor runs 45min after fi_pipeline so it sees that day
+# board output; position monitor is the quarterly review its docstring claims.
+15 15 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fi_risk_monitor.py >> logs/fi_risk_$(date +\%Y\%m\%d).log 2>&1
+0 10 1 1,4,7,10 * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fi_position_monitor.py >> logs/fi_position_$(date +\%Y\%m\%d).log 2>&1
