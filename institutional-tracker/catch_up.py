@@ -259,6 +259,30 @@ JOB_REGISTRY = [
         "catchup_window":  (0, 24),
         "once_per_wakeup": True,
     },
+
+    # ── Coherence laws (Mac-side, and only Mac-side) ──────────────────────────
+    # The pipeline runs these on the VM too, but one of the seven can ONLY run
+    # here: `deployed_set_matches_repo` compares the git checkout against the
+    # trading host, and the VM is not a git checkout — deploy.sh rsyncs with
+    # --exclude=.git/. On the VM that law returns CANNOT_TELL naming this
+    # machine as the owner, so if the Mac never runs it, the one law that would
+    # have caught "the fix never reached production" is answered by nobody.
+    #
+    # This is now the substantive reason the Mac's scheduler exists at all
+    # (#81 removed the pipeline). Read-only: it places no orders and writes
+    # only data/coherence_report.json plus, on a violation, at most one row per
+    # law in the Chairman's queue.
+    {
+        "name":            "coherence_laws",
+        "script":          "coherence_laws.py",
+        "args":            ["--quiet", "--exit-on-violation-only"],
+        "output_file":     "data/coherence_report.json",
+        "ttl_hours":       7,
+        "fire_times_edt":  [9.0, 15.0, 21.0],
+        "run_days":        "all",
+        "catchup_window":  (0, 24),
+        "once_per_wakeup": True,
+    },
 ]
 
 

@@ -7886,14 +7886,22 @@ class TestCoherenceLaws(unittest.TestCase):
         cl = self._law_sources()
         self.assertTrue(cl.LAWS, "no laws registered")
         for fn, statement in cl.LAWS:
-            r = fn()
-            self.assertEqual(len(r.sources), 2, f"{r.name} does not name two sources")
-            a, b = r.sources
-            self.assertTrue(a and b, f"{r.name} has an empty source")
+            # Read the DECLARATION, do not run the law. Two of these ssh to
+            # another host and one hits the broker; making the commit path wait
+            # on the network just to learn a law's sources is how the check
+            # gets deleted the first time someone commits on a train.
+            self.assertTrue(hasattr(fn, "sources"),
+                            f"{fn.__name__} is registered but never declared its "
+                            f"sources with @sources(...)")
+            self.assertEqual(len(fn.sources), 2,
+                             f"{fn.__name__} does not name two sources")
+            a, b = fn.sources
+            self.assertTrue(a and b, f"{fn.__name__} has an empty source")
             self.assertNotEqual(a, b,
-                                f"{r.name} names the SAME source twice — that is a "
-                                f"self-check, and a broken producer passes its own")
-            self.assertTrue(statement.strip(), f"{r.name} has no conservation statement")
+                                f"{fn.__name__} names the SAME source twice — that is "
+                                f"a self-check, and a broken producer passes its own")
+            self.assertTrue(statement.strip(),
+                            f"{fn.__name__} has no conservation statement")
 
     def test_a_violated_ladder_is_detected(self):
         """Nested outcomes priced non-monotonically must come back VIOLATED."""
@@ -8065,6 +8073,325 @@ class TestCoherenceLaws(unittest.TestCase):
                 for d in start_dicts),
             "no heartbeat write records a `starts` history, so nothing can ever "
             "tell how OFTEN the pipeline ran")
+
+    # -- deployed_set_matches_repo ------------------------------------------
+    #
+    # The escape: deploy.sh's rsync excluded gcp_setup/, so the VM's own rebuild
+    # script was three months stale and the fix for it could not reach the host
+    # that needed it. Every audit that missed this enumerated from the DEPLOY
+    # SET, and an excluded file is not in the deploy set. This law enumerates
+    # from git.
+
+    def _fake_ssh(self, md5_body, find_body="", ls_files=("a.py",), rc=0):
+        """A runner that fakes `git ls-files` then the one ssh round trip."""
+        class R:
+            def __init__(self, out, code=0):
+                self.stdout, self.stderr, self.returncode = out, "", code
+        calls = {"n": 0}
+
+        def run(cmd, timeout):
+            calls["n"] += 1
+            if cmd[0] == "git":
+                return R("\n".join(ls_files))
+            return R(md5_body + "---FIND---" + find_body, rc)
+        return run
+
+    def test_a_file_that_differs_on_the_trading_host_is_a_violation(self):
+        import hashlib
+        cl = self._law_sources()
+        real = (cl.BASE_DIR / "coherence_laws.py")
+        h = hashlib.md5(real.read_bytes()).hexdigest()
+        wrong = "0" * 32
+        self.assertNotEqual(h, wrong)
+        r = cl.law_deployed_set_matches_repo(
+            self._fake_ssh(f"{wrong}  coherence_laws.py\n",
+                           ls_files=("coherence_laws.py",)))
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+
+    def test_an_identical_deployed_set_holds(self):
+        import hashlib
+        cl = self._law_sources()
+        h = hashlib.md5((cl.BASE_DIR / "coherence_laws.py").read_bytes()).hexdigest()
+        r = cl.law_deployed_set_matches_repo(
+            self._fake_ssh(f"{h}  coherence_laws.py\n",
+                           find_body="\ncoherence_laws.py\n",
+                           ls_files=("coherence_laws.py",)))
+        self.assertEqual(r.verdict, cl.HOLDS, r.detail)
+
+    def test_a_file_on_the_host_that_is_in_no_commit_is_a_violation(self):
+        """The other direction. 97 such files were found on the VM in July."""
+        import hashlib
+        cl = self._law_sources()
+        h = hashlib.md5((cl.BASE_DIR / "coherence_laws.py").read_bytes()).hexdigest()
+        r = cl.law_deployed_set_matches_repo(
+            self._fake_ssh(f"{h}  coherence_laws.py\n",
+                           find_body="\ncoherence_laws.py\nsecret_thing.py\n",
+                           ls_files=("coherence_laws.py",)))
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("secret_thing.py", json.dumps(r.evidence))
+
+    def test_an_unreachable_host_is_not_a_clean_deploy(self):
+        cl = self._law_sources()
+
+        def boom(cmd, timeout):
+            if cmd[0] == "git":
+                class R:
+                    stdout, stderr, returncode = "coherence_laws.py", "", 0
+                return R()
+            raise OSError("ssh: connect to host apex-capital port 22: timed out")
+        r = cl.law_deployed_set_matches_repo(boom)
+        self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+
+    def test_a_missing_file_is_named_not_blanked(self):
+        """`.strip("md5sum ")` strips a character SET, not a prefix.
+
+        The first version of this parser turned every absent path into the empty
+        string: the count was right and the evidence named nothing, which is a
+        detector that fires and tells you nothing — the same shape as
+        `error: None` on the FI execution path.
+        """
+        cl = self._law_sources()
+        r = cl.law_deployed_set_matches_repo(
+            self._fake_ssh("md5sum: coherence_laws.py: No such file or directory\n",
+                           ls_files=("coherence_laws.py",)))
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("coherence_laws.py", json.dumps(r.evidence))
+
+    # -- emitted_verbs_are_handled -------------------------------------------
+
+    def test_a_verb_the_manager_cannot_name_is_a_violation(self):
+        cl = self._law_sources()
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "cos_fake_agent.py").write_text(
+                'def pick():\n    return {"ticker": "X", "action": "YOLO"}\n')
+            r = cl.law_emitted_verbs_are_handled(Path(d))
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("YOLO", r.detail)
+
+    def test_a_verb_inside_a_conditional_expression_is_still_seen(self):
+        """The eight agents that shipped the escape all wrote it this way.
+
+        `"action": "BUY" if conviction >= 3 else "WATCH"` is an ast.IfExp, not
+        an ast.Constant. A scan that matched only bare constants found ZERO of
+        the producers that caused the 66-day outage.
+        """
+        cl = self._law_sources()
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "cos_fake_agent.py").write_text(
+                'def pick(c):\n'
+                '    return {"action": "NONSENSE" if c >= 3 else "WATCH"}\n')
+            r = cl.law_emitted_verbs_are_handled(Path(d))
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("NONSENSE", r.detail)
+
+    def test_the_live_agent_pool_emits_only_verbs_the_manager_handles(self):
+        cl = self._law_sources()
+        r = cl.law_emitted_verbs_are_handled()
+        self.assertEqual(r.verdict, cl.HOLDS, r.detail)
+
+    def test_an_empty_agent_pool_cannot_report_a_clean_vocabulary(self):
+        """No verbs found means the scan broke, not that the firm is disciplined."""
+        cl = self._law_sources()
+        with tempfile.TemporaryDirectory() as d:
+            r = cl.law_emitted_verbs_are_handled(Path(d))
+        self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+
+    # -- positions_conserve ---------------------------------------------------
+
+    def test_a_position_the_ledger_never_recorded_is_a_violation(self):
+        """The still-open watch item: state.json 0 positions, Alpaca 16."""
+        cl = self._law_sources()
+        r = cl.law_positions_conserve(
+            broker_positions={"AAPL": 10, "MSFT": -5},
+            state={"entry_dates": {"AAPL": "2026-08-01"}},
+            host="apexcapitalc")
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("MSFT", json.dumps(r.evidence))
+
+    def test_a_matching_ledger_holds(self):
+        cl = self._law_sources()
+        r = cl.law_positions_conserve(
+            broker_positions={"AAPL": 10},
+            state={"entry_dates": {"AAPL": "2026-08-01"}},
+            host="apexcapitalc")
+        self.assertEqual(r.verdict, cl.HOLDS, r.detail)
+
+    def test_off_the_writer_the_law_defers_and_names_the_owner(self):
+        """There is no state sync between hosts.
+
+        Comparing the Mac's month-old entry_dates to the live broker would
+        VIOLATE every day forever, correctly and uselessly — and a law that
+        cries wolf daily is a law that gets muted. CANNOT_TELL naming the owner
+        is the honest verdict, not a downgrade.
+        """
+        cl = self._law_sources()
+        import single_writer
+        r = cl.law_positions_conserve(host="definitely-not-the-writer")
+        self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+        self.assertIn(single_writer.designated_host(), r.detail)
+
+    def test_an_unreadable_broker_is_not_a_flat_book(self):
+        cl = self._law_sources()
+        r = cl.law_positions_conserve(
+            broker_positions={}, state={"entry_dates": {"AAPL": "2026-08-01"}},
+            host="apexcapitalc")
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+
+    # -- broker_host_census ---------------------------------------------------
+
+    def _order(self, host, when):
+        oid = f"apex-{host}-mod-{'a' * 12}" if host != "UNSTAMPED" else "manual-1"
+        return {"client_order_id": oid, "submitted_at": when}
+
+    def test_an_undocumented_host_trading_the_account_is_a_violation(self):
+        """The Oracle instance traded this account for 69 days.
+
+        It did not hide — it placed orders. It was invisible because the host
+        list WAS the doc, and the doc did not have it.
+        """
+        cl = self._law_sources()
+        r = cl.law_broker_host_census(
+            orders=[self._order("apexcapitalc", "2026-08-15T12:00:00+00:00"),
+                    self._order("apexcapitals", "2026-08-15T13:00:00+00:00")])
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        self.assertIn("apexcapitals", r.detail)
+
+    def test_a_stranger_from_before_the_stamping_cutover_is_not_judged(self):
+        """STRICT_FROM exists so the cutover cannot brand old history as ghosts."""
+        cl = self._law_sources()
+        r = cl.law_broker_host_census(
+            orders=[self._order("apexcapitalc", "2026-08-15T12:00:00+00:00"),
+                    self._order("UNSTAMPED", "2026-07-01T13:00:00+00:00")])
+        self.assertEqual(r.verdict, cl.HOLDS, r.detail)
+
+    def test_no_orders_cannot_report_a_clean_census(self):
+        cl = self._law_sources()
+        r = cl.law_broker_host_census(orders=[])
+        self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+
+    def test_the_documented_host_set_cannot_drift_from_infrastructure_md(self):
+        """Source B is a doc, so the doc has to actually contain it.
+
+        Without this the constant is just a second doc that agrees with itself,
+        which is precisely the failure the census was built to end.
+        """
+        cl = self._law_sources()
+        infra = cl.BASE_DIR.parent / "INFRASTRUCTURE.md"
+        if not infra.exists():
+            self.fail("INFRASTRUCTURE.md is missing — source B for the host census "
+                      "does not exist, so the census cannot be trusted")
+        text = infra.read_text()
+        for tag in cl.DOCUMENTED_HOST_TAGS:
+            self.assertIn(tag, text,
+                          f"host tag '{tag}' is permitted by coherence_laws but appears "
+                          f"nowhere in INFRASTRUCTURE.md — the registry and the census "
+                          f"have drifted, and the census is the thing that trusts it")
+
+    # -- escalation -----------------------------------------------------------
+
+    def _escalate_into(self, tmpdir, results, existing=None):
+        cl = self._law_sources()
+        q = Path(tmpdir) / "chairman_action_required.json"
+        q.write_text(json.dumps(existing if existing is not None else []))
+        real = cl.CHAIRMAN_QUEUE
+        try:
+            cl.CHAIRMAN_QUEUE = q
+            cl.escalate_violations(results)
+        finally:
+            cl.CHAIRMAN_QUEUE = real
+        return json.loads(q.read_text())
+
+    def _violation(self, law_name):
+        cl = self._law_sources()
+        return cl.LawResult(law_name, cl.VIOLATED, "broke", ("A", "B"))
+
+    def test_escalating_the_same_violation_twice_writes_one_row(self):
+        """The queue holds 152 items and 127 need a decision.
+
+        A detector that runs six times a day and APPENDS is not an alarm, it is
+        a way of making the queue unreadable — and an unreadable queue is how a
+        CRITICAL sat for 50 days.
+        """
+        v = [self._violation("positions_conserve")]
+        with tempfile.TemporaryDirectory() as d:
+            rows = self._escalate_into(d, v)
+            self.assertEqual(len(rows), 1)
+            # second pass over the queue the first one produced
+            rows2 = self._escalate_into(d, v, existing=rows)
+        self.assertEqual(len(rows2), 1,
+                         "escalation appended a second row for the same law")
+
+    def test_a_law_that_stops_violating_has_its_row_retired(self):
+        """A finding that outlives its cause is a false signal, just inverted."""
+        cl = self._law_sources()
+        with tempfile.TemporaryDirectory() as d:
+            rows = self._escalate_into(d, [self._violation("positions_conserve")])
+            self.assertEqual(len(rows), 1)
+            cleared = self._escalate_into(
+                d, [cl.LawResult("positions_conserve", cl.HOLDS, "fine", ("A", "B"))],
+                existing=rows)
+        self.assertEqual(cleared, [], "the row survived the law starting to hold")
+
+    def test_escalation_leaves_other_peoples_rows_alone(self):
+        other = [{"id": "chairman-decision-something", "severity": "CRITICAL",
+                  "description": "not mine"}]
+        with tempfile.TemporaryDirectory() as d:
+            rows = self._escalate_into(d, [self._violation("positions_conserve")],
+                                       existing=other)
+        self.assertEqual(len(rows), 2)
+        self.assertIn("chairman-decision-something", json.dumps(rows))
+
+    def test_cannot_tell_does_not_reach_the_chairman(self):
+        """CANNOT_TELL is the resting state of laws whose host cannot see a source.
+
+        positions_conserve defers on every run off the writer. Escalating that
+        would park a permanent row in front of the Chairman that no decision can
+        clear, which teaches people to skim past exactly those rows.
+        """
+        cl = self._law_sources()
+        with tempfile.TemporaryDirectory() as d:
+            rows = self._escalate_into(
+                d, [cl.LawResult("positions_conserve", cl.CANNOT_TELL, "off-host",
+                                 ("A", "B"))])
+        self.assertEqual(rows, [])
+
+    def test_the_scheduler_exit_code_fires_on_violations_not_on_deferrals(self):
+        """AST, not import: --exit-on-violation-only must gate on VIOLATED only.
+
+        The strict code stays the default for CI. A scheduled job that exits
+        nonzero on every run is a job whose output nobody reads — the same trap
+        as the 152-row queue, one layer down.
+        """
+        import ast
+        cl = self._law_sources()
+        tree = ast.parse(Path(cl.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "main")
+        srcs = [n for n in ast.walk(fn) if isinstance(n, ast.Attribute)
+                and n.attr == "exit_on_violation_only"]
+        self.assertTrue(srcs, "main() never reads --exit-on-violation-only")
+
+    # -- the Mac is where the deploy law can run ------------------------------
+
+    def test_the_mac_schedules_the_coherence_laws(self):
+        """One of the seven can run NOWHERE ELSE.
+
+        `deployed_set_matches_repo` compares the git checkout against the
+        trading host, and the VM is not a git checkout (deploy.sh rsyncs with
+        --exclude=.git/). On the VM it returns CANNOT_TELL naming the Mac. So if
+        the Mac's scheduler drops this job, the one law that catches "the fix
+        never reached production" is answered by nobody — which is precisely the
+        state the firm was in when gcp_setup/ sat three months stale.
+        """
+        import catch_up
+        jobs = [j for j in catch_up.JOB_REGISTRY
+                if j.get("script") == "coherence_laws.py"]
+        self.assertTrue(jobs, "the Mac no longer runs coherence_laws.py, so "
+                              "deployed_set_matches_repo runs on no host at all")
+        for j in jobs:
+            self.assertIn("--exit-on-violation-only", j.get("args", []),
+                          "without this the job logs a failure on every run and "
+                          "stops being read")
 
 
 

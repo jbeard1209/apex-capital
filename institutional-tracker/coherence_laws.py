@@ -98,6 +98,33 @@ class LawResult:
         }
 
 
+def sources(a: str, b: str):
+    """Declare a law's two independent sources, and refuse the law without them.
+
+    This is a decorator rather than a convention because the two-source rule is
+    the only thing separating this module from an assertion file, and a rule
+    enforced by convention is a rule that lasts until the first hurried commit.
+    A law declaring one source, or the same source twice, raises at IMPORT time —
+    the module will not load, which is loud in a way a failing test in a suite
+    someone skipped is not.
+
+    It also lets the audit read a law's sources WITHOUT running it. That matters:
+    two of these laws ssh to another host and hit the broker, and a smoke test
+    that had to execute them to learn their sources would be a network call in
+    the commit path.
+    """
+    if not a or not b:
+        raise ValueError(f"a coherence law needs two named sources, got {a!r}/{b!r}")
+    if a == b:
+        raise ValueError(f"a law's two sources must be independent; both are {a!r}. "
+                         f"A single-source check passes on a broken producer.")
+
+    def deco(fn):
+        fn.sources = (a, b)
+        return fn
+    return deco
+
+
 # =============================================================================
 # LAW — nested probabilities are monotone
 # =============================================================================
@@ -168,6 +195,7 @@ def _ladders(rows: List[dict]) -> dict:
     return {k: v for k, v in grouped.items() if len(v) >= 2}
 
 
+@sources("kalshi quote, low rung", "kalshi quote, high rung (same event)")
 def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> LawResult:
     """P(X > 0.5) >= P(X > 1.5) >= ... within one event. Arithmetic, not opinion.
 
@@ -188,7 +216,7 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
     only way to know that is to make the numbers argue with each other.
     """
     name = "nested_probabilities_are_monotone"
-    src = ("kalshi quote, low rung", "kalshi quote, high rung (same event)")
+    src = law_nested_probabilities_are_monotone.sources
     if rows is None:
         path = DATA_DIR / "kalshi_predictions.json"
         if not path.exists():
@@ -242,6 +270,7 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
 # LAW — quoted prices have two sides
 # =============================================================================
 
+@sources("recorded ask (market_price)", "bid on the same contract")
 def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawResult:
     """Every recorded quote had someone on the other side of it.
 
@@ -262,7 +291,7 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
     clean (memory `presence-is-not-currency`).
     """
     name = "quoted_prices_have_two_sides"
-    src = ("recorded ask (market_price)", "bid on the same contract")
+    src = law_quoted_prices_have_two_sides.sources
     if rows is None:
         path = DATA_DIR / "kalshi_predictions.json"
         if not path.exists():
@@ -303,6 +332,7 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
 # LAW — runs match schedule
 # =============================================================================
 
+@sources("pipeline_heartbeat.json starts (observed)", "host schedule (intended)")
 def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
     """Pipeline starts observed today == pipeline starts the schedule asks for.
 
@@ -325,7 +355,7 @@ def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
     overrun, which is never legitimate.
     """
     name = "runs_match_schedule"
-    src = ("pipeline_heartbeat.json starts (observed)", "host schedule (intended)")
+    src = law_runs_match_schedule.sources
     now = now or datetime.now()
     hb_path = DATA_DIR / "pipeline_heartbeat.json"
     if not hb_path.exists():
@@ -436,6 +466,428 @@ def _expand_field(field: str, span: int) -> int:
 
 
 # =============================================================================
+# LAW — the deployed set matches the repo
+# =============================================================================
+
+# ssh alias for the host that actually trades. From INFRASTRUCTURE.md row 1.
+REMOTE_ALIAS = "apex-capital"
+REMOTE_DIR = "~/institutional-tracker"
+
+# Files that live in the repo and are *deliberately* not on the remote, or are
+# deliberately per-host. Each needs a reason; an entry without one is how an
+# exclusion list becomes the thing it was meant to police.
+DEPLOY_EXEMPT = {
+    # (none yet — every tracked .py is expected to reach the trading host)
+}
+
+
+@sources("git ls-files + local md5 (repo)", "md5sum + find on the trading host (deployed)")
+def law_deployed_set_matches_repo(runner: Optional[Callable] = None) -> LawResult:
+    """Every tracked .py in the repo is byte-identical on the trading host.
+
+    SOURCE A: `git ls-files '*.py'` + local md5. What the firm WROTE.
+    SOURCE B: `md5sum` over the same paths on the VM, plus a `find` of the VM's
+              own .py files. What the firm is RUNNING.
+
+    Neither is derived from `deploy.sh`, and that is the entire point. The audit
+    that missed this asked "is everything in the deploy set on the VM?" —
+    `deploy.sh` excluded `gcp_setup/`, so the VM's own rebuild script was three
+    months stale and the fix for it could not reach the machine that needed it
+    (memory `fix-that-cannot-reach-production`). An exclusion is invisible to any
+    check that enumerates from the include list. This one enumerates from git.
+
+    The `find` half is the other direction: files on the VM that are in no
+    commit. That is not hypothetical — 97 of them were found on 2026-07-25,
+    including a whole governance subsystem (memory `orphan_code_2026_07`).
+
+    Runs where the git checkout is. On the VM there is no `.git` (deploy.sh
+    rsyncs with --exclude=.git/), so this returns CANNOT_TELL naming the Mac
+    rather than pretending.
+    """
+    name = "deployed_set_matches_repo"
+    src = law_deployed_set_matches_repo.sources
+    import subprocess
+    runner = runner or (lambda cmd, timeout: subprocess.run(
+        cmd, capture_output=True, text=True, timeout=timeout))
+
+    if not (BASE_DIR / ".git").exists() and not (BASE_DIR.parent / ".git").exists():
+        return LawResult(name, CANNOT_TELL,
+                         "no git checkout on this host — the deployed set can only be "
+                         "compared where the repo is. Owner: the Mac (dev host).", src)
+    try:
+        ls = runner(["git", "-C", str(BASE_DIR), "ls-files", "*.py"], 30)
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL, f"git ls-files failed: {e}", src)
+    if getattr(ls, "returncode", 1) != 0:
+        return LawResult(name, CANNOT_TELL, "git ls-files failed on this host", src)
+
+    import hashlib
+    local = {}
+    for rel in ls.stdout.split():
+        if rel in DEPLOY_EXEMPT:
+            continue
+        f = BASE_DIR / rel
+        if not f.exists():
+            continue
+        local[rel] = hashlib.md5(f.read_bytes()).hexdigest()
+    if not local:
+        return LawResult(name, CANNOT_TELL, "no tracked .py files found — refusing to "
+                                            "report a match against an empty set", src)
+
+    # One round trip. `md5sum` for the repo->VM direction, `find` for VM->repo.
+    paths = " ".join("'" + p.replace("'", "'\\''") + "'" for p in sorted(local))
+    remote_cmd = (
+        f"cd {REMOTE_DIR} 2>/dev/null || exit 9; "
+        f"md5sum {paths} 2>&1; echo '---FIND---'; "
+        # depth 3, not 2: agents/archive/*.py is a real tracked directory and a
+        # shallower sweep reports every file in it as absent from the host.
+        f"find . -maxdepth 3 -name '*.py' -not -path './.git/*' "
+        f"-not -path '*/__pycache__/*' | sed 's|^\\./||'"
+    )
+    try:
+        out = runner(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=12",
+                      REMOTE_ALIAS, remote_cmd], 120)
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL,
+                         f"cannot reach {REMOTE_ALIAS} ({type(e).__name__}: {e}) — the "
+                         f"deployed set is unknown, not known-good. Owner: Chairman "
+                         f"(host reachability).", src)
+    if getattr(out, "returncode", 1) == 9:
+        return LawResult(name, CANNOT_TELL, f"{REMOTE_DIR} does not exist on "
+                                            f"{REMOTE_ALIAS}", src)
+    if not out.stdout.strip():
+        return LawResult(name, CANNOT_TELL,
+                         f"ssh to {REMOTE_ALIAS} returned nothing "
+                         f"({(getattr(out, 'stderr', '') or '')[:180]})", src)
+
+    head, _, tail = out.stdout.partition("---FIND---")
+    remote_md5, missing = {}, []
+    for line in head.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        # GNU md5sum errors read "md5sum: <path>: No such file or directory".
+        # `.strip("md5sum ")` would strip a CHARACTER SET, not a prefix, and on
+        # the first pass it turned every missing path into the empty string —
+        # the count was right and the evidence named nothing.
+        if ": No such file" in line or "cannot open" in line:
+            parts = line.split(":")
+            if len(parts) >= 3:
+                missing.append(parts[1].strip())
+            continue
+        parts = line.split(None, 1)
+        if len(parts) == 2 and len(parts[0]) == 32:
+            remote_md5[parts[1].strip()] = parts[0]
+
+    absent = sorted(set(local) - set(remote_md5) | set(missing))
+    differs = sorted(p for p, h in local.items()
+                     if p in remote_md5 and remote_md5[p] != h)
+    vm_only = sorted(set(p.strip() for p in tail.split() if p.strip()) - set(local))
+
+    ev = ([{"absent_on_host": p} for p in absent[:8]]
+          + [{"differs": p} for p in differs[:8]]
+          + [{"on_host_but_in_no_commit": p} for p in vm_only[:8]])
+    if absent or differs or vm_only:
+        return LawResult(name, VIOLATED,
+                         f"{len(absent)} tracked file(s) absent from {REMOTE_ALIAS}, "
+                         f"{len(differs)} differ, {len(vm_only)} file(s) run there that "
+                         f"are in no commit. The host is not running the repo.", src, ev)
+    return LawResult(name, HOLDS,
+                     f"{len(local)} tracked .py identical on {REMOTE_ALIAS}, "
+                     f"no uncommitted files there", src)
+
+
+# =============================================================================
+# LAW — every verb emitted is a verb handled
+# =============================================================================
+
+# The keys the consumer actually reads. manager_agent.py:256 is
+# `rec.get("action") or rec.get("signal", "BUY_NEW")` — so these two keys, and
+# no others. `verdict` is a DIFFERENT vocabulary with a different consumer
+# (fi_pipeline filters STRONG_BUY/BUY/WATCH and never hands `verdict` to the
+# manager); including it here would manufacture violations that are not real.
+_VERB_KEYS = ("action", "signal")
+
+
+def _emitted_verbs(agent_dir: Optional[Path] = None) -> dict:
+    """{verb: {files}} for every action/signal string literal in the agent pool.
+
+    AST, not grep. `manager_agent.py` carries a 20-line comment naming "BUY" and
+    every other verb in this vocabulary; a text search would match the
+    postmortem and report the bug as its own fix. Comments are never AST nodes.
+
+    Walks the whole value subtree rather than matching a bare Constant, because
+    the real emitters are conditional expressions:
+        "action": "BUY" if conviction >= 3 else "WATCH"
+    Matching only `ast.Constant` finds none of the eight agents that shipped the
+    escape.
+    """
+    agent_dir = agent_dir or (BASE_DIR / "agents")
+    import ast as _ast
+    out = defaultdict(set)
+    for f in sorted(agent_dir.glob("*.py")):
+        try:
+            tree = _ast.parse(f.read_text())
+        except (SyntaxError, OSError):
+            continue
+
+        def _collect(node, where):
+            for c in _ast.walk(node):
+                if isinstance(c, _ast.Constant) and isinstance(c.value, str):
+                    v = c.value.strip()
+                    if v and v.replace("_", "").isalpha() and v.upper() == v:
+                        out[v].add(where)
+
+        for n in _ast.walk(tree):
+            if isinstance(n, _ast.Dict):
+                for k, v in zip(n.keys, n.values):
+                    if isinstance(k, _ast.Constant) and k.value in _VERB_KEYS:
+                        _collect(v, f.name)
+            elif isinstance(n, _ast.Assign):
+                for t in n.targets:
+                    if isinstance(t, _ast.Name) and t.id in _VERB_KEYS:
+                        _collect(n.value, f.name)
+            elif (isinstance(n, _ast.AnnAssign) and isinstance(n.target, _ast.Name)
+                  and n.target.id in _VERB_KEYS and n.value is not None):
+                _collect(n.value, f.name)
+    return out
+
+
+@sources("agents/*.py action|signal literals (producers)",
+         "manager_agent KNOWN_ACTIONS + ACTION_ALIASES (consumer)")
+def law_emitted_verbs_are_handled(agent_dir: Optional[Path] = None) -> LawResult:
+    """Every action verb the agent pool emits is one the manager can name.
+
+    SOURCE A: the producers' own source — string literals reaching `action` /
+              `signal` in `agents/*.py`.
+    SOURCE B: the consumer's declared vocabulary — `manager_agent.KNOWN_ACTIONS`
+              plus `ACTION_ALIASES`.
+
+    Neither reads the other, which is why the gap survived 66 days. Six FI agents
+    emitted `"BUY"`; the manager branched on BUY_NEW / ADD / SELL / TRIM / HOLD /
+    WATCH with no `else` on either chain. `execute_decision()` fell through and
+    returned `{"executed": False, "error": None}` — printed as "✗ Failed: None",
+    which reads as a broker having a bad day, six times a day. Meanwhile
+    `evaluate_recommendation()` kept its initialiser `decision = "APPROVED"`, so
+    ~118 orders per cycle were stamped APPROVED having passed no gate at all
+    (memory `unknown-verb-approved-nothing`).
+
+    SCOPE, stated so nobody mistakes this for more than it is: `agents/` only.
+    `dynamic_position_sizer.py` emits `action: "SKIP"` into position_sizes.json,
+    which is a different vocabulary with a different consumer. Widening this law
+    to all of data/ would flag that on day one and every day after, and a law
+    that cries wolf daily is a law that gets muted.
+    """
+    name = "emitted_verbs_are_handled"
+    src = law_emitted_verbs_are_handled.sources
+    agent_dir = agent_dir or (BASE_DIR / "agents")
+    if not agent_dir.is_dir():
+        return LawResult(name, CANNOT_TELL, f"{agent_dir} missing — cannot read what "
+                                            f"the producers emit", src)
+    try:
+        sys.path.insert(0, str(BASE_DIR))
+        import manager_agent
+        handled = set(manager_agent.KNOWN_ACTIONS) | set(manager_agent.ACTION_ALIASES)
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL,
+                         f"cannot read the consumer's vocabulary ({type(e).__name__}: "
+                         f"{e}) — an unreadable handler set is not an empty one", src)
+    if not handled:
+        return LawResult(name, CANNOT_TELL,
+                         "manager_agent declares no actions — refusing to compare "
+                         "against an empty vocabulary", src)
+
+    emitted = _emitted_verbs(agent_dir)
+    if not emitted:
+        return LawResult(name, CANNOT_TELL,
+                         f"no action/signal literals found in {agent_dir} — either the "
+                         f"pool is empty or the scan stopped matching how agents are "
+                         f"written. Owner: whoever last changed the agent template.", src)
+
+    unhandled = {v: sorted(f)[:4] for v, f in emitted.items() if v not in handled}
+    if unhandled:
+        return LawResult(name, VIOLATED,
+                         f"{len(unhandled)} verb(s) emitted that the manager cannot "
+                         f"name: {', '.join(sorted(unhandled))}. An unrecognised verb "
+                         f"is not rejected, it is unheard.", src,
+                         [{"verb": v, "emitted_by": f} for v, f in sorted(unhandled.items())])
+    return LawResult(name, HOLDS,
+                     f"{len(emitted)} verb(s) emitted ({', '.join(sorted(emitted))}), "
+                     f"all handled", src)
+
+
+# =============================================================================
+# LAW — positions conserve
+# =============================================================================
+
+@sources("Alpaca get_all_positions (broker)", "state.json entry_dates (internal ledger)")
+def law_positions_conserve(broker_positions: Optional[dict] = None,
+                           state: Optional[dict] = None,
+                           host: Optional[str] = None) -> LawResult:
+    """What the broker holds == what this host's ledger says it opened.
+
+    SOURCE A: Alpaca `get_all_positions()`. The only medium every host shares,
+              and the only one that cannot be wrong about what we own.
+    SOURCE B: `data/state.json` -> `entry_dates`, written by this firm when it
+              opens a position.
+
+    The escape this is built from is still open as a watch item: state.json
+    showed 0 positions while Alpaca held 16. Every downstream rule that reads the
+    ledger — stop-loss, holding period, position cap, the pod ledger — was
+    reasoning about a portfolio that did not exist, and nothing complained,
+    because state.json is perfectly consistent with itself.
+
+    HOST DISCIPLINE: the ledger only means something on the designated writer.
+    There is no state sync between hosts (CLAUDE.md), so the Mac's `entry_dates`
+    is a month-old fossil and comparing it to the live broker would VIOLATE every
+    single day, forever, correctly and uselessly. Off the writer this returns
+    CANNOT_TELL and names the host that owns the answer — which is the honest
+    verdict, not a downgrade (memory `verdict-with-no-consequence`).
+    """
+    name = "positions_conserve"
+    src = law_positions_conserve.sources
+    try:
+        import single_writer
+        designated = single_writer.designated_host()
+        host = host or single_writer.this_host()
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL, f"cannot resolve host identity: {e}", src)
+
+    if broker_positions is None and host != designated:
+        return LawResult(name, CANNOT_TELL,
+                         f"this host is '{host}'; the ledger that matters belongs to "
+                         f"'{designated}' and there is no state sync between hosts. "
+                         f"Owner: {designated}.", src)
+
+    if broker_positions is None:
+        broker_positions = single_writer._positions_map()
+    if broker_positions is None:
+        return LawResult(name, CANNOT_TELL,
+                         "broker position lookup failed — an unreadable broker is not a "
+                         "flat book (memory `nan-is-not-none`)", src)
+
+    if state is None:
+        sp = DATA_DIR / "state.json"
+        if not sp.exists():
+            return LawResult(name, CANNOT_TELL, f"{sp} missing", src)
+        try:
+            state = json.loads(sp.read_text())
+        except (ValueError, OSError) as e:
+            return LawResult(name, CANNOT_TELL, f"state.json unreadable: {e}", src)
+
+    entries = state.get("entry_dates")
+    if not isinstance(entries, dict):
+        return LawResult(name, CANNOT_TELL,
+                         "state.json carries no `entry_dates` map — the ledger has no "
+                         "opinion to check. Owner: main.py state writer.", src)
+
+    held = {s.upper() for s, q in broker_positions.items() if q}
+    ledger = {s.upper() for s in entries}
+    unledgered = sorted(held - ledger)     # broker holds it, the firm forgot
+    phantom = sorted(ledger - held)        # the firm thinks it holds it, it does not
+
+    if unledgered or phantom:
+        return LawResult(name, VIOLATED,
+                         f"{len(unledgered)} position(s) held at the broker with no ledger "
+                         f"entry, {len(phantom)} ledger entr(ies) with no position. Every "
+                         f"stop-loss and holding-period rule reads the ledger.", src,
+                         [{"held_not_ledgered": s} for s in unledgered[:10]]
+                         + [{"ledgered_not_held": s} for s in phantom[:10]])
+    return LawResult(name, HOLDS,
+                     f"{len(held)} broker position(s), same {len(ledger)} in the ledger",
+                     src)
+
+
+# =============================================================================
+# LAW — broker host census
+# =============================================================================
+
+# Every host permitted to place an order on the shared account, and why.
+# Pinned to INFRASTRUCTURE.md by TestCoherenceLaws — the constant may not drift
+# from the registry silently, because a census whose source B is a doc nobody
+# updates is exactly how a third host ran for 69 days (memory `oracle_third_host`).
+DOCUMENTED_HOST_TAGS = {
+    "apexcapitalc": "GCP VM — designated writer (INFRASTRUCTURE.md row 1)",
+    "mac":          "this laptop — exit-only since 2026-08-17 (row 2)",
+    # Same laptop, before `data/.host_id` existed. `_host_tag()` derived the tag
+    # from socket.gethostname() on every call, so one machine answered to two
+    # names depending on which network it had joined. Its last order under this
+    # tag was 2026-08-07T14:02Z, hours before .host_id was seeded (the file's
+    # mtime is 2026-08-07 13:00 local). Listed, not silently forgiven: an
+    # undocumented tag on this account is the finding, and the honest way to
+    # clear a real one is to write it down.
+    "macbookair17": "this laptop pre-.host_id, retired 2026-08-07 (row 2)",
+}
+
+
+@sources("Alpaca order history, host tag off client_order_id",
+         "DOCUMENTED_HOST_TAGS / INFRASTRUCTURE.md")
+def law_broker_host_census(orders: Optional[list] = None,
+                           documented: Optional[dict] = None) -> LawResult:
+    """Every host placing orders is a host the firm has written down.
+
+    SOURCE A: the broker's order history, host tag parsed off `client_order_id`.
+              Not a host list — a record of who actually traded.
+    SOURCE B: DOCUMENTED_HOST_TAGS, the written inventory.
+
+    The Oracle instance ran a full parallel firm for 69 days on this account. It
+    did not hide: it placed orders and sent emails. It was invisible because the
+    host list WAS the doc, and the doc did not have it — the firm asked its own
+    inventory how many hosts it had, and the inventory answered from itself. Only
+    the broker can count hosts, because it is the one thing every host must touch
+    (memory `two_brains_one_account`).
+
+    UNSTAMPED is a distinct unknown host, never dropped — dropping it is how a
+    foreign order becomes invisible to the check written to find it. But it is
+    only judged from `order_ledger.STRICT_FROM` onward: before that instant no
+    host stamped anything, so counting those orders would brand weeks of the
+    firm's own legitimate history as strangers and the law would VIOLATE forever
+    on facts nobody can change. The cutover is read from the producer, not
+    copied here, so the two cannot drift apart.
+    """
+    name = "broker_host_census"
+    src = law_broker_host_census.sources
+    documented = DOCUMENTED_HOST_TAGS if documented is None else documented
+    try:
+        import single_writer
+        from order_ledger import STRICT_FROM
+        strict_from = datetime.fromisoformat(STRICT_FROM)
+        if orders is None:
+            orders = single_writer.fetch_broker_orders(limit=500)
+        if orders is None:
+            return LawResult(name, CANNOT_TELL,
+                             "could not read the broker's order history — the census is "
+                             "unknown, not clean", src)
+        seen = single_writer.hosts_last_seen(orders)
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL,
+                         f"census unavailable ({type(e).__name__}: {e})", src)
+
+    if not seen:
+        return LawResult(name, CANNOT_TELL,
+                         "no orders on file — no orders is evidence of nothing, not "
+                         "evidence of one host (memory `presence-is-not-currency`)", src)
+
+    if all(ts < strict_from for ts in seen.values()):
+        return LawResult(name, CANNOT_TELL,
+                         f"every order on file predates stamping ({STRICT_FROM}) — the "
+                         f"census cannot be taken from unstamped history", src)
+
+    strangers = sorted(h for h, ts in seen.items()
+                       if h not in documented and ts >= strict_from)
+    if strangers:
+        return LawResult(name, VIOLATED,
+                         f"{len(strangers)} host(s) placed orders on this account that "
+                         f"are in no registry row: {', '.join(strangers)}. An unlisted "
+                         f"writer sizes against the same capital and cannot be seen by "
+                         f"anything that reads the doc.", src,
+                         [{"host": h, "last_order": seen[h].isoformat()} for h in strangers])
+    return LawResult(name, HOLDS,
+                     "; ".join(f"{h} last traded {seen[h].date()}" for h in sorted(seen)),
+                     src)
+
+
+# =============================================================================
 # registry + runner
 # =============================================================================
 
@@ -447,6 +899,14 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "a recorded quote must have had a live bid against it"),
     (law_runs_match_schedule,
      "pipeline starts observed == pipeline starts scheduled"),
+    (law_deployed_set_matches_repo,
+     "every tracked file in the repo is the file running on the trading host"),
+    (law_emitted_verbs_are_handled,
+     "every verb a producer emits is a verb the consumer can name"),
+    (law_positions_conserve,
+     "what the broker holds == what the ledger says we opened"),
+    (law_broker_host_census,
+     "every host trading the account is a host the firm has written down"),
 ]
 
 
@@ -461,6 +921,74 @@ def run_all() -> List[LawResult]:
                 f"law raised {type(e).__name__}: {e}",
                 ("n/a", "n/a")))
     return results
+
+
+CHAIRMAN_QUEUE = DATA_DIR / "chairman_action_required.json"
+
+
+def escalate_violations(results: List[LawResult]) -> int:
+    """Put every VIOLATED law in the Chairman's queue — at most one row each.
+
+    Returns the number of rows written or refreshed.
+
+    ONE ROW PER LAW, UPDATED IN PLACE, keyed `coherence-<law>`. That constraint
+    is the whole design. This queue already holds 152 items and 127 of them are
+    waiting on a decision; a detector that runs six times a day and appends is
+    not an alarm, it is a way of making the queue unreadable, and an unreadable
+    queue is how a CRITICAL sits for 50 days. Seven laws can therefore add seven
+    rows and never an eighth.
+
+    A law that stops violating has its row REMOVED. A stale finding that outlives
+    its cause is the same false signal as a missing one, pointed the other way.
+
+    CANNOT_TELL does not escalate here. It is a finding and it is printed and it
+    fails the exit code, but it is the ordinary state of a law whose host cannot
+    see the source (positions_conserve off the writer, every run). Escalating it
+    would put a permanent row in front of the Chairman that no decision can
+    clear — and the queue teaches people to ignore exactly those.
+    """
+    from datetime import datetime as _dt
+    try:
+        rows = json.loads(CHAIRMAN_QUEUE.read_text()) if CHAIRMAN_QUEUE.exists() else []
+        if not isinstance(rows, list):
+            return 0
+    except (ValueError, OSError):
+        return 0
+
+    violated = {f"coherence-{r.name}": r for r in results if r.verdict == VIOLATED}
+    mine = {f"coherence-{fn.__name__.replace('law_', '')}" for fn, _ in LAWS}
+
+    kept, written = [], 0
+    for row in rows:
+        rid = row.get("id") if isinstance(row, dict) else None
+        if rid in violated:
+            r = violated.pop(rid)
+            row["description"] = f"COHERENCE LAW VIOLATED — {r.name}: {r.detail}"
+            row["last_seen"] = _dt.now().isoformat()
+            kept.append(row)
+            written += 1
+        elif rid in mine:
+            continue                     # law now holds: the row is retired
+        else:
+            kept.append(row)
+
+    for rid, r in sorted(violated.items()):
+        kept.append({
+            "id": rid,
+            "severity": "HIGH",
+            "description": (f"COHERENCE LAW VIOLATED — {r.name}: {r.detail} "
+                            f"(A: {r.sources[0]} | B: {r.sources[1]})"),
+            "source": "coherence_laws",
+            "ts": _dt.now().isoformat(),
+            "last_seen": _dt.now().isoformat(),
+        })
+        written += 1
+
+    try:
+        CHAIRMAN_QUEUE.write_text(json.dumps(kept, indent=1))
+    except OSError:
+        return 0
+    return written
 
 
 def _write_report(results: List[LawResult]) -> None:
@@ -478,10 +1006,23 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Apex Capital coherence laws")
     ap.add_argument("--report", action="store_true", help="agent convention; same as default")
     ap.add_argument("--quiet", action="store_true", help="only print VIOLATED / CANNOT_TELL")
+    ap.add_argument("--no-escalate", action="store_true",
+                    help="write the report but do not touch the Chairman's queue")
+    # The strict exit code (1 on VIOLATED *or* CANNOT_TELL) is right for CI and
+    # the pre-push gate: there, "I could not check" must not read as "fine".
+    # It is wrong for a scheduler. CANNOT_TELL is the ordinary resting state of
+    # several laws — positions_conserve defers off the writer on every single
+    # run, by design — so a scheduled job on the strict code would log a failure
+    # three times a day forever, and a job that always fails is a job whose
+    # output nobody reads. Same trap as a queue with 152 rows.
+    ap.add_argument("--exit-on-violation-only", action="store_true",
+                    help="exit 1 only on VIOLATED; for schedulers, not for CI")
     args = ap.parse_args()
 
     results = run_all()
     _write_report(results)
+    if not args.no_escalate:
+        escalate_violations(results)
 
     bad = [r for r in results if r.verdict != HOLDS]
     if not args.quiet:
@@ -504,6 +1045,8 @@ def main() -> int:
               f"{sum(1 for r in results if r.verdict == VIOLATED)} violated, "
               f"{sum(1 for r in results if r.verdict == CANNOT_TELL)} cannot tell")
         print(f"  report → {REPORT}")
+    if args.exit_on_violation_only:
+        return 1 if any(r.verdict == VIOLATED for r in results) else 0
     return 1 if bad else 0
 
 

@@ -1778,6 +1778,38 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         logger.warning(f"  Backup error: {_be}")
 
     # -----------------------------------------------------------------------
+    # Coherence Laws — the conservation layer
+    # -----------------------------------------------------------------------
+    # Runs LAST, on purpose: state has been saved, orders are in, so every law
+    # reads the day as it finally stands rather than mid-flight.
+    #
+    # This is not another code review. CIT reads code and the Red Team argues
+    # with conclusions; both take an input and critique it, so neither can see
+    # anything that was never in the input — which is every escape the firm has
+    # paid for. Each law here holds two INDEPENDENTLY-SOURCED numbers against
+    # each other, so a violation names its own bug with nobody having predicted
+    # it. Never fatal to the pipeline: a detector that can take down the thing
+    # it watches gets removed the first time it does.
+    logger.info("\nCoherence laws — two-source conservation checks...")
+    try:
+        import coherence_laws
+        _cl_results = coherence_laws.run_all()
+        coherence_laws._write_report(_cl_results)
+        _cl_bad = [r for r in _cl_results if r.verdict == coherence_laws.VIOLATED]
+        _cl_unk = [r for r in _cl_results if r.verdict == coherence_laws.CANNOT_TELL]
+        for _r in _cl_bad:
+            logger.error(f"  ✗ VIOLATED {_r.name}: {_r.detail}")
+        for _r in _cl_unk:
+            logger.warning(f"  ? CANNOT_TELL {_r.name}: {_r.detail}")
+        if _cl_bad:
+            coherence_laws.escalate_violations(_cl_results)
+        logger.info(f"  {len(_cl_results)} law(s): "
+                    f"{len(_cl_results) - len(_cl_bad) - len(_cl_unk)} hold, "
+                    f"{len(_cl_bad)} violated, {len(_cl_unk)} cannot tell")
+    except Exception as _cle:
+        logger.warning(f"  Coherence laws error: {_cle}")
+
+    # -----------------------------------------------------------------------
     # Note: CIT (Continuous Improvement Team) runs on its own cron schedule
     # (6:00 AM ET + 6:00 PM ET) independent of the main pipeline.
     # Its proposals queue up in data/cit_pending_proposals.json and are voted

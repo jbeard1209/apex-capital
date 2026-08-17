@@ -24,6 +24,7 @@ import glob
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent
@@ -525,6 +526,65 @@ def _orphan_baseline() -> set:
         return set()
 
 
+def check_coherence_layer():
+    """The watchdog needs a watchdog.
+
+    coherence_laws.py is the only detector in the firm that can find a bug
+    nobody anticipated, which makes it the worst possible thing to let fail
+    quietly. Two ways it could:
+
+      1. A law gets registered without declaring two sources — it degrades into
+         an assertion and stops catching this bug class at all. The decorator
+         raises at import, so this check catching an ImportError IS that alarm.
+      2. The report goes stale. `coherence_report.json` is written on every run
+         of the daily pipeline; if its timestamp stops moving, the layer has
+         stopped firing and every law is silently HOLDS-by-absence. That is the
+         orphan tell this audit was built to sweep for, applied to itself.
+    """
+    try:
+        import coherence_laws as cl
+    except Exception as e:
+        problems.append(f"[coherence] coherence_laws will not import ({type(e).__name__}: "
+                        f"{e}) — the conservation layer is OFF")
+        return
+
+    if not cl.LAWS:
+        problems.append("[coherence] no laws registered — the module exists and "
+                        "checks nothing")
+        return
+    for fn, statement in cl.LAWS:
+        if not getattr(fn, "sources", None) or len(fn.sources) != 2 \
+           or fn.sources[0] == fn.sources[1]:
+            problems.append(f"[coherence] {fn.__name__} does not name two independent "
+                            f"sources — it is an assertion, not a law")
+        if not (statement or "").strip():
+            problems.append(f"[coherence] {fn.__name__} has no conservation statement")
+
+    rep = cl.REPORT
+    if not rep.exists():
+        notes.append(f"[coherence] {rep.name} has NEVER been produced — the layer is "
+                     f"wired but has not run on this host")
+        return
+    try:
+        checked = datetime.fromisoformat(json.loads(rep.read_text())["checked_at"])
+    except Exception as e:
+        problems.append(f"[coherence] {rep.name} unreadable ({e}) — cannot tell whether "
+                        f"the layer is still firing")
+        return
+    age_h = (datetime.now() - checked).total_seconds() / 3600.0
+    # 30h: the pipeline runs 4x on weekdays, so one quiet weekend day is normal
+    # and a genuinely stopped layer still shows up within a day and a half.
+    if age_h > 30:
+        problems.append(f"[coherence] report is {age_h:.0f}h old — the conservation "
+                        f"layer has stopped running on this host; every law is "
+                        f"passing by absence")
+    else:
+        holds = sum(1 for r in json.loads(rep.read_text())["results"]
+                    if r["verdict"] == "HOLDS")
+        notes.append(f"[coherence] OK — {len(cl.LAWS)} laws, all name two sources; "
+                     f"report {age_h:.1f}h old ({holds} holding)")
+
+
 def run_checks() -> dict:
     """Run all wiring checks and return {problems, notes} without exiting.
 
@@ -540,6 +600,7 @@ def run_checks() -> dict:
     check_glob_consumers_have_producers(sources)
     check_orphan_queues(sources)
     check_orphan_agents(sources)
+    check_coherence_layer()
     return {"problems": list(problems), "notes": list(notes)}
 
 
