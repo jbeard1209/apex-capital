@@ -9085,6 +9085,43 @@ class TestEntryDateLedger(unittest.TestCase):
                         "the ledger is reconciled after the review agent has "
                         "already read it")
 
+    def test_every_executable_verb_is_recorded_by_the_ledger_branch(self):
+        """main.py's post-execution block is a SECOND consumer of the verb list.
+
+        `coherence_laws.law_emitted_verbs_are_handled` checks producers against
+        `manager_agent.KNOWN_ACTIONS` — the executor. But the block that writes
+        the ledger after a fill dispatches on the same vocabulary independently,
+        and it handles four literals with no `else`. A fifth executable verb
+        (a "COVER", say) would trade and record nothing: the position would open
+        at the broker and never appear in entry_dates — the FI "BUY" bug
+        (memory `unknown-verb-approved-nothing`) one layer further in.
+        """
+        import ast
+        from manager_agent import EXECUTABLE_ACTIONS
+        tree = ast.parse((Path(__file__).resolve().parent / "main.py").read_text())
+
+        dispatched = set()
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Compare):
+                continue
+            src = ast.dump(node.left)
+            if "manager_action" not in src:
+                continue
+            for comp in node.comparators:
+                if isinstance(comp, ast.Constant) and isinstance(comp.value, str):
+                    dispatched.add(comp.value)
+                elif isinstance(comp, (ast.Tuple, ast.List, ast.Set)):
+                    dispatched.update(e.value for e in comp.elts
+                                      if isinstance(e, ast.Constant)
+                                      and isinstance(e.value, str))
+
+        missing = sorted(set(EXECUTABLE_ACTIONS) - dispatched)
+        self.assertFalse(
+            missing,
+            f"manager_agent can execute {missing} but main.py's ledger block "
+            f"never branches on it — those fills would leave no entry_dates row "
+            f"and no buy/sell log entry")
+
     # -- the reconstruction ------------------------------------------------
 
     def _fill(self, sym, side, qty, when):
