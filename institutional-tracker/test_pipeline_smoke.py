@@ -750,6 +750,219 @@ class TestWiringContracts(unittest.TestCase):
                          f"hardcoded host path(s) in wired agent(s): {offenders} — "
                          "resolve from __file__ instead")
 
+    # ── Imports that name things the target module does not define ─────────
+    # fi_risk_monitor.py and fi_position_monitor.py both did
+    # `from fi_data_layer import get_credit_spreads` inside their entry point.
+    # fi_data_layer never defined it, so both raised ImportError on line 1 of
+    # their only function — every time, since they were written. Neither is on
+    # any scheduler, so nobody ever saw the traceback, including the RISK
+    # monitor for the $30k FI book (memory `orphan_agents_blindness`: an agent
+    # nothing runs cannot report that it is broken).
+    #
+    # A function-local import is invisible to every linter that only checks
+    # module scope, and invisible to the test suite unless something calls the
+    # function. This resolves them statically, without importing anything.
+
+    def test_no_module_imports_a_name_its_target_does_not_define(self):
+        """Every `from <local module> import <name>` must resolve."""
+        import ast
+        import pathlib
+
+        root  = pathlib.Path(__file__).resolve().parent
+        files = sorted(p for p in root.glob("*.py") if not p.name.startswith("test_"))
+        local = {p.stem for p in files}
+
+        def defined_names(path):
+            """Top-level names a module exports, without executing it."""
+            names = set()
+            for node in ast.parse(path.read_text()).body:
+                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    names.add(node.name)
+                elif isinstance(node, ast.Assign):
+                    names |= {t.id for t in node.targets if isinstance(t, ast.Name)}
+                elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+                    names.add(node.target.id)
+                elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                    names |= {(a.asname or a.name).split(".")[0] for a in node.names}
+                elif isinstance(node, ast.Try):
+                    # try/except ImportError shims define names conditionally
+                    for sub in ast.walk(node):
+                        if isinstance(sub, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                            ast.ClassDef)):
+                            names.add(sub.name)
+                        elif isinstance(sub, ast.Assign):
+                            names |= {t.id for t in sub.targets
+                                      if isinstance(t, ast.Name)}
+                        elif (isinstance(sub, ast.AnnAssign)
+                              and isinstance(sub.target, ast.Name)):
+                            # `REGIME_MAP: dict = {}` in an except ImportError
+                            # handler is a definition like any other — missing
+                            # this made the sweep report its own false positive.
+                            names.add(sub.target.id)
+                        elif isinstance(sub, (ast.Import, ast.ImportFrom)):
+                            names |= {(a.asname or a.name).split(".")[0]
+                                      for a in sub.names}
+            return names
+
+        exports = {}
+        broken, checked = [], 0
+        for path in files:
+            try:
+                tree = ast.parse(path.read_text())
+            except SyntaxError:
+                continue
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.ImportFrom) or node.level:
+                    continue
+                if node.module not in local:
+                    continue
+                if node.module not in exports:
+                    try:
+                        exports[node.module] = defined_names(root / f"{node.module}.py")
+                    except Exception:
+                        exports[node.module] = None
+                have = exports[node.module]
+                if have is None:
+                    continue
+                for alias in node.names:
+                    if alias.name == "*":
+                        continue
+                    checked += 1
+                    if alias.name not in have:
+                        broken.append(f"{path.name}:{node.lineno} imports "
+                                      f"`{alias.name}` from {node.module}, which "
+                                      f"does not define it")
+
+        self.assertGreater(checked, 50,
+                           "the sweep resolved almost nothing — it is not "
+                           "actually checking imports (vacuous pass)")
+        self.assertEqual([], broken,
+                         "ImportError waiting to happen:\n  " + "\n  ".join(broken))
+
+    # ── Approved-picks key: board writer -> executor reader ────────────────
+    # fi_board/fe_board write the approved list under "approved". Every
+    # consumer read `.get("picks", [])`, which resolved to [] against a file
+    # that was never empty: fi_executor logged "No approved picks to execute"
+    # for every session it ever saw, fi_risk_monitor computed all nine of its
+    # risk metrics over an empty portfolio (a risk monitor that sees nothing
+    # reports no risk), and the FE correlation check never fired.
+
+    def test_the_approved_picks_key_is_the_one_the_boards_actually_write(self):
+        import ast
+        import fi_data_layer as dl
+        import json
+        import pathlib
+        import tempfile
+
+        root = pathlib.Path(__file__).resolve().parent
+
+        # The producers must write the key the loader looks for.
+        for board in ("fi_board.py", "fe_board.py"):
+            src = (root / board).read_text()
+            if "_approved_picks" not in src and "APPROVED_PICKS" not in src:
+                continue
+            self.assertIn(f'"{dl.APPROVED_PICKS_KEY}":', src,
+                          f"{board} does not write the "
+                          f"'{dl.APPROVED_PICKS_KEY}' key the readers expect")
+
+        # Readers of an approved-picks file must go through the loader; writers
+        # may do as they please. A text grep for `.get("picks", [])` cannot tell
+        # the two apart — fi_board.py legitimately reads fi_picks_queue.json,
+        # which really is keyed "picks", and writes the approved file — so the
+        # rule is enforced on what each open() call actually does with the file.
+        offenders = []
+        for path in list(root.glob("fi_*.py")) + list(root.glob("fe_*.py")):
+            src = path.read_text()
+            if "_approved_picks" not in src or "load_approved_picks" in src:
+                continue
+            try:
+                tree = ast.parse(src)
+            except SyntaxError:
+                continue
+            for node in ast.walk(tree):
+                if not (isinstance(node, ast.Call)
+                        and isinstance(node.func, ast.Name)
+                        and node.func.id == "open"
+                        and node.args):
+                    continue
+                target = ast.get_source_segment(src, node.args[0]) or ""
+                if "approved" not in target.lower():
+                    continue
+                mode = ""
+                if len(node.args) > 1 and isinstance(node.args[1], ast.Constant):
+                    mode = str(node.args[1].value)
+                for kw in node.keywords:
+                    if kw.arg == "mode" and isinstance(kw.value, ast.Constant):
+                        mode = str(kw.value.value)
+                if not any(c in mode for c in "wxa"):
+                    offenders.append(f"{path.name}:{node.lineno} opens {target} "
+                                     f"for reading without load_approved_picks")
+        self.assertEqual([], offenders,
+                         "approved-picks readers must use "
+                         "fi_data_layer.load_approved_picks:\n  "
+                         + "\n  ".join(offenders))
+
+        # And an unrecognised shape must raise, never return [].
+        with tempfile.TemporaryDirectory() as td:
+            good = pathlib.Path(td) / "good.json"
+            good.write_text(json.dumps({dl.APPROVED_PICKS_KEY: [{"ticker": "IEF"}]}))
+            self.assertEqual(1, len(dl.load_approved_picks(good)))
+
+            bad = pathlib.Path(td) / "bad.json"
+            bad.write_text(json.dumps({"selections": [{"ticker": "IEF"}]}))
+            with self.assertRaises(KeyError):
+                dl.load_approved_picks(bad)
+
+            self.assertEqual([], dl.load_approved_picks(pathlib.Path(td) / "nope.json"))
+
+    # ── Credit feed: a missing reading is None, never a plausible number ────
+
+    def test_a_dead_credit_feed_yields_unknown_not_normal(self):
+        """350bps is the middle of the NORMAL band. That was the whole problem.
+
+        A failed HYG fetch used to resolve to exactly 350, which scores exactly
+        NORMAL, which is the one answer guaranteed to look unremarkable. On
+        2026-08-14T18:00 hyg_price was null and the entire FI pod ran on it.
+        """
+        import fi_credit_monitor as m
+
+        orig = m._fetch_yield
+        try:
+            m._fetch_yield = lambda t: None if t == "HYG" else 100.0
+            r = m.run_credit_monitor(force_refresh=True)
+        finally:
+            m._fetch_yield = orig
+
+        self.assertEqual("DEGRADED", r["data_quality"])
+        self.assertTrue(r["degraded"], "a degraded read must name the dead feed")
+        self.assertEqual("UNKNOWN", r["spreads"]["spread_regime"],
+                         "a dead HY feed must not resolve to NORMAL")
+        self.assertIsNone(r["spreads"]["hy_spread_bps"],
+                          "an unmeasured spread is None, not 350")
+        self.assertIsNone(r["spreads"]["hy_spread"])
+
+    def test_a_degraded_credit_read_is_never_served_from_cache(self):
+        """One transient failure must not pin the regime for the 6h TTL."""
+        import fi_credit_monitor as m
+
+        orig = m._fetch_yield
+        try:
+            m._fetch_yield = lambda t: None if t == "HYG" else 100.0
+            m.run_credit_monitor(force_refresh=True)   # writes a DEGRADED cache
+            self.assertFalse(m._cache_valid(),
+                             "a DEGRADED cache entry must force a re-fetch")
+        finally:
+            m._fetch_yield = orig
+
+    def test_the_fi_scorer_abstains_rather_than_inventing_a_spread(self):
+        import fi_data_layer as dl
+        out = dl.get_bond_opportunity_score(
+            "LQD", {"spread_regime": "UNKNOWN", "hy_spread_bps": None,
+                    "ig_spread_bps": None, "treasury_10yr": None})
+        self.assertTrue(out.get("abstained"))
+        self.assertEqual("ABSTAIN", out["verdict"])
+        self.assertEqual(0, out["opportunity_score"])
+
     # ── Action vocabulary: producer verb -> manager branch ─────────────────
     # The most expensive instance of this firm's signature bug. Six FI agents
     # emit action="BUY"; execute_decision() branched on BUY_NEW/ADD/SELL/TRIM
@@ -6031,8 +6244,16 @@ class TestDeadmansSwitchHasOneDefinition(unittest.TestCase):
     queue, said "OK — heartbeat and manager_decisions are consistent".
     """
 
-    def _entries(self, *offsets_h):
-        now = datetime.now()
+    # A Wednesday 09:00, so a 40h lookback lands on Monday and every hour in
+    # between is a trading hour. Anchoring matters: the switch discounts weekend
+    # hours by design, so a test that builds its fixture from datetime.now() and
+    # asserts "40h must trip" is really asserting "it is currently Tue-Fri". Run
+    # on a Sunday, the same 40h is entirely weekend, effective age is ~0, and
+    # the test fails on a switch that is behaving exactly as specified.
+    ANCHOR = datetime(2026, 8, 12, 9, 0)
+
+    def _entries(self, *offsets_h, anchor=None):
+        now = anchor or datetime.now()
         return [{"generated_at": (now - timedelta(hours=h)).isoformat(),
                  "decisions": []} for h in offsets_h]
 
@@ -6041,8 +6262,8 @@ class TestDeadmansSwitchHasOneDefinition(unittest.TestCase):
         # Deliberately out of order. Both previous callers read data[-1], an
         # assumption about a producer's append order that nothing enforces —
         # and when it breaks it under-reports age, i.e. hides the outage.
-        data = self._entries(50, 2, 30)
-        self.assertAlmostEqual(dms.decision_age_hours(data), 2, delta=0.2,
+        data = self._entries(50, 2, 30, anchor=self.ANCHOR)
+        self.assertAlmostEqual(dms.decision_age_hours(data, self.ANCHOR), 2, delta=0.2,
                                msg="age must come from the newest decision by "
                                    "value, not from the last list element")
 
@@ -6051,7 +6272,7 @@ class TestDeadmansSwitchHasOneDefinition(unittest.TestCase):
         import deadmans_switch as dms
         with tempfile.TemporaryDirectory() as td:
             p = os.path.join(td, "manager_decisions.json")
-            data = self._entries(40)
+            data = self._entries(40, anchor=self.ANCHOR)
             with open(p, "w") as f:
                 json.dump(data, f)
             os.utime(p, None)              # fresh mtime, zero new decisions
@@ -6062,10 +6283,11 @@ class TestDeadmansSwitchHasOneDefinition(unittest.TestCase):
             # The old computation was min(file_mtime_age, content_ts_age) — the
             # YOUNGER of the two — so this file read as ~0h old and the alarm
             # went quiet with a 40h gap sitting in it.
-            self.assertAlmostEqual(dms.decision_age_hours(data), 40, delta=0.2,
+            self.assertAlmostEqual(dms.decision_age_hours(data, self.ANCHOR), 40,
+                                   delta=0.2,
                                    msg="age must ignore file mtime entirely; a "
                                        "rewrite proves nothing about decisions")
-            self.assertTrue(dms.is_tripped(data)[0],
+            self.assertTrue(dms.is_tripped(data, now=self.ANCHOR)[0],
                             "a 40h-old decision must trip the switch no matter "
                             "how recently the file was written")
 

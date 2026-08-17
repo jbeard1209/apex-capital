@@ -68,18 +68,21 @@ DB_PATH           = DATA_DIR / "historical_13f.db"
 
 sys.path.insert(0, str(BASE_DIR))
 
-try:
-    from config import (
-        MAX_POSITION_SIZE_PCT, MIN_CASH_FLOOR_PCT, MAX_OPEN_POSITIONS,
-        STOP_LOSS_PCT, TAKE_PROFIT_PCT, REGIME_MAP,
-    )
-except ImportError:
-    MAX_POSITION_SIZE_PCT = 0.07
-    MIN_CASH_FLOOR_PCT    = 0.20
-    MAX_OPEN_POSITIONS    = 15
-    STOP_LOSS_PCT         = 0.07
-    TAKE_PROFIT_PCT       = 0.20
-    REGIME_MAP: dict      = {}
+# No try/except shim here, deliberately. There used to be one, and it hid a
+# real bug for as long as this file has existed: `REGIME_MAP` is not a name
+# config.py has ever defined — the board-approved table is REGIME_MANDATES —
+# so the whole tuple import raised ImportError on every single run and every
+# constant below silently became a literal. Four of the five happened to match
+# config; MAX_OPEN_POSITIONS did not (15 here vs 20 in config, the live
+# pick-gate trial), and `REGIME_MAP = {}` made _get_regime_cap() return the
+# flat cap forever, so the "regime-adaptive max" in this module's own docstring
+# has never once been applied. A fallback that quietly substitutes plausible
+# risk limits is worse than an ImportError: the crash is one line to fix, the
+# fallback is a policy the firm believes it is enforcing and isn't.
+from config import (
+    MAX_POSITION_SIZE_PCT, MIN_CASH_FLOOR_PCT, MAX_OPEN_POSITIONS,
+    STOP_LOSS_PCT, TAKE_PROFIT_PCT, REGIME_MANDATES as REGIME_MAP,
+)
 
 # ---------------------------------------------------------------------------
 # Logging

@@ -252,7 +252,7 @@ def run_v2m(best_val, best_ts):
 
 def send_email(best_val, best_ts):
     try:
-        from config import GMAIL_USER, GMAIL_APP_PASSWORD, CHAIRMAN_EMAIL
+        from config import EMAIL_SENDER, GMAIL_APP_PASSWORD, EMAIL_RECIPIENT
         import smtplib
         promoted = [r for r in RESULTS if r['beats_prod']]
         all_rounds = [
@@ -274,8 +274,8 @@ def send_email(best_val, best_ts):
         n = len(promoted)
         subject = f"Apex Capital — ML Chain R3 | {n} promoted | production val={best_val:.4f}"
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
-            s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            s.sendmail(GMAIL_USER, CHAIRMAN_EMAIL, f"Subject: {subject}\n\n{body}")
+            s.login(EMAIL_SENDER, GMAIL_APP_PASSWORD)
+            s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, f"Subject: {subject}\n\n{body}")
         log.info(f"Email sent")
     except Exception as e:
         log.error(f"Email failed: {e}")

@@ -53,16 +53,36 @@ def run_fi_position_monitor() -> dict:
     hy      = spreads["hy_spread"]
     ig      = spreads["ig_spread"]
 
-    # Load approved positions
+    # A quarterly review that recommends TRIM/ADD off an invented regime is
+    # worse than no review: it is a set of position changes with a rationale
+    # nobody can trace back to a measurement. Abstain and say so.
+    if regime == "UNKNOWN" or hy is None or ig is None:
+        logger.error(
+            "FI Position Monitor ABSTAINING — credit read degraded "
+            "(regime=%s, hy=%s, ig=%s). No position actions this run.",
+            regime, hy, ig,
+        )
+        return {
+            "quarter":                f"Q{(datetime.now().month-1)//3 + 1} {datetime.now().year}",
+            "regime":                 regime,
+            "spreads":                spreads,
+            "positions_reviewed":     0,
+            "positions_with_actions": 0,
+            "actions":                [],
+            "abstained":              True,
+            "abstain_reason":         "credit read degraded — no regime to review against",
+        }
+
+    # Load approved positions. Through the shared loader: this used to read
+    # data["picks"], a key fi_board has never written, so it reviewed 0
+    # positions out of a file that held 8.
+    from fi_data_layer import load_approved_picks
     approved_file = DATA_DIR / "fi_approved_picks.json"
-    positions = []
-    if approved_file.exists():
-        try:
-            with open(approved_file) as f:
-                data = json.load(f)
-            positions = data.get("picks", [])
-        except Exception as exc:
-            logger.warning("Could not load positions: %s", exc)
+    try:
+        positions = load_approved_picks(approved_file)
+    except Exception as exc:
+        logger.error("Could not load positions: %s", exc)
+        positions = []
 
     logger.info("Reviewing %d positions. Regime: %s", len(positions), regime)
 

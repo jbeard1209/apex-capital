@@ -12,8 +12,15 @@ Safety gates (in order):
   4. Duplicate  — skips tickers already executed today (fi_execution_log)
   5. FI position cap — skips if ticker already held >= 80% of target size
 
-Runs immediately after fi_board.py (called from fi_pipeline.py, Step 9).
-Can also run standalone: python3 fi_executor.py
+NOT CURRENTLY WIRED. This docstring claimed "called from fi_pipeline.py, Step 9"
+until 2026-08-14; fi_pipeline has 8 steps and has never imported this module, and
+no crontab on either host runs it. Together with the wrong picks key (fixed
+below), that is three independent reasons the FI pod placed no orders — the last
+entry in fi_execution_log.json is 2026-06-16.
+
+Arming it is a Chairman decision, not a wiring fix: it submits live orders to the
+Alpaca paper account for the $30k FI book. Until that decision is taken this runs
+only when invoked by hand: python3 fi_executor.py
 
 Output: data/fi_execution_log.json
 """
@@ -219,32 +226,48 @@ def run_fi_executor() -> dict:
         logger.info("No fi_approved_picks.json found — nothing to execute")
         return result
 
+    # fi_board writes the approved list under "approved". This read used
+    # "picks", so it resolved to [] for every board session that has ever run,
+    # logged "No approved picks to execute", and returned — which is why the FI
+    # execution log ends on 2026-06-16. Every reader now goes through the one
+    # loader that knows the key, and that loader raises on a shape it does not
+    # recognise rather than handing back an empty list.
+    from fi_data_layer import load_approved_envelope, load_approved_picks
     try:
-        with open(APPROVED_FILE) as f:
-            approved_data = json.load(f)
+        picks    = load_approved_picks(APPROVED_FILE)
+        envelope = load_approved_envelope(APPROVED_FILE)
     except Exception as e:
         logger.error(f"Could not read fi_approved_picks.json: {e}")
         result["errors"].append(str(e))
         return result
 
-    picks = approved_data.get("picks", [])
     if not picks:
         logger.info("No approved picks to execute")
         return result
 
-    # Check approval freshness — only execute picks approved today
-    generated_at = approved_data.get("generated_at", "")
-    if generated_at:
-        try:
-            gen_dt = datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
-            age_h = (datetime.now(timezone.utc) - gen_dt).total_seconds() / 3600
-            if age_h > 26:
-                msg = f"Approved picks are {age_h:.1f}h old — skipping stale execution"
-                logger.warning(msg)
-                result["skipped"].append({"reason": msg})
-                return result
-        except Exception as e:
-            logger.debug(f"non-fatal: {e}")
+    # Check approval freshness — only execute picks approved today. Undatable is
+    # treated as stale: this used to be `if generated_at:` over a debug-swallowed
+    # parse, so a missing or malformed timestamp meant no freshness check at all
+    # and an arbitrarily old board mandate executed at full size. An executor
+    # that cannot date its mandate must not act on it.
+    generated_at = envelope.get("generated_at", "")
+    try:
+        gen_dt = datetime.fromisoformat(str(generated_at).replace("Z", "+00:00"))
+        if gen_dt.tzinfo is None:
+            gen_dt = gen_dt.replace(tzinfo=timezone.utc)
+        age_h = (datetime.now(timezone.utc) - gen_dt).total_seconds() / 3600
+    except Exception as e:
+        msg = (f"Approved picks carry no usable 'generated_at' "
+               f"({generated_at!r}: {e}) — refusing to execute an undatable mandate")
+        logger.error(msg)
+        result["skipped"].append({"reason": msg})
+        return result
+
+    if age_h > 26:
+        msg = f"Approved picks are {age_h:.1f}h old — skipping stale execution"
+        logger.warning(msg)
+        result["skipped"].append({"reason": msg})
+        return result
 
     # --- Alpaca client ---
     try:

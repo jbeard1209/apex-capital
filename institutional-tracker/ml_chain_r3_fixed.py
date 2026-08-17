@@ -255,7 +255,7 @@ def run_v2m(best_val, best_ts):
 
 def send_email(best_val, best_ts):
     try:
-        from config import GMAIL_USER, GMAIL_APP_PASSWORD, CHAIRMAN_EMAIL
+        from config import EMAIL_SENDER, GMAIL_APP_PASSWORD, EMAIL_RECIPIENT
         import smtplib
         promoted = [r for r in RESULTS if r['beats_prod']]
         rows = '\n'.join(f"  {r['name']:6} val={r['val_auc']:.4f}  TS-CV={r['ts_cv']:.4f}  {'✅' if r['beats_prod'] else '❌'}  {r['note']}"
@@ -273,8 +273,8 @@ def send_email(best_val, best_ts):
                 f"Improvement path: accumulate data via daily retrains.")
         subject = f"Apex Capital — ML Chain R3-fixed | {len(promoted)} promoted | best val={best_val:.4f}"
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
-            s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            s.sendmail(GMAIL_USER, CHAIRMAN_EMAIL, f"Subject: {subject}\n\n{body}")
+            s.login(EMAIL_SENDER, GMAIL_APP_PASSWORD)
+            s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, f"Subject: {subject}\n\n{body}")
         log.info("Email sent")
     except Exception as e:
         log.error(f"Email failed: {e}")

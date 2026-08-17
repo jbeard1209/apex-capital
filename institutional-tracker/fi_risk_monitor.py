@@ -58,16 +58,17 @@ def run_fi_risk_monitor() -> dict:
     duration_target = DURATION_TARGET_INVERTED if curve_inverted else DURATION_TARGET_NORMAL
     risk_flags = []
 
-    # Load approved picks for portfolio view
+    # Load approved picks for portfolio view. Through the shared loader — the
+    # old data["picks"] read returned [] against a file keyed "approved", so
+    # every risk metric below was computed over an empty portfolio and every
+    # threshold came back clean. A risk monitor that sees nothing reports no risk.
+    from fi_data_layer import load_approved_picks
     approved_file = DATA_DIR / "fi_approved_picks.json"
-    approved_picks = []
-    if approved_file.exists():
-        try:
-            with open(approved_file) as f:
-                data = json.load(f)
-            approved_picks = data.get("picks", [])
-        except Exception as exc:
-            logger.warning("Could not load approved picks: %s", exc)
+    try:
+        approved_picks = load_approved_picks(approved_file)
+    except Exception as exc:
+        logger.error("Could not load approved picks: %s", exc)
+        approved_picks = []
 
     total_deployed = sum(p.get("position_size_usd", 0) for p in approved_picks)
 
@@ -152,9 +153,7 @@ def run_fi_risk_monitor() -> dict:
     equity_approved_file = DATA_DIR / "fe_approved_picks.json"
     if equity_approved_file.exists():
         try:
-            with open(equity_approved_file) as f:
-                eq_data = json.load(f)
-            eq_picks = eq_data.get("picks", [])
+            eq_picks = load_approved_picks(equity_approved_file)
             if len(eq_picks) > 5 and len(approved_picks) > 3 and regime in ("WIDE", "DISTRESSED"):
                 risk_flags.append({
                     "type":    "CORRELATION_WARNING",

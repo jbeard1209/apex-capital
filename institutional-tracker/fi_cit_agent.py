@@ -65,6 +65,15 @@ logging.basicConfig(
 logger = logging.getLogger("fi_cit_agent")
 
 
+class _SkipImprovements(Exception):
+    """Raised to abandon the improvement pass on a degraded credit read.
+
+    Its own class, not a bare `Exception`, so the surrounding catch-all cannot
+    confuse an intentional abstention with an actual crash and log both the
+    same way.
+    """
+
+
 def _file_age_hours(path: Path) -> float:
     """Return file age in hours, or 999 if not found."""
     if not path.exists():
@@ -213,11 +222,34 @@ def run_fi_cit_agent() -> dict:
     # 5. Improvement proposals
     if spreads:
         try:
-            regime  = spreads.get("spread_regime", "NORMAL")
-            hy      = spreads.get("hy_spread", 350)
-            ig      = spreads.get("ig_spread", 120)
-            t10     = spreads.get("treasury_10yr", 4.0)
-            slope   = spreads.get("yield_curve_slope", 0)
+            # A missing reading is now None, not a stand-in. Reading it as
+            # 350/120/NORMAL is what let a dead HYG feed masquerade as a calm
+            # credit market on 2026-08-14. Note the `except` below swallows
+            # everything, so a None slipping into an f-string would have
+            # vanished silently — the check has to be explicit.
+            regime  = spreads.get("spread_regime") or "UNKNOWN"
+            hy      = spreads.get("hy_spread")
+            ig      = spreads.get("ig_spread")
+            t10     = spreads.get("treasury_10yr")
+            slope   = spreads.get("yield_curve_slope")
+
+            _dead = [n for n, v in (("HY spread", hy), ("IG spread", ig),
+                                    ("10yr Treasury", t10)) if v is None]
+            if regime == "UNKNOWN" or _dead:
+                # This is a finding in its own right — the FI pod cannot form
+                # an opinion, and that must reach the Chairman queue rather
+                # than being papered over with defaults.
+                issues.append({
+                    "severity": "HIGH",
+                    "type":     "DEGRADED_CREDIT_READ",
+                    "message":  (f"Credit read is degraded (regime={regime}; no "
+                                 f"reading for: {', '.join(_dead) or 'regime'}). "
+                                 "fi_pipeline abstains on this read — zero FI picks "
+                                 "and zero orders until the feed returns. If this "
+                                 "repeats across days, the yfinance proxy for those "
+                                 "tickers has broken, not the market."),
+                })
+                raise _SkipImprovements
 
             if regime == "WIDE" and hy > 550:
                 improvements.append({
@@ -248,6 +280,9 @@ def run_fi_cit_agent() -> dict:
                         "Consider maximizing TLT/IEF allocation (duration target: 8yr)."
                     ),
                 })
+        except _SkipImprovements:
+            logger.warning("Credit read degraded — improvement analysis skipped "
+                           "(issue raised instead).")
         except Exception as exc:
             logger.warning("Improvement analysis failed: %s", exc)
 

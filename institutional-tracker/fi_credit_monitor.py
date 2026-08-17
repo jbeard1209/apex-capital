@@ -35,7 +35,22 @@ def _cache_valid() -> bool:
     if not CACHE_PATH.exists():
         return False
     age_h = (datetime.now().timestamp() - CACHE_PATH.stat().st_mtime) / 3600
-    return age_h < CACHE_TTL_HOURS
+    if age_h >= CACHE_TTL_HOURS:
+        return False
+    # A degraded read must never be served from cache. One transient yfinance
+    # failure would otherwise pin the firm's credit regime for six hours —
+    # and because a missing HY feed used to resolve to exactly 350bps, which
+    # is exactly the middle of the NORMAL band, the poisoned value was the
+    # one value guaranteed to look unremarkable. Re-fetch instead; the retry
+    # is one HTTP call and the feed usually comes back on the next attempt.
+    try:
+        with open(CACHE_PATH) as f:
+            if json.load(f).get("data_quality") != "LIVE":
+                logger.info("  [CreditMonitor] cached read is DEGRADED — refetching")
+                return False
+    except Exception:
+        return False
+    return True
 
 
 def _fetch_yield(ticker: str) -> float | None:
@@ -88,34 +103,65 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
     hyg_ref_normal  = 79.0
     lqd_ref_normal  = 108.0
 
+    # ── A spread we could not measure is None, not a plausible number ─────────
+    # These used to fall back to 350 and 120. Those are not neutral defaults:
+    # 350 sits dead-centre in the NORMAL band (300–450) and the regime below is
+    # computed from hy_spread ALONE, so a failed HYG fetch did not degrade the
+    # credit read — it asserted, with full confidence, that credit conditions
+    # were normal. On 2026-08-14T18:00 exactly that happened: hyg_price was
+    # null, hy_spread was logged as 350, regime NORMAL, and the whole FI pod
+    # ran on it. HYG was fine ninety minutes later at 79.69 (= 315bps). The
+    # tell was in the output the whole time — every real value was a float and
+    # the fabricated one was an int.
+    #
+    # See memory `nan-is-not-none` and `presence-is-not-currency`: the failure
+    # is not the missing datum, it is that the missing datum is unreadable as
+    # missing. Downstream can handle "we don't know"; it cannot handle a lie.
+    degraded: list[str] = []
+
     if hyg_price:
         # Estimate bps: each $1 drop from normal ≈ +50bps
         hy_spread_bps = max(200, 350 + (hyg_ref_normal - hyg_price) * 50)
     else:
-        hy_spread_bps = 350  # default normal
+        hy_spread_bps = None
+        degraded.append("HYG (high-yield spread proxy)")
 
     if lqd_price:
         # IG spreads tighter: each $1 drop ≈ +20bps
         ig_spread_bps = max(60, 120 + (lqd_ref_normal - lqd_price) * 20)
     else:
-        ig_spread_bps = 120  # default normal
+        ig_spread_bps = None
+        degraded.append("LQD (investment-grade spread proxy)")
 
-    treasury_10yr = tnx_yield if tnx_yield else 4.5  # fallback
+    if tnx_yield:
+        treasury_10yr = tnx_yield
+    else:
+        treasury_10yr = None
+        degraded.append("^TNX (10yr Treasury benchmark)")
 
     # Yield curve slope: 10yr minus 2yr proxy (IEF vs SHY)
-    if ief_price and shy_price:
+    if ief_price and shy_price and treasury_10yr is not None:
         # Simplified: slope proxy from ETF durations
-        yield_curve_slope = round((treasury_10yr or 4.5) - 5.3, 3)  # rough approximation
+        yield_curve_slope = round(treasury_10yr - 5.3, 3)  # rough approximation
     else:
-        yield_curve_slope = -0.2
+        yield_curve_slope = None
+        if "^TNX (10yr Treasury benchmark)" not in degraded:
+            degraded.append("IEF/SHY (yield-curve slope proxy)")
 
     # ── Compute regime ────────────────────────────────────────────────────
     # TIGHT    : HY < 300bps  — risk-on, spreads compressed
     # NORMAL   : 300–450bps   — typical environment
     # WIDE     : 450–700bps   — stress building, opportunities appearing
     # DISTRESSED: >700bps     — crisis, maximum opportunity but maximum risk
+    #
+    # The regime is derived from hy_spread alone, so no HY reading means no
+    # regime. UNKNOWN is a real answer here — cos_fi_base and fi_pipeline both
+    # treat it as "abstain", which is what the firm should do when it cannot
+    # see the credit market. It must never resolve to NORMAL by default.
 
-    if hy_spread_bps < 300:
+    if hy_spread_bps is None:
+        spread_regime = "UNKNOWN"
+    elif hy_spread_bps < 300:
         spread_regime = "TIGHT"
     elif hy_spread_bps < 450:
         spread_regime = "NORMAL"
@@ -134,14 +180,16 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
             "direction": "BUY",
         })
 
-    if ig_spread_bps > 160:
+    if ig_spread_bps is not None and ig_spread_bps > 160:
         signals.append({
             "type": "IG_OPPORTUNITY",
             "message": f"IG spreads at ~{ig_spread_bps:.0f}bps — above normal; IG names attractive",
             "direction": "BUY",
         })
 
-    if yield_curve_slope < 0:
+    if yield_curve_slope is None:
+        pass
+    elif yield_curve_slope < 0:
         signals.append({
             "type": "INVERTED_CURVE",
             "message": f"Yield curve inverted ({yield_curve_slope:+.2f}). "
@@ -156,7 +204,7 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
             "direction": "OPPORTUNITY",
         })
 
-    if treasury_10yr > 5.0:
+    if treasury_10yr is not None and treasury_10yr > 5.0:
         signals.append({
             "type": "HIGH_RATES",
             "message": f"10yr Treasury at {treasury_10yr:.2f}% — IG bonds yielding well above historical avg.",
@@ -164,15 +212,22 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
         })
 
     # ── Build output ──────────────────────────────────────────────────────
+    _round_or_none = lambda v, n: None if v is None else round(v, n)
     result = {
         "fetched_at": datetime.now().isoformat(),
+        # Read this before reading `spreads`. LIVE means every proxy came back
+        # and every number below was computed from a real quote. DEGRADED means
+        # at least one is None and `degraded` names which feed failed — no
+        # consumer may substitute a value for it.
+        "data_quality": "LIVE" if not degraded else "DEGRADED",
+        "degraded":     degraded,
         "spreads": {
-            "hy_spread":          round(hy_spread_bps, 0),
-            "ig_spread":          round(ig_spread_bps, 0),
-            "hy_spread_bps":      round(hy_spread_bps, 0),
-            "ig_spread_bps":      round(ig_spread_bps, 0),
-            "treasury_10yr":      round(treasury_10yr, 3),
-            "yield_curve_slope":  round(yield_curve_slope, 3),
+            "hy_spread":          _round_or_none(hy_spread_bps, 0),
+            "ig_spread":          _round_or_none(ig_spread_bps, 0),
+            "hy_spread_bps":      _round_or_none(hy_spread_bps, 0),
+            "ig_spread_bps":      _round_or_none(ig_spread_bps, 0),
+            "treasury_10yr":      _round_or_none(treasury_10yr, 3),
+            "yield_curve_slope":  _round_or_none(yield_curve_slope, 3),
             "spread_regime":      spread_regime,
             "hyg_price":          hyg_price,
             "lqd_price":          lqd_price,
@@ -183,13 +238,20 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
             "NORMAL":     "Normal conditions — selective IG and BB-rated HY acceptable.",
             "WIDE":       "Spreads widening — strong value in quality HY; add IG selectively.",
             "DISTRESSED": "Crisis spreads — maximum value for patient capital; size small.",
+            "UNKNOWN":    ("Credit read unavailable — " + ", ".join(degraded) +
+                           " did not return. No FI positioning opinion is valid "
+                           "on this read; the pipeline abstains."),
         }.get(spread_regime, ""),
     }
 
     # ── Fable 5 credit read — gated to non-NORMAL regimes or 2+ signals ───
+    # Also gated on LIVE: asking a model to interpret numbers we do not have
+    # produces a fluent paragraph about a credit market nobody measured
+    # (memory `plausible-is-not-validated`).
     try:
         from apex_llm import reason as _r, is_available
-        if is_available("fi_credit") and (spread_regime != "NORMAL" or len(signals) >= 2):
+        if (not degraded and is_available("fi_credit")
+                and (spread_regime != "NORMAL" or len(signals) >= 2)):
             sigs = "; ".join(s["message"][:80] for s in signals[:3]) or "none"
             raw = _r(
                 "You are a fixed-income strategist for a $30k bond ETF pod.",
@@ -210,21 +272,33 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
     with open(CACHE_PATH, "w") as f:
         json.dump(result, f, indent=2)
 
+    _f = lambda v, fmt: "n/a" if v is None else format(v, fmt)
     logger.info(
-        "  [CreditMonitor] HY=%.0fbps IG=%.0fbps 10yr=%.2f%% slope=%.3f regime=%s signals=%d",
-        hy_spread_bps, ig_spread_bps, treasury_10yr,
-        yield_curve_slope, spread_regime, len(signals),
+        "  [CreditMonitor] HY=%sbps IG=%sbps 10yr=%s%% slope=%s regime=%s signals=%d [%s]",
+        _f(hy_spread_bps, ".0f"), _f(ig_spread_bps, ".0f"), _f(treasury_10yr, ".2f"),
+        _f(yield_curve_slope, ".3f"), spread_regime, len(signals),
+        result["data_quality"],
     )
+    if degraded:
+        logger.error(
+            "  [CreditMonitor] DEGRADED — no reading from: %s. Regime is UNKNOWN, "
+            "not NORMAL. Downstream must abstain, not substitute a default.",
+            ", ".join(degraded),
+        )
     return result
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     result = run_credit_monitor(force_refresh=True)
-    print(f"\nRegime: {result['spreads']['spread_regime']}")
-    print(f"HY spread: {result['spreads']['hy_spread']:.0f}bps")
-    print(f"IG spread: {result['spreads']['ig_spread']:.0f}bps")
-    print(f"10yr: {result['spreads']['treasury_10yr']:.2f}%")
+    s = result["spreads"]
+    fmt = lambda v, f: "n/a (feed down)" if v is None else format(v, f)
+    print(f"\nData quality: {result['data_quality']}", end="")
+    print(f"  — missing: {', '.join(result['degraded'])}" if result["degraded"] else "")
+    print(f"Regime: {s['spread_regime']}")
+    print(f"HY spread: {fmt(s['hy_spread'], '.0f')}bps")
+    print(f"IG spread: {fmt(s['ig_spread'], '.0f')}bps")
+    print(f"10yr: {fmt(s['treasury_10yr'], '.2f')}%")
     print(f"Signals: {len(result['signals'])}")
     for s in result["signals"]:
         print(f"  [{s['direction']}] {s['message']}")

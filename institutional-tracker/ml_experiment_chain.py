@@ -297,7 +297,7 @@ def run_v2f(X_full, y, best_val, best_ts):
 # ═══════════════════════════════════════════════════════════════════════════════
 def send_email():
     try:
-        from config import GMAIL_USER, GMAIL_APP_PASSWORD, CHAIRMAN_EMAIL
+        from config import EMAIL_SENDER, GMAIL_APP_PASSWORD, EMAIL_RECIPIENT
         import smtplib
         promoted = [r for r in RESULTS if r['beats_prod']]
         best = max(RESULTS, key=lambda r: r['ts_cv']) if RESULTS else {}
@@ -315,8 +315,8 @@ def send_email():
         subject = f"Apex Capital — ML Chain Done | {n_promoted} promoted | best TS-CV={best.get('ts_cv',0):.4f}"
         msg = f"Subject: {subject}\n\n{body}"
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
-            s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            s.sendmail(GMAIL_USER, CHAIRMAN_EMAIL, msg)
+            s.login(EMAIL_SENDER, GMAIL_APP_PASSWORD)
+            s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, msg)
         log.info(f"Results email sent ({n_promoted} promoted)")
     except Exception as e:
         log.error(f"Email failed: {e}")

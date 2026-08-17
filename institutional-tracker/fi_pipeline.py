@@ -134,13 +134,51 @@ def run_fi_pipeline():
     regime  = spreads["spread_regime"]
     signals = market["signals"]
 
+    _f = lambda v, fmt: "n/a" if v is None else format(v, fmt)
     log.info(
-        "HY spread: %.0fbps | IG spread: %.0fbps | 10yr: %.2f%% | "
-        "Slope: %.3f | Regime: %s | Signals: %d",
-        spreads["hy_spread"], spreads["ig_spread"],
-        spreads["treasury_10yr"], spreads["yield_curve_slope"],
-        regime, len(signals),
+        "HY spread: %sbps | IG spread: %sbps | 10yr: %s%% | "
+        "Slope: %s | Regime: %s | Signals: %d | Data: %s",
+        _f(spreads["hy_spread"], ".0f"), _f(spreads["ig_spread"], ".0f"),
+        _f(spreads["treasury_10yr"], ".2f"), _f(spreads["yield_curve_slope"], ".3f"),
+        regime, len(signals), market.get("data_quality", "UNKNOWN"),
     )
+
+    # ── Step 1b: no credit read => no pipeline ────────────────────────────
+    # Every stage below is a function of the regime: the agents score off it,
+    # fi_data_layer sizes off it, the board votes on it. There is no partial
+    # answer available when the regime is UNKNOWN, and the wrong thing to do
+    # is the thing this code used to do implicitly — treat a dead feed as a
+    # normal market and trade the full book on it.
+    #
+    # Abstaining is cheap: FI runs once a weekday and its holdings are bond
+    # ETFs on a quarterly review cycle. Missing one session costs nothing.
+    if regime == "UNKNOWN" or market.get("data_quality") != "LIVE":
+        _missing = ", ".join(market.get("degraded") or ["unspecified feed"])
+        log.error("=" * 60)
+        log.error("FI PIPELINE ABSTAINING — credit read is DEGRADED (%s).", _missing)
+        log.error("The regime gates every downstream stage, so there is no "
+                  "partial run to make. Zero picks, zero orders. Next scheduled "
+                  "run re-fetches; the degraded read is not cached.")
+        log.error("=" * 60)
+        _abstain = {
+            "run_at":        datetime.now(timezone.utc).isoformat(),
+            "capital":       FI_CAPITAL,
+            "regime":        "UNKNOWN",
+            "spreads":       spreads,
+            "data_quality":  market.get("data_quality", "DEGRADED"),
+            "degraded":      market.get("degraded", []),
+            "raw_picks":     0,
+            "qualified":     0,
+            "abstained":     True,
+            "abstain_reason": (f"credit read degraded — no data from {_missing}. "
+                               f"Scoring off default spreads would fabricate a regime."),
+            "agent_results": [],
+            "board_result":  {"approved_count": 0, "rejected_count": 0,
+                              "approved": [], "rejected": []},
+        }
+        with open(DATA_DIR / "fi_pipeline_report.json", "w") as f:
+            json.dump(_abstain, f, indent=2)
+        return _abstain
 
     # Step 2: Run all 7 R&D agents
     raw_picks = []

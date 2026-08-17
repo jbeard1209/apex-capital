@@ -153,7 +153,7 @@ def run_v2q(X, y, feat_cols, current_best):
 
 def send_email(current_best):
     try:
-        from config import GMAIL_USER, GMAIL_APP_PASSWORD, CHAIRMAN_EMAIL
+        from config import EMAIL_SENDER, GMAIL_APP_PASSWORD, EMAIL_RECIPIENT
         import smtplib
         promoted = [r for r in RESULTS if r['beats_prod']]
         rows = '\n'.join(
@@ -170,8 +170,8 @@ def send_email(current_best):
         )
         subject = f"Apex Capital — ML Chain R5 | best val={current_best:.4f}"
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
-            s.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            s.sendmail(GMAIL_USER, CHAIRMAN_EMAIL, f"Subject: {subject}\n\n{body}")
+            s.login(EMAIL_SENDER, GMAIL_APP_PASSWORD)
+            s.sendmail(EMAIL_SENDER, EMAIL_RECIPIENT, f"Subject: {subject}\n\n{body}")
         log.info("Email sent")
     except Exception as e:
         log.error(f"Email failed: {e}")
