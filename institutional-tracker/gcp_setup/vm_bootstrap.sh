@@ -3,7 +3,8 @@
 # APEX CAPITAL — GCP VM BOOTSTRAP
 # Run this ONCE on the fresh GCP e2-micro instance after SSH'ing in.
 # It installs all dependencies, sets up the project directory, and
-# configures cron to match the local Mac schedule.
+# configures a seed crontab. The full schedule is restored separately —
+# see restore_crontab.sh; this seed is 21 of the firm's 84 jobs.
 #
 # Usage:
 #   bash vm_bootstrap.sh
@@ -58,14 +59,22 @@ mkdir -p "$PROJECT_DIR/logs"
 mkdir -p "$PROJECT_DIR/oracle_setup"
 echo "  Directories created at $PROJECT_DIR"
 
-# ── 4. Timezone — set to US Eastern so cron times match Mac ──────────────────
+# ── 4. Timezone — UTC, because that is what the live crontab is written in ───
+# This block used to set America/New_York "so cron times match the Mac". The
+# running VM has been Etc/UTC since it was built, and every one of the 84 jobs
+# in data/vm_crontab_snapshot.txt was authored against UTC (fi_pipeline at
+# 14:30 = 10:30 ET, main.py at 13:45 = 09:45 ET). Setting ET here would move
+# every one of them 4-5 hours: the market-open run would fire at 05:45 ET,
+# before the open, on a rebuilt host that looked healthy. Do NOT "fix" this by
+# adding CRON_TZ — Debian's vixie cron 3.0pl1-162 ignores it silently, which
+# is the same failure with no error message.
 echo ""
-echo "[4/6] Setting timezone to US/Eastern..."
-sudo timedatectl set-timezone America/New_York 2>/dev/null || \
-    sudo ln -sf /usr/share/zoneinfo/America/New_York /etc/localtime
+echo "[4/6] Setting timezone to UTC (the timezone the crontab is written in)..."
+sudo timedatectl set-timezone Etc/UTC 2>/dev/null || \
+    sudo ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
 echo "  Timezone: $(date +%Z)"
 
-# ── 5. Crontab — matches local Mac schedule (all times ET) ───────────────────
+# ── 5. Crontab — a SEED only; the real 84-job schedule is the snapshot ──────
 echo ""
 echo "[5/6] Installing crontab..."
 
@@ -117,9 +126,31 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 @reboot cd $PROJECT_DIR/oracle_setup && python3 try_oracle.py >> oracle_attempts.log 2>&1 &
 "
 
-echo "$CRON_CONTENT" | crontab -
-echo "  Crontab installed. Jobs:"
-crontab -l | grep -v "^#" | grep -v "^$" | grep -v "^SHELL\|^PATH" | wc -l | xargs echo "   " jobs scheduled
+_count_jobs() { grep -v "^#" | grep -v "^$" | grep -v "^SHELL\|^PATH" | wc -l | tr -d " "; }
+
+_existing=$(crontab -l 2>/dev/null | _count_jobs)
+_seed=$(echo "$CRON_CONTENT" | _count_jobs)
+
+# Never shrink a live schedule. The block above is a 21-job seed for a blank
+# host; the firm actually runs 84 jobs (data/vm_crontab_snapshot.txt). Piping
+# the seed over a running VM would delete 63 scheduled agents at once and
+# report "BOOTSTRAP COMPLETE" — the firm would go on looking healthy while
+# most of it had stopped. See memory `orphan_agents_blindness`: an agent
+# nothing runs cannot report that it is not running.
+if [ "${_existing:-0}" -gt "$_seed" ] && [ "${FORCE_CRONTAB:-0}" != "1" ]; then
+    echo "  ⚠ REFUSING to install the seed crontab."
+    echo "    This host already has $_existing jobs; the seed has only $_seed."
+    echo "    Installing it would silently delete $((_existing - _seed)) scheduled jobs."
+    echo "    To restore a full schedule after a rebuild, deploy first, then:"
+    echo "      bash gcp_setup/restore_crontab.sh"
+    echo "    To override anyway (you almost never want this): FORCE_CRONTAB=1"
+else
+    echo "$CRON_CONTENT" | crontab -
+    echo "  Seed crontab installed ($_seed jobs)."
+    echo "  This is NOT the full schedule. After running deploy.sh from the Mac:"
+    echo "      bash gcp_setup/restore_crontab.sh"
+fi
+echo "  Crontab now holds: $(crontab -l 2>/dev/null | _count_jobs) job(s)"
 
 # ── 6. Done ──────────────────────────────────────────────────────────────────
 echo ""
@@ -127,8 +158,11 @@ echo "=============================================="
 echo "  BOOTSTRAP COMPLETE"
 echo "=============================================="
 echo ""
-echo "  Next step: run the deploy script from your Mac:"
-echo "    bash gcp_setup/deploy.sh <VM_IP>"
+echo "  Next steps:"
+echo "    1. From your Mac:  bash gcp_setup/deploy.sh <VM_IP>"
+echo "    2. Back on the VM: bash gcp_setup/restore_crontab.sh"
 echo ""
-echo "  That will rsync all project files + your .env to this VM."
+echo "  Step 1 rsyncs all project files + your .env to this VM."
+echo "  Step 2 is not optional. Without it this host runs the 21-job seed,"
+echo "  not the firm's 84-job schedule, and nothing will report the gap."
 echo ""

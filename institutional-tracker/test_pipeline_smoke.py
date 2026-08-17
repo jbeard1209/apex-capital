@@ -839,6 +839,62 @@ class TestWiringContracts(unittest.TestCase):
         self.assertEqual([], broken,
                          "ImportError waiting to happen:\n  " + "\n  ".join(broken))
 
+    # ── Rebuild contract: bootstrap must not contradict the live host ──────
+    # vm_bootstrap.sh is the only thing that would ever run on a rebuilt VM,
+    # and it disagreed with the running one on both axes that matter. It set
+    # America/New_York while all 84 live jobs are authored in UTC (a 4-5h
+    # shift, silently), and it piped a 21-job seed straight into `crontab -`,
+    # which on a live host deletes 63 scheduled agents and then prints
+    # "BOOTSTRAP COMPLETE". Neither failure raises anything: a job that is not
+    # scheduled cannot fail, and a job that runs at the wrong hour still runs.
+
+    def test_the_rebuild_script_agrees_with_the_host_it_rebuilds(self):
+        import pathlib
+
+        root = pathlib.Path(__file__).resolve().parent
+        raw  = (root / "gcp_setup" / "vm_bootstrap.sh").read_text()
+        # Executable lines only. The comments explaining why CRON_TZ is a trap
+        # necessarily contain "CRON_TZ", and a test that cannot distinguish the
+        # bug from its own postmortem is one nobody can keep green.
+        boot = "\n".join(ln for ln in raw.splitlines()
+                         if not ln.lstrip().startswith("#"))
+
+        self.assertNotIn("set-timezone America/New_York", boot,
+                         "vm_bootstrap.sh would set the VM to Eastern; the live "
+                         "crontab is written in UTC, so every job would move 4-5h")
+        self.assertIn("set-timezone Etc/UTC", boot,
+                      "vm_bootstrap.sh must pin the VM to UTC explicitly — "
+                      "inheriting the image default is not a decision")
+        self.assertNotIn("CRON_TZ", boot,
+                         "Debian's vixie cron ignores CRON_TZ silently; using it "
+                         "reintroduces the same bug with no error message")
+
+        # The seed may never overwrite a larger live schedule unattended.
+        self.assertIn("FORCE_CRONTAB", boot,
+                      "vm_bootstrap.sh installs its seed crontab with no guard — "
+                      "running it on the live VM would delete most of the firm")
+
+        restore = root / "gcp_setup" / "restore_crontab.sh"
+        self.assertTrue(restore.exists(),
+                        "there is no way to restore the full schedule after a "
+                        "rebuild; the seed is 21 jobs and the firm runs 84")
+        rsrc = restore.read_text()
+        self.assertIn("vm_crontab_snapshot.txt", rsrc,
+                      "restore_crontab.sh must restore from the committed "
+                      "snapshot, not from a second hand-maintained copy")
+        self.assertIn("UTC", rsrc,
+                      "restore_crontab.sh must refuse a non-UTC host — the "
+                      "snapshot's times are UTC")
+
+        # And the snapshot itself must not have silently emptied.
+        snap = (root / "data" / "vm_crontab_snapshot.txt").read_text()
+        jobs = [ln for ln in snap.splitlines()
+                if ln.strip() and not ln.lstrip().startswith("#")
+                and not ln.startswith(("SHELL", "PATH"))]
+        self.assertGreater(len(jobs), 50,
+                           f"vm_crontab_snapshot.txt holds only {len(jobs)} jobs — "
+                           f"restoring from it would shrink the firm")
+
     # ── Approved-picks key: board writer -> executor reader ────────────────
     # fi_board/fe_board write the approved list under "approved". Every
     # consumer read `.get("picks", [])`, which resolved to [] against a file
