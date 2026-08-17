@@ -175,6 +175,48 @@ def tradeable(market):
     return ask, size
 
 
+def two_sided(market, max_spread=0.10):
+    """(bid, ask, ask_size) if BOTH sides are quoted and close, else None.
+
+    THE STRICTER FILTER, and the one the near-certainty band actually needed.
+
+    `tradeable()` asks "is there a real ask, at a real size?" That is enough to
+    know you can BUY. It is not enough to know the ask means anything. A market
+    with an ask and no bid has exactly one participant — a seller — and their
+    asking price is not a probability, it is an opinion nobody has met. You can
+    fill on it, and that is the trap: the fill is real and the price is fiction.
+
+    Measured 2026-08-17, 10,000 open markets: 7 passed `tradeable()`, and **all
+    7 had no yes_bid at all**. Zero markets on the entire exchange had a
+    two-sided book at that hour. The settled ledger says what buying the
+    one-sided quotes was worth: 86 settlements at an average quote of 0.97
+    resolved YES 27% of the time, -0.68 per contract. Splitting them by whether
+    their event's nested legs were coherently priced changed nothing — the
+    "coherent" survivors lost 0.745 per contract, slightly WORSE than the
+    incoherent ones. There was no good subset to find, because the defect is
+    not in which markets were picked, it is in what the number meant.
+
+    So: no bid, no price. This is the mirror of the rule that opened the sector
+    ("cost of zero is an empty book, not a free contract") — an empty book
+    reports 0 on one side and, when someone rests a token offer, the top of the
+    range on the other. Both readings are the same absence.
+
+    `max_spread` exists because a bid of 0.05 against an ask of 0.98 is a
+    two-sided book only in the sense that two people are shouting past each
+    other. Neither number constrains the other and the mid is meaningless.
+    """
+    ask = parse_price(market.get("yes_ask_dollars", market.get("yes_ask")))
+    bid = parse_price(market.get("yes_bid_dollars", market.get("yes_bid")))
+    size = parse_size(market.get("yes_ask_size_fp"))
+    if ask is None or bid is None or not size:
+        return None
+    if ask <= bid:              # crossed or locked: a stale snapshot, not a book
+        return None
+    if (ask - bid) > max_spread:
+        return None
+    return bid, ask, size
+
+
 # -------------------------------------------------------------- transport --
 
 def _get(path, params=None, timeout=30, retries=2):

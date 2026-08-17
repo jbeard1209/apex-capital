@@ -186,65 +186,29 @@ JOB_REGISTRY = [
         "once_per_wakeup": True,
     },
 
-    # ── Main pipeline — run 1 (9:45 AM) ──────────────────────────────────────
-    # These four entries keep the ordering correct: pipeline run 1 fires
-    # between R&D@10AM and R&D@12PM, so it needs its own slot in the queue.
-    # once_per_wakeup=False here so all missed slots are discovered and
-    # sorted — but we de-duplicate to a single actual execution below.
-    {
-        "name":            "pipeline_0945",
-        "script":          "main.py",
-        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
-        "args":            [],
-        "output_file":     None,            # checked via today's cron log
-        "ttl_hours":       None,
-        "fire_times_edt":  [9.75],          # 9:45 AM
-        "run_days":        "weekdays",
-        "catchup_window":  (9.75, 17.5),
-        "once_per_wakeup": False,           # see de-dup logic below
-    },
-
-    # ── Main pipeline — run 2 (12:00 PM) ─────────────────────────────────────
-    {
-        "name":            "pipeline_1200",
-        "script":          "main.py",
-        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
-        "args":            [],
-        "output_file":     None,
-        "ttl_hours":       None,
-        "fire_times_edt":  [12.0],
-        "run_days":        "weekdays",
-        "catchup_window":  (12.0, 17.5),
-        "once_per_wakeup": False,
-    },
-
-    # ── Main pipeline — run 3 (2:00 PM) ──────────────────────────────────────
-    {
-        "name":            "pipeline_1400",
-        "script":          "main.py",
-        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
-        "args":            [],
-        "output_file":     None,
-        "ttl_hours":       None,
-        "fire_times_edt":  [14.0],
-        "run_days":        "weekdays",
-        "catchup_window":  (14.0, 17.5),
-        "once_per_wakeup": False,
-    },
-
-    # ── Main pipeline — run 4 (4:15 PM) ──────────────────────────────────────
-    {
-        "name":            "pipeline_1615",
-        "script":          "main.py",
-        "timeout_s":       PIPELINE_TIMEOUT_S,   # see _run(): 600s truncated ~half of all runs
-        "args":            [],
-        "output_file":     None,
-        "ttl_hours":       None,
-        "fire_times_edt":  [16.25],
-        "run_days":        "weekdays",
-        "catchup_window":  (16.25, 18.0),
-        "once_per_wakeup": False,
-    },
+    # ── Main pipeline — REMOVED 2026-08-17 (decision #81) ────────────────────
+    # Four entries used to live here (pipeline_0945/1200/1400/1615), running
+    # main.py on the Mac. They are gone, and the Mac no longer runs the
+    # pipeline at all.
+    #
+    # The Mac's own crontab header has said "NO trading, NO agents on cron"
+    # since 2026-07-03 — the firm runs on the GCP VM, and the Mac is a
+    # development machine. launchd ran the full pipeline anyway, four times a
+    # day by design and 12-22 times a day in practice until 47ee16e. Every
+    # entry it produced was refused at the broker: `single_writer.py` is in
+    # enforce mode with the VM designated, so the Mac's work came back
+    # BLOCK_ENTRY 132 times across two sampled days and zero of its buys
+    # reached Alpaca. What it bought was compute, API spend, and a `data/`
+    # directory that diverges from the host that actually trades — there is no
+    # state sync between the two.
+    #
+    # The one thing it did contribute was exits (5 ALLOW_EXIT on 08-14), and
+    # those were a side effect of the runaway rather than designed coverage.
+    # That capability is kept deliberately below, in `_mac_exit_guard()`, and
+    # gated on the VM having actually gone quiet — which is the only condition
+    # under which the Mac's exit path is worth anything. A permanent parallel
+    # exit path on a clamshell-sleeping laptop is not a safety net; a fallback
+    # that arms itself when the primary dies is.
 
     # ── CIT — evening session (6 PM, 9 PM EDT) ────────────────────────────────
     {
@@ -555,11 +519,137 @@ def _run(job: dict) -> bool:
 # MAIN
 # =============================================================================
 
+VM_STATE_FILE = DATA_DIR / "vm_state_monitor.json"
+
+# How stale the VM's state check may be before the Mac stops believing it.
+# The LaunchAgent runs vm_state_monitor every 15 minutes, so anything past an
+# hour means that monitor is itself not running.
+VM_STATE_MAX_AGE_H = 1.0
+
+# Where the guard records its last run, and how long it waits between runs when
+# the VM's state is merely UNKNOWN rather than known-bad.
+EXIT_GUARD_STAMP = DATA_DIR / ".mac_exit_guard_last"
+UNCERTAIN_GUARD_COOLDOWN_H = 4.0
+
+
+def _mac_exit_guard() -> bool:
+    """Run the canary's exit enforcement, but only if the VM has gone quiet.
+
+    Decision #81. The Mac stopped running main.py; this is what replaced it.
+
+    `canary_agent.py` carries `_enforce_canary_exits()` — the loop-breaker that
+    submits direct market-close orders for positions past their stop or take-
+    profit, bypassing deliberation entirely. On the VM it fires every few
+    minutes. The Mac needs it only when the VM cannot: on 2026-08-06 the free
+    trial ended, the instance sat STOPPED, and the firm ran exit-only for eight
+    days while nothing said so.
+
+    The gate is `vm_state_monitor.json`, which asks the two questions no single
+    check can answer alone — GCP for "is the box on", the broker for "is the
+    writer writing". Reusing it matters: a second, hand-rolled liveness test
+    here would be a third opinion about whether the VM is alive, and the firm
+    has been bitten by two definitions of one fact more than once.
+
+    ON AN UNREADABLE GATE THIS RUNS THE CANARY ANYWAY, AND SAYS SO.
+    That is deliberate and it is NOT a contradiction of the rule that a monitor
+    which cannot read its signal must not act (memory `fallback-that-means-act`,
+    and the 999 that launched 20 pipelines a day). The asymmetry is reversed
+    here. That constant authorised ENTRIES: a wrong "yes" opens positions with
+    real money behind it. This authorises EXITS, and only of positions already
+    breaching their own stop — a wrong "yes" closes something that was going to
+    be closed anyway, or no-ops because the canary re-checks Alpaca and finds
+    the position already gone. A wrong "no" leaves a -8% position bleeding for
+    days with nobody watching. Do not "fix" this into failing closed by
+    pattern-matching to the entry case; the direction of the risk is the whole
+    argument, and `single_writer.py` permits exits from a non-designated host
+    for exactly this reason.
+    """
+    reason, certain = None, False
+    try:
+        raw = json.loads(VM_STATE_FILE.read_text())
+        age_h = (datetime.now().timestamp() - VM_STATE_FILE.stat().st_mtime) / 3600
+        power = str(raw.get("power", "")).upper()
+        writer = str(raw.get("writer", "")).upper()
+        if age_h > VM_STATE_MAX_AGE_H:
+            reason = (f"{VM_STATE_FILE.name} is {age_h:.1f}h old (max "
+                      f"{VM_STATE_MAX_AGE_H}h) — the monitor that watches the VM "
+                      f"is not itself running, so the VM's state is unknown")
+        elif writer in ("HIGH", "CRITICAL"):
+            # Broker-sourced and authoritative: the writer has stopped writing.
+            reason = f"designated writer silent — {raw.get('writer_msg') or writer}"
+            certain = True
+        elif power == "CRITICAL":
+            reason = f"GCP reports the instance {raw.get('gcp_status')!r}, not RUNNING"
+            certain = True
+        elif power == "UNKNOWN" and writer in ("PASS", "SKIP"):
+            # gcloud could not answer, but the broker could, and it says the
+            # writer is trading. That is the question that actually matters;
+            # power state is a proxy for it. Standing down here is what keeps
+            # an unauthenticated gcloud from arming this guard every 20
+            # minutes forever — see the cooldown below for the case where
+            # NOTHING can answer.
+            logger.info(f"  Exit guard: GCP unreachable ({raw.get('detail')!r}) but "
+                        f"the broker says the writer is live — Mac stands down.")
+            return False
+        elif power == "UNKNOWN":
+            reason = (f"neither GCP nor the broker can confirm the writer "
+                      f"(power UNKNOWN: {raw.get('detail')!r}, writer {writer})")
+    except FileNotFoundError:
+        reason = (f"{VM_STATE_FILE.name} does not exist — the Mac has never "
+                  f"successfully checked on the VM")
+    except (ValueError, OSError) as e:
+        reason = f"{VM_STATE_FILE.name} unreadable: {type(e).__name__}: {e}"
+
+    if reason is None:
+        logger.info("  Exit guard: VM is up and writing — Mac stands down.")
+        return False
+
+    # Cooldown, and it is only for the uncertain case. When the VM is KNOWN
+    # down the guard runs on every tick, because that is the emergency it was
+    # built for. When we merely cannot tell — an unauthenticated gcloud, a
+    # missing state file — running the canary every 20 minutes forever is how
+    # a safety net turns into the thing it was meant to catch. Every detector
+    # in this firm looks for absence; nothing would ever report this.
+    if not certain:
+        try:
+            last = EXIT_GUARD_STAMP.stat().st_mtime
+            since_h = (datetime.now().timestamp() - last) / 3600
+            if since_h < UNCERTAIN_GUARD_COOLDOWN_H:
+                logger.warning(
+                    f"  Exit guard would arm ({reason}) but ran {since_h:.1f}h ago "
+                    f"and the VM state is UNCERTAIN, not known-bad — holding off "
+                    f"for {UNCERTAIN_GUARD_COOLDOWN_H}h. Owner: whoever restores "
+                    f"the VM state check (gcloud auth on this Mac).")
+                return False
+        except OSError:
+            pass
+
+    logger.warning(f"  ⚠ Exit guard ARMED ({'certain' if certain else 'uncertain'}): {reason}")
+    logger.warning("    Running canary_agent.py for stop/take-profit enforcement. "
+                   "This host places no entries; single_writer blocks those.")
+    ok, _out = _run({"name": "mac_exit_guard", "script": "canary_agent.py",
+                     "args": [], "timeout_s": 300})
+    try:
+        EXIT_GUARD_STAMP.touch()
+    except OSError:
+        pass
+    logger.warning(f"    Exit guard finished: {'ok' if ok else 'FAILED'}")
+    return True
+
+
 def run_catch_up():
     logger.info("=" * 60)
     logger.info("  APEX CAPITAL — WAKE-UP CATCH-UP RUNNER")
     logger.info(f"  {_now_edt().strftime('%Y-%m-%d %H:%M')} EDT")
     logger.info("=" * 60)
+
+    # Before anything else: is the firm's writer alive? This runs on every
+    # 20-minute launchd tick, ahead of the missed-job sweep, because an exit
+    # that waits for a catch-up queue is not a safety net.
+    try:
+        _mac_exit_guard()
+    except Exception as e:
+        logger.error(f"  Exit guard raised {type(e).__name__}: {e} — continuing")
 
     # ── Prevent overlapping catch-up runs ────────────────────────────────────
     if LOCKFILE.exists():

@@ -211,10 +211,14 @@ def find_disagreement_candidates(markets, estimator=None):
     """
     out = []
     for m in markets:
-        t = kc.tradeable(m)
+        # kc.two_sided, not kc.tradeable. An ask with no bid is not a price —
+        # see that function's docstring for the 86 settlements that established
+        # it. This is the gate that empties this list on most scans, and an
+        # empty list here is the honest answer, not a bug.
+        t = kc.two_sided(m)
         if not t:
             continue
-        ask, size = t
+        bid, ask, size = t
         if not (NEAR_CERTAINTY_LO <= ask <= NEAR_CERTAINTY_HI):
             continue
 
@@ -224,6 +228,10 @@ def find_disagreement_candidates(markets, estimator=None):
             "event_ticker": m.get("event_ticker"),
             "title": str(m.get("title"))[:90],
             "market_price": ask, "available_size": size,
+            # Recorded so a later audit can ask of any historical row "was
+            # there anyone on the other side?" — the question the first four
+            # days of this ledger cannot answer, because nobody stored it.
+            "yes_bid": bid, "spread": round(ask - bid, 4),
             "breakeven_probability": round(be, 4) if be else None,
             "payoff_against": round(ask / (1.0 - ask), 1),
             "volume": kc.parse_size(m.get("volume_fp")) or 0.0,
@@ -244,6 +252,68 @@ def find_disagreement_candidates(markets, estimator=None):
                 row["rationale"] = f"estimator failed: {type(e).__name__}: {e}"
         out.append(row)
     return sorted(out, key=lambda x: -x["volume"])
+
+
+def drop_incoherent(rows):
+    """Split candidates into (kept, dropped) on the nested-price coherence law.
+
+    `tradeable()` is not enough. It asks "is there a real ask, at a real size?"
+    and on these markets the answer is yes — so a 99c blanket offer resting on
+    every rung of an untraded soccer ladder walks straight through it and into
+    the near-certainty band. The filter is satisfied and the output is still
+    not a set of probabilities.
+
+    What catches it is making the quotes argue with each other. "Over 0.5
+    goals" and "over 5.5 goals" in the same match cannot both be 97c, and
+    "wins by more than 3.5" cannot be priced ABOVE "wins by more than 1.5" —
+    the second event contains the first. On 2026-08-17, 45 of 46 ladders in
+    the ledger failed that test, and the settled rows agreed from the other
+    end: the 0.98-0.995 band realised 22.6% YES against its 98.5c quote,
+    -0.68 per contract over 86 settlements.
+
+    Dropped rows are RETURNED, not discarded, and the scan report carries the
+    count. A filter that silently removes its own rejects is how the firm ends
+    up with an empty queue nobody can explain (memory `wiring_contract_bugs`).
+
+    ⚠ THIS FILTER IS NOT SUFFICIENT AND MUST NOT BE TREATED AS THE SAFETY GATE.
+    Splitting the 344-row ledger by it and settling both halves:
+
+        coherent    n=23  quoted 0.963  realised 0.217  -0.745/contract
+        incoherent  n=63  quoted 0.979  realised 0.317  -0.661/contract
+
+    The survivors lost MORE. A further 92 rows sat in no checkable ladder at
+    all and realised 0.176 against 0.968. There was no good subset to find,
+    because the defect is not in which markets were picked — it is that none of
+    the quotes were prices. `kc.two_sided()` is the gate that catches that, and
+    it runs upstream of this in `find_disagreement_candidates`. This function
+    survives because a non-monotone ladder is independently worth knowing about
+    and generalises to any nested market, not because it made anything safe.
+    Keeping a filter and believing it is the failure in memory
+    `plausible-is-not-validated`; this note is here so the next reader measures
+    the survivor set instead of trusting it.
+    """
+    import coherence_laws as cl
+
+    ladders = cl._ladders(rows)
+    bad_events = set()
+    for (ev, direction), rungs in ladders.items():
+        ordered = sorted(rungs.items())
+        prices = [r["market_price"] for _, r in ordered]
+        if direction == "below":
+            prices = prices[::-1]
+        if (any(prices[i] < prices[i + 1] - 1e-9 for i in range(len(prices) - 1))
+                or len(set(prices)) == 1):
+            bad_events.add(ev)
+
+    kept, dropped = [], []
+    for r in rows:
+        if r.get("event_ticker") in bad_events:
+            r = dict(r, dropped_reason="nested prices on this event are not "
+                                       "monotone — the quote is not a probability")
+            dropped.append(r)
+        else:
+            kept.append(r)
+    return kept, dropped
 
 
 # ------------------------------------------------------------------ sizing --
@@ -321,17 +391,25 @@ def scan(max_pages=12, estimator=None, check_mutex=True):
     # Only pay for event lookups where a field lock could possibly exist.
     fields = find_field_locks(markets, mutex_lookup) if check_mutex else []
     disagree = find_disagreement_candidates(markets, estimator)
+    disagree, incoherent = drop_incoherent(disagree)
 
     report = {
         "scanned_at": _now(), "env": kc.env_name(),
         "markets_seen": len(markets),
         "with_real_book": sum(1 for m in markets if kc.tradeable(m)),
+        # The gap between these two is the whole finding. `with_real_book`
+        # counts markets you could buy; `two_sided` counts markets whose price
+        # means something. On 2026-08-17 those were 7 and 0 out of 10,000.
+        "two_sided": sum(1 for m in markets if kc.two_sided(m)),
         "structural_pair": pairs,
         "structural_field": fields,
         "disagreement": disagree,
+        "dropped_incoherent": incoherent,
         "note": ("DISAGREEMENT rows are observations, not trades. Nothing in "
                  "this file places an order; kalshi_client.place_order raises "
-                 "unless the Chairman arms it."),
+                 "unless the Chairman arms it. `dropped_incoherent` rows failed "
+                 "coherence_laws.law_nested_probabilities_are_monotone — their "
+                 "quotes are resting offers, not probabilities."),
     }
     _save(SCAN_LOG, report)
     return report

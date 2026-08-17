@@ -225,10 +225,26 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         import json as _hb_json
         _hb_path = Path(__file__).parent / "data" / "pipeline_heartbeat.json"
         _hb_path.parent.mkdir(parents=True, exist_ok=True)
+        # `starts` is a rolling history, not just the latest stamp. The single
+        # timestamp answers "did the pipeline run?"; only a history answers
+        # "how OFTEN?" — and for six weeks the answer to the second question
+        # was 12-22 times a day against a design of 4, with nothing able to
+        # see it because every detector in the firm looks for absence.
+        # coherence_laws.law_runs_match_schedule reads this against the live
+        # crontab. Bounded at 400 so a runaway cannot grow the file without limit.
+        try:
+            _hb_prev = _hb_json.loads(_hb_path.read_text())
+            _hb_starts = _hb_prev.get("starts") or []
+            if not isinstance(_hb_starts, list):
+                _hb_starts = []
+        except Exception:
+            _hb_prev, _hb_starts = {}, []
+        _hb_starts.append(_pipeline_start_iso)
         with open(_hb_path, "w") as _hb_f:
             _hb_json.dump({
                 "last_started":  _pipeline_start_iso,
                 "pid":           os.getpid() if hasattr(os, "getpid") else None,
+                "starts":        _hb_starts[-400:],
             }, _hb_f, indent=2)
     except Exception:
         pass
@@ -1786,6 +1802,17 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     try:
         import json as _chb_json
         _chb_path = Path(__file__).parent / "data" / "pipeline_heartbeat.json"
+        # Carry `starts` forward. This block rewrites the whole file, so
+        # omitting the key would delete the run history the START block just
+        # appended to — a completion handler quietly erasing the evidence of
+        # how often the pipeline ran. That is the shape of memory
+        # `fix_that_erased_its_detector`, and it would have made
+        # coherence_laws.law_runs_match_schedule read 1 start every day
+        # forever, no matter how many times main.py actually fired.
+        try:
+            _chb_starts = _chb_json.loads(_chb_path.read_text()).get("starts") or []
+        except Exception:
+            _chb_starts = [_pipeline_start_iso]
         with open(_chb_path, "w") as _chb_f:
             _chb_json.dump({
                 "last_started":   _pipeline_start_iso,   # local var, always set at run start
@@ -1793,6 +1820,7 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 "status":         "completed",
                 "paper_day":      state.get("paper_day", 0),
                 "pid":            os.getpid() if hasattr(os, "getpid") else None,
+                "starts":         _chb_starts[-400:],
             }, _chb_f, indent=2)
     except Exception:
         pass

@@ -7324,9 +7324,16 @@ class TestCatchUpJobBudget(unittest.TestCase):
     """
 
     def test_every_main_py_job_gets_more_than_the_default_budget(self):
+        """If a pipeline job is ever put back, it must not be on the default budget.
+
+        Decision #81 removed all four (2026-08-17), so this usually iterates an
+        empty list — and that is fine, because the invariant it guards is
+        conditional by nature. The unconditional half is
+        TestMacDoesNotRunThePipeline below; between them there is no state in
+        which nothing is asserted.
+        """
         import catch_up
         pipes = [j for j in catch_up.JOB_REGISTRY if j.get("script") == "main.py"]
-        self.assertTrue(pipes, "no main.py job found in the registry")
         for j in pipes:
             self.assertGreater(
                 j.get("timeout_s", catch_up.DEFAULT_JOB_TIMEOUT_S),
@@ -7461,8 +7468,17 @@ class TestPipelineFreshnessSignalIsAlive(unittest.TestCase):
         import catch_up
         from datetime import datetime as _dt
 
-        pipes = [j for j in catch_up.JOB_REGISTRY if j.get("script") == "main.py"]
-        self.assertTrue(pipes, "no main.py job found in the registry")
+        # Synthetic, because decision #81 emptied the registry of pipeline jobs
+        # on 2026-08-17. The BRANCH is still live code and must stay proven: the
+        # day someone re-adds a pipeline entry, the fail-closed guard has to
+        # work, and a test that quietly skipped itself in the meantime would
+        # have rotted unnoticed. Registry jobs, if any, are checked too.
+        pipes = [j for j in catch_up.JOB_REGISTRY if j.get("script") == "main.py"] + [{
+            "name": "synthetic_pipeline", "script": "main.py", "args": [],
+            "output_file": None, "ttl_hours": None, "fire_times_edt": [14.0],
+            "run_days": "weekdays", "catchup_window": (14.0, 17.5),
+            "once_per_wakeup": False,
+        }]
 
         real_now, real_wd, real_hb = (catch_up._now_edt, catch_up._is_weekday_edt,
                                       catch_up._pipeline_last_run_hours)
@@ -7843,6 +7859,289 @@ class TestReentrySlateCannotLieByOmission(unittest.TestCase):
         expected = sorted(A._monitored(hist, _dt.date.today()))
         self.assertEqual(sorted(r["agent"] for r in R.agents_on_the_clock()["rows"]),
                          expected)
+
+
+
+class TestCoherenceLaws(unittest.TestCase):
+    """The conservation layer: two independent sources per law.
+
+    CIT reads code and the Red Team argues with conclusions, so both are blind
+    to anything that was never in their input — which is every expensive escape
+    of the last three months. These laws hold two independently-sourced numbers
+    against each other, so a violation names its own bug without anyone having
+    anticipated it. These tests exist to keep that property true.
+    """
+
+    def _law_sources(self):
+        import coherence_laws as cl
+        return cl
+
+    def test_every_law_names_two_distinct_sources(self):
+        """The defining property. A law with one source is an assertion, not a law.
+
+        A single-source check cannot catch this bug class at all: a broken
+        producer's output is perfectly self-consistent. state.json agreed with
+        itself while it reported 0 positions and the broker held 16.
+        """
+        cl = self._law_sources()
+        self.assertTrue(cl.LAWS, "no laws registered")
+        for fn, statement in cl.LAWS:
+            r = fn()
+            self.assertEqual(len(r.sources), 2, f"{r.name} does not name two sources")
+            a, b = r.sources
+            self.assertTrue(a and b, f"{r.name} has an empty source")
+            self.assertNotEqual(a, b,
+                                f"{r.name} names the SAME source twice — that is a "
+                                f"self-check, and a broken producer passes its own")
+            self.assertTrue(statement.strip(), f"{r.name} has no conservation statement")
+
+    def test_a_violated_ladder_is_detected(self):
+        """Nested outcomes priced non-monotonically must come back VIOLATED."""
+        cl = self._law_sources()
+        rows = [
+            {"event_ticker": "E1", "ticker": "E1-1", "market_price": 0.90,
+             "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "E1", "ticker": "E1-2", "market_price": 0.95,
+             "title": "Will over 1.5 goals be scored?"},
+        ]
+        r = cl.law_nested_probabilities_are_monotone(rows)
+        self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+
+        flat = [dict(x, market_price=0.97) for x in rows]
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(flat).verdict,
+                         cl.VIOLATED, "identically-priced rungs are impossible")
+
+    def test_a_monotone_ladder_holds(self):
+        """The counterpart, so the law cannot pass by being permanently broken.
+
+        Without this, deleting the comparison entirely would still make the
+        test above go green.
+        """
+        cl = self._law_sources()
+        rows = [
+            {"event_ticker": "E2", "ticker": "E2-1", "market_price": 0.95,
+             "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "E2", "ticker": "E2-2", "market_price": 0.60,
+             "title": "Will over 1.5 goals be scored?"},
+            {"event_ticker": "E2", "ticker": "E2-3", "market_price": 0.20,
+             "title": "Will over 2.5 goals be scored?"},
+        ]
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(rows).verdict,
+                         cl.HOLDS)
+
+    def test_a_below_ladder_is_read_in_the_other_direction(self):
+        """UNDER markets must RISE with the threshold. Reading them as ABOVE
+        would manufacture a violation on every correctly-priced one."""
+        cl = self._law_sources()
+        rows = [
+            {"event_ticker": "E3", "ticker": "E3-1", "market_price": 0.20,
+             "title": "Will under 0.5 goals be scored?"},
+            {"event_ticker": "E3", "ticker": "E3-2", "market_price": 0.75,
+             "title": "Will under 2.5 goals be scored?"},
+        ]
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(rows).verdict,
+                         cl.HOLDS)
+
+    def test_an_unparseable_title_is_not_forced_onto_the_number_line(self):
+        """No threshold, no judgement. Guessing a direction invents violations."""
+        cl = self._law_sources()
+        self.assertIsNone(cl.parse_threshold("Who will win the election?"))
+        self.assertIsNone(cl.parse_threshold(
+            "Will the temperature be between 70 and 80 degrees?"))
+        self.assertEqual(cl.parse_threshold("Will over 2.5 goals be scored?"),
+                         (2.5, "above"))
+        self.assertEqual(
+            cl.parse_threshold("Will the Nikkei 225 be at least 68,450 today?"),
+            (68450.0, "above"))
+
+    def test_an_unreadable_source_never_reports_success(self):
+        """CANNOT_TELL must not be folded into HOLDS.
+
+        A check that cannot read its inputs and says nothing is how the firm
+        got a liveness monitor that reported healthy for nine days while dead.
+        """
+        cl = self._law_sources()
+        for empty in ([], None):
+            r = cl.law_quoted_prices_have_two_sides([] if empty == [] else [])
+            self.assertNotEqual(r.verdict, cl.HOLDS)
+        r = cl.law_nested_probabilities_are_monotone([])
+        self.assertEqual(r.verdict, cl.CANNOT_TELL)
+        self.assertTrue(r.detail.strip(), "a CANNOT_TELL must say what it could not read")
+        self.assertIn("Owner", r.detail,
+                      "a CANNOT_TELL must name who resolves it — otherwise it is a "
+                      "verdict with no consequence")
+
+    def test_the_runner_fails_the_exit_code_on_cannot_tell(self):
+        """Exit 0 means every law held. It must not mean 'nothing blew up'."""
+        import subprocess
+        cl = self._law_sources()
+        results = cl.run_all()
+        expect_fail = any(r.verdict != cl.HOLDS for r in results)
+        out = subprocess.run([sys.executable, "coherence_laws.py", "--quiet"],
+                             cwd=str(Path(__file__).parent),
+                             capture_output=True, text=True, timeout=120)
+        self.assertEqual(out.returncode, 1 if expect_fail else 0,
+                         f"exit code disagrees with the verdicts:\n{out.stdout}")
+
+    def test_two_sided_rejects_a_book_with_no_bid(self):
+        """An ask with no bid is not a price.
+
+        Measured 2026-08-17: of 10,000 open markets, 7 had a real ask at a real
+        size and zero had a bid. Buying those quotes realised 0.27 against an
+        average quote of 0.97 over 86 settlements.
+        """
+        import kalshi_client as kc
+        no_bid = {"yes_ask_dollars": 0.97, "yes_ask_size_fp": 50}
+        self.assertIsNotNone(kc.tradeable(no_bid),
+                             "precondition: the old filter accepts this")
+        self.assertIsNone(kc.two_sided(no_bid),
+                          "a one-sided book must not pass the price gate")
+        self.assertIsNone(kc.two_sided(
+            {"yes_ask_dollars": 0.97, "yes_bid_dollars": 0.10, "yes_ask_size_fp": 50}),
+            "a 87c spread is two people shouting past each other, not a book")
+        self.assertIsNone(kc.two_sided(
+            {"yes_ask_dollars": 0.90, "yes_bid_dollars": 0.95, "yes_ask_size_fp": 50}),
+            "a crossed book is a stale snapshot")
+        self.assertEqual(kc.two_sided(
+            {"yes_ask_dollars": 0.97, "yes_bid_dollars": 0.95, "yes_ask_size_fp": 50}),
+            (0.95, 0.97, 50.0))
+
+    def test_the_disagreement_scan_gates_on_two_sided(self):
+        """AST, not grep: the postmortem comments in that function name BOTH
+        filters, so a text search cannot tell the gate from its own explanation.
+        Comments are never AST nodes."""
+        import ast
+        tree = ast.parse((Path(__file__).parent / "kalshi_scanner.py").read_text())
+        fn = next((n for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef)
+                   and n.name == "find_disagreement_candidates"), None)
+        self.assertIsNotNone(fn, "find_disagreement_candidates has been renamed")
+        called = {n.func.attr for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        self.assertIn("two_sided", called,
+                      "the near-certainty scan must gate on a two-sided book")
+        self.assertNotIn("tradeable", called,
+                         "tradeable() only proves you can BUY, not that the ask "
+                         "means anything — it must not be the gate here")
+
+    def test_the_completion_heartbeat_preserves_the_run_history(self):
+        """main.py rewrites the whole heartbeat file when it finishes. If that
+        write drops `starts`, it deletes the evidence the start block just
+        recorded, and runs_match_schedule reads 1 run a day forever.
+
+        AST again: the comment above that block explains this exact hazard and
+        would satisfy any grep.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).parent / "main.py").read_text())
+        completion_dicts = [
+            d for d in ast.walk(tree)
+            if isinstance(d, ast.Dict)
+            and any(isinstance(k, ast.Constant) and k.value == "last_completed"
+                    for k in d.keys if k is not None)
+        ]
+        self.assertTrue(completion_dicts,
+                        "no completion-heartbeat dict found in main.py")
+        for d in completion_dicts:
+            keys = {k.value for k in d.keys
+                    if isinstance(k, ast.Constant)}
+            self.assertIn("starts", keys,
+                          "the completion heartbeat drops `starts` — it would "
+                          "erase the run history its own start block writes")
+
+    def test_the_start_heartbeat_writes_the_run_history(self):
+        """The producer side. Without it the law above has no source A."""
+        import ast
+        tree = ast.parse((Path(__file__).parent / "main.py").read_text())
+        start_dicts = [
+            d for d in ast.walk(tree)
+            if isinstance(d, ast.Dict)
+            and any(isinstance(k, ast.Constant) and k.value == "last_started"
+                    for k in d.keys if k is not None)
+        ]
+        self.assertTrue(start_dicts, "no heartbeat dict found in main.py")
+        self.assertTrue(
+            any("starts" in {k.value for k in d.keys if isinstance(k, ast.Constant)}
+                for d in start_dicts),
+            "no heartbeat write records a `starts` history, so nothing can ever "
+            "tell how OFTEN the pipeline ran")
+
+
+
+class TestMacDoesNotRunThePipeline(unittest.TestCase):
+    """Decision #81, 2026-08-17. The Mac's scheduler no longer launches main.py.
+
+    Its crontab header has said "NO trading, NO agents on cron" since
+    2026-07-03; launchd ran the full pipeline anyway, and every entry it
+    produced came back BLOCK_ENTRY from single_writer. What survives is the
+    exit path, gated on the VM actually having gone quiet.
+    """
+
+    def test_the_registry_contains_no_pipeline_job(self):
+        import catch_up
+        pipes = [j["name"] for j in catch_up.JOB_REGISTRY
+                 if j.get("script") == "main.py"]
+        self.assertEqual(
+            pipes, [],
+            f"catch_up is scheduling main.py again ({pipes}). The Mac is a "
+            f"development machine; its entries are refused at the broker and "
+            f"its data/ diverges from the host that actually trades.")
+
+    def test_the_exit_path_survived_the_removal(self):
+        """Removing the pipeline must not remove the Mac's exit capability.
+
+        AST, not grep: the comment block explaining #81 names canary_agent.py,
+        so a text search would pass on the explanation alone.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).resolve().parent / "catch_up.py").read_text())
+        fn = next((n for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef) and n.name == "_mac_exit_guard"), None)
+        self.assertIsNotNone(fn, "the Mac's exit guard is gone — #81 removed the "
+                                 "pipeline AND the only thing that replaced it")
+        live = [n.value for n in ast.walk(fn)
+                if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+        self.assertIn("canary_agent.py", live,
+                      "the exit guard no longer invokes canary_agent.py, which is "
+                      "where _enforce_canary_exits() lives")
+
+    def test_the_guard_stands_down_while_the_vm_is_writing(self):
+        """A permanent parallel exit path is not a safety net. It must be gated."""
+        import catch_up, tempfile, json as _json
+        real = catch_up.VM_STATE_FILE
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "vm_state_monitor.json"
+            try:
+                catch_up.VM_STATE_FILE = f
+                f.write_text(_json.dumps({"power": "PASS", "gcp_status": "RUNNING",
+                                          "writer": "PASS", "writer_msg": "fine"}))
+                self.assertFalse(catch_up._mac_exit_guard(),
+                                 "guard armed while the VM is up and writing")
+
+                # Broker says the writer is live; gcloud cannot answer. The
+                # broker is the authority — this must NOT arm, or an
+                # unauthenticated gcloud runs the canary every 20 minutes.
+                f.write_text(_json.dumps({"power": "UNKNOWN", "gcp_status": None,
+                                          "writer": "PASS", "detail": "no creds"}))
+                self.assertFalse(catch_up._mac_exit_guard(),
+                                 "guard armed on an unreachable gcloud even though "
+                                 "the broker confirmed the writer is trading")
+            finally:
+                catch_up.VM_STATE_FILE = real
+
+    def test_a_silent_writer_is_treated_as_certain_not_merely_unknown(self):
+        """The known-bad case must bypass the cooldown — it is the emergency."""
+        import catch_up, ast
+        tree = ast.parse((Path(__file__).resolve().parent / "catch_up.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "_mac_exit_guard")
+        assigns = [n for n in ast.walk(fn)
+                   if isinstance(n, ast.Assign)
+                   and any(isinstance(t, ast.Name) and t.id == "certain" for t in n.targets)]
+        self.assertTrue(
+            any(isinstance(a.value, ast.Constant) and a.value.value is True for a in assigns),
+            "nothing in the guard ever sets certain=True, so every arming path "
+            "goes through the uncertain cooldown — including a confirmed dead VM")
 
 
 # =============================================================================
