@@ -85,6 +85,18 @@ Daily pipeline lives in `main.py`. Key agents:
 - **CIT** (`cit_director.py` + `cit_*`) — finds code bugs / improvements, queues board proposals
 - **Logic Team** (`logic_team.py` + `logic_team_implementation_agent.py`) — finds *logical/systemic*
   incoherence (distinct from CIT's code bugs) and acts on it
+- **Coherence laws** (`coherence_laws.py`) — each law compares TWO independently-sourced
+  measurements of the same quantity and alarms when the arithmetic doesn't close. A HOLDS
+  must carry `n_examined`; a pass on zero items is not a pass.
+- **Internal Audit** (`internal_audit_agent.py`, doc `CONTROLS.md`) — the **third line**: it
+  audits the *controls*, not the firm. CIT and the red team are `critique(artifact)`, so they
+  are blind to anything never in their input — a relation between two correct artifacts, an
+  absence, or a control's own blindness. This runs each law against a poison pill built to
+  make it fail (HOLDS ⇒ BLIND ⇒ every HOLDS it reported was worthless), demands denominators,
+  and keeps a census of failure classes → detectors. Detector refs are **AST-resolved, never
+  grepped** — every control is named in some postmortem comment. Findings escalate: BLIND to
+  the Chairman queue, the rest to CIT as proposals. **A new law without a poison pill fails
+  the suite.**
 - **Pods:** pod1_rd (R&D), pod2_ml (ML), pod3_macro (ETF/Macro); FI & FE pods exist as agent files
 - **ML** (`predictive_model/`, `ml_live_test_runner.py`) — ST/LT models + live validation
 - **Dashboard** (`dashboard_server.py`) — `apex_live_dashboard.html` on port 5050
