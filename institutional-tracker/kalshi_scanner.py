@@ -481,6 +481,19 @@ def drop_incoherent(rows, markets=None):
     count. A filter that silently removes its own rejects is how the firm ends
     up with an empty queue nobody can explain (memory `wiring_contract_bugs`).
 
+    THE TEST IS `cl._ladder_fault`, NOT A COPY OF IT. Until 2026-08-17 this
+    function held its own ask-vs-ask comparison, dropped 441 rows a day, and
+    told the ledger they were dropped because "the quote is not a probability".
+    Measured against the arbitrage condition, 439 of those 441 were nothing of
+    the kind — they were the bid-ask spread, on candidates that had already
+    cleared `kc.two_sided`. A filter is allowed to be conservative; it is not
+    allowed to write a false reason into the record, and 23% of the intake was
+    being discarded on one. Both consumers now call the same rule so they
+    cannot drift apart again.
+
+    A one-sided ladder no longer counts as checked. It used to land in `kept`
+    with `coherence="HOLDS"` — a pass awarded to a ladder that could not fail.
+
     ⚠ THIS FILTER IS NOT SUFFICIENT AND MUST NOT BE TREATED AS THE SAFETY GATE.
     Splitting the 344-row ledger by it and settling both halves:
 
@@ -505,13 +518,11 @@ def drop_incoherent(rows, markets=None):
 
     bad_events, checked_events = set(), set()
     for (ev, direction), rungs in ladders.items():
+        _o, _a, _b, hit, pairs = cl._ladder_fault(rungs, direction)
+        if not pairs:
+            continue          # one-sided: not checked, so not a pass either
         checked_events.add(ev)
-        ordered = sorted(rungs.items())
-        prices = [r["market_price"] for _, r in ordered]
-        if direction == "below":
-            prices = prices[::-1]
-        if (any(prices[i] < prices[i + 1] - 1e-9 for i in range(len(prices) - 1))
-                or len(set(prices)) == 1):
+        if hit is not None:
             bad_events.add(ev)
 
     kept, dropped, unchecked = [], [], []
@@ -520,8 +531,8 @@ def drop_incoherent(rows, markets=None):
         if ev in bad_events:
             dropped.append(dict(
                 r, coherence="VIOLATED",
-                dropped_reason="nested prices on this event are not monotone — "
-                               "the quote is not a probability"))
+                dropped_reason="a nested pair on this event quotes ask(wide) below "
+                               "bid(narrow) — no set of probabilities produces it"))
         elif ev in checked_events:
             dropped_from = len(ladders.get((ev, "above"), {})) or \
                 len(ladders.get((ev, "below"), {}))

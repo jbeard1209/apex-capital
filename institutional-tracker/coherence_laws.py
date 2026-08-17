@@ -280,6 +280,46 @@ def _bid_of(row: dict) -> Optional[float]:
     return None
 
 
+def _ladder_fault(rungs: dict, direction: str):
+    """(ordered, asks, bids, hit, testable_pairs) for one ladder.
+
+    `hit` is (i, j, credit) for the first pair whose quotes NO probabilities
+    produce — `ask(wide) < bid(narrow)` — or None. `testable_pairs` is the
+    denominator: zero means the ladder is one-sided and cannot pass or fail.
+
+    THE ONE DEFINITION OF "INCOHERENT" IN THE FIRM. The law and
+    `kalshi_scanner.drop_incoherent` both call it, because for a month they
+    each carried their own copy of the test and the copies were both wrong in
+    the same way — the scanner discarded 439 spread-gated candidates a day
+    under `dropped_reason="the quote is not a probability"`, a claim that was
+    false for all but two of them. Two consumers of one rule is exactly the
+    shape that drifts (memory `wiring_contract_bugs`), so there is one rule.
+    """
+    ordered = sorted(rungs.items())               # ascending threshold
+    if direction == "below":
+        ordered = ordered[::-1]                   # index order is always widest-first
+    asks = [row.get("market_price") for _, row in ordered]
+    bids = [_bid_of(row) for _, row in ordered]
+    hit, pairs = None, 0
+    for i in range(len(ordered)):
+        for j in range(i + 1, len(ordered)):
+            if asks[i] is None or bids[j] is None:
+                continue
+            pairs += 1
+            if hit is None and asks[i] < bids[j] - 1e-9:
+                hit = (i, j, round(bids[j] - asks[i], 4))
+    return ordered, asks, bids, hit, pairs
+
+
+def arbitraged_events(rows: List[dict]) -> set:
+    """Event tickers whose quoted ladder admits no set of probabilities."""
+    out = set()
+    for (ev, direction), rungs in _ladders(rows).items():
+        if _ladder_fault(rungs, direction)[3] is not None:
+            out.add(ev)
+    return out
+
+
 def _ladders(rows: List[dict]) -> dict:
     """Group rows into (event_ticker, direction) ladders of >= 2 distinct rungs.
 
@@ -434,27 +474,13 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
 
     bad, unprovable, untestable = [], 0, 0
     for (ev, direction), rungs in sorted(ladders.items()):
-        ordered = sorted(rungs.items())          # ascending threshold
-        if direction == "below":
-            ordered = ordered[::-1]              # so index order is always "widest first"
-        asks = [row.get("market_price") for _, row in ordered]
-        bids = [_bid_of(row) for _, row in ordered]
-
-        hit = None
-        pairs = 0
-        for i in range(len(ordered)):
-            for j in range(i + 1, len(ordered)):
-                if asks[i] is None or bids[j] is None:
-                    continue
-                pairs += 1
-                if asks[i] < bids[j] - 1e-9:
-                    hit = hit or (i, j, round(bids[j] - asks[i], 4))
+        ordered, asks, bids, hit, pairs = _ladder_fault(rungs, direction)
         if not pairs:
             untestable += 1
             continue
         if hit is None:
             # The ask ladder may still look inverted. That is not a finding:
-            # see this law's `_bid_of` note. Counted, never alarmed on.
+            # see `_bid_of`. Counted, never alarmed on.
             if any(a is not None and asks[k + 1] is not None and a < asks[k + 1] - 1e-9
                    for k, a in enumerate(asks[:-1])) or len(set(asks)) == 1:
                 unprovable += 1

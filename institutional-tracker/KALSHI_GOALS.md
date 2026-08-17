@@ -61,13 +61,30 @@ line of business** until a series is *proven* exhaustive from its rulebook.
 
 | Quantity | Value |
 |---|---|
-| Coherent candidates | 1,492 |
-| Dropped: failed ladder monotonicity | 441 |
-| Uncheckable: in no comparable ladder | 1,048 |
+| Coherent candidates | **1,920** |
+| Dropped: quotes admit no probabilities | **2** |
+| Uncheckable: in no testable ladder | 1,057 |
 | Closing within 30 days | **0** |
 | Closing in 31–90 days | 66 |
 | Closing in 91–365 days | 899 |
 | Closing beyond a year | 527 |
+
+**The drop count was 441 until the same afternoon, and 439 of those were the
+bid-ask spread.** The coherence test compared one rung's ask against another's,
+which compares the tops of two brackets of different widths. A quote brackets a
+probability; it is not one. Nested pricing is contradicted only when the
+brackets cannot be ordered at all — `ask(wide) < bid(narrow)`, which is also the
+arbitrage and therefore the proof. Every one of those 439 rows had already
+cleared the 10c spread gate, so the sector was discarding **23% of its own
+intake** and writing "the quote is not a probability" into the ledger beside
+each one. That claim was false 99.5% of the time.
+
+The tell was the 19 ladders quoting an identical ask on every rung. Their *bids*
+were 0.80, 0.65, 0.54, 0.48, 0.22, 0.18 — flawlessly monotone. The market was
+coherent; the ask was a resting ceiling offer, and `kc.two_sided`'s 10c cap had
+already refused every one. Nothing was loosened to get from 1,492 to 1,920: the
+empty-book rejection, the spread cap, the arm file and `is_edge_proven` are
+untouched. A false charge was dropped.
 
 Breakeven, corrected 2026-08-17 for order size (Kalshi rounds its fee up to a
 whole cent **per order**, so per-contract cost falls steeply with size):
@@ -98,14 +115,21 @@ Each goal names what would falsify it. A goal you cannot fail is not a goal.
 
 **Target:** every candidate the scanner surfaces carries one of three verdicts —
 `coherent`, `incoherent`, `uncheckable` — and the `uncheckable` count falls
-below **10%** of the band (today: 1,048 of 2,981, **35%**).
+below **10%** of the band (today: 1,057 of 2,979, **35%**).
 
 **Why this replaces the old G1.** The previous goal was "zero candidates fail
-structural coherence". We do not control the exchange's quotes. 441 rows fail
-monotonicity because the market really does quote them that way; the only lever
-that drives that number to zero is loosening the detector, so the old goal could
-be *achieved only by corrupting the thing that made it worth achieving*. A goal
-you can only hit by breaking your own detector is a bad goal.
+structural coherence". We do not control the exchange's quotes. Rows fail
+because the market really does quote them that way; the only lever that drives
+that number to zero is loosening the detector, so the old goal could be
+*achieved only by corrupting the thing that made it worth achieving*. A goal you
+can only hit by breaking your own detector is a bad goal.
+
+Note what happened on the day this was written: the failure count fell 441 → 2
+without the detector being loosened at all, because the detector had been
+measuring the wrong thing. That is the difference between hitting a target and
+correcting a measurement, and it is why the target is now the *uncheckable*
+fraction — a number about our own reading, which no amount of exchange
+behaviour can move.
 
 `uncheckable`, by contrast, is entirely ours. A rung sits in no ladder because we
 could not parse its strike, or because its siblings were not in the page we

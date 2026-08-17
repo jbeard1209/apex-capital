@@ -8120,6 +8120,56 @@ class TestCoherenceLaws(unittest.TestCase):
         self.assertEqual(cl.law_nested_probabilities_are_monotone(arb).verdict,
                          cl.VIOLATED, "under 2.5 asks 0.70 while under 0.5 bids 0.72")
 
+    def test_the_scanner_and_the_law_share_one_definition_of_incoherent(self):
+        """Two consumers of one rule is the shape that drifts.
+
+        For a month `drop_incoherent` carried its own copy of the comparison
+        and dropped 439 spread-gated candidates a day under a reason that was
+        false. AST, not grep: the postmortem comment above the call says
+        `_ladder_fault` too, and a text search would match the apology instead
+        of the code.
+        """
+        import ast
+        import coherence_laws as cl
+        import pathlib as _pl
+        src = _pl.Path(__file__).with_name("kalshi_scanner.py").read_text()
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef) and n.name == "drop_incoherent")
+        called = {n.func.attr for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        self.assertIn("_ladder_fault", called,
+                      "drop_incoherent must use coherence_laws' rule, not its own copy")
+
+        # Behavioural half: the same ladder must get the same answer from both.
+        rows = [
+            {"event_ticker": "EQ", "ticker": "EQ-1", "market_price": 0.90,
+             "yes_bid": 0.60, "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "EQ", "ticker": "EQ-2", "market_price": 0.95,
+             "yes_bid": 0.80, "title": "Will over 1.5 goals be scored?"},
+        ]
+        import kalshi_scanner as ks
+        kept, dropped, _unchecked = ks.drop_incoherent(rows)
+        self.assertEqual(len(dropped), 0, "spread-explicable: the law calls this HOLDS")
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(rows).verdict, cl.HOLDS)
+
+        arb = [dict(rows[0]), dict(rows[1], yes_bid=0.93)]
+        _kept, dropped, _u = ks.drop_incoherent(arb)
+        self.assertEqual(len(dropped), 2, "provable arbitrage drops the whole event")
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(arb).verdict, cl.VIOLATED)
+
+    def test_a_one_sided_ladder_is_not_awarded_a_coherence_pass(self):
+        """It used to land in `kept` with coherence=HOLDS — a pass it could
+        not have failed. Uncheckable is the honest bucket."""
+        import kalshi_scanner as ks
+        rows = [
+            {"event_ticker": "EU", "ticker": "EU-1", "market_price": 0.90,
+             "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "EU", "ticker": "EU-2", "market_price": 0.95,
+             "title": "Will over 1.5 goals be scored?"},
+        ]
+        kept, dropped, unchecked = ks.drop_incoherent(rows)
+        self.assertEqual((len(kept), len(dropped), len(unchecked)), (0, 0, 2))
+
     def test_a_host_that_schedules_no_pipeline_is_not_blamed_on_main_py(self):
         """CANNOT_TELL must name the host that owns the cadence, not main.py.
 
@@ -8674,10 +8724,14 @@ class TestCoherenceLaws(unittest.TestCase):
         ev = "KXMLBTOTAL-26AUG171340STLCING1"
         strikes = [(3.5, 0.92), (4.5, 0.91), (5.5, 0.84), (6.5, 0.77),
                    (7.5, 0.68), (8.5, 0.60), (9.5, 0.49)]
+        # Bids as well as asks: without the other side of the book this ladder
+        # is unfalsifiable, and `unchecked` — not `kept` — is the right bucket
+        # for a ladder that could not have failed.
         markets = [{"ticker": f"{ev}-{i}", "event_ticker": ev,
                     "title": "St. Louis vs Cincinnati Total Runs?",
                     "strike_type": "greater", "floor_strike": k,
-                    "yes_ask_dollars": f"{p:.4f}"}
+                    "yes_ask_dollars": f"{p:.4f}",
+                    "yes_bid_dollars": f"{p - 0.02:.4f}"}
                    for i, (k, p) in enumerate(strikes)]
         cands = [{"ticker": f"{ev}-0", "event_ticker": ev, "market_price": 0.92},
                  {"ticker": f"{ev}-1", "event_ticker": ev, "market_price": 0.91}]
@@ -8694,11 +8748,15 @@ class TestCoherenceLaws(unittest.TestCase):
         """
         import kalshi_scanner as ks
         ev = "EV1"
-        strikes = [(3.5, 0.92), (4.5, 0.91), (5.5, 0.40), (6.5, 0.75)]  # 5.5<6.5
+        # ask(over 5.5)=0.40 sits BELOW bid(over 6.5)=0.73: buy the wider
+        # outcome for less than the narrower one sells for. Neither rung is in
+        # the 90-99c band, and both surfaced candidates still have to go.
+        strikes = [(3.5, 0.92, 0.90), (4.5, 0.91, 0.89),
+                   (5.5, 0.40, 0.38), (6.5, 0.75, 0.73)]
         markets = [{"ticker": f"{ev}-{i}", "event_ticker": ev, "title": "Total?",
                     "strike_type": "greater", "floor_strike": k,
-                    "yes_ask_dollars": f"{p:.4f}"}
-                   for i, (k, p) in enumerate(strikes)]
+                    "yes_ask_dollars": f"{a:.4f}", "yes_bid_dollars": f"{b:.4f}"}
+                   for i, (k, a, b) in enumerate(strikes)]
         cands = [{"ticker": f"{ev}-0", "event_ticker": ev, "market_price": 0.92},
                  {"ticker": f"{ev}-1", "event_ticker": ev, "market_price": 0.91}]
         kept, dropped, unchecked = ks.drop_incoherent(cands, markets=markets)
