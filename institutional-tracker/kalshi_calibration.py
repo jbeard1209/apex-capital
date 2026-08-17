@@ -42,6 +42,7 @@ Usage:
 """
 
 import json
+import logging
 import math
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -50,6 +51,8 @@ from pathlib import Path
 import kalshi_client as kc
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
+logger = logging.getLogger("kalshi_calibration")
+
 LEDGER = DATA_DIR / "kalshi_predictions.json"
 SCAN_LOG = DATA_DIR / "kalshi_scan_log.json"
 
@@ -114,6 +117,20 @@ def record_from_scan(scan=None):
             # what the market said
             "market_price": c.get("market_price"),
             "breakeven_probability": c.get("breakeven_probability"),
+            # The bid, and the ladder verdict, travel INTO the ledger. They did
+            # not before, and the consequence was a law reading its own blind
+            # spot back as a finding: law_quoted_prices_have_two_sides reported
+            # "0 of 344 rows carry a yes_bid" while the scanner had been
+            # recording one on every candidate. The producer stored it, the
+            # ledger writer dropped it, and the consumer concluded the market
+            # was one-sided. Copy every field a law is going to ask about.
+            "yes_bid": c.get("yes_bid"), "spread": c.get("spread"),
+            "available_size": c.get("available_size"),
+            "coherence": c.get("coherence"),
+            "strike_type": c.get("strike_type"),
+            "floor_strike": c.get("floor_strike"),
+            "cap_strike": c.get("cap_strike"),
+            "yes_sub_title": c.get("yes_sub_title"),
             # what WE said. None is honest: no calibrated estimator exists yet,
             # and a null here is what keeps an unmeasured guess out of the
             # sample rather than quietly defaulting it to the market price.
@@ -276,12 +293,211 @@ def is_edge_proven(rows=None):
                   f"market's {b_mkt:.5f} and the 95c+ band is calibrated.")
 
 
+ALIVE, DEAD, UNDECIDED = "ALIVE", "DEAD", "CANNOT_TELL"
+
+
+def is_premise_alive(rows=None):
+    """(verdict, reason, detail). The question that comes BEFORE is_edge_proven.
+
+    is_edge_proven asks "is our estimate better than the price?" and correctly
+    refuses to answer with 0 estimates on file. But that refusal is permanent
+    unless someone builds an estimator, and building one is only worth doing if
+    the premise underneath the whole sector holds: **that the quoted number is a
+    probability at all.** This function answers that, and the data we already
+    have answers it definitively — no estimator required.
+
+    Two INDEPENDENT measurements, same discipline as coherence_laws:
+
+      A. SETTLEMENT. What the quote said versus what happened. If the mean quote
+         sits above the upper bound of the Wilson interval on the realised rate,
+         the quote is not a forecast. This does not need a view of our own — it
+         only needs the market's own claim and the outcome.
+      B. BOOK. Whether anyone was ever on the other side. A price is a meeting
+         of a bid and an ask; a lone ask at 99c with no bid is a number on a
+         screen that nobody will trade against, and marking a position to it is
+         marking to a wish.
+
+    Three verdicts, not a bool, and deliberately not the same shape as
+    is_edge_proven: DEAD is an answer, and folding it into `False` next to
+    "not yet" is exactly the collapse is_edge_proven's own docstring warns about.
+
+    This function NEVER authorises a trade. DEAD closes the sector; ALIVE only
+    means the prior question stopped blocking, and is_edge_proven still gates
+    every dollar.
+    """
+    rows = rows if rows is not None else _load_ledger()
+    settled = [r for r in rows
+               if r.get("settled") and r.get("outcome") in (0, 1)
+               and r.get("market_price") is not None]
+
+    detail = {"settled": len(settled)}
+
+    # ---- B. the book ------------------------------------------------------
+    # Counted over the whole ledger, not just settled rows: a bid is observable
+    # the moment a market is scanned, and waiting for settlement to notice that
+    # nothing has a bid would delay the finding by the length of the contract.
+    quoted = [r for r in rows if r.get("market_price") is not None]
+    two_sided = [r for r in quoted if r.get("yes_bid") is not None]
+    detail["quoted"] = len(quoted)
+    detail["with_bid_field"] = len(two_sided)
+
+    if len(settled) < MIN_SETTLED_FOR_VERDICT:
+        return UNDECIDED, (f"CANNOT TELL — {len(settled)}/"
+                           f"{MIN_SETTLED_FOR_VERDICT} settled quotes. The "
+                           f"premise is judged on outcomes, and there are not "
+                           f"enough yet."), detail
+
+    # ---- A. settlement ----------------------------------------------------
+    n = len(settled)
+    realised = sum(int(r["outcome"]) for r in settled) / n
+    mean_quote = sum(float(r["market_price"]) for r in settled) / n
+
+    z = 1.96
+    denom = 1 + z * z / n
+    centre = (realised + z * z / (2 * n)) / denom
+    half = z * math.sqrt(realised * (1 - realised) / n + z * z / (4 * n * n)) / denom
+    ci_low, ci_high = max(0.0, centre - half), min(1.0, centre + half)
+
+    detail.update({"mean_quote": round(mean_quote, 4),
+                   "realised": round(realised, 4),
+                   "ci_low": round(ci_low, 4), "ci_high": round(ci_high, 4)})
+
+    if mean_quote > ci_high:
+        return DEAD, (
+            f"DEAD on n={n} — the market quoted a mean of {mean_quote:.1%} and "
+            f"settled YES {realised:.1%} of the time (95% CI "
+            f"{ci_low:.1%}-{ci_high:.1%}). The quote is not above the interval "
+            f"by a little; it is outside it entirely, so these numbers are not "
+            f"probabilities and there is nothing for an estimator to beat. "
+            f"{len(two_sided)}/{len(quoted)} quotes ever carried a bid — an ask "
+            f"with no bid is not a price."), detail
+
+    if mean_quote < ci_low:
+        return DEAD, (
+            f"DEAD on n={n} — inverted: quoted {mean_quote:.1%}, settled "
+            f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}). Systematically "
+            f"cheap in this band is still a broken price, not free money; the "
+            f"reason a 97c contract settles 100% of the time is that nobody "
+            f"will sell it to you."), detail
+
+    return ALIVE, (f"ALIVE on n={n} — quoted {mean_quote:.1%}, settled "
+                   f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}); the "
+                   f"quote is inside its own interval. This clears the PRIOR "
+                   f"question only. is_edge_proven still gates every dollar."), detail
+
+
+VERDICT_STATE = DATA_DIR / "kalshi_verdict_notified.json"
+VERDICT_HEARTBEAT_DAYS = 7
+
+
+def email_verdict(rows=None, force=False):
+    """Buffer the sector's verdict to Jack. Returns (sent, why_or_why_not).
+
+    WHEN IT SENDS: on a CHANGE of verdict, and otherwise once every
+    VERDICT_HEARTBEAT_DAYS. Those are two different jobs and both are needed.
+
+    The change trigger is the news. The heartbeat exists because the verdict has
+    read DEAD for days and will keep reading DEAD, and a sector that mails only
+    on change is indistinguishable — from Jack's inbox — from a sector whose
+    cron entry was deleted. Every silent-failure postmortem in this repo has the
+    same shape: the absence of output was read as the absence of a problem.
+
+    Sent through email_buffer, never smtplib: it joins the one daily digest that
+    mail_guard permits. ~20 scripts opening their own connection is what buried
+    the real alerts in July.
+    """
+    rows = rows if rows is not None else _load_ledger()
+    premise, why_premise, detail = is_premise_alive(rows)
+    proven, why_edge = is_edge_proven(rows)
+    signature = f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}"
+
+    try:
+        st = json.loads(VERDICT_STATE.read_text())
+        prior, last_at = st.get("signature"), st.get("at")
+    except (OSError, ValueError, AttributeError):
+        prior, last_at = None, None
+
+    stale = True
+    if last_at:
+        try:
+            age = datetime.now(timezone.utc) - datetime.fromisoformat(last_at)
+            stale = age.days >= VERDICT_HEARTBEAT_DAYS
+        except (TypeError, ValueError):
+            stale = True
+
+    if not force and signature == prior and not stale:
+        return False, f"unchanged ({signature}) and last sent {last_at}"
+
+    try:
+        VERDICT_STATE.write_text(json.dumps({"signature": signature, "at": _now()}))
+    except OSError:
+        pass
+
+    curve = "".join(
+        f"<tr><td style='padding:4px 10px'>{c['bucket']}</td>"
+        f"<td align='right' style='padding:4px 10px'>{c['n']}</td>"
+        f"<td align='right' style='padding:4px 10px'>{c['mean_forecast']:.3f}</td>"
+        f"<td align='right' style='padding:4px 10px'><b>{c['observed']:.3f}</b></td>"
+        f"<td align='right' style='padding:4px 10px'>"
+        f"[{c['ci_low']:.3f}, {c['ci_high']:.3f}]</td></tr>"
+        for c in reliability_curve(rows) if c["n"])
+
+    # Read the last scan for the coherence split. Absent is reported as absent —
+    # a missing scan log is a stopped scanner, which Jack wants to hear about.
+    try:
+        scan = json.loads(SCAN_LOG.read_text())
+        coh = (f"Last scan {scan.get('scanned_at', '?')[:16]}: "
+               f"{scan.get('markets_seen', 0)} markets, "
+               f"{scan.get('two_sided', 0)} with a two-sided book, "
+               f"{len(scan.get('disagreement', []))} coherent candidate(s), "
+               f"{len(scan.get('dropped_incoherent', []))} dropped incoherent, "
+               f"{len(scan.get('unchecked_coherence', []))} uncheckable.")
+    except (OSError, ValueError):
+        coh = ("No readable scan log — the scanner may have stopped. That is "
+               "itself the finding.")
+
+    body = (
+        f"<p><b>PREMISE: {premise}</b><br>{why_premise}</p>"
+        f"<p><b>EDGE: {'PROVEN' if proven else 'NOT PROVEN'}</b><br>{why_edge}</p>"
+        f"<p>{coh}</p>"
+        f"<table style='border-collapse:collapse;font-family:system-ui,sans-serif;"
+        f"font-size:13px'>"
+        f"<tr><th align='left' style='padding:4px 10px'>quoted band</th>"
+        f"<th align='right' style='padding:4px 10px'>n</th>"
+        f"<th align='right' style='padding:4px 10px'>quoted</th>"
+        f"<th align='right' style='padding:4px 10px'>settled YES</th>"
+        f"<th align='right' style='padding:4px 10px'>95% CI</th></tr>{curve}</table>"
+        f"<p style='color:#666;font-size:12px'>Nothing in the Kalshi sector can "
+        f"place an order: kalshi_client.place_order() raises unless "
+        f"data/.kalshi_armed exists, and only the Chairman creates that file. "
+        f"This email is a measurement, not a recommendation.</p>")
+
+    subject = (f"Kalshi verdict: premise {premise}, edge "
+               f"{'PROVEN' if proven else 'not proven'} "
+               f"(n={detail.get('settled', 0)} settled)")
+    try:
+        from email_buffer import buffer_email
+        buffer_email(subject=subject, html_body=body,
+                     sender_name="Kalshi Sector",
+                     key_metrics={"premise": premise, "edge_proven": proven,
+                                  "settled": detail.get("settled", 0),
+                                  "realised": detail.get("realised"),
+                                  "mean_quote": detail.get("mean_quote")})
+        return True, f"sent ({signature})"
+    except Exception as e:                       # noqa: BLE001
+        logger.warning(f"kalshi verdict email failed: {e}")
+        return False, f"buffer failed: {e}"
+
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--record", action="store_true")
     ap.add_argument("--resolve", action="store_true")
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--email", action="store_true",
+                    help="buffer the verdict to the daily digest on change, "
+                         "or on the weekly heartbeat")
     args = ap.parse_args()
 
     if args.record:
@@ -308,12 +524,22 @@ def main():
         print(f"    {c['bucket']:<12}{c['n']:>6}{c['mean_forecast']:>10.4f}"
               f"{c['observed']:>10.4f}{ci:>18}")
 
+    # The prior question first. is_edge_proven cannot resolve without an
+    # estimator, and there is no point building one if this reads DEAD.
+    premise, why_premise, pd = is_premise_alive(rows)
+    print(f"\n  PREMISE: {premise}")
+    print(f"  {why_premise}")
+
     ok, why = is_edge_proven(rows)
     print(f"\n  VERDICT: {'PROVEN' if ok else 'NOT PROVEN'}")
     print(f"  {why}")
     print("\n  Until this reads PROVEN, kalshi_scanner.size_position returns 0 "
           "contracts\n  for every DISAGREEMENT candidate. Structural locks are "
           "unaffected —\n  they are arithmetic and need no estimator.")
+
+    if args.email:
+        sent, why = email_verdict(rows)
+        print(f"\n  email  : {'buffered' if sent else 'held'} — {why}")
     return 0
 
 

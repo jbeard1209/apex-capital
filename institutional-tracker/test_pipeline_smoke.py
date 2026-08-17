@@ -24,7 +24,7 @@ import sqlite3
 import tempfile
 import shutil
 import unittest
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
@@ -7192,6 +7192,12 @@ class TestKalshiSector(unittest.TestCase):
                 self.assertEqual(n, 0, why)
                 self.assertIn("quarantine", why.lower())
 
+        # `coherence` added 2026-08-17: size_position now also refuses any
+        # candidate whose nested ladder was not CHECKED and found monotone, and
+        # refuses a MISSING key rather than defaulting it — a candidate with no
+        # stamp never went through drop_incoherent. This fixture predates that
+        # gate, so it has to state the verdict a real candidate would carry.
+        c = dict(c, coherence="HOLDS")
         n, _ = ks.size_position(c, 10000, calibration_ok=True)
         self.assertGreater(n, 0, "a proven estimator must be allowed to size")
 
@@ -8370,6 +8376,212 @@ class TestCoherenceLaws(unittest.TestCase):
         srcs = [n for n in ast.walk(fn) if isinstance(n, ast.Attribute)
                 and n.attr == "exit_on_violation_only"]
         self.assertTrue(srcs, "main() never reads --exit-on-violation-only")
+
+    # -- the strike lives in a field, not in the prose ------------------------
+
+    def test_the_strike_is_read_from_the_exchange_field_not_the_title(self):
+        """Eleven MLB legs share one title. The number is in floor_strike.
+
+        This is the miss that made `dropped_incoherent: 0` mean "nothing was
+        checkable" instead of "everything checked out".
+        """
+        cl = self._law_sources()
+        leg = {"title": "St. Louis vs Cincinnati Total Runs?",
+               "strike_type": "greater", "floor_strike": 4.5, "cap_strike": None}
+        self.assertIsNone(cl.parse_threshold(leg["title"]),
+                          "the title genuinely carries no number — that is the point")
+        self.assertEqual(cl.market_threshold(leg), (4.5, "above"))
+
+    def test_prose_still_works_for_rows_recorded_before_strikes_were_stored(self):
+        cl = self._law_sources()
+        self.assertEqual(cl.market_threshold({"title": "Will over 2.5 goals be scored?"}),
+                         (2.5, "above"))
+
+    def test_a_range_market_is_not_forced_onto_the_number_line(self):
+        """`between` is not a rung. Coercing it manufactures violations."""
+        cl = self._law_sources()
+        self.assertIsNone(cl.market_threshold(
+            {"strike_type": "between", "floor_strike": 3.5, "cap_strike": 5.5,
+             "title": "Will the total be over 3.5?"}))
+
+    def test_a_real_mlb_ladder_is_recognised_as_monotone(self):
+        """The first well-formed ladder the project has seen — it must pass.
+
+        A filter that drops everything is as useless as one that drops nothing.
+        """
+        import kalshi_scanner as ks
+        ev = "KXMLBTOTAL-26AUG171340STLCING1"
+        strikes = [(3.5, 0.92), (4.5, 0.91), (5.5, 0.84), (6.5, 0.77),
+                   (7.5, 0.68), (8.5, 0.60), (9.5, 0.49)]
+        markets = [{"ticker": f"{ev}-{i}", "event_ticker": ev,
+                    "title": "St. Louis vs Cincinnati Total Runs?",
+                    "strike_type": "greater", "floor_strike": k,
+                    "yes_ask_dollars": f"{p:.4f}"}
+                   for i, (k, p) in enumerate(strikes)]
+        cands = [{"ticker": f"{ev}-0", "event_ticker": ev, "market_price": 0.92},
+                 {"ticker": f"{ev}-1", "event_ticker": ev, "market_price": 0.91}]
+        kept, dropped, unchecked = ks.drop_incoherent(cands, markets=markets)
+        self.assertEqual(len(kept), 2)
+        self.assertEqual((dropped, unchecked), ([], []))
+        self.assertTrue(all(r["coherence"] == "HOLDS" for r in kept))
+
+    def test_an_inverted_rung_outside_the_traded_band_still_drops_the_event(self):
+        """The two legs in the 90-99c band are locally fine; the ladder is not.
+
+        Judging only the surfaced candidates would pass this event, which is why
+        drop_incoherent takes the whole market list.
+        """
+        import kalshi_scanner as ks
+        ev = "EV1"
+        strikes = [(3.5, 0.92), (4.5, 0.91), (5.5, 0.40), (6.5, 0.75)]  # 5.5<6.5
+        markets = [{"ticker": f"{ev}-{i}", "event_ticker": ev, "title": "Total?",
+                    "strike_type": "greater", "floor_strike": k,
+                    "yes_ask_dollars": f"{p:.4f}"}
+                   for i, (k, p) in enumerate(strikes)]
+        cands = [{"ticker": f"{ev}-0", "event_ticker": ev, "market_price": 0.92},
+                 {"ticker": f"{ev}-1", "event_ticker": ev, "market_price": 0.91}]
+        kept, dropped, unchecked = ks.drop_incoherent(cands, markets=markets)
+        self.assertEqual(kept, [])
+        self.assertEqual(len(dropped), 2)
+        self.assertEqual(unchecked, [])
+
+    def test_an_uncheckable_candidate_is_not_reported_as_coherent(self):
+        """The bug in one test: no ladder must not read as a clean bill."""
+        import kalshi_scanner as ks
+        markets = [{"ticker": "SOLO-1", "event_ticker": "SOLO", "title": "Who wins?",
+                    "strike_type": None, "yes_ask_dollars": "0.9500"}]
+        cands = [{"ticker": "SOLO-1", "event_ticker": "SOLO", "market_price": 0.95}]
+        kept, dropped, unchecked = ks.drop_incoherent(cands, markets=markets)
+        self.assertEqual(kept, [])
+        self.assertEqual(dropped, [])
+        self.assertEqual(len(unchecked), 1)
+        self.assertEqual(unchecked[0]["coherence"], "UNCHECKED")
+
+    def test_the_scan_report_keeps_uncheckable_rows_out_of_the_candidate_list(self):
+        """AST: scan() must not fold `unchecked` back into `disagreement`."""
+        import ast, kalshi_scanner as ks
+        tree = ast.parse(Path(ks.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "scan")
+        keys = {k.value for n in ast.walk(fn) if isinstance(n, ast.Dict)
+                for k in n.keys if isinstance(k, ast.Constant)}
+        self.assertIn("unchecked_coherence", keys)
+        self.assertIn("dropped_incoherent", keys)
+
+    def test_an_unchecked_candidate_cannot_be_sized_even_with_calibration(self):
+        """The gate that makes UNCHECKED mean something.
+
+        Before this, an uncheckable row and a checked-and-clean row were the
+        same object to size_position. Fails closed on a MISSING key too — a
+        candidate that never went through drop_incoherent is not a pass.
+        """
+        import kalshi_scanner as ks
+        base = {"requires_estimate": True, "p_hat": 0.99, "market_price": 0.95}
+        for coh in ("UNCHECKED", "VIOLATED", None):
+            cand = dict(base)
+            if coh:
+                cand["coherence"] = coh
+            n, why = ks.size_position(cand, 10000.0, calibration_ok=True)
+            self.assertEqual(n, 0, f"sized a coherence={coh} candidate")
+            self.assertIn("coherence=", why)
+        ok = dict(base, coherence="HOLDS")
+        n, _ = ks.size_position(ok, 10000.0, calibration_ok=True)
+        self.assertGreater(n, 0, "a checked, held, calibrated candidate must size")
+
+    # -- the premise underneath the sector ------------------------------------
+
+    def test_a_market_that_settles_outside_its_own_interval_is_a_dead_premise(self):
+        """216 quotes averaging 97.7% that settled 39.4% YES.
+
+        is_edge_proven correctly refuses this question (it needs an estimator we
+        do not have). is_premise_alive answers the PRIOR one, which the data can
+        settle: were these numbers probabilities at all?
+        """
+        import kalshi_calibration as kcal
+        rows = ([{"settled": True, "outcome": 1, "market_price": 0.97}] * 80 +
+                [{"settled": True, "outcome": 0, "market_price": 0.97}] * 130)
+        verdict, why, detail = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.DEAD)
+        self.assertIn("not probabilities", why)
+        self.assertEqual(detail["settled"], 210)
+
+    def test_a_calibrated_market_leaves_the_premise_alive(self):
+        import kalshi_calibration as kcal
+        rows = ([{"settled": True, "outcome": 1, "market_price": 0.90}] * 189 +
+                [{"settled": True, "outcome": 0, "market_price": 0.90}] * 21)
+        verdict, why, _ = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.ALIVE)
+        self.assertIn("gates every dollar", why)
+
+    def test_a_thin_sample_cannot_declare_the_premise_dead(self):
+        import kalshi_calibration as kcal
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.99}] * 10
+        verdict, why, _ = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.UNDECIDED)
+
+    def test_the_premise_verdict_cannot_authorise_a_trade(self):
+        """AST: size_position must gate on is_edge_proven, never on the premise.
+
+        ALIVE means "the prior question stopped blocking", and a sector that
+        started sizing on it would be trading on the absence of one disproof.
+        """
+        import ast, kalshi_scanner as ks
+        tree = ast.parse(Path(ks.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "size_position")
+        called = {n.func.attr for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        self.assertNotIn("is_premise_alive", called)
+
+    def test_the_ledger_carries_the_bid_the_law_reads(self):
+        """The producer stored yes_bid; the ledger writer dropped it.
+
+        law_quoted_prices_have_two_sides then reported "0 of 344 rows carry a
+        yes_bid" — reading its own blind spot back as a finding about the
+        market. AST over the dict literal, because the postmortem comment sitting
+        directly above it names the field too.
+        """
+        import ast, kalshi_calibration as kcal
+        tree = ast.parse(Path(kcal.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "record_from_scan")
+        keys = {k.value for n in ast.walk(fn) if isinstance(n, ast.Dict)
+                for k in n.keys if isinstance(k, ast.Constant)}
+        for field in ("yes_bid", "coherence", "floor_strike", "market_price"):
+            self.assertIn(field, keys, f"record_from_scan drops {field}")
+
+    def test_the_verdict_email_repeats_on_a_heartbeat_not_only_on_change(self):
+        """A sector that mails only on change looks exactly like a dead cron.
+
+        DEAD will read DEAD for weeks. Without the heartbeat, Jack cannot tell a
+        stable verdict from a scanner whose crontab line was deleted.
+        """
+        import kalshi_calibration as kcal
+        self.assertGreaterEqual(kcal.VERDICT_HEARTBEAT_DAYS, 1)
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.97}] * 210
+        sent = []
+        real_state, real_buf = kcal.VERDICT_STATE, None
+        import email_buffer
+        real_buf = email_buffer.buffer_email
+        with tempfile.TemporaryDirectory() as d:
+            try:
+                kcal.VERDICT_STATE = Path(d) / "v.json"
+                email_buffer.buffer_email = lambda **kw: sent.append(kw) or True
+                first, _ = kcal.email_verdict(rows)
+                second, why = kcal.email_verdict(rows)
+                # backdate past the heartbeat window
+                kcal.VERDICT_STATE.write_text(json.dumps({
+                    "signature": json.loads(kcal.VERDICT_STATE.read_text())["signature"],
+                    "at": (datetime.now(timezone.utc)
+                           - timedelta(days=kcal.VERDICT_HEARTBEAT_DAYS + 1)).isoformat()}))
+                third, _ = kcal.email_verdict(rows)
+            finally:
+                kcal.VERDICT_STATE, email_buffer.buffer_email = real_state, real_buf
+        self.assertTrue(first)
+        self.assertFalse(second, "mailed an unchanged verdict inside the window")
+        self.assertTrue(third, "the heartbeat never fires — silence looks like health")
+        self.assertEqual(len(sent), 2)
+        self.assertIn("DEAD", sent[0]["subject"])
 
     # -- notification: the finding has to cross the host boundary -------------
 

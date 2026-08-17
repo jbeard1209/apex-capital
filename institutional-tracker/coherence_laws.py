@@ -174,6 +174,58 @@ def parse_threshold(title: str) -> Optional[Tuple[float, str]]:
         return None
 
 
+# Kalshi's own structured description of a rung. `strike_type` says which side
+# of the number the contract pays on and floor/cap carry the number itself.
+_STRIKE_ABOVE = {"greater", "greater_or_equal"}
+_STRIKE_BELOW = {"less", "less_or_equal"}
+
+
+def market_threshold(m: dict) -> Optional[Tuple[float, str]]:
+    """(threshold, 'above'|'below') from the exchange's own fields, else prose.
+
+    THE STRUCTURED FIELDS COME FIRST, and that ordering is the fix for a real
+    miss. Every leg of an MLB total-runs ladder is titled "St. Louis vs
+    Cincinnati Total Runs?" — identical across all eleven rungs, with no number
+    in it anywhere. The strike lives in `floor_strike` (3.5, 4.5, … 13.5) and in
+    `yes_sub_title` ("Over 4.5 runs scored"); `rules_primary` spells it out in
+    prose Kalshi writes as "score more 4.5 runs", which the title regex was
+    never going to match.
+
+    So `parse_threshold(title)` returned None for all eleven, `_ladders` built
+    no ladder, and `drop_incoherent` reported ZERO incoherent candidates. Zero
+    dropped read as "everything checked out". It meant "nothing was checkable" —
+    the same substitution as an alarm that stays GREEN because it only ever
+    asked whether an explanation EXISTS (memory `presence-is-not-currency`).
+
+    Prose stays as the fallback, not because it is better but because it is the
+    only thing older ledger rows carry: they were recorded before the scanner
+    stored a strike, and dropping them would silently shrink the history the
+    law is measured on.
+    """
+    st = str(m.get("strike_type") or "").strip().lower()
+    if st in _STRIKE_ABOVE and m.get("floor_strike") is not None:
+        try:
+            return float(m["floor_strike"]), "above"
+        except (TypeError, ValueError):
+            pass
+    if st in _STRIKE_BELOW and m.get("cap_strike") is not None:
+        try:
+            return float(m["cap_strike"]), "below"
+        except (TypeError, ValueError):
+            pass
+    # `between`/`custom` are deliberately not coerced. A range market is not a
+    # rung on a ladder, and forcing it onto the number line would manufacture
+    # violations out of markets this law has no claim over.
+    if st in ("between", "custom", "structured"):
+        return None
+
+    for field in ("title", "yes_sub_title"):
+        parsed = parse_threshold(str(m.get(field) or ""))
+        if parsed is not None:
+            return parsed
+    return None
+
+
 def _ladders(rows: List[dict]) -> dict:
     """Group rows into (event_ticker, direction) ladders of >= 2 distinct rungs.
 
@@ -186,7 +238,7 @@ def _ladders(rows: List[dict]) -> dict:
         ev = r.get("event_ticker")
         if price is None or not ev:
             continue
-        parsed = parse_threshold(str(r.get("title") or ""))
+        parsed = market_threshold(r)
         if parsed is None:
             continue
         threshold, direction = parsed

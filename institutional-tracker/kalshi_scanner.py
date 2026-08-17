@@ -232,6 +232,16 @@ def find_disagreement_candidates(markets, estimator=None):
             # there anyone on the other side?" — the question the first four
             # days of this ledger cannot answer, because nobody stored it.
             "yes_bid": bid, "spread": round(ask - bid, 4),
+            # The exchange's own description of the rung. Stored because the
+            # title of every leg of an MLB total-runs ladder is identical —
+            # "St. Louis vs Cincinnati Total Runs?" eleven times — so a
+            # coherence check that reads the title can place none of them on
+            # the number line, and reports zero incoherent because it checked
+            # nothing. See coherence_laws.market_threshold.
+            "strike_type": m.get("strike_type"),
+            "floor_strike": m.get("floor_strike"),
+            "cap_strike": m.get("cap_strike"),
+            "yes_sub_title": m.get("yes_sub_title"),
             "breakeven_probability": round(be, 4) if be else None,
             "payoff_against": round(ask / (1.0 - ask), 1),
             "volume": kc.parse_size(m.get("volume_fp")) or 0.0,
@@ -254,8 +264,49 @@ def find_disagreement_candidates(markets, estimator=None):
     return sorted(out, key=lambda x: -x["volume"])
 
 
-def drop_incoherent(rows):
-    """Split candidates into (kept, dropped) on the nested-price coherence law.
+def _ladder_rows_from_markets(markets):
+    """Every quoted leg of every event, in the shape `coherence_laws._ladders` reads.
+
+    Built from the FULL market list rather than from the surfaced candidates,
+    because a ladder's coherence is a property of the whole ladder. The MLB
+    event that surfaced on 2026-08-17 had eleven rungs and exactly two of them
+    landed in the 90-99c band; judging monotonicity on those two would have
+    passed an event whose other nine legs were never looked at. Two adjacent
+    rungs are almost always locally fine — that is precisely why a local check
+    is not the check.
+    """
+    out = []
+    for m in markets:
+        ask = kc.parse_price(m.get("yes_ask_dollars"))
+        if not ask:
+            continue
+        out.append({
+            "ticker": m.get("ticker"), "event_ticker": m.get("event_ticker"),
+            "title": m.get("title"), "yes_sub_title": m.get("yes_sub_title"),
+            "market_price": ask, "strike_type": m.get("strike_type"),
+            "floor_strike": m.get("floor_strike"), "cap_strike": m.get("cap_strike"),
+        })
+    return out
+
+
+def drop_incoherent(rows, markets=None):
+    """Split candidates into (kept, dropped, unchecked) on the nested-price law.
+
+    THREE OUTPUTS, NOT TWO, and the third is the point of this signature.
+
+    This function used to return (kept, dropped) and it reported `dropped: 0`
+    on a live scan — which read as "every surfaced candidate is coherent" and
+    meant "not one of them could be placed on the number line". The threshold
+    was in `floor_strike`, the check was reading the title, and every leg of
+    the ladder shares one title. A filter that cannot parse its input and
+    answers "kept" is the same failure as a verdict of GREEN from a check that
+    could not read its source: it converts an inability to look into a pass.
+
+    `unchecked` rows are surfaced with `coherence: "UNCHECKED"` on them so that
+    a later consumer can tell "this passed" from "nobody could tell", which is
+    the whole three-verdict discipline in coherence_laws applied one layer down.
+
+    Pass `markets` — the full scan — whenever it is available.
 
     `tradeable()` is not enough. It asks "is there a real ask, at a real size?"
     and on these markets the answer is yes — so a 99c blanket offer resting on
@@ -294,9 +345,12 @@ def drop_incoherent(rows):
     """
     import coherence_laws as cl
 
-    ladders = cl._ladders(rows)
-    bad_events = set()
+    universe = _ladder_rows_from_markets(markets) if markets is not None else rows
+    ladders = cl._ladders(universe)
+
+    bad_events, checked_events = set(), set()
     for (ev, direction), rungs in ladders.items():
+        checked_events.add(ev)
         ordered = sorted(rungs.items())
         prices = [r["market_price"] for _, r in ordered]
         if direction == "below":
@@ -305,15 +359,26 @@ def drop_incoherent(rows):
                 or len(set(prices)) == 1):
             bad_events.add(ev)
 
-    kept, dropped = [], []
+    kept, dropped, unchecked = [], [], []
     for r in rows:
-        if r.get("event_ticker") in bad_events:
-            r = dict(r, dropped_reason="nested prices on this event are not "
-                                       "monotone — the quote is not a probability")
-            dropped.append(r)
+        ev = r.get("event_ticker")
+        if ev in bad_events:
+            dropped.append(dict(
+                r, coherence="VIOLATED",
+                dropped_reason="nested prices on this event are not monotone — "
+                               "the quote is not a probability"))
+        elif ev in checked_events:
+            dropped_from = len(ladders.get((ev, "above"), {})) or \
+                len(ladders.get((ev, "below"), {}))
+            kept.append(dict(r, coherence="HOLDS", rungs_checked=dropped_from))
         else:
-            kept.append(r)
-    return kept, dropped
+            # Not a pass. Nobody could place this event on the number line —
+            # a single-leg market, a range market, or prose no parser reads.
+            unchecked.append(dict(
+                r, coherence="UNCHECKED",
+                unchecked_reason="no nested ladder of 2+ parseable rungs on this "
+                                 "event — coherence could not be evaluated"))
+    return kept, dropped, unchecked
 
 
 # ------------------------------------------------------------------ sizing --
@@ -361,6 +426,15 @@ def size_position(candidate, sleeve_dollars, calibration_ok=None):
                    "kalshi_calibration.is_edge_proven() passes — an unmeasured "
                    "tail estimator is indistinguishable from a broken one")
 
+    # Belt to that brace, and it fails closed on ABSENCE: a row with no
+    # `coherence` key at all is refused, not waved through. A candidate reaches
+    # here only via drop_incoherent, which stamps all three verdicts; a row
+    # missing the stamp came from somewhere that never ran the check.
+    if candidate.get("coherence") != "HOLDS":
+        return 0, (f"coherence={candidate.get('coherence') or 'ABSENT'} — only a "
+                   f"candidate whose nested ladder was CHECKED and held may be "
+                   f"sized. UNCHECKED is not a pass")
+
     p_hat, price = candidate.get("p_hat"), candidate.get("market_price")
     f = kelly_fraction(p_hat, price)
     if f is None or f <= 0:
@@ -391,7 +465,8 @@ def scan(max_pages=12, estimator=None, check_mutex=True):
     # Only pay for event lookups where a field lock could possibly exist.
     fields = find_field_locks(markets, mutex_lookup) if check_mutex else []
     disagree = find_disagreement_candidates(markets, estimator)
-    disagree, incoherent = drop_incoherent(disagree)
+    # `markets`, not `disagree`: the ladder is judged whole. See drop_incoherent.
+    disagree, incoherent, unchecked = drop_incoherent(disagree, markets=markets)
 
     report = {
         "scanned_at": _now(), "env": kc.env_name(),
@@ -405,11 +480,18 @@ def scan(max_pages=12, estimator=None, check_mutex=True):
         "structural_field": fields,
         "disagreement": disagree,
         "dropped_incoherent": incoherent,
+        # Held apart from `disagreement` on purpose. Folding these in would make
+        # a scan that checked nothing indistinguishable from a scan that checked
+        # everything and found it clean — which is exactly what `dropped: 0` on
+        # 2026-08-17 meant before the strike fields were read.
+        "unchecked_coherence": unchecked,
         "note": ("DISAGREEMENT rows are observations, not trades. Nothing in "
                  "this file places an order; kalshi_client.place_order raises "
                  "unless the Chairman arms it. `dropped_incoherent` rows failed "
                  "coherence_laws.law_nested_probabilities_are_monotone — their "
-                 "quotes are resting offers, not probabilities."),
+                 "quotes are resting offers, not probabilities. "
+                 "`unchecked_coherence` rows sit in no checkable ladder: they "
+                 "were NOT cleared, nobody could tell."),
     }
     _save(SCAN_LOG, report)
     return report
@@ -443,7 +525,10 @@ def main():
               f"x{c['max_contracts']}  {c['event_ticker']}")
 
     print(f"\n  [DISAGREEMENT] near-certainty band 90-99c: "
-          f"{len(r['disagreement'])}  (observed, never sized)")
+          f"{len(r['disagreement'])} coherent, "
+          f"{len(r.get('dropped_incoherent', []))} dropped incoherent, "
+          f"{len(r.get('unchecked_coherence', []))} uncheckable  "
+          f"(observed, never sized)")
     for c in r["disagreement"][:10]:
         be = c["breakeven_probability"]
         print(f"    {c['market_price']*100:5.1f}c  need >{be*100:.1f}% to break "
