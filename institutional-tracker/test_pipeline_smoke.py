@@ -6793,13 +6793,15 @@ class TestSingleWriterGuard(unittest.TestCase):
         gitignore = here.parent / ".gitignore"
 
         if not gitignore.exists():
-            # Not the deploying host. Both halves of the guarantee describe the
-            # SOURCE repo, and neither exists here: deploy.sh rsyncs with
-            # --exclude=".git/", so there is no .gitignore, and it also excludes
-            # "gcp_setup/", so the deploy.sh sitting next to us is a leftover
-            # from the original bootstrap that no deploy has touched since
-            # (2026-05-14 on the VM, three months stale). Asserting the guard
-            # against that copy fails on a file that is not the one that runs.
+            # Not the deploying host. The guarantee describes the SOURCE repo,
+            # and its marker does not exist here: deploy.sh rsyncs with
+            # --exclude=".git/", so the VM has no .gitignore.
+            #
+            # (gcp_setup/ used to be excluded too, which left the VM's deploy.sh
+            # frozen at the original bootstrap — 2026-05-14, three months stale.
+            # That exclusion is gone; see the comment in deploy.sh. The copy next
+            # to us on the VM is now current, but it is still not the copy that
+            # runs, and the check below is still the one worth making here.)
             #
             # There IS one thing worth checking here, and it is the thing that
             # would actually hurt: a second host that can deploy. If this copy's
@@ -6822,6 +6824,34 @@ class TestSingleWriterGuard(unittest.TestCase):
                         "an exclude after the includes would not fire")
         self.assertIn("data/.host_id", gitignore.read_text(),
                       "a committed .host_id gives every host the same tag")
+
+    def test_the_scripts_written_for_the_vm_can_actually_reach_the_vm(self):
+        """A repair that cannot travel to the machine it repairs is not deployed.
+
+        gcp_setup/ was excluded from the rsync, so the VM's copies were frozen
+        at whatever was last hand-scp'd. On 2026-08-16 that was the 2026-05-06
+        vm_bootstrap.sh — the version that sets America/New_York (shifting every
+        UTC-authored job 4-5 hours) and pipes its 21-job seed over the live
+        86-job crontab with no shrink guard. The commit that fixed both could
+        not reach the host it protects, and restore_crontab.sh, whose header
+        says to run it ON THE VM after a deploy, had never been deployed at all.
+        """
+        here   = Path(__file__).resolve().parent
+        deploy = (here / "gcp_setup" / "deploy.sh").read_text()
+
+        self.assertNotIn('--exclude="gcp_setup/"', deploy,
+                         "gcp_setup/ holds the scripts that run ON the VM "
+                         "(vm_bootstrap.sh, restore_crontab.sh) — excluding it "
+                         "strands every fix to them on the Mac")
+
+        # And the scripts really do announce themselves as VM-side, so the
+        # assertion above is guarding something, not a directory name.
+        for script in ("vm_bootstrap.sh", "restore_crontab.sh"):
+            p = here / "gcp_setup" / script
+            self.assertTrue(p.exists(), f"gcp_setup/{script} is missing")
+            self.assertIn("VM", p.read_text(),
+                          f"{script} no longer describes itself as VM-side — "
+                          f"re-derive what this test is protecting")
 
     def test_a_truncated_hostname_cannot_merge_two_machines_silently(self):
         """MacBook-Air-173 and MacBook-Air-179 both truncate to macbookair17."""

@@ -105,6 +105,18 @@ echo "[1/3] Syncing project files..."
 # the Mac's copy reached the VM, both hosts would stamp orders `mac` and the
 # single-writer detector — whose entire job is counting distinct hosts — would
 # report one writer forever. A deploy must never be able to blind a detector.
+#
+# gcp_setup/ used to be excluded here. It is the one directory whose contents
+# are written TO BE RUN ON THE VM — vm_bootstrap.sh rebuilds it, and
+# restore_crontab.sh reinstalls its 86-job schedule — so excluding it meant the
+# VM's copies were frozen at whatever someone last hand-scp'd. On 2026-08-16 the
+# VM was carrying the 2026-05-06 vm_bootstrap.sh: the version that sets
+# America/New_York (shifting every UTC-authored job 4-5 hours) and pipes its
+# 21-job seed straight over the live crontab with no shrink guard. The commit
+# that fixed both (a6dcf3c) could not reach the host it was written to protect,
+# and restore_crontab.sh — whose own header says "run this ON THE VM, after
+# deploy.sh has rsynced the repo across" — had never been deployed at all.
+# A repair that cannot travel to the machine it repairs is not deployed.
 rsync -avz --progress \
     --exclude="data/.host_id" \
     --include="data/" \
@@ -116,7 +128,6 @@ rsync -avz --progress \
     --exclude="__pycache__/" \
     --exclude="*.pyc" \
     --exclude=".git/" \
-    --exclude="gcp_setup/" \
     --exclude="oracle_setup/oracle_attempts.log" \
     "$LOCAL_DIR" \
     "$REMOTE_DIR"
