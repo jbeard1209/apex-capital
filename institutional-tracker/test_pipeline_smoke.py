@@ -7345,6 +7345,118 @@ class TestCatchUpJobBudget(unittest.TestCase):
                           "the log exists but lost the child's partial output")
 
 
+class TestPipelineFreshnessSignalIsAlive(unittest.TestCase):
+    """The runner must decide "has the pipeline run?" from a file with a writer.
+
+    catch_up.py asked logs/cron_<today>.log. The Mac's crontab — the only thing
+    that ever wrote that path — was deliberately emptied on 2026-07-03 when the
+    firm moved to the GCP VM. From that day the file never existed, the reader
+    returned its unreadable-constant 999, and `_is_job_missed` read 999 hours as
+    "definitely missed". Every launchd tick inside the catch-up window launched
+    a full main.py: 2026-08-14 has pipeline_1400 running at 14:19, 14:44, 15:07,
+    15:31 and 15:55, each one reaching the Manager on the live Alpaca account.
+    ~20 pipeline runs a day instead of 4, for six weeks, silently — a job that
+    runs too often never fails, so nothing had anything to report.
+
+    These tests are AST-based on purpose. A text grep here would match the
+    postmortem above and the comments in catch_up.py, and a test that cannot
+    tell a bug from its own explanation is one nobody can leave green.
+    """
+
+    @staticmethod
+    def _live_str_constants(src):
+        """String constants excluding docstrings/free-standing strings.
+
+        Comments are never AST nodes, so prose about the bug can't trip this;
+        bare-expression strings are the only prose that survives parsing.
+        """
+        import ast
+        tree = ast.parse(src)
+        docstrings = {id(n.value) for n in ast.walk(tree)
+                      if isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant)
+                      and isinstance(n.value.value, str)}
+        return [n.value for n in ast.walk(tree)
+                if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                and id(n) not in docstrings]
+
+    def test_the_freshness_file_is_one_some_module_still_writes(self):
+        import ast, catch_up
+        root  = Path(__file__).resolve().parent
+        fname = Path(catch_up.PIPELINE_HEARTBEAT).name
+
+        producers = []
+        for py in root.glob("*.py"):
+            if py.name.startswith("test_") or py.name == "catch_up.py":
+                continue
+            try:
+                src  = py.read_text()
+                tree = ast.parse(src)
+            except (SyntaxError, UnicodeDecodeError):
+                continue
+            names = [n.value for n in ast.walk(tree)
+                     if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+            if not any(fname in s for s in names):
+                continue
+            # Does this module open anything for writing at all?
+            writes = any(
+                isinstance(n, ast.Call) and getattr(n.func, "id", "") == "open"
+                and any(isinstance(a, ast.Constant) and isinstance(a.value, str)
+                        and set("wa") & set(a.value) for a in n.args[1:])
+                for n in ast.walk(tree))
+            if writes:
+                producers.append(py.name)
+
+        self.assertTrue(
+            producers,
+            f"catch_up reads {fname} to decide whether to launch the trading "
+            f"pipeline, but no module in the repo writes it. That is exactly "
+            f"the cron_<today>.log failure again: a reader outliving its "
+            f"producer, with an unreadable-constant that means 'go'.")
+        self.assertIn("main.py", producers,
+                      "the heartbeat must be written by the pipeline itself — "
+                      "a third party's file can be fresh while main.py is dead")
+
+    def test_the_dead_cron_log_is_not_read_again(self):
+        import catch_up
+        src = Path(catch_up.__file__).read_text()
+        offenders = [s for s in self._live_str_constants(src) if "cron_" in s]
+        self.assertEqual(
+            offenders, [],
+            f"catch_up.py is building a cron_*.log path again ({offenders}). "
+            f"Nothing has written one since 2026-07-03; reading it returns "
+            f"'definitely missed' forever.")
+
+    def test_an_unreadable_heartbeat_cannot_authorise_a_pipeline_run(self):
+        """Fail closed: 'I cannot tell' must not launch a run that trades."""
+        import catch_up
+        from datetime import datetime as _dt
+
+        pipes = [j for j in catch_up.JOB_REGISTRY if j.get("script") == "main.py"]
+        self.assertTrue(pipes, "no main.py job found in the registry")
+
+        real_now, real_wd, real_hb = (catch_up._now_edt, catch_up._is_weekday_edt,
+                                      catch_up._pipeline_last_run_hours)
+        try:
+            catch_up._now_edt        = lambda: _dt(2026, 8, 14, 15, 10)  # Fri, mid-window
+            catch_up._is_weekday_edt = lambda: True
+
+            catch_up._pipeline_last_run_hours = lambda: None
+            for j in pipes:
+                missed, _ = catch_up._is_job_missed(j)
+                self.assertFalse(missed, f"{j['name']} was queued on an unreadable "
+                                         f"heartbeat — that is the 999 bug wearing None")
+
+            # The inverse, so this can't pass by the check being disabled outright.
+            catch_up._pipeline_last_run_hours = lambda: 6.0
+            self.assertTrue(
+                any(catch_up._is_job_missed(j)[0] for j in pipes),
+                "no pipeline slot is missed after 6h with no run — the catch-up "
+                "runner has stopped catching up at all")
+        finally:
+            (catch_up._now_edt, catch_up._is_weekday_edt,
+             catch_up._pipeline_last_run_hours) = real_now, real_wd, real_hb
+
+
 class TestIntegrityWatchdogHasAMacFallback(unittest.TestCase):
     """cit_pipeline_integrity_agent is the only producer of deadmans_switch_sanity
     / peer_host_liveness / single_writer, and it was VM-only in the crontab.

@@ -41,6 +41,7 @@ import subprocess
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 
 logging.basicConfig(
     level  = logging.INFO,
@@ -334,18 +335,63 @@ def _output_age_hours(output_file: str) -> float:
     return (datetime.now().timestamp() - path.stat().st_mtime) / 3600
 
 
-def _pipeline_ran_today() -> bool:
-    """True if main.py produced a non-trivial log entry today."""
-    log = LOG_DIR / f"cron_{_now_edt().strftime('%Y%m%d')}.log"
-    return log.exists() and log.stat().st_size > 500
+# The file main.py actually writes when it starts. Both this and the
+# completion heartbeat go to the same path, so its mtime/`last_started` is the
+# firm's real answer to "has the pipeline run recently on THIS host".
+PIPELINE_HEARTBEAT = DATA_DIR / "pipeline_heartbeat.json"
 
 
-def _pipeline_last_run_hours() -> float:
-    """How many hours ago did main.py last produce output?"""
-    log = LOG_DIR / f"cron_{_now_edt().strftime('%Y%m%d')}.log"
-    if not log.exists() or log.stat().st_size < 500:
-        return 999
-    return (datetime.now().timestamp() - log.stat().st_mtime) / 3600
+def _pipeline_last_run_hours() -> Optional[float]:
+    """
+    Hours since main.py last STARTED on this host, or None when we cannot tell.
+
+    This used to read logs/cron_<today>.log — the redirect target of the Mac's
+    crontab. Two things were wrong with that, and the second hid behind the first.
+
+    The check was self-defeating from the start: `_run()` captures the child's
+    output and writes it to logs/catchup_<job>_<ts>.log, so a pipeline run that
+    THIS module launched never touched cron_<today>.log. The runner could not
+    see its own work. While the Mac crontab was live its own runs refreshed the
+    file often enough to mask it — but the Mac still logged 18-22 pipeline runs
+    on days like 2026-05-25 and 2026-06-02, against a design of 4.
+
+    Then on 2026-07-03 the Mac crontab was deliberately emptied ("the firm RUNS
+    ON THE GCP VM ... the Mac is a development machine only"), and the last
+    writer of cron_*.log went away. From that day the file simply did not exist
+    and this function returned its "cannot read it" constant, 999. 999 hours ago
+    is not a neutral value here: `_is_job_missed` compares it to
+    hours-since-scheduled, so 999 means "definitely missed" and every launchd
+    tick inside the catch-up window re-launched the full trading pipeline. That
+    is what 2026-08-14 looks like on disk — pipeline_1400 executed at 14:19,
+    14:44, 15:07, 15:31 and 15:55, each a complete run that reaches the Manager
+    and can place orders, on the same Alpaca account the VM trades. Nothing
+    reported it, because a job that runs too often never fails.
+
+    Two rules come out of that and are kept here deliberately:
+      1. Read a file something still writes. main.py writes this one itself,
+         at the top of every run — see main.py's "Pipeline heartbeat" block.
+      2. Never return a number that means "act". When the signal cannot be
+         read, return None and let the caller refuse; a monitor that cannot
+         tell must not be able to authorise a trade. (Same shape as the FI
+         credit feed's fabricated 350bp spread, and memory `nan-is-not-none`.)
+    """
+    if not PIPELINE_HEARTBEAT.exists():
+        return None
+    try:
+        with open(PIPELINE_HEARTBEAT) as f:
+            hb = json.load(f)
+        ts = hb.get("last_started") or hb.get("last_completed")
+        if ts:
+            age = (datetime.now() - datetime.fromisoformat(str(ts)[:26])).total_seconds() / 3600
+            return max(age, 0.0)
+    except Exception:
+        pass
+    # The file exists but carries no usable timestamp — its mtime is still a
+    # real observation of when main.py last wrote it.
+    try:
+        return (datetime.now().timestamp() - PIPELINE_HEARTBEAT.stat().st_mtime) / 3600
+    except OSError:
+        return None
 
 
 def _buffer_has_emails() -> bool:
@@ -417,9 +463,21 @@ def _is_job_missed(job: dict) -> tuple:
     if scheduled_at is None:
         return False, None
 
-    # Special handling: pipeline uses today's log file
+    # Special handling: the pipeline has no output_file — ask its heartbeat.
     if job["script"] == "main.py":
         last_run_h = _pipeline_last_run_hours()
+        if last_run_h is None:
+            # Fail closed. "I don't know when the pipeline last ran" is not a
+            # reason to run the pipeline — it is a reason to say so loudly and
+            # do nothing. Running main.py places orders; the cost of a wrong
+            # "yes" here is real trades, the cost of a wrong "no" is a skipped
+            # catch-up that the next real run covers.
+            logger.error(
+                f"  ✗ [{job['name']}] NOT run: cannot tell when main.py last "
+                f"started — {PIPELINE_HEARTBEAT} is missing or unreadable. "
+                f"Fix the heartbeat; do not relax this check."
+            )
+            return False, scheduled_at
         hours_since_scheduled = (now_edt - scheduled_at).total_seconds() / 3600
         # Missed if: pipeline hasn't run since the scheduled time (+ 10 min grace)
         missed = last_run_h > hours_since_scheduled + 0.17
