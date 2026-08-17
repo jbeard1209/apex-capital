@@ -7227,8 +7227,12 @@ class TestKalshiSector(unittest.TestCase):
         """An estimator that merely agrees with the market must NOT pass. This
         is the Kalshi analogue of edge_over_baseline in model_test_harness."""
         import kalshi_calibration as cal
+        # yes_bid marks the row as selected by the CURRENT two-sided rule.
+        # Without it these are legacy `tradeable()` rows and the gate refuses
+        # on sample size before it ever reaches the Brier comparison — correct
+        # behaviour, wrong branch for this test.
         rows = [{"settled": True, "outcome": 1, "p_hat": 0.97,
-                 "market_price": 0.97} for _ in range(300)]
+                 "market_price": 0.97, "yes_bid": 0.94} for _ in range(300)]
         ok, why = cal.is_edge_proven(rows)
         self.assertFalse(ok, "agreeing with the price is not an edge")
         self.assertIn("NO EDGE", why)
@@ -8498,24 +8502,112 @@ class TestCoherenceLaws(unittest.TestCase):
         settle: were these numbers probabilities at all?
         """
         import kalshi_calibration as kcal
-        rows = ([{"settled": True, "outcome": 1, "market_price": 0.97}] * 80 +
-                [{"settled": True, "outcome": 0, "market_price": 0.97}] * 130)
+        rows = ([{"settled": True, "outcome": 1, "market_price": 0.97,
+                  "yes_bid": 0.94}] * 80 +
+                [{"settled": True, "outcome": 0, "market_price": 0.97,
+                  "yes_bid": 0.94}] * 130)
         verdict, why, detail = kcal.is_premise_alive(rows)
         self.assertEqual(verdict, kcal.DEAD)
         self.assertIn("not probabilities", why)
         self.assertEqual(detail["settled"], 210)
 
+    def test_the_retired_selection_rule_cannot_supply_the_verdict(self):
+        """The defect this function shipped with, pinned.
+
+        It read the whole ledger and returned DEAD on n=216: quoted 97.7%,
+        settled YES 39.4%. Both numbers real — and every one of those rows was
+        picked by `tradeable()`, which required only an ask. `two_sided()`
+        replaced it because an ask with no bid is not a price, and not one of
+        the 216 could pass today's gate. The verdict described a producer that
+        no longer exists.
+
+        A row with no `yes_bid` is legacy: `two_sided()` cannot admit a market
+        without one, so its absence can only mean the old rule (or the old
+        ledger writer, which is the same era). The current cohort here is empty,
+        so the only honest answer is CANNOT_TELL — however damning the other
+        pile looks.
+        """
+        import kalshi_calibration as kcal
+        legacy = ([{"settled": True, "outcome": 1, "market_price": 0.977}] * 85 +
+                  [{"settled": True, "outcome": 0, "market_price": 0.977}] * 131)
+        verdict, why, detail = kcal.is_premise_alive(legacy)
+        self.assertEqual(verdict, kcal.UNDECIDED,
+                         "declared the sector dead on a retired selection rule")
+        self.assertEqual(detail["settled"], 0)
+        self.assertEqual(detail["legacy"]["settled"], 216)
+        self.assertIn("NOT evidence", why)
+
+    def test_the_two_cohorts_are_never_averaged_together(self):
+        """Pooling two selection rules measures neither.
+
+        Enough current-regime rows to clear the gate, plus a pile of legacy rows
+        that would drag the realised rate down if they were counted. The verdict
+        must reflect the current cohort alone.
+        """
+        import kalshi_calibration as kcal
+        current = ([{"settled": True, "outcome": 1, "market_price": 0.90,
+                     "yes_bid": 0.86}] * 189 +
+                   [{"settled": True, "outcome": 0, "market_price": 0.90,
+                     "yes_bid": 0.86}] * 21)
+        legacy = [{"settled": True, "outcome": 0, "market_price": 0.97}] * 400
+        verdict, _, detail = kcal.is_premise_alive(current + legacy)
+        self.assertEqual(verdict, kcal.ALIVE, "the legacy pile bled into the verdict")
+        self.assertEqual(detail["settled"], 210)
+        self.assertAlmostEqual(detail["realised"], 0.90, places=2)
+
+    def test_the_edge_gate_counts_only_the_current_rule(self):
+        """Sample-size gates are reached by measuring, not by borrowing rows.
+
+        216 legacy settlements would clear MIN_SETTLED_FOR_VERDICT outright. A
+        gate that let them would report a verdict about the live scanner having
+        observed it zero times.
+        """
+        import kalshi_calibration as kcal
+        legacy = [{"settled": True, "outcome": 1, "market_price": 0.97,
+                   "p_hat": 0.99}] * 400
+        ok, why = kcal.is_edge_proven(legacy)
+        self.assertFalse(ok)
+        self.assertIn(f"0/{kcal.MIN_SETTLED_FOR_VERDICT}", why)
+
+    def test_the_reported_curve_is_drawn_from_the_current_cohort(self):
+        """AST: the report and the email must not hand reliability_curve the
+        raw ledger.
+
+        A reader who sees one reliability curve reads it as the sector's
+        calibration, whichever rows happen to be underneath it — so the split
+        has to happen before the table is built, not in a caption. Checked
+        structurally because the comment beside each call names both cohorts.
+        """
+        import ast, kalshi_calibration as kcal
+        tree = ast.parse(Path(kcal.__file__).read_text())
+        for fn_name in ("main", "email_verdict"):
+            fn = next(n for n in ast.walk(tree)
+                      if isinstance(n, ast.FunctionDef) and n.name == fn_name)
+            for call in ast.walk(fn):
+                if not (isinstance(call, ast.Call)
+                        and isinstance(call.func, ast.Name)
+                        and call.func.id == "reliability_curve"):
+                    continue
+                self.assertTrue(call.args, f"{fn_name}: curve over the default ledger")
+                arg = call.args[0]
+                ok = (isinstance(arg, ast.Name) and arg.id != "rows") or \
+                     isinstance(arg, ast.Subscript)
+                self.assertTrue(ok, f"{fn_name} draws its curve from the pooled ledger")
+
     def test_a_calibrated_market_leaves_the_premise_alive(self):
         import kalshi_calibration as kcal
-        rows = ([{"settled": True, "outcome": 1, "market_price": 0.90}] * 189 +
-                [{"settled": True, "outcome": 0, "market_price": 0.90}] * 21)
+        rows = ([{"settled": True, "outcome": 1, "market_price": 0.90,
+                  "yes_bid": 0.86}] * 189 +
+                [{"settled": True, "outcome": 0, "market_price": 0.90,
+                  "yes_bid": 0.86}] * 21)
         verdict, why, _ = kcal.is_premise_alive(rows)
         self.assertEqual(verdict, kcal.ALIVE)
         self.assertIn("gates every dollar", why)
 
     def test_a_thin_sample_cannot_declare_the_premise_dead(self):
         import kalshi_calibration as kcal
-        rows = [{"settled": True, "outcome": 0, "market_price": 0.99}] * 10
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.99,
+                 "yes_bid": 0.95}] * 10
         verdict, why, _ = kcal.is_premise_alive(rows)
         self.assertEqual(verdict, kcal.UNDECIDED)
 
@@ -8558,7 +8650,8 @@ class TestCoherenceLaws(unittest.TestCase):
         """
         import kalshi_calibration as kcal
         self.assertGreaterEqual(kcal.VERDICT_HEARTBEAT_DAYS, 1)
-        rows = [{"settled": True, "outcome": 0, "market_price": 0.97}] * 210
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.97,
+                 "yes_bid": 0.94}] * 210
         sent = []
         real_state, real_buf = kcal.VERDICT_STATE, None
         import email_buffer
@@ -8683,7 +8776,8 @@ class TestCoherenceLaws(unittest.TestCase):
     def test_the_kalshi_verdict_survives_an_undeliverable_send(self):
         """Same branch, other sender. Both were written assuming success."""
         import kalshi_calibration as kcal, email_buffer
-        rows = [{"settled": True, "outcome": 0, "market_price": 0.97}] * 210
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.97,
+                 "yes_bid": 0.94}] * 210
         sent = []
         with tempfile.TemporaryDirectory() as d:
             real_state, real_buf = kcal.VERDICT_STATE, email_buffer.buffer_email

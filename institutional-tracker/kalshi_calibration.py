@@ -243,10 +243,16 @@ def is_edge_proven(rows=None):
     those call for different actions — keep collecting versus shut it down —
     and collapsing them into one boolean is how a project runs forever on
     "we just need more data".
+
+    Scoped to the CURRENT selection rule, same as `is_premise_alive`. A gate
+    that counted the retired `tradeable()` rows toward its sample would clear
+    its own size threshold on 216 observations of a rule the scanner no longer
+    applies — reaching a verdict sooner by measuring the wrong thing.
     """
     rows = rows if rows is not None else _load_ledger()
     settled = [r for r in rows
-               if r.get("settled") and r.get("outcome") in (0, 1)]
+               if _is_current_regime(r)
+               and r.get("settled") and r.get("outcome") in (0, 1)]
 
     n = len(settled)
     if n < MIN_SETTLED_FOR_VERDICT:
@@ -276,7 +282,7 @@ def is_edge_proven(rows=None):
     # And the top bucket must actually be calibrated, not merely better on
     # average: a model can win on Brier across all buckets while being
     # systematically overconfident in the only band we would ever trade.
-    top = [c for c in reliability_curve(rows)
+    top = [c for c in reliability_curve(settled)
            if c["bucket"] in ("0.95-0.98", "0.98-1.00") and c["n"] > 0]
     if not top:
         return False, "NOT YET — no settled observations in the 95c+ band"
@@ -294,6 +300,30 @@ def is_edge_proven(rows=None):
 
 
 ALIVE, DEAD, UNDECIDED = "ALIVE", "DEAD", "CANNOT_TELL"
+
+
+def _is_current_regime(row) -> bool:
+    """Was this row selected by `two_sided()`, the rule the sector runs today?
+
+    `yes_bid` is the marker: `two_sided()` refuses any market without a bid, and
+    only the post-2026-08-17 ledger writer copies the field through. Absence is
+    read as legacy — the conservative direction, since a row wrongly called
+    legacy delays a verdict and a row wrongly called current corrupts one.
+    """
+    return row.get("yes_bid") is not None
+
+
+def split_by_regime(rows=None):
+    """(current, legacy). Two cohorts that must never share a statistic.
+
+    Every renderer takes the current one. The legacy cohort is shown as a
+    labelled footnote, never as a row in the same table — a reader who sees one
+    reliability curve will read it as the sector's calibration, whichever rows
+    happen to be underneath it.
+    """
+    rows = rows if rows is not None else _load_ledger()
+    return ([r for r in rows if _is_current_regime(r)],
+            [r for r in rows if not _is_current_regime(r)])
 
 
 def is_premise_alive(rows=None):
@@ -321,31 +351,75 @@ def is_premise_alive(rows=None):
     is_edge_proven: DEAD is an answer, and folding it into `False` next to
     "not yet" is exactly the collapse is_edge_proven's own docstring warns about.
 
+    THE SAMPLE MUST MATCH THE RULE THAT PRODUCED IT
+    -----------------------------------------------
+    This function got its own first answer wrong, and the mistake is worth
+    keeping written down because it is the house failure mode wearing a new hat.
+
+    It read the whole ledger and returned DEAD on n=216: quoted 97.7%, settled
+    YES 39.4%. Both numbers are real. But every one of those 216 rows was
+    selected by `kalshi_client.tradeable()`, which asked only "is there an ask?"
+    — and `two_sided()` replaced it on 2026-08-17 precisely because an ask with
+    no bid is not a price. Not one row in that sample could pass today's gate.
+    So the verdict was about a producer that no longer exists, delivered as a
+    verdict about the sector as it stands (memory `reader-outlived-its-producer`,
+    inverted: here the READER outlived nothing — the SAMPLE did).
+
+    A calibration study that pools two selection rules measures neither. So the
+    ledger is partitioned by the rule that produced each row, `is_premise_alive`
+    judges only the CURRENT one, and the legacy cohort is reported as what it
+    is: a closed finding about a rule already retired.
+
+    The marker is the presence of `yes_bid`. Only the post-fix writer stores it,
+    and `two_sided()` cannot admit a row without one, so its presence is proof
+    of the current rule and its absence is treated as legacy. That direction
+    fails safe: a mislabelled row can only DELAY a verdict, never manufacture
+    one.
+
     This function NEVER authorises a trade. DEAD closes the sector; ALIVE only
     means the prior question stopped blocking, and is_edge_proven still gates
     every dollar.
     """
     rows = rows if rows is not None else _load_ledger()
-    settled = [r for r in rows
+    current = [r for r in rows if _is_current_regime(r)]
+    legacy = [r for r in rows if not _is_current_regime(r)]
+
+    settled = [r for r in current
                if r.get("settled") and r.get("outcome") in (0, 1)
                and r.get("market_price") is not None]
 
-    detail = {"settled": len(settled)}
+    detail = {"settled": len(settled), "regime": "two_sided",
+              "legacy_rows": len(legacy), "current_rows": len(current)}
 
-    # ---- B. the book ------------------------------------------------------
-    # Counted over the whole ledger, not just settled rows: a bid is observable
-    # the moment a market is scanned, and waiting for settlement to notice that
-    # nothing has a bid would delay the finding by the length of the contract.
-    quoted = [r for r in rows if r.get("market_price") is not None]
-    two_sided = [r for r in quoted if r.get("yes_bid") is not None]
-    detail["quoted"] = len(quoted)
-    detail["with_bid_field"] = len(two_sided)
+    # ---- the retired cohort, reported but never mixed in -------------------
+    # This is history, not evidence about the live rule. It is carried in the
+    # detail so the email can say WHY the gate that produced the current cohort
+    # exists, without the two samples ever being averaged together.
+    legacy_settled = [r for r in legacy
+                      if r.get("settled") and r.get("outcome") in (0, 1)
+                      and r.get("market_price") is not None]
+    if legacy_settled:
+        detail["legacy"] = {
+            "settled": len(legacy_settled),
+            "mean_quote": round(sum(float(r["market_price"])
+                                    for r in legacy_settled) / len(legacy_settled), 4),
+            "realised": round(sum(int(r["outcome"])
+                                  for r in legacy_settled) / len(legacy_settled), 4),
+        }
 
     if len(settled) < MIN_SETTLED_FOR_VERDICT:
-        return UNDECIDED, (f"CANNOT TELL — {len(settled)}/"
-                           f"{MIN_SETTLED_FOR_VERDICT} settled quotes. The "
-                           f"premise is judged on outcomes, and there are not "
-                           f"enough yet."), detail
+        why = (f"CANNOT TELL — {len(settled)}/{MIN_SETTLED_FOR_VERDICT} settled "
+               f"quotes selected by the CURRENT rule (two-sided book, spread "
+               f"<= 10c). The premise is judged on outcomes, and this rule has "
+               f"not produced enough yet.")
+        if "legacy" in detail:
+            lg = detail["legacy"]
+            why += (f" The {lg['settled']} settled rows from the retired "
+                    f"`tradeable()` rule (quoted {lg['mean_quote']:.1%}, settled "
+                    f"YES {lg['realised']:.1%}) are NOT evidence here — none of "
+                    f"them could pass today's gate, which is why the gate "
+                    f"changed. Pooling them would measure neither rule.")
+        return UNDECIDED, why, detail
 
     # ---- A. settlement ----------------------------------------------------
     n = len(settled)
@@ -358,19 +432,31 @@ def is_premise_alive(rows=None):
     half = z * math.sqrt(realised * (1 - realised) / n + z * z / (4 * n * n)) / denom
     ci_low, ci_high = max(0.0, centre - half), min(1.0, centre + half)
 
+    # ---- B. the book -------------------------------------------------------
+    # Independent of settlement, and it must be measured on the SAME cohort.
+    # Note what this can and cannot say now: every current-regime row carries a
+    # bid by construction, so "did anyone quote the other side" is answered YES
+    # trivially and is NOT corroboration. What is still informative is how far
+    # the bid sits from the ask — a 97c ask against a 90c bid brackets a range
+    # the quote does not pin down.
+    spreads = [float(r["spread"]) for r in settled if r.get("spread") is not None]
+    mean_spread = sum(spreads) / len(spreads) if spreads else None
+
     detail.update({"mean_quote": round(mean_quote, 4),
                    "realised": round(realised, 4),
-                   "ci_low": round(ci_low, 4), "ci_high": round(ci_high, 4)})
+                   "ci_low": round(ci_low, 4), "ci_high": round(ci_high, 4),
+                   "mean_spread": round(mean_spread, 4) if mean_spread else None})
 
     if mean_quote > ci_high:
+        book = (f" Mean bid-ask spread {mean_spread:.3f} — the book bracketed a "
+                f"range the quote did not pin down." if mean_spread else "")
         return DEAD, (
-            f"DEAD on n={n} — the market quoted a mean of {mean_quote:.1%} and "
-            f"settled YES {realised:.1%} of the time (95% CI "
-            f"{ci_low:.1%}-{ci_high:.1%}). The quote is not above the interval "
-            f"by a little; it is outside it entirely, so these numbers are not "
-            f"probabilities and there is nothing for an estimator to beat. "
-            f"{len(two_sided)}/{len(quoted)} quotes ever carried a bid — an ask "
-            f"with no bid is not a price."), detail
+            f"DEAD on n={n} rows selected by the CURRENT two-sided rule — the "
+            f"market quoted a mean of {mean_quote:.1%} and settled YES "
+            f"{realised:.1%} of the time (95% CI {ci_low:.1%}-{ci_high:.1%}). "
+            f"The quote is not above the interval by a little; it is outside it "
+            f"entirely, so these numbers are not probabilities and there is "
+            f"nothing for an estimator to beat.{book}"), detail
 
     if mean_quote < ci_low:
         return DEAD, (
@@ -441,7 +527,7 @@ def email_verdict(rows=None, force=False):
         f"<td align='right' style='padding:4px 10px'><b>{c['observed']:.3f}</b></td>"
         f"<td align='right' style='padding:4px 10px'>"
         f"[{c['ci_low']:.3f}, {c['ci_high']:.3f}]</td></tr>"
-        for c in reliability_curve(rows) if c["n"])
+        for c in reliability_curve(split_by_regime(rows)[0]) if c["n"])
 
     # Read the last scan for the coherence split. Absent is reported as absent —
     # a missing scan log is a stopped scanner, which Jack wants to hear about.
@@ -533,16 +619,31 @@ def main():
     print(f"  ledger: {len(rows)} prediction(s), {settled} settled, "
           f"{len(rows) - settled} awaiting outcome")
 
-    print("\n  reliability curve (forecast vs what actually happened)")
+    cur_rows, legacy_rows = split_by_regime(rows)
+    print(f"\n  reliability curve — CURRENT rule only "
+          f"(two-sided book, {len(cur_rows)} row(s))")
     print(f"    {'bucket':<12}{'n':>6}{'forecast':>10}{'observed':>10}"
           f"{'95% CI':>18}")
-    for c in reliability_curve(rows):
+    for c in reliability_curve(cur_rows):
         if not c["n"]:
             print(f"    {c['bucket']:<12}{0:>6}{'-':>10}{'-':>10}{'-':>18}")
             continue
         ci = f"[{c['ci_low']:.3f}, {c['ci_high']:.3f}]"
         print(f"    {c['bucket']:<12}{c['n']:>6}{c['mean_forecast']:>10.4f}"
               f"{c['observed']:>10.4f}{ci:>18}")
+
+    # The retired cohort, named and kept out of the table above. Every row of it
+    # was picked by `tradeable()`, which required only an ask; `two_sided()`
+    # replaced it because an ask with no bid is not a price. Its numbers are a
+    # finding about that rule, not about this one.
+    lg_settled = [r for r in legacy_rows
+                  if r.get("settled") and r.get("outcome") in (0, 1)]
+    if lg_settled:
+        n = len(lg_settled)
+        print(f"\n  retired cohort (`tradeable()`, ask-only — NOT counted above): "
+              f"{n} settled, "
+              f"quoted {sum(float(r['market_price']) for r in lg_settled)/n:.1%}, "
+              f"settled YES {sum(int(r['outcome']) for r in lg_settled)/n:.1%}")
 
     # The prior question first. is_edge_proven cannot resolve without an
     # estimator, and there is no point building one if this reads DEAD.
