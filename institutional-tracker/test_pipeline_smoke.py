@@ -7997,20 +7997,86 @@ class TestCoherenceLaws(unittest.TestCase):
                             f"{fn.__name__} has no conservation statement")
 
     def test_a_violated_ladder_is_detected(self):
-        """Nested outcomes priced non-monotonically must come back VIOLATED."""
+        """Nested outcomes priced non-monotonically must come back VIOLATED.
+
+        The violation is `ask(wide) < bid(narrow)`: you may buy "over 0.5" for
+        90c while someone bids 93c for "over 1.5", which is a 3c credit for a
+        payoff that cannot be negative. No probabilities produce that.
+        """
         cl = self._law_sources()
         rows = [
             {"event_ticker": "E1", "ticker": "E1-1", "market_price": 0.90,
-             "title": "Will over 0.5 goals be scored?"},
+             "yes_bid": 0.88, "title": "Will over 0.5 goals be scored?"},
             {"event_ticker": "E1", "ticker": "E1-2", "market_price": 0.95,
-             "title": "Will over 1.5 goals be scored?"},
+             "yes_bid": 0.93, "title": "Will over 1.5 goals be scored?"},
         ]
         r = cl.law_nested_probabilities_are_monotone(rows)
         self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
 
-        flat = [dict(x, market_price=0.97) for x in rows]
-        self.assertEqual(cl.law_nested_probabilities_are_monotone(flat).verdict,
-                         cl.VIOLATED, "identically-priced rungs are impossible")
+    def test_an_inverted_ASK_ladder_the_spread_explains_is_not_a_violation(self):
+        """The 283 false alarms. An ask ladder can invert and still be honest.
+
+        Rung A brackets its probability in [0.60, 0.90]; rung B in [0.80,
+        0.95]. The asks invert (0.90 < 0.95) but the brackets overlap, so
+        P(A)=0.88 >= P(B)=0.82 fits both quotes perfectly. Comparing ask to ask
+        called 287 of 1,148 live ladders VIOLATED when 4 were. An alarm wrong
+        98.6% of the time is how a real one gets ignored.
+        """
+        cl = self._law_sources()
+        rows = [
+            {"event_ticker": "E1B", "ticker": "E1B-1", "market_price": 0.90,
+             "yes_bid": 0.60, "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "E1B", "ticker": "E1B-2", "market_price": 0.95,
+             "yes_bid": 0.80, "title": "Will over 1.5 goals be scored?"},
+        ]
+        r = cl.law_nested_probabilities_are_monotone(rows)
+        self.assertEqual(r.verdict, cl.HOLDS, r.detail)
+        self.assertIn("spread-explicable", r.detail)
+
+    def test_identically_priced_asks_are_not_an_arithmetic_contradiction(self):
+        """Monotonicity is `>=`, so equal rungs are permitted — and were real.
+
+        Nineteen live ladders asked 0.99 on every rung. Their BIDS were 0.80,
+        0.65, 0.54, 0.48, 0.22, 0.18 — flawlessly monotone. The market was
+        coherent; the ask was a resting ceiling offer, and `kc.two_sided`'s
+        0.10 spread cap had already refused every one as a candidate. This law
+        must not re-convict them under a charge that belongs to the spread.
+        """
+        cl = self._law_sources()
+        rows = [
+            {"event_ticker": "E1C", "ticker": "E1C-1", "market_price": 0.99,
+             "yes_bid": 0.80, "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "E1C", "ticker": "E1C-2", "market_price": 0.99,
+             "yes_bid": 0.18, "title": "Will over 5.5 goals be scored?"},
+        ]
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(rows).verdict,
+                         cl.HOLDS)
+
+    def test_a_one_sided_ladder_cannot_pass(self):
+        """No bid, no bracket, no verdict — and above all no HOLDS.
+
+        Counting an unfalsifiable ladder as a pass is the exact substitution in
+        memory `presence-is-not-currency`: the denominator swells with rows
+        that were never capable of failing.
+        """
+        cl = self._law_sources()
+        rows = [
+            {"event_ticker": "E1D", "ticker": "E1D-1", "market_price": 0.90,
+             "title": "Will over 0.5 goals be scored?"},
+            {"event_ticker": "E1D", "ticker": "E1D-2", "market_price": 0.95,
+             "title": "Will over 1.5 goals be scored?"},
+        ]
+        r = cl.law_nested_probabilities_are_monotone(rows)
+        self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+        self.assertIn("one-sided", r.detail)
+
+    def test_a_zero_bid_is_an_empty_book_not_a_bid_of_zero(self):
+        """0 means nobody is bidding, so the rung stays untestable."""
+        cl = self._law_sources()
+        self.assertIsNone(cl._bid_of({"yes_bid": 0}))
+        self.assertIsNone(cl._bid_of({"yes_bid": None}))
+        self.assertIsNone(cl._bid_of({}))
+        self.assertEqual(cl._bid_of({"yes_bid": 0.42}), 0.42)
 
     def test_a_monotone_ladder_holds(self):
         """The counterpart, so the law cannot pass by being permanently broken.
@@ -8021,11 +8087,11 @@ class TestCoherenceLaws(unittest.TestCase):
         cl = self._law_sources()
         rows = [
             {"event_ticker": "E2", "ticker": "E2-1", "market_price": 0.95,
-             "title": "Will over 0.5 goals be scored?"},
+             "yes_bid": 0.93, "title": "Will over 0.5 goals be scored?"},
             {"event_ticker": "E2", "ticker": "E2-2", "market_price": 0.60,
-             "title": "Will over 1.5 goals be scored?"},
+             "yes_bid": 0.58, "title": "Will over 1.5 goals be scored?"},
             {"event_ticker": "E2", "ticker": "E2-3", "market_price": 0.20,
-             "title": "Will over 2.5 goals be scored?"},
+             "yes_bid": 0.18, "title": "Will over 2.5 goals be scored?"},
         ]
         self.assertEqual(cl.law_nested_probabilities_are_monotone(rows).verdict,
                          cl.HOLDS)
@@ -8036,12 +8102,77 @@ class TestCoherenceLaws(unittest.TestCase):
         cl = self._law_sources()
         rows = [
             {"event_ticker": "E3", "ticker": "E3-1", "market_price": 0.20,
-             "title": "Will under 0.5 goals be scored?"},
+             "yes_bid": 0.18, "title": "Will under 0.5 goals be scored?"},
             {"event_ticker": "E3", "ticker": "E3-2", "market_price": 0.75,
-             "title": "Will under 2.5 goals be scored?"},
+             "yes_bid": 0.73, "title": "Will under 2.5 goals be scored?"},
         ]
         self.assertEqual(cl.law_nested_probabilities_are_monotone(rows).verdict,
                          cl.HOLDS)
+
+        # ...and the mirror really does fire, so the direction flip is not a
+        # blanket amnesty for every BELOW ladder.
+        arb = [
+            {"event_ticker": "E3B", "ticker": "E3B-1", "market_price": 0.70,
+             "yes_bid": 0.68, "title": "Will under 2.5 goals be scored?"},
+            {"event_ticker": "E3B", "ticker": "E3B-2", "market_price": 0.40,
+             "yes_bid": 0.72, "title": "Will under 0.5 goals be scored?"},
+        ]
+        self.assertEqual(cl.law_nested_probabilities_are_monotone(arb).verdict,
+                         cl.VIOLATED, "under 2.5 asks 0.70 while under 0.5 bids 0.72")
+
+    def test_a_host_that_schedules_no_pipeline_is_not_blamed_on_main_py(self):
+        """CANNOT_TELL must name the host that owns the cadence, not main.py.
+
+        Read heartbeat-first, this law told every Mac session that main.py was
+        writing an obsolete single-timestamp heartbeat. main.py's producer was
+        correct; the Mac had simply not run the pipeline since 2026-08-14, when
+        it was narrowed to exit-only. A verdict that names the wrong owner
+        sends the next session to repair working code.
+        """
+        cl = self._law_sources()
+        real = cl._scheduled_pipeline_runs_today
+        try:
+            cl._scheduled_pipeline_runs_today = lambda now: 0
+            with patch.object(cl, "_this_host", lambda: "mac"), \
+                 patch.object(cl, "_designated_pipeline_host", lambda: "apexcapitalc"):
+                r = cl.law_runs_match_schedule()
+            self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+            self.assertIn("apexcapitalc", r.detail)
+            self.assertNotIn("main.py heartbeat block", r.detail)
+        finally:
+            cl._scheduled_pipeline_runs_today = real
+
+    def test_the_designated_host_scheduling_zero_runs_is_a_violation(self):
+        """Zero is only a safe answer on a host that is not the writer.
+
+        On the designated host, "no main.py in the crontab" means the firm's
+        pipeline is scheduled nowhere. Returning CANNOT_TELL there would let a
+        crontab that lost its entries read as an excuse.
+        """
+        cl = self._law_sources()
+        real = cl._scheduled_pipeline_runs_today
+        try:
+            cl._scheduled_pipeline_runs_today = lambda now: 0
+            with patch.object(cl, "_this_host", lambda: "apexcapitalc"), \
+                 patch.object(cl, "_designated_pipeline_host", lambda: "apexcapitalc"):
+                r = cl.law_runs_match_schedule()
+            self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
+        finally:
+            cl._scheduled_pipeline_runs_today = real
+
+    def test_an_unreadable_schedule_is_not_reported_as_zero(self):
+        """None and 0 mean opposite things and must not collapse."""
+        cl = self._law_sources()
+        real = cl._scheduled_pipeline_runs_today
+        try:
+            cl._scheduled_pipeline_runs_today = lambda now: None
+            with patch.object(cl, "_this_host", lambda: "apexcapitalc"), \
+                 patch.object(cl, "_designated_pipeline_host", lambda: "apexcapitalc"):
+                r = cl.law_runs_match_schedule()
+            self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
+            self.assertIn("crontab", r.detail)
+        finally:
+            cl._scheduled_pipeline_runs_today = real
 
     def test_an_unparseable_title_is_not_forced_onto_the_number_line(self):
         """No threshold, no judgement. Guessing a direction invents violations."""

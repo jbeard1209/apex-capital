@@ -56,6 +56,20 @@ import kalshi_client as kc
 DATA_DIR = Path(__file__).resolve().parent / "data"
 SCAN_LOG = DATA_DIR / "kalshi_scan_log.json"
 
+# The COMPLETE ladders behind everything that surfaced, kept in their own file so
+# `coherence_laws.law_nested_probabilities_are_monotone` can re-derive its verdict
+# from raw quotes instead of from the rows this scanner chose to keep.
+#
+# A ladder's coherence is a property of the WHOLE ladder, and the near-certainty
+# band is a slice through it. Judge the slice and you get it wrong in both
+# directions: the MLB event with eleven rungs put exactly two in the band, and
+# two adjacent rungs are almost always locally fine (false negative); a ladder
+# whose in-band rungs both clip to the 99c ceiling looks "all identically
+# priced" (false positive — this cost a real investigation on 2026-08-17, when
+# the law reported 26 leaks that were not leaks). Only complete ladders are
+# checkable, so only complete ladders are stored.
+LADDER_UNIVERSE = DATA_DIR / "kalshi_ladders.json"
+
 # --- gates ------------------------------------------------------------------
 # A lock has to clear fees on BOTH legs plus this cushion, in cents, or it is
 # not a lock. Books at these prices are thin and the second leg can move while
@@ -398,10 +412,36 @@ def _ladder_rows_from_markets(markets):
         out.append({
             "ticker": m.get("ticker"), "event_ticker": m.get("event_ticker"),
             "title": m.get("title"), "yes_sub_title": m.get("yes_sub_title"),
-            "market_price": ask, "strike_type": m.get("strike_type"),
+            "market_price": ask, "yes_bid": kc.parse_price(m.get("yes_bid_dollars")),
+            "strike_type": m.get("strike_type"),
             "floor_strike": m.get("floor_strike"), "cap_strike": m.get("cap_strike"),
         })
     return out
+
+
+def _persistable_ladder_universe(universe, band_events):
+    """Every quoted rung of every event that put a leg in the band.
+
+    Whole ladders for the events that matter, rather than every rung on the
+    exchange (46,726 rungs / 13.7MB per scan) or only the in-band rungs (which
+    are not ladders at all). Measured: 21,048 rungs, ~4MB.
+
+    The scanner's only contribution is WHICH EVENTS to store — a structural
+    choice, not the judgment under test. Thresholds are deliberately NOT parsed
+    here: the law runs its own `market_threshold` over the raw exchange fields,
+    so the two sides of the comparison stay independent. Storing a verdict, or
+    even a parse, would make the law audit this function's opinion instead of
+    the exchange's numbers.
+    """
+    # `yes_bid` is not optional decoration: without the other side of the book
+    # the monotonicity law can only compare ask to ask, which is wrong 98.6% of
+    # the time (see `coherence_laws._bid_of`). `title` is dropped — measured
+    # 2026-08-17, keeping it cost 3.2MB per scan and bought zero extra ladders,
+    # because `yes_sub_title` plus the strike fields already parse every rung.
+    keep = ("ticker", "event_ticker", "market_price", "yes_bid", "strike_type",
+            "floor_strike", "cap_strike", "yes_sub_title")
+    return [{k: r.get(k) for k in keep}
+            for r in universe if r.get("event_ticker") in band_events]
 
 
 def drop_incoherent(rows, markets=None):
@@ -608,6 +648,18 @@ def scan(max_pages=25, estimator=None, check_mutex=True):
     disagree = find_disagreement_candidates(markets, estimator)
     # `markets`, not `disagree`: the ladder is judged whole. See drop_incoherent.
     disagree, incoherent, unchecked = drop_incoherent(disagree, markets=markets)
+
+    # Publish the complete ladders behind everything that surfaced, so the
+    # coherence law can check this scanner's work against the raw quotes rather
+    # than against the rows this scanner decided to keep.
+    universe = _ladder_rows_from_markets(markets)
+    band_events = {r["event_ticker"] for r in universe
+                   if r.get("event_ticker")
+                   and NEAR_CERTAINTY_LO <= r["market_price"] <= NEAR_CERTAINTY_HI}
+    ladder_rows = _persistable_ladder_universe(universe, band_events)
+    _save(LADDER_UNIVERSE, {"scanned_at": _now(), "env": kc.env_name(),
+                            "events": len(band_events), "rungs": len(ladder_rows),
+                            "rows": ladder_rows})
 
     report = {
         "scanned_at": _now(), "env": kc.env_name(),

@@ -179,12 +179,22 @@ def _pill_deployed_set_matches_repo(law):
 
 
 def _pill_nested_probabilities_are_monotone(law):
-    """"Over 1.5 goals" priced ABOVE "over 0.5 goals" — arithmetically impossible."""
+    """"Over 1.5 goals" BID above what "over 0.5 goals" ASKS — impossible.
+
+    Carries both sides of the book on purpose. The pill used to quote asks
+    only, and when the law was corrected on 2026-08-17 to compare ask against
+    bid — the only comparison a spread cannot explain — an ask-only pill would
+    have gone quiet and reported this law BLIND. A pill has to be rebuilt
+    against the law's real failure condition whenever that condition changes,
+    or the third line certifies the second line on a test it no longer takes.
+    """
     rows = [
         {"event_ticker": "ZZPILL-EVENT", "ticker": "ZZPILL-A",
-         "title": "Will over 0.5 goals be scored?", "market_price": 0.40},
+         "title": "Will over 0.5 goals be scored?",
+         "market_price": 0.40, "yes_bid": 0.38},
         {"event_ticker": "ZZPILL-EVENT", "ticker": "ZZPILL-B",
-         "title": "Will over 1.5 goals be scored?", "market_price": 0.90},
+         "title": "Will over 1.5 goals be scored?",
+         "market_price": 0.92, "yes_bid": 0.90},
     ]
     return law(rows=rows)
 

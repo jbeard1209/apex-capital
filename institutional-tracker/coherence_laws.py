@@ -58,7 +58,7 @@ import logging
 import re
 import sys
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, List, Optional, Tuple
 
@@ -238,6 +238,48 @@ def market_threshold(m: dict) -> Optional[Tuple[float, str]]:
     return None
 
 
+def _bid_of(row: dict) -> Optional[float]:
+    """The rung's bid, or None. None means "not observed", never zero.
+
+    THIS FUNCTION IS WHY THIS LAW STOPPED SHOUTING. Until 2026-08-17 the law
+    compared ask against ask and reported 287 of 1,148 ladders VIOLATED. Four
+    of those 287 were real. The other 283 were the bid-ask spread.
+
+    A quote is not a probability, it is a BRACKET around one: the true P lies
+    somewhere in [bid, ask]. Comparing two rungs' asks compares the tops of two
+    brackets of different widths, and a wide bracket sits above a narrow one
+    for reasons that have nothing to do with arithmetic. Monotonicity is
+    contradicted only when the brackets cannot be ordered at all — when the
+    MOST the wide outcome can be worth is less than the LEAST the narrow one
+    is: `ask(wide) < bid(narrow)`. That is also exactly the arbitrage (buy
+    wide, sell narrow, collect the difference, and the payoff is never
+    negative), which is the proof that no probabilities produce these quotes.
+
+    The 19 "every rung identically priced" ladders were the tell. Six legs all
+    asking 0.99 looked like nonsense, and their BIDS were 0.80, 0.65, 0.54,
+    0.48, 0.22, 0.18 — flawlessly monotone. The market was coherent. The ask
+    was a resting ceiling offer nobody would ever meet, and `kc.two_sided`'s
+    0.10 spread cap had already refused every one of them as a candidate. The
+    law was blaming the ladder for what the spread gate had caught and named.
+
+    An alarm that is wrong 98.6% of the time is not a strict alarm, it is
+    noise, and noise is how a real one gets ignored.
+    """
+    for key in ("yes_bid", "yes_bid_dollars", "bid"):
+        if key not in row:
+            continue
+        try:
+            v = float(row[key])
+        except (TypeError, ValueError):
+            return None
+        # Zero is an empty book, not a bid of nothing — the same reading that
+        # opened the Kalshi sector. Parsed here rather than imported from
+        # kalshi_client on purpose: a law that borrows the scanner's reading of
+        # a number is no longer a second, independent source for it.
+        return v if 0.0 < v < 1.0 else None
+    return None
+
+
 def _ladders(rows: List[dict]) -> dict:
     """Group rows into (event_ticker, direction) ladders of >= 2 distinct rungs.
 
@@ -258,6 +300,99 @@ def _ladders(rows: List[dict]) -> dict:
         # independent observations and must not be compared against each other.
         grouped[(ev, direction)][threshold] = r
     return {k: v for k, v in grouped.items() if len(v) >= 2}
+
+
+# How stale a scan may be before its rows stop being evidence about now.
+# main.py runs 6x/day, so a scan older than this means the scanner stopped and
+# the laws below would otherwise keep passing on a frozen snapshot forever —
+# the failure in memory `presence-is-not-currency`.
+KALSHI_SCAN_MAX_AGE_HOURS = 36
+
+
+def _kalshi_scan_report(filename, key):
+    """(rows, provenance) from a Kalshi scanner artifact, or (None, why).
+
+    Shared freshness + shape handling. The age check is not boilerplate: main.py
+    scans 6x/day, and without it a law keeps passing forever on a frozen
+    snapshot after the scanner stops — an alarm that is GREEN because nothing is
+    looking (memory `presence-is-not-currency`).
+    """
+    path = DATA_DIR / filename
+    if not path.exists():
+        return None, f"no {filename} — the scanner has not run on this host"
+    try:
+        report = json.loads(path.read_text())
+    except (ValueError, OSError) as e:
+        return None, f"{filename} unreadable: {e}"
+    if isinstance(report, list):
+        report = report[-1] if report else {}
+    if not isinstance(report, dict):
+        return None, f"{filename} is neither a report nor a list of reports"
+
+    stamped = report.get("scanned_at")
+    try:
+        t = datetime.fromisoformat(str(stamped).replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        age_h = (datetime.now(timezone.utc) - t).total_seconds() / 3600.0
+    except (TypeError, ValueError):
+        return None, f"{filename} carries no readable `scanned_at` — its age is unknown"
+    if age_h > KALSHI_SCAN_MAX_AGE_HOURS:
+        return None, (f"last scan is {age_h:.0f}h old (limit "
+                      f"{KALSHI_SCAN_MAX_AGE_HOURS}h) — these quotes are history, "
+                      f"not evidence about the book now. Owner: Kalshi sector cron")
+    return report.get(key) or [], report, age_h
+
+
+def _kalshi_ladder_rows():
+    """(rows, provenance) — every rung of every ladder behind a surfaced candidate.
+
+    **Complete ladders, and that is the entire point.** A ladder's coherence is a
+    property of the whole ladder; the near-certainty band is a slice through it,
+    and judging the slice is wrong in both directions. Reading only in-band rungs
+    the first time this law was repointed produced 26 "leaks" that were not
+    leaks: two adjacent rungs both pinned at the 99c ceiling are unremarkable —
+    99c is the highest quotable price, so any two near-certain thresholds clip
+    there — but they read as "all rungs identically priced", which IS damning
+    across a full six-leg ladder. The evidence looked exactly like a finding.
+
+    `kalshi_scanner` publishes the raw rungs; the parse and the verdict are both
+    done here, so the two sides of the comparison stay independent.
+    """
+    got = _kalshi_scan_report("kalshi_ladders.json", "rows")
+    if got[0] is None:
+        return None, got[1]
+    rows, report, age_h = got
+    return rows, (f"{len(rows)} rung(s) across {report.get('events', '?')} "
+                  f"event(s), published {age_h:.1f}h ago")
+
+
+def _kalshi_cleared_rows():
+    """(rows, provenance) — the quotes the Kalshi scanner PASSED, or (None, why).
+
+    **Not the prediction ledger.** Both Kalshi laws used to read
+    `kalshi_predictions.json`, which holds only the rows we chose to record, and
+    both therefore reported CANNOT_TELL — "no event carried 2+ parseable rungs" —
+    while `kalshi_scan_log.json`, written minutes earlier in the same directory,
+    held 1,933 checkable rows of which the scanner itself had just rejected 441
+    for violating this exact law.
+
+    Reading the picks makes a law audit the output of its own consumer: it can
+    only ever confirm what the filter already removed, which is circular and
+    always clean. Reading the CLEARED rows instead makes the comparison real —
+    source A is the scanner's verdict (it kept this quote), source B is the law
+    re-derived from the raw prices. An inversion among the kept rows is a quote
+    that got through the gate, which is a finding. Feeding it the DROPPED rows
+    would be the opposite mistake: guaranteed VIOLATED on exactly the rows the
+    firm correctly refused, a permanent red light that means nothing.
+    """
+    got = _kalshi_scan_report("kalshi_scan_log.json", "disagreement")
+    if got[0] is None:
+        return None, got[1]
+    rows, report, age_h = got
+    return rows, (f"{len(rows)} row(s) cleared by the scanner "
+                  f"{age_h:.1f}h ago; {len(report.get('dropped_incoherent') or [])} "
+                  f"were dropped and are deliberately NOT re-judged here")
 
 
 @sources("kalshi quote, low rung", "kalshi quote, high rung (same event)")
@@ -282,52 +417,77 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
     """
     name = "nested_probabilities_are_monotone"
     src = law_nested_probabilities_are_monotone.sources
+    provenance = "rows supplied by caller"
     if rows is None:
-        path = DATA_DIR / "kalshi_predictions.json"
-        if not path.exists():
+        rows, provenance = _kalshi_ladder_rows()
+        if rows is None:
             return LawResult(name, CANNOT_TELL,
-                             f"no prediction ledger at {path} — the Kalshi scanner "
-                             f"has not recorded a scan on this host. Owner: Kalshi sector.",
-                             src)
-        try:
-            rows = json.loads(path.read_text())
-        except (ValueError, OSError) as e:
-            return LawResult(name, CANNOT_TELL,
-                             f"prediction ledger unreadable: {e}. Owner: Kalshi sector.", src)
+                             f"{provenance}. Owner: Kalshi sector.", src)
     if not isinstance(rows, list):
-        return LawResult(name, CANNOT_TELL, "prediction ledger is not a list", src)
+        return LawResult(name, CANNOT_TELL, "ladder rows are not a list", src)
 
     ladders = _ladders(rows)
     if not ladders:
         return LawResult(name, CANNOT_TELL,
-                         "no event carried 2+ parseable rungs — nothing to compare. "
-                         "Owner: Kalshi sector.", src)
+                         f"no event carried 2+ parseable rungs — nothing to "
+                         f"compare ({provenance}). Owner: Kalshi sector.", src)
 
-    bad = []
+    bad, unprovable, untestable = [], 0, 0
     for (ev, direction), rungs in sorted(ladders.items()):
         ordered = sorted(rungs.items())          # ascending threshold
-        prices = [row["market_price"] for _, row in ordered]
         if direction == "below":
-            prices = prices[::-1]                # BELOW ladders must RISE
-        inverted = any(prices[i] < prices[i + 1] - 1e-9 for i in range(len(prices) - 1))
-        flat = len(set(prices)) == 1
-        if inverted or flat:
-            bad.append({
-                "event_ticker": ev,
-                "direction": direction,
-                "fault": "inverted" if inverted else "all rungs identically priced",
-                "rungs": [[t, row["market_price"]] for t, row in ordered],
-            })
+            ordered = ordered[::-1]              # so index order is always "widest first"
+        asks = [row.get("market_price") for _, row in ordered]
+        bids = [_bid_of(row) for _, row in ordered]
 
+        hit = None
+        pairs = 0
+        for i in range(len(ordered)):
+            for j in range(i + 1, len(ordered)):
+                if asks[i] is None or bids[j] is None:
+                    continue
+                pairs += 1
+                if asks[i] < bids[j] - 1e-9:
+                    hit = hit or (i, j, round(bids[j] - asks[i], 4))
+        if not pairs:
+            untestable += 1
+            continue
+        if hit is None:
+            # The ask ladder may still look inverted. That is not a finding:
+            # see this law's `_bid_of` note. Counted, never alarmed on.
+            if any(a is not None and asks[k + 1] is not None and a < asks[k + 1] - 1e-9
+                   for k, a in enumerate(asks[:-1])) or len(set(asks)) == 1:
+                unprovable += 1
+            continue
+        i, j, credit = hit
+        bad.append({
+            "event_ticker": ev,
+            "direction": direction,
+            "fault": "provable arbitrage",
+            "detail": (f"ask {asks[i]:.2f} on the {ordered[i][0]:g} rung is BELOW "
+                       f"bid {bids[j]:.2f} on the {ordered[j][0]:g} rung — buy the "
+                       f"wider outcome for less than the narrower one sells for, "
+                       f"for a {credit:.2f} credit and a payoff that cannot be negative"),
+            "credit": credit,
+            "rungs": [[t, row.get("market_price"), _bid_of(row)] for t, row in ordered],
+        })
+
+    checked = len(ladders) - untestable
+    if not checked:
+        return LawResult(name, CANNOT_TELL,
+                         f"all {len(ladders)} ladder(s) are one-sided — no rung pair "
+                         f"carries both an ask and a bid, so nothing here is "
+                         f"falsifiable ({provenance}). Owner: Kalshi sector.", src)
+    tail = (f"; {untestable} ladder(s) not testable (one-sided), "
+            f"{unprovable} non-monotone on asks alone but spread-explicable")
     if not bad:
         return LawResult(name, HOLDS,
-                         f"{len(ladders)} ladder(s) checked, all monotone", src,
-                         n_examined=len(ladders))
+                         f"{checked} testable ladder(s) admit a monotone set of "
+                         f"probabilities{tail}", src, n_examined=checked)
     return LawResult(
         name, VIOLATED,
-        f"{len(bad)} of {len(ladders)} ladder(s) price nested outcomes "
-        f"incoherently — these quotes are not probabilities and must not be "
-        f"treated as candidates",
+        f"{len(bad)} of {checked} testable ladder(s) quote a nested pair that no "
+        f"set of probabilities can produce{tail}",
         src, bad,
     )
 
@@ -358,46 +518,68 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
     """
     name = "quoted_prices_have_two_sides"
     src = law_quoted_prices_have_two_sides.sources
+    provenance = "rows supplied by caller"
     if rows is None:
-        path = DATA_DIR / "kalshi_predictions.json"
-        if not path.exists():
+        rows, provenance = _kalshi_cleared_rows()
+        if rows is None:
             return LawResult(name, CANNOT_TELL,
-                             f"no prediction ledger at {path}. Owner: Kalshi sector.", src)
-        try:
-            rows = json.loads(path.read_text())
-        except (ValueError, OSError) as e:
-            return LawResult(name, CANNOT_TELL, f"ledger unreadable: {e}", src)
+                             f"{provenance}. Owner: Kalshi sector.", src)
     if not rows:
-        return LawResult(name, CANNOT_TELL, "ledger is empty", src)
+        return LawResult(name, CANNOT_TELL,
+                         f"the scanner cleared no rows ({provenance}) — nothing "
+                         f"to check is not the same as nothing wrong", src)
 
     with_bid = [r for r in rows if r.get("yes_bid") is not None]
     if not with_bid:
         return LawResult(
             name, CANNOT_TELL,
-            f"none of {len(rows)} ledger rows carry a `yes_bid` — every one "
-            f"predates the field. Their quotes cannot be shown to have had a "
-            f"second side, and the settled ones did not behave as if they did "
-            f"(0.97 quoted, 0.27 realised, n=86). Owner: Kalshi sector; "
-            f"resolves itself as post-fix scans accumulate.", src)
+            f"none of {len(rows)} row(s) carry a `yes_bid` — every one predates "
+            f"the field. Their quotes cannot be shown to have had a second side, "
+            f"and the settled ones did not behave as if they did (0.97 quoted, "
+            f"0.27 realised, n=86). Owner: Kalshi sector.", src)
 
     one_sided = [r for r in with_bid
                  if r["yes_bid"] <= 0 or r["yes_bid"] >= r.get("market_price", 1.0)]
     if one_sided:
         return LawResult(name, VIOLATED,
-                         f"{len(one_sided)} of {len(with_bid)} rows carry a bid that "
-                         f"is absent or crossed — the gate let through a quote with "
-                         f"no live counterparty", src,
+                         f"{len(one_sided)} of {len(with_bid)} cleared row(s) carry a "
+                         f"bid that is absent or crossed — `two_sided()` passed a "
+                         f"quote with no live counterparty ({provenance})", src,
                          [{"ticker": r.get("ticker"), "bid": r.get("yes_bid"),
-                           "ask": r.get("market_price")} for r in one_sided])
+                           "ask": r.get("market_price")} for r in one_sided[:20]])
     return LawResult(name, HOLDS,
-                     f"{len(with_bid)} of {len(rows)} row(s) carry a live two-sided "
-                     f"book; {len(rows) - len(with_bid)} predate the field", src,
+                     f"{len(with_bid)} of {len(rows)} cleared row(s) carry a live "
+                     f"two-sided book; {len(rows) - len(with_bid)} predate the "
+                     f"field ({provenance})", src,
                      n_examined=len(with_bid))
 
 
 # =============================================================================
 # LAW — runs match schedule
 # =============================================================================
+
+def _this_host() -> str:
+    """This host's persisted identity, never one derived from the hostname.
+
+    `single_writer` is the one place that knows it, and it knows it because it
+    is written down rather than inferred — the correction from memory
+    `two_brains_one_account`.
+    """
+    try:
+        import single_writer
+        return single_writer.this_host() or "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _designated_pipeline_host() -> Optional[str]:
+    """The host that is supposed to be running main.py, or None if unknowable."""
+    try:
+        import single_writer
+        return single_writer.designated_host() or None
+    except Exception:
+        return None
+
 
 @sources("pipeline_heartbeat.json starts (observed)", "host schedule (intended)")
 def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
@@ -424,6 +606,33 @@ def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
     name = "runs_match_schedule"
     src = law_runs_match_schedule.sources
     now = now or datetime.now()
+
+    # The SCHEDULE is read first, and that ordering is the fix for a false
+    # accusation. Read heartbeat-first, this law told every Mac session that
+    # `main.py` was writing an obsolete heartbeat format — main.py's producer
+    # was correct, and the file was simply the last one written before the Mac
+    # stopped running the pipeline at all. A CANNOT_TELL that names the wrong
+    # owner is worse than one that names none: it sends the next session to
+    # repair working code (memory `verdict-with-no-consequence`).
+    intended = _scheduled_pipeline_runs_today(now)
+    if intended is None:
+        return LawResult(name, CANNOT_TELL,
+                         "could not read this host's schedule — `crontab -l` failed. "
+                         "Owner: whoever owns this host's scheduler.", src)
+    if intended == 0:
+        designated = _designated_pipeline_host()
+        if designated and _this_host() != designated:
+            return LawResult(name, CANNOT_TELL,
+                             f"this host ({_this_host()}) schedules no main.py runs — "
+                             f"correct since it was narrowed to exit-only. The pipeline "
+                             f"cadence belongs to '{designated}' and there is no state "
+                             f"sync between hosts. Owner: {designated}.", src)
+        return LawResult(name, VIOLATED,
+                         f"this host ({_this_host()}) is the designated pipeline writer "
+                         f"and its crontab schedules main.py ZERO times. The pipeline is "
+                         f"not scheduled anywhere.", src,
+                         [{"host": _this_host(), "intended": 0}])
+
     hb_path = DATA_DIR / "pipeline_heartbeat.json"
     if not hb_path.exists():
         return LawResult(name, CANNOT_TELL,
@@ -450,13 +659,6 @@ def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
         except ValueError:
             continue
 
-    intended = _scheduled_pipeline_runs_today(now)
-    if intended is None:
-        return LawResult(name, CANNOT_TELL,
-                         "could not read this host's schedule — no crontab entry for "
-                         "main.py and no launchd plist. Owner: whoever owns this host's "
-                         "scheduler.", src)
-
     if observed > intended:
         return LawResult(name, VIOLATED,
                          f"main.py started {observed} time(s) today; the schedule asks "
@@ -482,9 +684,17 @@ def _scheduled_pipeline_runs_today(now: datetime) -> Optional[int]:
 
     Reads the LIVE scheduler, not a doc. A doc is a third party's claim about
     the schedule; `crontab -l` is the schedule (memory `auditor_ground_truth`).
-    Returns None when it cannot be read — never 0, which would read as "nothing
-    is scheduled, so any run is an overrun" and turn a degraded read into a
-    false alarm (memory `fallback-that-means-act`, inverted).
+    Returns None when the schedule CANNOT BE READ, and 0 when it reads fine and
+    asks for no runs. Those were one value until 2026-08-17 and they mean
+    opposite things: the first is a degraded read, the second is a fact about
+    this host — the Mac has had no main.py line since it was narrowed to
+    exit-only, which is correct and permanent. Collapsing them made the law
+    accuse `main.py`'s heartbeat block of writing an old format on a host where
+    main.py had simply not run since 2026-08-14. One sentinel standing for two
+    states with different consequences is `fallback-that-means-act`.
+
+    0 is only safe because the caller acts on it: on the DESIGNATED host, zero
+    scheduled runs is a violation, not an excuse.
     """
     import subprocess
     try:
@@ -510,9 +720,7 @@ def _scheduled_pipeline_runs_today(now: datetime) -> Optional[int]:
             continue
         # An hour field of "9,13,17" or "*/4" expands to that many fires.
         count += _expand_field(hour, 24) * _expand_field(minute, 60)
-    if not saw_any:
-        return None
-    return count
+    return count if saw_any else 0
 
 
 def _expand_field(field: str, span: int) -> int:
