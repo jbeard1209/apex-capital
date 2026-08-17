@@ -535,7 +535,8 @@ DEPLOY_EXEMPT = {
 
 
 @sources("git ls-files + local md5 (repo)", "md5sum + find on the trading host (deployed)")
-def law_deployed_set_matches_repo(runner: Optional[Callable] = None) -> LawResult:
+def law_deployed_set_matches_repo(runner: Optional[Callable] = None,
+                                  has_checkout: Optional[bool] = None) -> LawResult:
     """Every tracked .py in the repo is byte-identical on the trading host.
 
     SOURCE A: `git ls-files '*.py'` + local md5. What the firm WROTE.
@@ -556,6 +557,14 @@ def law_deployed_set_matches_repo(runner: Optional[Callable] = None) -> LawResul
     Runs where the git checkout is. On the VM there is no `.git` (deploy.sh
     rsyncs with --exclude=.git/), so this returns CANNOT_TELL naming the Mac
     rather than pretending.
+
+    `has_checkout` overrides that probe and exists for one reason: the probe ran
+    BEFORE the injected `runner`, so the four tests that drive both sides through
+    a fake runner short-circuited on any host without a repo — they passed on the
+    Mac and failed on the VM, which is the two-zone divergence in memory
+    `host_divergence_is_a_bug_class` showing up inside the suite meant to catch
+    it. A caller supplying both sides is not a host pretending it has a repo.
+    Default None keeps production on the real probe.
     """
     name = "deployed_set_matches_repo"
     src = law_deployed_set_matches_repo.sources
@@ -563,7 +572,10 @@ def law_deployed_set_matches_repo(runner: Optional[Callable] = None) -> LawResul
     runner = runner or (lambda cmd, timeout: subprocess.run(
         cmd, capture_output=True, text=True, timeout=timeout))
 
-    if not (BASE_DIR / ".git").exists() and not (BASE_DIR.parent / ".git").exists():
+    if has_checkout is None:
+        has_checkout = ((BASE_DIR / ".git").exists()
+                        or (BASE_DIR.parent / ".git").exists())
+    if not has_checkout:
         return LawResult(name, CANNOT_TELL,
                          "no git checkout on this host — the deployed set can only be "
                          "compared where the repo is. Owner: the Mac (dev host).", src)

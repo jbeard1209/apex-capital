@@ -8115,7 +8115,8 @@ class TestCoherenceLaws(unittest.TestCase):
         self.assertNotEqual(h, wrong)
         r = cl.law_deployed_set_matches_repo(
             self._fake_ssh(f"{wrong}  coherence_laws.py\n",
-                           ls_files=("coherence_laws.py",)))
+                           ls_files=("coherence_laws.py",)),
+            has_checkout=True)
         self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
 
     def test_an_identical_deployed_set_holds(self):
@@ -8125,7 +8126,8 @@ class TestCoherenceLaws(unittest.TestCase):
         r = cl.law_deployed_set_matches_repo(
             self._fake_ssh(f"{h}  coherence_laws.py\n",
                            find_body="\ncoherence_laws.py\n",
-                           ls_files=("coherence_laws.py",)))
+                           ls_files=("coherence_laws.py",)),
+            has_checkout=True)
         self.assertEqual(r.verdict, cl.HOLDS, r.detail)
 
     def test_a_file_on_the_host_that_is_in_no_commit_is_a_violation(self):
@@ -8136,9 +8138,45 @@ class TestCoherenceLaws(unittest.TestCase):
         r = cl.law_deployed_set_matches_repo(
             self._fake_ssh(f"{h}  coherence_laws.py\n",
                            find_body="\ncoherence_laws.py\nsecret_thing.py\n",
-                           ls_files=("coherence_laws.py",)))
+                           ls_files=("coherence_laws.py",)),
+            has_checkout=True)
         self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
         self.assertIn("secret_thing.py", json.dumps(r.evidence))
+
+    def test_this_laws_tests_do_not_depend_on_the_host_running_them(self):
+        """These four passed on the Mac and failed on the VM. That is the bug.
+
+        The `.git` probe ran BEFORE the injected runner, so on a host with no
+        checkout every one of them short-circuited to CANNOT_TELL — a suite
+        reporting green on one host and red on the other, which is memory
+        `host_divergence_is_a_bug_class` appearing inside the tests written to
+        catch exactly that. Deploying the suite and never running it on the far
+        host is how that stays invisible.
+
+        Simulated here by pointing BASE_DIR at a directory with no .git: a
+        caller driving both sides must still get a real verdict.
+        """
+        import hashlib
+        cl = self._law_sources()
+        payload = b"# stand-in for a tracked file\n"
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d) / "nogit"
+            root.mkdir()
+            (root / "coherence_laws.py").write_bytes(payload)
+            h = hashlib.md5(payload).hexdigest()
+            real_base = cl.BASE_DIR
+            try:
+                cl.BASE_DIR = root
+                self.assertFalse((root / ".git").exists())
+                r = cl.law_deployed_set_matches_repo(
+                    self._fake_ssh(f"{h}  coherence_laws.py\n",
+                                   find_body="\ncoherence_laws.py\n",
+                                   ls_files=("coherence_laws.py",)),
+                    has_checkout=True)
+            finally:
+                cl.BASE_DIR = real_base
+        self.assertEqual(r.verdict, cl.HOLDS,
+                         "the host vetoed a comparison the caller supplied in full")
 
     def test_an_unreachable_host_is_not_a_clean_deploy(self):
         cl = self._law_sources()
@@ -8149,7 +8187,7 @@ class TestCoherenceLaws(unittest.TestCase):
                     stdout, stderr, returncode = "coherence_laws.py", "", 0
                 return R()
             raise OSError("ssh: connect to host apex-capital port 22: timed out")
-        r = cl.law_deployed_set_matches_repo(boom)
+        r = cl.law_deployed_set_matches_repo(boom, has_checkout=True)
         self.assertEqual(r.verdict, cl.CANNOT_TELL, r.detail)
 
     def test_a_missing_file_is_named_not_blanked(self):
@@ -8163,7 +8201,8 @@ class TestCoherenceLaws(unittest.TestCase):
         cl = self._law_sources()
         r = cl.law_deployed_set_matches_repo(
             self._fake_ssh("md5sum: coherence_laws.py: No such file or directory\n",
-                           ls_files=("coherence_laws.py",)))
+                           ls_files=("coherence_laws.py",)),
+            has_checkout=True)
         self.assertEqual(r.verdict, cl.VIOLATED, r.detail)
         self.assertIn("coherence_laws.py", json.dumps(r.evidence))
 

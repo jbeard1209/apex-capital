@@ -143,6 +143,23 @@ rsync -avz --progress \
 
 echo "  Project files synced."
 
+# ── 1b. INFRASTRUCTURE.md ────────────────────────────────────────────────────
+# The host inventory lives at the REPO ROOT, one level above the directory this
+# script rsyncs, so no include pattern above could ever reach it. That gap had a
+# consequence: coherence_laws.law_broker_host_census names INFRASTRUCTURE.md as
+# its source B, and on the VM the doc did not exist — so the one law written to
+# catch an undocumented host (the Oracle instance ran 69 days on this account)
+# was reporting HOLDS on the host that does the trading, with its written source
+# absent. The test that pins DOCUMENTED_HOST_TAGS to the doc could not run there
+# either. A source that is not deployed is not a source.
+if [ -f "${LOCAL_DIR}../INFRASTRUCTURE.md" ]; then
+    scp "${LOCAL_DIR}../INFRASTRUCTURE.md" "$SSH_TARGET:~/institutional-tracker/INFRASTRUCTURE.md"
+    echo "  INFRASTRUCTURE.md deployed (source B for the host census)."
+else
+    echo "  WARNING: INFRASTRUCTURE.md not found — the VM's host census will"
+    echo "  have no written source to check itself against."
+fi
+
 # ── 2. Sync .env (credentials) ────────────────────────────────────────────
 echo ""
 echo "[2/2] Syncing .env credentials..."
