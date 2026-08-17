@@ -81,12 +81,23 @@ class LawResult:
     """
 
     def __init__(self, name: str, verdict: str, detail: str,
-                 sources: Tuple[str, str], evidence: Optional[list] = None):
+                 sources: Tuple[str, str], evidence: Optional[list] = None,
+                 n_examined: Optional[int] = None):
         self.name = name
         self.verdict = verdict
         self.detail = detail
         self.sources = sources
         self.evidence = evidence or []
+        # HOW MANY THINGS THIS VERDICT IS ABOUT. A pass with a denominator of
+        # zero is not a pass — it is a check that found nothing to check and
+        # said "clean". That single shape is behind more escapes here than any
+        # other: the Kalshi filter rejected 0 of 0 parseable rungs, the host
+        # census read an INFRASTRUCTURE.md that wasn't there, coverage looked
+        # present on one stale record (memory `presence-is-not-currency`).
+        # `internal_audit_agent` reads this field and downgrades any HOLDS that
+        # cannot say how much it looked at, which is why HOLDS paths must set
+        # it and CANNOT_TELL paths need not.
+        self.n_examined = n_examined
 
     def to_dict(self) -> dict:
         return {
@@ -95,6 +106,7 @@ class LawResult:
             "detail": self.detail,
             "source_a": self.sources[0],
             "source_b": self.sources[1],
+            "n_examined": self.n_examined,
             "evidence": self.evidence[:20],
         }
 
@@ -309,7 +321,8 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
 
     if not bad:
         return LawResult(name, HOLDS,
-                         f"{len(ladders)} ladder(s) checked, all monotone", src)
+                         f"{len(ladders)} ladder(s) checked, all monotone", src,
+                         n_examined=len(ladders))
     return LawResult(
         name, VIOLATED,
         f"{len(bad)} of {len(ladders)} ladder(s) price nested outcomes "
@@ -378,7 +391,8 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
                            "ask": r.get("market_price")} for r in one_sided])
     return LawResult(name, HOLDS,
                      f"{len(with_bid)} of {len(rows)} row(s) carry a live two-sided "
-                     f"book; {len(rows) - len(with_bid)} predate the field", src)
+                     f"book; {len(rows) - len(with_bid)} predate the field", src,
+                     n_examined=len(with_bid))
 
 
 # =============================================================================
@@ -454,8 +468,13 @@ def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
                          f"main.py started {observed} time(s) today against {intended} "
                          f"scheduled, and the day is over.", src,
                          [{"observed": observed, "intended": intended}])
+    # Denominator is the heartbeat history, not today's count: `observed == 0`
+    # is a legitimate result on a quiet host, but a heartbeat that has never
+    # recorded a single start means this law is agreeing with a file nobody
+    # writes, which is the shape of `reader-outlived-its-producer`.
     return LawResult(name, HOLDS,
-                     f"{observed} start(s) today, {intended} scheduled", src)
+                     f"{observed} start(s) today, {intended} scheduled", src,
+                     n_examined=len(starts))
 
 
 def _scheduled_pipeline_runs_today(now: datetime) -> Optional[int]:
@@ -659,7 +678,7 @@ def law_deployed_set_matches_repo(runner: Optional[Callable] = None,
                          f"are in no commit. The host is not running the repo.", src, ev)
     return LawResult(name, HOLDS,
                      f"{len(local)} tracked .py identical on {REMOTE_ALIAS}, "
-                     f"no uncommitted files there", src)
+                     f"no uncommitted files there", src, n_examined=len(local))
 
 
 # =============================================================================
@@ -778,7 +797,7 @@ def law_emitted_verbs_are_handled(agent_dir: Optional[Path] = None) -> LawResult
                          [{"verb": v, "emitted_by": f} for v, f in sorted(unhandled.items())])
     return LawResult(name, HOLDS,
                      f"{len(emitted)} verb(s) emitted ({', '.join(sorted(emitted))}), "
-                     f"all handled", src)
+                     f"all handled", src, n_examined=len(emitted))
 
 
 # =============================================================================
@@ -860,7 +879,7 @@ def law_positions_conserve(broker_positions: Optional[dict] = None,
                          + [{"ledgered_not_held": s} for s in phantom[:10]])
     return LawResult(name, HOLDS,
                      f"{len(held)} broker position(s), same {len(ledger)} in the ledger",
-                     src)
+                     src, n_examined=len(held))
 
 
 # =============================================================================
@@ -969,7 +988,7 @@ def law_broker_host_census(orders: Optional[list] = None,
                          [{"host": h, "last_order": seen[h].isoformat()} for h in strangers])
     return LawResult(name, HOLDS,
                      "; ".join(f"{h} last traded {seen[h].date()}" for h in sorted(seen)),
-                     src)
+                     src, n_examined=len(seen))
 
 
 # =============================================================================

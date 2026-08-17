@@ -585,6 +585,64 @@ def check_coherence_layer():
                      f"report {age_h:.1f}h old ({holds} holding)")
 
 
+def check_internal_audit():
+    """The third line has no fourth line — so this sweep is its outer ring.
+
+    `internal_audit_agent` is the only control whose subject is the other
+    controls. Nothing else in the firm would notice if it stopped: its report
+    would simply stay at the last good answer, and a frozen "0 blind, 0
+    uncovered" reads exactly like a healthy one. That is the orphan tell this
+    audit exists for, applied to the one module where it matters most.
+
+    Three ways it could fail quietly, in descending order of nastiness:
+      1. It will not import — the layer is off and every law's falsifiability
+         is unmeasured.
+      2. A law has no poison pill. Then that law's HOLDS is not evidence, and
+         the audit's own summary would still say "0 blind".
+      3. The report goes stale, so every verdict below is a fossil.
+    """
+    try:
+        import internal_audit_agent as ia
+        import coherence_laws as cl
+    except Exception as e:
+        problems.append(f"[internal audit] will not import ({type(e).__name__}: {e}) "
+                        f"— nothing is checking whether the controls can fail")
+        return
+
+    unpilled = sorted({fn.__name__.replace("law_", "") for fn, _ in cl.LAWS}
+                      - set(ia.POISON_PILLS))
+    if unpilled:
+        problems.append(f"[internal audit] {len(unpilled)} law(s) have no poison pill "
+                        f"({', '.join(unpilled)}) — their HOLDS is an assertion, not "
+                        f"a measurement")
+
+    uncensused = [c.id for c in ia.CONTROL_CENSUS if not c.detectors]
+    if uncensused:
+        problems.append(f"[internal audit] failure class(es) with no detector: "
+                        f"{', '.join(uncensused)}")
+
+    rep = ia.REPORT
+    if not rep.exists():
+        notes.append(f"[internal audit] {rep.name} has NEVER been produced — wired "
+                     f"but not yet run on this host")
+        return
+    try:
+        r = json.loads(rep.read_text())
+        checked = datetime.fromisoformat(r["checked_at"])
+    except Exception as e:
+        problems.append(f"[internal audit] {rep.name} unreadable ({e})")
+        return
+    age_h = (datetime.now() - checked).total_seconds() / 3600.0
+    if age_h > 30:
+        problems.append(f"[internal audit] report is {age_h:.0f}h old — the third line "
+                        f"has stopped running on this host, and a frozen 'all clear' "
+                        f"is indistinguishable from a real one")
+    else:
+        notes.append(f"[internal audit] OK — {len(r.get('falsifiability', []))} control(s) "
+                     f"proven falsifiable, {len(ia.CONTROL_CENSUS)} failure class(es) "
+                     f"censused; report {age_h:.1f}h old")
+
+
 def run_checks() -> dict:
     """Run all wiring checks and return {problems, notes} without exiting.
 
@@ -601,6 +659,7 @@ def run_checks() -> dict:
     check_orphan_queues(sources)
     check_orphan_agents(sources)
     check_coherence_layer()
+    check_internal_audit()
     return {"problems": list(problems), "notes": list(notes)}
 
 

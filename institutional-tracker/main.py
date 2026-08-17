@@ -1850,6 +1850,33 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
     except Exception as _cle:
         logger.warning(f"  Coherence laws error: {_cle}")
 
+    # -- Internal audit: the third line ---------------------------------------
+    # Runs immediately after the laws, and on purpose. Everything above this
+    # point is the firm checking itself; this is the only thing that checks the
+    # checking. It poison-pills every law to prove the alarm can still fire,
+    # refuses any HOLDS that cannot say how many things it examined, and holds
+    # the census of failure classes against the detectors that name them.
+    # A BLIND control means a whole bug class is unwatched while the dashboard
+    # says otherwise — which is what every expensive escape here looked like
+    # from the inside.
+    logger.info("\nInternal audit — can our controls still fail?")
+    try:
+        import internal_audit_agent
+        _ia = internal_audit_agent.run_audit()
+        for _b in _ia["blind"]:
+            logger.error(f"  ✗ BLIND {_b} — it passed an input built to violate it")
+        for _e in _ia["empty_success"]:
+            logger.error(f"  ✗ EMPTY SUCCESS {_e} — HOLDS on zero examined items")
+        for _u in _ia["uncovered"]:
+            logger.warning(f"  ? UNCOVERED failure class: {_u}")
+        internal_audit_agent.escalate(_ia)
+        logger.info(f"  {len(_ia['falsifiability'])} control(s) tested, "
+                    f"{len(_ia['blind'])} blind, {len(_ia['unproven'])} unproven; "
+                    f"{len(_ia['census'])} failure class(es), "
+                    f"{len(_ia['uncovered'])} uncovered")
+    except Exception as _iae:
+        logger.warning(f"  Internal audit error: {_iae}")
+
     # -----------------------------------------------------------------------
     # Note: CIT (Continuous Improvement Team) runs on its own cron schedule
     # (6:00 AM ET + 6:00 PM ET) independent of the main pipeline.

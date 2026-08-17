@@ -18,6 +18,7 @@ Tests:
 
 import sys
 import os
+import ast
 import json
 import re
 import sqlite3
@@ -9276,6 +9277,311 @@ class TestEntryDateLedger(unittest.TestCase):
         self.assertNotIn(0, seeds,
                          "hold_days is still seeded to 0, so a position the ledger "
                          "cannot date reads as one opened today and never ages")
+
+
+class TestInternalAudit(unittest.TestCase):
+    """The third line: does the checking work?
+
+    `internal_audit_agent` is the only control in the firm whose subject is the
+    other controls, which makes it the one place where a silent failure has no
+    outer ring to catch it. So these tests do two distinct jobs, and the second
+    matters more than the first:
+
+      1. the harness reaches a true verdict on the real laws, and
+      2. THE HARNESS ITSELF CAN FAIL. `test_a_law_that_cannot_fail_is_reported_
+         blind` feeds it a law that always passes and demands it says so. Without
+         that, an audit whose comparison silently degraded would report seven
+         PROVEN forever and read as the strongest evidence in the building —
+         exactly the shape it was built to find (memory `presence-is-not-currency`).
+    """
+
+    def _mod(self):
+        sys.path.insert(0, str(Path(__file__).parent))
+        import internal_audit_agent
+        return internal_audit_agent
+
+    # -- falsifiability -----------------------------------------------------
+
+    def test_every_law_has_a_poison_pill(self):
+        """The ratchet: a new law cannot ship without a proof it can fail.
+
+        Enumerated from LAWS, never from the pill table — iterating the pills
+        would make an unpilled law invisible to the check written to find it.
+        """
+        import coherence_laws as cl
+        ia = self._mod()
+        names = {fn.__name__.replace("law_", "") for fn, _ in cl.LAWS}
+        missing = sorted(names - set(ia.POISON_PILLS))
+        self.assertEqual([], missing,
+                         f"law(s) with no poison pill: {missing}. Nothing shows these "
+                         f"are capable of returning VIOLATED, so their HOLDS is not "
+                         f"evidence of anything.")
+
+    def test_no_law_passes_an_input_built_to_violate_it(self):
+        ia = self._mod()
+        results = ia.prove_can_fail()
+        blind = [r for r in results if r["verdict"] == ia.BLIND]
+        self.assertEqual([], blind, f"BLIND control(s): {json.dumps(blind, indent=1)}")
+        # INCONCLUSIVE is not a pass either — it means the pill never reached the
+        # comparison, so the law is neither shown working nor shown broken.
+        stuck = [r["control"] for r in results if r["verdict"] == ia.INCONCLUSIVE]
+        self.assertEqual([], stuck, f"pill never reached the comparison for: {stuck}")
+
+    def test_a_law_that_cannot_fail_is_reported_blind(self):
+        """The meta-check — run through the path production actually uses.
+
+        This SUBSTITUTES an existing law in `LAWS` rather than appending a new
+        one. Appending passes trivially: a bespoke fake law can be its own pill,
+        so the test never exercises the lookup a real law goes through. Only
+        substitution catches a pill bound to `coherence_laws.law_x` instead of
+        to the registry entry — which is the defect this module shipped with:
+        swapping the entry left the pill still calling the old implementation
+        and the audit reported PROVEN on a law nothing dispatched to.
+        """
+        import coherence_laws as cl
+        ia = self._mod()
+
+        @cl.sources(*cl.law_positions_conserve.sources)
+        def stub(broker_positions=None, state=None, host=None):
+            held = set(broker_positions or {})
+            return cl.LawResult("positions_conserve", cl.HOLDS,
+                                f"{len(held)} position(s) reconciled",
+                                stub.sources, n_examined=len(held))
+        stub.__name__ = "law_positions_conserve"      # the registry keys on this
+
+        real = list(cl.LAWS)
+        try:
+            cl.LAWS[:] = [(stub if fn.__name__ == "law_positions_conserve" else fn, s)
+                          for fn, s in cl.LAWS]
+            got = {r["control"]: r["verdict"] for r in ia.prove_can_fail()}
+        finally:
+            cl.LAWS[:] = real
+
+        self.assertEqual(ia.BLIND, got.get("positions_conserve"),
+                         "a law replaced by one that cannot fail still audited as "
+                         "PROVEN — the pill is bound to something other than the "
+                         "callable the registry dispatches, so the audit is itself "
+                         "the unfalsifiable control it exists to catch")
+
+    def test_every_pill_exercises_the_registered_callable(self):
+        """Not one pill may reach for `coherence_laws.law_x` on its own.
+
+        The blind test above proves it for one law. This proves it for all of
+        them, and does so without needing a plausible broken stub per law: each
+        registry entry is wrapped in a proxy that records the call and delegates
+        to the real law, so a pill that bypasses `fn` leaves its proxy unused.
+        """
+        import coherence_laws as cl
+        ia = self._mod()
+
+        called = set()
+
+        def proxy_for(fn):
+            def proxy(*a, **kw):
+                called.add(fn.__name__)
+                return fn(*a, **kw)
+            proxy.__name__ = fn.__name__
+            proxy.sources = fn.sources
+            return proxy
+
+        real = list(cl.LAWS)
+        try:
+            cl.LAWS[:] = [(proxy_for(fn), s) for fn, s in cl.LAWS]
+            results = ia.prove_can_fail()
+        finally:
+            cl.LAWS[:] = real
+
+        expected = {"law_" + r["control"] for r in results
+                    if r["verdict"] != ia.UNPROVEN}
+        self.assertEqual(expected, called & expected,
+                         f"pill(s) never touched the callable handed to them: "
+                         f"{sorted(expected - called)} — they resolved the law by "
+                         f"module attribute, so swapping the registry entry would "
+                         f"leave the audit testing code nothing runs")
+
+    def test_a_law_with_no_pill_is_unproven_not_skipped(self):
+        import coherence_laws as cl
+        ia = self._mod()
+
+        @cl.sources("x", "y")
+        def law_zz_unpilled():
+            return cl.LawResult("zz_unpilled", cl.HOLDS, "", law_zz_unpilled.sources,
+                                n_examined=1)
+
+        real = list(cl.LAWS)
+        try:
+            cl.LAWS.append((law_zz_unpilled, "no pill for this one"))
+            got = {r["control"]: r["verdict"] for r in ia.prove_can_fail()}
+        finally:
+            cl.LAWS[:] = real
+        self.assertEqual(ia.UNPROVEN, got.get("zz_unpilled"))
+
+    # -- the denominator rule -----------------------------------------------
+
+    def test_a_pass_on_zero_items_is_not_a_pass(self):
+        ia = self._mod()
+        out = ia.audit_denominators([
+            {"law": "zz_empty", "verdict": "HOLDS", "n_examined": 0},
+            {"law": "zz_real", "verdict": "HOLDS", "n_examined": 12},
+        ])
+        by = {f["control"]: f["verdict"] for f in out}
+        self.assertEqual("EMPTY_SUCCESS", by.get("zz_empty"),
+                         "HOLDS on nothing examined was accepted as a clean pass")
+        self.assertNotIn("zz_real", by)
+
+    def test_a_pass_that_cannot_say_how_much_it_looked_at_is_flagged(self):
+        ia = self._mod()
+        out = ia.audit_denominators([{"law": "zz_mute", "verdict": "HOLDS"}])
+        self.assertEqual([("zz_mute", "NO_DENOMINATOR")],
+                         [(f["control"], f["verdict"]) for f in out])
+
+    def test_a_cannot_tell_is_never_asked_for_a_denominator(self):
+        """CANNOT_TELL already names what it could not read; demanding a count
+        there would turn an honest abstention into a second finding."""
+        ia = self._mod()
+        self.assertEqual([], ia.audit_denominators(
+            [{"law": "zz", "verdict": "CANNOT_TELL", "n_examined": None}]))
+
+    def test_every_law_reports_a_denominator_on_its_holds_path(self):
+        """AST over coherence_laws.py: every HOLDS return names n_examined.
+
+        AST rather than running the laws, because two of them ssh to the VM and
+        hit the broker, and a smoke test must not do either. It also cannot be
+        satisfied by the comment above `LawResult.n_examined` that explains the
+        rule, which a text search would happily match.
+        """
+        import coherence_laws as cl
+        src = ast.parse(Path(cl.__file__).read_text())
+        offenders = []
+        for node in ast.walk(src):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id == "LawResult"):
+                continue
+            if len(node.args) < 2:
+                continue
+            verdict = node.args[1]
+            if not (isinstance(verdict, ast.Name) and verdict.id == "HOLDS"):
+                continue
+            if not any(k.arg == "n_examined" for k in node.keywords):
+                offenders.append(node.lineno)
+        self.assertEqual([], offenders,
+                         f"HOLDS returned without n_examined at coherence_laws.py "
+                         f"line(s) {offenders} — that verdict cannot be told apart "
+                         f"from a pass on an empty set")
+
+    # -- the census ---------------------------------------------------------
+
+    def test_every_named_detector_still_exists(self):
+        """A census that names deleted code reports coverage it does not have.
+
+        This is the failure in memory `auditor_ground_truth` pointed at the
+        coverage map itself, and it is why deleting any control named here has
+        to break the suite rather than quietly shrink what is watched.
+        """
+        ia = self._mod()
+        broken = [(c["class"], c["missing"]) for c in ia.audit_census() if c["missing"]]
+        self.assertEqual([], broken,
+                         f"census names detectors that no longer exist: {broken}")
+
+    def test_a_failure_class_with_no_detector_is_a_finding(self):
+        ia = self._mod()
+        real = list(ia.CONTROL_CENSUS)
+        try:
+            ia.CONTROL_CENSUS.append(ia.FailureClass(
+                "zz_unwatched", "something that has hurt us", "an incident", [],
+                "nobody"))
+            got = {c["class"]: c["verdict"] for c in ia.audit_census()}
+        finally:
+            ia.CONTROL_CENSUS[:] = real
+        self.assertEqual(ia.UNCOVERED, got.get("zz_unwatched"))
+
+    def test_detector_resolution_is_ast_not_text_search(self):
+        """Every control in the census is named in a postmortem comment somewhere
+        in this repo. A grep-based resolver would find the comment and report a
+        deleted detector as present — the same trap `_emitted_verbs` avoids."""
+        ia = self._mod()
+        with tempfile.TemporaryDirectory() as td:
+            f = Path(td) / "zz_probe.py"
+            f.write_text('# def zz_ghost(): the old detector, deleted 2026-08\n'
+                         'NOTES = "see zz_ghost for the check that used to run"\n')
+            real_base = ia.BASE_DIR
+            try:
+                ia.BASE_DIR = Path(td)
+                self.assertFalse(ia._symbol_exists("zz_probe.py::zz_ghost"),
+                                 "a symbol that survives only in a comment and a "
+                                 "string resolved as a live detector")
+                f.write_text("def zz_ghost():\n    return True\n")
+                self.assertTrue(ia._symbol_exists("zz_probe.py::zz_ghost"))
+            finally:
+                ia.BASE_DIR = real_base
+
+    def test_controls_md_matches_the_census(self):
+        """The committed doc is generated, so it cannot drift from the code."""
+        ia = self._mod()
+        self.assertTrue(ia.CONTROLS_MD.exists(),
+                        "CONTROLS.md is missing — run: python3 internal_audit_agent.py "
+                        "--write-md")
+        self.assertEqual(ia.render_controls_md(), ia.CONTROLS_MD.read_text(),
+                         "CONTROLS.md has drifted from CONTROL_CENSUS — regenerate it "
+                         "with: python3 internal_audit_agent.py --write-md")
+
+    # -- escalation + wiring ------------------------------------------------
+
+    def test_a_blind_control_reaches_the_chairman_once_and_is_retired(self):
+        ia = self._mod()
+        with tempfile.TemporaryDirectory() as td:
+            q = Path(td) / "q.json"
+            q.write_text(json.dumps([{"id": "unrelated-row", "severity": "LOW"}]))
+            real_q = ia.CHAIRMAN_QUEUE
+            try:
+                ia.CHAIRMAN_QUEUE = q
+                blind_report = {
+                    "falsifiability": [{"control": "zz_law", "verdict": ia.BLIND,
+                                        "detail": "d", "pill": "p"}],
+                    "census": [], "denominators": []}
+                ia.escalate(blind_report)
+                ia.escalate(blind_report)          # twice: must not duplicate
+                rows = json.loads(q.read_text())
+                mine = [r for r in rows if r["id"] == "internal-audit-blind-zz_law"]
+                self.assertEqual(1, len(mine), "a blind control filed more than one row")
+                self.assertEqual("CRITICAL", mine[0]["severity"])
+                self.assertTrue(any(r["id"] == "unrelated-row" for r in rows),
+                                "escalation dropped somebody else's row")
+
+                ia.escalate({"falsifiability": [], "census": [], "denominators": []})
+                rows = json.loads(q.read_text())
+                self.assertEqual([], [r for r in rows
+                                      if str(r.get("id", "")).startswith(
+                                          "internal-audit-blind-")],
+                                 "a control that is now proven left its row behind — "
+                                 "a stale finding is the same false signal as a "
+                                 "missing one, pointed the other way")
+            finally:
+                ia.CHAIRMAN_QUEUE = real_q
+
+    def test_internal_audit_runs_in_the_daily_pipeline(self):
+        """Wired, not merely written. AST — main.py's postmortem comments name
+        this module, and a text search would match them."""
+        main_src = ast.parse((Path(__file__).parent / "main.py").read_text())
+        called = set()
+        for node in ast.walk(main_src):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                called.add(node.func.id)
+            elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                called.add(node.func.attr)
+        for fn in ("run_audit", "escalate"):
+            self.assertIn(fn, called,
+                          f"main.py never calls internal_audit_agent.{fn}() — the "
+                          f"third line exists but does not run")
+
+    def test_wiring_audit_watches_the_auditor(self):
+        import wiring_audit
+        out = wiring_audit.run_checks()
+        text = json.dumps(out)
+        self.assertIn("internal audit", text.lower(),
+                      "wiring_audit says nothing about internal_audit_agent — the "
+                      "one control with no outer ring is the one that must be "
+                      "swept for staleness")
 
 
 # =============================================================================
