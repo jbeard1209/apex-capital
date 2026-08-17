@@ -1047,6 +1047,17 @@ def escalate_violations(results: List[LawResult]) -> int:
 NOTIFY_STATE = DATA_DIR / "coherence_notified.json"
 
 
+def _rollback_notify_state(prior_text: Optional[str]) -> None:
+    """Undo the dedupe write when nothing was actually transmitted."""
+    try:
+        if prior_text is None:
+            NOTIFY_STATE.unlink(missing_ok=True)
+        else:
+            NOTIFY_STATE.write_text(prior_text)
+    except OSError:
+        pass
+
+
 def notify_violations(results: List[LawResult]) -> bool:
     """Buffer ONE digest email when the set of violations changes. Returns sent.
 
@@ -1070,9 +1081,10 @@ def notify_violations(results: List[LawResult]) -> bool:
     signature = json.dumps(violated)
 
     try:
-        prior = json.loads(NOTIFY_STATE.read_text()).get("signature")
+        prior_text = NOTIFY_STATE.read_text()
+        prior = json.loads(prior_text).get("signature")
     except (OSError, ValueError, AttributeError):
-        prior = None
+        prior_text, prior = None, None
 
     if signature == prior:
         return False
@@ -1116,13 +1128,30 @@ def notify_violations(results: List[LawResult]) -> bool:
 
     try:
         from email_buffer import buffer_email
-        buffer_email(
+        # buffer_email returns False for an URGENT subject, meaning "I did not
+        # buffer this, the caller must send it directly" — and this caller has
+        # no direct sender, by design. Returning True on that would report a
+        # delivery that did not happen, which is the failure this whole module
+        # was written to catch. No coherence subject matches the urgent list
+        # today; if one ever does, this says so instead of lying.
+        buffered = buffer_email(
             subject=f"Coherence: {len(violated)} law(s) violated on {host}",
             html_body=body,
             sender_name="Coherence Layer",
             key_metrics={"violated": len(violated), "host": host,
                          "laws": [n for n, _ in violated]},
         )
+        if buffered is False:
+            # Roll the dedupe record back. Recording-before-sending is right for
+            # a THROWN write (retrying that mails on every run), but this branch
+            # transmitted nothing at all, so there is no flood to protect
+            # against — only an alarm that would otherwise be suppressed
+            # forever by a state file claiming it was already delivered.
+            _rollback_notify_state(prior_text)
+            logging.getLogger("coherence_laws").error(
+                "coherence email classified URGENT — email_buffer expects the "
+                "caller to transmit it, and this caller cannot. NOT SENT.")
+            return False
         return True
     except Exception as e:                       # noqa: BLE001 — never break main
         logging.getLogger("coherence_laws").warning(f"notify failed: {e}")

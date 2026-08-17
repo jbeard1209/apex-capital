@@ -412,10 +412,11 @@ def email_verdict(rows=None, force=False):
     signature = f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}"
 
     try:
-        st = json.loads(VERDICT_STATE.read_text())
+        prior_text = VERDICT_STATE.read_text()
+        st = json.loads(prior_text)
         prior, last_at = st.get("signature"), st.get("at")
     except (OSError, ValueError, AttributeError):
-        prior, last_at = None, None
+        prior_text, prior, last_at = None, None, None
 
     stale = True
     if last_at:
@@ -477,12 +478,31 @@ def email_verdict(rows=None, force=False):
                f"(n={detail.get('settled', 0)} settled)")
     try:
         from email_buffer import buffer_email
-        buffer_email(subject=subject, html_body=body,
-                     sender_name="Kalshi Sector",
-                     key_metrics={"premise": premise, "edge_proven": proven,
-                                  "settled": detail.get("settled", 0),
-                                  "realised": detail.get("realised"),
-                                  "mean_quote": detail.get("mean_quote")})
+        # False means "urgent — I did not buffer it, you send it". This caller
+        # has no direct sender, so that return is a MISS, not a success.
+        buffered = buffer_email(subject=subject, html_body=body,
+                                sender_name="Kalshi Sector",
+                                key_metrics={"premise": premise,
+                                             "edge_proven": proven,
+                                             "settled": detail.get("settled", 0),
+                                             "realised": detail.get("realised"),
+                                             "mean_quote": detail.get("mean_quote")})
+        if buffered is False:
+            # Nothing was transmitted, so put the dedupe record back — otherwise
+            # the state file asserts a delivery that never happened and the
+            # verdict stays silent until the signature changes or the heartbeat
+            # expires. There is no flood risk in retrying a send that sends
+            # nothing.
+            try:
+                if prior_text is None:
+                    VERDICT_STATE.unlink(missing_ok=True)
+                else:
+                    VERDICT_STATE.write_text(prior_text)
+            except OSError:
+                pass
+            logger.error("kalshi verdict classified URGENT — not buffered and "
+                         "this caller cannot transmit. NOT SENT.")
+            return False, "classified urgent; no direct sender here"
         return True, f"sent ({signature})"
     except Exception as e:                       # noqa: BLE001
         logger.warning(f"kalshi verdict email failed: {e}")

@@ -8648,6 +8648,72 @@ class TestCoherenceLaws(unittest.TestCase):
         self.assertFalse(fired)
         self.assertEqual(sent, [])
 
+    def test_an_undeliverable_alert_is_not_recorded_as_delivered(self):
+        """buffer_email returns False for an URGENT subject: "you send it".
+
+        This caller has no direct sender, by design — every sender that grew one
+        is what produced the July flood. So False is a MISS. Two things must
+        follow, and neither is the obvious one: notify_violations must report
+        False rather than the success it used to assume, and it must roll back
+        the dedupe record, or a state file claiming delivery silences the alarm
+        permanently. An inability to send, converted into a pass, is the exact
+        shape this module exists to catch.
+        """
+        cl = self._law_sources()
+        sent, v = [], [self._violation("positions_conserve")]
+        with tempfile.TemporaryDirectory() as d:
+            import email_buffer
+            state = Path(d) / "coherence_notified.json"
+            real_state, real_buf = cl.NOTIFY_STATE, email_buffer.buffer_email
+            try:
+                cl.NOTIFY_STATE = state
+                email_buffer.buffer_email = lambda **kw: sent.append(kw) or False
+                with self.assertLogs("coherence_laws", level="ERROR"):
+                    fired = cl.notify_violations(v)
+                self.assertFalse(fired, "reported a send that did not happen")
+                self.assertFalse(state.exists(),
+                                 "dedupe recorded an undelivered alert")
+                # and the retry actually gets through once the path works
+                email_buffer.buffer_email = lambda **kw: sent.append(kw) or True
+                self.assertTrue(cl.notify_violations(v),
+                                "the alarm was suppressed by its own failure")
+            finally:
+                cl.NOTIFY_STATE, email_buffer.buffer_email = real_state, real_buf
+
+    def test_the_kalshi_verdict_survives_an_undeliverable_send(self):
+        """Same branch, other sender. Both were written assuming success."""
+        import kalshi_calibration as kcal, email_buffer
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.97}] * 210
+        sent = []
+        with tempfile.TemporaryDirectory() as d:
+            real_state, real_buf = kcal.VERDICT_STATE, email_buffer.buffer_email
+            try:
+                kcal.VERDICT_STATE = Path(d) / "v.json"
+                email_buffer.buffer_email = lambda **kw: sent.append(kw) or False
+                with self.assertLogs("kalshi_calibration", level="ERROR"):
+                    ok, why = kcal.email_verdict(rows)
+                self.assertFalse(ok)
+                self.assertFalse(kcal.VERDICT_STATE.exists(),
+                                 "an undelivered verdict was marked as sent")
+                email_buffer.buffer_email = lambda **kw: sent.append(kw) or True
+                self.assertTrue(kcal.email_verdict(rows)[0])
+            finally:
+                kcal.VERDICT_STATE, email_buffer.buffer_email = real_state, real_buf
+
+    def test_no_sender_here_can_be_classified_urgent_today(self):
+        """The branch above is a safety net; this is the front door.
+
+        email_buffer routes URGENT subjects away from the digest and expects the
+        caller to transmit them. Neither of these two subjects matches today. If
+        someone later renames a subject into that list, this fails loudly rather
+        than the alert quietly falling into the un-sendable branch.
+        """
+        import email_buffer
+        for subject in ("Coherence: 3 law(s) violated on apex-capital",
+                        "Kalshi Sector — premise DEAD, edge NOT PROVEN"):
+            self.assertFalse(email_buffer._is_urgent(subject),
+                             f"{subject!r} now routes to a sender that does not exist")
+
     def test_the_layer_never_opens_its_own_smtp_connection(self):
         """AST, not grep: the docstring above notify_violations says 'smtplib'.
 
