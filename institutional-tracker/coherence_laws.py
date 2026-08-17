@@ -867,6 +867,26 @@ def law_positions_conserve(broker_positions: Optional[dict] = None,
 # LAW — broker host census
 # =============================================================================
 
+def infrastructure_doc() -> Optional[Path]:
+    """Where the host inventory actually is on THIS host, or None.
+
+    Two shapes, because the two hosts have two shapes. On the Mac the doc sits
+    at the repo root, one level above this package. On the VM there is no repo
+    root — deploy.sh scp's the doc into the package directory itself. A resolver
+    hard-coded to `BASE_DIR.parent` reported "missing" on the VM while the file
+    sat right beside it, which is the same host-shaped assumption that had the
+    doc undeployed in the first place.
+
+    Returns None rather than a non-existent Path: the caller must be able to
+    tell "no inventory" from "an inventory I could not parse".
+    """
+    for cand in (BASE_DIR.parent / "INFRASTRUCTURE.md",
+                 BASE_DIR / "INFRASTRUCTURE.md"):
+        if cand.exists():
+            return cand
+    return None
+
+
 # Every host permitted to place an order on the shared account, and why.
 # Pinned to INFRASTRUCTURE.md by TestCoherenceLaws — the constant may not drift
 # from the registry silently, because a census whose source B is a doc nobody

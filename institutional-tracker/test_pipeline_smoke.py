@@ -8325,8 +8325,12 @@ class TestCoherenceLaws(unittest.TestCase):
         which is precisely the failure the census was built to end.
         """
         cl = self._law_sources()
-        infra = cl.BASE_DIR.parent / "INFRASTRUCTURE.md"
-        if not infra.exists():
+        # Resolved by the module, not by this test: the doc is at the repo
+        # root on the Mac and inside the package on the VM, and a test carrying
+        # its own path assumption is how this failed on one host and passed on
+        # the other.
+        infra = cl.infrastructure_doc()
+        if infra is None:
             self.fail("INFRASTRUCTURE.md is missing — source B for the host census "
                       "does not exist, so the census cannot be trusted")
         text = infra.read_text()
