@@ -9855,6 +9855,284 @@ class TestInternalAudit(unittest.TestCase):
                       "swept for staleness")
 
 
+class TestOneDigestADay(unittest.TestCase):
+    """Jack got two daily digests back to back on 2026-08-17.
+
+    Nothing had broken. Four independent things could call `flush_digest()`
+    and none knew about the others, across two hosts that share no state.
+    The fix is two checks at the one choke point they all pass through, and
+    these tests pin both — plus the thing that makes the pair necessary,
+    which is that neither check alone is sufficient.
+    """
+
+    def setUp(self):
+        import email_buffer
+        self.eb = email_buffer
+        self.tmp = tempfile.mkdtemp()
+        self._stamp = email_buffer.DIGEST_STAMP_PATH
+        self._vmfile = email_buffer._VM_STATE_FILE
+        email_buffer.DIGEST_STAMP_PATH = os.path.join(self.tmp, ".digest_last_sent")
+        email_buffer._VM_STATE_FILE = os.path.join(self.tmp, "vm_state_monitor.json")
+
+    def tearDown(self):
+        self.eb.DIGEST_STAMP_PATH = self._stamp
+        self.eb._VM_STATE_FILE = self._vmfile
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write_vm_state(self, writer="PASS", power="UNKNOWN", age_h=0.0):
+        with open(self.eb._VM_STATE_FILE, "w") as f:
+            json.dump({"writer": writer, "power": power,
+                       "writer_msg": "fine", "gcp_status": "RUNNING"}, f)
+        if age_h:
+            old = datetime.now().timestamp() - age_h * 3600
+            os.utime(self.eb._VM_STATE_FILE, (old, old))
+
+    # ── half one: once per day, per host ──────────────────────────────────
+
+    def test_a_second_send_on_the_same_day_is_refused(self):
+        self.eb._stamp_digest_sent(3)
+        self.assertTrue(self.eb._digest_already_sent_today())
+
+    def test_yesterdays_stamp_does_not_block_today(self):
+        with open(self.eb.DIGEST_STAMP_PATH, "w") as f:
+            json.dump({"date": (date.today() - timedelta(days=1)).isoformat()}, f)
+        self.assertFalse(self.eb._digest_already_sent_today())
+
+    def test_a_missing_or_corrupt_stamp_does_not_block_the_digest(self):
+        """The stamp fails OPEN, and that is the opposite of the host guard.
+
+        Its two answers are "already sent" and "don't know". A wrong "already
+        sent" costs Jack the whole day's reporting with no signal; a wrong
+        "don't know" costs at worst the duplicate, which the host guard is
+        still standing behind. So the unreadable case must read as no stamp.
+        """
+        self.assertFalse(self.eb._digest_already_sent_today())
+        with open(self.eb.DIGEST_STAMP_PATH, "w") as f:
+            f.write("{not json")
+        self.assertFalse(self.eb._digest_already_sent_today())
+
+    # ── half two: one host, and which one ─────────────────────────────────
+
+    def test_the_designated_host_sends(self):
+        with patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="apexcapitalc"):
+            allowed, why = self.eb._may_send_digest()
+        self.assertTrue(allowed, why)
+
+    def test_a_non_designated_host_stands_down_while_the_writer_is_live(self):
+        self._write_vm_state(writer="PASS")
+        with patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            allowed, why = self.eb._may_send_digest()
+        self.assertFalse(allowed, "the Mac sent a second digest alongside a live VM")
+        self.assertIn("stands down", why)
+
+    def test_a_silent_writer_hands_the_digest_to_the_other_host(self):
+        """Standing down must not mean Jack loses the digest when the VM dies."""
+        self._write_vm_state(writer="CRITICAL")
+        with patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            allowed, why = self.eb._may_send_digest()
+        self.assertTrue(allowed, why)
+
+    def test_an_unreadable_gate_fails_CLOSED(self):
+        """The deliberate inverse of `catch_up._mac_exit_guard`.
+
+        That guard runs the canary on an unreadable gate because it authorises
+        EXITS — a wrong "no" bleeds a position for days. This authorises an
+        EMAIL: a wrong "yes" is the duplicate that started this, a wrong "no"
+        delays a report by a day with the buffer sitting intact. Do not
+        "fix" this into failing open by pattern-matching to that one.
+        """
+        with patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            allowed, why = self.eb._may_send_digest()          # no state file
+        self.assertFalse(allowed)
+        self.assertIn("unreadable", why)
+
+    def test_a_stale_gate_fails_CLOSED(self):
+        """Unknown is not known-bad. A stale monitor proves nothing about the VM."""
+        self._write_vm_state(writer="CRITICAL", age_h=9.0)
+        with patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            allowed, why = self.eb._may_send_digest()
+        self.assertFalse(allowed, "a 9h-old file was treated as live evidence "
+                                  "the VM had gone quiet")
+        self.assertIn("old", why)
+
+    def test_an_unidentifiable_host_stands_down(self):
+        with patch("single_writer.designated_host", side_effect=OSError("boom")):
+            allowed, why = self.eb._may_send_digest()
+        self.assertFalse(allowed)
+
+    def test_no_designated_host_recorded_stands_down(self):
+        with patch("single_writer.designated_host", return_value=""), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            allowed, _ = self.eb._may_send_digest()
+        self.assertFalse(allowed)
+
+    # ── neither half is sufficient alone ──────────────────────────────────
+
+    def test_both_halves_are_needed(self):
+        """The two checks cover different failure modes; one is not enough.
+
+        Per-day idempotence alone still sends twice — once per host, because
+        each host keeps its own `data/.digest_last_sent` beside its own
+        buffer. The host guard alone still lets the 22:00 cron and
+        wakeup_recovery both fire on the winning host in the same evening.
+        """
+        with patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="apexcapitalc"):
+            self.assertTrue(self.eb._may_send_digest()[0])
+            self.eb._stamp_digest_sent(3)
+            # Host guard still says yes; only the stamp stops the second send.
+            self.assertTrue(self.eb._may_send_digest()[0])
+            self.assertTrue(self.eb._digest_already_sent_today())
+
+    # ── the choke point actually consults them ────────────────────────────
+
+    def test_flush_digest_sends_nothing_once_the_stamp_is_set(self):
+        self.eb._stamp_digest_sent(1)
+        entry = {"subject": "x", "html_body": "<p>x</p>",
+                 "buffered_at": datetime.now().isoformat(), "sender_name": "t"}
+        with patch.object(self.eb, "_load_buffer", return_value=[entry]), \
+             patch.object(self.eb, "_save_buffer") as save, \
+             patch.object(self.eb, "smtplib") as smtp:
+            self.assertTrue(self.eb.flush_digest())
+        smtp.SMTP_SSL.assert_not_called()
+        save.assert_not_called()      # the buffer rolls into tomorrow, intact
+
+    def test_flush_digest_sends_nothing_when_this_host_stands_down(self):
+        self._write_vm_state(writer="PASS")
+        entry = {"subject": "x", "html_body": "<p>x</p>",
+                 "buffered_at": datetime.now().isoformat(), "sender_name": "t"}
+        with patch.object(self.eb, "_load_buffer", return_value=[entry]), \
+             patch.object(self.eb, "_save_buffer") as save, \
+             patch.object(self.eb, "smtplib") as smtp, \
+             patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            self.assertTrue(self.eb.flush_digest())
+        smtp.SMTP_SSL.assert_not_called()
+        save.assert_not_called()
+
+    def test_force_bypasses_both_guards(self):
+        """A human running the file is the case the guards should get out of."""
+        self.eb._stamp_digest_sent(1)
+        self._write_vm_state(writer="PASS")
+        entry = {"subject": "x", "html_body": "<p>x</p>",
+                 "buffered_at": datetime.now().isoformat(), "sender_name": "t"}
+        with patch.object(self.eb, "_load_buffer", return_value=[entry]), \
+             patch.object(self.eb, "_save_buffer"), \
+             patch.object(self.eb, "smtplib") as smtp, \
+             patch("single_writer.designated_host", return_value="apexcapitalc"), \
+             patch("single_writer.this_host", return_value="Jacks-MacBook-Air"):
+            self.eb.flush_digest(force=True)
+        self.assertTrue(smtp.SMTP_SSL.called,
+                        "force=True was swallowed by the guards it exists to skip")
+
+    def test_the_stamp_is_written_before_the_buffer_is_cleared(self):
+        """Order matters, and only the source can show it.
+
+        Stamp-then-clear fails as a late digest. Clear-then-stamp fails as a
+        second, empty digest sent this evening — the exact bug. AST, because
+        the comment above those two lines names both of them.
+        """
+        src = (Path(__file__).resolve().parent / "email_buffer.py").read_text()
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef) and n.name == "flush_digest")
+        order = [n.func.id for n in ast.walk(fn)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                 and n.func.id in ("_stamp_digest_sent", "_save_buffer")]
+        self.assertIn("_stamp_digest_sent", order, "the send path never stamps")
+        self.assertLess(order.index("_stamp_digest_sent"),
+                        order.index("_save_buffer"),
+                        "the buffer is cleared before the stamp is written — a "
+                        "crash between them leaves a cleared buffer with no "
+                        "stamp, and the next caller sends the second digest")
+
+    # ── standing down must have a consequence ─────────────────────────────
+
+    def test_a_stranded_buffer_escalates_to_the_chairman(self):
+        """Quiet for one evening is right. Quiet for a month is the 87-email queue."""
+        buf = [{"subject": f"r{i}", "buffered_at": datetime.now().isoformat()}
+               for i in range(self.eb.STRANDED_BUFFER_ALERT_AT + 1)]
+        with patch("chairman_queue.submit") as sub:
+            self.eb._report_stranded_buffer(buf, "test")
+        self.assertTrue(sub.called, "a stranded buffer was reported to nobody")
+
+    def test_a_stranded_buffer_is_not_reported_by_email(self):
+        """A host that answers 'I have been silenced' by mailing is not silenced."""
+        buf = [{"subject": f"r{i}", "buffered_at": datetime.now().isoformat()}
+               for i in range(self.eb.STRANDED_BUFFER_ALERT_AT + 1)]
+        with patch("chairman_queue.submit"), \
+             patch.object(self.eb, "smtplib") as smtp:
+            self.eb._report_stranded_buffer(buf, "test")
+        smtp.SMTP_SSL.assert_not_called()
+
+    def test_an_old_buffer_escalates_even_when_it_is_small(self):
+        old = (datetime.now() - timedelta(hours=self.eb.STRANDED_BUFFER_MAX_AGE_H + 5))
+        buf = [{"subject": "r", "buffered_at": old.isoformat()}]
+        with patch("chairman_queue.submit") as sub:
+            self.eb._report_stranded_buffer(buf, "test")
+        self.assertTrue(sub.called, "a buffer older than the age bound was ignored "
+                                    "because it was under the count bound")
+
+    def test_one_evening_of_standing_down_is_not_escalated(self):
+        """Otherwise the alarm fires every night and stops meaning anything."""
+        buf = [{"subject": "r", "buffered_at": datetime.now().isoformat()}]
+        with patch("chairman_queue.submit") as sub:
+            self.eb._report_stranded_buffer(buf, "test")
+        self.assertFalse(sub.called)
+
+    def test_every_chairman_queue_call_in_email_buffer_resolves(self):
+        """The house bug, guarded on the code written to stop the house bug.
+
+        The first draft of `_report_stranded_buffer` called
+        `chairman_queue.add(...)`, which does not exist. Its own
+        `except Exception` would have swallowed the AttributeError and the
+        stranded buffer would have reached nobody — from the very function
+        written to make sure it reached somebody.
+        """
+        import chairman_queue
+        src = (Path(__file__).resolve().parent / "email_buffer.py").read_text()
+        called = {n.func.attr for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                  and isinstance(n.func.value, ast.Name)
+                  and n.func.value.id == "chairman_queue"}
+        self.assertTrue(called, "no chairman_queue call found — the escalation path "
+                               "was removed and this guard is now vacuous")
+        for name in sorted(called):
+            self.assertTrue(hasattr(chairman_queue, name),
+                            f"email_buffer calls chairman_queue.{name}(), which "
+                            f"does not exist; the surrounding except would hide it")
+
+    # ── the four callers, pinned ──────────────────────────────────────────
+
+    def test_catch_up_no_longer_schedules_a_digest(self):
+        """The Mac's entry did not catch up the VM's digest — it composed a
+        second one from the Mac's own buffer. Removing it IS the fix."""
+        import catch_up
+        jobs = [j["name"] for j in catch_up.JOB_REGISTRY
+                if j.get("script") == "email_buffer.py"]
+        self.assertEqual(jobs, [], f"catch_up is scheduling the digest again "
+                                   f"({jobs}) — on a host that is not the sender, "
+                                   f"out of a buffer that is not the VM's")
+
+    def test_wakeup_recovery_still_covers_a_genuinely_missed_digest(self):
+        """The inverse pin, and it is the one more likely to be broken next.
+
+        Three of the four callers were noise; this one is not. It runs on the
+        designated host and exists to re-run a digest the 22:00 cron actually
+        missed. Deleting it to "fix duplicates" trades a duplicate email for a
+        silently skipped one, which is strictly worse — nobody notices.
+        """
+        import wakeup_recovery
+        scripts = [j[0] for j in wakeup_recovery.JOBS]
+        self.assertIn("email_buffer.py", scripts,
+                      "the digest lost its catch-up path; a missed 22:00 cron is "
+                      "now a day with no digest and no alert about the absence")
+
+
 # =============================================================================
 # Runner
 # =============================================================================

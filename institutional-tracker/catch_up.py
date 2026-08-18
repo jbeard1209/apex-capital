@@ -223,20 +223,22 @@ JOB_REGISTRY = [
         "once_per_wakeup": True,
     },
 
-    # ── Daily digest ──────────────────────────────────────────────────────────
-    # Flush buffered emails. If missed, send as soon as Mac wakes — user
-    # shouldn't go without their digest just because Mac was off at 6 PM.
-    {
-        "name":            "email_digest",
-        "script":          "email_buffer.py",
-        "args":            [],
-        "output_file":     None,            # no output file — check buffer size
-        "ttl_hours":       None,
-        "fire_times_edt":  [18.0],          # 6:00 PM
-        "run_days":        "all",
-        "catchup_window":  (18.0, 24),      # only after 6 PM
-        "once_per_wakeup": True,
-    },
+    # ── Daily digest — REMOVED 2026-08-17, and the removal is the fix ─────────
+    # This entry read: "If missed, send as soon as Mac wakes — user shouldn't go
+    # without their digest just because Mac was off at 6 PM." That reasoning was
+    # sound when the Mac was the firm. It stopped being sound when the VM became
+    # the designated writer, because the two hosts share no state: each keeps
+    # its own data/email_buffer.json, so this job did not "catch up" the VM's
+    # digest, it composed and sent a SECOND one out of the Mac's own buffer.
+    # That is the two-digests-in-a-row Jack received.
+    #
+    # The failover it was reaching for is real and is kept — it just belongs at
+    # the choke point, not in one of four schedulers. `email_buffer
+    # ._may_send_digest()` lets a non-designated host send only when the
+    # designated one has gone quiet, judged by the same vm_state_monitor.json
+    # that gates `_mac_exit_guard` below. Leaving this entry AND adding that
+    # guard would have been harmless-looking and wrong: the job would fire
+    # nightly, no-op, and read in the logs as if the Mac were still covering.
 
     # ── CIT pipeline integrity (dead-man's switch / peer host liveness) ───────
     # VM cron: "50 */2 * * *" — every 2h, round the clock, every day. This is

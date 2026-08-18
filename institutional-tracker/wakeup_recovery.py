@@ -78,6 +78,14 @@ JOBS = [
     ("board_meeting.py",             "board",             25, True,  []),
     ("cit_director.py",              "cit",                7, False, ["--session", "morning"]),
     ("overnight_ml_runner.py",       "ml_runner_daily",   25, False, []),
+    # Staleness here is measured from logs/digest_YYYYMMDD.log, which is
+    # written by whoever RAN the script — not by whoever sent mail. So this
+    # entry cannot tell a missed 22:00 cron from one that ran and correctly
+    # sent nothing. It re-runs on both, and that is fine: since 2026-08-17
+    # `email_buffer.flush_digest()` refuses a second send on the same day, so
+    # the redundant run is a no-op rather than Jack's second digest. Do not
+    # delete this line to fix a duplicate — the duplicate is fixed at the
+    # choke point, and deleting it would lose the genuinely-missed case.
     ("email_buffer.py",              "digest",            25, False, []),
     ("logic_team.py",                "logic_team",        13, False, []),
 ]
