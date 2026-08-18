@@ -492,9 +492,29 @@ def run_morning_briefing() -> dict:
         briefing["sections"]["firm_channel"] = _channel
         _urgent = _channel.get("urgent", [])
         if _urgent:
-            for _u in _urgent[:3]:
+            # Dedupe BEFORE the [:3] cap, not after, and that ordering is the
+            # whole fix. The Foreign Order Detector posts on every run, so the
+            # same "2 unexplained account order(s)" message appeared three times
+            # in a 20h window and took all three slots — Jack saw one warning
+            # printed three times, and every OTHER agent's urgent post was
+            # silently pushed out of the briefing entirely. The repetition was
+            # the visible symptom; the suppression was the damage.
+            _seen, _uniq = set(), []
+            for _u in _urgent:
+                _key = (_u.get("agent", ""), _u.get("content", "")[:80])
+                if _key in _seen:
+                    continue
+                _seen.add(_key)
+                _uniq.append(_u)
+            _dropped = len(_urgent) - len(_uniq)
+            for _u in _uniq[:3]:
                 briefing["alerts"].append(
                     f"📢 {_u['agent']}: {_u['content'][:80]}"
+                )
+            if len(_uniq) > 3:
+                # Never let the cap hide the fact that it is capping.
+                briefing["alerts"].append(
+                    f"📢 Firm Channel: {len(_uniq) - 3} further urgent post(s) not shown"
                 )
         logger.info(
             f"    Firm Channel: {_channel['total']} posts | "

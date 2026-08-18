@@ -107,6 +107,20 @@ BOARD_REPORT = DATA / "board_meeting_report.json"
 
 # ── policy ───────────────────────────────────────────────────────────────────
 RELAY_AFTER_SIGHTINGS = 2      # one sighting can be a blip; two is a pattern
+MAX_RELAYS_PER_RUN = 3         # pace the intake — see below
+#
+# MAX_RELAYS_PER_RUN exists because the first live dry run filed NINE proposals
+# in a single pass, into a board queue that already held thirty — and one of the
+# nine alerts was "CIT: 30 proposals pending board vote — queue getting long".
+# Relaying that one lengthens the queue it is complaining about. The loop would
+# have been a mild positive feedback loop on the board's own backlog, arriving
+# as a burst nobody could act on, which is how a governance channel gets ignored
+# and then ignored permanently.
+#
+# The cap paces intake instead of discarding it: what does not go this run is
+# still DETECTED, still counted in the digest's denominator, and goes next run.
+# Ordering is most-persistent-first (sightings desc, then oldest), so the thing
+# that has been wrong longest is the thing the board sees first.
 DEFAULT_FOLLOW_UP_DAYS = 7     # how long a board fix gets to prove itself
 FOLLOW_UP_GRACE_DAYS = 3       # slack past the date before the lapse escalates
 MAX_STRIKES = 2                # failed fixes before the sentinel's structural path
@@ -395,11 +409,13 @@ def relay(ledger: Optional[dict] = None, save: bool = True) -> List[str]:
     led.pop("relay_standdown", None)
     now = _now()
     sent = []
-    for sig, rec in led["issues"].items():
-        if rec.get("state") != DETECTED:
-            continue
-        if int(rec.get("sightings", 0)) < RELAY_AFTER_SIGHTINGS:
-            continue
+    ready = [(sig, rec) for sig, rec in led["issues"].items()
+             if rec.get("state") == DETECTED
+             and int(rec.get("sightings", 0)) >= RELAY_AFTER_SIGHTINGS]
+    ready.sort(key=lambda kv: (-int(kv[1].get("sightings", 0)),
+                              str(kv[1].get("first_seen", ""))))
+    led["relay_backlog"] = max(0, len(ready) - MAX_RELAYS_PER_RUN)
+    for sig, rec in ready[:MAX_RELAYS_PER_RUN]:
         item = _board_item(rec, now)
         if _append_deduped(PENDING_PATH, item):
             rec["state"] = RELAYED
@@ -644,6 +660,14 @@ def digest_section(ledger: Optional[dict] = None, save: bool = True) -> dict:
     if sd and counts[DETECTED]:
         lines.append(f"⚠ {counts[DETECTED]} issue(s) are NOT reaching the board: "
                      f"{sd.get('why', 'reason not recorded')} (since {str(sd.get('at',''))[:10]})")
+    # Pacing is not the same as dropping, but it looks identical from the outside
+    # unless the queue depth is stated. A backlog that stops draining is a broken
+    # relay wearing the cap as a disguise.
+    backlog = int(led.get("relay_backlog") or 0)
+    if backlog and not sd:
+        lines.append(f"↻ {backlog} further issue(s) queued for the board — "
+                     f"{MAX_RELAYS_PER_RUN} are filed per pipeline run to keep the "
+                     f"board's queue actionable")
     if save and retired:
         _save(LEDGER_PATH, led)
     rows = "".join(f"<li style='margin:4px 0;'>{l}</li>" for l in lines)

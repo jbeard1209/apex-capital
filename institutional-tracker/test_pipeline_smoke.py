@@ -10538,6 +10538,53 @@ class TestBoardIssueLedger(unittest.TestCase):
                         "nothing on a scheduled path calls board_issue_ledger.run() — "
                         "issues would be relayed and then never move again")
 
+    def test_intake_is_paced_not_dumped(self):
+        """The first live dry run filed 9 proposals into a queue already holding
+        30 — while one of the 9 alerts WAS "30 proposals pending board vote —
+        queue getting long". Ungated, this loop feeds the backlog it reports on,
+        and a governance channel that arrives as an unactionable burst gets
+        ignored permanently."""
+        alerts = [f"⚠ synthetic {w} is failing" for w in
+                  ("alpha bravo charlie delta echo foxtrot golf hotel india").split()]
+        self.B.process(alerts, "morning_briefing")
+        self.B.process(alerts, "morning_briefing")
+        filed = self._read(self.B.PENDING_PATH)
+        self.assertEqual(len(filed), self.B.MAX_RELAYS_PER_RUN)
+
+    def test_what_is_paced_is_not_lost(self):
+        """Capping must defer, never discard. The remainder stays DETECTED, is
+        still counted in the denominator, and goes out on the next run."""
+        alerts = [f"⚠ synthetic {w} is failing" for w in
+                  ("alpha bravo charlie delta echo foxtrot golf hotel india").split()]
+        self.B.process(alerts, "morning_briefing")
+        self.B.process(alerts, "morning_briefing")
+        self.assertEqual(len(self.B.load_ledger()["issues"]), 9)
+        for _ in range(3):
+            self.B.relay()
+        self.assertEqual(len(self._read(self.B.PENDING_PATH)), 9,
+                         "the backlog stopped draining — deferred became dropped")
+
+    def test_a_backlog_is_stated_not_hidden_by_the_cap(self):
+        """Pacing and a broken relay look identical from outside unless the
+        queue depth is reported."""
+        alerts = [f"⚠ synthetic {w} is failing" for w in
+                  ("alpha bravo charlie delta echo foxtrot golf hotel india").split()]
+        self.B.process(alerts, "morning_briefing")
+        self.B.process(alerts, "morning_briefing")
+        self.assertTrue(any("queued for the board" in l
+                            for l in self.B.digest_section()["lines"]))
+
+    def test_the_most_persistent_issue_reaches_the_board_first(self):
+        self.B.process(["⚠ old and chronic"], "morning_briefing")
+        self.B.process(["⚠ old and chronic"], "morning_briefing")
+        self.B.process(["⚠ old and chronic"] + [f"⚠ new {i}" for i in range(5)],
+                       "morning_briefing")
+        self.B.process(["⚠ old and chronic"] + [f"⚠ new {i}" for i in range(5)],
+                       "morning_briefing")
+        titles = [it["title"] for it in self._read(self.B.PENDING_PATH)]
+        self.assertTrue(any("old and chronic" in t for t in titles),
+                        "the longest-standing issue was crowded out by newer ones")
+
     def test_the_digest_renders_the_issues_section(self):
         """email_buffer must actually call digest_section, and the template must
         actually interpolate it. Either half missing = a silent no-op."""
@@ -10571,6 +10618,45 @@ class TestBoardIssueLedger(unittest.TestCase):
             self.assertLess(route, send,
                             "alerts are routed after the email is sent — the digest "
                             "shows unannotated warnings")
+
+
+class TestUrgentPostsAreNotCrowdedOut(unittest.TestCase):
+    """One chatty agent must not consume the briefing's whole urgent slate."""
+
+    def test_duplicate_urgent_posts_are_collapsed_before_the_cap(self):
+        """The Foreign Order Detector posts every run, so one message appeared
+        3x in a 20h window and took all three urgent slots. Jack saw one warning
+        printed three times — and every OTHER agent's urgent post was dropped
+        from the briefing entirely. Dedupe must happen BEFORE the [:3] slice or
+        the cap does the suppressing."""
+        src = (Path(__file__).resolve().parent / "morning_briefing.py").read_text()
+        tree = ast.parse(src)
+        # AST, not a text search. The first cut of this test looked for the
+        # literal "[:3]" and matched the postmortem comment three lines above
+        # the code — passing while measuring nothing. Comments are not evidence.
+        dedupe_ln = cap_ln = None
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Name) and node.id == "_seen" and dedupe_ln is None:
+                dedupe_ln = node.lineno
+            if (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name)
+                    and node.value.id in ("_urgent", "_uniq")
+                    and isinstance(node.slice, ast.Slice)):
+                cap_ln = node.lineno if cap_ln is None else min(cap_ln, node.lineno)
+        self.assertIsNotNone(dedupe_ln, "urgent posts are no longer deduplicated")
+        self.assertIsNotNone(cap_ln, "the urgent slate is no longer capped")
+        self.assertLess(dedupe_ln, cap_ln,
+                        "the cap is applied before the dedupe, so one repeated "
+                        "message still crowds out every other agent")
+        sliced = {n.value.id for n in ast.walk(tree)
+                  if isinstance(n, ast.Subscript) and isinstance(n.value, ast.Name)
+                  and isinstance(n.slice, ast.Slice) and n.value.id in ("_urgent", "_uniq")}
+        self.assertNotIn("_urgent", sliced,
+                         "the raw, undeduplicated list is being sliced")
+
+    def test_the_cap_says_when_it_is_capping(self):
+        src = (Path(__file__).resolve().parent / "morning_briefing.py").read_text()
+        self.assertIn("further urgent post(s) not shown", src,
+                      "urgent posts beyond the third vanish with no trace")
 
 
 # =============================================================================
