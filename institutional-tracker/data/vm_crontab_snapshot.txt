@@ -1,3 +1,8 @@
+# CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
+# Captured 2026-08-18T03:43:50Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# DO NOT hand-edit — it is a mirror, not a control surface.
+# Refresh with: bash scripts/refresh_crontab_snapshot.sh
+
 APEX_HEALTHCHECK_URL=https://hc-ping.com/0ca2940f-74a7-4306-a5fe-c7078f7c79cc
 SHELL=/bin/bash
 PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

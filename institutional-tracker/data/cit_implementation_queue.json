@@ -21,8 +21,9 @@
     "proposed_fix": "Create test_pipeline_smoke.py with at minimum: (1) mock evaluate_recommendation with known inputs and assert outputs, (2) mock enforce_risk_rules with a known position set, (3) verify state.json round-trips correctly.",
     "evidence": "Searched /Users/jackbeard/Claude investment strategy/institutional-tracker for test_*.py and *_test.py \u2014 none found.",
     "queued_at": "2026-06-10T03:50:41.991506",
-    "status": "queued",
-    "routed_by": "overnight_sprint:cleanup"
+    "status": "skipped",
+    "routed_by": "overnight_sprint:cleanup",
+    "skip_reason": "File not found: _test.py"
   },
   {
     "proposal_id": "CIT-2026-217",
@@ -1684,8 +1685,9 @@
     "proposed_fix": "Most frequent error type: `'get'` (3/3 sampled). Locate the call site in logs/run_*.log matching `12:00:21  ERROR       [Canary] Manager Agent step failed: 's`, wrap it in `except 'get'` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
     "evidence": "Recent log samples:\n  \u2022 12:00:21  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 12:30:18  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 13:00:34  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'",
     "queued_at": "2026-06-11T14:33:04.446891",
-    "status": "queued",
-    "routed_by": "overnight_sprint:cleanup"
+    "status": "systemic",
+    "routed_by": "overnight_sprint:cleanup",
+    "skip_reason": "No specific file target \u2014 systemic finding"
   },
   {
     "proposal_id": "CIT-2026-1448",

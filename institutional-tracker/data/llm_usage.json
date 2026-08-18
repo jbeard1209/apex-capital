@@ -1,43 +1,38 @@
 {
-  "date": "2026-06-12",
-  "calls": 28,
-  "input_tokens": 7642,
-  "output_tokens": 19063,
+  "date": "2026-07-30",
+  "calls": 70,
+  "input_tokens": 12560,
+  "output_tokens": 17004,
   "by_agent": {
-    "rd_pod_board": {
-      "calls": 3,
-      "in": 206,
-      "out": 155
-    },
-    "manager_agent": {
-      "calls": 1,
-      "in": 138,
-      "out": 156
-    },
-    "missed_winners": {
-      "calls": 3,
-      "in": 924,
-      "out": 1200
-    },
-    "teaching": {
-      "calls": 18,
-      "in": 5062,
-      "out": 16200
+    "creative": {
+      "calls": 5,
+      "in": 750,
+      "out": 386
     },
     "irm_review": {
-      "calls": 1,
-      "in": 550,
-      "out": 665
+      "calls": 4,
+      "in": 1594,
+      "out": 867
+    },
+    "review_agent": {
+      "calls": 4,
+      "in": 618,
+      "out": 873
+    },
+    "pre_trade_challenge": {
+      "calls": 49,
+      "in": 7422,
+      "out": 12576
+    },
+    "morning_briefing": {
+      "calls": 7,
+      "in": 1532,
+      "out": 1753
     },
     "logic_team": {
       "calls": 1,
-      "in": 627,
-      "out": 494
-    },
-    "cit_director": {
-      "calls": 1,
-      "in": 135,
-      "out": 193
+      "in": 644,
+      "out": 549
     }
   }
 }

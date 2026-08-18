@@ -1,5 +1,35 @@
 {
-  "checked_at": "2026-07-03T18:50:01.144728",
-  "issues": [],
-  "healthy": true
+  "checked_at": "2026-08-18T05:04:04.187540",
+  "issues": [
+    {
+      "severity": "HIGH",
+      "check": "deadmans_switch_sanity",
+      "message": "pipeline_heartbeat.json is 82.2h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
+      "auto_fixed": false
+    },
+    {
+      "severity": "HIGH",
+      "check": "email_loop_detection",
+      "message": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Coherence: 2 law(s) violated on MacBook-Air-173\" \u00d712",
+      "auto_fixed": false
+    },
+    {
+      "severity": "MEDIUM",
+      "check": "agent_file_freshness",
+      "message": "3 agent output file(s) are >26h old and no recovery appears in progress: research_team_report.json (82h); risk_bulletin.json (84h); canary_state.json (155h)",
+      "auto_fixed": false
+    }
+  ],
+  "healthy": false,
+  "verdicts": {
+    "deadmans_switch_sanity": "FAIL",
+    "email_loop_detection": "FAIL",
+    "agent_file_freshness": "FAIL",
+    "ml_model_health": "SKIP",
+    "peer_host_liveness": "PASS",
+    "single_writer": "PASS"
+  },
+  "skipped": {
+    "ml_model_health": "model_v2_meta.json carries no AUC field \u2014 nothing to compare"
+  }
 }

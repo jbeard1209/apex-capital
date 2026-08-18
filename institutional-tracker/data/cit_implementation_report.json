@@ -1,63 +1,21 @@
 {
-  "generated_at": "2026-06-10T03:51:57.165763",
+  "generated_at": "2026-07-29T17:39:13.096751",
   "implemented": 0,
-  "skipped": 9,
-  "total_in_queue": 129,
-  "dry_run": false,
+  "skipped": 2,
+  "total_in_queue": 148,
+  "dry_run": true,
   "items": [
     {
-      "pid": "CIT-2026-1048",
-      "title": "66 ERROR lines \u2014 dominant: `known`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
+      "pid": "CIT-2026-216",
+      "title": "Zero test coverage \u2014 no integration tests for the pipeline",
+      "result": "FILE_NOT_FOUND",
+      "reason": "File not found: _test.py"
     },
     {
-      "pid": "CIT-2026-1074",
-      "title": "70 ERROR lines \u2014 dominant: `known`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1088",
-      "title": "32 ERROR lines \u2014 dominant: `known`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1369",
-      "title": "38 ERROR lines \u2014 dominant: `Sell`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1369",
-      "title": "38 ERROR lines \u2014 dominant: `Sell`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1367",
-      "title": "43 ERROR lines \u2014 dominant: `Sell`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1367",
-      "title": "43 ERROR lines \u2014 dominant: `Sell`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1368",
-      "title": "48 ERROR lines \u2014 dominant: `Sell`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
-    },
-    {
-      "pid": "CIT-2026-1368",
-      "title": "48 ERROR lines \u2014 dominant: `Sell`",
-      "result": "NEEDS_HUMAN",
-      "reason": "Could not identify target file from evidence/fix description"
+      "pid": "CIT-2026-1448",
+      "title": "6 ERROR lines \u2014 dominant: `'get'`",
+      "result": "SYSTEMIC",
+      "reason": "Requires architectural change, not a single-file fix"
     }
   ]
 }

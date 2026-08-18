@@ -50,9 +50,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-217",
@@ -105,9 +122,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-184",
@@ -160,9 +194,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-203",
@@ -215,9 +266,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-204",
@@ -270,9 +338,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-210",
@@ -325,9 +410,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-267",
@@ -380,9 +482,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-268",
@@ -435,9 +554,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-275",
@@ -490,9 +626,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-278",
@@ -545,9 +698,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-279",
@@ -600,9 +770,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-289",
@@ -655,9 +842,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-295",
@@ -710,9 +914,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-299",
@@ -765,9 +986,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-322",
@@ -820,9 +1058,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-472",
@@ -875,9 +1130,26 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   },
   {
     "proposal_id": "CIT-2026-1827",
@@ -930,8 +1202,25 @@
           }
         },
         "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
+      },
+      {
+        "days": 90,
+        "checked_at": "2026-08-14T12:47:19.269784",
+        "delta": {
+          "total_return_pct": 3.11,
+          "cit_backlog_depth": 226.0,
+          "canary_level": {
+            "before": "GREEN",
+            "after": "GREEN"
+          },
+          "regime": {
+            "before": "BULL",
+            "after": "BULL"
+          }
+        },
+        "verdict": "NEGATIVE \u2014 metrics deteriorated since implementation (may be unrelated)"
       }
     ],
-    "next_check_days": 90
+    "next_check_days": null
   }
 ]

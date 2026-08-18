@@ -6,8 +6,9 @@
     "source": "chairman_checkup_2026-07-27",
     "ts": "2026-07-27T04:16:15.586598",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:decision needed the cro has blocked all buys for # days d)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:decision needed the cro has blocked all buys for # days d)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "info-20260727-oracle-terminated",
@@ -16,8 +17,9 @@
     "source": "chairman_checkup_2026-07-27",
     "ts": "2026-07-27T04:16:15.586598",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:resolved hidden #rd host oracle always free vm # # # # # )"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:resolved hidden #rd host oracle always free vm # # # # # )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "watch-20260727-data-integrity",
@@ -26,8 +28,9 @@
     "source": "chairman_checkup_2026-07-27",
     "ts": "2026-07-27T04:16:15.586598",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:watch items not blocking # state json shows # positions w)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:watch items not blocking # state json shows # positions w)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "pip-integrity-20260630-20-email_loop_detection",
@@ -37,9 +40,10 @@
     "ts": "2026-06-30T20:50:01.080036",
     "status": "awaiting_chairman",
     "dedup_key": "Repeated email subjects in buffer (# unique subject(s) appear #+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun #, #\" \u00d7#",
-    "times_seen": 844424930131968,
+    "times_seen": 2588154880046461420288033448353884544669165864563894958185946583924736,
     "first_seen_of_group": "2026-06-30T16:50:00.866216",
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:repeated email subjects in buffer (# unique subject(s) ap)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:repeated email subjects in buffer (# unique subject(s) ap)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "pip-integrity-20260702-00-deadmans_switch_sani",
@@ -49,9 +53,10 @@
     "ts": "2026-07-02T00:50:01.076806",
     "status": "awaiting_chairman",
     "dedup_key": "pipeline_heartbeat.json is #.#h old on a weekday (threshold #h) \u2014 possible genuine pipeline outage or VM issue.",
-    "times_seen": 4222124650659840,
+    "times_seen": 12940774400232307101440167241769422723345829322819474790929732919623680,
     "first_seen_of_group": "2026-06-30T18:50:00.761971",
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:pipeline_heartbeat.json is #.#h old on a weekday (thresho)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:pipeline_heartbeat.json is #.#h old on a weekday (thresho)",
+    "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260701000009",
@@ -62,8 +67,9 @@
     "status": "awaiting_chairman",
     "times_approved": 42,
     "queued_at": "2026-07-01T13:30:00.842048",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia suspend ml driven buys model auc below random ml fin)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia suspend ml driven buys model auc below random ml fin)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260701000009-436df4",
@@ -74,8 +80,9 @@
     "status": "awaiting_chairman",
     "times_approved": 60,
     "queued_at": "2026-07-01T13:30:00.842048",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia expected agents silent check they re still running c)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia expected agents silent check they re still running c)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260702014906-FE",
@@ -86,9 +93,10 @@
     "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
     "ts": "2026-07-02T01:49:06.406014",
     "dedup_key": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report #h old) but produced # qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python# fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still # \u2014 keep the #% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
-    "times_seen": 562949953421312,
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
     "first_seen_of_group": "2026-07-02T01:49:06.406014",
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[fe] zero_picks: first eagle value pod health \u2014 first eag)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[fe] zero_picks: first eagle value pod health \u2014 first eag)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260702090133-ETF",
@@ -106,8 +114,9 @@
     "merged_ids": [
       "PHM-20260702090133-ETF-e6e65a"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf zero picks macro etf pod health etf zero picks macro )"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf zero picks macro etf pod health etf zero picks macro )",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "AUD-20260702094001",
@@ -116,8 +125,9 @@
     "status": "open",
     "ts": "2026-07-02T09:40:01.849001",
     "description": "[Audit] ml_research_team_leader / ml_data_watchdog orphaned \u2014 data_quality_report 469h stale \u2014 nothing invokes it (not in cron, not in overnight_ml_runner). Decide: schedule it, fold the data watchdog into an existing run, or retire the report (freshness_sentinel budget expects 54h).",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:audit ml research team leader ml data watchdog orphaned d)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:audit ml research team leader ml data watchdog orphaned d)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260702014906-FE-349e0a",
@@ -128,8 +138,9 @@
     "status": "awaiting_chairman",
     "times_approved": 4,
     "queued_at": "2026-07-02T09:58:42.283692",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe zero picks first eagle value pod health first eagle va)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe zero picks first eagle value pod health first eagle va)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260702120033",
@@ -140,8 +151,9 @@
     "status": "awaiting_chairman",
     "times_approved": 48,
     "queued_at": "2026-07-02T13:30:16.041454",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia decide on idle pod capital ml quantitative # # capit)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia decide on idle pod capital ml quantitative # # capit)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260702120033-7461cf",
@@ -152,8 +164,9 @@
     "status": "awaiting_chairman",
     "times_approved": 48,
     "queued_at": "2026-07-02T13:30:16.041454",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia cit backlog bloat tighten proposal quality or action)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia cit backlog bloat tighten proposal quality or action)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "INVEST-2026-0703-ml-parquet",
@@ -167,8 +180,9 @@
     "status": "open",
     "fix_applied": true,
     "fix_description": "pip3 install pyarrow>=12.0.0; added pyarrow>=12.0.0 to requirements.txt",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ml v# v# v# fail every nightly run pyarrow never installe)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ml v# v# v# fail every nightly run pyarrow never installe)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "INVEST-2026-0703-lt-noon-miss",
@@ -181,8 +195,9 @@
     "source": "forensic_investigator",
     "ts": "2026-07-03T18:48:38.661806",
     "status": "open",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:logic team noon run missed when mac sleeps not in wakeup )"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:logic team noon run missed when mac sleeps not in wakeup )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "INVEST-BUG-2026-0703-pyarrow",
@@ -197,8 +212,9 @@
     "status": "awaiting_chairman",
     "times_approved": 1,
     "queued_at": "2026-07-04T11:32:53.583050",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ml v# v# v# fail every run pyarrow never in requirements )"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ml v# v# v# fail every run pyarrow never in requirements )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "INVEST-BUG-2026-0703-lt-cron",
@@ -213,8 +229,9 @@
     "status": "awaiting_chairman",
     "times_approved": 1,
     "queued_at": "2026-07-04T11:32:54.645966",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:wakeup recovery py missing logic team py catchup noon run)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:wakeup recovery py missing logic team py catchup noon run)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LT-125400-cro_extended_no_review",
@@ -226,9 +243,10 @@
     "times_approved": 2,
     "queued_at": "2026-07-16T09:43:07.430496",
     "dedup_key": "CRO=HIGH for # cycles (# days) \u2014 board must vote",
-    "times_seen": 2533274790395904,
+    "times_seen": 7764464640139384260864100345061653634007497593691684874557839751774208,
     "first_seen_of_group": "2026-07-15T09:46:13.573650",
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cro=high for # cycles (# days) \u2014 board must vote)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cro=high for # cycles (# days) \u2014 board must vote)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LT-160139-cro_paralysis",
@@ -240,9 +258,10 @@
     "times_approved": 2,
     "queued_at": "2026-07-15T09:46:13.573650",
     "dedup_key": "CRO at HIGH for #+ days \u2014 firm has no buy strategy",
-    "times_seen": 1688849860263936,
+    "times_seen": 5176309760092922840576066896707769089338331729127789916371893167849472,
     "first_seen_of_group": "2026-07-15T09:46:13.573650",
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cro at high for #+ days \u2014 firm has no buy strategy)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cro at high for #+ days \u2014 firm has no buy strategy)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260715115334",
@@ -254,9 +273,10 @@
     "times_approved": 2,
     "queued_at": "2026-07-16T09:43:07.430496",
     "dedup_key": "[LTIA] Governance action: CRO=HIGH for # cycles (# days) \u2014 board must vote",
-    "times_seen": 562949953421312,
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
     "first_seen_of_group": "2026-07-15T09:46:13.573650",
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[ltia] governance action: cro=high for # cycles (# days) )"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[ltia] governance action: cro=high for # cycles (# days) )",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260714133149",
@@ -267,8 +287,9 @@
     "status": "awaiting_chairman",
     "times_approved": 4,
     "queued_at": "2026-07-15T09:46:13.573650",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia cro extended block needs a vote with explicit exit c)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia cro extended block needs a vote with explicit exit c)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260714133205",
@@ -279,8 +300,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-15T09:46:13.573650",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia governance action # chairman action item s unresolve)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia governance action # chairman action item s unresolve)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260723112501-FI",
@@ -289,8 +311,9 @@
     "description": "[FI] STALE: Fixed Income pod health \u2014 Fixed Income pipeline report is 214h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fi_pipeline.py\nOwner: FI Pod Board + Chairman. Auto-raised by pod_health_monitor.",
     "status": "open",
     "ts": "2026-07-23T11:25:01.794639",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fi stale fixed income pod health fixed income pipeline re)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fi stale fixed income pod health fixed income pipeline re)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260723112501-FE",
@@ -299,8 +322,9 @@
     "description": "[FE] STALE: First Eagle Value pod health \u2014 First Eagle Value pipeline report is 478h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
     "status": "open",
     "ts": "2026-07-23T11:25:01.800983",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe stale first eagle value pod health first eagle value p)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe stale first eagle value pod health first eagle value p)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260723112501-ETF",
@@ -309,8 +333,9 @@
     "description": "[ETF] STALE: Macro/ETF pod health \u2014 Macro/ETF pipeline report is 474h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 pod3_macro.py\nOwner: Macro Pod Board. Auto-raised by pod_health_monitor.",
     "status": "open",
     "ts": "2026-07-23T11:25:01.804414",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf stale macro etf pod health macro etf pipeline report )"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf stale macro etf pod health macro etf pipeline report )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "FOD-20260723112502",
@@ -319,8 +344,9 @@
     "status": "open",
     "ts": "2026-07-23T11:25:02.979301",
     "description": "[ForeignOrders] 2026-07-23 \u2014 3 account order(s) with NO local decision record (SH). Either another host is trading this account (e.g. the GCP VM) or local decision logging broke. Both demand investigation.",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:foreignorders # # # # account order s with no local decis)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:foreignorders # # # # account order s with no local decis)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260723112501-FI-e5ea31",
@@ -331,8 +357,9 @@
     "status": "known_infrastructure",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:25:10.431313",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fi stale fixed income pod health)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fi stale fixed income pod health)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260723112501-FE-e5ea31",
@@ -343,8 +370,9 @@
     "status": "known_infrastructure",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:25:10.431313",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe stale first eagle value pod health)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe stale first eagle value pod health)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "PHM-20260723112501-ETF-e5ea31",
@@ -355,8 +383,9 @@
     "status": "known_infrastructure",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:25:10.431313",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf stale macro etf pod health)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:etf stale macro etf pod health)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LT-175022-cro_extended_no_review",
@@ -409,8 +438,9 @@
       "LT-173017-cro_extended_no_review",
       "LT-175139-cro_extended_no_review"
     ],
-    "times_seen": 11540474045136896,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro high for # cycles # days board must vote the cro has )"
+    "times_seen": 35371450027301639410603123794169755443811933482373231095207936646971392,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro high for # cycles # days board must vote the cro has )",
+    "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LT-175022-cro_paralysis",
@@ -462,8 +492,9 @@
       "LT-173017-cro_paralysis",
       "LT-175139-cro_paralysis"
     ],
-    "times_seen": 11258999068426240,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro at high for # days firm has no buy strategy the cro h)"
+    "times_seen": 34508731733952818937173779311385127262255544860851932775812621118996480,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro at high for # days firm has no buy strategy the cro h)",
+    "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260723113542",
@@ -474,8 +505,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-23T11:35:43.164168",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia reconcile contradicting risk signals cro high but ca)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia reconcile contradicting risk signals cro high but ca)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LO-20260724175022-extended_cro_high_no_review",
@@ -528,8 +560,9 @@
       "LO-20260724170745-extended_cro_high_no_review",
       "LO-20260724172904-extended_cro_high_no_review"
     ],
-    "times_seen": 11540474045136896,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro has been at high for # cycles no board review the cro)"
+    "times_seen": 35371450027301639410603123794169755443811933482373231095207936646971392,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cro has been at high for # cycles no board review the cro)",
+    "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-email_buffer_overflo",
@@ -542,8 +575,9 @@
     "merged_ids": [
       "apex-sys-cit-20260730-1720-email_buffer_overflo"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:email buffer overflow # unsent emails in buffer threshold)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:email buffer overflow # unsent emails in buffer threshold)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-email_loop_detected_",
@@ -556,8 +590,9 @@
     "merged_ids": [
       "apex-sys-cit-20260730-1720-email_loop_detected_"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:email loop detected # subject s appear # times in buffer )"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:email loop detected # subject s appear # times in buffer )",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-1720-edgar_cache_director",
@@ -567,8 +602,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T17:20:03.153851",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:edgar cache directory missing fe edgar fundamentals may n)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:edgar cache directory missing fe edgar fundamentals may n)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-1720-deep_research_librar",
@@ -578,8 +614,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T17:20:03.153889",
     "status": "awaiting_chairman",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:deep research library directory missing data company rese)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:deep research library directory missing data company rese)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-1720-fe_watchlist_missing",
@@ -589,8 +626,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T17:20:03.153915",
     "status": "awaiting_chairman",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe watchlist missing data fe watchlist json add target pr)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe watchlist missing data fe watchlist json add target pr)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-1720-gcp_ip_changed____cu",
@@ -602,8 +640,9 @@
     "status": "resolved",
     "resolution": "FALSE POSITIVE \u2014 raised by a local (non-GCP) run. The check curl'd ifconfig.me, which answers from any host, so it compared the running machine's IP (71.183.49.72) to the VM's. The VM's external IP is unchanged at 34.182.202.196 (verified via GCP metadata 2026-07-31). Check now probes the metadata server and skips off-VM; guarded by test_pipeline_smoke.TestHostSpecificChecksStayOnTheirHost.",
     "resolved_at": "2026-07-31T14:30:07.283141",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp ip changed current external ip # # # # does not match)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp ip changed current external ip # # # # does not match)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260730100954",
@@ -615,8 +654,9 @@
     "status": "awaiting_chairman",
     "times_approved": 90,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:idle_pod_pod2_ml)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:idle_pod_pod2_ml)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260730134552",
@@ -631,8 +671,9 @@
     "merged_ids": [
       "LTIA-20260730101004"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cit_backlog_bloat)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:cit_backlog_bloat)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260730101004-74e9bc",
@@ -644,8 +685,9 @@
     "status": "awaiting_chairman",
     "times_approved": 90,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:stale_chairman_actions)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:stale_chairman_actions)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260730134552-d9ebd5",
@@ -660,8 +702,9 @@
     "merged_ids": [
       "LTIA-20260730101004-d9ebd5"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:agent_communication_silence)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:agent_communication_silence)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fund-sanity-FICO",
@@ -673,8 +716,9 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for fico \u2014 quarantine from valuat)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for fico \u2014 quarantine from valuat)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fund-sanity-MSCI",
@@ -686,8 +730,9 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for msci \u2014 quarantine from valuat)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for msci \u2014 quarantine from valuat)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fund-sanity-SBAC",
@@ -699,8 +744,9 @@
     "status": "awaiting_chairman",
     "times_approved": 6,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for sbac \u2014 quarantine from valuat)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for sbac \u2014 quarantine from valuat)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "STRAT-2026-0730-kr-tech-short",
@@ -712,8 +758,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:korea/ai-hardware tech shorts \u2014 recommend no new shorts ()"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:korea/ai-hardware tech shorts \u2014 recommend no new shorts ()",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ARCH-2026-0730-orphan-agents",
@@ -725,8 +772,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:# agents write reports that other modules read, but nothi)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:# agents write reports that other modules read, but nothi)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260730103213",
@@ -738,8 +786,9 @@
     "status": "awaiting_chairman",
     "times_approved": 4,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:irm_cro_contradiction)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:irm_cro_contradiction)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LO-20260730125005-zero_picks_anomaly",
@@ -751,8 +800,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:zero_picks_anomaly)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:zero_picks_anomaly)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "RDEVT-20260730174325-INDEX_GAP",
@@ -764,8 +814,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T09:42:42.666242",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:live market event: index_gap on qqq)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:live market event: index_gap on qqq)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260731-1058-long_term_model_file",
@@ -776,8 +827,9 @@
     "ts": "2026-07-31T10:58:08.603758",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:0344f5e388f4b157",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:0344f5e388f4b157)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:0344f5e388f4b157)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260731-1058-long_term_ml_output_",
@@ -788,8 +840,9 @@
     "ts": "2026-07-31T10:58:08.665731",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:9efdff558c046948",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:9efdff558c046948)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:9efdff558c046948)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we",
@@ -800,8 +853,9 @@
     "ts": "2026-07-31T14:21:33.531750",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:5581cc6b1bf98b19",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:5581cc6b1bf98b19)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:5581cc6b1bf98b19)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-efeb82",
@@ -812,8 +866,9 @@
     "ts": "2026-07-31T14:21:33.531775",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:a45e0ac076e38cf6",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a45e0ac076e38cf6)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a45e0ac076e38cf6)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-2fd0d9",
@@ -824,8 +879,9 @@
     "ts": "2026-07-31T14:21:33.531796",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:5cb063ba317bff21",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:5cb063ba317bff21)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:5cb063ba317bff21)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-65eb26",
@@ -836,8 +892,9 @@
     "ts": "2026-07-31T14:21:33.531813",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:9ea43ce1aee12ac7",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:9ea43ce1aee12ac7)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:9ea43ce1aee12ac7)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-aa338b",
@@ -848,8 +905,9 @@
     "ts": "2026-07-31T14:21:33.531830",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:a65cbbb5b636cb7c",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a65cbbb5b636cb7c)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a65cbbb5b636cb7c)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-d3b199",
@@ -860,8 +918,9 @@
     "ts": "2026-07-31T14:21:33.531848",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:74312b3b449ea1f6",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:74312b3b449ea1f6)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:74312b3b449ea1f6)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-8a903d",
@@ -872,8 +931,9 @@
     "ts": "2026-07-31T14:21:33.531865",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:65ebb0fe8e0c31c7",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:65ebb0fe8e0c31c7)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:65ebb0fe8e0c31c7)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-f8d751",
@@ -884,8 +944,9 @@
     "ts": "2026-07-31T14:21:33.531882",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:27d0b0c946504239",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:27d0b0c946504239)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:27d0b0c946504239)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-cfaeda",
@@ -896,8 +957,9 @@
     "ts": "2026-07-31T14:21:33.531899",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:1acc6dda6bb512ed",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:1acc6dda6bb512ed)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:1acc6dda6bb512ed)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we-022107",
@@ -908,8 +970,9 @@
     "ts": "2026-07-31T14:21:33.531916",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:54d4549d6593879a",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:54d4549d6593879a)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:54d4549d6593879a)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-email_buffer_overflo",
@@ -920,8 +983,9 @@
     "ts": "2026-07-31T14:21:33.538813",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:abe5725021bcb2f7",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:abe5725021bcb2f7)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:abe5725021bcb2f7)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-email_loop_detected_",
@@ -932,8 +996,9 @@
     "ts": "2026-07-31T14:21:33.539159",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:10ad4fe3155b76a7",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:10ad4fe3155b76a7)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:10ad4fe3155b76a7)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1421-gcp_ip_changed____cu",
@@ -946,8 +1011,9 @@
     "dedup_key": "sha1:8afd72d12e09de58",
     "resolution": "FALSE POSITIVE \u2014 raised by a local (non-GCP) run. The check curl'd ifconfig.me, which answers from any host, so it compared the running machine's IP (206.252.193.62) to the VM's. The VM's external IP is unchanged at 34.182.202.196 (verified via GCP metadata 2026-07-31). Check now probes the metadata server and skips off-VM; guarded by test_pipeline_smoke.TestHostSpecificChecksStayOnTheirHost.",
     "resolved_at": "2026-07-31T14:30:07.283180",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:8afd72d12e09de58)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:8afd72d12e09de58)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LT-151009-wiring_contract_violation",
@@ -959,8 +1025,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T15:15:10.621388",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:wiring contract violation \u2014 [orphan-agent] performance_sn)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:wiring contract violation \u2014 [orphan-agent] performance_sn)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260731151009",
@@ -972,8 +1039,9 @@
     "status": "awaiting_chairman",
     "times_approved": 2,
     "queued_at": "2026-07-31T15:15:10.621388",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:wiring_contract_violation)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:wiring_contract_violation)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-268b6539ca13",
@@ -983,10 +1051,11 @@
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
     "merged_ids": [
-      "data-integrity-2026-08-01"
+      "data-integrity-2026-08-18"
     ],
-    "times_seen": 844426003890208,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:firm data integrity sweep is red fundamentals # issue s s)"
+    "times_seen": 2588158171105890956484898920072568416470574942802845977374117993652226,
+    "merge_note": "3 action record(s) folded by chairman_queue_sync (key=tx:firm data integrity sweep is red fundamentals # issue s s)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-9f92cecfed05",
@@ -995,8 +1064,9 @@
     "description": "'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T14:55:01.787673+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:pre trade devil s advocate adversarial challenge before h)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:pre trade devil s advocate adversarial challenge before h)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-5acf1b1388df",
@@ -1005,8 +1075,9 @@
     "description": "'Replace flat position sizing with conviction-weighted Kelly-derived sizing' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T14:55:01.787673+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:replace flat position sizing with conviction weighted kel)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:replace flat position sizing with conviction weighted kel)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260730-2132-outcome_365d_labels_",
@@ -1016,8 +1087,9 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.681695",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:outcome #d labels too old latest labeled snapshot date # )"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:outcome #d labels too old latest labeled snapshot date # )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260730-2132-long_term_ml_output_",
@@ -1027,8 +1099,9 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.682098",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term ml output stale newest file ml longterm board r)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term ml output stale newest file ml longterm board r)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260730-2132-long_term_model_due_",
@@ -1038,8 +1111,9 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.682879",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term model due for retraining cycle model longterm p)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term model due for retraining cycle model longterm p)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260730-2132-long_term_model_pred",
@@ -1049,8 +1123,9 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.683138",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term model predates fundamental features retrain rec)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:long term model predates fundamental features retrain rec)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "ml-lt-cit-20260730-2132-consider_whether_sec",
@@ -1060,8 +1135,9 @@
     "source": "ml_longterm_cit_agent",
     "ts": "2026-07-30T21:32:25.685234",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:consider whether sec edgar xbrl expanded coverage could i)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:consider whether sec edgar xbrl expanded coverage could i)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-gcp_disk_usage_eleva",
@@ -1071,8 +1147,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.144593",
     "status": "awaiting_chairman",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp disk usage elevated # used threshold #)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp disk usage elevated # used threshold #)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we",
@@ -1082,8 +1159,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.195909",
     "status": "awaiting_chairman",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml improvement agent log no log)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml improvement agent log no log)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-efeb82",
@@ -1093,8 +1171,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.195974",
     "status": "awaiting_chairman",
-    "times_seen": 140737488355328,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml data watchdog log no log fou)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml data watchdog log no log fou)",
+    "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-2fd0d9",
@@ -1104,8 +1183,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196015",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml drift monitor log no log fou)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml drift monitor log no log fou)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-65eb26",
@@ -1115,8 +1195,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196051",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml alpha decay monitor log no l)"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml alpha decay monitor log no l)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-aa338b",
@@ -1126,8 +1207,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196091",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml research team leader log no )"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml research team leader log no )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-d3c01b",
@@ -1137,8 +1219,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196125",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday edgar scraper log no log found )"
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday edgar scraper log no log found )",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-8a903d",
@@ -1148,8 +1231,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196161",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe cit agent log no log found t)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe cit agent log no log found t)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-cfaeda",
@@ -1159,8 +1243,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196199",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe watchlist monitor log no log)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe watchlist monitor log no log)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-cron_job_stale_on_we-022107",
@@ -1170,8 +1255,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.196236",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday portfolio risk dashboard log no)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday portfolio risk dashboard log no)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260730-2145-edgar_cache_partiall",
@@ -1181,8 +1267,9 @@
     "source": "apex_system_cit_agent",
     "ts": "2026-07-30T21:45:49.217716",
     "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:edgar cache partially stale # of # file s older than #d f)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:edgar cache partially stale # of # file s older than #d f)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-32d95c04d5de",
@@ -1191,8 +1278,9 @@
     "description": "'[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia decide on idle pod capital ml quantitative # # capit)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia decide on idle pod capital ml quantitative # # capit)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-c97ea63884ae",
@@ -1201,8 +1289,9 @@
     "description": "'[LTIA] Governance action: 4 Chairman action item(s) unresolved for >3 days' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia governance action # chairman action item s unresolve)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia governance action # chairman action item s unresolve)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-3dacfe9229e3",
@@ -1214,8 +1303,9 @@
     "merged_ids": [
       "lifecycle-drop-sig-a23422f0c07f"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:replace fixed r d cadence with event triggered research c)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596936099752094991361,
+    "merge_note": "3 action record(s) folded by chairman_queue_sync (key=tx:replace fixed r d cadence with event triggered research c)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-618c2c21fb90",
@@ -1227,8 +1317,9 @@
     "merged_ids": [
       "lifecycle-drop-sig-251d1fc4f07e"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for bbio quarantine from valuatio)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for bbio quarantine from valuatio)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-f0ff0d888af8",
@@ -1240,8 +1331,9 @@
     "merged_ids": [
       "lifecycle-drop-sig-3749e6ba26d6"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for fico quarantine from valuatio)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for fico quarantine from valuatio)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-39c582aff1bd",
@@ -1253,8 +1345,9 @@
     "merged_ids": [
       "lifecycle-drop-sig-fd6f04f8e589"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for msci quarantine from valuatio)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for msci quarantine from valuatio)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-2be31998caed",
@@ -1266,8 +1359,9 @@
     "merged_ids": [
       "lifecycle-drop-sig-aae92388eef4"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for tdg quarantine from valuation)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for tdg quarantine from valuation)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-65c35fa5a77f",
@@ -1279,8 +1373,9 @@
     "merged_ids": [
       "lifecycle-drop-sig-bca7a3da0763"
     ],
-    "times_seen": 562949953421312,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for wing quarantine from valuatio)"
+    "times_seen": 1725436586697640946858688965569256363112777243042596638790631055949824,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:impossible fundamentals for wing quarantine from valuatio)",
+    "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-09d824d6aa5f",
@@ -1289,8 +1384,9 @@
     "description": "'[LTIA] Reconcile contradicting risk signals: Canary=ORANGE but 15 positions stil' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia reconcile contradicting risk signals canary orange b)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ltia reconcile contradicting risk signals canary orange b)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-085bf982dc7f",
@@ -1299,8 +1395,9 @@
     "description": "'[ForeignOrders] 2026-07-28 \u2014 1 account order(s) with NO local decision record (FITB). Either another host is trading this account (e.g. the GCP VM) or local decision logging broke. Both demand investigation.' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:foreignorders # # # # account order s with no local decis)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:foreignorders # # # # account order s with no local decis)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "lifecycle-drop-sig-6d3a5f90ef04",
@@ -1309,8 +1406,9 @@
     "description": "'Repeated email subjects in buffer (3 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:LOW | Manager Grade:F | Jul 28, 2026\" \u00d710; \"Apex Capital \u2014 Chief of Staff Brief | Risk:LOW | Grade:F | Jul 28, 2026\" \u00d76; \"[IRM DAILY CHECK] 2026-07-28 \u2014 Risk Score 3/10 | 0 Red Flag(s) | HR: agents flagged\" \u00d76' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
     "status": "awaiting_chairman",
     "ts": "2026-07-30T22:55:01.771980+00:00",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:repeated email subjects in buffer # unique subject s appe)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:repeated email subjects in buffer # unique subject s appe)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fund-sanity-BBIO",
@@ -1322,8 +1420,9 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T13:30:05.719508",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for bbio \u2014 quarantine from valuat)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for bbio \u2014 quarantine from valuat)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fund-sanity-TDG",
@@ -1335,8 +1434,9 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T13:30:05.719508",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for tdg \u2014 quarantine from valuati)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for tdg \u2014 quarantine from valuati)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fund-sanity-WING",
@@ -1348,8 +1448,9 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T13:30:05.719508",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for wing \u2014 quarantine from valuat)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:impossible fundamentals for wing \u2014 quarantine from valuat)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "LTIA-20260731160120",
@@ -1361,8 +1462,9 @@
     "status": "awaiting_chairman",
     "times_approved": 10,
     "queued_at": "2026-07-31T16:01:23.323687",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:canary_red_positions_open)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:canary_red_positions_open)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "pip-integrity-20260731-16-email_loop_detection",
@@ -1371,9 +1473,15 @@
     "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:LOW | Manager Grade:F | Jul 31, 2026\" \u00d78",
     "source": "cit_pipeline_integrity_agent",
     "ts": "2026-07-31T16:50:01.962981",
-    "status": "awaiting_chairman",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:email_loop_detection)"
+    "status": "resolved",
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "3 action record(s) folded by chairman_queue_sync (key=dk:email_loop_detection)",
+    "resolved_at": "2026-08-06T23:26:10.606575",
+    "resolved_by": "condition no longer observed by cit_pipeline_integrity_agent at 2026-08-06T23:26:10 \u2014 closed by re-observation, not by declaration",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
+    "merged_ids": [
+      "pip-integrity-20260818-01-email_loop_detection"
+    ]
   },
   {
     "id": "apex-sys-cit-20260731-1840-email_buffer_overflo",
@@ -1384,8 +1492,9 @@
     "ts": "2026-07-31T18:40:49.495907",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:e034dfd374f5b5e5",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:e034dfd374f5b5e5)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:e034dfd374f5b5e5)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1840-email_loop_detected_",
@@ -1396,8 +1505,9 @@
     "ts": "2026-07-31T18:40:49.496192",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:bf8bd6f6afaea26d",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:bf8bd6f6afaea26d)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:bf8bd6f6afaea26d)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260731-1840-edgar_cache_partiall",
@@ -1408,8 +1518,9 @@
     "ts": "2026-07-31T18:40:49.498053",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:aac4bd561e6a8f03",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:aac4bd561e6a8f03)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:aac4bd561e6a8f03)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fi-cit-20260731-1852-stale_spread_data",
@@ -1422,8 +1533,9 @@
     "dedup_key": "fi_cit:STALE_SPREAD_DATA",
     "resolved_at": "2026-07-31T18:55:31.890444+00:00",
     "resolution": "False alarm, raised minutes earlier by the pre-fix reader. It measured data/fi_spread_cache.json, which no producer writes (frozen 2026-07-03). The live file is data/fi_credit_conditions.json, 4.4h old. Reader repointed.",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:stale_spread_data)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:stale_spread_data)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "fi-cit-20260731-1855-imp-duration",
@@ -1434,8 +1546,9 @@
     "ts": "2026-07-31T18:55:19.298596+00:00",
     "status": "awaiting_chairman",
     "dedup_key": "fi_cit:improvement:DURATION",
-    "times_seen": 281474976710656,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:improvement:duration)"
+    "times_seen": 862718293348820473429344482784628181556388621521298319395315527974912,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:improvement:duration)",
+    "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "hr-retire-20260801-retirement_never_enforced-retired20260514",
@@ -1446,11 +1559,12 @@
     "status": "resolved",
     "raised_at": "2026-08-01T01:01:24.224414",
     "source": "hr_retirement_audit",
-    "times_seen": 2199023255552,
+    "times_seen": 6739986666787659948666753771754907668409286105635143120275902562304,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:retirement_never_enforced:retired-2026-05-14)",
     "resolved_at": "2026-08-01T13:46:05",
     "resolved_by": "Co-Chairman Jack Beard",
-    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage."
+    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage.",
+    "times_seen_lost": "original value had 67 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "hr-retire-20260801-unverifiable_retirement-retired20260514",
@@ -1461,11 +1575,12 @@
     "status": "resolved",
     "raised_at": "2026-08-01T01:01:24.224422",
     "source": "hr_retirement_audit",
-    "times_seen": 2199023255552,
+    "times_seen": 6739986666787659948666753771754907668409286105635143120275902562304,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:unverifiable_retirement:retired-2026-05-14)",
     "resolved_at": "2026-08-01T13:46:05",
     "resolved_by": "Co-Chairman Jack Beard",
-    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage."
+    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage.",
+    "times_seen_lost": "original value had 67 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "hr-retire-20260801-retirement_cites_voided_chance-retired20260514",
@@ -1476,11 +1591,12 @@
     "status": "resolved",
     "raised_at": "2026-08-01T01:01:24.224427",
     "source": "hr_retirement_audit",
-    "times_seen": 2199023255552,
+    "times_seen": 6739986666787659948666753771754907668409286105635143120275902562304,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:retirement_cites_voided_chance:retired-2026-05-14)",
     "resolved_at": "2026-08-01T13:46:05",
     "resolved_by": "Co-Chairman Jack Beard",
-    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage."
+    "resolution": "RESOLVED 2026-08-01 by Co-Chairman Jack Beard: the seven 2026-05-14 retirements are VACATED, not enforced. All seven are reinstated to active duty under continuous HR surveillance (one dated observation per day in data/agent_probation_log.json), with a keep-or-terminate review due 2026-09-01. The termination record is preserved under `vacated_retirement` \u2014 the retirement is undone, not erased. Grounds: all seven are permanent: true (chief_of_staff_agent.py:1872 forbids auto-retiring a permanent agent without Co-Chairman authorisation), and the stated reason cited a stage-3 reassignment that was later voided as a no-op. Enforcing instead would have deleted seven sectors of live coverage.",
+    "times_seen_lost": "original value had 67 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260801-1300-gcp_disk_usage_eleva",
@@ -1491,8 +1607,9 @@
     "ts": "2026-08-01T13:00:01.212752",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:a12238c739c8b07a",
-    "times_seen": 2048,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a12238c739c8b07a)"
+    "times_seen": 6277101735386680763835789423207666416102355444464034512896,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:a12238c739c8b07a)",
+    "times_seen_lost": "original value had 58 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
   },
   {
     "id": "apex-sys-cit-20260801-1300-edgar_cache_partiall",
@@ -1503,7 +1620,831 @@
     "ts": "2026-08-01T13:00:01.312208",
     "status": "awaiting_chairman",
     "dedup_key": "sha1:861ae3bd593437fd",
-    "times_seen": 2048,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:861ae3bd593437fd)"
+    "times_seen": 6277101735386680763835789423207666416102355444464034512896,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:861ae3bd593437fd)",
+    "times_seen_lost": "original value had 58 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_INPUT_UNPRODUCED",
+    "title": "Sweep: 13 finding(s) \u2014 agent inputs that nobody produces",
+    "dedup_key": "sweep-agent_input_unproduced",
+    "category": "INTEGRATION",
+    "description": "The weekly firm sweep found 13 instance(s) of AGENT_INPUT_UNPRODUCED.\n\nWHY THIS MATTERS\nA reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.\n\nAFFECTED\n  cit_director <- etf_pod_pending.json\n  cit_director <- fe_pod_pending.json\n  cit_director <- latest_signals.json\n  cit_director <- research_picks.json\n  fe_pipeline <- synthesis_memo.json\n  dynamic_position_sizer <- cro_state.json\n  dynamic_position_sizer <- portfolio_summary.json\n  dynamic_position_sizer <- positions.json\n  dynamic_position_sizer <- signals.json\n  ml_drift_monitor <- _meta.json\n  ml_shortterm_cit_agent <- ml_validation_report_prior.json\n  pod_health_monitor <- deploy_stamp.json\n  \u2026 and 1 more \u2014 full list in data/agent_sweep_report.json\n\nWHAT THE BOARD IS DECIDING\nWrite the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).\n\nOWNER: CIT. SLA: 20 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In cit_director.py (<- etf_pod_pending.json), cit_director.py (<- fe_pod_pending.json), cit_director.py (<- latest_signals.json), cit_director.py (<- research_picks.json), dynamic_position_sizer.py (<- cro_state.json), fe_pipeline.py (<- synthesis_memo.json): Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open). (full list: data/agent_sweep_report.json)",
+    "evidence": "13 finding(s) of kind AGENT_INPUT_UNPRODUCED in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: cit_director <- etf_pod_pending.json, cit_director <- fe_pod_pending.json, cit_director <- latest_signals.json, cit_director <- research_picks.json, fe_pipeline <- synthesis_memo.json, dynamic_position_sizer <- cro_state.json.",
+    "confidence": 90,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:43.591540",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_input_unproduced)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_ISOLATED",
+    "title": "Sweep: 2 finding(s) \u2014 agents that speak to no other agent",
+    "dedup_key": "sweep-agent_isolated",
+    "category": "INTEGRATION",
+    "description": "The weekly firm sweep found 2 instance(s) of AGENT_ISOLATED.\n\nWHY THIS MATTERS\nThe Chairman's standing instruction: the firm must never lose track of an agent, because a key agent that quietly stops doing its job is disastrous. An agent that reads nothing anyone writes and writes nothing anyone reads is already lost \u2014 it is running and irrelevant.\n\nAFFECTED\n  ml_longterm_data_watchdog\n  ml_longterm_drift_monitor\n\nWHAT THE BOARD IS DECIDING\nDecide and implement one of: (a) wire the agent's output to a real consumer, (b) wire a real producer to its input, or (c) take it to the board for retirement. Notify HR either way so the roster reflects reality.\n\nOWNER: CIT. SLA: 20 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In ml_longterm_data_watchdog.py, ml_longterm_drift_monitor.py: Decide and implement one of: (a) wire the agent's output to a real consumer, (b) wire a real producer to its input, or (c) take it to the board for retirement. Notify HR either way so the roster reflects reality. (full list: data/agent_sweep_report.json)",
+    "evidence": "2 finding(s) of kind AGENT_ISOLATED in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: ml_longterm_data_watchdog, ml_longterm_drift_monitor.",
+    "confidence": 90,
+    "severity": "HIGH",
+    "approved_by": "Deputy Board (UNANIMOUS)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:43.720785",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_isolated)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_OUTPUT_NEVER_PRODUCED",
+    "title": "Sweep: 1 finding(s) \u2014 agents that have never produced output",
+    "dedup_key": "sweep-agent_output_never_produced",
+    "category": "BUG_FIX",
+    "description": "The weekly firm sweep found 1 instance(s) of AGENT_OUTPUT_NEVER_PRODUCED.\n\nWHY THIS MATTERS\nAn output file that has never existed proves the agent has never completed a run, no matter how long it has been on the roster.\n\nAFFECTED\n  edgar_transcript_agent\n\nWHAT THE BOARD IS DECIDING\nDetermine whether the agent has ever run successfully. Fix or retire it.\n\nOWNER: CIT. SLA: 14 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In edgar_transcript_agent.py: Determine whether the agent has ever run successfully. Fix or retire it. (full list: data/agent_sweep_report.json)",
+    "evidence": "1 finding(s) of kind AGENT_OUTPUT_NEVER_PRODUCED in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: edgar_transcript_agent.",
+    "confidence": 90,
+    "severity": "HIGH",
+    "approved_by": "Deputy Board (UNANIMOUS)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:43.847436",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_output_never_produced)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_OUTPUT_UNCONSUMED",
+    "title": "Sweep: 9 finding(s) \u2014 agent outputs that nobody reads",
+    "dedup_key": "sweep-agent_output_unconsumed",
+    "category": "INTEGRATION",
+    "description": "The weekly firm sweep found 9 instance(s) of AGENT_OUTPUT_UNCONSUMED.\n\nWHY THIS MATTERS\nfi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.\n\nAFFECTED\n  cit_director -> watchdog_escalated_tasks.json\n  fe_pipeline -> fe_research_nominations.json\n  dynamic_position_sizer -> position_sizes.json\n  edgar_transcript_agent -> edgar_tone_signals.json\n  ml_pod_board -> ml_pod_approved.json\n  ml_shortterm_experiment_runner -> ml_shortterm_experiment_queue.json\n  rd_pod_board -> rd_pod_approved.json\n  short_interest_monitor -> short_interest_alerts.json\n  tech_short_pod -> tech_short_candidates.json\n\nWHAT THE BOARD IS DECIDING\nEither wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.\n\nOWNER: CIT. SLA: 20 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In cit_director.py (-> watchdog_escalated_tasks.json), dynamic_position_sizer.py (-> position_sizes.json), edgar_transcript_agent.py (-> edgar_tone_signals.json), fe_pipeline.py (-> fe_research_nominations.json), ml_pod_board.py (-> ml_pod_approved.json), ml_shortterm_experiment_runner.py (-> ml_shortterm_experiment_queue.json): Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made. (full list: data/agent_sweep_report.json)",
+    "evidence": "9 finding(s) of kind AGENT_OUTPUT_UNCONSUMED in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: cit_director -> watchdog_escalated_tasks.json, fe_pipeline -> fe_research_nominations.json, dynamic_position_sizer -> position_sizes.json, edgar_transcript_agent -> edgar_tone_signals.json, ml_pod_board -> ml_pod_approved.json, ml_shortterm_experiment_runner -> ml_shortterm_experiment_queue.json.",
+    "confidence": 90,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:43.973355",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_output_unconsumed)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_UNREVIEWED",
+    "title": "Sweep: 1 finding(s) \u2014 agents never reviewed by HR",
+    "dedup_key": "sweep-agent_unreviewed",
+    "category": "IMPROVEMENT",
+    "description": "The weekly firm sweep found 1 instance(s) of AGENT_UNREVIEWED.\n\nWHY THIS MATTERS\nThe graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.\n\nAFFECTED\n  MissedWinnersAgent\n\nWHAT THE BOARD IS DECIDING\nHR adds the agent to its review roster and scores it in the next cycle.\n\nOWNER: HR. SLA: 45 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In MissedWinnersAgent: HR adds the agent to its review roster and scores it in the next cycle. (full list: data/agent_sweep_report.json)",
+    "evidence": "1 finding(s) of kind AGENT_UNREVIEWED in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: MissedWinnersAgent.",
+    "confidence": 90,
+    "severity": "LOW",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:44.100502",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_unreviewed)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_UNSCHEDULED",
+    "title": "Sweep: 45 finding(s) \u2014 employed agents that run nowhere",
+    "dedup_key": "sweep-agent_unscheduled",
+    "category": "INTEGRATION",
+    "description": "The weekly firm sweep found 45 instance(s) of AGENT_UNSCHEDULED.\n\nWHY THIS MATTERS\nAn employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.\n\nAFFECTED\n  FECITAgent\n  activist_investor_monitor\n  apex_improvement_board\n  behavioral_analyst\n  chief_learning_officer\n  cit_watchdog\n  cos_fi_municipal_agent\n  cos_fi_tips_agent\n  crypto_signal_agent\n  deputy_monitor\n  dynamic_position_sizer\n  fe_cio_agent\n  \u2026 and 33 more \u2014 full list in data/agent_sweep_report.json\n\nWHAT THE BOARD IS DECIDING\nBoard decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.\n\nOWNER: BOARD. SLA: 30 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In FECITAgent, activist_investor_monitor, apex_improvement_board.py, behavioral_analyst, chief_learning_officer, cit_watchdog.py: Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it. (full list: data/agent_sweep_report.json)",
+    "evidence": "45 finding(s) of kind AGENT_UNSCHEDULED in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: FECITAgent, activist_investor_monitor, apex_improvement_board, behavioral_analyst, chief_learning_officer, cit_watchdog.",
+    "confidence": 90,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:44.226702",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_unscheduled)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "SWEEP-AGENT_WRITES_ON_IMPORT",
+    "title": "Sweep: 5 finding(s) \u2014 agents that mutate firm state at import time",
+    "dedup_key": "sweep-agent_writes_on_import",
+    "category": "BUG_FIX",
+    "description": "The weekly firm sweep found 5 instance(s) of AGENT_WRITES_ON_IMPORT.\n\nWHY THIS MATTERS\nImport-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.\n\nAFFECTED\n  dynamic_position_sizer\n  institution_performance_tracker\n  ml_data_watchdog\n  ml_drift_monitor\n  ml_feature_drift_monitor\n\nWHAT THE BOARD IS DECIDING\nMove the write into a function called by main()/run(); importing a module must not mutate firm state.\n\nOWNER: CIT. SLA: 20 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "proposed_fix": "In dynamic_position_sizer.py, institution_performance_tracker.py, ml_data_watchdog.py, ml_drift_monitor.py, ml_feature_drift_monitor.py: Move the write into a function called by main()/run(); importing a module must not mutate firm state. (full list: data/agent_sweep_report.json)",
+    "evidence": "5 finding(s) of kind AGENT_WRITES_ON_IMPORT in data/agent_sweep_report.json (sweep of 2026-08-01, host apex-capital-configuration). Reproduce with: python3 agent_sweep.py --report. Affected modules: dynamic_position_sizer, institution_performance_tracker, ml_data_watchdog, ml_drift_monitor, ml_feature_drift_monitor.",
+    "confidence": 90,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-01T22:00:44.353673",
+    "times_seen": 365375409332725729550921208179070754913983135744,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-agent_writes_on_import)",
+    "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "apex-sys-cit-20260803-1300-cron_job_stale_on_we",
+    "severity": "MEDIUM",
+    "category": "BUG_FIX",
+    "description": "Cron job stale on weekday -- ML drift monitor log 56h old (threshold 36h)",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-03T13:00:01.497853",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:bc8757819a4234ad",
+    "times_seen": 67108864,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:bc8757819a4234ad)",
+    "times_seen_lost": "original value had 8 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "apex-sys-cit-20260803-1300-email_loop_detected_",
+    "severity": "HIGH",
+    "category": "BUG_FIX",
+    "description": "Email loop detected -- 2 subject(s) appear 3+ times in buffer: \"apex capital \u2014 r&d team briefing | aug 03, 2026\" x3; \"wakeup_recovery\" x3",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-03T13:00:01.536593",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:505b214c097f610c",
+    "times_seen": 67108864,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:505b214c097f610c)",
+    "times_seen_lost": "original value had 8 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "COUNCIL-HR-etf_picks-20260803120001",
+    "title": "[HR] Macro/ETF pod below output OKR (0/1) (2026-08-03)",
+    "dedup_key": "[HR] Macro/ETF pod below output OKR (#/#) (#-#-#)",
+    "category": "IMPROVEMENT",
+    "description": "Macro/ETF produced 0 picks vs OKR minimum 1 this period.",
+    "confidence": 70,
+    "status": "awaiting_chairman",
+    "times_approved": 8,
+    "queued_at": "2026-08-03T13:30:05.901430",
+    "times_seen": 16777216,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[hr] macro/etf pod below output okr (#/#) (#-#-#))",
+    "times_seen_lost": "original value had 8 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "RDEVT-20260803135504-OIL_SHOCK",
+    "title": "Live market event: OIL_SHOCK on USO",
+    "dedup_key": "Live market event: OIL_SHOCK on USO",
+    "category": "STRATEGY",
+    "description": "USO (oil) moved -7.01% in one session (threshold \u00b15.0%) \u2014 energy/geopolitical signal",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-03T14:25:33.310096",
+    "times_seen": 524288,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:live market event: oil_shock on uso)",
+    "times_seen_lost": "original value had 6 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "lifecycle-drop-sig-528493685ce7",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Ratify Strategy Council goals (2026-08-03)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-03T14:55:01.151452+00:00",
+    "times_seen": 262144,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:ratify strategy council goals # # # disappeared from ever)",
+    "times_seen_lost": "original value had 6 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "lifecycle-drop-sig-65007fa6e312",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[HR] Macro/ETF pod below output OKR (0/1) (2026-08-03)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-03T14:55:01.151452+00:00",
+    "times_seen": 262144,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:hr macro etf pod below output okr # # # # # disappeared f)",
+    "times_seen_lost": "original value had 6 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1"
+  },
+  {
+    "id": "apex-sys-cit-20260804-1300-cron_job_stale_on_we",
+    "severity": "MEDIUM",
+    "category": "BUG_FIX",
+    "description": "Cron job stale on weekday -- ML drift monitor log 80h old (threshold 36h)",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-04T13:00:01.925641",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:26fda664aef30cbd",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:26fda664aef30cbd)"
+  },
+  {
+    "id": "lifecycle-drop-sig-52f253043d5e",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'GCP disk usage elevated -- 76% used (threshold 70%)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:gcp disk usage elevated # used threshold # disappeared fr)"
+  },
+  {
+    "id": "lifecycle-drop-sig-4e1461c8cc17",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- ML improvement agent log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "merged_ids": [
+      "lifecycle-drop-sig-a9c8bd129799"
+    ],
+    "times_seen": 2,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml improvement agent log no log)"
+  },
+  {
+    "id": "lifecycle-drop-sig-b62d906d23a8",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- ML data watchdog log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "merged_ids": [
+      "lifecycle-drop-sig-b0725b67137e"
+    ],
+    "times_seen": 2,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml data watchdog log no log fou)"
+  },
+  {
+    "id": "lifecycle-drop-sig-a289dc0e1944",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- ML drift monitor log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "merged_ids": [
+      "lifecycle-drop-sig-2733dd4cbc6c"
+    ],
+    "times_seen": 2,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml drift monitor log no log fou)"
+  },
+  {
+    "id": "lifecycle-drop-sig-38b8a2c066e0",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- ML alpha decay monitor log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "merged_ids": [
+      "lifecycle-drop-sig-41b3f4a76a2c"
+    ],
+    "times_seen": 2,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml alpha decay monitor log no l)"
+  },
+  {
+    "id": "lifecycle-drop-sig-0f72893682f3",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- ML research team leader log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "merged_ids": [
+      "lifecycle-drop-sig-6910a9e170de"
+    ],
+    "times_seen": 2,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml research team leader log no )"
+  },
+  {
+    "id": "lifecycle-drop-sig-cdf68e3a3a4b",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Deep research library directory missing -- data/company_research/ does not exist' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:deep research library directory missing data company rese)"
+  },
+  {
+    "id": "lifecycle-drop-sig-8a4cf5e69830",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'FE watchlist missing (data/fe_watchlist.json) -- add target-priced candidates' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:fe watchlist missing data fe watchlist json add target pr)"
+  },
+  {
+    "id": "lifecycle-drop-sig-4506b99ca0ee",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- CIT pipeline integrity log 668h old (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday cit pipeline integrity log #h o)"
+  },
+  {
+    "id": "lifecycle-drop-sig-21837bc97ded",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- FE CIT agent log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe cit agent log no log found t)",
+    "merged_ids": [
+      "lifecycle-drop-sig-d0c9c8eebabc"
+    ]
+  },
+  {
+    "id": "lifecycle-drop-sig-39e135893752",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- FE pipeline log 673h old (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe pipeline log #h old threshol)"
+  },
+  {
+    "id": "lifecycle-drop-sig-e890ba6a27c3",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- FE watchlist monitor log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday fe watchlist monitor log no log)",
+    "merged_ids": [
+      "lifecycle-drop-sig-d768c57533e8"
+    ]
+  },
+  {
+    "id": "lifecycle-drop-sig-3616daec9161",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- Portfolio risk dashboard log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-04T14:55:01.396202+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday portfolio risk dashboard log no)"
+  },
+  {
+    "id": "pip-integrity-20260806-23-peer_host_liveness",
+    "dedup_key": "peer_host_liveness",
+    "severity": "HIGH",
+    "description": "apex-capital is unreachable (ssh to apex-capital failed: ssh: connect to host 34.182.202.196 port 22: Operation timed out) and this firm has no record of it ever answering. The always-on VM runs main.py ~6x/day against the same Alpaca account; while it is down the Mac is the only host trading, and the Mac only runs while it is awake.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-08-06T23:26:10.604378",
+    "status": "resolved",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:peer_host_liveness)",
+    "resolved_at": "2026-08-14T15:09:57.778477",
+    "resolved_by": "condition no longer observed by cit_pipeline_integrity_agent at 2026-08-14T15:09:57 \u2014 closed by re-observation, not by declaration",
+    "merged_ids": [
+      "pip-integrity-20260816-03-peer_host_liveness"
+    ]
+  },
+  {
+    "id": "pip-integrity-20260806-23-single_writer",
+    "dedup_key": "single_writer",
+    "severity": "CRITICAL",
+    "description": "2 hosts placed orders on the shared account: apexcapitalc=12, mac=5. They size against the same capital and cannot see each other. Guard mode is 'shadow' \u2014 APEX_TRADING_HOST is unset, so nothing is being blocked.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-08-06T23:26:55.019117",
+    "status": "resolved",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:single_writer)",
+    "resolved_at": "2026-08-17T00:50:02.067346",
+    "resolved_by": "condition no longer observed by cit_pipeline_integrity_agent at 2026-08-17T00:50:02 \u2014 closed by re-observation, not by declaration"
+  },
+  {
+    "id": "CIT-2026-560",
+    "title": "Agent zero-pick streaks: 63 exonerated, 0 genuine concern \u2014 HR memo written",
+    "dedup_key": "Agent zero-pick streaks: # exonerated, # genuine concern \u2014 HR memo written",
+    "category": "BUG_FIX",
+    "description": "63 agent(s) have \u22654 consecutive zero-pick cycles. CIT diagnosis: 63 are exonerated (buys blocked system-wide by canary=GREEN/CRO=MODERATE, or sector not assigned this cycle). 0 show genuine underperformance with no mitigating factor. Full context written to data/cit_hr_memo.json for HR to read.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-08-05T13:30:06.040545",
+    "proposed_fix": "HR should read data/cit_hr_memo.json before penalising zero-pick agents. Exonerated agents need no action \u2014 they are blocked by market conditions, not underperforming. Genuine concern agents should receive targeted development plans.",
+    "evidence": "Canary: GREEN | CRO: MODERATE | Buys blocked: True\nExonerated: ['BiotechResearchAgent', 'CITArchitectureAdvisor', 'CITCodeInspector', 'CITDirector', 'CITPipelineMonitor', 'CITStrategyAnalyst', 'CanaryAgent', 'ChiefOfStaff', 'CommunicationsMediaAgent', 'ConsumerDiscretionaryAgent', 'CryptoEquitiesAgent', 'DividendDefensiveAgent', 'DividendYieldAgent', 'EarningsCatalystAgent', 'ExecutionAuditorAgent', 'FECITAgent', 'FECapitalAllocationAgent', 'FEContrarianRecoveryAgent', 'FEFamilyBusinessAgent', 'FEHardMoneyAgent', 'FEHiddenAssetsAgent', 'FEInsuranceValueAgent', 'FEInternationalValueAgent', 'FEPipeline', 'FEQualityCompoundersAgent', 'FESmallMidCapValueAgent', 'FESpecialSituationsAgent', 'FICITAgent', 'FIConvertibleAgent', 'FICreditSpreadAgent', 'FIDistressedAgent', 'FIDurationAgent', 'FIHighYieldAgent', 'FIInvestmentGradeAgent', 'FIPipeline', 'FIPreferredAgent', 'FinancialSectorAgent', 'FirstEagleValueAgent', 'FraudWatchdog', 'GeopoliticalRiskAnalyst', 'GlobalMacroETFAgent', 'GlobalTechAgent', 'HRDevelopmentOfficer', 'HRPerformanceOfficer', 'HealthcarePharmaAgent', 'HistoricalContextAnalyst', 'IndependentRiskManager', 'IndustrialsDefenseAgent', 'InternationalEmergingAgent', 'MacroPolicyHistorian', 'MacroRatesSensitivityAgent', 'MacroRegimeMonitorAgent', 'ManagementQualityAnalyzer', 'ManagerAgent', 'MissedWinnersAgent', 'MoatAnalyzer', 'OptionsFlowMonitorAgent', 'QuantFactorScreenerAgent', 'RiskManager', 'SmallCapGrowthAgent', 'SystemPerformanceAnalyst', 'TechnicalPatternAgent', 'ValueOpportunityAgent']\n",
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "merged_ids": [
+      "CIT-2026-484"
+    ],
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:agent zero-pick streaks: # exonerated, # genuine concern )"
+  },
+  {
+    "id": "pip-integrity-20260811-18-deadmans_switch_sani",
+    "dedup_key": "deadmans_switch_sanity",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 96.4h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-08-11T18:13:16.120074",
+    "status": "resolved",
+    "resolved_at": "2026-08-14T12:50:00.101556",
+    "resolved_by": "condition no longer observed by cit_pipeline_integrity_agent at 2026-08-14T12:50:00 \u2014 closed by re-observation, not by declaration",
+    "times_seen": 1,
+    "merge_note": "3 action record(s) folded by chairman_queue_sync (key=dk:deadmans_switch_sanity)",
+    "merged_ids": [
+      "pip-integrity-20260818-01-deadmans_switch_sani"
+    ]
+  },
+  {
+    "id": "investigator-20260811-catchup_window_gap",
+    "dedup_key": "main_pipeline_catchup_window_gap",
+    "severity": "CRITICAL",
+    "description": "main.py has not run on EITHER host since 2026-08-07 23:02 EDT (4+ days). Root cause found in catch_up.py: main.py has four catchup_window ranges, all confined to roughly 9:45am-6pm EDT market hours. The Mac has woken 5 times since (Aug 8 08:10/19:31, Aug 9 18:24, Aug 10 20:33, Aug 11 18:05 EDT) and every single wake fell outside all four windows, so _is_job_missed() never triggered a catch-up run even though the true staleness (96h+) far exceeds any TTL. This is independent of and compounds the VM outage (peer_host_liveness/single_writer, open since 2026-08-06 23:26): even if the VM were reachable, the Mac fallback for main.py has a structural blind spot for any wake time outside market hours. 19 open Alpaca paper positions (~$63k of ~$99.7k equity) have had no fresh research, risk bulletin, or Manager decision in 4+ days. PARTIAL FIX SHIPPED this run: cit_pipeline_integrity_agent.py (dead-man switch / peer-liveness / single-writer watchdog) is now mirrored into catch_up.py JOB_REGISTRY with catchup_window=(0,24) so monitoring itself no longer goes dark on off-hours wakes. main.py's own catchup_window was deliberately NOT widened to (0,24) in this run because loosening when a trading pipeline is allowed to catch up is a bigger, riskier change than a monitoring-only mirror and needs a Chairman call on the tradeoff (e.g. catching up main.py at 2am EDT means opening/sizing positions off stale/closed-market data). File: catch_up.py JOB_REGISTRY (fire_times_edt / catchup_window per job); root-cause trace via logs/catchup_launchd.log WAKE-UP CATCH-UP RUNNER session headers.",
+    "source": "weekly_investigator",
+    "ts": "2026-08-11T18:25:29.762410",
+    "status": "awaiting_chairman",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:main_pipeline_catchup_window_gap)"
+  },
+  {
+    "id": "investigator-20260811-apex_system_cit_host_guard",
+    "dedup_key": "apex_system_cit_agent_host_guard_gap",
+    "severity": "MEDIUM",
+    "description": "apex_system_cit_agent.py (cron staleness / disk / email-loop watchdog) is, like cit_pipeline_integrity_agent.py was before this run's fix, scheduled VM-only (vm_crontab_snapshot.txt: 0 13 * * *) with zero Mac fallback -- so it too went dark for the full VM outage. NOT mirrored onto the Mac this run: check_gcp_health() (apex_system_cit_agent.py lines ~204-245) shells out to bare disk-usage and memory commands with no host guard, so running it on the Mac would mislabel the Mac's own disk/memory as GCP disk/memory usage -- the exact host-specific-check bug class already fixed once for gcp_ip_changed (guarded by TestHostSpecificChecksStayOnTheirHost). Needs a metadata-server-style host guard (skip cleanly when not running on the VM) added to check_gcp_health() before it can be safely added to catch_up.py JOB_REGISTRY. Regression test test_apex_system_cit_agent_is_not_blindly_mirrored (test_pipeline_smoke.py) documents this omission so it is not silently 'fixed' by copy-pasting the integrity-agent registry entry.",
+    "source": "weekly_investigator",
+    "ts": "2026-08-11T18:25:29.762410",
+    "status": "awaiting_chairman",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:apex_system_cit_agent_host_guard_gap)"
+  },
+  {
+    "id": "LTIA-20260811182620",
+    "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
+    "dedup_key": "ml_auc_mediocre",
+    "category": "IMPROVEMENT",
+    "description": "ML finding: 'ST model AUC 0.548 \u2014 barely above random; weak edge'. An AUC below 0.50 means the model loses to a coin flip; any capital on its signals has negative expectancy.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-14T11:35:02.651896",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:ml_auc_mediocre)"
+  },
+  {
+    "id": "apex-sys-cit-20260805-1300-cron_job_stale_on_we",
+    "severity": "MEDIUM",
+    "category": "BUG_FIX",
+    "description": "Cron job stale on weekday -- ML drift monitor log 104h old (threshold 36h)",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-05T13:00:01.996974",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:19b540c99785ce93",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:19b540c99785ce93)"
+  },
+  {
+    "id": "lifecycle-drop-sig-e72ace4241ce",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Cron job stale on weekday -- EDGAR scraper log no log found (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-05T14:55:01.204451+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday edgar scraper log no log found )"
+  },
+  {
+    "id": "lifecycle-drop-sig-966c67cd4118",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Live market event: INDEX_GAP on QQQ' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-05T14:55:01.204451+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:live market event index gap on qqq disappeared from every)"
+  },
+  {
+    "id": "lifecycle-drop-sig-8a1cad8e9084",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'Agent zero-pick streaks: 67 exonerated, 0 genuine concern \u2014 HR memo written' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-05T14:55:01.204451+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:agent zero pick streaks # exonerated # genuine concern hr)"
+  },
+  {
+    "id": "kr-short-entry-2026-08",
+    "source": "Tech-Short Pod (thesis watch)",
+    "severity": "MEDIUM",
+    "description": "[ENTRY_WINDOW] The DO-NOT-SHORT verdict on the Korea/AI-hardware thesis (STRAT-2026-0730-kr-tech-short) has a flip condition firing. The rally-back-toward-the-50MA entry the 2026-07-30 verdict named has appeared \u2014 recovered out of the squeeze zone: QCOM (0th -> 25th pctile). KR-stress signal is NONE. Re-examine the thesis; this is an alert, not a trade \u2014 the short book still requires the live KR-stress gate.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-14T20:20:11.728652+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:entry window the do not short verdict on the korea ai har)"
+  },
+  {
+    "id": "sweep-sweep_did_not_run-sweep_governance",
+    "severity": "CRITICAL",
+    "check": "sweep_sweep_did_not_run",
+    "dedup_key": "sweep-sweep_did_not_run-sweep_governance",
+    "description": "The weekly firm sweep last ran 13 days ago (expected every 7). For those 13 days no agent was checked for import failure, isolation, silence or unreviewed status, and nothing distinguished that blind window from a clean one.\n\nWHY: The deadman. A weekly job that quietly stops looks exactly like a weekly job with nothing to report.\n\nWHAT HAPPENS NEXT: Restore the weekly schedule on both hosts and confirm a fresh report stamp.",
+    "source": "sweep_governance",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run-sweep_governance)",
+    "status": null
+  },
+  {
+    "id": "apex-sys-cit-20260817-1300-cron_job_stale_on_we",
+    "severity": "MEDIUM",
+    "category": "BUG_FIX",
+    "description": "Cron job stale on weekday -- ML drift monitor log 65h old (threshold 36h)",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-17T13:00:01.969853",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:f12f1c98ffd297c6",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:f12f1c98ffd297c6)"
+  },
+  {
+    "id": "apex-sys-cit-20260817-1300-email_loop_detected_",
+    "severity": "HIGH",
+    "category": "BUG_FIX",
+    "description": "Email loop detected -- 2 subject(s) appear 3+ times in buffer: \"apex capital \u2014 r&d team briefing | aug 17, 2026\" x3; \"wakeup_recovery\" x3",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-08-17T13:00:01.998959",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:97dd52c19577f7c0",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:97dd52c19577f7c0)"
+  },
+  {
+    "id": "fi-cit-20260817-1330-degraded_credit_read",
+    "severity": "HIGH",
+    "category": "BUG_FIX",
+    "description": "Credit read is degraded (regime=UNKNOWN; no reading for: HY spread). fi_pipeline abstains on this read \u2014 zero FI picks and zero orders until the feed returns. If this repeats across days, the yfinance proxy for those tickers has broken, not the market.",
+    "source": "fi_cit_agent",
+    "ts": "2026-08-17T13:30:05.864090+00:00",
+    "status": "awaiting_chairman",
+    "dedup_key": "fi_cit:DEGRADED_CREDIT_READ",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:degraded_credit_read)"
+  },
+  {
+    "id": "SWEEP-SWEEP_DID_NOT_RUN",
+    "title": "Sweep: 1 finding(s) \u2014 missed weekly sweeps",
+    "dedup_key": "sweep-sweep_did_not_run",
+    "category": "BUG_FIX",
+    "description": "The weekly firm sweep found 1 instance(s) of SWEEP_DID_NOT_RUN.\n\nWHY THIS MATTERS\nThe deadman. A weekly job that quietly stops looks exactly like a weekly job with nothing to report.\n\nAFFECTED\n  sweep_governance\n\nWHAT THE BOARD IS DECIDING\nRestore the weekly schedule on both hosts and confirm a fresh report stamp.\n\nOWNER: CIT. SLA: 3 days \u2014 after that problem_lifecycle_sentinel escalates it to the Chairman as STALE.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-17T13:30:07.119388",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run)"
+  },
+  {
+    "id": "sla-escalation-pip-integrity-20260630-20-email_loop_detection",
+    "title": "[SLA] Board must decide (Chairman did not respond in 20d): pip-integrity-2026063",
+    "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): pip-integrity-#",
+    "category": "STRATEGY",
+    "description": "This decision was surfaced to the Chairman on 2026-07-27T14:43:01.795735 and remained undecided for 20 days. Per standing governance policy, the board now decides on his behalf so the firm does not stall.\n\nORIGINAL ITEM (HIGH, from cit_pipeline_integrity_agent):\nRepeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d76",
+    "confidence": 100,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-08-17T13:30:07.119388",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+  },
+  {
+    "id": "sla-escalation-INVEST-BUG-2026-0703-pyarrow",
+    "title": "[SLA] Board must decide (Chairman did not respond in 20d): INVEST-BUG-2026-0703-",
+    "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): INVEST-BUG-#-#-",
+    "category": "STRATEGY",
+    "description": "This decision was surfaced to the Chairman on 2026-07-27T14:43:01.795735 and remained undecided for 20 days. Per standing governance policy, the board now decides on his behalf so the firm does not stall.\n\nORIGINAL ITEM (HIGH, from unknown):\novernight_ml_runner.py runs v3/v4/v5 models nightly. All three fail with \"ModuleNotFoundError: No module named pyarrow\" because macro_features.py uses pd.to_parquet/pd.read_parquet (lines 92, 134). pyarrow was never in requirements.txt.",
+    "confidence": 100,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-17T13:30:07.119388",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+  },
+  {
+    "id": "sla-escalation-INV-20260725-ORPHAN-CODE",
+    "title": "[SLA] Board must decide (Chairman did not respond in 20d): INV-20260725-ORPHAN-C",
+    "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): INV-#-ORPHAN-C",
+    "category": "STRATEGY",
+    "description": "This decision was surfaced to the Chairman on 2026-07-27T14:44:28.490324 and remained undecided for 20 days. Per standing governance policy, the board now decides on his behalf so the firm does not stall.\n\nORIGINAL ITEM (CRITICAL, from unknown):\nWeekly investigator (run #6) diffed the full recursive .py tree between this VM and the Mac/git repo and found 97 files that existed ONLY here with zero git history (git log --all returns empty for each path - never committed by anyone, ever). Notable: agent_meeting.py + wake_agent.py implement an agent-to-agent meeting system with a 3-way HR/CoS/IRM governance veto, imported by 14 satellite agents (pretrade_compliance_agent, position_risk_monitor, tca_agent, liquidity_stress_test, short_interest_monitor, etc). data/agent_meetings.json (331KB) was last written 2026-07-03 - the exact date of the Option-A one-brain crontab migration - strongly suggesting that migration silently dropped whatever invoked this subsystem, and it sat dark 22 days across 5 prior investigator runs undetected (invisible to git-based auditing, not in CLAUDE.md architecture section). Also found: fe_research_agents/ (15-file deep-research pipeline, no cron/caller), teaching_division/ (6-file prototype, superseded by the live tracked teaching_division.py), agents/cos_fi_municipal_agent.py + cos_fi_tips_agent.py (dead, unreferenced), and assorted ml_chain_r2-r7 experiment leftovers (same species as ml_chain_r8-r10 deleted in run #5).",
+    "confidence": 100,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-17T13:30:07.119388",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+  },
+  {
+    "id": "sla-escalation-data-integrity-2026-07-27",
+    "title": "[SLA] Board must decide (Chairman did not respond in 20d): data-integrity-2026-0",
+    "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): data-integrity-#-#",
+    "category": "STRATEGY",
+    "description": "This decision was surfaced to the Chairman on 2026-07-28T12:30:01.777804 and remained undecided for 20 days. Per standing governance policy, the board now decides on his behalf so the firm does not stall.\n\nORIGINAL ITEM (HIGH, from Data Integrity Sentinel (CIT)):\nFirm data-integrity sweep is RED \u2014 json_health: 1 issue(s). See data/data_integrity_report.json. Impossible values are quarantined from trading; decide on root-cause fixes.",
+    "confidence": 100,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-17T13:30:07.119388",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+  },
+  {
+    "id": "lifecycle-drop-sig-9f58cda02644",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): watch-20260727-data-integrity' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d watc)"
+  },
+  {
+    "id": "lifecycle-drop-sig-cba3d5866f28",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): pip-integrity-20260724-16-email_loop_detection' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d pip )"
+  },
+  {
+    "id": "lifecycle-drop-sig-a2992f16f989",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): pip-integrity-20260702-00-deadmans_switch_sani' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d pip )"
+  },
+  {
+    "id": "lifecycle-drop-sig-4d44eadd6175",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): LTIA-20260714133205' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d ltia)"
+  },
+  {
+    "id": "lifecycle-drop-sig-6a1437f832eb",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): PHM-20260702014906-FE' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d phm )"
+  },
+  {
+    "id": "lifecycle-drop-sig-8be01b86c5ec",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): PHM-20260702090133-ETF' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d phm )"
+  },
+  {
+    "id": "lifecycle-drop-sig-e3f0d3f5cca4",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): INVEST-BUG-2026-0703-pyarrow' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d inve)"
+  },
+  {
+    "id": "lifecycle-drop-sig-5e2fec34e254",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): INVEST-BUG-2026-0703-lt-cron' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d inve)"
+  },
+  {
+    "id": "lifecycle-drop-sig-4bfba05f10fc",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): INV-20260725-ORPHAN-CODE' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d inv )"
+  },
+  {
+    "id": "lifecycle-drop-sig-407986445848",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): COUNCIL-RISK-20260727120001' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d coun)"
+  },
+  {
+    "id": "lifecycle-drop-sig-b455ff19c91f",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): COUNCIL-HR-etf_picks-20260727120001' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d coun)"
+  },
+  {
+    "id": "lifecycle-drop-sig-0dd7341ef2ff",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): lifecycle-drop-sig-268b6539ca13' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d life)"
+  },
+  {
+    "id": "lifecycle-drop-sig-c410870b98f3",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): data-integrity-2026-07-27' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d data)"
+  },
+  {
+    "id": "lifecycle-drop-sig-2ec716ff9ba7",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'[SLA] Board must decide (Chairman did not respond in 20d): lifecycle-drop-sig-6d3a5f90ef04' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T14:55:01.317635+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:sla board must decide chairman did not respond in #d life)"
+  },
+  {
+    "id": "lifecycle-drop-sig-50cc501208bb",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'COHERENCE LAW VIOLATED \u2014 positions_conserve: 13 position(s) held at the broker with no ledger entry, 11 ledger entr(ies) with no position. Every stop-loss and holding-period rule reads the ledger.' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-17T16:55:01.556420+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated positions conserve # position s he)"
+  },
+  {
+    "id": "loop-sig-6d3a5f90ef04",
+    "title": "[LOOP] Recurring problem needs a STRUCTURAL fix, not another band-aid",
+    "dedup_key": "loop_sig-6d3a5f90ef04",
+    "category": "ARCHITECTURE",
+    "description": "'Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:LOW | Manager Grade:D | Aug 17, 2026\" \u00d75' has recurred after being resolved 1x (seen 3x since 2026-07-29). Band-aid fixes are not holding. The loop-break set now blocks the CIT actuator from re-patching it \u2014 the board must ratify a root-cause fix or a documented won't-fix decision.",
+    "confidence": "HIGH",
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-08-17T17:15:43.237225",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:loop_sig-6d3a5f90ef04)"
+  },
+  {
+    "id": "coherence-nested_probabilities_are_monotone",
+    "severity": "HIGH",
+    "description": "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 7 of 1850 testable ladder(s) quote a nested pair that no set of probabilities can produce; 89 ladder(s) not testable (one-sided), 486 non-monotone on asks alone but spread-explicable",
+    "source": "coherence_laws",
+    "ts": "2026-08-17T11:56:04.774446",
+    "last_seen": "2026-08-17T23:45:16.632298",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated nested probabilities are monotone )",
+    "status": null
+  },
+  {
+    "id": "lifecycle-drop-sig-fa6b55655db2",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'COHERENCE LAW VIOLATED \u2014 runs_match_schedule: main.py started 5 time(s) today; the schedule asks for 4. An overrun is never legitimate \u2014 something is launching the pipeline outside the schedule. (A: pipeline_heartbeat.json starts (observed) | B: host schedule (intended))' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-18T00:55:01.085054+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated runs match schedule main py starte)"
+  },
+  {
+    "id": "lifecycle-drop-sig-894c5c15546b",
+    "source": "Problem Lifecycle Sentinel",
+    "severity": "MEDIUM",
+    "description": "'COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 45 of 46 ladder(s) price nested outcomes incoherently \u2014 these quotes are not probabilities and must not be treated as candidates' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
+    "status": "awaiting_chairman",
+    "ts": "2026-08-18T02:55:01.434367+00:00",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated nested probabilities are monotone )"
   }
 ]

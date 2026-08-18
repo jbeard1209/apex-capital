@@ -17,37 +17,325 @@
       "loss_attribution": {
         "primary_driver": "CRO HIGH risk level maintained for extended period, blocking all new capital deployment. Portfolio has been in capital-preservation mode since mid-May 2026.",
         "contributing_factors": [
-          "QQQ short position (11 shares @ $709.87) — market rally hurt short book, covering recommended",
+          "QQQ short position (11 shares @ $709.87) \u2014 market rally hurt short book, covering recommended",
           "System-wide buy blocks during CRO HIGH periods prevented new position accumulation and profit capture from ML/RD signals",
-          "29 of 29 research agents were stuck in non-loaded state (pipeline bug) — picks not reaching portfolio",
-          "Fixed Income pod ($30k) and ML pod ($30k) have $0 in deployed capital — idle cash drag"
+          "29 of 29 research agents were stuck in non-loaded state (pipeline bug) \u2014 picks not reaching portfolio",
+          "Fixed Income pod ($30k) and ML pod ($30k) have $0 in deployed capital \u2014 idle cash drag"
         ],
         "fixes_applied_today": [
           "Bug fixed: research_team.py now loads reassigned agents (was loading 0 agents)",
           "29 agents restored to active status via Chairman amnesty 2026-06-09",
-          "CRO exoneration added — agents no longer penalized during buy blocks",
+          "CRO exoneration added \u2014 agents no longer penalized during buy blocks",
           "PIP stage added before role reassignment",
           "Thresholds increased: notice=8, PIP=14, reassign=20, replace=30 cycles",
-          "Teaching Division created — 5 tutor agents, 90-day curriculum"
+          "Teaching Division created \u2014 5 tutor agents, 90-day curriculum"
         ],
-        "expected_recovery_path": "Research pipeline should now generate picks each cycle. Pods 2 (ML) and 3 (Macro/ETF) have $30k idle each — as CRO normalizes to MEDIUM, these should be deployed. The QQQ short should be covered per Review Agent recommendation."
+        "expected_recovery_path": "Research pipeline should now generate picks each cycle. Pods 2 (ML) and 3 (Macro/ETF) have $30k idle each \u2014 as CRO normalizes to MEDIUM, these should be deployed. The QQQ short should be covered per Review Agent recommendation."
       },
       "positions_snapshot": [
-        {"ticker": "APD",  "side": "long",  "qty": 14, "unrealized_pnl_pct": 0.39},
-        {"ticker": "ARM",  "side": "long",  "qty": 8,  "unrealized_pnl_pct": 5.98},
-        {"ticker": "COST", "side": "long",  "qty": 2,  "unrealized_pnl_pct": 2.62},
-        {"ticker": "GS",   "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "LLY",  "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "NEE",  "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "AMAT", "side": "long",  "qty": 6,  "unrealized_pnl_pct": null},
-        {"ticker": "KO",   "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "ZION", "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "RF",   "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "KEY",  "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "CFG",  "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "USB",  "side": "long",  "unrealized_pnl_pct": null},
-        {"ticker": "QQQ",  "side": "short", "qty": -11, "unrealized_pnl_pct": 0.17, "note": "Review Agent recommends SELL — cover this short, it's recovered above 50MA"}
+        {
+          "ticker": "APD",
+          "side": "long",
+          "qty": 14,
+          "unrealized_pnl_pct": 0.39
+        },
+        {
+          "ticker": "ARM",
+          "side": "long",
+          "qty": 8,
+          "unrealized_pnl_pct": 5.98
+        },
+        {
+          "ticker": "COST",
+          "side": "long",
+          "qty": 2,
+          "unrealized_pnl_pct": 2.62
+        },
+        {
+          "ticker": "GS",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "LLY",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "NEE",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "AMAT",
+          "side": "long",
+          "qty": 6,
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "KO",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "ZION",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "RF",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "KEY",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "CFG",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "USB",
+          "side": "long",
+          "unrealized_pnl_pct": null
+        },
+        {
+          "ticker": "QQQ",
+          "side": "short",
+          "qty": -11,
+          "unrealized_pnl_pct": 0.17,
+          "note": "Review Agent recommends SELL \u2014 cover this short, it's recovered above 50MA"
+        }
       ]
+    },
+    {
+      "snapshot_date": "2026-07-31",
+      "snapshot_time": "16:40 ET",
+      "portfolio_value": 97746.55,
+      "cash": 30682.89,
+      "n_positions": 21,
+      "pnl_today_usd": -277.64,
+      "pnl_today_pct": -0.283,
+      "pnl_inception_usd": -2253.45,
+      "pnl_inception_pct": -2.25,
+      "active_agents_at_snapshot": 37,
+      "pnl_drivers": [
+        {
+          "ticker": "D",
+          "pnl_usd": -235.6,
+          "pnl_pct": -3.46
+        },
+        {
+          "ticker": "ARQT",
+          "pnl_usd": -133.9,
+          "pnl_pct": -3.69
+        },
+        {
+          "ticker": "XLK",
+          "pnl_usd": -131.15,
+          "pnl_pct": -1.77
+        },
+        {
+          "ticker": "RF",
+          "pnl_usd": 527.72,
+          "pnl_pct": 12.05
+        },
+        {
+          "ticker": "CFG",
+          "pnl_usd": 439.8,
+          "pnl_pct": 11.4
+        },
+        {
+          "ticker": "DXCM",
+          "pnl_usd": 382.2,
+          "pnl_pct": 9.69
+        }
+      ],
+      "source": "performance_snapshot.py"
+    },
+    {
+      "snapshot_date": "2026-08-04",
+      "snapshot_time": "17:49 ET",
+      "portfolio_value": 97710.08,
+      "cash": 19179.37,
+      "n_positions": 21,
+      "pnl_today_usd": -456.18,
+      "pnl_today_pct": -0.465,
+      "pnl_inception_usd": -2289.92,
+      "pnl_inception_pct": -2.29,
+      "active_agents_at_snapshot": 51,
+      "pnl_drivers": [
+        {
+          "ticker": "D",
+          "pnl_usd": -230.85,
+          "pnl_pct": -3.39
+        },
+        {
+          "ticker": "PINS",
+          "pnl_usd": -80.85,
+          "pnl_pct": -1.47
+        },
+        {
+          "ticker": "BILL",
+          "pnl_usd": -60.48,
+          "pnl_pct": -1.48
+        },
+        {
+          "ticker": "DXCM",
+          "pnl_usd": 614.64,
+          "pnl_pct": 15.59
+        },
+        {
+          "ticker": "CFG",
+          "pnl_usd": 559.8,
+          "pnl_pct": 14.51
+        },
+        {
+          "ticker": "GTLB",
+          "pnl_usd": 440.0,
+          "pnl_pct": 10.71
+        }
+      ],
+      "source": "performance_snapshot.py"
+    },
+    {
+      "snapshot_date": "2026-08-06",
+      "snapshot_time": "13:46 ET",
+      "portfolio_value": 97500.83,
+      "cash": 26927.79,
+      "n_positions": 21,
+      "pnl_today_usd": -193.6,
+      "pnl_today_pct": -0.198,
+      "pnl_inception_usd": -2499.17,
+      "pnl_inception_pct": -2.5,
+      "active_agents_at_snapshot": 51,
+      "pnl_drivers": [
+        {
+          "ticker": "BILL",
+          "pnl_usd": -124.32,
+          "pnl_pct": -3.04
+        },
+        {
+          "ticker": "PINS",
+          "pnl_usd": -69.3,
+          "pnl_pct": -1.23
+        },
+        {
+          "ticker": "AES",
+          "pnl_usd": -24.32,
+          "pnl_pct": -0.54
+        },
+        {
+          "ticker": "U",
+          "pnl_usd": 617.12,
+          "pnl_pct": 15.06
+        },
+        {
+          "ticker": "CFG",
+          "pnl_usd": 516.0,
+          "pnl_pct": 13.37
+        },
+        {
+          "ticker": "DXCM",
+          "pnl_usd": 382.72,
+          "pnl_pct": 9.71
+        }
+      ],
+      "source": "performance_snapshot.py"
+    },
+    {
+      "snapshot_date": "2026-08-07",
+      "snapshot_time": "17:52 ET",
+      "portfolio_value": 99085.83,
+      "cash": 36245.41,
+      "n_positions": 19,
+      "pnl_today_usd": 1405.7,
+      "pnl_today_pct": 1.439,
+      "pnl_inception_usd": -914.17,
+      "pnl_inception_pct": -0.91,
+      "active_agents_at_snapshot": 51,
+      "pnl_drivers": [
+        {
+          "ticker": "AFRM",
+          "pnl_usd": -96.18,
+          "pnl_pct": -2.95
+        },
+        {
+          "ticker": "BILL",
+          "pnl_usd": -62.16,
+          "pnl_pct": -1.52
+        },
+        {
+          "ticker": "UL",
+          "pnl_usd": -44.55,
+          "pnl_pct": -1.27
+        },
+        {
+          "ticker": "GTLB",
+          "pnl_usd": 751.25,
+          "pnl_pct": 18.29
+        },
+        {
+          "ticker": "CART",
+          "pnl_usd": 631.62,
+          "pnl_pct": 14.18
+        },
+        {
+          "ticker": "S",
+          "pnl_usd": 510.38,
+          "pnl_pct": 16.43
+        }
+      ],
+      "source": "performance_snapshot.py"
+    },
+    {
+      "snapshot_date": "2026-08-14",
+      "snapshot_time": "16:46 ET",
+      "portfolio_value": 99529.29,
+      "cash": 26601.9,
+      "n_positions": 17,
+      "pnl_today_usd": -440.15,
+      "pnl_today_pct": -0.44,
+      "pnl_inception_usd": -470.71,
+      "pnl_inception_pct": -0.47,
+      "active_agents_at_snapshot": 51,
+      "pnl_drivers": [
+        {
+          "ticker": "NNN",
+          "pnl_usd": -119.6,
+          "pnl_pct": -2.44
+        },
+        {
+          "ticker": "UL",
+          "pnl_usd": -92.4,
+          "pnl_pct": -2.63
+        },
+        {
+          "ticker": "AES",
+          "pnl_usd": -21.28,
+          "pnl_pct": -0.47
+        },
+        {
+          "ticker": "NTNX",
+          "pnl_usd": 850.5,
+          "pnl_pct": 16.52
+        },
+        {
+          "ticker": "XLV",
+          "pnl_usd": 449.79,
+          "pnl_pct": 8.86
+        },
+        {
+          "ticker": "CART",
+          "pnl_usd": 384.12,
+          "pnl_pct": 8.62
+        }
+      ],
+      "source": "performance_snapshot.py"
     }
-  ]
+  ],
+  "last_written": "2026-08-14T16:46:14.309040-04:00"
 }

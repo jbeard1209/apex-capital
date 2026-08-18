@@ -499,5 +499,89 @@
     "context_summary": "Canary: GREEN | CRO: HIGH | Positions: 0 open | Day 266",
     "routed_to_pod": "rd",
     "routed_at": "2026-07-25T12:03:11.694187"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "HIGH",
+    "confidence": 90,
+    "title": "290 ERROR lines \u2014 dominant: `opens`",
+    "description": "The last 24-48h of logs contain 290 ERROR-level entries (5848 WARNINGs). Most frequent error class: `opens` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 16:02:47  ERROR       [single_writer] BLOCKED buy 72.0 CFG: mac is not the designated writer (apexcapitalc); this opens \n  \u2022 16:02:47  ERROR       Buy order failed for CFG: mac is not the designated writer (apexcapitalc); this opens exposure\n  \u2022 16:02:48  ERROR       [single_writer] BLOCKED buy 1071.0 AMC: mac is not the designated writer (apexcapitalc); this open",
+    "proposed_fix": "Most frequent error type: `opens` (1/3 sampled). Locate the call site in logs/run_*.log matching `16:02:47  ERROR       [single_writer] BLOCKED buy 72.0 CFG: `, wrap it in `except opens` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-530",
+    "context": {
+      "captured_at": "2026-08-07T18:13:41.411557",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "MODERATE",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 323,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 24,
+      "last_buy": {
+        "ticker": "TFC",
+        "date": "2026-07-31"
+      },
+      "open_issues_count": 558,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 4,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: MODERATE | Positions: 0 open | Day 323",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-08-07T18:13:41.504321"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "HIGH",
+    "confidence": 90,
+    "title": "46 ERROR lines \u2014 dominant: `open`",
+    "description": "The last 24-48h of logs contain 46 ERROR-level entries (267 WARNINGs). Most frequent error class: `open` (1 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 11:35:07  ERROR       \u26a0 COVER FAILED SMCI \u2014 cover rule fired but no order was placed; position still open\n  \u2022 12:39:17  ERROR       [single_writer] BLOCKED buy 115.0 DOW: mac is not the designated writer (apexcapitalc); this opens\n  \u2022 12:39:17  ERROR       Buy order failed for DOW: mac is not the designated writer (apexcapitalc); this opens exposure",
+    "proposed_fix": "Most frequent error type: `open` (1/3 sampled). Locate the call site in logs/run_*.log matching `11:35:07  ERROR       \u26a0 COVER FAILED SMCI \u2014 cover rule fired`, wrap it in `except open` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-582",
+    "context": {
+      "captured_at": "2026-08-14T13:10:13.336726",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "ELEVATED",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 324,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 25,
+      "last_buy": {
+        "ticker": "TFC",
+        "date": "2026-07-31"
+      },
+      "open_issues_count": 1681,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 0,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: ELEVATED | Positions: 0 open | Day 324",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-08-14T13:10:13.439361"
+  },
+  {
+    "source": "internal_audit",
+    "severity": "LOW",
+    "category": "INTEGRATION",
+    "title": "Coherence law 'runs_match_schedule' is proven only by monkeypatch",
+    "detail": "The pill had to substitute module globals; nothing shows the law is still pointed at the sources production writes.",
+    "proposed_fix": "Add parameters for both sources, defaulting to the real reads, and flip the pill to injected=True.",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-08-17T19:39:55.969080"
   }
 ]

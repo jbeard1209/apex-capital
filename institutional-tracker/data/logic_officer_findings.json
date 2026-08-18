@@ -1,16 +1,8 @@
 {
   "history": [
     {
-      "ts": "2026-07-23T15:21:40.960327",
+      "ts": "2026-07-31T14:26:23.269595",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 23 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 23 consecutive cycles (roughly 92 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -22,16 +14,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T15:43:10.864794",
+      "ts": "2026-07-31T14:48:15.507715",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 24 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 24 consecutive cycles (roughly 96 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -43,16 +27,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T16:04:08.976538",
+      "ts": "2026-07-31T15:15:09.677417",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 25 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 25 consecutive cycles (roughly 100 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -64,16 +40,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T16:26:13.989969",
+      "ts": "2026-07-31T15:36:45.652577",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 26 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 26 consecutive cycles (roughly 104 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -85,16 +53,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T16:47:36.106818",
+      "ts": "2026-07-31T15:58:16.790322",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 27 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 27 consecutive cycles (roughly 108 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -106,16 +66,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T17:08:56.588965",
+      "ts": "2026-07-31T16:19:44.040246",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 28 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 28 consecutive cycles (roughly 112 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -127,16 +79,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T17:30:18.035437",
+      "ts": "2026-07-31T16:43:08.940646",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 29 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 29 consecutive cycles (roughly 116 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -148,16 +92,8 @@
       ]
     },
     {
-      "ts": "2026-07-23T17:51:39.687823",
+      "ts": "2026-08-07T13:49:23.600032",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 30 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 30 consecutive cycles (roughly 120 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -169,16 +105,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T10:06:58.897543",
+      "ts": "2026-08-07T14:12:08.750578",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 31 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 31 consecutive cycles (roughly 124 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -190,16 +118,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T10:29:58.647610",
+      "ts": "2026-08-07T14:34:29.057580",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 32 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 32 consecutive cycles (roughly 128 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -211,16 +131,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T10:51:22.599756",
+      "ts": "2026-08-07T14:56:39.855622",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 33 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 33 consecutive cycles (roughly 132 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -232,16 +144,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T11:12:44.722471",
+      "ts": "2026-08-07T15:18:51.961692",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 34 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 34 consecutive cycles (roughly 136 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -253,16 +157,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T11:34:15.966273",
+      "ts": "2026-08-07T15:41:00.589019",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 35 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 35 consecutive cycles (roughly 140 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -274,16 +170,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T12:01:08.246399",
+      "ts": "2026-08-07T16:02:58.125731",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 36 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 36 consecutive cycles (roughly 144 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -295,16 +183,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T12:27:23.646462",
+      "ts": "2026-08-07T16:25:30.510028",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 37 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 37 consecutive cycles (roughly 148 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -316,16 +196,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T12:49:14.781936",
+      "ts": "2026-08-07T16:47:25.365018",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 38 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 38 consecutive cycles (roughly 152 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -337,16 +209,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T13:11:05.131204",
+      "ts": "2026-08-07T17:09:08.355838",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 39 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 39 consecutive cycles (roughly 156 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -358,16 +222,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T13:32:59.438577",
+      "ts": "2026-08-07T17:30:53.570785",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 40 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 40 consecutive cycles (roughly 160 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -379,16 +235,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T13:54:52.963520",
+      "ts": "2026-08-07T17:52:53.457187",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 41 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 41 consecutive cycles (roughly 164 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -400,16 +248,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T14:16:48.764228",
+      "ts": "2026-08-14T12:47:19.259443",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 42 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 42 consecutive cycles (roughly 168 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -421,16 +261,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T14:38:16.723566",
+      "ts": "2026-08-14T13:12:45.717606",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 43 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 43 consecutive cycles (roughly 172 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -442,16 +274,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T14:59:35.556595",
+      "ts": "2026-08-14T13:35:12.744416",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 44 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 44 consecutive cycles (roughly 176 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -463,16 +287,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T15:20:59.753301",
+      "ts": "2026-08-14T13:58:09.753699",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 45 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 45 consecutive cycles (roughly 180 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -484,16 +300,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T15:42:24.231356",
+      "ts": "2026-08-14T14:22:05.442648",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 46 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 46 consecutive cycles (roughly 184 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -505,16 +313,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T16:03:11.413792",
+      "ts": "2026-08-14T14:45:47.697428",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 47 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 47 consecutive cycles (roughly 188 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -526,16 +326,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T16:25:08.175833",
+      "ts": "2026-08-14T15:09:54.080333",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 48 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 48 consecutive cycles (roughly 192 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -547,16 +339,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T16:46:27.460466",
+      "ts": "2026-08-14T15:33:42.523266",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 49 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 49 consecutive cycles (roughly 196 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -568,16 +352,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T17:07:45.969042",
+      "ts": "2026-08-14T15:58:05.674941",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 50 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 50 consecutive cycles (roughly 200 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -589,16 +365,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T17:29:04.085325",
+      "ts": "2026-08-14T16:22:16.964029",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 51 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 51 consecutive cycles (roughly 204 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -610,16 +378,8 @@
       ]
     },
     {
-      "ts": "2026-07-24T17:50:22.250874",
+      "ts": "2026-08-14T16:46:45.085773",
       "findings": [
-        {
-          "rule": "extended_cro_high_no_review",
-          "severity": "HIGH",
-          "title": "CRO has been at HIGH for 52 cycles \u2014 no board review",
-          "observation": "The CRO has been at HIGH for 52 consecutive cycles (roughly 208 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-          "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-          "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-        },
         {
           "rule": "idle_capital",
           "severity": "MEDIUM",
@@ -632,14 +392,6 @@
     }
   ],
   "latest": [
-    {
-      "rule": "extended_cro_high_no_review",
-      "severity": "HIGH",
-      "title": "CRO has been at HIGH for 52 cycles \u2014 no board review",
-      "observation": "The CRO has been at HIGH for 52 consecutive cycles (roughly 208 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
-      "why_its_wrong": "An extended buy block is a major business decision that should require ongoing board ratification, not just persist automatically. It keeps $60k+ in idle cash, penalizes research agents for producing zero approved picks, and may be based on conditions that no longer exist.",
-      "suggested_resolution": "Board should formally vote: (1) is HIGH still warranted given current market conditions? (2) If yes, set an explicit review date. (3) If no, step down to ELEVATED with specific criteria for next escalation."
-    },
     {
       "rule": "idle_capital",
       "severity": "MEDIUM",

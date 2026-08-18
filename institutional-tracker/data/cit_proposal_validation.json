@@ -1,12 +1,40 @@
 {
-  "generated_at": "2026-07-27T12:24:17.705536",
-  "proposals_reviewed": 1,
+  "generated_at": "2026-08-18T06:10:15.312306",
+  "proposals_reviewed": 5,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "LT-100152-zero_picks",
-      "title": "Research pipeline DARK: 999 days without picks despite 37 active agents",
-      "category": "IMPROVEMENT",
+      "id": "fund-sanity-FICO",
+      "title": "Impossible fundamentals for FICO \u2014 quarantine from valuation",
+      "category": "LOGIC_ERROR",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "fund-sanity-MSCI",
+      "title": "Impossible fundamentals for MSCI \u2014 quarantine from valuation",
+      "category": "LOGIC_ERROR",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "fund-sanity-SBAC",
+      "title": "Impossible fundamentals for SBAC \u2014 quarantine from valuation",
+      "category": "LOGIC_ERROR",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "CIT-2026-874",
+      "title": "Replace fixed R&D cadence with event-triggered research cycles",
+      "category": "VISION",
+      "pre_validated": false,
+      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
+    },
+    {
+      "id": "CIT-2026-875",
+      "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     }

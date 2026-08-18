@@ -1,19 +1,17 @@
 {
-  "generated_at": "2026-07-24T17:29:04.388062",
+  "generated_at": "2026-08-14T16:22:17.522022",
   "source": "anonymous",
   "urgency": "HIGH",
-  "risk_score": 7,
-  "alert_summary": "Anonymous risk assessment: 5 concern(s) identified at severity 7/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+  "risk_score": 5,
+  "alert_summary": "Anonymous risk assessment: 3 concern(s) identified at severity 5/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
   "concerns": [
-    "DANGEROUS DIVERGENCE: Market appears complacent (VIX est. ~12) while IRM-rated portfolio risk is HIGH. Shiller: complacency at fundamental highs is a classic late-cycle signal. Soros reflexivity: prices can remain irrational while risk accumulates silently.",
-    "CREDIT SPREAD RISK in high-risk regime: when equity markets sell off, credit spreads typically widen simultaneously, reducing cross-asset diversification. Equity-only portfolios lose their correlation buffer precisely when it is most needed (Ilmanen, 'Expected Returns').",
-    "Canary Agent \u2014 output is 502h old (threshold: 13h). Agent may have missed a cycle.",
-    "CANARY CONTINUITY: canary_state.json is 502h old. Canary should update every few hours \u2014 a 502h gap suggests it may have stopped running.",
-    "EXTENDED CRO HIGH: The CRO has been at HIGH for 51+ consecutive cycles. This buy block has NOT been formally reviewed by the board. IRM RECOMMENDATION: Board must convene to assess whether the HIGH posture is still warranted or should be relaxed. Extended buy blocks silently damage research throughput and agent performance."
+    "REGIME MISALIGNMENT: Portfolio is 73% deployed in equities. For BULL_LATE regime, Dalio/Klarman frameworks suggest optimal equity allocation is 45\u201365%. Currently 8pp overextended. Recommended action: raise cash buffer to at least 35%.",
+    "Canary Agent \u2014 output is 70h old (threshold: 13h). Agent may have missed a cycle.",
+    "CANARY CONTINUITY: canary_state.json is 70h old. Canary should update every few hours \u2014 a 70h gap suggests it may have stopped running."
   ],
   "findings": [
-    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-66,720) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-39,820) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-67,844) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,491) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
     "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
   ]
 }

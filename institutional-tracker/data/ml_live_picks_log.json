@@ -715,6 +715,78 @@
       "gate": 0.57,
       "horizon_days": 20,
       "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-07-28",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-07-29",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-07-30",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-07-31",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-08-04",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-08-06",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-08-07",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
+    },
+    {
+      "model": "shortterm",
+      "pick_date": "2026-08-14",
+      "status": "model_below_gate",
+      "auc": 0.5477,
+      "gate": 0.57,
+      "horizon_days": 20,
+      "picks": []
     }
   ]
 }

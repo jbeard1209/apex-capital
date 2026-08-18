@@ -1,2014 +1,6 @@
 [
   {
-    "ts": "2026-07-03T13:54:37.187822",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T13:54:37.190014",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:43:26.479693",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:43:26.483109",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:48:56.305244",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:48:56.308938",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:49:20.342623",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:49:20.345659",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:50:20.059407",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:50:20.063947",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:54:09.385820",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:54:09.390246",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:58:40.781762",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T18:58:40.785919",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:01:06.131483",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:01:06.135347",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:04:52.659235",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:04:52.666258",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:04:58.535022",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:04:58.537870",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:05:25.408712",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:05:25.412331",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:06:13.339123",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:06:13.349419",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:15:07.108327",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:15:07.117393",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:17:04.587671",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T19:17:04.591652",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T23:58:40.133879",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-03T23:58:40.202164",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T00:00:36.702333",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T00:00:36.749111",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T12:05:04.216178",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T12:05:04.286728",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T12:17:33.621147",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T12:17:34.105925",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T12:23:37.495875",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T12:23:37.531262",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T20:42:21.666950",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T20:42:21.690560",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T20:43:43.227364",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T20:43:43.247277",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T21:47:43.516423",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-04T21:47:43.569815",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-05T12:24:06.777652",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-05T12:24:06.868488",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-05T13:48:01.418607",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-05T13:48:02.749207",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-05T14:47:21.135162",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-05T14:47:21.622873",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-10T10:50:14.564744",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-10T10:50:14.605467",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-10T11:25:04.292149",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-10T11:25:04.431439",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-11T10:16:01.449392",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:16:01.454774",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:21:59.729582",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:22:02.207676",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:30:56.136037",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:30:56.476358",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:40:48.692623",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:40:48.728631",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:41:42.442432",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-11T10:41:42.478737",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-13T13:53:20.163796",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T13:53:20.167523",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:01:15.288098",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:01:15.292113",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:01:55.261251",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:01:55.264490",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:02:57.522868",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:02:57.527370",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:04:27.310875",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-13T14:04:27.314370",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "ELEVATED",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-07-17T17:05:25.336414",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:05:25.340620",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:06:12.230243",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:06:12.233606",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:06:22.365438",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:06:22.368624",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:07:25.544518",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:07:25.548333",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:13:51.831735",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:13:51.835914",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:15:36.016396",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-17T17:15:36.019969",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:06:12.426201",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:06:12.430803",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:08:08.130523",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:08:08.134512",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:08:28.985505",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:08:28.988421",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:08:39.269827",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-18T10:08:39.272749",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-20T23:07:40.022623",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-20T23:07:40.026416",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-20T23:07:51.965815",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-20T23:07:51.969053",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:25:48.010133",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:25:48.014397",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:00.127676",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:00.132615",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:08.402656",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:08.405570",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:15.387029",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:15.393152",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:32.617888",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:32.621154",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:43.343942",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:28:43.346972",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:30:26.413107",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:30:26.417636",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:11.696210",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:11.700050",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:34.401067",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:34.404098",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:39.422645",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:39.424956",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:44.650348",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:44.652579",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:45.170654",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:31:45.172856",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:13.611441",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:13.614974",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:17.999972",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:18.002228",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:18.557780",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:18.560208",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:23.406226",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:23.408837",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:35.172038",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:32:35.175684",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:33:10.283022",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:33:10.286819",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:33:36.919026",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:33:36.922566",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:35:16.720346",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:35:16.724647",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:35:40.046655",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:35:40.049807",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:07.479112",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:07.484266",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:11.777873",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:11.781885",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:12.725012",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:12.728525",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:48.510281",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:36:48.514324",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:37:50.765700",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:37:50.770591",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:37:52.316971",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:37:52.320212",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:40:32.114782",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:40:32.118867",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:43:42.032525",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:43:42.036486",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:45:46.093145",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:45:46.097120",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:47:47.252675",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:47:47.257200",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:47:52.183241",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-23T11:47:52.187695",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:07:34.113500",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:07:34.120053",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:09:07.601294",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:09:07.606274",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:15:03.744104",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:15:03.748487",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:15:56.712598",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:15:56.717001",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:23:32.724548",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:23:32.730106",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:23:38.799664",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-25T10:23:38.802873",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-27T00:15:18.696521",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-27T00:15:18.701013",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-27T00:15:51.584695",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-27T00:15:51.588872",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "HIGH",
-    "concerns": [
-      "CRO at HIGH \u2014 macro environment is elevated risk. This is a new position entered against a restrictive risk backdrop."
-    ],
-    "severity": "MEDIUM"
-  },
-  {
-    "ts": "2026-07-27T10:43:42.755435",
+    "ts": "2026-08-16T23:35:12.300591",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2018,7 +10,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T10:43:42.760121",
+    "ts": "2026-08-16T23:35:53.258705",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-16T23:36:18.720533",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2028,7 +32,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T10:44:05.015783",
+    "ts": "2026-08-16T23:36:18.723205",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2038,7 +42,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T10:44:05.020855",
+    "ts": "2026-08-16T23:36:58.321642",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T03:37:01.509860",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2048,7 +64,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T12:40:28.081041",
+    "ts": "2026-08-17T03:37:01.512446",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2058,7 +74,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T12:40:28.085621",
+    "ts": "2026-08-17T03:37:40.601815",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T07:28:56.399134",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2068,7 +96,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:02:01.968842",
+    "ts": "2026-08-17T07:28:56.402527",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2078,7 +106,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:02:01.973487",
+    "ts": "2026-08-17T07:29:36.182650",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T07:35:46.697160",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2088,7 +128,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:11:08.736854",
+    "ts": "2026-08-17T07:35:46.700358",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2098,7 +138,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:11:08.741471",
+    "ts": "2026-08-17T07:36:24.897091",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T07:52:27.695610",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2108,7 +160,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:15:38.665405",
+    "ts": "2026-08-17T07:52:27.699359",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2118,7 +170,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:15:38.670024",
+    "ts": "2026-08-17T07:53:09.231858",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T07:57:59.672131",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2128,7 +192,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:19:45.141274",
+    "ts": "2026-08-17T07:57:59.675182",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2138,7 +202,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:19:45.143529",
+    "ts": "2026-08-17T07:58:40.626762",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:06:24.544991",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2148,7 +224,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:20:37.151418",
+    "ts": "2026-08-17T08:06:24.549341",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2158,7 +234,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T13:20:37.156560",
+    "ts": "2026-08-17T08:07:04.138157",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:07:33.763333",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2168,7 +256,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T14:30:06.969582",
+    "ts": "2026-08-17T08:07:33.766044",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2178,7 +266,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T14:30:06.972632",
+    "ts": "2026-08-17T08:08:12.919558",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:13:24.351446",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2188,7 +288,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T14:30:23.839433",
+    "ts": "2026-08-17T08:13:24.354455",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2198,7 +298,19 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T14:30:23.842686",
+    "ts": "2026-08-17T08:14:03.034118",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:15:45.698675",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2208,7 +320,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T15:29:03.106074",
+    "ts": "2026-08-17T08:15:45.701357",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2218,13 +330,1807 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-07-27T15:29:03.109211",
+    "ts": "2026-08-17T08:16:25.346021",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:20:35.672090",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
     "source_agent": "RDTeamLeader",
     "cro_level": "LOW",
     "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:20:35.675028",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:21:14.736708",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:21:27.860466",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:21:27.863222",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:22:06.286805",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:22:21.154428",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:22:21.157077",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:23:00.705802",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:25:19.757721",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:25:19.760844",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:25:57.776892",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:29:55.691175",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:29:55.694085",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:30:33.074679",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:32:58.117856",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:32:58.120638",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:33:42.516287",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:35:01.841769",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:35:01.844959",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:35:42.058204",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:35:47.359615",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:35:47.361888",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T08:36:26.284986",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T11:50:34.672144",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T11:50:34.679950",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T11:51:19.659896",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T11:53:55.893597",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T11:53:55.898717",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T11:54:34.636409",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T18:06:58.050864",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T18:06:58.062678",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T18:07:46.290008",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:13:25.320216",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:13:25.326534",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:14:14.973836",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:14:54.659072",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:14:54.662603",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:15:41.732586",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:15:50.893474",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:15:50.896131",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:16:38.030515",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:19:51.808591",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:19:51.819171",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:21:16.886021",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:23:06.149898",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:23:06.153628",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:24:04.598438",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:24:12.918452",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:24:12.921031",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:25:16.360182",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:41:09.813768",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:41:09.819614",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:42:00.244969",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:42:48.952680",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:42:48.959948",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:43:39.585687",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:43:48.444387",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:43:48.451056",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:44:36.161787",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:46:42.178793",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:46:42.185366",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:47:27.670525",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:47:39.821894",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:47:39.827157",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:48:26.001098",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:49:00.443199",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:49:00.446392",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:49:51.626249",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:50:54.626294",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:50:54.630783",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T19:52:27.314206",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:52:39.542843",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:52:39.550672",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:53:39.708963",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:12:04.995007",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:12:05.002728",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:12:53.132100",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:13:30.160128",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:13:30.166541",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:14:18.607420",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:14:27.183613",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:14:27.188125",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:15:12.866793",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:29:55.782112",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:29:55.785665",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:30:42.204995",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:33:08.839663",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:33:08.845948",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:33:54.434659",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:34:39.690863",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:34:39.697240",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:35:26.090735",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:35:34.552441",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:35:34.558163",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:36:20.238945",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:40:15.683303",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:40:15.689124",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:41:02.640969",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:41:33.521741",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:41:33.526094",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:42:18.850844",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:42:27.063776",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:42:27.070256",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:43:12.787290",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:45:40.036078",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:45:40.041472",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:46:27.158712",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:46:46.299553",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:46:46.305425",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:47:32.278407",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:47:41.115996",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:47:41.119115",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:48:27.551985",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:49:30.481424",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:49:30.486337",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:50:21.067203",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:51:22.026912",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:51:22.038066",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T22:52:20.903484",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:52:29.534353",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:52:29.541565",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T02:53:25.430916",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:11:38.473200",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:11:38.480378",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:12:25.349658",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:12:36.811946",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:12:36.818540",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:13:26.415045",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:14:50.419968",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:14:50.425812",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:16:05.712400",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:17:05.927539",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:17:05.944647",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:18:22.565685",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:18:35.643753",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:18:35.648386",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:19:44.303951",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:20:12.231347",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:20:12.234208",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:21:27.302771",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:21:40.686817",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:21:40.690897",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:22:42.235444",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:23:00.597215",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:23:00.599897",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:24:13.412003",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:24:25.745931",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:24:25.753398",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:25:17.386151",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:37:39.015215",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:37:39.022210",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:38:28.689111",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:39:03.087550",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:39:03.093488",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:39:50.651993",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:39:58.828684",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:39:58.834091",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:40:47.990216",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:42:31.621005",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:42:31.628715",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:43:19.957295",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:43:50.381299",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:43:50.387424",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-17T23:44:38.828081",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:44:46.253702",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:44:46.256782",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-18T03:45:34.790802",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
     "severity": "LOW"
   }
 ]
