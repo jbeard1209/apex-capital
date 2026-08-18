@@ -592,10 +592,16 @@ def is_premise_alive(rows=None):
         }
 
     if len(settled) < MIN_SETTLED_FOR_VERDICT:
+        # The rule is RENDERED, never described. This line read "(two-sided
+        # book, spread <= 10c)" — a gate retired two revisions ago — while the
+        # rows it counted were selected by horizon and annualized return. A
+        # verdict that names the wrong selection rule is the failure in
+        # `sample-outlived-its-rule` told from the reporting side: the number is
+        # right and the sentence around it is about something else.
         why = (f"CANNOT TELL — {len(settled)}/{MIN_SETTLED_FOR_VERDICT} settled "
-               f"quotes selected by the CURRENT rule (two-sided book, spread "
-               f"<= 10c). The premise is judged on outcomes, and this rule has "
-               f"not produced enough yet.")
+               f"quotes selected by the CURRENT rule ({SELECTION_RULE}). The "
+               f"premise is judged on outcomes, and this rule has not produced "
+               f"enough yet.")
         if "legacy" in detail:
             lg = detail["legacy"]
             why += (f" The {lg['settled']} settled rows from the retired "
@@ -820,7 +826,7 @@ def main():
 
     cur_rows, legacy_rows = split_by_regime(rows)
     print(f"\n  reliability curve — CURRENT rule only "
-          f"(two-sided book, {len(cur_rows)} row(s))")
+          f"({SELECTION_RULE}, {len(cur_rows)} row(s))")
     print(f"    {'bucket':<12}{'n':>6}{'forecast':>10}{'observed':>10}"
           f"{'95% CI':>18}")
     for c in reliability_curve(cur_rows):

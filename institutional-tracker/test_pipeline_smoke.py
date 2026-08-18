@@ -7753,6 +7753,47 @@ class TestKalshiSampleIsWorthSomething(unittest.TestCase):
                          "must never read as finished")
         gen.close()
 
+    def test_the_verdict_names_the_rule_it_actually_used(self):
+        """A right number inside a sentence about the wrong gate.
+
+        The CANNOT_TELL line read "selected by the CURRENT rule (two-sided
+        book, spread <= 10c)" while the rows it counted had been selected by
+        horizon and annualized return — a gate retired two revisions earlier.
+        Nothing was miscounted; the label was just frozen prose, and prose does
+        not get updated when a constant does. So the rule is rendered from
+        SELECTION_RULE and never described in words.
+
+        Checked on the AST: the retired description is quoted in my own
+        postmortem comment two lines above the fix, so a text search for it
+        would find the note and call the bug alive.
+        """
+        import ast
+        src  = (Path(__file__).resolve().parent / "kalshi_calibration.py").read_text()
+        tree = ast.parse(src)
+
+        checked = 0
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.JoinedStr):
+                continue
+            literal = "".join(v.value for v in node.values
+                              if isinstance(v, ast.Constant)
+                              and isinstance(v.value, str))
+            if "CURRENT rule" not in literal:
+                continue
+            checked += 1
+            names = {n.id
+                     for v in node.values if isinstance(v, ast.FormattedValue)
+                     for n in ast.walk(v) if isinstance(n, ast.Name)}
+            self.assertIn("SELECTION_RULE", names,
+                          f"this line claims to report the CURRENT rule but "
+                          f"spells it out by hand: {literal!r} — it will keep "
+                          f"naming today's gate after the gate changes")
+
+        self.assertGreaterEqual(checked, 2,
+                                "the verdict line and the reliability-curve "
+                                "header both name the current rule; found "
+                                f"{checked} — re-derive what this guards")
+
     def test_the_page_cap_is_not_declared_twice(self):
         """AST over the CLI. `--pages` carried its own default of 12 while
         `scan()` said otherwise, so every cron run walked a quarter of the
