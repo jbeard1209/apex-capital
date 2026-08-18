@@ -345,6 +345,25 @@ def flush_digest(force: bool = False) -> bool:
     No agent activity to report today.
   </div>"""
 
+    # ── Issues & fixes — the other half of every warning above ────────────────
+    # Chairman directive 2026-08-17. Reports say what is wrong; this says what
+    # is being DONE about what is wrong, and closes each item exactly once.
+    # It renders even on a day with no buffered reports, because "the board
+    # fixed X" is worth sending on a quiet day and a quiet day is precisely
+    # when a stalled fix is easiest to miss.
+    issues_html = ""
+    try:
+        import board_issue_ledger
+        issues_html = board_issue_ledger.digest_section()["html"]
+    except Exception as e:
+        # Loud, not silent. If this block vanishes quietly, the digest reverts
+        # to a list of complaints with no visible sign that the loop is broken,
+        # which is the state the directive was written to end.
+        logger.warning(f"  [EmailBuffer] issues section unavailable: {e}")
+        issues_html = ("<p style='color:#f85149;font-size:12px;'>Issues &amp; fixes "
+                       "section could not be built — the board-issue ledger is not "
+                       "reporting. Treat the alerts above as UNROUTED.</p>")
+
     html = f"""<!DOCTYPE html>
 <html>
 <body style="font-family:Arial,sans-serif;background:#0d1117;color:#c9d1d9;
@@ -360,6 +379,8 @@ def flush_digest(force: bool = False) -> bool:
   </div>
 
   {sections_html}
+
+  {issues_html}
 
   <div style="border-top:1px solid #21262d;margin-top:24px;padding-top:12px;
               font-size:11px;color:#484f58;text-align:center;">

@@ -10133,6 +10133,446 @@ class TestOneDigestADay(unittest.TestCase):
                       "now a day with no digest and no alert about the absence")
 
 
+class TestBoardIssueLedger(unittest.TestCase):
+    """The IRM -> board -> "Fixed issues" loop (Chairman directive 2026-08-17).
+
+    Jack asked for four things and each one is a test below: warnings reach the
+    board ANONYMOUSLY; the digest says so on the line itself; a board-owned fix
+    shows as "ongoing fix by board (why) (date)" until it is verified and then
+    "fixed by board (why) (date)"; and once reported fixed it is never mentioned
+    again.
+
+    The load-bearing test is `test_a_fix_is_not_confirmed_on_silence_from_a_dead_
+    detector`. Everything else in this file could pass while the feature was a
+    generator of comfortable fiction — the board votes, a week goes by, nobody
+    checks, the digest reports a fix. That is the firm's oldest failure mode
+    (memories `presence-is-not-currency`, `plausible-is-not-validated`) dressed
+    up as governance, and it is worse than no feature at all, because Jack would
+    stop chasing the thing.
+    """
+
+    def setUp(self):
+        import board_issue_ledger as B
+        self.B = B
+        self.tmp = Path(tempfile.mkdtemp())
+        self._saved = (B.LEDGER_PATH, B.PENDING_PATH, B.CHAIRMAN_PATH, B.DEPUTY_REPORT)
+        B.LEDGER_PATH = self.tmp / "ledger.json"
+        B.PENDING_PATH = self.tmp / "pending.json"
+        B.CHAIRMAN_PATH = self.tmp / "chairman.json"
+        B.DEPUTY_REPORT = self.tmp / "deputy.json"
+
+        # This host is not the designated writer, and `relay()` correctly
+        # refuses there. Every test below that exercises the loop needs the
+        # relay to happen, so the gate is opened here — and closed again, and
+        # tested on its own in `test_a_non_designated_host_does_not_file_to_a_
+        # board_nobody_reads`.
+        self._real_may_relay = B.may_relay
+        B.may_relay = lambda: (True, "test host")
+
+    def tearDown(self):
+        (self.B.LEDGER_PATH, self.B.PENDING_PATH,
+         self.B.CHAIRMAN_PATH, self.B.DEPUTY_REPORT) = self._saved
+        self.B.may_relay = self._real_may_relay
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    # ── helpers ──────────────────────────────────────────────────────────────
+    @staticmethod
+    def _read(path):
+        return json.loads(Path(path).read_text())
+
+    ALERT = "⚠ R&D report is 62h old — research may be stale"
+
+    def _relayed(self, text=None, source="morning_briefing"):
+        """Drive an alert to RELAYED and return (sig, board_item)."""
+        t = text or self.ALERT
+        self.B.process([t], source)
+        self.B.process([t], source)
+        led = self.B.load_ledger()
+        sig = next(iter(led["issues"]))
+        return sig, self._read(self.B.PENDING_PATH)[0]
+
+    def _rule(self, board_ref, classification="APPROVED",
+              why="rd_team_leader cron gap; add a catch-up run"):
+        self.B.DEPUTY_REPORT.write_text(json.dumps(
+            {"results": [{"proposal_id": board_ref, "classification": classification,
+                          "votes": [{"deputy": "Deputy CRO", "rationale": why}]}]}))
+
+    def _observer_alive_at(self, source, when):
+        led = self.B.load_ledger()
+        led["observers"][source] = {"last_ran": when.isoformat(), "last_alert_count": 0}
+        self.B._save(self.B.LEDGER_PATH, led)
+
+    # ── anonymity ────────────────────────────────────────────────────────────
+    def test_the_board_never_learns_who_reported(self):
+        """Jack: "the IRM should anonymously report these to the board".
+
+        The board weighs the finding, not the finder. The firm keeps HR ratings
+        and a performance ledger keyed to agent identity, so a warning that
+        arrives stamped with its author invites the vote to become a judgement
+        about that author.
+        """
+        _, item = self._relayed()
+        blob = json.dumps(item)
+        self.assertNotIn("morning_briefing", blob,
+                         "the reporting agent's identity reached the board")
+        self.assertEqual(item["source"], "Independent Risk Monitor (anonymous)")
+
+    def test_the_identity_is_kept_locally_not_destroyed(self):
+        """Anonymous to the board is not anonymous to an auditor."""
+        sig, _ = self._relayed()
+        self.assertEqual(self.B.load_ledger()["issues"][sig]["source"], "morning_briefing")
+
+    # ── what counts as one issue ─────────────────────────────────────────────
+    def test_a_changing_number_does_not_fork_the_issue(self):
+        """"62h old" and "74h old" are one problem, not two.
+
+        If they forked, neither copy would ever reach RELAY_AFTER_SIGHTINGS and
+        nothing would ever reach the board — the feature would be silently inert.
+        """
+        self.B.process(["⚠ R&D report is 62h old — research may be stale"], "morning_briefing")
+        self.B.process(["⚠ R&D report is 74h old — research may be stale"], "morning_briefing")
+        self.assertEqual(len(self.B.load_ledger()["issues"]), 1)
+
+    def test_the_signature_is_imported_from_the_sentinel_not_redefined(self):
+        """One definition of "the same issue", for the same reason the
+        monotonicity law's private copy of a coherence test was wrong 283 times
+        out of 287: a second copy drifts, and nobody sees it drift."""
+        src = (Path(__file__).resolve().parent / "board_issue_ledger.py").read_text()
+        tree = ast.parse(src)
+        defined = {n.name for n in ast.walk(tree)
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+        self.assertNotIn("signature", defined,
+                         "board_issue_ledger defines its own signature() — it must "
+                         "import problem_lifecycle_sentinel's or the two will "
+                         "disagree about what one issue is")
+        imported = {a.name for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)
+                    and n.module == "problem_lifecycle_sentinel" for a in n.names}
+        self.assertIn("signature", imported)
+
+    def test_a_dict_alert_is_rendered_as_words_not_a_python_repr(self):
+        """morning_briefing appends dicts and strings to the same alerts list.
+
+        Unnormalized, the dict stringifies with its days_open counter inside, so
+        its signature would change every day and one recurring issue would look
+        like an endless stream of new ones — never reaching two sightings.
+        """
+        d = {"source": "Logic Team", "severity": "HIGH",
+             "message": "CRITICAL finding open", "days_open": 4}
+        text = self.B.alert_text(d)
+        self.assertNotIn("days_open", text)
+        self.assertIn("Logic Team", text)
+        self.assertIn("CRITICAL finding open", text)
+        d2 = dict(d, days_open=5)
+        self.assertEqual(self.B.alert_text(d), self.B.alert_text(d2),
+                         "a daily-changing counter leaked into the signature")
+
+    # ── the relay threshold ──────────────────────────────────────────────────
+    def test_one_sighting_does_not_reach_the_board(self):
+        self.B.process([self.ALERT], "morning_briefing")
+        self.assertFalse(self.B.PENDING_PATH.exists() and
+                         self._read(self.B.PENDING_PATH))
+
+    def test_an_unrelayed_alert_is_not_claimed_to_be_relayed(self):
+        """The worst possible failure: telling Jack the board has it when nobody
+        does. He would stop chasing it, and so would everyone else."""
+        line = self.B.process([self.ALERT], "morning_briefing")[0]
+        self.assertEqual(line, self.ALERT)
+        self.assertNotIn("relayed", line)
+
+    def test_the_line_says_so_in_the_same_digest_that_relays_it(self):
+        """Jack's example verbatim: "... : this information has been relayed to
+        the board". Observing in one run and annotating in the next would leave a
+        day where the digest shows a bare warning the board already holds."""
+        self.B.process([self.ALERT], "morning_briefing")
+        line = self.B.process([self.ALERT], "morning_briefing")[0]
+        self.assertEqual(line, f"{self.ALERT}: this information has been relayed to the board")
+
+    # ── the board's ruling ───────────────────────────────────────────────────
+    def test_an_approved_fix_reads_as_ongoing_with_reason_and_date(self):
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        line = self.B.annotate(self.ALERT, "morning_briefing")
+        self.assertIn("ongoing fix by board", line)
+        self.assertIn("cron gap", line, "the board's explanation was dropped")
+        due = self.B.load_ledger()["issues"][sig]["follow_up_by"][:10]
+        self.assertIn(due, line, "no follow-up date shown")
+
+    def test_a_deferral_is_not_a_fix(self):
+        """DEFERRED / NEEDS_INFO / REJECTED leave it RELAYED, so the digest keeps
+        saying "awaiting a ruling" instead of quietly promoting a non-decision."""
+        sig, item = self._relayed()
+        self._rule(item["id"], classification="DEFERRED")
+        self.B.run()
+        self.assertEqual(self.B.load_ledger()["issues"][sig]["state"], self.B.RELAYED)
+
+    # ── verification: the board may not mark its own homework ────────────────
+    def test_nothing_is_judged_before_the_follow_up_date(self):
+        """The vote approves a remedy; it does not deploy one. The detector is
+        SUPPOSED to keep firing while the fix is being built. An earlier version
+        struck on that and would have failed every real fix within hours."""
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        self.B.process([self.ALERT], "morning_briefing")      # still firing
+        out = self.B.verify(now=datetime.now() + timedelta(days=1))
+        self.assertEqual(out["struck"], [], "struck an issue before its deadline")
+        self.assertEqual(self.B.load_ledger()["issues"][sig]["state"], self.B.ONGOING)
+
+    def test_a_fix_is_not_confirmed_on_silence_from_a_dead_detector(self):
+        """THE test. `last_seen` only advances when the observer runs, so a
+        switched-off detector is indistinguishable from a quiet one by silence
+        alone. Liveness is checked first, and a detector that never ran yields
+        CANNOT_TELL — never FIXED."""
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        future = datetime.now() + timedelta(days=8)           # past the deadline
+        out = self.B.verify(now=future)                       # observer never ran again
+        self.assertEqual(out["fixed"], [],
+                         "declared a fix on silence from a detector that was not running")
+        self.assertIn(sig, out["cannot_tell"])
+        rec = self.B.load_ledger()["issues"][sig]
+        self.assertEqual(rec["state"], self.B.ONGOING)
+        self.assertEqual(rec["verdict"], "CANNOT_TELL")
+
+    def test_an_unverifiable_issue_escalates_rather_than_sitting(self):
+        """"cannot tell" must eventually reach a human (memory
+        `verdict-with-no-consequence`), or it is just a resolved issue with extra
+        steps."""
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        way_past = datetime.now() + timedelta(
+            days=self.B.DEFAULT_FOLLOW_UP_DAYS + self.B.FOLLOW_UP_GRACE_DAYS + 2)
+        out = self.B.verify(now=way_past)
+        self.assertIn(sig, out["escalated"])
+        chair = self._read(self.B.CHAIRMAN_PATH)
+        self.assertTrue(any("not running" in c.get("description", "") for c in chair))
+
+    def test_a_listening_and_quiet_detector_is_what_promotes_to_fixed(self):
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        future = datetime.now() + timedelta(days=8)
+        self._observer_alive_at("morning_briefing", future)   # it ran, and said nothing
+        out = self.B.verify(now=future)
+        self.assertEqual(out["fixed"], [sig])
+        self.assertEqual(self.B.load_ledger()["issues"][sig]["state"], self.B.FIXED)
+
+    def test_an_issue_still_firing_at_its_deadline_is_a_strike_not_a_fix(self):
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        future = datetime.now() + timedelta(days=8)
+        led = self.B.load_ledger()                            # detector ran, still firing
+        led["issues"][sig]["last_seen"] = future.isoformat()
+        led["observers"]["morning_briefing"] = {"last_ran": future.isoformat(),
+                                                "last_alert_count": 1}
+        self.B._save(self.B.LEDGER_PATH, led)
+        out = self.B.verify(now=future)
+        self.assertEqual(out["struck"], [sig])
+        rec = self.B.load_ledger()["issues"][sig]
+        self.assertEqual(rec["state"], self.B.DETECTED, "a failed fix must re-enter the loop")
+        self.assertEqual(rec["strikes"], 1)
+
+    def test_a_struck_issue_can_reach_the_board_again(self):
+        """The id carries the attempt number, the dedup_key does not. With a
+        stable id, `_append_deduped` would refuse the re-file — the first
+        proposal is still in the queue — and the issue would sit in DETECTED
+        forever, never reaching the board again and never alarming."""
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        future = datetime.now() + timedelta(days=8)
+        led = self.B.load_ledger()
+        led["issues"][sig]["last_seen"] = future.isoformat()
+        led["observers"]["morning_briefing"] = {"last_ran": future.isoformat(),
+                                                "last_alert_count": 1}
+        self.B._save(self.B.LEDGER_PATH, led)
+        self.B.verify(now=future)
+        self.B.relay()
+        items = self._read(self.B.PENDING_PATH)
+        self.assertEqual(len(items), 2, "the re-filed issue never reached the board")
+        self.assertNotEqual(items[0]["id"], items[1]["id"])
+        self.assertEqual(items[0]["dedup_key"], items[1]["dedup_key"],
+                         "the board cannot tell these are the same finding recurring")
+        self.assertEqual(self.B.load_ledger()["issues"][sig]["board_ref"], items[1]["id"],
+                         "board_ref must track the newest attempt or its ruling never lands")
+
+    def test_repeated_failed_fixes_escalate_to_the_chairman(self):
+        sig, item = self._relayed()
+        for attempt in range(self.B.MAX_STRIKES):
+            ref = self.B.load_ledger()["issues"][sig]["board_ref"]
+            self._rule(ref)
+            self.B.run()
+            future = datetime.now() + timedelta(days=8 * (attempt + 1))
+            led = self.B.load_ledger()
+            led["issues"][sig]["last_seen"] = future.isoformat()
+            led["observers"]["morning_briefing"] = {"last_ran": future.isoformat(),
+                                                    "last_alert_count": 1}
+            self.B._save(self.B.LEDGER_PATH, led)
+            self.B.verify(now=future)
+            self.B.relay()
+        self.assertGreaterEqual(self.B.load_ledger()["issues"][sig]["strikes"],
+                                self.B.MAX_STRIKES)
+        chair = self._read(self.B.CHAIRMAN_PATH)
+        self.assertTrue(any("structural" in c.get("description", "") for c in chair),
+                        "a fix that failed twice must stop being retried and reach Jack")
+
+    # ── the digest section ───────────────────────────────────────────────────
+    def test_a_fixed_issue_is_reported_once_and_never_again(self):
+        """Jack: "and then it shouldnt be mentioned again"."""
+        sig, item = self._relayed()
+        self._rule(item["id"])
+        self.B.run()
+        future = datetime.now() + timedelta(days=8)
+        self._observer_alive_at("morning_briefing", future)
+        self.B.verify(now=future)
+        first = self.B.digest_section()
+        self.assertTrue(any("fixed by board" in l for l in first["lines"]))
+        self.assertTrue(any("cron gap" in l for l in first["lines"]))
+        self.assertEqual(self.B.load_ledger()["issues"][sig]["state"], self.B.RETIRED)
+        self.assertEqual(self.B.digest_section()["lines"], [],
+                         "a closed issue was mentioned twice")
+
+    def test_the_header_always_carries_a_denominator(self):
+        """"3 fixed" reads as progress whether or not any was made; "3 fixed of
+        11 tracked" cannot. This is what `internal_audit_agent` demands of every
+        control that reports a count."""
+        self._relayed()
+        header = self.B.digest_section()["header"]
+        self.assertIn("tracked issue", header)
+        self.assertRegex(header, r"\d+ fixed")
+
+    def test_an_empty_ledger_still_renders_a_section(self):
+        sec = self.B.digest_section()
+        self.assertIn("Issues &amp; fixes", sec["html"])
+        self.assertIn("No open issues tracked", sec["html"])
+
+    # ── wiring: the contracts this feature dies on silently ──────────────────
+    def test_observe_records_a_heartbeat_even_on_a_zero_alert_run(self):
+        """The empty call is not a no-op — it is the only thing that makes a
+        later silence mean "looked and found nothing"."""
+        self.B.process([], "morning_briefing")
+        self.assertIn("morning_briefing", self.B.load_ledger()["observers"])
+
+    def test_every_caller_uses_one_source_string_for_observe_and_annotate(self):
+        """A caller that observes as "morning_briefing" and annotates as
+        "briefing" computes a different signature, finds no record, and returns
+        every line unannotated — output produced, nothing acted on, no error.
+        That is the house bug class (memory `wiring_contract_bugs`), so it is
+        checked structurally rather than trusted."""
+        here = Path(__file__).resolve().parent
+        callers = [p for p in here.glob("*.py")
+                   if p.name not in ("board_issue_ledger.py", Path(__file__).name)
+                   and "board_issue_ledger" in p.read_text()]
+        self.assertTrue(callers, "nothing calls the ledger — the feature is not wired in")
+        checked = 0
+        for p in callers:
+            for node in ast.walk(ast.parse(p.read_text())):
+                if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)):
+                    continue
+                if node.func.attr not in ("process", "observe", "annotate"):
+                    continue
+                if not (isinstance(node.func.value, ast.Name)
+                        and node.func.value.id == "board_issue_ledger"):
+                    continue
+                src_args = [a for a in node.args if isinstance(a, ast.Constant)]
+                self.assertTrue(src_args,
+                                f"{p.name}: {node.func.attr}() called without a literal "
+                                f"source string — it cannot be verified to match")
+                checked += 1
+        self.assertTrue(checked, "no ledger calls found to check; this guard is vacuous")
+
+    def test_a_non_designated_host_does_not_file_to_a_board_nobody_reads(self):
+        """catch_up runs morning_briefing and board_meeting on the Mac too, on
+        the Mac's own data/. Ungated, that is a complete second governance loop:
+        the Mac's board rules on the Mac's queue with its own explanation and its
+        own follow-up date, and the digest — VM-only since #88 — never shows any
+        of it. Two boards, one issue, one invisible verdict."""
+        self.B.may_relay = lambda: (False, "mac is not the designated host (apexcapitalc is)")
+        self.B.process([self.ALERT], "morning_briefing")
+        self.B.process([self.ALERT], "morning_briefing")
+        self.assertFalse(self.B.PENDING_PATH.exists() and self._read(self.B.PENDING_PATH),
+                         "a non-designated host filed a proposal into its own queue")
+        self.assertEqual(self.B.load_ledger()["issues"][
+            next(iter(self.B.load_ledger()["issues"]))]["state"], self.B.DETECTED)
+
+    def test_standing_down_is_reported_not_merely_skipped(self):
+        """A host that has stood down for weeks looks identical to a host with
+        nothing to say. The digest must be able to tell them apart."""
+        self.B.may_relay = lambda: (False, "no designated host recorded")
+        self.B.process([self.ALERT], "morning_briefing")
+        self.B.process([self.ALERT], "morning_briefing")
+        lines = self.B.digest_section()["lines"]
+        self.assertTrue(any("NOT reaching the board" in l for l in lines),
+                        "issues were silently not relayed and the report said nothing")
+
+    def test_the_relay_gate_fails_closed(self):
+        """Real implementation, host identity unavailable -> refuse."""
+        self.B.may_relay = self._real_may_relay
+        with patch.dict(sys.modules, {"single_writer": None}):
+            allowed, why = self.B.may_relay()
+        self.assertFalse(allowed)
+        self.assertIn("not relaying", why)
+
+    def test_the_state_machine_is_driven_by_the_pipeline(self):
+        """`morning_briefing` observes and `email_buffer` renders — but every
+        transition after the relay happens in `run()`. If nothing calls it, each
+        issue sits at RELAYED forever while the digest truthfully reports that
+        the board has never fixed anything, and `wiring_audit` stays GREEN the
+        whole time because the MODULE is reachable; it is this FUNCTION that
+        would not be (memory `orphan_agents_blindness`)."""
+        here = Path(__file__).resolve().parent
+        roots = ["main.py"]
+        drivers = []
+        for r in roots:
+            for node in ast.walk(ast.parse((here / r).read_text())):
+                if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                        and node.func.attr == "run"
+                        and isinstance(node.func.value, ast.Name)
+                        and node.func.value.id == "board_issue_ledger"):
+                    drivers.append(r)
+        self.assertTrue(drivers,
+                        "nothing on a scheduled path calls board_issue_ledger.run() — "
+                        "issues would be relayed and then never move again")
+
+    def test_the_digest_renders_the_issues_section(self):
+        """email_buffer must actually call digest_section, and the template must
+        actually interpolate it. Either half missing = a silent no-op."""
+        src = (Path(__file__).resolve().parent / "email_buffer.py").read_text()
+        self.assertIn("board_issue_ledger", src, "the digest never asks for the section")
+        self.assertIn("digest_section", src)
+        self.assertIn("{issues_html}", src,
+                      "the section is built and then not placed in the email body")
+
+    def test_the_briefing_routes_its_alerts_through_the_ledger(self):
+        src = (Path(__file__).resolve().parent / "morning_briefing.py").read_text()
+        self.assertIn("board_issue_ledger.process", src,
+                      "morning_briefing's alerts never reach the board")
+
+    def test_late_alert_injections_happen_before_the_briefing_is_sent(self):
+        """These two blocks used to run ~120 lines AFTER the email was composed
+        and sent, so a CRITICAL Logic Team finding and a STALE DATA sentinel alert
+        were written to a JSON file nobody opens and reached no human at all. They
+        must also precede the ledger call, or the relay covers only some alerts.
+        """
+        src = (Path(__file__).resolve().parent / "morning_briefing.py").read_text()
+        inject = max(src.find("logic_team_findings"), src.find("freshness"))
+        route = src.find("board_issue_ledger.process")
+        send = src.find("send_email")
+        self.assertGreater(inject, -1)
+        self.assertGreater(route, -1)
+        self.assertLess(inject, route,
+                        "late alerts are injected after the ledger call — they are "
+                        "never relayed to the board")
+        if send > -1:
+            self.assertLess(route, send,
+                            "alerts are routed after the email is sent — the digest "
+                            "shows unannotated warnings")
+
+
 # =============================================================================
 # Runner
 # =============================================================================

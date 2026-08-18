@@ -1743,6 +1743,34 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         logger.info("\nStep 12: Board Meeting — no trigger threshold reached this cycle.")
 
     # -----------------------------------------------------------------------
+    # Board issue ledger — advance the IRM -> board -> "Fixed issues" loop
+    # -----------------------------------------------------------------------
+    # This call is what makes the loop a loop. `morning_briefing` OBSERVES and
+    # `email_buffer` RENDERS, and both were already wired — but every state
+    # transition after the relay (a board ruling becoming ONGOING, a follow-up
+    # date coming due, a verified fix becoming FIXED) happens only here. Without
+    # it every issue would sit at RELAYED forever while the digest faithfully
+    # reported that nothing was ever fixed, and `wiring_audit` would stay green
+    # throughout, because the MODULE is reachable — it is this FUNCTION that
+    # would not be. That is the orphan bug class one level down from where the
+    # audit looks (memory `orphan_agents_blindness`), so it is pinned by
+    # `TestBoardIssueLedger::test_the_state_machine_is_driven_by_the_pipeline`.
+    #
+    # It belongs immediately after Step 12: the board has just ruled, so fresh
+    # rulings are picked up in the same cycle rather than waiting for the next.
+    try:
+        import board_issue_ledger
+        _bil = board_issue_ledger.run()
+        if any(_bil.get(k) for k in ("relayed", "ruled", "fixed", "struck", "escalated")):
+            logger.info(
+                f"  Board issue ledger: {len(_bil['relayed'])} relayed, "
+                f"{len(_bil['ruled'])} ruled, {len(_bil['fixed'])} verified fixed, "
+                f"{len(_bil['struck'])} failed to hold, "
+                f"{len(_bil['escalated'])} escalated ({_bil['tracked']} tracked)")
+    except Exception as e:
+        logger.warning(f"  Board issue ledger error: {e}")
+
+    # -----------------------------------------------------------------------
     # Predictive Model — collect snapshot + attempt retraining
     # -----------------------------------------------------------------------
     # Runs every cycle: logs current signals + fills in price outcomes for old

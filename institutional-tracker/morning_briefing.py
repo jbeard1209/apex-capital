@@ -558,11 +558,76 @@ def run_morning_briefing() -> dict:
     logger.info(f"  Board meeting in ~15 min. Pipeline fires in ~30 min.")
     logger.info("=" * 60)
 
+    # ── Late alert injections — MOVED UP 2026-08-17, and the move is a fix ────
+    # These two blocks used to sit ~120 lines below, AFTER the briefing email
+    # had already been composed and sent. Both exist to put something in front
+    # of the Chairman — one is captioned "inject Logic Team open findings into
+    # morning briefing", the other "surface stale-data issues prominently" —
+    # and neither had ever appeared in a briefing email. They appended to
+    # `briefing["alerts"]` after `alert_rows` was built from it, so their output
+    # reached data/morning_briefing.json (re-saved at the end) and nothing else.
+    # A CRITICAL Logic Team finding and a STALE DATA sentinel alert were both
+    # being written to a file nobody opens. They must also run before the ledger
+    # call below, or the relay would silently cover only some of the alerts.
+    try:
+        from logic_team import get_open_findings_summary
+        lt_open = get_open_findings_summary()
+        if lt_open:
+            briefing["logic_team_open"] = lt_open
+            critical_high = [f for f in lt_open if f["severity"] in ("CRITICAL", "HIGH")]
+            for cf in critical_high:
+                briefing["alerts"].append({
+                    "source": "Logic Team",
+                    "severity": cf["severity"],
+                    "message": cf["title"],
+                    "days_open": cf.get("days_open", 0),
+                })
+        else:
+            briefing["logic_team_open"] = []
+    except Exception as _lt_e:
+        logger.debug(f"Logic Team injection skipped: {_lt_e}")
+
+    try:
+        fresh = _safe_load("data/freshness_report.json")
+        if fresh:
+            briefing["freshness"] = {
+                "overall": fresh.get("overall", "?"),
+                "stale":   fresh.get("stale", 0),
+                "auto_fixed": fresh.get("auto_fixed", []),
+            }
+            for i in fresh.get("issues", []):
+                if i.get("critical"):
+                    briefing["alerts"].append({
+                        "source": "Freshness Sentinel", "severity": "HIGH",
+                        "message": f"STALE DATA: {i.get('item','?')} — {i.get('detail','')}",
+                    })
+    except Exception as _fs_e:
+        logger.debug(f"Freshness injection skipped: {_fs_e}")
+
+    # ── Route the alerts to the board, and say so in the email ────────────────
+    # Chairman directive 2026-08-17: a warning Jack cannot personally fix must
+    # reach whoever can. `process()` records each alert against a normalized
+    # signature, relays repeat offenders to the board anonymously, and hands
+    # back the same lines with their board status appended — so
+    # "⚠ R&D report is 62h old" becomes "... : this information has been
+    # relayed to the board", then "... : ongoing fix by board (...) (date)".
+    #
+    # It runs unconditionally, INCLUDING on a clean day with zero alerts. The
+    # empty call is the heartbeat that proves this observer was listening, and
+    # every promotion to "fixed by board" rests on it: silence from a detector
+    # that stopped running is not evidence of anything.
+    _alert_lines = [str(a) for a in briefing["alerts"]]
+    try:
+        import board_issue_ledger
+        _alert_lines = board_issue_ledger.process(briefing["alerts"], "morning_briefing")
+    except Exception as _bil_e:
+        logger.warning(f"  ⚠ Board issue ledger unavailable — alerts not routed: {_bil_e}")
+
     # ── Buffer summary email (goes to digest) ─────────────────────────────────
     try:
         alert_rows = "".join(
             f"<li style='color:#f0883e;margin-bottom:4px;'>{a}</li>"
-            for a in briefing["alerts"]
+            for a in _alert_lines
         ) or "<li style='color:#3fb950;'>No alerts — clean bill of health.</li>"
 
         pos_rows = ""
@@ -653,43 +718,6 @@ def run_morning_briefing() -> dict:
     except Exception as e:
         logger.debug(f"Morning briefing email error (non-fatal): {e}")
 
-    # ── Inject Logic Team open findings into morning briefing ─────────────
-    try:
-        from logic_team import get_open_findings_summary
-        lt_open = get_open_findings_summary()
-        if lt_open:
-            briefing["logic_team_open"] = lt_open
-            critical_high = [f for f in lt_open if f["severity"] in ("CRITICAL","HIGH")]
-            if critical_high:
-                for cf in critical_high:
-                    briefing["alerts"].append({
-                        "source": "Logic Team",
-                        "severity": cf["severity"],
-                        "message": cf["title"],
-                        "days_open": cf.get("days_open", 0),
-                    })
-        else:
-            briefing["logic_team_open"] = []
-    except Exception as _lt_e:
-        logger.debug(f"Logic Team injection skipped: {_lt_e}")
-
-    # ── Freshness Sentinel — surface stale-data issues prominently ────────
-    try:
-        fresh = _safe_load("data/freshness_report.json")
-        if fresh:
-            briefing["freshness"] = {
-                "overall": fresh.get("overall", "?"),
-                "stale":   fresh.get("stale", 0),
-                "auto_fixed": fresh.get("auto_fixed", []),
-            }
-            for i in fresh.get("issues", []):
-                if i.get("critical"):
-                    briefing["alerts"].append({
-                        "source": "Freshness Sentinel", "severity": "HIGH",
-                        "message": f"STALE DATA: {i.get('item','?')} — {i.get('detail','')}",
-                    })
-    except Exception as _fs_e:
-        logger.debug(f"Freshness injection skipped: {_fs_e}")
 
     # ── Fable 5 LLM executive summary ─────────────────────────────────────
     # Generates a crisp "what to watch today" narrative for the Chairman.
