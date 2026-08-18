@@ -49,9 +49,21 @@ institutional-tracker/data/.host_id
 institutional-tracker/data/reentry_slate.html
 
 # ── Runtime data (live trade state, PII, agent evaluations) ──────────────────
-# These are pushed directly to the cloud server via sync_to_cloud.py,
-# never stored in git.
+# NOT synced anywhere. This comment used to say these files were "pushed
+# directly to the cloud server via sync_to_cloud.py" — that script POSTed to
+# Railway, which was decommissioned 2026-07-10, and it is on neither host's
+# scheduler. Each host's runtime data has been fully independent since then
+# (CLAUDE.md, "There is NO state sync between hosts"). They are excluded from
+# git because they are live state and PII, and for no other reason.
 institutional-tracker/data/state.json
+# The lifecycle sentinel's and the board ledger's state. These were untracked
+# only because nobody had run `git add -A` in this directory yet — the sentinel's
+# own docstring asserted they were "gitignored + cloud-synced" while they were
+# in fact neither, which is one stray `git add` away from committing live agent
+# evaluations. Named explicitly now.
+institutional-tracker/data/problem_lifecycle.json
+institutional-tracker/data/problem_loops.json
+institutional-tracker/data/board_issue_ledger.json
 institutional-tracker/data/manager_decisions.json
 institutional-tracker/data/board_meeting_report.json
 institutional-tracker/data/canary_alert.json

@@ -42,7 +42,19 @@ Consumer wiring (verified — no orphan queues):
   * loop-break  -> data/problem_loops.json (read by cit_implementation_agent).
 
 Runtime state (data/problem_lifecycle.json, data/problem_loops.json) is
-gitignored + cloud-synced like every other data/*.json queue — never committed.
+gitignored — and, as of 2026-08-17, actually is. This line previously claimed it
+was "gitignored + cloud-synced". Neither half was true: no rule matched either
+file (they were untracked only because nobody had run `git add -A` here), and
+cloud-sync went away with Railway on 2026-07-10. Both files are now named in
+.gitignore explicitly.
+
+The correction matters beyond tidiness. Nothing syncs, so this state is PER-HOST:
+the Mac and the VM keep separate lifecycles for the same problem and neither can
+see the other's. Do not reason as if a signature recorded on one host is known to
+the other (CLAUDE.md, "There is NO state sync between hosts"). `board_issue_ledger`
+imports this module's `signature()` for exactly that reason — one definition of
+one fact — and gates its board relay on the designated host so only one of the
+two lifecycles ever reaches the board.
 """
 from __future__ import annotations
 
