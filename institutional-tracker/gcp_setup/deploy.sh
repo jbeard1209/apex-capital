@@ -126,6 +126,29 @@ echo "[1/2] Syncing project files..."
 # ever passing a review, and nothing there schedules or imports it. Shipping the
 # means to rebuild the incident, to the host that would rebuild it, buys
 # nothing. It stays on the Mac, where Jack runs it by hand or not at all.
+#
+# ...and that reasoning applies to every gitignored file, not just that one
+# directory. Naming oracle_setup/ fixed the instance and left the class open:
+# on 2026-08-18 `deployed_set_matches_repo` reported two files "on host, in no
+# commit" — _measure_horizon.py and _measure_walk.py, throwaway measurement
+# scripts written in this directory an hour earlier. 362 untracked files were
+# shipping to the trading host on every deploy, none of them reviewed, none of
+# them in any commit. A scratch file named like a module the pipeline imports
+# would shadow it, and the shadow would exist only in production.
+#
+# So the exclusion is now DERIVED, not listed: git decides what is deployable.
+# `git ls-files --others` (deliberately WITHOUT --exclude-standard, so it
+# reports ignored files too) is every path git does not track; each is anchored
+# with a leading "/" so it matches from the transfer root and not at any depth.
+# .env is in that set and is meant to be — it travels in step 2, by itself, on
+# purpose. If this list ever over-matches and drops a file the VM needs, the
+# same law reports it from the other side as "absent from apex-capital", so
+# both failure directions are observable rather than silent.
+DEPLOY_EXCLUDES="$(mktemp "${TMPDIR:-/tmp}/apex_deploy_excludes.XXXXXX")"
+trap 'rm -f "$DEPLOY_EXCLUDES"' EXIT
+git -C "$LOCAL_DIR" ls-files --others | sed 's|^|/|' > "$DEPLOY_EXCLUDES"
+echo "  $(wc -l < "$DEPLOY_EXCLUDES" | tr -d ' ') untracked path(s) held back — git decides what deploys."
+
 rsync -avz --progress \
     --exclude="data/.host_id" \
     --include="data/" \
@@ -133,6 +156,7 @@ rsync -avz --progress \
     --include="data/vm_crontab_snapshot.txt" \
     --include="data/agent_roster_manifest.json" \
     --exclude="data/*" \
+    --exclude-from="$DEPLOY_EXCLUDES" \
     --exclude="logs/" \
     --exclude="__pycache__/" \
     --exclude="*.pyc" \
@@ -170,6 +194,27 @@ else
     echo "  WARNING: No .env found locally. You'll need to create one on the VM."
     echo "  SSH in and run: nano ~/institutional-tracker/.env"
 fi
+
+# ── 2b. Stamp the VM, over ssh, only now that the deploy has succeeded ───────
+# The stamp written at step 0 is the MAC's copy. It used to reach the VM as an
+# ordinary rsync payload, which quietly made the freshness detector depend on
+# the deploy's own file list: the moment step 1 started deriving its exclusions
+# from git, deploy_stamp.json — untracked, generated, in no commit — was held
+# back, and the VM's stamp froze at 2026-08-18T03:23Z while deploys kept
+# landing. pod_health_monitor.py and reentry_slate.py both read that file on
+# whichever host they run; a frozen stamp does not read as "stale", it reads as
+# the last deploy that happened to slip through, forever. That is the shape of
+# `fix_that_erased_its_detector` — a remediation deleting the field its own
+# check consumes — and it was caught by looking at the stamp after a deploy
+# rather than by trusting that the deploy had updated it.
+#
+# So the VM is now stamped directly, and deliberately LAST: `set -e` means any
+# failure above aborts before this line, leaving the previous stamp in place so
+# a half-finished deploy reports as drift instead of as success.
+ssh "$SSH_TARGET" "cat > ~/institutional-tracker/deploy_stamp.json" <<STAMP
+{"sha": "$GIT_SHA", "deployed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "from_host": "$(hostname)"}
+STAMP
+echo "  VM stamped: $GIT_SHA (written on the host, not rsynced)."
 
 # ── 3. (removed 2026-08-17) Oracle setup is deliberately NOT deployed ─────
 # This step used to push oracle_setup/ — provisioning scripts and oci_key.pem —

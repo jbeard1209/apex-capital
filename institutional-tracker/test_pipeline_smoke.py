@@ -6854,6 +6854,104 @@ class TestSingleWriterGuard(unittest.TestCase):
                           f"{script} no longer describes itself as VM-side — "
                           f"re-derive what this test is protecting")
 
+    def test_only_files_git_tracks_are_deployed_to_the_trading_host(self):
+        """Untracked code must not reach production, and not by name-list.
+
+        deploy.sh already excluded `oracle_setup/` with a comment saying the kit
+        "reached the VM without ever passing a review" because it was gitignored.
+        That fixed the instance and left the class open: on 2026-08-18
+        `deployed_set_matches_repo` reported _measure_horizon.py and
+        _measure_walk.py "on host, in no commit" — scratch scripts written an
+        hour earlier. 362 untracked files were shipping on every deploy. A
+        scratch file named like a module the pipeline imports would shadow it,
+        and the shadow would exist only in production.
+
+        The rule has to be derived from git, not maintained by hand, so this
+        asserts on deploy.sh with its COMMENTS STRIPPED — the paragraph above
+        this test is quoted almost verbatim in that file, and a plain text
+        search would match my own postmortem note instead of the command.
+        """
+        here = Path(__file__).resolve().parent
+        raw  = (here / "gcp_setup" / "deploy.sh").read_text()
+        code = "\n".join(ln for ln in raw.splitlines()
+                         if not ln.lstrip().startswith("#"))
+
+        self.assertIn("--exclude-from=", code,
+                      "deploy.sh's rsync must take its exclusions from a "
+                      "generated file, not a hand-maintained list of names")
+
+        gen = [ln for ln in code.splitlines() if "ls-files" in ln]
+        self.assertTrue(gen, "nothing in deploy.sh generates the exclude list "
+                             "from git — the list is hand-maintained again")
+        self.assertIn("--others", gen[0],
+                      "`git ls-files --others` is what enumerates untracked "
+                      "paths; without it the exclude file is not that set")
+        self.assertNotIn("--exclude-standard", gen[0],
+                         "--exclude-standard makes ls-files SKIP ignored files, "
+                         "so every gitignored path would deploy again — that is "
+                         "precisely the bug (oracle_setup, _measure_*.py)")
+
+        # The other direction: the derived rule must not silently stop shipping
+        # config the VM reads to make decisions. Every data/ file deploy.sh
+        # allowlists has to be tracked, or git would now hold it back.
+        import subprocess
+        allowed = re.findall(r'--include="(data/[^"]+)"', code)
+        self.assertTrue(allowed, "the data/ config allowlist vanished")
+        if (here.parent / ".git").exists():   # not on the VM; not a checkout
+            for rel in allowed:
+                rc = subprocess.run(["git", "ls-files", "--error-unmatch", rel],
+                                    cwd=str(here), capture_output=True)
+                self.assertEqual(rc.returncode, 0,
+                                 f"deploy.sh allowlists {rel} but git does not "
+                                 f"track it — the derived exclusion drops it, "
+                                 f"and the VM silently keeps a stale copy")
+
+    def test_files_the_vm_needs_but_git_refuses_arrive_outside_the_rsync(self):
+        """The freshness stamp must not travel as ordinary rsync payload.
+
+        Tightening step 1 to deploy only tracked files immediately caught its
+        own tail: deploy_stamp.json is generated, untracked, and in no commit,
+        so it was held back — and the VM's stamp froze at 2026-08-18T03:23Z
+        while deploys kept landing. pod_health_monitor.py and reentry_slate.py
+        both read that file to decide whether production is stale. A frozen
+        stamp does not read as stale; it reads as the last deploy that happened
+        to slip through, forever.
+
+        Anything the VM needs that git will not carry has to be delivered by an
+        explicit ssh/scp step, where holding it back is impossible.
+        """
+        import subprocess
+        here = Path(__file__).resolve().parent
+        raw  = (here / "gcp_setup" / "deploy.sh").read_text()
+        code = "\n".join(ln for ln in raw.splitlines()
+                         if not ln.lstrip().startswith("#"))
+
+        for needed in ("deploy_stamp.json", ".env"):
+            delivered = [ln for ln in code.splitlines()
+                         if needed in ln and ("ssh " in ln or "scp " in ln)]
+            self.assertTrue(delivered,
+                            f"{needed} is not delivered to the VM by any "
+                            f"ssh/scp line — it can only be arriving as rsync "
+                            f"payload, which the tracked-files-only rule drops")
+
+        # The premise: the stamp really is untracked. If it is ever committed,
+        # the rsync could carry it and this test is guarding a dead branch —
+        # re-derive rather than deleting it.
+        if (here.parent / ".git").exists():   # the VM is not a git checkout
+            rc = subprocess.run(["git", "ls-files", "--error-unmatch",
+                                 "deploy_stamp.json"],
+                                cwd=str(here), capture_output=True)
+            self.assertNotEqual(rc.returncode, 0,
+                                "deploy_stamp.json is now git-tracked — it "
+                                "records per-deploy state and committing it "
+                                "makes every host claim the committer's deploy")
+
+        # And the stamp is written to the VM only after the syncing steps, so a
+        # deploy that aborts halfway leaves the old stamp and reports as drift.
+        self.assertLess(code.index("rsync"), code.rindex("deploy_stamp.json"),
+                        "the VM stamp must be written after the sync, or a "
+                        "failed deploy still stamps itself as successful")
+
     def test_a_truncated_hostname_cannot_merge_two_machines_silently(self):
         """MacBook-Air-173 and MacBook-Air-179 both truncate to macbookair17."""
         import order_ledger as ol
