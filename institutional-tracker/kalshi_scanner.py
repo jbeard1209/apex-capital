@@ -83,6 +83,65 @@ MIN_LEG_SIZE = 25
 # The band the Chairman asked about.
 NEAR_CERTAINTY_LO, NEAR_CERTAINTY_HI = 0.90, 0.99
 
+# ── The two gates that turn a price band into a business ─────────────────────
+#
+# Measured 2026-08-18 over 48,630 genuine markets: the 90-99c band selected on
+# PRICE ALONE has a median 442 days to close (max 3,816 — a decade). Its median
+# annualized return is 3.44%, BELOW the 4.25% T-bill, and that figure already
+# assumes a 100% hit rate before fees. So the band as originally defined is not
+# a mispricing to harvest; it is mostly the time value of money, correctly
+# priced. Buying it would lock capital for fourteen months to underperform cash
+# while carrying settlement risk on top. No amount of calibration work fixes
+# that — the trade is bad even when the probability estimate is perfect.
+#
+# `days_to_close` is the load-bearing filter, and it buys two separate things:
+#
+#   1. RETURN. APY = gross / days, so the horizon IS the return. Every one of
+#      the top 15 markets by APY closes within 82 days.
+#   2. MEASURABILITY. A calibration study whose observations settle in 442 days
+#      cannot report for over a year, so `is_edge_proven` would answer "NOT YET"
+#      until 2027 and the sector would run all that time on the strength of a
+#      number nobody had checked. Memory `sample-outlived-its-rule`.
+#
+# 90 days is where the exchange actually is, not a round number: of 2,946
+# two-sided band markets, ZERO close within 30 days and 252 close in 31-90.
+# Under 31 days the band is empty — the near-certainty that settles next week
+# gets arbitraged away, which is the market working correctly.
+MAX_DAYS_TO_CLOSE = 90
+
+# And a FLOOR, which is the less obvious half.
+#
+# Measured on the first gated scan: 29 candidates closed within six hours and
+# 108 within a day — "Bitcoin price on Aug 18, 2026?" quoted at 0.98 an hour
+# before it settles. That is not a forecast, it is a reading of an event that
+# has essentially already happened, and it breaks the sector in two ways:
+#
+#   1. The return is fictional. APY = gross x 365/days explodes as days -> 0;
+#      those rows scored up to 96,894% annualized. Nothing can be ranked against
+#      a number that is mostly a division by a small denominator.
+#   2. It poisons the CALIBRATION, and this is the one that would have cost
+#      money. Near-expiry quotes are nearly tautological, so they settle YES at
+#      a very high rate — AND they settle first. The first 200 settled rows
+#      would therefore be almost entirely sub-3-day markets, `is_edge_proven`
+#      would flip to PROVEN on them, and that verdict would then license sizing
+#      on the 30-90 day positions the sample never contained. A hit rate is a
+#      statement about a horizon; borrowing one horizon's rate to underwrite
+#      another's is the same error as `sample-outlived-its-rule`.
+#
+# One day is the floor because a scanner on a 4x-daily cron cannot reliably act
+# inside one, so anything below it is unactionable regardless of its arithmetic.
+MIN_DAYS_TO_CLOSE = 1.0
+
+# The return floor. A 97c contract settling in 442 days pays 3.1% gross; the
+# same 97c settling in 45 days pays 25% annualized. Only the second is a trade.
+# Set at the 3-month T-bill because that is the literal alternative use of the
+# same locked dollar — anything below this is a worse Treasury with counterparty
+# and rules risk stapled on. Re-measure when rates move; this is not a constant
+# of nature. Gross of fees and assuming settlement goes our way, so it is an
+# upper bound on the return, and a market failing it fails generously.
+RISK_FREE_RATE = 0.0425
+MIN_ANNUALIZED_RETURN = RISK_FREE_RATE
+
 # The order size breakeven is quoted for. Kalshi rounds its fee UP to a whole
 # cent per ORDER, so the per-contract cost falls steeply with size: at 99c a
 # 1-contract order pays 1c (14x the true rate) and a 100-contract order pays
@@ -315,7 +374,41 @@ def find_field_locks(markets, mutex_lookup, stats=None):
 
 # ------------------------------------------------------------ DISAGREEMENT --
 
-def find_disagreement_candidates(markets, estimator=None):
+def days_to_close(market, now=None):
+    """Days until the market closes, or None if it does not say.
+
+    None is NOT zero and is not "soon". A market with no close_time cannot be
+    horizon-filtered, so the caller must reject it rather than default it —
+    memory `fallback-that-means-act`: the constant a degraded read substitutes
+    is itself a decision, and every plausible default here (0, 999) reads as
+    either "buy immediately" or "never buy".
+    """
+    c = market.get("close_time")
+    if not c:
+        return None
+    try:
+        d = datetime.fromisoformat(str(c).replace("Z", "+00:00"))
+    except (ValueError, TypeError):
+        return None
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=timezone.utc)
+    now = now or datetime.now(timezone.utc)
+    return (d - now).total_seconds() / 86400.0
+
+
+def annualized_return(ask, days):
+    """Simple annualized return if the contract settles YES, or None.
+
+    Deliberately NOT compounded: these are single-settlement instruments held to
+    expiry, so there is nothing to reinvest and a compounded figure would flatter
+    the short-dated end of exactly the filter that selects on it.
+    """
+    if not ask or days is None or days <= 0 or ask <= 0 or ask >= 1:
+        return None
+    return ((1.0 - ask) / ask) * 365.0 / days
+
+
+def find_disagreement_candidates(markets, estimator=None, stats=None):
     """The Chairman's original idea, logged and quarantined.
 
     `estimator(market) -> (p_hat, rationale)` or None. With no estimator this
@@ -328,17 +421,48 @@ def find_disagreement_candidates(markets, estimator=None):
     `kalshi_calibration.is_edge_proven()` passes.
     """
     out = []
+    # Denominators. A gate that reports only what it passed cannot be audited:
+    # "4 candidates" is the same output whether it rejected 6 or 60,000, and the
+    # internal auditor refuses a HOLDS with no n_examined for exactly this
+    # reason. Every `continue` below increments something.
+    s = stats if stats is not None else {}
+    for k in ("seen", "no_two_sided_book", "outside_band", "no_close_time",
+              "too_far_out", "settles_too_soon", "return_below_riskfree",
+              "passed"):
+        s.setdefault(k, 0)
+
     for m in markets:
+        s["seen"] += 1
         # kc.two_sided, not kc.tradeable. An ask with no bid is not a price —
         # see that function's docstring for the 86 settlements that established
         # it. This is the gate that empties this list on most scans, and an
         # empty list here is the honest answer, not a bug.
         t = kc.two_sided(m)
         if not t:
+            s["no_two_sided_book"] += 1
             continue
         bid, ask, size = t
         if not (NEAR_CERTAINTY_LO <= ask <= NEAR_CERTAINTY_HI):
+            s["outside_band"] += 1
             continue
+
+        # Horizon, then return. See MAX_DAYS_TO_CLOSE for the measurement that
+        # put these here: on price alone this band is a worse T-bill.
+        dtc = days_to_close(m)
+        if dtc is None:
+            s["no_close_time"] += 1
+            continue
+        if dtc > MAX_DAYS_TO_CLOSE:
+            s["too_far_out"] += 1
+            continue
+        if dtc < MIN_DAYS_TO_CLOSE:
+            s["settles_too_soon"] += 1
+            continue
+        apy = annualized_return(ask, dtc)
+        if apy is None or apy < MIN_ANNUALIZED_RETURN:
+            s["return_below_riskfree"] += 1
+            continue
+        s["passed"] += 1
 
         # Breakeven is priced for the order we could ACTUALLY send: the whole
         # resting size, capped at the reference order. Both numbers travel with
@@ -375,6 +499,12 @@ def find_disagreement_candidates(markets, estimator=None):
             "payoff_against": round(ask / (1.0 - ask), 1),
             "volume": kc.parse_size(m.get("volume_fp")) or 0.0,
             "close_time": m.get("close_time"),
+            # Both gates travel with the row, not just their verdict. A ledger
+            # that stores only survivors cannot later answer "what rule was this
+            # picked under?", and that question is the whole of
+            # `sample-outlived-its-rule`.
+            "days_to_close": round(dtc, 2),
+            "annualized_return": round(apy, 4),
             "rules_primary": str(m.get("rules_primary") or "")[:300],
             "requires_estimate": True,
             "p_hat": None, "rationale": "no calibrated estimator installed",
@@ -614,7 +744,7 @@ def size_position(candidate, sleeve_dollars, calibration_ok=None):
 
 # -------------------------------------------------------------------- scan --
 
-def scan(max_pages=25, estimator=None, check_mutex=True):
+def scan(max_pages=60, estimator=None, check_mutex=True):
     # ONE walk of /events, and everything downstream is derived from it.
     #
     # This used to walk markets, then call `kc.get_event()` once per event to
@@ -623,7 +753,8 @@ def scan(max_pages=25, estimator=None, check_mutex=True):
     # had just downloaded. That runtime was not a detail: the cron budget is what
     # decides whether this sector runs unattended 4x/day or only when a human
     # remembers, and an unrunnable scan produces the same evidence as no scan.
-    events = list(kc.iter_events(max_pages=max_pages))
+    walk = {}
+    events = list(kc.iter_events(max_pages=max_pages, stats=walk))
     markets = [m for e in events for m in (e.get("markets") or [])
                if not kc.is_shard(m)]
     mutex_map = {e.get("event_ticker"): bool(e.get("mutually_exclusive"))
@@ -638,6 +769,14 @@ def scan(max_pages=25, estimator=None, check_mutex=True):
             "genuine": len(markets),
             "mutually_exclusive_events": sum(1 for v in mutex_map.values() if v),
             "shards_excluded": True,
+            # Did we reach the end of the feed, or stop at the page cap? These
+            # are separate from `healthy` because they answer a different
+            # question: `healthy` asks "did we read anything?", `walk_complete`
+            # asks "did we read it ALL?". Only the second licenses a conclusion
+            # from an empty result — and the cap silently truncated the walk at
+            # 5,000 of 10,184 events for as long as this feed has been used.
+            "pages_walked": walk.get("pages", 0),
+            "walk_complete": bool(walk.get("complete")),
             "healthy": len(markets) > 0}
     if not feed["healthy"]:
         report = {"scanned_at": _now(), "env": kc.env_name(),
@@ -656,7 +795,8 @@ def scan(max_pages=25, estimator=None, check_mutex=True):
     field_stats = {}
     pairs = find_pair_locks(markets)
     fields = find_field_locks(markets, mutex_lookup, stats=field_stats) if check_mutex else []
-    disagree = find_disagreement_candidates(markets, estimator)
+    band_stats = {}
+    disagree = find_disagreement_candidates(markets, estimator, stats=band_stats)
     # `markets`, not `disagree`: the ladder is judged whole. See drop_incoherent.
     disagree, incoherent, unchecked = drop_incoherent(disagree, markets=markets)
 
@@ -692,6 +832,12 @@ def scan(max_pages=25, estimator=None, check_mutex=True):
         "field_partial_skipped": field_stats.get("partial_fields_skipped", 0),
         "field_mutex_priced": field_stats.get("mutex_fields_priced", 0),
         "field_uncertifiable": field_stats.get("uncertifiable", []),
+        # Why the band emptied, in order of gate. Without this a scan reporting
+        # 4 candidates cannot be distinguished from a broken feed, and the
+        # horizon gate in particular rejects ~90% of the price band — a fact
+        # about the exchange that has to stay visible, or a later reader will
+        # "restore" the candidates by deleting the filter.
+        "band_gates": band_stats,
         "disagreement": disagree,
         "dropped_incoherent": incoherent,
         # Held apart from `disagreement` on purpose. Folding these in would make
@@ -715,16 +861,27 @@ def main():
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--report", action="store_true")
-    ap.add_argument("--pages", type=int, default=12)
+    # None, not a number. This flag carried its own default of 12 — so every
+    # command-line run, which is every CRON run, walked 2,400 of the feed's
+    # 10,184 events while `scan()`'s own default said otherwise. Two defaults
+    # for one quantity means the one you read is not the one that runs.
+    ap.add_argument("--pages", type=int, default=None,
+                    help="page cap for the events walk (default: scan()'s own)")
     ap.add_argument("--no-mutex-check", action="store_true",
                     help="skip event lookups (faster, disables field locks)")
     args = ap.parse_args()
 
-    r = scan(max_pages=args.pages, check_mutex=not args.no_mutex_check)
+    kw = {"check_mutex": not args.no_mutex_check}
+    if args.pages is not None:
+        kw["max_pages"] = args.pages
+    r = scan(**kw)
 
     print(f"KALSHI SCAN — env={r['env']}  {r['scanned_at'][:19]}Z")
+    _f = r.get("feed", {})
+    _walk = ("whole feed" if _f.get("walk_complete")
+             else f"⚠ TRUNCATED at the {_f.get('pages_walked', '?')}-page cap")
     print(f"  markets seen {r['markets_seen']}, with a real book "
-          f"{r['with_real_book']}")
+          f"{r['with_real_book']}  [{_f.get('pages_walked','?')} pages, {_walk}]")
 
     print(f"\n  [STRUCTURAL] pair locks (arithmetic, no estimate needed): "
           f"{len(r['structural_pair'])}")

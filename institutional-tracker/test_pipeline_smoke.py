@@ -7310,12 +7310,16 @@ class TestKalshiSector(unittest.TestCase):
         """An estimator that merely agrees with the market must NOT pass. This
         is the Kalshi analogue of edge_over_baseline in model_test_harness."""
         import kalshi_calibration as cal
-        # yes_bid marks the row as selected by the CURRENT two-sided rule.
-        # Without it these are legacy `tradeable()` rows and the gate refuses
-        # on sample size before it ever reaches the Brier comparison — correct
-        # behaviour, wrong branch for this test.
+        # `selection_rule` marks the row as selected by the CURRENT rule.
+        # Without it these are legacy rows and the gate refuses on sample size
+        # before it ever reaches the Brier comparison — correct behaviour, wrong
+        # branch for this test. This used to be marked with `yes_bid`, back when
+        # the regime was INFERRED from a field that happened to correlate with
+        # it; the stamp is explicit now. `days_to_close` spreads the rows across
+        # the horizon strata for the same reason: to reach the branch under test.
         rows = [{"settled": True, "outcome": 1, "p_hat": 0.97,
-                 "market_price": 0.97, "yes_bid": 0.94} for _ in range(300)]
+                 "market_price": 0.97, "selection_rule": cal.SELECTION_RULE,
+                 "days_to_close": (3.0, 15.0, 45.0)[i % 3]} for i in range(300)]
         ok, why = cal.is_edge_proven(rows)
         self.assertFalse(ok, "agreeing with the price is not an edge")
         self.assertIn("NO EDGE", why)
@@ -7397,7 +7401,11 @@ class TestKalshiSector(unittest.TestCase):
                                   "title": "t", "breakeven_probability": 0.963}]}
         store = {}
 
-        with mock.patch.object(cal, "_load_ledger",
+        # `_all_rows`, not `_load_ledger`. This test patched `_load_ledger` and
+        # kept passing after `record_from_scan` switched readers — it was then
+        # reading the REAL ledger off disk while appearing to use `store`. A
+        # mock of the wrong function is a test of nothing.
+        with mock.patch.object(cal, "_all_rows",
                                side_effect=lambda: store.get("rows", [])), \
              mock.patch.object(cal, "_save_ledger",
                                side_effect=lambda r: store.__setitem__("rows", r)):
@@ -7405,6 +7413,268 @@ class TestKalshiSector(unittest.TestCase):
             second, _ = cal.record_from_scan(scan)
         self.assertEqual(first, 1)
         self.assertEqual(second, 0, "same ticker, same day — must not re-add")
+
+
+class TestKalshiSampleIsWorthSomething(unittest.TestCase):
+    """The sample must measure the rule we trade, at the horizon we hold it.
+
+    Every test here comes from a defect found on 2026-08-18, when the sector
+    had 893 recorded "predictions" and none of them could have produced a
+    verdict this decade. The band was selected on PRICE alone, so its median
+    market closed in 442 days and returned 3.44% annualized — below the T-bill
+    it was competing with, before fees, assuming it never lost. The rows were
+    real, the arithmetic was real, and the whole thing measured nothing.
+    """
+
+    def setUp(self):
+        import kalshi_calibration as cal
+        import kalshi_scanner as ks
+        self.cal, self.ks = cal, ks
+
+    @staticmethod
+    def _market(ask, bid, days, ticker="T"):
+        """A market that gets PAST `two_sided()` and reaches the horizon gates.
+
+        `yes_ask_size_fp` is not optional decoration: without a resting size
+        `two_sided` returns None and every test below would pass by being
+        rejected one gate too early — green for the wrong reason, which is the
+        failure this suite exists to catch.
+        """
+        m = {"ticker": ticker, "yes_ask_dollars": ask, "yes_bid_dollars": bid,
+             "yes_ask_size_fp": "100000000000000000", "title": ticker}
+        if days is not None:
+            m["close_time"] = (datetime.now(timezone.utc)
+                               + timedelta(days=days)).isoformat()
+        return m
+
+    def test_the_fixture_would_otherwise_qualify(self):
+        """Guards the three gate tests: prove the helper's market passes when
+        its horizon is fine, so a rejection there is the gate under test and not
+        a malformed fixture."""
+        stats = {}
+        out = self.ks.find_disagreement_candidates([self._market(0.95, 0.94, 30)],
+                                                   stats=stats)
+        self.assertEqual(len(out), 1, f"fixture rejected before the gates: {stats}")
+
+    # ------------------------------------------------- the selection gates --
+
+    def test_a_market_beyond_the_horizon_is_not_a_candidate(self):
+        """The gate that turns a price band into a business. On price alone the
+        band is mostly the time value of money, correctly priced."""
+        far = self._market(0.95, 0.94, days=400)
+        stats = {}
+        out = self.ks.find_disagreement_candidates([far], stats=stats)
+        self.assertEqual(out, [])
+        self.assertEqual(stats["too_far_out"], 1,
+                         "the row must be counted as rejected, not vanish")
+
+    def test_a_market_settling_within_the_day_is_not_a_forecast(self):
+        """29 candidates closed within six hours on the first gated scan —
+        'Bitcoin price on Aug 18' at 0.98, an hour out. Those settle first and
+        would carry the entire verdict on near-tautologies."""
+        soon = self._market(0.95, 0.94, days=0.125)
+        stats = {}
+        self.assertEqual(self.ks.find_disagreement_candidates([soon], stats=stats), [])
+        self.assertEqual(stats["settles_too_soon"], 1)
+
+    def test_a_market_that_will_not_say_when_it_closes_is_rejected(self):
+        """Not defaulted to 0 and not to 999 — either constant IS a decision,
+        and both of those decide wrongly (memory `fallback-that-means-act`)."""
+        self.assertIsNone(self.ks.days_to_close({}))
+        self.assertIsNone(self.ks.days_to_close({"close_time": "not-a-date"}))
+        mute = self._market(0.95, 0.94, days=None)
+        stats = {}
+        self.assertEqual(self.ks.find_disagreement_candidates([mute], stats=stats), [])
+        self.assertEqual(stats["no_close_time"], 1)
+
+    def test_a_return_below_cash_is_not_an_opportunity(self):
+        """97c settling in 442 days pays 2.55% annualized. The alternative use
+        of that same locked dollar is a T-bill, with no rules risk."""
+        self.assertLess(self.ks.annualized_return(0.97, 442),
+                        self.ks.MIN_ANNUALIZED_RETURN)
+        self.assertGreater(self.ks.annualized_return(0.97, 45),
+                           self.ks.MIN_ANNUALIZED_RETURN)
+
+    def test_the_return_calculation_refuses_rather_than_guesses(self):
+        for bad in [(0.97, None), (0.97, 0), (0.97, -5), (None, 45),
+                    (1.0, 45), (0.0, 45)]:
+            self.assertIsNone(self.ks.annualized_return(*bad),
+                              f"annualized_return{bad} must be None, not a number")
+
+    def test_every_rejection_is_counted(self):
+        """A gate reporting only its survivors cannot be audited: '4 candidates'
+        is the same output whether it rejected 6 or 60,000."""
+        stats = {}
+        self.ks.find_disagreement_candidates([], stats=stats)
+        for k in ("seen", "no_two_sided_book", "outside_band", "no_close_time",
+                  "too_far_out", "settles_too_soon", "return_below_riskfree",
+                  "passed"):
+            self.assertIn(k, stats, f"denominator {k!r} missing from band_gates")
+
+    # -------------------------------------------------- one row per market --
+
+    def _record(self, scan, store):
+        import unittest.mock as mock
+        with mock.patch.object(self.cal, "_all_rows",
+                               side_effect=lambda: store.get("rows", [])), \
+             mock.patch.object(self.cal, "_save_ledger",
+                               side_effect=lambda r: store.__setitem__("rows", r)):
+            return self.cal.record_from_scan(scan)[0]
+
+    def test_the_same_market_on_a_later_day_is_not_a_second_observation(self):
+        """THE bug. The dedup key was (ticker, scan date), which stops four
+        counts in one day but not four hundred over a contract's life — and all
+        four hundred settle to the SAME outcome. n would clear its threshold on
+        a handful of markets wearing a large sample."""
+        scan = {"disagreement": [{"ticker": "T1", "market_price": 0.96,
+                                  "days_to_close": 30.0, "annualized_return": 0.5}]}
+        store = {}
+        self.assertEqual(self._record(scan, store), 1)
+        # Simulate tomorrow's scan finding the same still-open contract.
+        store["rows"][0]["recorded_date"] = "2026-01-01"
+        self.assertEqual(self._record(scan, store), 0,
+                         "same market, later day — one contract is one observation")
+
+    def test_a_new_rule_may_re_observe_a_market_the_old_rule_saw(self):
+        """The mirror. Keyed on ticker alone, a market first seen under a
+        retired rule could never enter the current sample — invisible to the old
+        verdict (wrong rule) and to the new one (already seen). Most of the 893
+        legacy rows age into the current 90-day window over time."""
+        store = {"rows": [{"ticker": "T1", "selection_rule": "some_old_rule",
+                           "settled": False}]}
+        scan = {"disagreement": [{"ticker": "T1", "market_price": 0.96,
+                                  "days_to_close": 30.0, "annualized_return": 0.5}]}
+        self.assertEqual(self._record(scan, store), 1)
+        self.assertEqual(store["rows"][-1]["selection_rule"], self.cal.SELECTION_RULE)
+
+    def test_a_voided_row_is_not_quietly_re_recorded(self):
+        store = {"rows": [{"ticker": "T1", "selection_rule": self.cal.SELECTION_RULE,
+                           "voided": True, "void_reason": "bad evidence"}]}
+        scan = {"disagreement": [{"ticker": "T1", "market_price": 0.96,
+                                  "days_to_close": 30.0, "annualized_return": 0.5}]}
+        self.assertEqual(self._record(scan, store), 0,
+                         "re-recording a voided ticker undoes the void")
+
+    def test_recording_round_trips_the_whole_file_not_the_filtered_view(self):
+        """`record_from_scan` ends in `_save_ledger(rows)`. Handed the
+        voided-filtered view it would write that view back and delete every
+        voided row — a remediation that erases its own evidence."""
+        store = {"rows": [{"ticker": "OLD", "voided": True,
+                           "selection_rule": self.cal.SELECTION_RULE}]}
+        scan = {"disagreement": [{"ticker": "NEW", "market_price": 0.96,
+                                  "days_to_close": 30.0, "annualized_return": 0.5}]}
+        self._record(scan, store)
+        self.assertTrue(any(r.get("ticker") == "OLD" for r in store["rows"]),
+                        "the voided row was dropped by a save it should have survived")
+
+    def test_the_save_path_reads_all_rows_not_the_evidence_view(self):
+        """AST, because the names differ by one word and a grep for
+        `_all_rows` matches the postmortem comment sitting above the call."""
+        import ast
+        src = (Path(__file__).parent / "kalshi_calibration.py").read_text()
+        tree = ast.parse(src)
+        for fn in ("record_from_scan", "resolve_settlements"):
+            node = next(n for n in ast.walk(tree)
+                        if isinstance(n, ast.FunctionDef) and n.name == fn)
+            saves = any(isinstance(c, ast.Call) and getattr(c.func, "id", "") ==
+                        "_save_ledger" for c in ast.walk(node))
+            reads = {getattr(c.func, "id", "") for c in ast.walk(node)
+                     if isinstance(c, ast.Call)}
+            if saves:
+                self.assertIn("_all_rows", reads,
+                              f"{fn} writes the ledger back but reads the "
+                              f"filtered view — voided rows would be deleted")
+                self.assertNotIn("_load_ledger", reads,
+                                 f"{fn} round-trips the file; it must not read "
+                                 f"_load_ledger")
+
+    # ------------------------------------------------------ regime marking --
+
+    def test_the_regime_is_stamped_not_inferred(self):
+        """The previous marker was `yes_bid is not None` — a field that happened
+        to correlate with the rule change. A proxy stops discriminating the
+        moment a third regime arrives, which is exactly what happened."""
+        self.assertTrue(self.cal._is_current_regime(
+            {"selection_rule": self.cal.SELECTION_RULE}))
+        self.assertFalse(self.cal._is_current_regime({"yes_bid": 0.94}),
+                         "a bid is not proof of the current selection rule")
+        self.assertFalse(self.cal._is_current_regime({}))
+
+    def test_rows_from_a_retired_rule_cannot_reach_a_verdict(self):
+        legacy = [{"settled": True, "outcome": 1, "p_hat": 0.97,
+                   "market_price": 0.95, "days_to_close": 30.0,
+                   "selection_rule": "retired"} for _ in range(500)]
+        ok, why = self.cal.is_edge_proven(legacy)
+        self.assertFalse(ok)
+        self.assertIn("0/", why, "legacy rows were counted toward the sample")
+
+    # ------------------------------------------------------- stratification --
+
+    def test_a_verdict_needs_more_than_a_big_n(self):
+        """Settlements arrive shortest-horizon-first, always. The first 200 are
+        drawn from the easy end; declaring PROVEN there would underwrite 60-day
+        positions with 3-day evidence."""
+        short = [{"selection_rule": self.cal.SELECTION_RULE, "settled": True,
+                  "outcome": 1, "days_to_close": 3.0, "p_hat": 0.97,
+                  "market_price": 0.95} for _ in range(300)]
+        ok, why = self.cal.is_edge_proven(short)
+        self.assertFalse(ok, "300 short-dated settlements must not prove the rule")
+        self.assertIn("horizons", why)
+
+    def test_a_verdict_is_reachable_when_the_sample_spans_horizons(self):
+        """The mirror of the test above: the gate must be satisfiable, or it is
+        not a gate, it is a refusal (memory `verdict-with-no-consequence`)."""
+        rows = []
+        for d in (3.0, 15.0, 45.0):
+            rows += [{"selection_rule": self.cal.SELECTION_RULE, "settled": True,
+                      "outcome": 1, "days_to_close": d, "p_hat": 0.97,
+                      "market_price": 0.95} for _ in range(70)]
+        ok, why = self.cal.is_edge_proven(rows)
+        self.assertTrue(ok, f"a well-spread sample must be able to pass: {why}")
+
+    def test_a_row_with_no_horizon_is_counted_in_no_stratum(self):
+        """Filing it under the nearest bucket would invent the fact the strata
+        exist to check."""
+        strata = self.cal.horizon_strata([{"settled": True, "outcome": 1}])
+        self.assertEqual(sum(v["n"] for v in strata.values()), 0)
+
+    # -------------------------------------------------------- the aperture --
+
+    def test_the_walk_reports_whether_it_reached_the_end(self):
+        """`max_pages=25` cut the feed at 5,000 of 10,184 events, every scan,
+        for as long as the events feed has been used. A truncated walk and a
+        small exchange produce the same list, and only one licenses the
+        conclusion 'no candidates today'."""
+        import inspect
+        import kalshi_client as kc
+        self.assertIn("stats", inspect.signature(kc.iter_events).parameters)
+        stats = {}
+        gen = kc.iter_events(stats=stats)
+        self.assertEqual(stats.get("complete"), False,
+                         "completeness must start False — an unfinished walk "
+                         "must never read as finished")
+        gen.close()
+
+    def test_the_page_cap_is_not_declared_twice(self):
+        """AST over the CLI. `--pages` carried its own default of 12 while
+        `scan()` said otherwise, so every cron run walked a quarter of the
+        exchange and no reader of either default would have known."""
+        import ast
+        tree = ast.parse((Path(__file__).parent / "kalshi_scanner.py").read_text())
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call)
+                    and getattr(node.func, "attr", "") == "add_argument"):
+                continue
+            if not any(isinstance(a, ast.Constant) and a.value == "--pages"
+                       for a in node.args):
+                continue
+            for kw in node.keywords:
+                if kw.arg == "default":
+                    self.assertIsNone(getattr(kw.value, "value", "sentinel"),
+                                      "--pages must default to None and defer "
+                                      "to scan(); two defaults for one quantity "
+                                      "means the one you read is not the one "
+                                      "that runs")
 
 
 class TestCatchUpJobBudget(unittest.TestCase):
@@ -8818,9 +9088,9 @@ class TestCoherenceLaws(unittest.TestCase):
         """
         import kalshi_calibration as kcal
         rows = ([{"settled": True, "outcome": 1, "market_price": 0.97,
-                  "yes_bid": 0.94}] * 80 +
+                  "selection_rule": kcal.SELECTION_RULE}] * 80 +
                 [{"settled": True, "outcome": 0, "market_price": 0.97,
-                  "yes_bid": 0.94}] * 130)
+                  "selection_rule": kcal.SELECTION_RULE}] * 130)
         verdict, why, detail = kcal.is_premise_alive(rows)
         self.assertEqual(verdict, kcal.DEAD)
         self.assertIn("not probabilities", why)
@@ -8894,7 +9164,7 @@ class TestCoherenceLaws(unittest.TestCase):
                 date.today()
                 - timedelta(days=kcal.SAMPLE_PATIENCE_DAYS + 5)).isoformat()
             rows = [{"settled": True, "outcome": 1, "market_price": 0.97,
-                     "yes_bid": 0.94}] * 100
+                     "selection_rule": kcal.SELECTION_RULE}] * 100
             _, why, detail = kcal.is_premise_alive(rows)
             self.assertNotIn("DECISION DUE", why,
                              "escalated a cohort that is filling up fine")
@@ -8912,9 +9182,9 @@ class TestCoherenceLaws(unittest.TestCase):
         """
         import kalshi_calibration as kcal
         current = ([{"settled": True, "outcome": 1, "market_price": 0.90,
-                     "yes_bid": 0.86}] * 189 +
+                     "selection_rule": kcal.SELECTION_RULE}] * 189 +
                    [{"settled": True, "outcome": 0, "market_price": 0.90,
-                     "yes_bid": 0.86}] * 21)
+                     "selection_rule": kcal.SELECTION_RULE}] * 21)
         legacy = [{"settled": True, "outcome": 0, "market_price": 0.97}] * 400
         verdict, _, detail = kcal.is_premise_alive(current + legacy)
         self.assertEqual(verdict, kcal.ALIVE, "the legacy pile bled into the verdict")
@@ -8963,9 +9233,9 @@ class TestCoherenceLaws(unittest.TestCase):
     def test_a_calibrated_market_leaves_the_premise_alive(self):
         import kalshi_calibration as kcal
         rows = ([{"settled": True, "outcome": 1, "market_price": 0.90,
-                  "yes_bid": 0.86}] * 189 +
+                  "selection_rule": kcal.SELECTION_RULE}] * 189 +
                 [{"settled": True, "outcome": 0, "market_price": 0.90,
-                  "yes_bid": 0.86}] * 21)
+                  "selection_rule": kcal.SELECTION_RULE}] * 21)
         verdict, why, _ = kcal.is_premise_alive(rows)
         self.assertEqual(verdict, kcal.ALIVE)
         self.assertIn("gates every dollar", why)
@@ -8973,7 +9243,7 @@ class TestCoherenceLaws(unittest.TestCase):
     def test_a_thin_sample_cannot_declare_the_premise_dead(self):
         import kalshi_calibration as kcal
         rows = [{"settled": True, "outcome": 0, "market_price": 0.99,
-                 "yes_bid": 0.95}] * 10
+                 "selection_rule": kcal.SELECTION_RULE}] * 10
         verdict, why, _ = kcal.is_premise_alive(rows)
         self.assertEqual(verdict, kcal.UNDECIDED)
 
@@ -9017,7 +9287,7 @@ class TestCoherenceLaws(unittest.TestCase):
         import kalshi_calibration as kcal
         self.assertGreaterEqual(kcal.VERDICT_HEARTBEAT_DAYS, 1)
         rows = [{"settled": True, "outcome": 0, "market_price": 0.97,
-                 "yes_bid": 0.94}] * 210
+                 "selection_rule": kcal.SELECTION_RULE}] * 210
         sent = []
         real_state, real_buf = kcal.VERDICT_STATE, None
         import email_buffer
@@ -9143,7 +9413,7 @@ class TestCoherenceLaws(unittest.TestCase):
         """Same branch, other sender. Both were written assuming success."""
         import kalshi_calibration as kcal, email_buffer
         rows = [{"settled": True, "outcome": 0, "market_price": 0.97,
-                 "yes_bid": 0.94}] * 210
+                 "selection_rule": kcal.SELECTION_RULE}] * 210
         sent = []
         with tempfile.TemporaryDirectory() as d:
             real_state, real_buf = kcal.VERDICT_STATE, email_buffer.buffer_email

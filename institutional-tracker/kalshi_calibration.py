@@ -62,9 +62,25 @@ SCAN_LOG = DATA_DIR / "kalshi_scan_log.json"
 # only just inside the gap we are trying to resolve.
 MIN_SETTLED_FOR_VERDICT = 200
 
-# The two-sided rule went live 2026-08-17. Everything before it was selected by
-# `tradeable()` and is a different experiment (see `_is_current_regime`).
-REGIME_START = "2026-08-17"
+# The selection rule this sample is a sample OF, written into every row.
+#
+# Bump this string whenever the scanner's selection changes, and the old rows
+# stop counting toward the verdict automatically. That is the point: a hit rate
+# is a statement about a rule, so a sample gathered under a rule that no longer
+# exists cannot confirm or refute the one that does — memory
+# `sample-outlived-its-rule`. The 893 rows recorded on 2026-08-18 under
+# `two_sided` alone are honest observations of a band with a median 442 days to
+# close, which is not the band the scanner now surfaces.
+#
+# It is an explicit stamp rather than an inferred one on purpose. The previous
+# regime was detected by `yes_bid is not None` — a field that happened to
+# correlate with the rule change — and a proxy like that silently stops
+# discriminating the moment a third regime arrives, which is exactly what
+# happened here.
+SELECTION_RULE = "two_sided+band90_99+horizon1_90d+apy>=rf"
+
+# When the rule above went live. Everything before it is a different experiment.
+REGIME_START = "2026-08-18"
 
 # How long the current rule gets to produce a measurable sample before "not yet"
 # stops being an acceptable answer. This exists because of memory
@@ -89,11 +105,53 @@ def _now():
 
 
 def _load_ledger():
+    """Every row that is still evidence.
+
+    Voided rows are filtered here, at the single door into the ledger, rather
+    than at each of the seven callers — one of which would eventually be added
+    without the filter and would quietly put a known-bad observation back into a
+    calibration statistic.
+
+    They are VOIDED and not DELETED on purpose. Deleting would leave a ledger
+    that looks like it was always clean, and the fact that this sector once
+    scanned parlay shards and recorded one as a near-certainty is exactly the
+    kind of thing a future session needs to be able to find. `voided_rows()`
+    reads them back for the audit trail.
+    """
+    return [r for r in _all_rows() if not r.get("voided")]
+
+
+def _all_rows():
     try:
         d = json.loads(LEDGER.read_text())
         return d if isinstance(d, list) else []
     except Exception:
         return []
+
+
+def voided_rows():
+    return [r for r in _all_rows() if r.get("voided")]
+
+
+def void_row(row_id, reason, actor="system"):
+    """Mark one row as no-longer-evidence, with a reason. Idempotent.
+
+    Returns True if this call did the voiding, False if it was already void or
+    no such row exists.
+    """
+    rows = _all_rows()
+    for r in rows:
+        if r.get("id") != row_id:
+            continue
+        if r.get("voided"):
+            return False
+        r["voided"] = True
+        r["void_reason"] = reason
+        r["voided_at"] = _now()
+        r["voided_by"] = actor
+        _save_ledger(rows)
+        return True
+    return False
 
 
 def _save_ledger(rows):
@@ -104,11 +162,23 @@ def _save_ledger(rows):
 # ----------------------------------------------------------------- record --
 
 def record_from_scan(scan=None):
-    """Append today's near-certainty observations to the append-only ledger.
+    """Append newly-seen near-certainty observations to the append-only ledger.
 
-    Idempotent on (ticker, scan date): re-running the scanner four times a day
-    must not quadruple-count one market into the calibration sample, which
-    would make a single lucky settlement look like four confirmations.
+    **Idempotent on ticker alone — one row per market, ever.** The dedup key was
+    `(ticker, scan date)`, which stops a market being counted four times in one
+    day but not four hundred times over its life: a contract open for 400 days
+    is re-surfaced by every daily scan, and each row settles to the SAME
+    outcome. That is one observation recorded four hundred times, not four
+    hundred observations. `MIN_SETTLED_FOR_VERDICT` would then be cleared by a
+    handful of genuinely independent markets wearing a large n, and
+    `is_edge_proven` would return a confident verdict with a real standard error
+    several times the one it printed.
+
+    The first sighting is the prediction, because that is the trade: we would
+    have bought it then. Re-recording the same market later at a moved price is
+    a different, path-dependent experiment whose rows are not independent of the
+    first — so it is not merely double-counting, it is double-counting weighted
+    toward whatever stayed open longest, i.e. toward the hardest markets.
     """
     if scan is None:
         try:
@@ -116,20 +186,48 @@ def record_from_scan(scan=None):
         except Exception:
             return 0, "no scan log to record from — run kalshi_scanner.py first"
 
-    rows = _load_ledger()
-    have = {(r.get("ticker"), r.get("recorded_date")) for r in rows}
+    # `_all_rows`, NOT `_load_ledger`: this function ends in `_save_ledger(rows)`,
+    # so it must round-trip the WHOLE file. Handing it the voided-filtered view
+    # would write that view back and silently delete every voided row — a
+    # remediation that erases its own evidence (memory `fix_that_erased_its_
+    # detector`). The dedup set below also has to see voided tickers, or a
+    # voided market would be re-recorded on the next scan of the same day.
+    rows = _all_rows()
+    # (ticker, rule), not ticker, and not (ticker, day) — see the docstring.
+    #
+    # Ticker alone stops the daily re-count, but it would also mean a market
+    # first seen under an OLD rule can never enter the sample of a new one. That
+    # is not hypothetical: most of the 893 rows recorded 2026-08-18 sit at 136+
+    # days to close, and each will cross into the current rule's 90-day window
+    # as time passes. Keyed on ticker alone they would be skipped forever —
+    # invisible to the old verdict (wrong rule) and to the new one (already
+    # seen). One observation per market PER EXPERIMENT is the honest unit.
+    #
+    # Voided tickers are in this set too: a row thrown out as bad evidence must
+    # not be quietly re-recorded by the next scan under the same rule, which
+    # would undo the void.
+    have = {(r.get("ticker"), r.get("selection_rule")) for r in rows}
     day = _now()[:10]
     added = 0
 
     for c in scan.get("disagreement", []):
-        key = (c.get("ticker"), day)
-        if key in have or not c.get("ticker"):
+        if not c.get("ticker"):
+            continue
+        key = (c["ticker"], SELECTION_RULE)
+        if key in have:
             continue
         rows.append({
             "id": f"KAL-{day}-{c['ticker']}",
             "recorded_at": _now(), "recorded_date": day,
+            # Which experiment this row belongs to. Read by `_is_current_regime`;
+            # without it the row is legacy and never reaches a verdict.
+            "selection_rule": SELECTION_RULE,
             "ticker": c["ticker"], "event_ticker": c.get("event_ticker"),
             "title": c.get("title"),
+            # The two gate values, so a later audit can re-derive the selection
+            # from the row instead of trusting that the scanner applied it.
+            "days_to_close": c.get("days_to_close"),
+            "annualized_return": c.get("annualized_return"),
             # what the market said
             "market_price": c.get("market_price"),
             "breakeven_probability": c.get("breakeven_probability"),
@@ -173,8 +271,13 @@ def resolve_settlements(max_lookups=400):
     could see, which is exactly how a calibration study reports the number its
     author hoped for.
     """
-    rows = _load_ledger()
-    pending = [r for r in rows if not r.get("settled")][:max_lookups]
+    # `_all_rows` for the same reason as `record_from_scan`: this ends in
+    # `_save_ledger(rows)`. Voided rows are skipped for lookup — a bad
+    # observation is not worth an API call — but they must stay in the list
+    # that gets written back.
+    rows = _all_rows()
+    pending = [r for r in rows
+               if not r.get("settled") and not r.get("voided")][:max_lookups]
     resolved = failed = 0
 
     for r in pending:
@@ -193,7 +296,8 @@ def resolve_settlements(max_lookups=400):
 
     _save_ledger(rows)
     return resolved, (f"{resolved} settled, {failed} lookup failure(s), "
-                      f"{sum(1 for r in rows if not r.get('settled'))} still open")
+                      f"{sum(1 for r in rows if not r.get('settled') and not r.get('voided'))} "
+                      f"still open")
 
 
 # ------------------------------------------------------------ measurement --
@@ -252,6 +356,37 @@ def reliability_curve(rows=None):
     return curve
 
 
+# The horizon strata a verdict must cover, and the minimum settled count in
+# each. The bands are the ones the scanner's 1-90 day window spans; the floor of
+# 40 is the point where a 97% rate has a 95% CI of roughly +/-5 points — wide,
+# but narrow enough to notice a stratum settling at 85% while the others hold.
+HORIZON_STRATA = (("1-7d", 1.0, 7.0), ("7-30d", 7.0, 30.0), ("30-90d", 30.0, 91.0))
+MIN_SETTLED_PER_HORIZON = 40
+
+
+def horizon_strata(rows):
+    """{stratum: {n, hits, rate}} over settled rows, by days held to close.
+
+    Rows with no `days_to_close` are counted in no stratum rather than dumped
+    into the nearest one. They are pre-stratification history, and quietly
+    filing them under "1-7d" would be inventing the very fact the strata exist
+    to check.
+    """
+    out = {k: {"n": 0, "hits": 0, "rate": None} for k, _, _ in HORIZON_STRATA}
+    for r in rows:
+        d = r.get("days_to_close")
+        if d is None or r.get("outcome") not in (0, 1):
+            continue
+        for k, lo, hi in HORIZON_STRATA:
+            if lo <= float(d) < hi:
+                out[k]["n"] += 1
+                out[k]["hits"] += int(r["outcome"])
+                break
+    for v in out.values():
+        v["rate"] = round(v["hits"] / v["n"], 4) if v["n"] else None
+    return out
+
+
 def is_edge_proven(rows=None):
     """(bool, reason). The gate `kalshi_scanner.size_position` consults.
 
@@ -275,6 +410,24 @@ def is_edge_proven(rows=None):
         return False, (f"NOT YET — {n}/{MIN_SETTLED_FOR_VERDICT} settled "
                        f"observations. Separating 96% from 99% is a 3-point "
                        f"question and this sample cannot resolve it.")
+
+    # n alone is not enough, because settlements do not arrive in a random
+    # order — they arrive SHORTEST-HORIZON FIRST, always. The rule admits
+    # markets from 1 to 90 days out, so the first 200 settled rows are drawn
+    # almost entirely from the short end, and short-dated near-certainty is the
+    # easy case: the event has nearly happened. Declaring PROVEN there and then
+    # sizing 60-day positions would be underwriting one horizon with another
+    # horizon's evidence — n=200 would be perfectly real and completely
+    # inapplicable. So every stratum we would trade must carry its own weight.
+    strata = horizon_strata(settled)
+    thin = [k for k, v in strata.items() if v["n"] < MIN_SETTLED_PER_HORIZON]
+    if thin:
+        detail = ", ".join(f"{k}: {strata[k]['n']}" for k in sorted(thin))
+        return False, (f"NOT YET — {n} settled, but the sample is not spread "
+                       f"across the horizons this rule trades. Under "
+                       f"{MIN_SETTLED_PER_HORIZON} settled in {detail}. Short-"
+                       f"dated markets settle first and are the easy case; "
+                       f"their hit rate does not underwrite longer holds.")
 
     ours = [(float(r["p_hat"]), int(r["outcome"]))
             for r in settled if r.get("p_hat") is not None]
@@ -319,14 +472,14 @@ ALIVE, DEAD, UNDECIDED = "ALIVE", "DEAD", "CANNOT_TELL"
 
 
 def _is_current_regime(row) -> bool:
-    """Was this row selected by `two_sided()`, the rule the sector runs today?
+    """Was this row selected by the rule the sector runs today?
 
-    `yes_bid` is the marker: `two_sided()` refuses any market without a bid, and
-    only the post-2026-08-17 ledger writer copies the field through. Absence is
-    read as legacy — the conservative direction, since a row wrongly called
-    legacy delays a verdict and a row wrongly called current corrupts one.
+    An exact match on the stamp the writer put there, never a guess from the
+    row's contents. A row with no stamp is legacy — the conservative direction,
+    since a row wrongly called legacy only delays a verdict while a row wrongly
+    called current corrupts one.
     """
-    return row.get("yes_bid") is not None
+    return row.get("selection_rule") == SELECTION_RULE
 
 
 def _regime_age_and_rate(settled_now: int):

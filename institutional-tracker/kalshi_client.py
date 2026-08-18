@@ -282,19 +282,52 @@ def is_shard(market) -> bool:
     return bool(market.get("mve_collection_ticker") or market.get("is_provisional"))
 
 
-def iter_events(status="open", max_pages=25, limit=200):
+def iter_events(status="open", max_pages=60, limit=200, stats=None):
     """Yield open events WITH their markets nested. Bounded, like iter_markets.
 
     This is the door onto the exchange. `/markets` is not — see iter_markets.
+
+    `max_pages` was 25, which at limit=200 is 5,000 events. Measured 2026-08-18,
+    twice, identically: the open-events feed exhausts at **51 pages — 10,184
+    events, 85,949 genuine markets**. So the cap was cutting the exchange
+    slightly past half, every scan, since the feed was adopted. Nothing reported
+    it, because a truncated walk and a small exchange produce the same list. The
+    full walk costs 18s against the capped walk's 10s, which is not a budget
+    question. 60 leaves headroom; if the exchange outgrows it, `stats` says so
+    rather than quietly returning less.
+
+    `stats` (optional dict) receives `pages`, `events`, and **`complete`** —
+    True only when the cursor ran out, i.e. we reached the end of the feed.
+    False means we stopped because we hit `max_pages` and there was more.
+    Callers that intend to conclude anything from an ABSENCE must check it: on
+    an incomplete walk "no candidates found" is a statement about the walk, not
+    about the exchange, and this sector has already published that mistake once
+    (see iter_markets, and memory `fallback-that-means-act`).
     """
+    # Initialised HERE, in a plain function, and the walk itself is the
+    # generator below. Written as one generator the whole body — including this
+    # init — would not run until the first `next()`, so a caller that built the
+    # dict and checked `complete` before iterating would read a missing key and
+    # a `.get()` would hand it None. "Not started" must not be reachable as
+    # anything other than incomplete.
+    s = stats if stats is not None else {}
+    s.update({"pages": 0, "events": 0, "complete": False})
+    return _walk_events(status, max_pages, limit, s)
+
+
+def _walk_events(status, max_pages, limit, s):
     cursor = None
     for _ in range(max_pages):
         d = _get("/events", {"limit": limit, "status": status, "cursor": cursor,
                              "with_nested_markets": "true"})
-        for e in d.get("events", []):
+        batch = d.get("events", [])
+        s["pages"] += 1
+        s["events"] += len(batch)
+        for e in batch:
             yield e
         cursor = d.get("cursor")
         if not cursor:
+            s["complete"] = True
             return
 
 
