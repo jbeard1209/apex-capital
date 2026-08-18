@@ -670,12 +670,26 @@ def digest_section(ledger: Optional[dict] = None, save: bool = True) -> dict:
                      f"board's queue actionable")
     if save and retired:
         _save(LEDGER_PATH, led)
-    rows = "".join(f"<li style='margin:4px 0;'>{l}</li>" for l in lines)
+    # An empty body has two completely different meanings and they must not share
+    # a sentence. The first live render said "12 newly detected — 12 tracked
+    # issue(s)" directly above "No open issues tracked", which is a flat
+    # contradiction inside one section of Jack's email — and the kind that
+    # teaches a reader to stop trusting the section rather than to ask about it.
+    # A DETECTED issue correctly produces no line here: this section reports what
+    # is being DONE, and nothing is being done until the board has it. So the
+    # empty case has to say WHICH empty it is.
+    if lines:
+        rows = "".join(f"<li style='margin:4px 0;'>{l}</li>" for l in lines)
+        body = f"<ul style='margin:0;padding-left:18px;font-size:13px;'>{rows}</ul>"
+    elif counts[DETECTED]:
+        body = (f"<p style='color:#8b949e;font-size:12px;'>{counts[DETECTED]} issue(s) "
+                f"detected and awaiting a second sighting before they are filed with the "
+                f"board — nothing is in the board's hands yet. The warnings themselves are "
+                f"listed above.</p>")
+    else:
+        body = "<p style='color:#8b949e;font-size:12px;'>No open issues tracked.</p>"
     html = (f"<h3 style='margin:18px 0 4px;'>Issues &amp; fixes</h3>"
-            f"<p style='color:#8b949e;font-size:12px;margin:0 0 6px;'>{header}</p>"
-            + (f"<ul style='margin:0;padding-left:18px;font-size:13px;'>{rows}</ul>"
-               if rows else
-               "<p style='color:#8b949e;font-size:12px;'>No open issues tracked.</p>"))
+            f"<p style='color:#8b949e;font-size:12px;margin:0 0 6px;'>{header}</p>" + body)
     return {"lines": lines, "html": html, "counts": counts, "header": header}
 
 

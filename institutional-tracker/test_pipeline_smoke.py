@@ -10450,6 +10450,19 @@ class TestBoardIssueLedger(unittest.TestCase):
         self.assertIn("Issues &amp; fixes", sec["html"])
         self.assertIn("No open issues tracked", sec["html"])
 
+    def test_the_section_never_contradicts_its_own_header(self):
+        """The first live render printed "12 newly detected — 12 tracked
+        issue(s)" directly above "No open issues tracked". A reader who sees a
+        section disagree with itself learns to skip the section, not to ask
+        about it — so an empty body has to say WHICH empty it is."""
+        self.B.process([self.ALERT], "morning_briefing")          # DETECTED, not relayed
+        sec = self.B.digest_section()
+        self.assertIn("1 tracked issue", sec["header"])
+        self.assertNotIn("No open issues tracked", sec["html"],
+                         "the body denies what the header just counted")
+        self.assertIn("awaiting a second sighting", sec["html"],
+                      "the body does not say why there is nothing to report yet")
+
     # ── wiring: the contracts this feature dies on silently ──────────────────
     def test_observe_records_a_heartbeat_even_on_a_zero_alert_run(self):
         """The empty call is not a no-op — it is the only thing that makes a
