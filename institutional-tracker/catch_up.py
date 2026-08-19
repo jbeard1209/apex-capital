@@ -285,6 +285,42 @@ JOB_REGISTRY = [
         "catchup_window":  (0, 24),
         "once_per_wakeup": True,
     },
+
+    # ── Internal audit (the third line) ───────────────────────────────────────
+    # Added 2026-08-19 because #81 broke it here without anyone deciding to.
+    # `internal_audit_agent` has exactly one caller — main.py — and #81 removed
+    # main.py from this host. The module stayed deployed, its report stayed on
+    # disk, and a frozen "0 blind, 0 uncovered" is indistinguishable from a
+    # fresh one, so nothing looked wrong; wiring_audit caught it only because it
+    # measures the report's AGE rather than its contents. The third line has no
+    # fourth line, so a host where it silently stopped is a host whose controls
+    # are unaudited.
+    #
+    # It runs 15 minutes after the coherence laws on purpose: its denominator
+    # check grades THAT report, and grading yesterday's would be the same fossil
+    # in a different file. catch_up orders by scheduled fire time, so the offset
+    # is what sequences them.
+    #
+    # Escalation is left ON. Both hosts keep their own Chairman queue (there is
+    # no state sync), so this cannot duplicate a row the VM wrote — and the ids
+    # are deterministic (`internal-audit-blind-<control>`), so within a queue it
+    # upserts and retires rather than appends. The alternative, --no-escalate,
+    # would drop any finding only this host can see: `empty_success` is computed
+    # from THIS host's coherence report.
+    #
+    # Exits 1 when it has findings, which catch_up logs as a warning. That is
+    # the intended reading — the report is written before the exit.
+    {
+        "name":            "internal_audit",
+        "script":          "internal_audit_agent.py",
+        "args":            ["--report"],
+        "output_file":     "data/internal_audit_report.json",
+        "ttl_hours":       7,
+        "fire_times_edt":  [9.25, 15.25, 21.25],
+        "run_days":        "all",
+        "catchup_window":  (0, 24),
+        "once_per_wakeup": True,
+    },
 ]
 
 

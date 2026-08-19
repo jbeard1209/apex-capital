@@ -283,17 +283,26 @@ class PipelineOpsAnalyst:
 
         # ── 7. FE pod pipeline health ──────────────────────────────────────
         import os as _os
-        fe_pipeline_age = _file_age_hours("data/fe_pipeline_report.json")
+        # fe_pipeline.py writes `fe_pipeline_log.json` (see its line 41), and so
+        # do all five other consumers — pod_health_monitor, freshness_sentinel,
+        # cit_director, fe_cit_agent, logic_team. This analyst alone asked for
+        # `fe_pipeline_report.json`, which nothing in the firm has ever written,
+        # so the `is None` branch below fired every single weekday and the
+        # ">30h stale" branch could never fire at all. The detector that should
+        # have caught a file with no producer (agent_sweep's
+        # AGENT_INPUT_UNPRODUCED) was itself blinded: wiring_audit credited this
+        # pure-reader module as the file's writer.
+        fe_pipeline_age = _file_age_hours("data/fe_pipeline_log.json")
         fe_board_age    = _file_age_hours("data/fe_board_report.json")
         fe_picks_age    = _file_age_hours("data/fe_picks_queue.json")
 
         if fe_pipeline_age is not None and fe_pipeline_age > 30:
             findings.append(
-                f"FE PIPELINE: fe_pipeline_report.json is {fe_pipeline_age:.0f}h old — "
+                f"FE PIPELINE: fe_pipeline_log.json is {fe_pipeline_age:.0f}h old — "
                 f"FE pipeline may have missed its daily run."
             )
         elif fe_pipeline_age is None and self._is_weekday_local():
-            findings.append("FE PIPELINE: fe_pipeline_report.json not found — FE pipeline may not have run yet.")
+            findings.append("FE PIPELINE: fe_pipeline_log.json not found — FE pipeline may not have run yet.")
 
         if fe_board_age is not None and fe_board_age > 200:
             findings.append(

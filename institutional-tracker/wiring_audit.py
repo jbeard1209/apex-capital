@@ -20,6 +20,7 @@
 # =============================================================================
 
 import argparse
+import ast
 import glob
 import json
 import re
@@ -213,6 +214,53 @@ def _escalation_path(name: str, code_txt: str):
     return None
 
 
+#: The shapes that are, on their face, a write to a file. Shared with
+#: _local_write_helpers so "what counts as a write" is defined once — a helper
+#: recognised by one rule and missed by the other is how a module ends up
+#: half-classified.
+_WRITE_SITE_PATTERNS = (
+    r'open\(([^)]*),\s*["\']w["\']',
+    # `.write_text(` on ANY expression, not just a bare name. kalshi_scanner's
+    # helper is `Path(path).write_text(...)`; the old `[\w.\[\]"\']+` stopped at
+    # the closing paren of `Path(path)` and matched nothing, so the module's only
+    # write was invisible and every file it merely read became a fabricated output.
+    r'[\w.\[\]"\'()]+\.write_text\(',
+    r'json\.dump\((?:[^()]|\([^()]*\))*\)',
+    r'os\.replace\(([^)]*)\)',
+)
+
+
+def _local_write_helpers(tree) -> set:
+    """Names of functions defined IN this module whose body writes a file.
+
+    `writer_stems` already covers handing the write to another module. This
+    covers the far commoner shape: a five-line `_save(path, payload)` at the top
+    of the file that every write in the module goes through. Without it such a
+    module has zero visible write sites, which sends it to the fallback below —
+    and the fallback's guess about a module that writes through a helper is that
+    everything it READS is an output.
+
+    Resolved to a fixpoint so a helper that delegates to another helper counts.
+    """
+    bodies = {}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            try:
+                bodies[node.name] = ast.unparse(node)
+            except Exception:
+                pass
+    base = re.compile("|".join(_WRITE_SITE_PATTERNS))
+    helpers = {n for n, b in bodies.items() if base.search(b)}
+    while helpers:
+        alt = "|".join(re.escape(s) for s in sorted(helpers))
+        grown = {n for n, b in bodies.items()
+                 if n not in helpers and re.search(rf'(?<![\w.])(?:{alt})\s*\(', b)}
+        if not grown:
+            break
+        helpers |= grown
+    return helpers
+
+
 def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
     """The data/*.json files a module actually WRITES, in stable order.
 
@@ -234,8 +282,7 @@ def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
         if hit:
             var_of[m.group(1)] = hit.group(1)
 
-    patterns = [r'open\(([^)]*),\s*["\']w["\']', r'([\w.\[\]"\']+)\.write_text\(',
-                r'json\.dump\((?:[^()]|\([^()]*\))*\)', r'os\.replace\(([^)]*)\)']
+    patterns = list(_WRITE_SITE_PATTERNS)
     # Handing the write to a shared helper is still a write, and the path the
     # caller passes is still its declared output. Must be a CALL — `helper.fn(` —
     # not a bare mention: chairman_inbox.py's docstring says "companion to
@@ -253,6 +300,33 @@ def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
             written.add(fname)
     for fname in out_re.findall(blob):
         written.add(fname)
+
+    # Calls to this module's own write helpers, resolved through the AST rather
+    # than a regex. The regex form cannot be made to work here: the first
+    # argument is the path but the LAST is arbitrary Python, and
+    # `_save(QUEUE_PATH, list(queue_by_id.values()))` nests two levels deep —
+    # every balanced-paren pattern short of a real parser drops it silently, and
+    # a silently dropped write is exactly a fabricated producer edge.
+    helpers = set()
+    try:
+        tree = ast.parse(txt)
+    except SyntaxError:
+        tree = None
+    if tree is not None:
+        helpers = _local_write_helpers(tree)
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id in helpers and node.args):
+                continue
+            target = node.args[0]
+            if isinstance(target, ast.Name) and target.id in var_of:
+                written.add(var_of[target.id])
+                continue
+            for sub in ast.walk(target):     # `_save_json(os.path.join(D, "x.json"), …)`
+                if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
+                    hit = out_re.search('"%s"' % sub.value)
+                    if hit:
+                        written.add(hit.group(1))
 
     if written:
         return sorted(written)
@@ -280,7 +354,64 @@ def _declared_outputs(txt: str, out_re, writer_stems=()) -> list:
     # stays on.
     if write_ctx and _writes_only_non_json(write_ctx, txt, out_re):
         return []
+
+    # The other half of the same rule, and the one the paragraph above missed:
+    # a module with NO write site of any kind and NO write helper of its own is
+    # not a parsing miss either. It is a pure reader, and a pure reader is the
+    # clearest case there is of "not a producer" — yet it was the one case that
+    # fell straight through to the guess.
+    #
+    # Measured 2026-08-18 before the fix: 19 modules in that state were credited
+    # with 75 producer edges they do not have, and 13 data files with no real
+    # writer anywhere were shielded from agent_sweep's AGENT_INPUT_UNPRODUCED by
+    # a fabricated one. irm_board/pipeline_ops_analyst.py — 19 reads, zero
+    # writes — was recorded as the producer of fe_pipeline_report.json, a file
+    # nothing in the firm has ever written, which is why nobody noticed that the
+    # IRM's FE health check reads a filename that does not exist.
+    # ...but "no write site and no LOCAL helper" is not yet the same thing as a
+    # pure reader, and the first version of this rule conflated them. A module
+    # whose only write is `_atomic(REPORT, payload)` — helper imported, defined
+    # elsewhere — has no write site the regex can see and no helper this module
+    # defines, and would have been declared a pure reader and credited with
+    # nothing. That is the 41-producer blinding the docstring above warns about,
+    # arriving through a different door.
+    #
+    # The discriminator is the shape of the call, not the name of the callee
+    # (naming it would be a guess, and guesses are what this function exists to
+    # stop): a call whose RESULT IS DISCARDED and whose FIRST argument is a
+    # data/*.json path is `write(path, payload)` and cannot be anything else — a
+    # read whose return value is thrown away does nothing. `json.load(open(P))`
+    # and `x = _load(P, {})` keep their results and are unaffected.
+    if not write_ctx and not helpers and not _opaque_write_call(tree, var_of, out_re):
+        return []
     return sorted({m for m in out_re.findall(txt) if "data" in txt.split(m)[0][-120:]})
+
+
+def _opaque_write_call(tree, var_of, out_re) -> bool:
+    """True if some statement calls an unrecognised helper on a data/*.json path.
+
+    Deliberately returns a BOOLEAN and not the filename. Resolving it precisely
+    would look like an upgrade and would in fact be a quiet narrowing: the
+    module's other writes still go through helpers nothing here can follow, so
+    naming this one path would replace "we could not tell, keep the hedge" with
+    "these are the outputs" — the same overconfidence, one layer up. The hedge
+    stays on; this only decides whether it is switched off.
+    """
+    if tree is None:
+        return False
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)):
+            continue
+        args = node.value.args
+        if not args:
+            continue
+        first = args[0]
+        if isinstance(first, ast.Name) and first.id in var_of:
+            return True
+        if (isinstance(first, ast.Constant) and isinstance(first.value, str)
+                and out_re.search('"%s"' % first.value)):
+            return True
+    return False
 
 
 #: Extensions a module can write that are, by definition, not a JSON handoff to

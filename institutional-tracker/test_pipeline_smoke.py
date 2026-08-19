@@ -8913,6 +8913,23 @@ class TestReentrySlateCannotLieByOmission(unittest.TestCase):
         self.assertEqual(W._declared_outputs(unknown, W.DATA_JSON_RE),
                          ["hr_history.json"])
 
+        # CONTROL 5 — the escape hatch CONTROL 1 relies on must be the write
+        # SHAPE, not "this module makes calls". A pure reader that logs, prints
+        # or notifies is still a pure reader; if `_opaque_write_call` ever
+        # widens to any discarded call, every consumer in the firm goes back to
+        # being credited with writing what it reads, which is the bug at the top
+        # of this test. The two cases below differ only in whether the discarded
+        # call's first argument is the data path.
+        chatty = ('DATA = Path("data")\n'
+                  'HIST = DATA / "hr_history.json"\n'
+                  'def go():\n'
+                  '    x = json.load(open(HIST))\n'
+                  '    logger.info("read %s rows", len(x))\n'
+                  '    notify(summarise(x), HIST)\n')
+        self.assertEqual(W._declared_outputs(chatty, W.DATA_JSON_RE), [],
+                         "a reader that logs and notifies was mistaken for a "
+                         "module writing through an opaque helper")
+
     def test_the_suite_cannot_silently_drop_a_test_class(self):
         """The runner must discover test classes, never enumerate them by hand.
 
@@ -10299,6 +10316,84 @@ class TestMacDoesNotRunThePipeline(unittest.TestCase):
             "nothing in the guard ever sets certain=True, so every arming path "
             "goes through the uncertain cooldown — including a confirmed dead VM")
 
+    def test_removing_the_pipeline_did_not_orphan_a_per_host_control(self):
+        """#81's collateral damage, and the ratchet against the next one.
+
+        main.py was the ONLY caller of `internal_audit_agent`. Taking main.py off
+        this host therefore stopped the third line here — silently, because its
+        report stayed on disk and a frozen "0 blind, 0 uncovered" reads exactly
+        like a fresh one. wiring_audit caught it a day later only because that
+        check measures the report's AGE rather than its contents; nothing caught
+        it at the moment the decision was made.
+
+        The set below is DERIVED, never listed. A hand-maintained list of
+        "controls the Mac must still run" is the roster-vs-coverage-map trap
+        (memory `hr_roster_blind_spot`): it stays green while the real set grows
+        past it. So: read wiring_audit's own source, take every check that raises
+        a HARD problem when a report goes stale ON THIS HOST, and require the
+        module it imports to be reachable from this host's scheduler. Add such a
+        check to wiring_audit and this test starts demanding the schedule too.
+        """
+        import ast
+        import catch_up
+        here = Path(__file__).resolve().parent
+        tree = ast.parse((here / "wiring_audit.py").read_text())
+
+        graded_here = set()
+        for fn in [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]:
+            raises_host_problem = False
+            for n in ast.walk(fn):
+                if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                        and n.func.attr == "append"
+                        and isinstance(n.func.value, ast.Name)
+                        and n.func.value.id == "problems"):
+                    continue
+                try:
+                    if "on this host" in ast.unparse(n):
+                        raises_host_problem = True
+                except Exception:
+                    pass
+            if raises_host_problem:
+                graded_here |= {a.name for m in ast.walk(fn)
+                                if isinstance(m, ast.Import) for a in m.names}
+
+        self.assertTrue(graded_here,
+                        "no per-host freshness check found in wiring_audit — either "
+                        "they were all deleted or the phrase this test keys on was "
+                        "reworded; a detector that matches nothing is not a pass")
+
+        scripts = {j["script"] for j in catch_up.JOB_REGISTRY}
+        if "main.py" in scripts:
+            self.skipTest("this host runs the full pipeline — every control is "
+                          "reachable through main.py and there is nothing to orphan")
+
+        # Reachable = the scheduler runs the module, or runs something that
+        # imports it. One level is enough for the shape this guards against (a
+        # control whose sole caller was removed); deeper indirection would make
+        # 'scheduled' too easy to claim.
+        reachable = {s[:-3] for s in scripts}
+        for s in sorted(scripts):
+            p = here / s
+            if not p.exists():
+                continue
+            try:
+                t = ast.parse(p.read_text())
+            except SyntaxError:
+                continue
+            for n in ast.walk(t):
+                if isinstance(n, ast.Import):
+                    reachable |= {a.name for a in n.names}
+                elif isinstance(n, ast.ImportFrom) and n.module:
+                    reachable.add(n.module)
+
+        orphaned = sorted(graded_here - reachable)
+        self.assertEqual(
+            orphaned, [],
+            "wiring_audit grades this host on the freshness of %s, but nothing in "
+            "catch_up's registry runs it. Its report will fossilise at the last "
+            "good answer and read as healthy — which is what #81 did to "
+            "internal_audit_agent for a day." % ", ".join(orphaned))
+
 
 class TestEntryDateLedger(unittest.TestCase):
     """The position ledger must agree with the broker, and say so when it can't.
@@ -11675,6 +11770,420 @@ class TestUrgentPostsAreNotCrowdedOut(unittest.TestCase):
         src = (Path(__file__).resolve().parent / "morning_briefing.py").read_text()
         self.assertIn("further urgent post(s) not shown", src,
                       "urgent posts beyond the third vanish with no trace")
+
+
+
+
+# =============================================================================
+# The guessed column
+# =============================================================================
+#
+# `AlpacaTrader.get_positions()` returns a DataFrame with a `ticker` column.
+# Four modules asked it for `symbol`. Neither pandas accessor raises on a
+# missing column — `df.get("symbol", [])` returns the default and
+# `Series.get("symbol", "")` returns the default — so the mistake produced no
+# traceback, no log line and no empty-result branch. It produced *plausible
+# zeros*.
+#
+# Measured on the live VM, 21 open positions, 2026-08-18:
+#
+#   position_risk_monitor   21/21 ticker="", 21/21 pnl_pct=0.0 (it also read
+#                           `avg_entry_price`; the column is `avg_entry`, so
+#                           entry fell back to current and the difference was
+#                           always exactly zero). The tightest stop-loss is
+#                           -6.0, and 0.0 <= -6.0 is never true — the firm's
+#                           per-position stop-loss tracker was structurally
+#                           incapable of firing, and logged "21 OK" instead.
+#   edgar_transcript_agent  on VM cron at 23:20 UTC nightly; logged "No tickers
+#                           to analyze / RC=0" every night, which is why nothing
+#                           had written alt_data_signals.json since 2026-07-03.
+#   quiver_signal_agent     same, wrapped in a bare `except: pass` that hid
+#                           nothing, because nothing was ever raised.
+#   short_interest_monitor  same.
+#
+# So the rule below is not "spell the column right". It is: a column name read
+# off a get_positions() frame must exist in the schema get_positions() actually
+# builds, and that schema is read from the source of truth rather than restated
+# here — a hardcoded copy would drift and start passing for the wrong reason.
+
+_POSITION_FACTORIES = ("get_positions", "get_all_positions")
+
+
+def _canonical_position_columns(alpaca_src: str) -> set:
+    """The keys of the dict literal that `get_positions()` appends per row.
+
+    AST, not grep: the point is to fail when alpaca_trader's schema changes,
+    and a regex over a dict literal would happily match the postmortem comment
+    above instead of the code.
+    """
+    tree = ast.parse(alpaca_src)
+    for fn in ast.walk(tree):
+        if not (isinstance(fn, ast.FunctionDef) and fn.name == "get_positions"):
+            continue
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Dict) and node.keys:
+                keys = {k.value for k in node.keys
+                        if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+                if keys:
+                    return keys
+    return set()
+
+
+def _position_column_reads(src: str):
+    """[(lineno, column, expr)] for every column name read off a positions frame.
+
+    Scope-aware on purpose. Tracks, per function:
+      frames  x = trader.get_positions()
+      rows    for _, r in x.iterrows():
+    then collects `x["col"]`, `x.get("col", ...)`, `r["col"]`, `r.get("col", ...)`.
+    Attribute access (`r.col`) is out of scope — it raises, so it is not part of
+    this silent-failure class.
+
+    Comprehensions are their own scope and are excluded when they rebind a
+    tracked name. Without that, `pick_gate_trial_review` reads as an offender:
+    it iterates broker rows as `r`, builds plain dicts, and later writes
+    `[x["unrealized_pnl_pct"] for r in trial_rows]` over those dicts using the
+    same letter. Flagging that would be a fabricated finding, and a fabricated
+    finding arrives with the authority of a real one.
+    """
+    tree = ast.parse(src)
+    hits = []
+
+    _COMPS = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+
+    def _scopes(node):
+        """Function bodies, plus module-level code with those bodies removed."""
+        nested = [n for n in ast.walk(node)
+                  if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+        return nested + [node]
+
+    def _own_nodes(scope, nested):
+        """Nodes belonging to `scope` itself, not to a function nested in it."""
+        inner = set()
+        for fn in nested:
+            if fn is scope:
+                continue
+            for n in ast.walk(fn):
+                inner.add(id(n))
+        return [n for n in ast.walk(scope) if id(n) not in inner or n is scope]
+
+    nested_fns = [n for n in ast.walk(tree)
+                  if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+
+    for scope in _scopes(tree):
+        nodes = _own_nodes(scope, nested_fns)
+        frames, rows = set(), set()
+
+        for node in nodes:
+            if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                    and isinstance(node.value.func, ast.Attribute)
+                    and node.value.func.attr in _POSITION_FACTORIES):
+                frames.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        for node in nodes:
+            if not isinstance(node, ast.For):
+                continue
+            it = node.iter
+            if (isinstance(it, ast.Call) and isinstance(it.func, ast.Attribute)
+                    and it.func.attr == "iterrows"
+                    and isinstance(it.func.value, ast.Name)
+                    and it.func.value.id in frames
+                    and isinstance(node.target, ast.Tuple)
+                    and len(node.target.elts) == 2
+                    and isinstance(node.target.elts[1], ast.Name)):
+                rows.add(node.target.elts[1].id)
+
+        if not (frames or rows):
+            continue
+        holders = frames | rows
+
+        # Nodes sitting inside a comprehension that rebinds one of our names.
+        shadowed = set()
+        for node in nodes:
+            if not isinstance(node, _COMPS):
+                continue
+            bound = {t.id for gen in node.generators
+                     for t in ast.walk(gen.target) if isinstance(t, ast.Name)}
+            if bound & holders:
+                for n in ast.walk(node):
+                    shadowed.add(id(n))
+
+        for node in nodes:
+            if id(node) in shadowed:
+                continue
+            if (isinstance(node, ast.Subscript)
+                    and isinstance(node.value, ast.Name)
+                    and node.value.id in holders
+                    and isinstance(node.slice, ast.Constant)
+                    and isinstance(node.slice.value, str)):
+                hits.append((node.lineno, node.slice.value,
+                             "%s[%r]" % (node.value.id, node.slice.value)))
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "get"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id in holders
+                    and node.args
+                    and isinstance(node.args[0], ast.Constant)
+                    and isinstance(node.args[0].value, str)):
+                hits.append((node.lineno, node.args[0].value,
+                             "%s.get(%r)" % (node.func.value.id, node.args[0].value)))
+
+    return sorted(set(hits))
+
+
+class TestPositionColumnsAreNotGuessed(unittest.TestCase):
+    """No module may read a column get_positions() does not build."""
+
+    BASE = Path(__file__).resolve().parent
+
+    #: Names a module may read that the broker frame does not carry, because
+    #: the module tolerates their absence *on purpose* and says so in code.
+    #: Every entry needs a reason; this is not a place to park a new bug.
+    ALLOWED_ABSENT = {
+        # position_risk_monitor guards this with `"sector" in pos_df.columns`
+        # and falls back to DEFAULT — the broker has no sector, an enricher may.
+        ("position_risk_monitor.py", "sector"),
+    }
+
+    def setUp(self):
+        self.schema = _canonical_position_columns(
+            (self.BASE / "alpaca_trader.py").read_text())
+        self.assertTrue(
+            self.schema,
+            "could not read the positions schema out of alpaca_trader.py — the "
+            "detector is blind, which is worse than a failing detector")
+
+    def test_schema_is_the_one_we_think_it_is(self):
+        # Pins the two names the bug turned on. If either disappears this test
+        # should fail loudly rather than quietly widen what counts as legal.
+        self.assertIn("ticker", self.schema)
+        self.assertIn("avg_entry", self.schema)
+        self.assertNotIn("symbol", self.schema,
+                         "if get_positions() ever emits `symbol`, delete this "
+                         "assertion deliberately — do not let it pass by accident")
+
+    def test_no_module_reads_a_column_that_does_not_exist(self):
+        offenders, examined, files_with_reads = [], 0, 0
+        for path in sorted(self.BASE.rglob("*.py")):
+            if any(p in path.parts for p in (".git", "venv", "__pycache__", "archive")):
+                continue
+            if path.name == Path(__file__).name:
+                continue
+            try:
+                reads = _position_column_reads(path.read_text())
+            except SyntaxError:
+                continue
+            if reads:
+                files_with_reads += 1
+            for lineno, col, expr in reads:
+                examined += 1
+                if col in self.schema:
+                    continue
+                if (path.name, col) in self.ALLOWED_ABSENT:
+                    continue
+                offenders.append("%s:%d  %s" % (path.name, lineno, expr))
+
+        # A pass on zero items is not a pass. If the walker stops finding the
+        # call sites — a refactor to a wrapper, a rename of get_positions — this
+        # test would go green while checking nothing.
+        self.assertGreaterEqual(
+            files_with_reads, 3,
+            "only %d file(s) were found reading positions columns; the walker "
+            "has lost sight of the call sites and this test is now vacuous"
+            % files_with_reads)
+        self.assertGreater(examined, 10, "suspiciously few column reads examined")
+        self.assertEqual([], offenders,
+                         "columns read that get_positions() never builds "
+                         "(schema=%s):\n  %s" % (sorted(self.schema),
+                                                 "\n  ".join(offenders)))
+
+    def test_the_detector_can_fail(self):
+        """Poison pill. A control never shown to fail is not evidence."""
+        poison = (
+            "def f(trader):\n"
+            "    df = trader.get_positions()\n"
+            "    a = df.get('symbol', [])\n"
+            "    b = df['nope']\n"
+            "    for _, row in df.iterrows():\n"
+            "        c = row.get('avg_entry_price', 0)\n"
+            "        d = row['ticker']\n"
+        )
+        found = {col for _, col, _ in _position_column_reads(poison)}
+        self.assertEqual(
+            {"symbol", "nope", "avg_entry_price", "ticker"}, found,
+            "the walker missed one of the four accessor forms the real bug used")
+        bad = found - self.schema
+        self.assertEqual({"symbol", "nope", "avg_entry_price"}, bad,
+                         "the schema check does not separate real columns from "
+                         "invented ones")
+
+
+class TestStopLossCanActuallyFire(unittest.TestCase):
+    """The tracker reported '21 OK' for months. Prove it can say otherwise."""
+
+    def _frame(self, rows):
+        import pandas as pd
+        return pd.DataFrame(rows)
+
+    def test_a_losing_position_breaches(self):
+        import position_risk_monitor as prm
+        frame = self._frame([
+            {"ticker": "AAA", "qty": 10.0, "qty_available": 10.0,
+             "avg_entry": 100.0, "current_price": 88.0, "market_value": 880.0,
+             "unrealized_pl": -120.0, "unrealized_pct": -12.0, "side": "long"},
+            {"ticker": "BBB", "qty": 5.0, "qty_available": 5.0,
+             "avg_entry": 10.0, "current_price": 10.5, "market_value": 52.5,
+             "unrealized_pl": 2.5, "unrealized_pct": 5.0, "side": "long"},
+        ])
+        fake = MagicMock()
+        fake.return_value.get_positions.return_value = frame
+        with patch.dict(sys.modules, {"alpaca_trader": MagicMock(AlpacaTrader=fake)}):
+            rows = prm.get_positions_with_entry()
+
+        self.assertEqual(["AAA", "BBB"], [r["ticker"] for r in rows],
+                         "tickers came back blank — the `symbol` bug is back")
+        by = {r["ticker"]: r for r in rows}
+        self.assertAlmostEqual(-12.0, by["AAA"]["pnl_pct"], places=6)
+        self.assertAlmostEqual(100.0, by["AAA"]["entry_price"], places=6)
+        # -12% is past the DEFAULT stop of -8%.
+        self.assertLessEqual(by["AAA"]["pnl_pct"],
+                             prm.SECTOR_STOP_LOSS["DEFAULT"],
+                             "a -12% position does not breach the -8% default stop")
+        self.assertGreater(by["BBB"]["pnl_pct"], prm.SECTOR_STOP_LOSS["DEFAULT"])
+
+    def test_the_old_shape_would_have_been_caught(self):
+        """Poison pill: the pre-fix frame must now produce no positions at all,
+        rather than 21 rows of ticker='' and pnl_pct=0.0."""
+        import position_risk_monitor as prm
+        frame = self._frame([
+            {"symbol": "AAA", "qty": 10.0, "current_price": 88.0},
+        ])
+        fake = MagicMock()
+        fake.return_value.get_positions.return_value = frame
+        with patch.dict(sys.modules, {"alpaca_trader": MagicMock(AlpacaTrader=fake)}):
+            rows = prm.get_positions_with_entry()
+        self.assertEqual([], rows,
+                         "a frame missing the real columns must yield nothing, "
+                         "not rows of false zeros that can never breach a stop")
+
+    def test_a_short_is_not_inverted(self):
+        """(current-entry) has the wrong sign for a short; the broker's own
+        unrealized_pct does not. VFC was live at entry 15.22 / price 14.50 —
+        a 4.7% GAIN that the arithmetic would have booked as a 4.7% loss."""
+        import position_risk_monitor as prm
+        frame = self._frame([
+            {"ticker": "VFC", "qty": -100.0, "qty_available": -100.0,
+             "avg_entry": 15.22, "current_price": 14.50, "market_value": -1450.0,
+             "unrealized_pl": 72.0, "unrealized_pct": 4.731, "side": "short"},
+        ])
+        fake = MagicMock()
+        fake.return_value.get_positions.return_value = frame
+        with patch.dict(sys.modules, {"alpaca_trader": MagicMock(AlpacaTrader=fake)}):
+            rows = prm.get_positions_with_entry()
+        self.assertEqual(1, len(rows))
+        self.assertGreater(rows[0]["pnl_pct"], 0,
+                           "a profitable short is being reported as a loss")
+
+
+class TestWatchUniverseIsOneAnswer(unittest.TestCase):
+    """Four agents, four private copies of 'which tickers?', four wrong."""
+
+    BASE = Path(__file__).resolve().parent
+
+    def test_the_dict_shaped_watchlist_is_not_discarded(self):
+        import watch_universe as wu
+        blob = {"last_updated": "x", "description": "y",
+                "watchlist": [{"ticker": "aaa"}, {"ticker": "BBB"}]}
+        self.assertEqual([{"ticker": "aaa"}, {"ticker": "BBB"}],
+                         wu._rows(blob, ("watchlist", "tickers")),
+                         "fe_watchlist.json is a dict; reading it as a list "
+                         "silently discards every name in it")
+        self.assertEqual([], wu._rows(blob, ("picks",)),
+                         "a key that is not there must yield nothing, not the dict")
+
+    def test_the_ticker_column_is_resolved_not_named(self):
+        import pandas as pd
+        import watch_universe as wu
+        for column in ("ticker", "symbol"):
+            frame = pd.DataFrame([{column: "aaa"}, {column: "BBB"}])
+            fake = MagicMock()
+            fake.return_value.get_positions.return_value = frame
+            with patch.dict(sys.modules,
+                            {"alpaca_trader": MagicMock(AlpacaTrader=fake)}):
+                self.assertEqual(["AAA", "BBB"], wu.position_tickers(),
+                                 "did not resolve the %r column" % column)
+
+    def test_an_unknown_schema_raises_instead_of_returning_empty(self):
+        import pandas as pd
+        import watch_universe as wu
+        frame = pd.DataFrame([{"sym": "AAA"}])
+        fake = MagicMock()
+        fake.return_value.get_positions.return_value = frame
+        with patch.dict(sys.modules, {"alpaca_trader": MagicMock(AlpacaTrader=fake)}):
+            with self.assertRaises(KeyError):
+                wu.position_tickers()
+
+    def test_degraded_is_distinguishable_from_quiet(self):
+        import watch_universe as wu
+        self.assertTrue(wu.is_degraded({"positions": 0, "fe_watchlist": 0}))
+        self.assertFalse(wu.is_degraded({"positions": 21, "fe_watchlist": 0}))
+        # An empty counts dict means no source was even consulted — that is not
+        # a measurement, and calling it "degraded" would invent one.
+        self.assertFalse(wu.is_degraded({}))
+
+    def test_counts_are_per_source_not_marginal(self):
+        """A watchlist that fully overlaps the positions must not read as 0.
+
+        Counting only *new* tickers made a healthy source indistinguishable
+        from a broken one — the same confusion this module exists to end."""
+        import pandas as pd
+        import watch_universe as wu
+        frame = pd.DataFrame([{"ticker": "AAA"}, {"ticker": "BBB"}])
+        fake = MagicMock()
+        fake.return_value.get_positions.return_value = frame
+        with tempfile.TemporaryDirectory() as tmp:
+            Path(tmp, "fe_watchlist.json").write_text(
+                json.dumps({"watchlist": [{"ticker": "AAA"}, {"ticker": "BBB"}]}))
+            with patch.object(wu, "DATA_DIR", tmp), \
+                 patch.dict(sys.modules,
+                            {"alpaca_trader": MagicMock(AlpacaTrader=fake)}):
+                tickers, counts = wu.get_watch_tickers(
+                    sources=("positions", "fe_watchlist"))
+        self.assertEqual(["AAA", "BBB"], tickers)
+        self.assertEqual(2, counts["positions"])
+        self.assertEqual(2, counts["fe_watchlist"],
+                         "a fully-overlapping watchlist reported as empty")
+
+    def test_the_scanners_do_not_keep_private_copies(self):
+        """AST: none of the four may resolve a positions frame themselves."""
+        for name in ("short_interest_monitor.py", "quiver_signal_agent.py",
+                     "edgar_transcript_agent.py"):
+            src = (self.BASE / name).read_text()
+            reads = _position_column_reads(src)
+            self.assertEqual(
+                [], reads,
+                "%s still reads positions columns directly (%s) — the universe "
+                "question has more than one answer again"
+                % (name, [r[2] for r in reads]))
+            self.assertIn("import watch_universe", src,
+                          "%s does not use the shared universe" % name)
+
+    def test_a_zero_universe_is_reported_as_broken(self):
+        """Every one of these printed a 0 with RC=0 while examining nothing."""
+        for name in ("short_interest_monitor.py", "quiver_signal_agent.py",
+                     "edgar_transcript_agent.py"):
+            src = (self.BASE / name).read_text()
+            tree = ast.parse(src)
+            exits = {n.args[0].value for n in ast.walk(tree)
+                     if isinstance(n, ast.Call)
+                     and isinstance(n.func, ast.Attribute)
+                     and n.func.attr == "exit"
+                     and n.args and isinstance(n.args[0], ast.Constant)
+                     and isinstance(n.args[0].value, int)}
+            self.assertIn(2, exits,
+                          "%s never exits non-zero on an empty universe; a run "
+                          "that examined nothing still looks like a clean run "
+                          "to cron" % name)
 
 
 # =============================================================================
