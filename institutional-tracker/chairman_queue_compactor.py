@@ -91,6 +91,19 @@ def plan(rows, history, other_queue_sigs):
 
 def main():
     apply = "--apply" in sys.argv
+    # The interlock above is only as good as the history it reads, and since
+    # 2026-08-19 only the designated host advances that history — the other
+    # host's copy is frozen at whatever it last knew. A frozen history that
+    # still says RESOLVED would let this archive a row the writer host
+    # considers open, and chairman_queue_sync propagates the archive to the
+    # other host as a tombstone. So the guard is imported from the sentinel,
+    # not re-derived: whoever may not write the history may not act on it.
+    if apply:
+        may_write, why = PLS.writer_verdict()
+        if not may_write:
+            print("REFUSING to compact — %s\nThe history this decision depends "
+                  "on is not maintained here; run it on the writer host." % why)
+            return 0
     rows = PLS._load(PLS.CHAIRMAN_PATH, [])
     history = PLS._load(PLS.HISTORY_PATH, {})
     other = set()

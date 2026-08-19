@@ -446,10 +446,16 @@ CONTROL_CENSUS: List[FailureClass] = [
         "Host-local state describing something an external system owns. Wrong by "
         "design, not by bug: it diverges every time anything happens off-host.",
         "state.json entry_dates: 13 broker positions unledgered, 11 phantom rows, "
-        "because there is no state sync between the two hosts.",
+        "because there is no state sync between the two hosts. Recurred inside "
+        "governance itself: two lifecycle histories of one firm-wide problem, so "
+        "the VM called 37 subjects stale and the Mac 25, and 17 rows finished "
+        "archived on one host and un-archivable on the other.",
         ["coherence_laws.py::law_positions_conserve",
          "entry_date_ledger.py::reconcile",
-         "test_pipeline_smoke.py::TestSingleWriterGuard"],
+         "problem_lifecycle_sentinel.py::writer_verdict",
+         "chairman_queue_compactor.py::main",
+         "test_pipeline_smoke.py::TestSingleWriterGuard",
+         "test_pipeline_smoke.py::TestCompactorWillNotActOnAHistoryItCannotMaintain"],
         "designated writer", "private-diary-of-a-shared-fact"),
 
     FailureClass(

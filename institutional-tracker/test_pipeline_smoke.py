@@ -13165,6 +13165,62 @@ class TestDerivedRowsFollowTheArchive(unittest.TestCase):
             self.assertEqual([], reopened)
 
 
+class TestCompactorWillNotActOnAHistoryItCannotMaintain(unittest.TestCase):
+    """Whoever may not write the history may not act on it.
+
+    The compactor's whole safety argument is the sentinel's history: a row may
+    leave the queue only once the sentinel has RECORDED its closure. Gating
+    sentinel writes to one host froze the other host's copy — and a frozen
+    history that still says RESOLVED would authorise archiving a row the writer
+    host considers open. The archive is then propagated to that host as a
+    tombstone, so the stale opinion wins.
+    """
+
+    def setUp(self):
+        import problem_lifecycle_sentinel as P
+        import chairman_queue_compactor as C
+        self.P, self.C = P, C
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        d = Path(self.tmp.name)
+        self.chair = d / "chairman.json"
+        self.hist = d / "history.json"
+        self.arch = d / "archive.json"
+        sig = P.signature({"id": "x", "title": "a settled thing"}, "chairman")
+        self.chair.write_text(json.dumps([{"id": "x", "title": "a settled thing",
+                                           "status": "resolved"}]))
+        self.hist.write_text(json.dumps({sig: {"sig": sig, "status": "RESOLVED"}}))
+        self.arch.write_text("[]")
+
+    def _run(self, argv, verdict):
+        with patch.multiple(self.P, CHAIRMAN_PATH=self.chair,
+                            HISTORY_PATH=self.hist,
+                            PENDING_PATH=self.chair.parent / "none1.json",
+                            IMPL_QUEUE_PATH=self.chair.parent / "none2.json"), \
+                patch.object(self.C, "ARCHIVE", str(self.arch)), \
+                patch.object(self.P, "writer_verdict", lambda: verdict), \
+                patch.object(sys, "argv", argv):
+            self.C.main()
+        return json.loads(self.chair.read_text()), json.loads(self.arch.read_text())
+
+    def test_a_non_writer_host_archives_nothing(self):
+        rows, arch = self._run(["c", "--apply"], (False, "read-only on 'mac'"))
+        self.assertEqual(1, len(rows))
+        self.assertEqual([], arch)
+
+    def test_the_poison_pill_the_writer_host_does_archive(self):
+        """Otherwise the test above passes because the plan was empty."""
+        rows, arch = self._run(["c", "--apply"], (True, "designated host"))
+        self.assertEqual([], rows)
+        self.assertEqual(1, len(arch))
+
+    def test_the_dry_run_is_allowed_everywhere(self):
+        """Reading is not the hazard; seeing the queue on any host is useful."""
+        rows, arch = self._run(["c"], (False, "read-only on 'mac'"))
+        self.assertEqual(1, len(rows))
+        self.assertEqual([], arch)
+
+
 # =============================================================================
 # Runner
 # =============================================================================
