@@ -155,6 +155,7 @@ rsync -avz --progress \
     --include="data/orphan_agents_baseline.json" \
     --include="data/vm_crontab_snapshot.txt" \
     --include="data/agent_roster_manifest.json" \
+    --include="data/pick_gate_trial.json" \
     --exclude="data/*" \
     --exclude-from="$DEPLOY_EXCLUDES" \
     --exclude="logs/" \

@@ -37,11 +37,66 @@ REPORT_PATH = "data/reconciliation_report.json"
 # Mirror config.py guardrails — deliberately hardcoded here so the
 # reconciler doesn't silently pass if config.py has a wrong value.
 _MIN_CASH_FLOOR_PCT    = 0.20
-_MAX_POSITIONS         = 15
+_MAX_POSITIONS         = 20     # 2026-07-27 pick-gate trial raised it 15 -> 20;
+                                # reverts to 15 if the trial is not extended, and
+                                # _mirror_check below will say so when it does
 _STOP_LOSS_PCT         = 0.07   # 7%
 _MAX_POSITION_SIZE_PCT = 0.07   # 7% (10% grace before flagging)
 _IMMEDIATE_TIMEOUT_H   = 2      # IMMEDIATE board actions must execute within 2h
 _PNL_DRIFT_THRESHOLD   = 1000   # flag if pipeline P&L tracking drifts > $1000 from Alpaca
+
+# ── The mirror has to be checked, or it is just a second wrong number ────────
+# The hardcoding above is right: an independent copy is what lets this file
+# disagree with config.py, and disagreement is the whole point. What was missing
+# is that nothing ever COMPARED them, so a legitimate config change looked
+# identical to a tampered one — and the disagreement surfaced disguised as
+# something else.
+#
+# Measured 2026-08-19: the board raised MAX_OPEN_POSITIONS 15 -> 20 for the
+# pick-gate trial on 2026-07-27. This mirror stayed at 15 for 23 days and
+# reported "21 positions open — exceeds 15 maximum" on every run. The count was
+# over the real cap too, so the flag was not wrong — but it named the wrong
+# number, and a HIGH that quotes a stale limit is how a reader learns to skim
+# the HIGHs. Nobody was told the guardrail itself had moved.
+#
+# So: compare, flag the divergence as its OWN finding, and keep evaluating
+# against whichever bound is stricter. Stricter preserves the tamper guard — a
+# config loosened to 999 cannot widen this check — while the flag makes sure a
+# deliberate change is noticed rather than absorbed.
+#: mirror name -> (local value, config attribute, "cap" | "floor")
+_MIRRORED = {
+    "MIN_CASH_FLOOR_PCT":    (_MIN_CASH_FLOOR_PCT,    "MIN_CASH_FLOOR_PCT",    "floor"),
+    "MAX_OPEN_POSITIONS":    (_MAX_POSITIONS,         "MAX_OPEN_POSITIONS",    "cap"),
+    "STOP_LOSS_PCT":         (_STOP_LOSS_PCT,         "STOP_LOSS_PCT",         "cap"),
+    "MAX_POSITION_SIZE_PCT": (_MAX_POSITION_SIZE_PCT, "MAX_POSITION_SIZE_PCT", "cap"),
+}
+
+
+def _mirror_check():
+    """(effective bounds, divergences). Never raises — a broken config is itself
+    a finding, not a reason for the reconciler to stop reconciling."""
+    try:
+        import config
+    except Exception as exc:                     # pragma: no cover — import guard
+        return ({k: v[0] for k, v in _MIRRORED.items()},
+                [("config", None, None, f"config.py will not import ({exc})")])
+
+    effective, drift = {}, []
+    for name, (local, attr, kind) in _MIRRORED.items():
+        theirs = getattr(config, attr, None)
+        if theirs is None:
+            effective[name] = local
+            drift.append((name, local, None,
+                          f"config.{attr} no longer exists — this mirror is now "
+                          f"the only copy and nothing can contradict it"))
+            continue
+        effective[name] = (min(local, theirs) if kind == "cap"
+                           else max(local, theirs))
+        if abs(float(theirs) - float(local)) > 1e-9:
+            drift.append((name, local, theirs,
+                          f"reconciler mirrors {local}, config.{attr} is {theirs} — "
+                          f"checking against the stricter {effective[name]}"))
+    return effective, drift
 
 
 def _flag(flags: list, severity: str, check: str, detail: str):
@@ -117,23 +172,35 @@ def run_reconciliation() -> dict:
     except Exception as _fve:
         logger.warning(f"  Could not write authoritative firm value: {_fve}")
 
+    # ── CHECK 0: do the two copies of the guardrails still agree? ──────────
+    bounds, drift = _mirror_check()
+    cash_floor  = bounds["MIN_CASH_FLOOR_PCT"]
+    max_pos     = bounds["MAX_OPEN_POSITIONS"]
+    stop_pct    = bounds["STOP_LOSS_PCT"]
+    max_size    = bounds["MAX_POSITION_SIZE_PCT"]
+    logger.info("\n  [0/7] Guardrail mirror...")
+    for name, local, theirs, detail in drift:
+        _flag(flags, "HIGH", "GUARDRAIL_DRIFT", f"{name}: {detail}")
+    if not drift:
+        logger.info("    ✓ all %d guardrails match config.py" % len(_MIRRORED))
+
     # ── CHECK 1: Cash floor ────────────────────────────────────────────────
-    logger.info("\n  [1/7] Cash floor...")
-    if cash_pct < _MIN_CASH_FLOOR_PCT:
+    logger.info("  [1/7] Cash floor...")
+    if cash_pct < cash_floor:
         _flag(flags, "HIGH", "CASH_FLOOR",
               f"Cash is {cash_pct*100:.1f}% of portfolio (${cash:,.0f}) — "
-              f"below {_MIN_CASH_FLOOR_PCT*100:.0f}% floor. "
+              f"below {cash_floor*100:.0f}% floor. "
               f"A buy bypassed the cash floor guardrail.")
     else:
-        logger.info(f"    ✓ Cash {cash_pct*100:.1f}% ≥ {_MIN_CASH_FLOOR_PCT*100:.0f}% floor")
+        logger.info(f"    ✓ Cash {cash_pct*100:.1f}% ≥ {cash_floor*100:.0f}% floor")
 
     # ── CHECK 2: Position count ────────────────────────────────────────────
     logger.info("  [2/7] Position count...")
-    if n_positions > _MAX_POSITIONS:
+    if n_positions > max_pos:
         _flag(flags, "HIGH", "MAX_POSITIONS",
-              f"{n_positions} positions open — exceeds {_MAX_POSITIONS} maximum.")
+              f"{n_positions} positions open — exceeds {max_pos} maximum.")
     else:
-        logger.info(f"    ✓ {n_positions}/{_MAX_POSITIONS} positions")
+        logger.info(f"    ✓ {n_positions}/{max_pos} positions")
 
     # ── CHECK 3 & 4: Per-position compliance ──────────────────────────────
     logger.info("  [3/7] Stop-loss compliance...")
@@ -148,16 +215,16 @@ def run_reconciliation() -> dict:
                 mv      = float(pos.get("market_value", 0))
                 weight  = mv / portfolio_value
 
-                if pnl_pct <= -(_STOP_LOSS_PCT * 100):
+                if pnl_pct <= -(stop_pct * 100):
                     _flag(flags, "CRITICAL", "STOP_LOSS_BREACH",
                           f"{ticker} is at {pnl_pct:+.1f}% — breaches "
-                          f"-{_STOP_LOSS_PCT*100:.0f}% stop-loss and is still held. "
+                          f"-{stop_pct*100:.0f}% stop-loss and is still held. "
                           f"Stop-loss enforcement missed this position.")
 
-                if weight > _MAX_POSITION_SIZE_PCT * 1.10:   # 10% grace for intraday drift
+                if weight > max_size * 1.10:   # 10% grace for intraday drift
                     _flag(flags, "MEDIUM", "POSITION_SIZE_BREACH",
                           f"{ticker} is {weight*100:.1f}% of portfolio (${mv:,.0f}) — "
-                          f"exceeds {_MAX_POSITION_SIZE_PCT*100:.0f}% limit.")
+                          f"exceeds {max_size*100:.0f}% limit.")
             except Exception as _pe:
                 logger.debug(f"    Position parse error for {ticker}: {_pe}")
     else:

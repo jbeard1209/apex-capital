@@ -22,6 +22,7 @@ import ast
 import json
 import re
 import sqlite3
+import subprocess
 import tempfile
 import shutil
 import unittest
@@ -12184,6 +12185,204 @@ class TestWatchUniverseIsOneAnswer(unittest.TestCase):
                           "%s never exits non-zero on an empty universe; a run "
                           "that examined nothing still looks like a clean run "
                           "to cron" % name)
+
+
+class TestOneShotReviewCannotDieIntoALog(unittest.TestCase):
+    """The pick-gate review was scheduled once. Once is all it got.
+
+    VM crontab `0 13 17 8 *` fired 2026-08-17 13:00 UTC and raised
+    FileNotFoundError: the manifest is written by the Mac, there is no state
+    sync between hosts, and deploy.sh's data/ allowlist did not carry it. The
+    traceback landed in logs/pick_gate_trial.log and nowhere else. Nothing was
+    watching that file, so the cap stayed at 20 past its review date while
+    every surface reported the trial ACTIVE and on schedule.
+
+    A recurring job that crashes gets another go tomorrow. A one-shot job that
+    crashes has *spent its only attempt*, which is why these four are pinned.
+    """
+
+    BASE = Path(__file__).resolve().parent
+
+    def _module(self, tmp, manifest, queue):
+        import pick_gate_trial_review as P
+        return patch.multiple(P, MANIFEST=manifest, CHAIRMAN_QUEUE=queue), P
+
+    def test_a_missing_manifest_escalates_instead_of_raising(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            queue = str(Path(tmp, "q.json"))
+            Path(queue).write_text(json.dumps([{"id": "unrelated"}]))
+            ctx, P = self._module(tmp, str(Path(tmp, "gone.json")), queue)
+            with ctx:
+                rc = P.notify()
+            rows = json.loads(Path(queue).read_text())
+        self.assertEqual(2, rc, "a review that reached nobody must not exit 0")
+        ids = [r.get("id") for r in rows]
+        self.assertIn("pick-gate-trial-unreviewable", ids,
+                      "the review could not run and left no row for the "
+                      "Chairman — exactly the 2026-08-17 silence")
+        self.assertIn("unrelated", ids, "clobbered the rest of the queue")
+
+    def test_escalating_twice_leaves_one_row(self):
+        """A yearly cron plus manual reruns must not grow the queue."""
+        with tempfile.TemporaryDirectory() as tmp:
+            queue = str(Path(tmp, "q.json"))
+            Path(queue).write_text("[]")
+            ctx, P = self._module(tmp, str(Path(tmp, "gone.json")), queue)
+            with ctx:
+                P.notify()
+                P.notify()
+                P.notify()
+            rows = json.loads(Path(queue).read_text())
+        self.assertEqual(1, len(rows), "upsert appended duplicates")
+
+    def test_an_unwritable_queue_still_exits_nonzero(self):
+        """Last resort: if even the escalation fails, the RC must still say so."""
+        with tempfile.TemporaryDirectory() as tmp:
+            ctx, P = self._module(tmp, str(Path(tmp, "gone.json")),
+                                  str(Path(tmp, "no_such_queue.json")))
+            with ctx:
+                self.assertEqual(2, P.notify())
+
+    def test_the_manifest_can_actually_reach_the_host_that_reviews_it(self):
+        """Two halves, and the include alone is inert without the other.
+
+        deploy.sh excludes `data/*` and re-includes a short allowlist, but its
+        DEPLOY_EXCLUDES is built from `git ls-files --others` — so an untracked
+        file is held back no matter how many --include lines name it. Both the
+        allowlist entry and git tracking are required; this asserts both.
+        """
+        rel = "data/pick_gate_trial.json"
+        deploy = (self.BASE / "gcp_setup" / "deploy.sh").read_text()
+        self.assertIn('--include="%s"' % rel, deploy,
+                      "%s is not in deploy.sh's data/ allowlist, so the VM — "
+                      "where the review cron lives — cannot see the trial's "
+                      "own record" % rel)
+        tracked = subprocess.run(
+            ["git", "ls-files", "--error-unmatch", rel],
+            cwd=str(self.BASE), capture_output=True, text=True)
+        self.assertEqual(0, tracked.returncode,
+                         "%s is untracked, so deploy.sh's ls-files --others "
+                         "excludes it and the --include line above is inert"
+                         % rel)
+
+    # ---- the review's own arithmetic -------------------------------------
+
+    def test_a_decayed_control_arm_is_not_extended_into(self):
+        """Waiting cannot regrow an arm that only shrinks.
+
+        Incumbent membership was frozen at the trial's start; names leave when
+        they are sold and nothing ever adds one back. On 2026-08-19 the arm was
+        3 of 15 while the trial arm was 18. The old logic compared the two
+        averages anyway, landed inside the +/-1.0pp dead band and returned HOLD
+        — 'extend the trial window before deciding' — which prescribes the one
+        action guaranteed to make the comparison worse.
+        """
+        import pick_gate_trial_review as P
+        base = {"n_trial_picks": 18, "trial_avg_return_pct": 0.68,
+                "incumbent_avg_return_pct": 0.34,
+                "incumbents_at_start": ["A"] * 15,
+                "spy_return_since_start_pct": 3.8}
+        v, why = P._verdict(dict(base, n_incumbents=3))
+        self.assertEqual("UNMEASURABLE", v,
+                         "a 3-name control arm still produced a verdict")
+        self.assertNotIn("xtend", why,
+                         "told the reader to wait for an arm that only shrinks")
+        # A healthy arm must still reach the ordinary verdicts, or this guard
+        # would have quietly disabled the experiment instead of scoping it.
+        self.assertEqual("HOLD", P._verdict(dict(base, n_incumbents=9))[0])
+        self.assertEqual("REVERT", P._verdict(
+            dict(base, n_incumbents=9, trial_avg_return_pct=-3.0))[0])
+
+    def test_a_hold_cannot_extend_forever(self):
+        """'Not yet' has to expire (memory: sample-outlived-its-rule)."""
+        import pick_gate_trial_review as P
+        with tempfile.TemporaryDirectory() as tmp:
+            man = str(Path(tmp, "m.json"))
+            with patch.object(P, "MANIFEST", man):
+                m = {"status": "ACTIVE", "review_on": "2026-01-01"}
+                seen = []
+                for _ in range(P.MAX_EXTENSIONS + 1):
+                    P._settle(m, "HOLD", "no signal")
+                    seen.append(m["status"])
+        self.assertEqual(["ACTIVE"] * P.MAX_EXTENSIONS + ["REVIEWED"], seen,
+                         "the trial kept buying itself another window")
+
+    def test_a_terminal_verdict_does_not_edit_the_risk_limit(self):
+        """REVERT lowers a live cap. That is the Chairman's call, not this file's.
+
+        AST, not grep: the module's own docstring and postmortem comments say
+        'config.py' repeatedly, so any text search matches its explanation of
+        why it must not do this. Only real writes count — a path opened for
+        writing, or an attribute set on the imported config module.
+        """
+        tree = ast.parse((self.BASE / "pick_gate_trial_review.py").read_text())
+        writes = []
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id == "open"):
+                args = [a.value for a in node.args
+                        if isinstance(a, ast.Constant) and isinstance(a.value, str)]
+                if any("config" in a for a in args):
+                    writes.append("open(%r)" % args)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) \
+                    and node.func.id == "setattr" and node.args:
+                writes.append("setattr(...)")
+            for tgt in (node.targets if isinstance(node, ast.Assign) else []):
+                if isinstance(tgt, ast.Attribute) and isinstance(tgt.value, ast.Name) \
+                        and tgt.value.id == "config":
+                    writes.append("config.%s = ..." % tgt.attr)
+        self.assertEqual([], writes,
+                         "the review edits the live position cap itself (%s) — "
+                         "a risk limit changes by decision, not by cron" % writes)
+
+    def test_a_missing_benchmark_is_not_a_number(self):
+        """`nan` is a float, passes `is not None`, and printed as '+nan%'.
+
+        yfinance returns a one-column DataFrame and its last row is today's
+        unfilled bar, so the SPY arm of the scoreboard had silently been NaN
+        while still occupying its line in the email (memory: nan-is-not-none).
+        """
+        import pick_gate_trial_review as P
+        self.assertEqual("n/a", P._fmt(float("nan")))
+        self.assertEqual("n/a", P._fmt(float("inf")))
+        self.assertEqual("n/a", P._fmt(None))
+        self.assertEqual("+3.84%", P._fmt(3.8371))
+
+    def test_the_benchmark_drops_unfilled_bars(self):
+        """The real shape that broke it: DataFrame columns, NaN final row."""
+        import pandas as pd
+        import pick_gate_trial_review as P
+        frame = pd.DataFrame(
+            {("Close", "SPY"): [100.0, 110.0, float("nan")],
+             ("Open", "SPY"): [1.0, 2.0, 3.0]})
+        frame.columns = pd.MultiIndex.from_tuples(frame.columns)
+        fake = MagicMock(download=MagicMock(return_value=frame))
+        with patch.dict(sys.modules, {"yfinance": fake}):
+            self.assertAlmostEqual(10.0, P._spy_return("2026-07-27"), places=6)
+        # And a frame with only one usable bar yields None, never a 0.0 that
+        # would read as "the benchmark was flat".
+        one = frame.iloc[:1]
+        with patch.dict(sys.modules,
+                        {"yfinance": MagicMock(download=MagicMock(return_value=one))}):
+            self.assertIsNone(P._spy_return("2026-07-27"))
+
+    def test_the_exit_code_distinguishes_verdict_lost_from_crash(self):
+        """AST: `--notify` must propagate notify()'s return code."""
+        src = (self.BASE / "pick_gate_trial_review.py").read_text()
+        tree = ast.parse(src)
+        propagated = False
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "exit" and node.args):
+                continue
+            if any(isinstance(sub, ast.Call) and isinstance(sub.func, ast.Name)
+                   and sub.func.id == "notify" for sub in ast.walk(node.args[0])):
+                propagated = True
+        self.assertTrue(propagated,
+                        "notify()'s return code is discarded, so cron cannot "
+                        "tell 'the verdict was REVERT and could not be sent' "
+                        "from 'the interpreter fell over'")
 
 
 # =============================================================================

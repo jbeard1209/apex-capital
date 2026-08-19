@@ -1,0 +1,93 @@
+{
+  "trial": "pick_gate_position_cap",
+  "started": "2026-07-27",
+  "review_on": "2026-08-17",
+  "status": "REVIEWED",
+  "prior_cap": 15,
+  "trial_cap": 20,
+  "incumbents": [
+    "AES",
+    "CFG",
+    "DIS",
+    "KEY",
+    "NVO",
+    "PFE",
+    "QQQ",
+    "RF",
+    "USB",
+    "XLE",
+    "XLF",
+    "XLK",
+    "XLV",
+    "XLY",
+    "ZION"
+  ],
+  "incumbent_snapshot": {
+    "AES": {
+      "avg_entry": 14.799868,
+      "qty": 304.0
+    },
+    "CFG": {
+      "avg_entry": 64.32,
+      "qty": 60.0
+    },
+    "DIS": {
+      "avg_entry": 99.360652,
+      "qty": -92.0
+    },
+    "KEY": {
+      "avg_entry": 21.86,
+      "qty": 223.0
+    },
+    "NVO": {
+      "avg_entry": 48.91,
+      "qty": 53.0
+    },
+    "PFE": {
+      "avg_entry": 24.14,
+      "qty": -184.0
+    },
+    "QQQ": {
+      "avg_entry": 715.640661,
+      "qty": -11.0
+    },
+    "RF": {
+      "avg_entry": 27.72,
+      "qty": 158.0
+    },
+    "USB": {
+      "avg_entry": 55.66,
+      "qty": 52.0
+    },
+    "XLE": {
+      "avg_entry": 57.403899,
+      "qty": -161.0
+    },
+    "XLF": {
+      "avg_entry": 55.29951,
+      "qty": 102.0
+    },
+    "XLK": {
+      "avg_entry": 171.940962,
+      "qty": -43.0
+    },
+    "XLV": {
+      "avg_entry": 153.785,
+      "qty": 33.0
+    },
+    "XLY": {
+      "avg_entry": 115.447232,
+      "qty": -70.0
+    },
+    "ZION": {
+      "avg_entry": 61.74,
+      "qty": 94.0
+    }
+  },
+  "note": "Any open position whose ticker is NOT in incumbents is a TRIAL pick admitted by the raised cap. Review compares trial picks vs incumbent book vs SPY since 2026-07-27. Revert = MAX_OPEN_POSITIONS back to 15 in config.py (does not force-sell).",
+  "trial_entries": [],
+  "last_reviewed": "2026-08-19T03:00:56.621294",
+  "verdict": "UNMEASURABLE",
+  "verdict_why": "The control arm has decayed to 3 of the original 15 incumbents \u2014 below the 5-name floor. Incumbent membership was frozen at the trial's start and only ever shrinks, so waiting longer cannot restore it. The cap needs a judgement call, not another window.",
+  "closed_on": "2026-08-19"
+}
