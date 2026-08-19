@@ -256,12 +256,27 @@ class DeputyCRO:
             results["actions"].append(f"Stop-loss enforcement: {sl_result}")
             logger.info(f"  [DeputyCRO] Stop-loss check complete: {sl_result}")
 
-            # Snapshot current concentration
+            # Snapshot current concentration.
+            #
+            # `weight_pct` is not a column get_positions() builds — it never
+            # was. `row.get("weight_pct", 0)` therefore returned 0 for every
+            # position, `0 > 10` is never true, and the Deputy CRO's
+            # concentration alert could not fire. Weight has to be computed
+            # against the account, so if the account read fails there is no
+            # denominator and the honest answer is "not checked", not "0%".
             positions = trader.get_positions()
-            if not positions.empty:
+            portfolio_value = float(trader.get_account().get("portfolio_value", 0) or 0)
+            if positions.empty or portfolio_value <= 0:
+                if not positions.empty:
+                    logger.warning("  [DeputyCRO] No portfolio value — "
+                                   "concentration NOT checked for %d position(s)",
+                                   len(positions))
+                    results["actions"].append(
+                        "Concentration NOT checked — no portfolio value")
+            else:
                 new_breaches = []
                 for _, row in positions.iterrows():
-                    w = float(row.get("weight_pct", 0))
+                    w = abs(float(row["market_value"])) / portfolio_value * 100
                     if w > 10:
                         new_breaches.append(f"{row['ticker']} {w:.1f}%")
                 if new_breaches:

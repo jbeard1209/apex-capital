@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-19T02:05:40Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-19T03:06:30Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -327,3 +327,10 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # collects (derived from this crontab, not a hostname), so the Mac copy stays
 # quiet instead of alarming daily about another machine.
 15 12 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_watchdog.py --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
+
+# ── SHORT INTEREST MONITOR — 8:35 AM EDT = 12:35 UTC, Mon-Fri ──
+# Was scheduled NOWHERE for its entire existence while five modules read the
+# alt_data_signals.json it produces, so that file had no writer at all. Exits
+# RC=2 if the ticker universe comes back empty — "0 tickers, 0 alerts, RC=0"
+# is what made the old version indistinguishable from a calm market.
+35 12 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 short_interest_monitor.py >> logs/short_interest_$(date +\%Y\%m\%d).log 2>&1

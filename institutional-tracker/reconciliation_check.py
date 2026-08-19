@@ -142,7 +142,9 @@ def run_reconciliation() -> dict:
         for _, pos in positions.iterrows():
             ticker  = pos.get("ticker", "?")
             try:
-                pnl_pct = float(pos.get("unrealized_plpc", 0)) * 100
+                # Column is `unrealized_pct`, already in percent — see
+                # deputy_monitor. STOP_LOSS_BREACH could never be raised.
+                pnl_pct = float(pos["unrealized_pct"])
                 mv      = float(pos.get("market_value", 0))
                 weight  = mv / portfolio_value
 

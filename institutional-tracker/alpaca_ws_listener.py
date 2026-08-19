@@ -36,7 +36,9 @@ def get_position_tickers():
         from alpaca_trader import AlpacaTrader
         pos_df = AlpacaTrader().get_positions()
         if pos_df is not None and not pos_df.empty:
-            return list(pos_df["symbol"].str.upper())
+            # `symbol` raised KeyError into a bare `except: pass`, so this
+            # returned [] and the listener subscribed to no position at all.
+            return list(pos_df["ticker"].str.upper())
     except: pass
     return []
 

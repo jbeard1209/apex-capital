@@ -84,15 +84,19 @@ def get_position_returns(days: int = 7) -> list[dict]:
         pos_df = trader.get_positions()
         if pos_df is not None and not pos_df.empty:
             for _, row in pos_df.iterrows():
-                ticker  = str(row.get("symbol", "")).upper()
+                # Three SDK attribute names, none of them columns:
+                # symbol→ticker, unrealized_plpc→unrealized_pct (already a
+                # percent), avg_entry_price→avg_entry. Attribution ran on
+                # blank tickers at a flat 0.00%.
+                ticker  = str(row["ticker"]).upper()
                 unrealized_pnl = float(row.get("unrealized_pl", 0))
-                unrealized_pct = float(row.get("unrealized_plpc", 0)) * 100
+                unrealized_pct = float(row["unrealized_pct"])
                 positions.append({
                     "ticker":    ticker,
                     "pnl":       unrealized_pnl,
                     "pnl_pct":  round(unrealized_pct, 2),
                     "current":   float(row.get("current_price", 0)),
-                    "entry":     float(row.get("avg_entry_price", 0)),
+                    "entry":     float(row["avg_entry"]),
                     "status":    "open",
                 })
     except Exception as e:

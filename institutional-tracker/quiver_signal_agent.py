@@ -11,6 +11,8 @@ Set with: echo 'export QUIVER_API_KEY="your_key"' >> ~/.bashrc
 import json, logging, os, sys, time
 from datetime import datetime, timedelta, timezone
 
+import watch_universe
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)-8s  %(message)s")
 logger = logging.getLogger("quiver_signal")
 
@@ -89,19 +91,16 @@ def compute_congress_score(trades):
     return len(buys) - len(sells), len(buys), len(sells), round((buy_val - sell_val) / 1000, 1)
 
 def get_watch_tickers():
-    tickers = set()
-    try:
-        from alpaca_trader import AlpacaTrader
-        pos_df = AlpacaTrader().get_positions()
-        if pos_df is not None and not pos_df.empty:
-            tickers.update(str(t).upper() for t in pos_df.get("symbol",[]) if t)
-    except: pass
-    for src in ["fe_watchlist.json", "fe_picks_queue.json"]:
-        items = _load(os.path.join(DATA_DIR, src), [])
-        for item in (items if isinstance(items, list) else []):
-            t = item.get("ticker","") if isinstance(item, dict) else str(item)
-            if t: tickers.add(str(t).upper())
-    return list(tickers)[:40]
+    """(tickers, per-source counts) — delegated to watch_universe.
+
+    Was three wrong guesses in eight lines: `pos_df.get("symbol",[])` against a
+    DataFrame whose column is `ticker`, `items if isinstance(items, list)`
+    against the `fe_watchlist.json` dict, and a bare `except: pass` that hid
+    neither (pandas returns the default for a missing column, so nothing was
+    ever raised to hide). See watch_universe.py for the measurements.
+    """
+    return watch_universe.get_watch_tickers(
+        limit=40, sources=("positions", "fe_watchlist", "fe_picks"))
 
 def run_quiver_signals():
     logger.info("Running Quiver Quantitative signal fetch...")
@@ -112,8 +111,17 @@ def run_quiver_signals():
                                 "status": "NO_API_KEY", "tickers": {}})
         return {"status": "NO_API_KEY"}
 
-    tickers = get_watch_tickers()
-    logger.info(f"  Fetching Quiver signals for {len(tickers)} tickers...")
+    tickers, counts = get_watch_tickers()
+    if not tickers:
+        # Every source empty is a broken input, not a quiet market. Returning
+        # "OK, 0 tickers" here is what made this agent indistinguishable from
+        # one with nothing to do.
+        logger.error("  NO TICKERS from any source (%s) — nothing was fetched.",
+                     watch_universe.describe(counts))
+        return {"status": "DEGRADED", "tickers_analyzed": 0, "notable": [],
+                "sources": counts}
+    logger.info(f"  Fetching Quiver signals for {len(tickers)} tickers "
+                f"({watch_universe.describe(counts)})...")
     results = {}
 
     for ticker in tickers:
@@ -162,5 +170,11 @@ if __name__ == "__main__":
     r = run_quiver_signals()
     if r.get("status") == "NO_API_KEY":
         print("\nQuiver: waiting for API key. Register at https://api.quiverquant.com/")
+    elif r.get("status") == "DEGRADED":
+        # RC=2, not 0: a run that examined nothing must not look like a run
+        # that found nothing.
+        print("\nQuiver: DEGRADED — no tickers from any source (%s)"
+              % watch_universe.describe(r.get("sources", {})))
+        sys.exit(2)
     else:
         print(f"\nQuiver: {r['tickers_analyzed']} tickers, {len(r['notable'])} notable")

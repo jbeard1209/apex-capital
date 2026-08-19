@@ -88,7 +88,8 @@ def run_liquidity_stress() -> dict:
         if pos_df is not None and not pos_df.empty:
             for _, row in pos_df.iterrows():
                 positions.append({
-                    "ticker": str(row.get("symbol","")).upper(),
+                    # `symbol` is not a column — every ticker was "".
+                    "ticker": str(row["ticker"]).upper(),
                     "market_value": float(row.get("market_value", 0)),
                 })
     except Exception as e:

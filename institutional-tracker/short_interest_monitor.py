@@ -18,6 +18,8 @@ import os
 import sys
 from datetime import datetime, timezone
 
+import watch_universe
+
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s  %(levelname)-8s  %(message)s",
                     datefmt="%H:%M:%S")
@@ -76,34 +78,21 @@ def get_short_interest(tickers: list[str]) -> dict:
     return result
 
 
-def get_watch_tickers() -> list[str]:
-    """Get all tickers to monitor (positions + watchlist + research picks)."""
-    tickers = set()
-    
-    # Current positions
-    try:
-        from alpaca_trader import AlpacaTrader
-        pos_df = AlpacaTrader().get_positions()
-        if pos_df is not None and not pos_df.empty:
-            tickers.update(str(t).upper() for t in pos_df.get("symbol", []) if t)
-    except Exception:
-        pass
+def get_watch_tickers() -> tuple:
+    """(tickers, per-source counts) — delegated to watch_universe.
 
-    # FE watchlist
-    watchlist = _load_json(os.path.join(DATA_DIR, "fe_watchlist.json"), [])
-    for item in (watchlist if isinstance(watchlist, list) else []):
-        t = item.get("ticker","") or item if isinstance(item, str) else ""
-        if t:
-            tickers.add(str(t).upper())
+    This module used to answer the question itself, and got all three sources
+    wrong: it asked the positions DataFrame for a `symbol` column that is
+    called `ticker`, read the `fe_watchlist.json` dict through an
+    `isinstance(x, list) else []` guard that discarded it whole, and looked for
+    `top_picks`/`picks` in a report that carries `approved`/`newly_queued`.
+    Three wrong guesses produce exactly the output of a calm market, which is
+    why "Monitored 0 tickers, 0 alerts / RC=0" read as success for as long as
+    this agent existed. See watch_universe.py for the measurements.
 
-    # ML picks (last board report)
-    ml_report = _load_json(os.path.join(DATA_DIR, "ml_shortterm_board_report.json"), {})
-    for pick in ml_report.get("top_picks", ml_report.get("picks", [])):
-        t = pick.get("ticker", pick) if isinstance(pick, dict) else str(pick)
-        if t:
-            tickers.add(str(t).upper())
-
-    return list(tickers)[:50]  # cap at 50 to avoid rate limits
+    The 50 cap is this agent's own: it fetches yfinance `.info` per ticker.
+    """
+    return watch_universe.get_watch_tickers(limit=50)
 
 
 def compute_si_changes(history: dict, current: dict) -> list[dict]:
@@ -166,12 +155,19 @@ def run_si_monitor():
     """Main entry point."""
     logger.info("Running short interest change monitor...")
     
-    tickers = get_watch_tickers()
+    tickers, counts = get_watch_tickers()
+    src = watch_universe.describe(counts)
     if not tickers:
-        logger.info("  No tickers to monitor. Run again after positions are built.")
-        return {"tickers": 0, "alerts": []}
+        # Not an INFO. Every named source was consulted and every one of them
+        # yielded nothing — that is a broken input, not a calm market, and the
+        # two are indistinguishable in the output unless this line says so.
+        logger.error(
+            "  NO TICKERS from any source (%s). Nothing was examined, so the "
+            "0 alerts below are an absence of evidence, not evidence of "
+            "absence. Fix the source before trusting a quiet run.", src)
+        return {"tickers": 0, "alerts": [], "sources": counts, "degraded": True}
 
-    logger.info(f"  Monitoring {len(tickers)} tickers: {', '.join(tickers[:10])}...")
+    logger.info(f"  Monitoring {len(tickers)} tickers ({src}): {', '.join(tickers[:10])}...")
     
     # Load 2-week-old snapshot (latest available)
     history = _load_json(SI_HISTORY, {})
@@ -226,7 +222,8 @@ def run_si_monitor():
         logger.debug(f"  alt_data update error: {e}")
 
     logger.info(f"  Done. {len(current)} fetched, {len(alerts)} alerts: {[a['ticker']+':'+a['alert_type'] for a in alerts]}")
-    return {"tickers": len(current), "alerts": alerts}
+    return {"tickers": len(current), "alerts": alerts, "sources": counts,
+            "degraded": False}
 
 
 if __name__ == "__main__":
@@ -236,3 +233,10 @@ if __name__ == "__main__":
         sys.exit(0)
     result = run_si_monitor()
     print(f"\nMonitored {result['tickers']} tickers, {len(result['alerts'])} alerts")
+    # Exit 2 on a degraded run. "Monitored 0 tickers, 0 alerts" with RC=0 is
+    # what let this agent look healthy while examining nothing; the return code
+    # is the only part of that line a cron wrapper reads.
+    if result.get("degraded"):
+        print("DEGRADED — no tickers from any source (%s)"
+              % watch_universe.describe(result.get("sources", {})))
+        sys.exit(2)

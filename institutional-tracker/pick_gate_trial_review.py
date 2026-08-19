@@ -39,6 +39,11 @@ def review() -> dict:
     from alpaca_trader import AlpacaTrader
     trader = AlpacaTrader()
     pos = trader.get_positions()
+    # `weight_pct` is not a column get_positions() builds, so the old
+    # `r.get("weight_pct", 0)` printed every trial pick as "(wt +0.0%)".
+    # None, not 0.0, when there is no denominator — a weight of zero is a
+    # claim, and "we could not measure it" is not that claim.
+    portfolio_value = float(trader.get_account().get("portfolio_value", 0) or 0)
 
     trial_rows, incumbent_rows = [], []
     if not pos.empty:
@@ -46,8 +51,10 @@ def review() -> dict:
             tkr = r["ticker"]
             pnl = r.get("unrealized_pct")
             pnl = float(pnl) if pnl is not None else None
+            wt  = (abs(float(r["market_value"])) / portfolio_value * 100
+                   if portfolio_value > 0 else None)
             row = {"ticker": tkr, "unrealized_pnl_pct": pnl,
-                   "weight_pct": float(r.get("weight_pct", 0) or 0)}
+                   "weight_pct": wt}
             (incumbent_rows if tkr in incumbents else trial_rows).append(row)
 
     # SPY benchmark over the trial window
@@ -111,7 +118,7 @@ def notify():
     o = review()
     v, why = _verdict(o)
     picks = "".join(
-        f"<li>{r['ticker']}: {_fmt(r['unrealized_pnl_pct'])} (wt {r['weight_pct']:+.1f}%)</li>"
+        f"<li>{r['ticker']}: {_fmt(r['unrealized_pnl_pct'])} (wt {_fmt(r['weight_pct'])})</li>"
         for r in o["trial_picks"]) or "<li>none admitted</li>"
     body = (
         f"<h2>Pick-gate trial review — verdict: {v}</h2>"
@@ -143,7 +150,7 @@ def main():
     print(f"Trial picks admitted so far: {o['n_trial_picks']}")
     if o["trial_picks"]:
         for r in o["trial_picks"]:
-            print(f"   {r['ticker']:6} {_fmt(r['unrealized_pnl_pct']):>9}  (wt {r['weight_pct']:+.1f}%)")
+            print(f"   {r['ticker']:6} {_fmt(r['unrealized_pnl_pct']):>9}  (wt {_fmt(r['weight_pct'])})")
     else:
         print("   (none yet — no new pick has cleared into a 16th+ slot)")
     print("\n--- scoreboard (avg unrealized return) ---")

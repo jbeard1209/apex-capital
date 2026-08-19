@@ -28,6 +28,8 @@ import time
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
+import watch_universe
+
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s  %(levelname)-8s  %(message)s",
                     datefmt="%H:%M:%S")
@@ -241,27 +243,31 @@ def run_edgar_transcript_analysis(tickers: Optional[list[str]] = None, days_back
     """Main entry point. Analyzes all positions + watchlist."""
     logger.info("Running EDGAR earnings transcript analysis...")
     
+    counts = {}
     if tickers is None:
-        # Get tickers from positions + watchlist
-        tickers = []
-        try:
-            from alpaca_trader import AlpacaTrader
-            pos_df = AlpacaTrader().get_positions()
-            if pos_df is not None and not pos_df.empty:
-                tickers.extend(str(t).upper() for t in pos_df.get("symbol", []) if t)
-        except Exception:
-            pass
-        fe_watchlist = _load_json(os.path.join(DATA_DIR, "fe_watchlist.json"), [])
-        for item in (fe_watchlist if isinstance(fe_watchlist, list) else []):
-            t = item.get("ticker","") or (item if isinstance(item, str) else "")
-            if t:
-                tickers.append(str(t).upper())
-        tickers = list(set(tickers))[:30]
+        # Was: `pos_df.get("symbol", [])` against a DataFrame whose column is
+        # `ticker`, plus `fe_watchlist if isinstance(..., list) else []` against
+        # a dict. Both returned nothing, silently — and this agent runs at 23:20
+        # UTC every night, so "No tickers to analyze / RC=0" was its entire
+        # output for months while alt_data_signals.json went unwritten from
+        # 2026-07-03 onward. See watch_universe.py.
+        tickers, counts = watch_universe.get_watch_tickers(limit=30)
 
     if not tickers:
+        if watch_universe.is_degraded(counts):
+            # Every source was consulted and every one was empty. That is a
+            # broken input, not "no earnings this week" — and at ERROR so it
+            # survives a log tail.
+            logger.error(
+                "  NO TICKERS from any source (%s). Nothing was analyzed, so "
+                "the 0 bearish flags below are an absence of evidence.",
+                watch_universe.describe(counts))
+            return {"tickers_analyzed": 0, "results": {}, "degraded": True}
         logger.info("  No tickers to analyze.")
-        return {"tickers_analyzed": 0, "results": {}}
+        return {"tickers_analyzed": 0, "results": {}, "degraded": False}
 
+    if counts:
+        logger.info(f"  Universe: {watch_universe.describe(counts)}")
     logger.info(f"  Analyzing {len(tickers)} tickers: {', '.join(tickers[:10])}...")
     
     results = {}
@@ -312,3 +318,9 @@ if __name__ == "__main__":
         sys.exit(0)
     result = run_edgar_transcript_analysis()
     print(f"\nAnalyzed {result['tickers_analyzed']} tickers, {len(result.get('bearish',[]))} flagged bearish")
+    # Exit 2 on a degraded run. This agent printed "Analyzed 0 tickers, 0
+    # flagged bearish" with RC=0 every night for months; the return code is
+    # the only part of that line the cron wrapper can act on.
+    if result.get("degraded"):
+        print("DEGRADED — no tickers from any source")
+        sys.exit(2)

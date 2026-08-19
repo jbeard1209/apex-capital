@@ -89,16 +89,43 @@ def get_positions_with_entry() -> list[dict]:
         pos_df = trader.get_positions()
         if pos_df is None or pos_df.empty:
             return []
+        # The schema is asserted, not guessed. Every field below was read with
+        # `row.get(<wrong name>, <default>)` until 2026-08-18: the symbol column
+        # is `ticker` not `symbol`, and the entry column is `avg_entry` not
+        # `avg_entry_price`. A pandas Series `.get()` returns the default for a
+        # missing key rather than raising, so all 21 live positions came back as
+        # ticker="" with entry==current and therefore pnl_pct==0.0 — and 0.0 is
+        # never <= the tightest stop of -6.0. This tracker could not fire. It
+        # reported "21 positions checked, 21 OK" every run instead.
+        missing = [c for c in ("ticker", "current_price", "avg_entry", "qty")
+                   if c not in pos_df.columns]
+        if missing:
+            # Loud and empty beats quiet and wrong: a schema drift that silently
+            # zeroes every P&L is the exact failure being fixed here.
+            logger.error(
+                "get_positions() is missing %s (saw %s) — cannot evaluate "
+                "stop-losses; returning no positions rather than false zeros.",
+                missing, list(pos_df.columns))
+            return []
+
+        has_pct    = "unrealized_pct" in pos_df.columns
+        has_sector = "sector" in pos_df.columns   # broker has none; kept for enrichers
+
         positions = []
         for _, row in pos_df.iterrows():
-            ticker = str(row.get("symbol", "")).upper()
+            ticker = str(row["ticker"]).upper()
             try:
-                current = float(row.get("current_price", 0))
-                entry   = float(row.get("avg_entry_price", current))
-                qty     = float(row.get("qty", 0))
-                pnl_pct = ((current - entry) / entry * 100) if entry > 0 else 0.0
-                sector  = str(row.get("sector", "DEFAULT"))
-            except (ValueError, TypeError):
+                current = float(row["current_price"])
+                entry   = float(row["avg_entry"])
+                qty     = float(row["qty"])
+                # Prefer the broker's own figure: it already carries the right
+                # sign for shorts, where (current - entry) has it backwards.
+                if has_pct:
+                    pnl_pct = float(row["unrealized_pct"])
+                else:
+                    pnl_pct = ((current - entry) / entry * 100) if entry > 0 else 0.0
+                sector  = str(row["sector"]) if has_sector else "DEFAULT"
+            except (ValueError, TypeError, KeyError):
                 continue
             positions.append({
                 "ticker":        ticker,

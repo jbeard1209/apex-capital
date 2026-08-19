@@ -194,7 +194,12 @@ def _check_stop_losses(actions: list, errors: list):
         for _, pos in positions.iterrows():
             ticker  = pos.get("ticker", "?")
             try:
-                pnl_pct = float(pos.get("unrealized_plpc", 0)) * 100
+                # `unrealized_plpc` is the SDK attribute; the column is
+                # `unrealized_pct` and is ALREADY in percent. The old read
+                # took the 0 default and multiplied it by 100, so every
+                # position scored exactly 0.0% and this logged
+                # "No stop-loss breaches across N positions" forever.
+                pnl_pct = float(pos["unrealized_pct"])
                 if pnl_pct <= -(_STOP_LOSS_PCT * 100):
                     breaches.append((ticker, pnl_pct))
             except Exception:
