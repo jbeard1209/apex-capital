@@ -171,3 +171,16 @@ A remediation deletes the field, file or record its own check reads, so the chec
 - **Writeup:** memory `fix_that_erased_its_detector`
 - **Detectors:**
   - `test_pipeline_smoke.py::TestWrongfulRetirement`
+
+## `control_output_becomes_its_own_input`
+
+A control writes its finding into the queue it scans, so the finding is tracked as a new problem, ages, and earns a finding about itself. Every step is individually correct and the queue fills with governance about governance until nobody reads it — and a queue nobody reads is not a control.
+
+- **Proved real by:** 96 of the Chairman's 214 rows (45%) were rows the sentinel or the SLA escalator had written about other rows; 18 were about another governance row. One pyarrow bug accounted for four separate rows.
+- **Owner:** Problem Lifecycle Sentinel
+- **Writeup:** memory `problem_lifecycle_sentinel`
+- **Detectors:**
+  - `problem_lifecycle_sentinel.py::derived_subject`
+  - `problem_lifecycle_sentinel.py::flag_stale_in_place`
+  - `problem_lifecycle_sentinel.py::retire_derived_rows`
+  - `test_pipeline_smoke.py::TestGovernanceDoesNotEscalateItself`

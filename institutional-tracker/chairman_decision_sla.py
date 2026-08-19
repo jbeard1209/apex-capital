@@ -45,6 +45,7 @@ from pathlib import Path
 # undone by the next ingest — the producer/consumer mismatch this firm keeps
 # rediscovering. Imported, never re-implemented.
 from chairman_queue_sync import group_key as _group_key
+import problem_lifecycle_sentinel as _PLS
 
 DATA = Path(__file__).resolve().parent / "data"
 CHAIR_ACTION  = DATA / "chairman_action_required.json"   # upstream producers
@@ -149,7 +150,10 @@ def _escalate_to_board(item):
     pending = _load(CIT_PENDING, [])
     if not isinstance(pending, list):
         pending = []
-    pid = f"sla-escalation-{item['id']}"
+    # Prefix imported, not spelled: problem_lifecycle_sentinel reads it to tell
+    # that this row is a VIEW of item['id'] rather than a problem of its own,
+    # and a second copy of the format is a second thing that can drift.
+    pid = f"{_PLS.SLA_ESCALATION_PREFIX}{item['id']}"
     if any(isinstance(p, dict) and p.get("id") == pid for p in pending):
         return False
     pending.append({

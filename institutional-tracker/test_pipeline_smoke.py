@@ -12816,6 +12816,241 @@ class TestRetiredFindingIsClosedNotDeleted(unittest.TestCase):
         self.assertNotIn("status", out[0])
 
 
+class TestGovernanceDoesNotEscalateItself(unittest.TestCase):
+    """A view of a problem must not become a problem in its own right.
+
+    Measured on the VM 2026-08-19: 96 of the Chairman's 214 rows — 45% — were
+    rows the sentinel or the SLA escalator had written ABOUT other rows, and 18
+    of those were about another governance row. The mechanism is a ratchet: a
+    real problem goes 20 days undecided, so the sentinel appends
+    `lifecycle-stale-sig-X` to the queue it scans; that row is then tracked as
+    an independent problem, ages 20 days of its own, and earns a row about it.
+    Nothing was wrong with any single step, which is why it ran for months.
+    """
+
+    def setUp(self):
+        import problem_lifecycle_sentinel as P
+        self.P = P
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        d = Path(self.tmp.name)
+        self.paths = {
+            "CHAIRMAN_PATH": d / "chairman.json",
+            "PENDING_PATH": d / "pending.json",
+            "IMPL_QUEUE_PATH": d / "impl.json",
+            "HISTORY_PATH": d / "history.json",
+            "LOOPS_PATH": d / "loops.json",
+        }
+        for p in self.paths.values():
+            p.write_text("[]" if "history" not in p.name and "loops" not in p.name else "{}")
+        self.paths["SCANNED_QUEUES"] = (
+            (self.paths["PENDING_PATH"], "proposal"),
+            (self.paths["IMPL_QUEUE_PATH"], "impl"),
+            (self.paths["CHAIRMAN_PATH"], "chairman"))
+
+    def _patched(self):
+        return patch.multiple(self.P, **self.paths)
+
+    def _write(self, key, obj):
+        self.paths[key].write_text(json.dumps(obj))
+
+    def _chairman(self):
+        return json.loads(self.paths["CHAIRMAN_PATH"].read_text())
+
+    def _old(self, days=40):
+        return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+    # -- the ratchet -------------------------------------------------------
+    def test_a_stale_problem_is_flagged_on_itself_not_given_a_second_row(self):
+        self._write("CHAIRMAN_PATH", [{"id": "real-problem",
+                                       "title": "Something actually broken",
+                                       "status": "awaiting_chairman"}])
+        with self._patched():
+            self.P.run(escalate=True)           # seed history
+            hist = json.loads(self.paths["HISTORY_PATH"].read_text())
+            for h in hist.values():
+                h["first_seen"] = h["last_open"] = self._old()
+            self._write("HISTORY_PATH", hist)
+            rep = self.P.run(escalate=True)
+
+        rows = self._chairman()
+        self.assertEqual(1, len(rows),
+                         "the sentinel appended a row about a row — that is the "
+                         "ratchet that made 45%% of the queue governance")
+        self.assertTrue(rows[0].get("sla_breached"))
+        self.assertGreaterEqual(rows[0].get("stale_days", 0), self.P.STALE_SLA_DAYS)
+        self.assertEqual(1, rep["flagged_in_place"])
+        self.assertEqual(0, rep["escalated_chairman"])
+
+    def test_flagging_is_idempotent_and_does_not_restamp_the_breach_time(self):
+        self._write("CHAIRMAN_PATH", [{"id": "real-problem", "title": "T",
+                                       "status": "awaiting_chairman"}])
+        with self._patched():
+            self.P.run(escalate=True)
+            hist = json.loads(self.paths["HISTORY_PATH"].read_text())
+            for h in hist.values():
+                h["first_seen"] = h["last_open"] = self._old()
+            self._write("HISTORY_PATH", hist)
+            self.P.run(escalate=True)
+            first = self._chairman()[0]["sla_breached_at"]
+            self.P.run(escalate=True)
+            self.P.run(escalate=True)
+        rows = self._chairman()
+        self.assertEqual(1, len(rows))
+        self.assertEqual(first, rows[0]["sla_breached_at"],
+                         "the breach timestamp moves every run, so the row never "
+                         "looks old and the SLA clock never actually expires")
+
+    def test_a_breach_with_no_row_to_stamp_still_surfaces(self):
+        """The fallback matters: a breach we cannot attach to anything must
+        not evaporate. Poison pill for the flag-in-place path."""
+        with self._patched():
+            hist = {"sig-orphan": {"sig": "sig-orphan", "title": "vanished thing",
+                                   "first_seen": self._old(), "last_open": self._old(),
+                                   "status": "OPEN", "present": True,
+                                   "occurrences": 1, "times_resolved": 0,
+                                   "recurred_after_resolution": 0}}
+            self._write("HISTORY_PATH", hist)
+            rep = self.P.run(escalate=True)
+        # It is not in any queue, so it is a SILENT_DROP rather than STALE —
+        # either way the requirement is the same: it reaches the Chairman.
+        self.assertEqual(1, len(self._chairman()))
+        self.assertEqual(1, rep["escalated_chairman"])
+
+    # -- derived rows are not problems ------------------------------------
+    def test_a_derived_row_is_never_classified_open_and_never_escalates(self):
+        derived = {"id": self.P.STALE_ID_PREFIX + "sig-abc",
+                   "description": "'X' has been OPEN with no resolution",
+                   "status": "awaiting_chairman", "ts": self._old()}
+        self._write("CHAIRMAN_PATH", [derived])
+        with self._patched():
+            self.P.run(escalate=True)
+            hist = json.loads(self.paths["HISTORY_PATH"].read_text())
+            for h in hist.values():
+                h["first_seen"] = h["last_open"] = self._old()
+            self._write("HISTORY_PATH", hist)
+            rep = self.P.run(escalate=True)
+        self.assertEqual([], rep["stale"],
+                         "a row about a stale row went stale and spawned a third")
+        self.assertEqual(1, len(self._chairman()))
+        self.assertEqual(1, len(rep["derived"]))
+
+    def test_the_poison_pill_a_derived_row_untagged_does_escalate(self):
+        """Proves the previous test is testing the tagging, not the clock.
+
+        Same row, same age — only the id prefix differs — and the sentinel
+        escalates it. That difference IS the fix.
+        """
+        undetected = {"id": "not-a-recognised-prefix-sig-abc",
+                      "description": "'X' has been OPEN with no resolution",
+                      "status": "awaiting_chairman"}
+        self._write("CHAIRMAN_PATH", [undetected])
+        with self._patched():
+            self.P.run(escalate=True)
+            hist = json.loads(self.paths["HISTORY_PATH"].read_text())
+            for h in hist.values():
+                h["first_seen"] = h["last_open"] = self._old()
+            self._write("HISTORY_PATH", hist)
+            rep = self.P.run(escalate=True)
+        self.assertEqual(1, len(rep["stale"]))
+
+    def test_removing_a_derived_row_is_not_a_silent_drop(self):
+        derived = {"id": self.P.DROP_ID_PREFIX + "sig-abc",
+                   "description": "'X' disappeared from every queue",
+                   "status": "awaiting_chairman"}
+        self._write("CHAIRMAN_PATH", [derived])
+        with self._patched():
+            self.P.run(escalate=True)
+            self._write("CHAIRMAN_PATH", [])          # compacted away
+            rep = self.P.run(escalate=True)
+        self.assertEqual([], rep["silent_drop"],
+                         "archiving a spent view was reported as a dropped problem")
+        self.assertEqual([], self._chairman())
+
+    # -- retirement of the rows already in the queue -----------------------
+    def test_a_stale_row_superseded_by_the_flag_is_closed_not_deleted(self):
+        subject = {"id": "real-problem", "title": "Something actually broken",
+                   "status": "awaiting_chairman"}
+        with self._patched():
+            sig = self.P.signature(subject, "chairman")
+            view = {"id": self.P.STALE_ID_PREFIX + sig,
+                    "description": "'Something actually broken' has been OPEN",
+                    "status": "awaiting_chairman"}
+            self._write("CHAIRMAN_PATH", [subject, view])
+            self.P.run(escalate=True)
+            hist = json.loads(self.paths["HISTORY_PATH"].read_text())
+            for h in hist.values():
+                h["first_seen"] = h["last_open"] = self._old()
+            self._write("HISTORY_PATH", hist)
+            self.P.run(escalate=True)     # stamps the subject
+            rep = self.P.run(escalate=True)   # retires the now-redundant view
+
+        rows = {r["id"]: r for r in self._chairman()}
+        self.assertEqual(2, len(rows), "the view was deleted, not closed")
+        self.assertIn(self.P.STALE_ID_PREFIX + sig, rep["retired_derived"])
+        self.assertIn(self.P._status_of(rows[self.P.STALE_ID_PREFIX + sig]),
+                      self.P.RESOLVED_STATUSES)
+        self.assertTrue(rows["real-problem"].get("sla_breached"),
+                        "the view was retired without the breach it announced "
+                        "being carried anywhere — that IS losing the escalation")
+
+    def test_a_view_whose_subject_is_still_unresolved_is_kept(self):
+        self._write("CHAIRMAN_PATH", [{"id": self.P.STALE_ID_PREFIX + "sig-live",
+                                       "description": "about a live problem",
+                                       "status": "awaiting_chairman"}])
+        hist = {"sig-live": {"sig": "sig-live", "title": "t", "status": "OPEN",
+                             "first_seen": self._old(), "last_open": self._old(),
+                             "present": True, "occurrences": 1,
+                             "times_resolved": 0, "recurred_after_resolution": 0}}
+        self._write("HISTORY_PATH", hist)
+        with self._patched():
+            rep = self.P.run(escalate=True)
+        self.assertEqual([], rep["retired_derived"])
+        self.assertNotIn("resolved_at", self._chairman()[0])
+
+    def test_an_unidentifiable_subject_is_not_treated_as_settled(self):
+        """'I cannot find what this was watching' is not a closure."""
+        with self._patched():
+            settled, why = self.P._subject_is_settled("sig-nowhere", {}, {})
+        self.assertFalse(settled)
+        self.assertIn("not in history", why)
+
+    # -- the dry run must be dry -------------------------------------------
+    def test_report_mode_writes_nothing(self):
+        self._write("CHAIRMAN_PATH", [{"id": "p", "title": "t",
+                                       "status": "awaiting_chairman"}])
+        before = {k: p.read_text() for k, p in self.paths.items()
+                  if isinstance(p, Path)}
+        with self._patched():
+            self.P.run(escalate=False)
+        after = {k: p.read_text() for k, p in self.paths.items()
+                 if isinstance(p, Path)}
+        self.assertEqual(before, after,
+                         "--report advanced persistent state; the second run then "
+                         "classifies against what the first one wrote")
+
+    # -- one definition of the id format ------------------------------------
+    def test_the_sla_escalator_imports_the_prefix_it_does_not_spell_it(self):
+        """AST, not grep: the literal appears in this file's own comments.
+
+        reconciliation_check.py held four private copies of config guardrails;
+        one was 23 days stale and a legitimate board change was indistinguish-
+        able from tampering. The sentinel reads this prefix to tell a view from
+        a problem, so a second copy would silently un-tag the SLA's rows.
+        """
+        import ast
+        src = Path("chairman_decision_sla.py").read_text()
+        tree = ast.parse(src)
+        literals = [n.value for n in ast.walk(tree)
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                    and "sla-escalation" in n.value]
+        self.assertEqual([], literals,
+                         "chairman_decision_sla.py spells the prefix itself")
+        attrs = [n for n in ast.walk(tree) if isinstance(n, ast.Attribute)
+                 and n.attr == "SLA_ESCALATION_PREFIX"]
+        self.assertTrue(attrs, "it neither spells nor imports the prefix")
+
+
 # =============================================================================
 # Runner
 # =============================================================================

@@ -87,6 +87,58 @@ CHRONIC_OCCURRENCE = 20      # raised this many distinct times == chronic loop
 RESOLVED_STATUSES = {"implemented", "resolved", "done", "closed", "completed", "fixed"}
 WONT_FIX_STATUSES = {"skipped", "protected", "wont_fix", "rejected", "dismissed"}
 
+# ---------------------------------------------------------------------------
+# DERIVED ROWS: a view of a problem is not a problem  (2026-08-19)
+# ---------------------------------------------------------------------------
+# Measured on the VM: 91 of the Chairman's 214 rows — 43% — were rows this
+# sentinel had itself written about other rows, and 18 of those were about
+# another governance row. The mechanism is a ratchet: a real problem goes 20
+# days undecided, so this file writes `lifecycle-stale-sig-X` into the same
+# queue it scans. That new row is then tracked as an independent problem, sits
+# undecided for 20 days of its own, and earns a `lifecycle-stale-sig-Y` about
+# it. Each generation is cheap to produce and indistinguishable, at a glance,
+# from a real finding — and a queue nobody reads is not a control, which is
+# the whole reason chairman_queue_compactor.py exists.
+#
+# The rule is that a derived row has no lifecycle of its own: it exists exactly
+# as long as the thing it points at is unresolved. So it is TRACKED (its
+# signature stays in history, so removing it later is never read as a drop) but
+# never CLASSIFIED as OPEN, never escalated, and retired automatically once its
+# subject closes. See retire_derived_rows().
+#
+# These prefixes are the ones this module mints, plus chairman_decision_sla's —
+# which imports SLA_ESCALATION_PREFIX from here rather than holding its own
+# copy, because a second copy of an identifier format is a second thing that
+# can drift (reconciliation_check.py held four such copies; one was 23 days
+# stale). The import direction is forced: chairman_decision_sla already depends
+# on this module transitively, so the constant has to live at the root.
+STALE_ID_PREFIX = "lifecycle-stale-"
+DROP_ID_PREFIX = "lifecycle-drop-"
+LOOP_ID_PREFIX = "loop-"
+SLA_ESCALATION_PREFIX = "sla-escalation-"
+DERIVED_ID_PREFIXES = (STALE_ID_PREFIX, DROP_ID_PREFIX, LOOP_ID_PREFIX,
+                       SLA_ESCALATION_PREFIX)
+
+# A terminal status that is emphatically NOT a silent drop. It means: we
+# stopped tracking this row as a problem in its own right, on purpose, and
+# here is the row it was a view of.
+DERIVED_STATUS = "DERIVED"
+
+
+def derived_subject(item: dict):
+    """The id/signature this row is merely a VIEW of, or None if it is a
+    problem in its own right.
+
+    `lifecycle-stale-sig-abc` -> `sig-abc`;  `sla-escalation-foo-42` -> `foo-42`.
+    """
+    if not isinstance(item, dict):
+        return None
+    rid = str(item.get("id") or "")
+    for pre in DERIVED_ID_PREFIXES:
+        if rid.startswith(pre):
+            return rid[len(pre):] or None
+    return None
+
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -164,12 +216,19 @@ def _is_open(status: str) -> bool:
 # ---------------------------------------------------------------------------
 # Scan the live queues into a signature -> aggregate snapshot.
 # ---------------------------------------------------------------------------
-def _register(snap: dict, sig: str, kind: str, title: str, st: str) -> None:
+def _register(snap: dict, sig: str, kind: str, title: str, st: str,
+              derived_of: str = None) -> None:
     cur = snap.setdefault(sig, {
         "sig": sig, "kinds": set(), "titles": set(),
         "open": False, "resolved": False, "wont_fix": False,
-        "title": title,
+        "title": title, "derived_of": None,
     })
+    # Derived-ness is a property of the row, not of the run: once any producer
+    # of this signature is a view of something else, it stays one. Recording
+    # the subject (not just a bool) is what lets retire_derived_rows close it
+    # against the right history entry.
+    if derived_of and not cur.get("derived_of"):
+        cur["derived_of"] = derived_of
     cur["kinds"].add(kind)
     cur["titles"].add(title[:120])
     if _is_open(st):
@@ -193,7 +252,8 @@ def _scan() -> dict:
                 continue
             st = _status_of(item)
             title = item.get("title") or item.get("description") or "(untitled)"
-            _register(snap, signature(item, kind), kind, title, st)
+            subj = derived_subject(item)
+            _register(snap, signature(item, kind), kind, title, st, subj)
 
             # A row folded into this one by chairman_queue_sync is still in the
             # queue — it is just wearing the survivor's title. That file dedups
@@ -226,6 +286,10 @@ def _update_history(snap: dict, history: dict, now: str) -> dict:
                 "status": "OPEN" if cur["open"] else ("RESOLVED" if cur["resolved"] else "WONT_FIX"),
                 "present": True, "last_open": now if cur["open"] else None,
             }
+            if cur.get("derived_of"):
+                h["derived_of"] = cur["derived_of"]
+                h["status"] = DERIVED_STATUS
+                h["last_open"] = None
             history[sig] = h
             continue
 
@@ -249,6 +313,13 @@ def _update_history(snap: dict, history: dict, now: str) -> dict:
         h["present"] = True
         h["title"] = cur["title"]
         h["kinds"] = sorted(set(h.get("kinds", [])) | cur["kinds"])
+        if cur.get("derived_of"):
+            # Tracked so its later removal is never read as a drop, but never
+            # OPEN, so it can never go STALE and spawn a row about itself.
+            h["derived_of"] = cur["derived_of"]
+            h["status"] = DERIVED_STATUS
+            h["last_open"] = None
+            continue
         if cur["open"]:
             h["status"] = "OPEN"
             if not h.get("last_open"):
@@ -281,6 +352,11 @@ def classify(h: dict, now: str) -> str:
     occ = h.get("occurrences", 0)
     status = h.get("status", "OPEN")
 
+    # Checked before everything else, including LOOPING: a view of a problem
+    # that keeps recurring is not itself a recurring problem, and escalating it
+    # would put a second board proposal behind one root cause.
+    if h.get("derived_of") or status == DERIVED_STATUS:
+        return DERIVED_STATUS
     if recurred >= LOOP_RECUR_THRESHOLD or (status == "OPEN" and occ >= CHRONIC_OCCURRENCE):
         return "LOOPING"
     if status == "SILENT_DROP":
@@ -333,12 +409,64 @@ def _escalate_looping(h: dict, now: str) -> bool:
     return _append_deduped(PENDING_PATH, entry, "id")
 
 
+SCANNED_QUEUES = ((PENDING_PATH, "proposal"),
+                  (IMPL_QUEUE_PATH, "impl"),
+                  (CHAIRMAN_PATH, "chairman"))
+
+
+def flag_stale_in_place(sig: str, h: dict, now: str) -> int:
+    """Stamp the SLA breach ON the stale row(s). Returns rows stamped.
+
+    An escalation is an ATTRIBUTE of a problem, not a second problem. Appending
+    `lifecycle-stale-<sig>` — the old behaviour — put a row in the queue whose
+    entire content was "the row above me is 20 days old", doubling the queue's
+    length without adding a fact, and then aged into a third row about the
+    second. Stamping the row itself says the same thing in the place a reader
+    is already looking, and cannot compound.
+
+    Returns 0 when the signature is in no queue, which is the caller's signal
+    to fall back to appending a row: a breach we cannot attach to anything must
+    still surface somewhere rather than evaporate.
+    """
+    stamped = 0
+    age = _days_between(h.get("last_open") or h.get("first_seen"), now)
+    for path, kind in SCANNED_QUEUES:
+        items = _load(path, [])
+        if not isinstance(items, list):
+            continue
+        touched = False
+        for it in items:
+            if not isinstance(it, dict) or signature(it, kind) != sig:
+                continue
+            if not _is_open(_status_of(it)):
+                continue
+            # first_flagged is written once: it is when the SLA was breached,
+            # not when the sentinel last looked at it.
+            if not it.get("sla_breached"):
+                it["sla_breached"] = True
+                it["sla_breached_at"] = now
+                touched = True
+            if it.get("stale_days") != int(age):
+                it["stale_days"] = int(age)
+                it["sla_note"] = (
+                    f"OPEN with no resolution for >= {STALE_SLA_DAYS}d "
+                    f"(first seen {h.get('first_seen','?')[:10]}). It needs a "
+                    f"decision — resolve, reassign, or explicitly close.")
+                touched = True
+            stamped += 1
+        if touched:
+            _save(path, items)
+    return stamped
+
+
 def _escalate_chairman(h: dict, cls: str, now: str) -> bool:
     sig = h["sig"]
     if cls == "STALE":
         desc = (f"'{h.get('title')}' has been OPEN with no resolution for "
                 f">= {STALE_SLA_DAYS}d (first seen {h.get('first_seen','?')[:10]}). "
-                f"It needs a decision — resolve, reassign, or explicitly close.")
+                f"It needs a decision — resolve, reassign, or explicitly close. "
+                f"(No queue row carries this signature, so the breach could not "
+                f"be stamped on the problem itself.)")
         eid = f"lifecycle-stale-{sig}"
     else:  # SILENT_DROP
         desc = (f"'{h.get('title')}' disappeared from every queue with NO recorded "
@@ -355,9 +483,13 @@ def _escalate_chairman(h: dict, cls: str, now: str) -> bool:
     return _append_deduped(CHAIRMAN_PATH, entry, "id")
 
 
-def _update_loops(history: dict) -> list:
+def _update_loops(history: dict, write: bool = True) -> list:
     """Loop-break set: signatures currently LOOPING. Self-correcting — a sig
-    drops out once it is no longer open/recurring (RESOLVED or gone)."""
+    drops out once it is no longer open/recurring (RESOLVED or gone).
+
+    `write=False` for --report: the loop-break set gates the CIT actuator, so a
+    dry run that prunes it would quietly re-arm auto-patching on a loop.
+    """
     loops = _load(LOOPS_PATH, {})
     if not isinstance(loops, dict):
         loops = {}
@@ -375,7 +507,8 @@ def _update_loops(history: dict) -> list:
     for sig in list(loops.keys()):
         if sig not in active:
             loops.pop(sig, None)
-    _save(LOOPS_PATH, loops)
+    if write:
+        _save(LOOPS_PATH, loops)
     return sorted(loops.keys())
 
 
@@ -388,6 +521,87 @@ def is_loop_broken(item: dict, kind: str = "impl") -> bool:
     return signature(item, kind) in loops
 
 
+def _subject_is_settled(subject: str, history: dict, by_id: dict):
+    """(settled, why) for the thing a derived row points at.
+
+    Two kinds of subject, because two producers mint derived rows: this file
+    points at a signature, chairman_decision_sla points at a queue item id.
+    Returns settled=False whenever the subject is still live OR cannot be
+    identified — a view is only safe to retire once we can SAY what happened to
+    what it was watching. "I can't find it" is not a closure; it is the reason
+    _escalate_chairman exists.
+    """
+    h = history.get(subject)
+    if h is not None:
+        st = h.get("status", "OPEN")
+        if st in ("RESOLVED", "WONT_FIX"):
+            return True, "underlying %s is %s" % (subject, st)
+        return False, "underlying %s is %s" % (subject, st)
+    item = by_id.get(subject)
+    if item is not None:
+        st = _status_of(item)
+        if _is_resolved(st) or _is_wont_fix(st):
+            return True, "underlying item %s is %s" % (subject, st or "closed")
+        return False, "underlying item %s is %s" % (subject, st or "open")
+    return False, "underlying %s is not in history or any queue" % subject
+
+
+def _sigs_flagged_in_place() -> set:
+    """Signatures of rows that already carry the SLA breach on themselves."""
+    out = set()
+    for path, kind in SCANNED_QUEUES:
+        for it in _load(path, []):
+            if isinstance(it, dict) and it.get("sla_breached"):
+                out.add(signature(it, kind))
+    return out
+
+
+def retire_derived_rows(rows: list, history: dict, now: str) -> list:
+    """Close, in place, every derived row whose subject has settled.
+
+    Not delete — the same rule the rest of the firm follows: close in place
+    with the evidence, let the detector observe the closure, and let
+    chairman_queue_compactor archive it afterwards. Deleting here would
+    manufacture the silent drop this file was built to detect, at scale, using
+    this file's own rows.
+
+    Idempotent: a row that already carries resolved_at is left alone, so the
+    stamp records when the view was retired and not when it was last read.
+    """
+    by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id")}
+    flagged = _sigs_flagged_in_place()
+    retired = []
+    for row in rows:
+        subject = derived_subject(row)
+        if not subject or row.get("resolved_at"):
+            continue
+        if _status_of(row) in RESOLVED_STATUSES | WONT_FIX_STATUSES:
+            continue
+        settled, why = _subject_is_settled(subject, history, by_id)
+        if not settled and str(row.get("id","")).startswith(STALE_ID_PREFIX) \
+                and subject in flagged:
+            # The breach this row announced now lives on the problem itself, so
+            # the row is a duplicate of a fact the reader already has. Retiring
+            # it is not dropping the escalation — flag_stale_in_place re-stamps
+            # the subject every run for as long as it stays open.
+            settled = True
+            why = ("the SLA breach is now stamped on %s itself (sla_breached), "
+                   "so this separate row says nothing the subject does not"
+                   % subject)
+        if not settled:
+            continue
+        row["status"] = "resolved"
+        row["resolved_at"] = now
+        row["resolution"] = (
+            "Derived row retired by problem_lifecycle_sentinel: %s, so this "
+            "view has nothing left to watch. The subject keeps its own history "
+            "entry; this row is closed rather than deleted so the closure is "
+            "observable, and chairman_queue_compactor archives it once it is."
+            % why)
+        retired.append(row.get("id"))
+    return retired
+
+
 # ---------------------------------------------------------------------------
 # Public entry point.
 # ---------------------------------------------------------------------------
@@ -397,12 +611,24 @@ def run(escalate: bool = True) -> dict:
     if not isinstance(history, dict):
         history = {}
 
+    # Retire spent views BEFORE the scan, against the history as it stood at
+    # the end of the last run, so this run observes them already closed and
+    # records the resolution. Doing it after would leave a one-run window in
+    # which the row is closed but no detector has seen it close — which is
+    # exactly the window chairman_queue_compactor refuses to compact in.
+    chairman_rows = _load(CHAIRMAN_PATH, [])
+    retired = retire_derived_rows(chairman_rows, history, now) if escalate else []
+    if retired:
+        _save(CHAIRMAN_PATH, chairman_rows)
+
     snap = _scan()
     history = _update_history(snap, history, now)
 
     report = {"ts": now, "tracked": len(history),
-              "looping": [], "stale": [], "silent_drop": [],
-              "escalated_board": 0, "escalated_chairman": 0}
+              "looping": [], "stale": [], "silent_drop": [], "derived": [],
+              "retired_derived": retired,
+              "escalated_board": 0, "escalated_chairman": 0,
+              "flagged_in_place": 0}
 
     for sig, h in history.items():
         cls = classify(h, now)
@@ -413,16 +639,27 @@ def run(escalate: bool = True) -> dict:
                 report["escalated_board"] += 1
         elif cls == "STALE":
             report["stale"].append(sig)
-            if escalate and _escalate_chairman(h, cls, now):
-                report["escalated_chairman"] += 1
+            if escalate:
+                if flag_stale_in_place(sig, h, now):
+                    report["flagged_in_place"] += 1
+                elif _escalate_chairman(h, cls, now):
+                    report["escalated_chairman"] += 1
         elif cls == "SILENT_DROP":
             report["silent_drop"].append(sig)
             if escalate and _escalate_chairman(h, cls, now):
                 report["escalated_chairman"] += 1
+        elif cls == DERIVED_STATUS:
+            report["derived"].append(sig)
 
-    loops = _update_loops(history)
+    loops = _update_loops(history, write=escalate)
     report["loop_break_set"] = loops
-    _save(HISTORY_PATH, history)
+    if escalate:
+        # --report used to persist history anyway. A dry run that advances the
+        # `present` flags is not a dry run: the second --report classifies
+        # against state the first one wrote, and on 2026-08-19 a --report on
+        # the Mac silently replaced a 21-day-old history with 226 fresh
+        # signatures. Read-only means read-only.
+        _save(HISTORY_PATH, history)
     return report
 
 
@@ -439,7 +676,9 @@ def main(argv=None):
         print(f"[lifecycle] tracked={rep['tracked']} "
               f"looping={len(rep['looping'])} stale={len(rep['stale'])} "
               f"silent_drop={len(rep['silent_drop'])} "
+              f"derived={len(rep['derived'])} "
               f"-> board+{rep['escalated_board']} chairman+{rep['escalated_chairman']} "
+              f"retired+{len(rep['retired_derived'])} "
               f"loop_break={len(rep['loop_break_set'])}")
     return 0
 
