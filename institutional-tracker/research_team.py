@@ -30,6 +30,31 @@ import yfinance as yf
 
 logger = logging.getLogger(__name__)
 
+
+def _pipeline_run_agents() -> dict:
+    """{ClassName: pipeline_stem} for agents this module declines to construct.
+
+    Deliberately the SAME function agent_roster uses to decide `research_cycle`,
+    rather than a list maintained here. Two derivations of "which agents does
+    research_team run" would be two things to keep in sync, and this codebase's
+    signature failure is exactly that: a producer and a consumer describing the
+    same set in different words until they quietly stop agreeing.
+
+    Fails OPEN: on any error the map is empty, every registry agent is
+    constructed as before, and the FI agents go back to abstaining audibly.
+    A broken derivation should cost noise, never silence.
+    """
+    try:
+        from agent_roster import research_team_skips
+        return research_team_skips()
+    except Exception as exc:                      # pragma: no cover
+        logger.warning(f"  Could not derive pipeline-run agents ({exc}) — "
+                       f"running every registry agent")
+        return {}
+
+
+_PIPELINE_RUN_AGENTS = _pipeline_run_agents()
+
 # ── Suppress yfinance's noisy internal logging ────────────────────────────────
 # yfinance logs individual ticker download failures as ERROR/WARNING to the root
 # logger, which inflates our pipeline error counts (CIT flags 5000+ "errors").
@@ -482,6 +507,41 @@ class ResearchTeamCoordinator:
                         module = importlib.util.module_from_spec(spec)
                         spec.loader.exec_module(module)
                         AgentClass = getattr(module, class_name)
+
+                        # ── Decision #79: leave fixed income to fi_pipeline ──
+                        # This loop constructs every registry agent as a bare
+                        # AgentClass(). The 7 FI agents need a live credit-spread
+                        # context to have any opinion at all, and there is no way
+                        # to pass one through a generic registry loop, so every
+                        # cycle they ran here they abstained — 6 times a day,
+                        # into HR's zero-pick streak counter, where CIT then
+                        # "exonerated" all 7 by blaming market conditions for
+                        # what was a structural impossibility.
+                        #
+                        # The alternative — teach this loop to pass spreads —
+                        # was rejected: fi_pipeline already runs these same
+                        # seven files with live spreads, its own FI_CAPITAL, its
+                        # own board and (since #80) its own executor. Feeding
+                        # their picks into the equity `all_picks` list as well
+                        # would size one book from two capital pools through two
+                        # sets of risk gates. That is the arithmetic
+                        # `positions_conserve` exists to catch; better not to
+                        # create it.
+                        #
+                        # Skipped only when BOTH hold: the class declares context
+                        # it cannot get here, and some pipeline registry actually
+                        # loads it. An agent that needs context and has no
+                        # pipeline still runs and still abstains loudly — the
+                        # failure stays visible instead of becoming a silent skip.
+                        needs_ctx = bool(getattr(AgentClass, "REQUIRED_SPREAD_KEYS", ()))
+                        if needs_ctx and class_name in _PIPELINE_RUN_AGENTS:
+                            logger.info(
+                                f"  [{class_name}] skipped — needs live context this "
+                                f"loop cannot pass; runs in "
+                                f"{_PIPELINE_RUN_AGENTS[class_name]}.py with real spreads"
+                            )
+                            continue
+
                         reg_agent  = AgentClass()
                         reg_report = reg_agent.run()
                         agent_reports.append(reg_report)

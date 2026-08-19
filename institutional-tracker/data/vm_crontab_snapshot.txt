@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-18T03:43:50Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-19T02:05:40Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -316,3 +316,14 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # board output; position monitor is the quarterly review its docstring claims.
 15 15 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fi_risk_monitor.py >> logs/fi_risk_$(date +\%Y\%m\%d).log 2>&1
 0 10 1 1,4,7,10 * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 fi_position_monitor.py >> logs/fi_position_$(date +\%Y\%m\%d).log 2>&1
+
+# Kalshi campaign watchdog, daily (added 2026-08-19). The scan has never
+# missed a slot; what stopped between 2026-08-14 and 2026-08-18 was the
+# SUPERVISION of it, which lived in a session-scoped /loop on the Mac and
+# ended when that session ended. A patient detector and a dead collector both
+# emit "NOT YET" forever, so silence cannot tell them apart — this is the
+# thing that can. Runs 30 min after the 11:45 resolve so it reads a ledger
+# that has just been closed out. It only reports on the host that actually
+# collects (derived from this crontab, not a hostname), so the Mac copy stays
+# quiet instead of alarming daily about another machine.
+15 12 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_watchdog.py --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1

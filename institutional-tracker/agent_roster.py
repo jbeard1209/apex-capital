@@ -232,6 +232,128 @@ def runs_here(agents: list, crontab_text: str = None) -> set:
     return here
 
 
+def dynamic_agent_registries(base: Path = None) -> dict:
+    """Agents a module runs by PATH rather than by import: {ClassName: stem}.
+
+    `_imports_of` walks import statements, so it sees every caller that says
+    `import x`. It is blind to the other way this firm starts an agent:
+
+        RESEARCH_AGENTS = [("agents/cos_fi_creditspread_agent.py",
+                            "FICreditSpreadAgent"), ...]
+        spec = importlib.util.spec_from_file_location(class_name, path)
+
+    fi_pipeline runs 7 agents that way and fe_pipeline runs 10. None of the 17
+    appears in `called_by`, so the roster could only explain them through the
+    `research_cycle` fallback further down — "no module schedule, so
+    research_team must be running it." That fallback happened to be true and
+    happened to be the wrong reason, which is the worst kind of correct: the
+    moment research_team stops loading them the roster calls 17 employed agents
+    UNSCHEDULED, and the shrink-only orphan ratchet fires on a fiction.
+
+    Detected structurally, never by name: a module that calls
+    spec_from_file_location AND declares a module-level sequence of
+    (`*.py`, `ClassName`) pairs is loading agents from disk. Adding an
+    eighteenth agent to either list needs no edit here; writing a third such
+    pipeline needs none either.
+    """
+    base = base or BASE
+    out = {}
+    for rel in _py_files(base):
+        if os.path.dirname(rel):        # top-level pipelines only
+            continue
+        try:
+            tree = ast.parse((base / rel).read_text())
+        except Exception:
+            continue
+        loads_by_path = any(
+            isinstance(n, ast.Call)
+            and ((isinstance(n.func, ast.Attribute) and n.func.attr == "spec_from_file_location")
+                 or (isinstance(n.func, ast.Name) and n.func.id == "spec_from_file_location"))
+            for n in ast.walk(tree))
+        if not loads_by_path:
+            continue
+        stem = rel[:-3]
+        for node in tree.body:
+            if not (isinstance(node, ast.Assign) and isinstance(node.value, (ast.List, ast.Tuple))):
+                continue
+            for elt in node.value.elts:
+                if not (isinstance(elt, (ast.Tuple, ast.List)) and len(elt.elts) == 2):
+                    continue
+                try:
+                    path, cls = ast.literal_eval(elt.elts[0]), ast.literal_eval(elt.elts[1])
+                except Exception:
+                    continue
+                if isinstance(path, str) and isinstance(cls, str) \
+                        and path.endswith(".py") and cls[:1].isupper():
+                    out[cls] = stem
+    return out
+
+
+CONTEXT_CONTRACT = "REQUIRED_SPREAD_KEYS"
+
+
+def research_team_skips(base: Path = None) -> dict:
+    """{ClassName: pipeline_stem} research_team declines to construct (#79).
+
+    Two conditions, both required, mirroring research_team.py's own guard:
+      1. the class declares CONTEXT_CONTRACT — inputs it cannot get from a bare
+         AgentClass() in a generic registry loop, and
+      2. a pipeline registry loads it by path, so skipping it here does not
+         make it stop running anywhere.
+
+    Condition 1 is read off the AST, following one level of base class within
+    agents/, because that is where the contract actually lives (the seven FI
+    agents inherit it from cos_fi_base). Condition 2 is dynamic_agent_registries.
+
+    The FE agents satisfy 2 and not 1 — they need no runtime context and
+    research_team still runs them — which is the distinction this function
+    exists to make. Keyed off a declared class attribute rather than an "FI"
+    name prefix so a renamed pod does not silently rejoin the research cycle.
+    """
+    base = base or BASE
+    dyn = dynamic_agent_registries(base)
+    if not dyn:
+        return {}
+
+    def declares(rel: str, depth: int = 0) -> bool:
+        try:
+            tree = ast.parse((base / rel).read_text())
+        except Exception:
+            return False
+        bases = set()
+        for cls in (n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)):
+            for stmt in cls.body:
+                tgts = (stmt.targets if isinstance(stmt, ast.Assign)
+                        else [stmt.target] if isinstance(stmt, ast.AnnAssign) else [])
+                if any(isinstance(t, ast.Name) and t.id == CONTEXT_CONTRACT for t in tgts):
+                    return True
+            bases.update(b.id for b in cls.bases if isinstance(b, ast.Name))
+        if depth or not bases:
+            return False
+        # One hop: find the sibling file in agents/ that defines a base class.
+        d = os.path.dirname(rel)
+        for sib in sorted(_py_files(base)):
+            if os.path.dirname(sib) != d or sib == rel:
+                continue
+            try:
+                sib_tree = ast.parse((base / sib).read_text())
+            except Exception:
+                continue
+            if any(isinstance(n, ast.ClassDef) and n.name in bases
+                   for n in ast.walk(sib_tree)) and declares(sib, depth + 1):
+                return True
+        return False
+
+    reg = {a.get("class_name"): (a.get("file") or "")
+           for a in _registry_rows(_load(base / "data" / "agent_registry.json", []))}
+    out = {}
+    for cls, stem in dyn.items():
+        rel = reg.get(cls) or ""
+        if rel and (base / rel).exists() and declares(rel):
+            out[cls] = stem
+    return out
+
+
 def _imports_of(base: Path, rel: str) -> set:
     """Module names this file imports, first level only."""
     try:
@@ -270,6 +392,8 @@ def build(base: Path = BASE, host: str = "local") -> dict:
         return via
 
     # Everything a scheduled module imports is itself running, one level deep.
+    dyn_registries = dynamic_agent_registries(base)
+    skipped_by_research_team = research_team_skips(base)
     directly_scheduled = {s for s in stems if scheduled_in(s)}
     called_by = {}
     for s in sorted(directly_scheduled):
@@ -306,7 +430,15 @@ def build(base: Path = BASE, host: str = "local") -> dict:
             "superseded_by": superseded_by,
             # research_cycle is what `status` actually controls (research_team.py
             # loads active + reassigned). It is NOT employment.
-            "research_cycle": a.get("status") in ("active", "reassigned"),
+            #
+            # Except for agents research_team now declines to construct: since
+            # decision #79 it skips a registry agent that declares required
+            # context AND has a pipeline that supplies it, so `active` no longer
+            # implies "runs in the research cycle" for those. Recorded here
+            # rather than left to drift, because agent_sweep reads this field to
+            # decide whether a retired agent is still executing.
+            "research_cycle": (a.get("status") in ("active", "reassigned")
+                               and name not in skipped_by_research_team),
             "registry_status": a.get("status"),
             "permanent": bool(a.get("permanent")),
             "retirement_reason": a.get("retirement_reason") or a.get("deactivation_reason"),
@@ -354,6 +486,14 @@ def build(base: Path = BASE, host: str = "local") -> dict:
         via = scheduled_in(stem) if stem else []
         if not via and stem in called_by:
             via = [f"called_by:{s}" for s in sorted(called_by[stem])]
+        # Loaded from disk by a pipeline's own registry (fi_pipeline's
+        # RESEARCH_AGENTS, fe_pipeline's FE_AGENT_REGISTRY). This is a real
+        # schedule edge that `called_by` cannot see, because the pipeline never
+        # imports the agent — it opens the file. Checked BEFORE the
+        # research_team fallback so the roster names the path that actually
+        # gives the agent its inputs.
+        if not via and r["name"] in dyn_registries:
+            via = [f"called_by:{dyn_registries[r['name']]}"]
         # A research agent with no module schedule still runs: research_team.py
         # instantiates it from the registry every cycle.
         if not via and r["research_cycle"]:

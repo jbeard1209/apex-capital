@@ -27,6 +27,24 @@ logs/
 institutional-tracker/logs/
 *.log
 
+# ── Arm files — authorisation to transmit real orders ────────────────────────
+# These are the files that turn shadow mode into live order submission:
+#   data/.kalshi_armed  -> kalshi_client.place_order()
+#   data/.fi_armed      -> fi_executor's transmit branch
+#
+# Neither was ignored until 2026-08-19, which was a live hazard rather than an
+# untidiness. deploy.sh now derives its exclusions from `git ls-files --others`,
+# so tracked files ship to the trading VM automatically — meaning one careless
+# `git add data/` on the Mac would have committed an arm file and the next
+# deploy would have armed the always-on host that actually runs the pipeline.
+# The Chairman would have authorised one machine and armed a different one.
+#
+# Ignored, they can never travel. Arming is per-host by construction, which is
+# right: there is no state sync between the Mac and the VM, and fi_pipeline runs
+# on the VM. Arm where the pipeline runs, deliberately, by hand.
+institutional-tracker/data/.fi_armed
+institutional-tracker/data/.kalshi_armed
+
 # ── Backups ───────────────────────────────────────────────────────────────────
 institutional-tracker/data/backups/
 

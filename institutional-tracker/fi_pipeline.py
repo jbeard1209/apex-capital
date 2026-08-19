@@ -283,6 +283,30 @@ def run_fi_pipeline():
         log.error("FI board failed: %s", exc)
         board_result = {"error": str(exc)}
 
+    # Step 9: Execute the board's approved picks — SHADOW unless armed.
+    #
+    # This step is the one fi_executor's docstring claimed existed since June
+    # and never did. The pipeline had eight steps, nothing imported the module,
+    # and no crontab ran it, so "should the FI book trade?" went unanswered for
+    # two months by machinery that was simply broken. Wiring it and arming it
+    # are different decisions and are now separated: unarmed, it runs every gate
+    # and every sizing calculation and writes the orders it WOULD have placed to
+    # data/fi_shadow_orders.json. Arming is a Chairman action (data/.fi_armed).
+    #
+    # Placed after the board and before the email on purpose, so the digest
+    # reports what execution actually did rather than what was approved.
+    exec_result = {}
+    try:
+        import fi_executor
+        exec_result = fi_executor.run_fi_executor()
+        log.info("FI executor complete [%s]: %d submitted, %d proposed",
+                 "ARMED" if exec_result.get("armed") else "SHADOW",
+                 len(exec_result.get("submitted", [])),
+                 len(exec_result.get("shadow", [])))
+    except Exception as exc:
+        log.error("FI executor failed: %s", exc)
+        exec_result = {"error": str(exc)}
+
     # Step 8: Send daily email (never let email formatting kill the pipeline)
     try:
         _send_daily_email(spreads, regime, signals, qualified, board_result)
@@ -299,6 +323,8 @@ def run_fi_pipeline():
         "qualified":     len(qualified),
         "agent_results": agent_results,
         "board_result":  board_result,
+        "exec_result":   exec_result,
+        "execution_armed": bool(exec_result.get("armed")),
     }
     with open(PIPELINE_LOG_FILE, "w") as f:
         json.dump(pipeline_log, f, indent=2, default=str)

@@ -688,6 +688,48 @@ class TestAgentRegistry(unittest.TestCase):
 # (a rule name, a pod name, a category) that no downstream consumer handles —
 # the failure is silent because .get()/try-except swallow the mismatch.
 # =============================================================================
+def patch_yfinance(tc, quotes: dict):
+    """Feed fi_credit_monitor fixed quotes by replacing the VENDOR, not our code.
+
+    Every credit-feed test in this file used to stub `fi_credit_monitor
+    ._fetch_yield`. That seam stopped being the fetch path on 2026-08-19, when
+    the read was split into `_fetch_raw` (vendor call) -> cross-series identity
+    check -> `_in_band`, so the whole plausibility layer could see every series
+    before any of them were discarded. The stubs silently stopped intercepting
+    anything and the tests started hitting the live network — one of them went
+    red, which is the only reason this was noticed rather than becoming two
+    tests that pass by measuring the real market.
+
+    Patching the vendor keeps the seam outside the code under test, so a future
+    refactor of the plausibility layer cannot hollow these tests out again.
+    `None` means the fetch returned nothing (empty DataFrame), which is what a
+    dead feed looks like from here.
+    """
+    import sys
+    import types
+    import pandas as pd
+
+    class _T:
+        def __init__(self, tkr):
+            self.tkr = tkr
+
+        def history(self, period="5d"):
+            v = quotes.get(self.tkr)
+            return pd.DataFrame() if v is None else pd.DataFrame({"Close": [v]})
+
+    saved = sys.modules.get("yfinance")
+
+    def _restore():
+        if saved is None:
+            sys.modules.pop("yfinance", None)
+        else:
+            sys.modules["yfinance"] = saved
+
+    sys.modules["yfinance"] = types.SimpleNamespace(Ticker=_T)
+    tc.addCleanup(_restore)
+    return quotes
+
+
 class TestWiringContracts(unittest.TestCase):
 
     def test_international_analyst_is_actually_scheduled(self):
@@ -983,12 +1025,11 @@ class TestWiringContracts(unittest.TestCase):
         """
         import fi_credit_monitor as m
 
-        orig = m._fetch_yield
-        try:
-            m._fetch_yield = lambda t: None if t == "HYG" else 100.0
-            r = m.run_credit_monitor(force_refresh=True)
-        finally:
-            m._fetch_yield = orig
+        # HYG dead; the rest alive and plausible. The dead leg alone must
+        # degrade the read — the others being fine is not a reason to guess.
+        patch_yfinance(self, {"HYG": None, "LQD": 105.84, "TLT": 81.66,
+                              "IEF": 92.93, "SHY": 82.02, "^TNX": 4.706})
+        r = m.run_credit_monitor(force_refresh=True)
 
         self.assertEqual("DEGRADED", r["data_quality"])
         self.assertTrue(r["degraded"], "a degraded read must name the dead feed")
@@ -1002,14 +1043,11 @@ class TestWiringContracts(unittest.TestCase):
         """One transient failure must not pin the regime for the 6h TTL."""
         import fi_credit_monitor as m
 
-        orig = m._fetch_yield
-        try:
-            m._fetch_yield = lambda t: None if t == "HYG" else 100.0
-            m.run_credit_monitor(force_refresh=True)   # writes a DEGRADED cache
-            self.assertFalse(m._cache_valid(),
-                             "a DEGRADED cache entry must force a re-fetch")
-        finally:
-            m._fetch_yield = orig
+        patch_yfinance(self, {"HYG": None, "LQD": 105.84, "TLT": 81.66,
+                              "IEF": 92.93, "SHY": 82.02, "^TNX": 4.706})
+        m.run_credit_monitor(force_refresh=True)   # writes a DEGRADED cache
+        self.assertFalse(m._cache_valid(),
+                         "a DEGRADED cache entry must force a re-fetch")
 
     def test_the_fi_scorer_abstains_rather_than_inventing_a_spread(self):
         import fi_data_layer as dl
@@ -7814,6 +7852,499 @@ class TestKalshiSampleIsWorthSomething(unittest.TestCase):
                                       "to scan(); two defaults for one quantity "
                                       "means the one you read is not the one "
                                       "that runs")
+
+
+class TestFixedIncomeHasOnePath(unittest.TestCase):
+    """Decision #79: fi_pipeline is the FI path; research_team does not duplicate it.
+
+    research_team's registry loop constructs every agent as a bare
+    AgentClass(). The seven FI agents need a live credit-spread context to have
+    any opinion, so each of the six daily cycles they ran there produced an
+    abstention — which HR counted as a zero-pick streak and CIT then
+    "exonerated" by blaming market conditions for a structural impossibility.
+
+    The rejected alternative was teaching that loop to pass spreads. fi_pipeline
+    already runs the same seven files with live spreads, its own FI_CAPITAL, its
+    own board and its own executor; a second path would size one book from two
+    capital pools through two sets of risk gates.
+
+    The trap in doing this — and the reason for the last test here — is that
+    agent_roster's `called_by` map is import-based, while both pipelines load
+    agents by FILE PATH. All 17 were invisible to it and were explained only by
+    the "must be research_team then" fallback. Remove that fallback's premise
+    without teaching the roster about path-loading and 17 employed agents read
+    as UNSCHEDULED, firing the shrink-only orphan ratchet on a fiction.
+    """
+
+    def test_the_seven_fi_agents_are_skipped_and_the_ten_fe_agents_are_not(self):
+        import agent_roster as ar
+        skips = ar.research_team_skips()
+        self.assertEqual(len(skips), 7, f"expected the 7 FI agents, got {sorted(skips)}")
+        self.assertTrue(all(v == "fi_pipeline" for v in skips.values()), skips)
+
+        dyn = ar.dynamic_agent_registries()
+        fe = {k for k, v in dyn.items() if v == "fe_pipeline"}
+        self.assertTrue(fe, "fe_pipeline's registry no longer resolves")
+        self.assertFalse(fe & set(skips),
+                         "FE agents were skipped too — they need no runtime "
+                         "context and research_team is their only research path; "
+                         "skipping them silently drops real picks")
+
+    def test_research_team_and_the_roster_agree_by_construction(self):
+        """One derivation, not two. Same call, same set."""
+        import agent_roster as ar
+        import research_team as rt
+        self.assertEqual(rt._PIPELINE_RUN_AGENTS, ar.research_team_skips(),
+                         "research_team is skipping a different set than the "
+                         "roster records as skipped")
+
+    def test_the_skip_is_keyed_on_a_declared_contract_not_a_name_prefix(self):
+        """A renamed pod must not silently rejoin the research cycle."""
+        import ast
+        import agent_roster as ar
+        src = ast.parse(Path(ar.__file__).read_text())
+        fn = next(n for n in ast.walk(src) if isinstance(n, ast.FunctionDef)
+                  and n.name == "research_team_skips")
+        literals = {n.value for n in ast.walk(fn)
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+        literals.discard(ast.get_docstring(fn))
+        for banned in ("FI", "fi_pipeline", "FICreditSpreadAgent", "cos_fi_base"):
+            self.assertNotIn(banned, literals,
+                             f"{banned!r} is hardcoded — the skip set must be "
+                             f"derived from the declared contract and the "
+                             f"pipeline registries, not from names")
+
+    def test_skipping_fi_does_not_orphan_it(self):
+        """The trap. Every skipped agent must still name a runner.
+
+        This is the check that makes the change safe rather than merely tidy:
+        research_team was the ONLY thing the roster could point at for these
+        seven, and it pointed there for the wrong reason.
+        """
+        import agent_roster as ar
+        roster = ar.build(Path(__file__).resolve().parent)
+        rows = {a["name"]: a for a in roster["agents"]}
+        for cls, pipeline in ar.research_team_skips().items():
+            row = rows.get(cls)
+            self.assertIsNotNone(row, f"{cls} vanished from the roster entirely")
+            self.assertNotEqual(row["runs_via"], ["UNSCHEDULED"],
+                                f"{cls} is skipped by research_team and the roster "
+                                f"can no longer name anything that runs it")
+            self.assertIn(f"called_by:{pipeline}", row["runs_via"],
+                          f"{cls} should be attributed to {pipeline}, got "
+                          f"{row['runs_via']}")
+            self.assertFalse(row["research_cycle"],
+                             f"{cls} is skipped but still flagged research_cycle; "
+                             f"agent_sweep reads that field to decide whether a "
+                             f"retired agent is still executing")
+
+    def test_path_loaded_agents_are_found_without_an_import(self):
+        """The roster's blind spot, stated as an invariant.
+
+        `_imports_of` walks import statements. Neither pipeline imports the
+        agents it runs — it opens their files. 17 agents depend on this.
+        """
+        import agent_roster as ar
+        base = Path(__file__).resolve().parent
+        dyn = ar.dynamic_agent_registries(base)
+        self.assertGreaterEqual(len(dyn), 17, f"only found {len(dyn)}: {sorted(dyn)}")
+        for pipeline in ("fi_pipeline", "fe_pipeline"):
+            runs = [k for k, v in dyn.items() if v == pipeline]
+            self.assertTrue(runs, f"{pipeline}'s agent registry no longer resolves")
+            for cls in runs:
+                self.assertNotIn(cls, ar._imports_of(base, f"{pipeline}.py"),
+                                 f"{cls} is now imported by {pipeline}; if that is "
+                                 f"deliberate this detector is no longer the thing "
+                                 f"keeping it visible — recheck before deleting")
+
+
+class TestFIExecutorArmGate(unittest.TestCase):
+    """Wiring and arming are different decisions and must stay separable.
+
+    Until 2026-08-14 fi_executor's docstring said it was "called from
+    fi_pipeline.py, Step 9". The pipeline had eight steps, never imported the
+    module, and no crontab ran it. So the question "should the FI book trade?"
+    sat unanswered for two months, not because anyone decided to wait but
+    because the machinery was broken — the worst way to not make a decision.
+
+    It is wired now, and shadow by default: every gate, every sizing
+    calculation, every live price, then the order is WRITTEN rather than sent
+    unless the Chairman's data/.fi_armed exists. Same shape as
+    kalshi_client.place_order().
+    """
+
+    def test_the_pipeline_actually_calls_the_executor(self):
+        """The claim that failed for two months. Assert it, don't document it."""
+        import ast
+        here = Path(__file__).resolve().parent
+        tree = ast.parse((here / "fi_pipeline.py").read_text())
+
+        imported = any(
+            (isinstance(n, ast.Import) and any(a.name == "fi_executor" for a in n.names))
+            or (isinstance(n, ast.ImportFrom) and n.module == "fi_executor")
+            for n in ast.walk(tree))
+        self.assertTrue(imported, "fi_pipeline does not import fi_executor — the "
+                                  "Step 9 in the docstring does not exist again")
+
+        called = any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                     and n.func.attr == "run_fi_executor" for n in ast.walk(tree))
+        self.assertTrue(called, "fi_executor is imported but never run — an import "
+                                "is not an integration")
+
+    def test_unarmed_is_the_default_for_every_malformed_input(self):
+        """The branch that spends money defaults closed.
+
+        Absence, corruption, the wrong account, an explicit false — all of them
+        have to mean 'not armed'. A parse error that read as armed would be
+        `fallback-that-means-act` on the one path where acting is a trade.
+        """
+        import fi_executor as fx
+        arm = fx.ARM_FILE
+        existed = arm.exists()
+        original = arm.read_text() if existed else None
+        self.addCleanup(lambda: arm.write_text(original) if existed
+                        else (arm.unlink() if arm.exists() else None))
+
+        if arm.exists():
+            arm.unlink()
+        self.assertFalse(fx.is_armed(), "missing arm file read as armed")
+
+        for payload in ('{"armed": false, "account": "paper"}',
+                        '{"armed": true, "account": "live"}',
+                        '{"armed": true}',
+                        '{}', 'not json at all', ''):
+            arm.write_text(payload)
+            self.assertFalse(fx.is_armed(), f"{payload!r} read as armed")
+
+        arm.write_text('{"armed": true, "account": "paper"}')
+        self.assertTrue(fx.is_armed(),
+                        "the gate cannot be opened at all — a gate that never "
+                        "opens is not a gate, it is a wall, and the Chairman "
+                        "would have no way to act on the shadow evidence")
+
+    def test_the_arm_gate_precedes_the_transmit_call(self):
+        """Order matters: the shadow branch must short-circuit before submit.
+
+        Read off the AST. The module docstring and the gate comment both spell
+        out submit_order and .fi_armed while explaining the design, so a text
+        search would match the prose and pass on a file where the gate had been
+        moved below the transmit.
+        """
+        import ast
+        import fi_executor as fx
+        tree = ast.parse(Path(fx.__file__).read_text())
+
+        fn = next((n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
+                   and n.name == "run_fi_executor"), None)
+        self.assertIsNotNone(fn, "run_fi_executor vanished")
+
+        submits = [n.lineno for n in ast.walk(fn)
+                   if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                   and n.func.attr == "submit_order"]
+        self.assertTrue(submits, "no submit_order call — the executor cannot "
+                                 "execute even when armed")
+
+        gates = []
+        for node in ast.walk(fn):
+            if isinstance(node, ast.If) and isinstance(node.test, ast.UnaryOp) \
+                    and isinstance(node.test.op, ast.Not) \
+                    and isinstance(node.test.operand, ast.Name) \
+                    and node.test.operand.id == "armed":
+                self.assertTrue(
+                    any(isinstance(c, ast.Continue) for c in ast.walk(node)),
+                    "the unarmed branch falls through instead of skipping the "
+                    "order — shadow mode would transmit")
+                gates.append(node.lineno)
+
+        self.assertTrue(gates, "no `if not armed:` guard in run_fi_executor")
+        self.assertLess(min(gates), min(submits),
+                        "the arm gate sits AFTER submit_order; unarmed runs "
+                        "would place real orders and record them as shadow")
+
+    def test_arm_files_can_never_travel_between_hosts(self):
+        """Arming must be a per-host act, because deploy ships tracked files.
+
+        deploy.sh derives its exclusions from `git ls-files --others`, so
+        anything git tracks reaches the trading VM. If an arm file were
+        committable, one `git add data/` on the Mac would arm the always-on host
+        that actually runs fi_pipeline — the Chairman authorising one machine and
+        arming a different one. There is no state sync between the two; that
+        asymmetry is the whole reason this has to be checked rather than assumed.
+        """
+        import subprocess
+        import fi_executor as fx
+        repo = Path(fx.__file__).resolve().parent.parent
+        if not (repo / ".git").exists():
+            self.skipTest("not a git checkout (the VM is not one)")
+
+        for rel in ("institutional-tracker/data/.fi_armed",
+                    "institutional-tracker/data/.kalshi_armed"):
+            rc = subprocess.run(["git", "check-ignore", "-q", rel],
+                                cwd=str(repo), capture_output=True)
+            self.assertEqual(rc.returncode, 0,
+                             f"{rel} is not gitignored, so it can be committed "
+                             f"and deployed — arming the VM by accident")
+
+
+class TestCreditReadCannotFabricate(unittest.TestCase):
+    """A vendor quote no market could produce must read as MISSING, not as data.
+
+    On 2026-08-18T10:50 yfinance returned exactly 100.0 for both ^TNX and LQD.
+    Nothing errored — a DataFrame came back and the last close was a float — so
+    fi_credit_conditions.json published a 10-year Treasury yielding 100%, an IG
+    spread of 280bps derived from it, and three signals: HIGH_RATES BUY,
+    IG_OPPORTUNITY BUY, STEEPENING_CURVE (+94.70). Twelve commits of history
+    read 4.37-4.71%; the live values ninety minutes later were 4.706 and 105.84.
+
+    It reached no order only by luck. HYG failed in the same minute, the regime
+    derives from hy_spread alone, and fi_pipeline abstains on UNKNOWN. Had HYG
+    returned its real 79.53, `degraded` would have been empty, data_quality
+    would have read LIVE, and the $30k FI book would have run the full pipeline
+    on a 100% Treasury.
+
+    The guards were all `if price:` — truthy tests, which reject None and 0.0
+    and accept 100.0 without a murmur. `fallback-that-means-act` one layer
+    further out: there we substituted the constant ourselves, here the vendor
+    handed it over already dressed as data.
+    """
+
+    def _boundary(self):
+        """Patch yfinance itself, not _fetch_yield.
+
+        A first attempt at this test stubbed `_fetch_yield` — the function that
+        CONTAINS the band check — and reported a clean pass while proving
+        nothing about the band at all. `plausible-is-not-validated`: the patch
+        has to sit outside the code under test.
+
+        Shared with the older credit tests in TestWiringContracts, which were
+        stubbing that same dead seam and had to be repointed here.
+        """
+        return patch_yfinance(self, {})
+
+    ALL = ("HYG", "LQD", "TLT", "IEF", "SHY", "^TNX")
+    REAL = {"HYG": 79.53, "LQD": 105.84, "TLT": 81.66,
+            "IEF": 92.93, "SHY": 82.02, "^TNX": 4.706}
+
+    def _rejected(self, overrides):
+        import fi_credit_monitor as m
+        q = self._boundary()
+        q.update(self.REAL)
+        q.update(overrides)
+        got = m._fetch_quotes(self.ALL)
+        return sorted(k for k, v in got.items() if v is None)
+
+    def test_a_real_market_passes_untouched(self):
+        """The control. Guards that reject good data are their own outage."""
+        self.assertEqual(self._rejected({}), [],
+                         "the plausibility guards rejected a normal market")
+
+    def test_an_impossible_yield_is_not_a_reading(self):
+        self.assertEqual(self._rejected({"^TNX": 100.0}), ["^TNX"],
+                         "a 100% 10-year Treasury passed the band check")
+        self.assertEqual(self._rejected({"^TNX": -3.0}), ["^TNX"])
+
+    def test_two_series_reporting_one_number_are_both_discarded(self):
+        """LQD's 100.0 sits inside any honest band for a bond ETF.
+
+        What exposed it was ^TNX returning 100.0 in the same breath. A yield in
+        percent and an ETF in dollars are different units of different things;
+        they do not coincide to fifteen decimal places. That is one vendor
+        artifact wearing two hats, so both go.
+        """
+        self.assertEqual(self._rejected({"^TNX": 100.0, "LQD": 100.0}),
+                         ["LQD", "^TNX"],
+                         "the in-band half of the artifact survived")
+
+    def test_nan_is_not_a_quote(self):
+        self.assertEqual(self._rejected({"HYG": float("nan")}), ["HYG"],
+                         "NaN passes every `is not None` guard and fails every "
+                         "threshold — see memory nan-is-not-none")
+
+    def test_the_poisoned_read_makes_the_pipeline_abstain(self):
+        """End to end: the counterfactual that would have traded the book."""
+        import fi_credit_monitor as m
+        q = self._boundary()
+        q.update(self.REAL)
+        q.update({"^TNX": 100.0, "LQD": 100.0})
+        saved = m._cache_valid
+        m._cache_valid = lambda: False
+        self.addCleanup(lambda: setattr(m, "_cache_valid", saved))
+
+        r = m.run_credit_monitor(force_refresh=True)
+        self.assertNotEqual(r["data_quality"], "LIVE",
+                            "a fabricated read published itself as LIVE")
+        self.assertIsNone(r["spreads"]["treasury_10yr"])
+        self.assertEqual(r["signals"], [],
+                         "signals were generated from a discarded quote")
+
+    def test_every_fetched_series_has_a_band(self):
+        """The ratchet: a new ticker must not arrive unguarded.
+
+        Read off the AST rather than by text search — the module docstring and
+        the comment above _PLAUSIBLE both list these tickers while explaining
+        the bug, so a grep would find them in the prose and call them covered.
+        """
+        import ast
+        import fi_credit_monitor as m
+        tree = ast.parse(Path(m.__file__).read_text())
+
+        fetched = set()
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Name)
+                    and node.func.id == "_fetch_quotes"
+                    and node.args
+                    and isinstance(node.args[0], ast.Tuple)):
+                for el in node.args[0].elts:
+                    if isinstance(el, ast.Constant) and isinstance(el.value, str):
+                        fetched.add(el.value)
+
+        self.assertTrue(fetched, "no _fetch_quotes call site found — the credit "
+                                 "monitor stopped fetching through the guard")
+        missing = fetched - set(m._PLAUSIBLE)
+        self.assertFalse(missing,
+                         f"{sorted(missing)} are fetched with no plausibility "
+                         f"band, so any value the vendor invents for them is "
+                         f"indistinguishable from a quote")
+
+
+class TestKalshiWatchdogSupervises(unittest.TestCase):
+    """The campaign's supervisor must be falsifiable and host-aware.
+
+    Built 2026-08-19 after the Chairman asked why the Kalshi plan "wasn't
+    running". It was — the VM had scanned 4x/day without a miss. What had
+    stopped was the supervision, which lived in a session-scoped `/loop` and
+    died with its session. `is_edge_proven()` answers "NOT YET" while the sample
+    matures, and a dead collector produces that identical answer forever, so
+    silence could not distinguish the two.
+    """
+
+    def _mod(self):
+        import kalshi_watchdog
+        return kalshi_watchdog
+
+    def test_every_check_fires_on_a_poison_pill(self):
+        """A supervisor that cannot alarm is worse than none — it is reassuring.
+
+        `internal_audit_agent` states the rule the other way round: a HOLDS from
+        a control that has never been shown to fail is not evidence, so a new
+        law without a poison pill fails this suite. Each projection below is
+        built to make exactly one check fire.
+        """
+        w = self._mod()
+        base = {"collector": {"role": "collector", "evidence": "test"},
+                "stall_hours": 1.0, "n_examined": 900,
+                "newest_record": "2026-08-19T00:00Z", "overdue_unsettled": 0,
+                "oldest_overdue": None, "strata": {}, "unreachable": [],
+                "binding_gate": "2026-09-21"}
+
+        pills = {
+            "COLLECTION_STALLED":  (dict(base, stall_hours=40.0), None),
+            "RESOLUTION_STALLED":  (dict(base, overdue_unsettled=55,
+                                         oldest_overdue="2026-08-01T00:00Z"), None),
+            "STRATUM_UNREACHABLE": (dict(base, unreachable=["30-90d"],
+                                         strata={"30-90d": {"need": 40, "pending": 3,
+                                                            "intake_7d": 0}}), None),
+            "GATE_SLIPPED":        (dict(base, binding_gate="2026-11-01"),
+                                    {"binding_gate": "2026-09-21",
+                                     "measured_at": "2026-08-18T00:00"}),
+            "NO_COLLECTOR":        (dict(base, collector={"role": "orphaned",
+                                                          "evidence": "x"}), None),
+        }
+        for kind, (proj, prev) in pills.items():
+            kinds = [f["kind"] for f in w.evaluate(proj, prev)]
+            self.assertIn(kind, kinds,
+                          f"{kind} stayed silent on a projection built to trip "
+                          f"it — the check is blind and every OK it reports is "
+                          f"worthless")
+
+        self.assertEqual(w.evaluate(dict(base), None), [],
+                         "a healthy projection must produce no findings, or the "
+                         "alarm is noise and gets ignored on the day it matters")
+
+    def test_a_reader_host_reports_nothing_about_the_collectors_data(self):
+        """Red on the Mac is not red.
+
+        The Kalshi cron runs on the VM alone and there is no state sync, so the
+        Mac's kalshi_predictions.json is whatever the last deploy left behind.
+        Aged naively it reads ~22h stale and would file a CRITICAL every single
+        day about a stall that is not happening. An alarm that cries wolf daily
+        is worse than no alarm: it trains the Chairman to scroll past the one
+        day it is real. `host_divergence_is_a_bug_class`, in the direction
+        people forget.
+        """
+        w = self._mod()
+        reader = {"collector": {"role": "reader", "evidence": "vm collects"},
+                  "stall_hours": 999.0, "n_examined": 900,
+                  "newest_record": "2026-01-01T00:00Z", "overdue_unsettled": 400,
+                  "oldest_overdue": "2026-01-01T00:00Z", "strata": {},
+                  "unreachable": ["30-90d"], "binding_gate": None}
+        self.assertEqual(w.evaluate(reader, None), [],
+                         "a reader measured another machine's state from a stale "
+                         "local artifact and alarmed about it")
+
+    def test_the_collector_is_derived_not_a_hostname_list(self):
+        """A hardcoded host is wrong silently the day the cron moves.
+
+        Checked on the AST rather than by text search: the docstring in
+        kalshi_watchdog explains this rule and names both hosts while doing so,
+        so a grep for 'apex' or 'mac' matches my own postmortem note and would
+        report the bug as present in the code that fixes it — the trap recorded
+        in `auditor_ground_truth`.
+        """
+        import ast
+        w = self._mod()
+        src = Path(w.__file__).read_text()
+        tree = ast.parse(src)
+
+        fn = next((n for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef) and n.name == "collector_role"),
+                  None)
+        self.assertIsNotNone(fn, "collector_role() is the whole host guard")
+
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                if node is not ast.get_docstring(fn, clean=False):
+                    low = node.value.lower()
+                    for host in ("apex-capital", "apexcapital", "jackbeard"):
+                        self.assertNotIn(host, low,
+                                         f"collector_role hardcodes {host!r}; the "
+                                         f"role must come from a crontab, so it "
+                                         f"self-corrects when the cron moves")
+
+        called = {n.func.attr for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        self.assertIn("run", called,
+                      "collector_role must actually read a crontab (subprocess.run)")
+
+    def test_thresholds_come_from_the_calibrator_not_a_second_copy(self):
+        """One rule, one place.
+
+        The watchdog reports how far the sample is from MIN_SETTLED_PER_HORIZON
+        and MIN_SETTLED_FOR_VERDICT. If it carried its own copies, raising the
+        bar in kalshi_calibration would leave the supervisor still measuring
+        against the old one and cheerfully projecting a date that no longer
+        means anything — `sample-outlived-its-rule` with extra steps.
+        """
+        import ast
+        w = self._mod()
+        tree = ast.parse(Path(w.__file__).read_text())
+
+        owned = {"SELECTION_RULE", "HORIZON_STRATA", "MIN_SETTLED_PER_HORIZON",
+                 "MIN_SETTLED_FOR_VERDICT", "REGIME_START"}
+        for node in tree.body:                       # module level only
+            if isinstance(node, ast.Assign):
+                for t in node.targets:
+                    if isinstance(t, ast.Name) and t.id in owned:
+                        self.fail(f"kalshi_watchdog redeclares {t.id}; it must "
+                                  f"import it from kalshi_calibration so the two "
+                                  f"can never disagree")
+
+        import kalshi_calibration as kc
+        for name in owned:
+            self.assertTrue(hasattr(kc, name),
+                            f"kalshi_calibration.{name} vanished — the watchdog "
+                            f"reads it and would project against nothing")
 
 
 class TestCatchUpJobBudget(unittest.TestCase):

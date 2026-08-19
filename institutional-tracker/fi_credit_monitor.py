@@ -53,18 +53,151 @@ def _cache_valid() -> bool:
     return True
 
 
-def _fetch_yield(ticker: str) -> float | None:
-    """Fetch the most recent closing yield/price for a ticker."""
+# ── Plausibility bands ──────────────────────────────────────────────────────
+# An out-of-band quote is not a low-confidence datum to be used carefully. It is
+# a FAILED READ, and the only safe thing to return for a failed read is None,
+# because None is the one value every consumer below already handles correctly.
+#
+# On 2026-08-18T10:50 yfinance returned exactly 100.0 for BOTH ^TNX and LQD.
+# Nothing raised: `_fetch_yield` got a DataFrame, took the last close, and
+# handed back a float. The guards downstream are all `if lqd_price:` — truthy
+# tests, which reject None and 0.0 and accept 100.0 without a murmur. So the
+# firm published a credit read stating the 10-year Treasury yields 100%, and
+# three signals computed from it:
+#     HIGH_RATES        BUY          "10yr Treasury at 100.00%"
+#     IG_OPPORTUNITY    BUY          ig_spread 280bps, from lqd_price 100
+#     STEEPENING_CURVE  OPPORTUNITY  slope +94.70  (= 100.0 - 5.3)
+# Twelve commits of history read 4.37–4.71% and 106–109.6. The live values
+# ninety minutes later were 4.706 and 105.84. This was never a market event.
+#
+# It did not reach an order, and only by luck: HYG failed the same minute, the
+# regime derives from hy_spread alone, and fi_pipeline abstains on UNKNOWN. Had
+# HYG returned its real 79.53, `degraded` would have been EMPTY, data_quality
+# would have read LIVE, and the $30k FI book would have traded the full pipeline
+# on a 100% Treasury.
+#
+# This is `fallback-that-means-act` one layer further out. There the constant
+# was substituted by our own code; here it arrives from the vendor already
+# wearing the costume of data. The lesson is the same and it is about the GUARD,
+# not the value: `if x:` asks "did we get something?", and the question that
+# needed asking was "could this be true?".
+#
+# Bands are deliberately far wider than any market this firm will see, so they
+# can only ever fire on nonsense. The 10-year has not printed above 16% since
+# records begin (15.8%, Sept 1981).
+_PLAUSIBLE = {
+    "^TNX": (0.20,  20.0),    # 10yr yield, percent
+    "HYG":  (25.0,  150.0),   # HY credit ETF, ~$79
+    "LQD":  (50.0,  200.0),   # IG credit ETF, ~$106
+    "TLT":  (30.0,  250.0),   # 20yr Treasury ETF, ~$82
+    "IEF":  (50.0,  200.0),   # 7-10yr Treasury ETF, ~$93
+    "SHY":  (50.0,  150.0),   # 1-3yr Treasury ETF, ~$82
+}
+
+
+def _fetch_raw(ticker: str) -> float | None:
+    """The vendor's number, with nothing rejected but NaN.
+
+    Deliberately unfiltered. The cross-series check in _fetch_quotes needs to
+    see what every feed actually said, including the values it is about to
+    throw away — see the ordering note there.
+    """
     try:
         import yfinance as yf
         t = yf.Ticker(ticker)
         hist = t.history(period="5d")
         if hist.empty:
             return None
-        return float(hist["Close"].iloc[-1])
+        value = float(hist["Close"].iloc[-1])
     except Exception as e:
         logger.debug(f"  [{ticker}] fetch failed: {e}")
         return None
+
+    if value != value:                       # NaN — see memory `nan-is-not-none`
+        logger.warning("  [%s] quote is NaN — treating as no data", ticker)
+        return None
+    return value
+
+
+def _in_band(ticker: str, value: float) -> bool:
+    lo, hi = _PLAUSIBLE.get(ticker, (float("-inf"), float("inf")))
+    return lo <= value <= hi
+
+
+def _fetch_yield(ticker: str) -> float | None:
+    """One series, band-checked. None means "we do not know".
+
+    Every caller is already written to treat None as a degraded feed rather
+    than a number, which is the whole reason None is the right answer here.
+    """
+    value = _fetch_raw(ticker)
+    if value is None:
+        return None
+    if not _in_band(ticker, value):
+        lo, hi = _PLAUSIBLE[ticker]
+        logger.warning("  [%s] quote %.4f is outside the plausible band "
+                       "[%.2f, %.2f] — treating as no data, NOT as a reading",
+                       ticker, value, lo, hi)
+        return None
+    return value
+
+
+def _fetch_quotes(tickers: tuple) -> dict:
+    """Fetch every series together, then reject what no market could produce.
+
+    Two checks, and THE ORDER BETWEEN THEM IS THE POINT.
+
+    The per-series band cannot see the failure that actually happened: LQD's
+    100.0 sits comfortably inside any honest band for a bond ETF. What exposed
+    it was ^TNX reporting 100.0 in the same breath. A yield in percent and an
+    IG ETF in dollars are different units of different things; they do not
+    coincide to fifteen decimal places. That is one vendor artifact wearing two
+    hats, so both go.
+
+    The first version of this function ran the band first and the cross-series
+    check afterwards, on the survivors — and it let LQD through. Rejecting
+    ^TNX for being out of band had removed the only evidence that LQD was
+    fabricated. A guard that consumes the input its partner needs is
+    `fix_that_erased_its_detector` in miniature, and it was caught by the test
+    that replays both halves of the real poison rather than by reading the code.
+
+    So the identity check runs on the RAW quotes, before anything is discarded,
+    and the band is applied after.
+
+    Residual risk, stated rather than papered over: a single series returning a
+    lone in-band wrong number still passes both. Closing that needs a second,
+    independent source for the same quantity — a coherence law, not a fetch
+    guard — and `treasury_10yr` against the yield implied by IEF/SHY is the
+    obvious pair. Noted, not built here.
+    """
+    raw = {t: _fetch_raw(t) for t in tickers}
+
+    fabricated = set()
+    seen: dict = {}
+    for tkr, val in raw.items():
+        if val is not None:
+            seen.setdefault(val, []).append(tkr)
+    for val, owners in seen.items():
+        if len(owners) > 1:
+            logger.warning("  [%s] all reported the identical value %r — that is "
+                           "a data-source artifact, not a market. Discarding all "
+                           "of them.", "/".join(sorted(owners)), val)
+            fabricated.update(owners)
+
+    quotes = {}
+    for tkr, val in raw.items():
+        if val is None or tkr in fabricated:
+            quotes[tkr] = None
+        elif not _in_band(tkr, val):
+            lo, hi = _PLAUSIBLE[tkr]
+            logger.warning("  [%s] quote %.4f is outside the plausible band "
+                           "[%.2f, %.2f] — treating as no data, NOT as a reading",
+                           tkr, val, lo, hi)
+            quotes[tkr] = None
+        else:
+            quotes[tkr] = val
+
+    return quotes
 
 
 def run_credit_monitor(force_refresh: bool = False) -> dict:
@@ -85,12 +218,15 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
     logger.info("  [CreditMonitor] Fetching live credit market data...")
 
     # ── Fetch raw prices ──────────────────────────────────────────────────
-    hyg_price  = _fetch_yield("HYG")   # HY bond ETF
-    lqd_price  = _fetch_yield("LQD")   # IG bond ETF
-    tlt_price  = _fetch_yield("TLT")   # 20yr treasury
-    ief_price  = _fetch_yield("IEF")   # 7-10yr treasury
-    shy_price  = _fetch_yield("SHY")   # 1-3yr treasury
-    tnx_yield  = _fetch_yield("^TNX")  # 10yr yield (%)
+    # Fetched together so the cross-series checks in _fetch_quotes can see all
+    # six at once; individually they are indistinguishable from real quotes.
+    _q = _fetch_quotes(("HYG", "LQD", "TLT", "IEF", "SHY", "^TNX"))
+    hyg_price  = _q["HYG"]    # HY bond ETF
+    lqd_price  = _q["LQD"]    # IG bond ETF
+    tlt_price  = _q["TLT"]    # 20yr treasury
+    ief_price  = _q["IEF"]    # 7-10yr treasury
+    shy_price  = _q["SHY"]    # 1-3yr treasury
+    tnx_yield  = _q["^TNX"]   # 10yr yield (%)
 
     # ── Compute spread proxies ─────────────────────────────────────────────
     # HYG and LQD move inversely to spreads.
@@ -280,10 +416,21 @@ def run_credit_monitor(force_refresh: bool = False) -> dict:
         result["data_quality"],
     )
     if degraded:
+        # This used to end "Regime is UNKNOWN, not NORMAL" unconditionally,
+        # which was false whenever HY read fine and something else did not —
+        # and it printed directly beneath a summary line saying regime=NORMAL.
+        # Two adjacent log lines contradicting each other teach a reader that
+        # one of them is boilerplate, and the reader is then right. The regime
+        # is UNKNOWN exactly when HY is missing (it derives from HY alone), so
+        # say which of the two situations this actually is.
         logger.error(
-            "  [CreditMonitor] DEGRADED — no reading from: %s. Regime is UNKNOWN, "
-            "not NORMAL. Downstream must abstain, not substitute a default.",
-            ", ".join(degraded),
+            "  [CreditMonitor] DEGRADED — no reading from: %s. Regime is %s%s "
+            "Downstream must abstain, not substitute a default.",
+            ", ".join(degraded), spread_regime,
+            (" — derived from HY alone, which read fine; the missing series "
+             "above are still missing and anything needing them must abstain."
+             if spread_regime != "UNKNOWN" else
+             " because HY is unreadable, NOT because the market is calm."),
         )
     return result
 

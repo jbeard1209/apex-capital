@@ -12,17 +12,36 @@ Safety gates (in order):
   4. Duplicate  — skips tickers already executed today (fi_execution_log)
   5. FI position cap — skips if ticker already held >= 80% of target size
 
-NOT CURRENTLY WIRED. This docstring claimed "called from fi_pipeline.py, Step 9"
-until 2026-08-14; fi_pipeline has 8 steps and has never imported this module, and
-no crontab on either host runs it. Together with the wrong picks key (fixed
-below), that is three independent reasons the FI pod placed no orders — the last
-entry in fi_execution_log.json is 2026-06-16.
+SHADOW BY DEFAULT (2026-08-19). This module is now wired into fi_pipeline as
+Step 9 and runs every session, but it does not transmit unless the Chairman has
+armed it. Unarmed, it does every gate, every sizing calculation and every price
+lookup, then writes the order it WOULD have placed to data/fi_shadow_orders.json
+instead of sending it. Same gate design as kalshi_client.place_order(): a file
+the Chairman creates, never a flag an agent can flip.
 
-Arming it is a Chairman decision, not a wiring fix: it submits live orders to the
-Alpaca paper account for the $30k FI book. Until that decision is taken this runs
-only when invoked by hand: python3 fi_executor.py
+    arm:    echo '{"armed": true, "account": "paper"}' > data/.fi_armed
+    disarm: rm data/.fi_armed
 
-Output: data/fi_execution_log.json
+Wiring and arming were deliberately separated, because they had been conflated.
+Until 2026-08-14 this docstring claimed "called from fi_pipeline.py, Step 9";
+fi_pipeline had 8 steps and had never imported this module, and no crontab on
+either host ran it. With the wrong picks key, that was three independent reasons
+the FI pod placed no orders — fi_execution_log.json ends 2026-06-16. "Should we
+trade the FI book?" was left unanswered for two months by machinery that was
+merely broken, which is the worst way to not make a decision.
+
+So the wiring is fixed and the decision is now a real one, taken on evidence:
+run shadow, read fi_shadow_orders.json, and arm when the orders it proposes look
+like orders you would have placed.
+
+That evidence matters more than it sounds. On 2026-08-18 the credit monitor
+published a 10-year Treasury yield of 100% from a vendor placeholder, with three
+BUY signals computed off it, and the pipeline abstained only because a different
+feed happened to fail in the same minute. An executor armed that morning would
+have traded on it. The FI book's inputs earn arming; they are not owed it.
+
+Output: data/fi_execution_log.json  (live)
+        data/fi_shadow_orders.json  (unarmed — what it would have done)
 """
 
 from __future__ import annotations
@@ -42,11 +61,36 @@ LOGS_DIR = BASE_DIR / "logs"
 
 APPROVED_FILE   = DATA_DIR / "fi_approved_picks.json"
 EXEC_LOG_FILE   = DATA_DIR / "fi_execution_log.json"
+SHADOW_FILE     = DATA_DIR / "fi_shadow_orders.json"
+ARM_FILE        = DATA_DIR / ".fi_armed"
 CANARY_FILE     = DATA_DIR / "canary_state.json"
 IRM_FILE        = DATA_DIR / "irm_daily_check.json"
 CIT_HR_MEMO     = DATA_DIR / "cit_hr_memo.json"
 
 FI_CAPITAL = 30_000.0
+
+
+class FINotArmed(RuntimeError):
+    """Raised if a transmit path is reached without the Chairman's arm file."""
+
+
+def is_armed() -> bool:
+    """True only if data/.fi_armed exists and explicitly authorises the account.
+
+    Deliberately a file the Chairman creates, and deliberately account-specific,
+    so that arming the paper book can never silently arm a live one. Any parse
+    failure, any missing key, any unexpected value reads as NOT armed: the
+    default has to be the safe one, because this is the branch that spends money.
+
+    Note the shape of the check. It asks whether authorisation is present, not
+    whether it is absent — `presence-is-not-currency` cuts the other way here,
+    and the file is the currency.
+    """
+    try:
+        d = json.loads(ARM_FILE.read_text())
+    except Exception:
+        return False
+    return bool(d.get("armed")) and d.get("account") == "paper"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -190,12 +234,18 @@ def run_fi_executor() -> dict:
     logger.info("APEX CAPITAL -- FIXED INCOME EXECUTOR")
     logger.info("=" * 60)
 
+    armed = is_armed()
     result = {
         "run_at":    datetime.now(timezone.utc).isoformat(),
+        "armed":     armed,
         "submitted": [],
+        "shadow":    [],
         "skipped":   [],
         "errors":    [],
     }
+    logger.info("  mode: %s", "ARMED — orders will be transmitted" if armed else
+                "SHADOW — proposed orders recorded, nothing transmitted "
+                f"(arm with {ARM_FILE})")
 
     # --- Safety gate: market hours ---
     if not _is_market_open():
@@ -348,6 +398,26 @@ def run_fi_executor() -> dict:
             continue
 
         actual_cost = qty * price
+
+        # ── The arm gate ─────────────────────────────────────────────────────
+        # Everything above this line ran: market hours, canary, IRM, duplicate,
+        # position cap, cash floor, sizing, live price. That is the point — the
+        # shadow record is only worth reading if it is the decision the armed
+        # executor would genuinely have made, not a sketch of one.
+        if not armed:
+            shadow_entry = {
+                "ticker": ticker, "date": today, "qty": qty,
+                "price_est": price, "cost_est": actual_cost,
+                "target_usd": target_usd, "conviction": conviction,
+                "verdict": verdict, "reason": reason,
+                "would_submit_at": datetime.now(timezone.utc).isoformat(),
+            }
+            logger.info(f"  [SHADOW] would BUY {qty} x {ticker} @ ~${price:.2f} "
+                        f"= ~${actual_cost:,.2f}  [{verdict} conv={conviction}]")
+            result["shadow"].append(shadow_entry)
+            available_cash -= actual_cost      # so later picks size honestly
+            continue
+
         logger.info(f"  Submitting BUY: {qty} x {ticker} @ ~${price:.2f} = ~${actual_cost:,.2f}"
                     f"  [{verdict} conv={conviction}]")
 
@@ -384,20 +454,59 @@ def run_fi_executor() -> dict:
             result["errors"].append(f"{ticker}: {e}")
 
     _save_exec_log(exec_log)
+    _save_shadow(result)
     _finalize(result)
     return result
+
+
+def _save_shadow(result: dict) -> None:
+    """Append this session's proposed orders to the shadow ledger.
+
+    Appended, never overwritten. The whole value of shadow mode is the run of
+    sessions: one day's proposal says nothing, twenty days of them say whether
+    the FI pod's judgement is worth arming. An overwriting writer would leave
+    the Chairman deciding on a sample of one.
+    """
+    proposed = result.get("shadow", [])
+    if not proposed:
+        return
+    try:
+        with open(SHADOW_FILE) as f:
+            ledger = json.load(f)
+        if not isinstance(ledger, list):
+            ledger = []
+    except Exception:
+        ledger = []
+
+    ledger.append({
+        "run_at": result.get("run_at"),
+        "armed":  False,
+        "orders": proposed,
+        "notional": round(sum(o.get("cost_est", 0.0) for o in proposed), 2),
+    })
+    tmp = SHADOW_FILE.with_suffix(".json.tmp")
+    with open(tmp, "w") as f:
+        json.dump(ledger[-500:], f, indent=2)
+    tmp.replace(SHADOW_FILE)
+    logger.info("  %d proposed order(s) recorded to %s", len(proposed), SHADOW_FILE.name)
 
 
 def _finalize(result: dict) -> None:
     """Buffer a brief execution summary into the evening email digest."""
     submitted = result.get("submitted", [])
+    shadow    = result.get("shadow", [])
     skipped   = result.get("skipped", [])
     errors    = result.get("errors", [])
+    armed     = result.get("armed", False)
 
+    # The mode goes in the first line the Chairman reads. A summary saying
+    # "Orders submitted: 0" is true in both modes and means opposite things —
+    # nothing to do, versus nothing allowed. `verdict-with-no-consequence`.
     lines = [
         "APEX CAPITAL — FI EXECUTION SUMMARY",
         "=" * 45,
         f"Run at: {result.get('run_at', 'unknown')}",
+        f"Mode:   {'ARMED (live paper orders)' if armed else 'SHADOW (nothing transmitted)'}",
         "",
         f"Orders submitted: {len(submitted)}",
     ]
@@ -406,6 +515,16 @@ def _finalize(result: dict) -> None:
             f"  ✅ {ex['ticker']:6s} {ex['qty']} shares @ ~${ex['price_est']:.2f}"
             f" = ~${ex['cost_est']:,.0f}  [{ex['verdict']}]"
         )
+    if shadow:
+        notional = sum(o.get("cost_est", 0.0) for o in shadow)
+        lines.append(f"\nProposed but NOT sent ({len(shadow)}, ~${notional:,.0f} notional):")
+        for o in shadow:
+            lines.append(
+                f"  ○ {o['ticker']:6s} {o['qty']} shares @ ~${o['price_est']:.2f}"
+                f" = ~${o['cost_est']:,.0f}  [{o['verdict']}]"
+            )
+        lines.append("\n  Arming is a Chairman action:")
+        lines.append("      echo '{\"armed\": true, \"account\": \"paper\"}' > data/.fi_armed")
     if skipped:
         lines.append(f"\nSkipped ({len(skipped)}):")
         for s in skipped:
@@ -429,7 +548,8 @@ def _finalize(result: dict) -> None:
 
     logger.info(
         f"\n{'='*60}\n"
-        f"  FI Executor done — submitted: {len(submitted)}, "
+        f"  FI Executor done [{'ARMED' if armed else 'SHADOW'}] — "
+        f"submitted: {len(submitted)}, proposed: {len(shadow)}, "
         f"skipped: {len(skipped)}, errors: {len(errors)}\n"
         f"{'='*60}"
     )
