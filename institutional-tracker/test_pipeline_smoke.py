@@ -6601,6 +6601,71 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         self.assertEqual(issues, [])
 
 
+class TestPoisonedCountersAreFloored(unittest.TestCase):
+    """Stopping the doubling did not undo it — `max` preserves 2^228 forever.
+
+    The sum()→max() fix landed 2026-08-06 and was correct. It also could not
+    repair a single existing record: max(poison, sane) is the poison. Weeks
+    later 107 rows in chairman_action_required.json and 108 in
+    chairman_decision_queue.json still carried 69- and 70-digit counters, and
+    one of them sat beside a note reading "floored to 1" next to a value that
+    had never been floored. The remediation had written its own postmortem and
+    not run — which is why the repair now executes on every load instead of
+    living in a migration script someone has to remember, on two hosts that
+    share no state and cannot be migrated from one place.
+    """
+
+    def test_an_impossible_counter_is_floored_and_the_loss_recorded(self):
+        import chairman_queue_sync as s
+        poison = 862718293348820473429344482784628181556388621521298319395315527974912
+        out = s.sanitize_times_seen({"id": "x", "times_seen": poison})
+        self.assertEqual(1, out["times_seen"])
+        self.assertIn("69 digits", out["times_seen_lost"],
+                      "the evidence of what was lost must survive the floor")
+
+    def test_plausible_counters_are_left_alone(self):
+        """A recurrence hint is still a hint. Don't flatten real signal."""
+        import chairman_queue_sync as s
+        for n in (1, 2, 47, s.TIMES_SEEN_CEILING):
+            self.assertEqual(n, s.sanitize_times_seen({"times_seen": n})["times_seen"])
+            self.assertNotIn("times_seen_lost", s.sanitize_times_seen({"times_seen": n}))
+
+    def test_the_floor_is_idempotent_and_survives_odd_types(self):
+        import chairman_queue_sync as s
+        for v in (0, -5, None, True, "many", 10 ** 40):
+            once = s.sanitize_times_seen({"times_seen": v})
+            self.assertEqual(once, s.sanitize_times_seen(dict(once)),
+                             f"not idempotent for {v!r}")
+
+    def test_a_poisoned_record_cannot_reinfect_the_merge(self):
+        """Ordering: sanitise before grouping, or max() picks the poison back up."""
+        import chairman_queue_sync as s
+        a = {"id": "d1", "dedup_key": "k", "status": "awaiting_chairman",
+             "description": "d", "times_seen": 10 ** 60}
+        b = {"id": "d1", "dedup_key": "k", "status": "awaiting_chairman",
+             "description": "d", "times_seen": 3}
+        merged = s.merge_actions([a], [b])
+        self.assertEqual(1, len(merged))
+        self.assertLessEqual(merged[0]["times_seen"], s.TIMES_SEEN_CEILING,
+                             "the merge re-adopted the poisoned counter")
+
+    def test_no_live_queue_still_carries_a_poisoned_counter(self):
+        """The data itself, not just the code path. Backups excluded on purpose."""
+        import json
+        import chairman_queue_sync as s
+        data = Path(__file__).resolve().parent / "data"
+        for name in ("chairman_action_required.json", "chairman_decision_queue.json"):
+            p = data / name
+            if not p.exists():
+                continue
+            rows = json.loads(p.read_text())
+            bad = [r.get("id") for r in rows if isinstance(r, dict)
+                   and isinstance(r.get("times_seen"), int)
+                   and not isinstance(r.get("times_seen"), bool)
+                   and r["times_seen"] > s.TIMES_SEEN_CEILING]
+            self.assertEqual([], bad, f"{name} still carries poisoned counters: {bad[:5]}")
+
+
 class TestChairmanSyncMergeIsIdempotent(unittest.TestCase):
     """merge(merge(a,b), merge(a,b)) == merge(a,b).
 

@@ -116,12 +116,57 @@ def _min_ts(values):
     return min(vals) if vals else None
 
 
+#  A queue item is surfaced at most a few times a day and the oldest open item
+#  dates to June 2026, so a genuine `times_seen` cannot plausibly reach four
+#  figures. Anything above this is 2^n wreckage from the sum() merge, not a
+#  count of anything.
+TIMES_SEEN_CEILING = 1000
+
+
+def sanitize_times_seen(item: dict) -> dict:
+    """Floor an impossible recurrence counter, in place, and say so.
+
+    Switching the merge from sum() to max() stopped the doubling but could not
+    undo it: `max` PRESERVES the poisoned value forever, so 107 records in
+    chairman_action_required.json and 108 in chairman_decision_queue.json still
+    carried 69-and-70-digit counters weeks after the merge was fixed. One of
+    them already had a note reading "floored to 1" beside a value that had
+    never been floored — the remediation had written its own postmortem and not
+    run. That is the shape to avoid here, hence a sanitiser that executes on
+    every load rather than a migration script someone has to remember.
+
+    Self-healing on read is also the only design that works across this firm's
+    two hosts: they share no state and no migration can run "everywhere" from
+    one machine. Each host repairs its own copy the next time it syncs.
+
+    The original is unrecoverable — 2^n counts merge runs, not sightings — so it
+    is floored to 1 and the digit count is kept as evidence rather than the
+    number itself, matching the `times_seen_lost` convention already in the data.
+    Idempotent: a floored record has a plain small int and is left alone.
+    """
+    v = item.get("times_seen")
+    if isinstance(v, bool) or not isinstance(v, int):
+        return item
+    if 0 < v <= TIMES_SEEN_CEILING:
+        return item
+    if v <= 0:
+        item["times_seen"] = 1
+        return item
+    item["times_seen"] = 1
+    item["times_seen_lost"] = (
+        f"original value had {len(str(v))} digits (non-idempotent sum() merge, "
+        f"fixed 2026-08-06); true count unrecoverable, floored to 1")
+    return item
+
+
 def _collapse(items, rank: dict, ts_fields, label: str) -> list:
     """Fold a list of queue items into one record per distinct complaint."""
     groups: "OrderedDict[str, list]" = OrderedDict()
     for it in items:
         if isinstance(it, dict):
-            groups.setdefault(group_key(it), []).append(it)
+            # Before grouping, so a poisoned record cannot win the max() below
+            # and re-infect the merged output.
+            groups.setdefault(group_key(it), []).append(sanitize_times_seen(it))
 
     merged_out = []
     for grp in groups.values():
