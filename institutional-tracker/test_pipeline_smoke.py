@@ -12248,8 +12248,18 @@ class TestOneShotReviewCannotDieIntoALog(unittest.TestCase):
 
         deploy.sh excludes `data/*` and re-includes a short allowlist, but its
         DEPLOY_EXCLUDES is built from `git ls-files --others` — so an untracked
-        file is held back no matter how many --include lines name it. Both the
-        allowlist entry and git tracking are required; this asserts both.
+        file is held back no matter how many --include lines name it.
+
+        Each host checks the half it can actually know. The Mac is the git
+        checkout and the only host that deploys, so there the question is "is
+        this tracked". The VM is NOT a checkout (deploy.sh rsyncs with
+        --exclude=.git/), so `git ls-files` there exits 128 "not a git
+        repository" — which this test first read as "untracked" and reported
+        with total confidence, naming a cause that was not the cause. On that
+        host the answer is better anyway: the file either arrived or it did
+        not, and arriving is the outcome the include exists to produce.
+        Neither host is skipped, because a control nobody runs on the host
+        that matters is the shape of the bug being fixed here.
         """
         rel = "data/pick_gate_trial.json"
         deploy = (self.BASE / "gcp_setup" / "deploy.sh").read_text()
@@ -12260,10 +12270,17 @@ class TestOneShotReviewCannotDieIntoALog(unittest.TestCase):
         tracked = subprocess.run(
             ["git", "ls-files", "--error-unmatch", rel],
             cwd=str(self.BASE), capture_output=True, text=True)
+        if tracked.returncode == 128 and "not a git repository" in tracked.stderr:
+            self.assertTrue(
+                (self.BASE / rel).is_file(),
+                "%s is absent on this non-checkout host — the allowlist entry "
+                "did not deliver it, which is exactly the 2026-08-17 failure"
+                % rel)
+            return
         self.assertEqual(0, tracked.returncode,
-                         "%s is untracked, so deploy.sh's ls-files --others "
-                         "excludes it and the --include line above is inert"
-                         % rel)
+                         "%s is untracked (git rc=%d), so deploy.sh's "
+                         "ls-files --others excludes it and the --include line "
+                         "above is inert" % (rel, tracked.returncode))
 
     # ---- the review's own arithmetic -------------------------------------
 
