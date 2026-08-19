@@ -13592,6 +13592,105 @@ class TestABoardDecisionIsNotASilentDrop(unittest.TestCase):
                         "undated approvals are why 727 rows cannot be matched")
 
 
+class TestAReconciliationHIGHReachesSomebody(unittest.TestCase):
+    """A guardrail reporting its own bypass into a briefing paragraph.
+
+    _escalation_sweep read only n_critical. The report's other consumer,
+    morning_briefing, renders top_flags into a section. So a HIGH had no owner
+    and no escalation path at all. Measured on the VM 2026-08-19, three had
+    been standing: pod ledger $6,376 adrift from the broker, cash at 6.0%
+    against a 20% floor — with the flag text itself reading "a buy bypassed the
+    cash floor guardrail" — and 21 positions against a cap of 20.
+    """
+
+    def setUp(self):
+        import deputy_monitor as D
+        self.D = D
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.chair = Path(self.tmp.name) / "chairman_action_required.json"
+        self.chair.write_text("[]")
+        p = patch.object(D, "CHAIRMAN_PATH", str(self.chair))
+        p.start()
+        self.addCleanup(p.stop)
+        self.woken = []
+        w = patch.object(D, "_wake_board",
+                         lambda reason, severity, caller: self.woken.append(
+                             (severity, reason)))
+        w.start()
+        self.addCleanup(w.stop)
+
+    def _report(self, flags, age_h=0.0):
+        ts = (datetime.now() - timedelta(hours=age_h)).isoformat()
+        return {"generated_at": ts, "flags": flags, "n_flags": len(flags),
+                "n_critical": sum(1 for f in flags if f["severity"] == "CRITICAL"),
+                "n_high": sum(1 for f in flags if f["severity"] == "HIGH")}
+
+    def _sweep(self, report):
+        with patch.object(self.D, "_load", lambda path: report):
+            self.D._escalation_sweep([], [])
+        return json.loads(self.chair.read_text())
+
+    HIGHS = [{"severity": "HIGH", "check": "CASH_FLOOR",
+              "detail": "Cash is 6.0% — below 20% floor. A buy bypassed the guardrail."},
+             {"severity": "HIGH", "check": "MAX_POSITIONS",
+              "detail": "21 positions open — exceeds 20 maximum."}]
+
+    def test_a_high_lands_in_the_chairman_queue(self):
+        rows = self._sweep(self._report(self.HIGHS))
+        ids = {r["id"] for r in rows}
+        self.assertEqual({"recon-high-cash_floor", "recon-high-max_positions"}, ids)
+        self.assertTrue(all(r["severity"] == "HIGH" for r in rows))
+        self.assertIn("bypassed", json.dumps(rows))
+
+    def test_a_high_does_not_wake_the_board(self):
+        """Three HIGHs every run would make the wake-up mean nothing."""
+        self._sweep(self._report(self.HIGHS))
+        self.assertEqual([], self.woken)
+
+    def test_repeated_runs_do_not_grow_the_queue(self):
+        rep = self._report(self.HIGHS)
+        self._sweep(rep)
+        self._sweep(rep)
+        rows = self._sweep(rep)
+        self.assertEqual(2, len(rows), "the sweep appended instead of upserting; "
+                                       "a detector that floods the queue is one "
+                                       "people stop reading")
+
+    def test_a_returning_condition_reopens_the_same_row(self):
+        rep = self._report(self.HIGHS)
+        self._sweep(rep)
+        rows = json.loads(self.chair.read_text())
+        rows[0]["resolved_at"] = "2026-08-19T00:00:00"
+        rows[0]["status"] = "resolved"
+        self.chair.write_text(json.dumps(rows))
+        rows = self._sweep(rep)
+        row = next(r for r in rows if r["id"] == "recon-high-cash_floor")
+        self.assertEqual(2, len(rows), "reopening forked a near-duplicate row")
+        self.assertNotIn("resolved_at", row, "the row is closed while the "
+                                             "condition it names is still true")
+        self.assertIn("reopened_at", row)
+
+    def test_a_stale_report_with_flags_is_itself_the_alarm(self):
+        """Without this the freshness guard turns every flag into silence the
+        moment the producer stops running."""
+        rows = self._sweep(self._report(self.HIGHS, age_h=9))
+        self.assertEqual([], rows, "acted on a report too old to act on")
+        self.assertEqual(1, len(self.woken))
+        self.assertIn("stopped running", self.woken[0][1])
+
+    def test_POISON_PILL_a_clean_report_escalates_nothing(self):
+        rows = self._sweep(self._report([]))
+        self.assertEqual([], rows)
+        self.assertEqual([], self.woken)
+
+    def test_a_critical_still_wakes_the_board(self):
+        crit = [{"severity": "CRITICAL", "check": "STOP_LOSS", "detail": "x"}]
+        self._sweep(self._report(crit))
+        self.assertEqual(1, len(self.woken))
+        self.assertEqual("CRITICAL", self.woken[0][0])
+
+
 class TestADropRowIsRetractedWhenItsPremiseExpires(unittest.TestCase):
     """The queue side of the same defect the history side just fixed.
 

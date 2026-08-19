@@ -145,6 +145,46 @@ def _age_hours(ts: str) -> float:
         return float("inf")
 
 
+def _upsert_chairman_row(rid: str, severity: str, description: str) -> bool:
+    """One keyed row in the Chairman's queue. Upserts; never appends a second.
+
+    Keyed by `id`, because this sweep runs on a schedule and an append would
+    grow the queue by one row per run per flag. The queue is already 127 items
+    deep, and a detector that floods it is a detector people stop reading —
+    which is how a HIGH ends up meaning nothing.
+
+    Returns False rather than raising: a monitor that dies while reporting on
+    other monitors is worse than one that logs a miss.
+    """
+    try:
+        with open(CHAIRMAN_PATH) as fh:
+            rows = json.load(fh)
+        if not isinstance(rows, list):
+            return False
+    except (ValueError, OSError):
+        return False
+    row = {"id": rid, "severity": severity, "source": "deputy_monitor",
+           "ts": datetime.now().isoformat(), "description": description}
+    for i, existing in enumerate(rows):
+        if isinstance(existing, dict) and existing.get("id") == rid:
+            if existing.get("resolved_at"):
+                # Closed, and the condition is back. Re-open on the same id so
+                # the row keeps its history instead of forking a near-duplicate.
+                row["reopened_at"] = row["ts"]
+                existing = {k: v for k, v in existing.items()
+                            if k not in ("resolved_at", "resolution", "status")}
+            rows[i] = {**existing, **row}
+            break
+    else:
+        rows.append(row)
+    try:
+        with open(CHAIRMAN_PATH, "w") as fh:
+            json.dump(rows, fh, indent=2)
+        return True
+    except OSError:
+        return False
+
+
 def _post(agent: str, msg: str, priority: str = "NORMAL"):
     try:
         from firm_channel import post
@@ -416,7 +456,8 @@ def _escalation_sweep(actions: list, errors: list):
     try:
         recon = _load("data/reconciliation_report.json")
         recon_age = _age_hours(recon.get("generated_at", ""))
-        if recon.get("n_critical", 0) > 0 and recon_age < 2:
+        fresh = recon_age < 2
+        if recon.get("n_critical", 0) > 0 and fresh:
             flags = [f["check"] for f in recon.get("flags", []) if f.get("severity") == "CRITICAL"]
             _wake_board(
                 f"Reconciliation CRITICAL flags unresolved: {', '.join(flags)}. "
@@ -425,6 +466,47 @@ def _escalation_sweep(actions: list, errors: list):
             )
             escalated += 1
             logger.warning(f"    ⚠ Reconciliation CRITICAL escalated to board")
+
+        # HIGH flags used to reach nobody. This branch only ever read
+        # n_critical, and the only other consumer of the report,
+        # morning_briefing, renders top_flags into a paragraph. So on
+        # 2026-08-19 the firm carried three unowned HIGHs for an unknown
+        # number of days: pod ledger $6,376 adrift from the broker, cash at
+        # 6.0% against a 20% floor with the report itself saying "a buy
+        # bypassed the cash floor guardrail", and 21 positions against a cap
+        # of 20. A guardrail reporting its own bypass into a briefing
+        # paragraph is a verdict with no consequence.
+        #
+        # HIGH does not wake the board — three HIGHs on every run would make
+        # the wake-up meaningless, the same trap as a scheduler pinned to a
+        # strict exit code. It gets a keyed row in the Chairman's queue
+        # instead, where it ages, hits the SLA escalation, and is archived
+        # only once something records a closure.
+        if fresh:
+            for f in recon.get("flags", []):
+                if f.get("severity") != "HIGH":
+                    continue
+                check = str(f.get("check") or "UNKNOWN")
+                if _upsert_chairman_row(
+                        f"recon-high-{check.lower()}", "HIGH",
+                        f"Reconciliation HIGH — {check}: {f.get('detail', '')} "
+                        f"Raised by reconciliation_check.py; it has no other "
+                        f"escalation path."):
+                    escalated += 1
+                    logger.warning(f"    ⚠ Reconciliation HIGH {check} → Chairman queue")
+
+        # A stale report is not a clean report. Without this, the freshness
+        # guard above turns every flag into silence the moment the producer
+        # stops running — the degraded read substituting a value that means
+        # "nothing to escalate".
+        if not fresh and recon.get("n_flags", 0) > 0:
+            _wake_board(
+                f"Reconciliation report is {recon_age:.0f}h old and still carries "
+                f"{recon.get('n_flags')} unresolved flag(s). Too old to act on and "
+                f"too flagged to ignore — reconciliation_check.py has stopped running.",
+                severity="HIGH", caller="Deputy Monitor"
+            )
+            escalated += 1
     except Exception as e:
         logger.warning(f"    Escalation sweep (reconciliation): {e}")
 

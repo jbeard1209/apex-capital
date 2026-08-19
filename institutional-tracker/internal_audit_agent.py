@@ -602,6 +602,24 @@ CONTROL_CENSUS: List[FailureClass] = [
          "test_pipeline_smoke.py::TestTheSuiteDoesNotWriteLiveState"],
         "Coherence Laws / Wiring Audit",
         "scheduler-stopped-while-reporting-healthy"),
+
+    FailureClass(
+        "severity_below_the_escalation_floor",
+        "A detector grades findings by severity, and the escalation path is "
+        "wired only to the top grade. Everything below it is written to a "
+        "report and rendered somewhere a human might read, which is not an "
+        "owner. The finding is detected, published, and actioned by nobody.",
+        "reconciliation_check grades LOW/MEDIUM/HIGH/CRITICAL. "
+        "deputy_monitor._escalation_sweep read n_critical and nothing else, and "
+        "the report's only other consumer paints top_flags into the morning "
+        "briefing. On 2026-08-19 three HIGHs were standing with no queue row "
+        "anywhere: pod ledger $6,376 adrift from the broker, cash at 6.0% "
+        "against a 20% floor with the flag text itself saying a buy had "
+        "bypassed the guardrail, and 21 positions against a cap of 20.",
+        ["deputy_monitor.py::_upsert_chairman_row",
+         "test_pipeline_smoke.py::TestAReconciliationHIGHReachesSomebody"],
+        "Deputy Monitor",
+        "verdict-with-no-consequence"),
 ]
 
 

@@ -222,3 +222,14 @@ A test exercises a control by running its real entry point, and that run emits t
   - `coherence_laws.py::main`
   - `test_pipeline_smoke.py::TestCoherenceLaws`
   - `test_pipeline_smoke.py::TestTheSuiteDoesNotWriteLiveState`
+
+## `severity_below_the_escalation_floor`
+
+A detector grades findings by severity, and the escalation path is wired only to the top grade. Everything below it is written to a report and rendered somewhere a human might read, which is not an owner. The finding is detected, published, and actioned by nobody.
+
+- **Proved real by:** reconciliation_check grades LOW/MEDIUM/HIGH/CRITICAL. deputy_monitor._escalation_sweep read n_critical and nothing else, and the report's only other consumer paints top_flags into the morning briefing. On 2026-08-19 three HIGHs were standing with no queue row anywhere: pod ledger $6,376 adrift from the broker, cash at 6.0% against a 20% floor with the flag text itself saying a buy had bypassed the guardrail, and 21 positions against a cap of 20.
+- **Owner:** Deputy Monitor
+- **Writeup:** memory `verdict-with-no-consequence`
+- **Detectors:**
+  - `deputy_monitor.py::_upsert_chairman_row`
+  - `test_pipeline_smoke.py::TestAReconciliationHIGHReachesSomebody`
