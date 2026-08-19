@@ -758,6 +758,35 @@ def retire_derived_rows(rows: list, history: dict, now: str) -> list:
         if _status_of(row) in RESOLVED_STATUSES | WONT_FIX_STATUSES:
             continue
         settled, why = _subject_is_settled(subject, history, by_id)
+        if not settled and str(row.get("id", "")).startswith(DROP_ID_PREFIX):
+            # A drop row asserts one thing: this problem vanished with no record
+            # of a decision. That assertion can stop being true two ways, and
+            # NEITHER of them is a resolution, so the RESOLVED/WONT_FIX test
+            # above can never retire the row.
+            #
+            # Measured on the VM 2026-08-19, after the ledger fix cut the drop
+            # count from 17 to 1: 47 drop rows were still open in the Chairman's
+            # queue. Twenty-one pointed at a signature that is DERIVED — a view
+            # of another row, which is never OPEN, never ages and never
+            # escalates, so the row asked for a decision about nothing.
+            # Twenty-four pointed at a signature that had simply COME BACK and
+            # was sitting in a queue, open, at that moment. One was the real
+            # loss. The history had corrected itself on every run since the fix;
+            # the queue had not, because nothing retracts an escalation whose
+            # premise expired. A verdict reached once and never revisited is the
+            # same defect on the queue side that SILENT_DROP had on the history
+            # side.
+            h = history.get(subject)
+            if h is not None and h.get("status") == DERIVED_STATUS:
+                settled = True
+                why = ("%s is a derived view of another row, not a problem in "
+                       "its own right — it cannot be silently dropped because "
+                       "it was never independently open" % subject)
+            elif h is not None and h.get("present"):
+                settled = True
+                why = ("%s is back in a queue and open again, so it was not "
+                       "lost. If it disappears again the next scan files a "
+                       "fresh row with the new dates" % subject)
         if not settled and str(row.get("id","")).startswith(STALE_ID_PREFIX) \
                 and subject in flagged:
             # The breach this row announced now lives on the problem itself, so

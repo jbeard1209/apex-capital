@@ -13592,6 +13592,89 @@ class TestABoardDecisionIsNotASilentDrop(unittest.TestCase):
                         "undated approvals are why 727 rows cannot be matched")
 
 
+class TestADropRowIsRetractedWhenItsPremiseExpires(unittest.TestCase):
+    """The queue side of the same defect the history side just fixed.
+
+    A `lifecycle-drop-*` row asserts one thing: this problem vanished with no
+    record of a decision. That can stop being true two ways — the signature
+    comes back, or it turns out to be a derived view of another row — and
+    NEITHER is a resolution, so the RESOLVED/WONT_FIX test in
+    retire_derived_rows could never retire the row.
+
+    Measured on the VM 2026-08-19, after the ledger fix cut the drop count from
+    17 to 1, the Chairman's queue still held 47 open drop rows: 21 pointed at a
+    DERIVED signature, 24 at a signature that was back in a queue and open, 1 at
+    the real loss, 1 at a signature no longer in history at all. Forty-six rows
+    asking for a decision whose premise had expired.
+    """
+
+    def setUp(self):
+        import problem_lifecycle_sentinel as S
+        self.S = S
+
+    def _row(self, sig):
+        return {"id": "%s%s" % (self.S.DROP_ID_PREFIX, sig),
+                "status": "open",
+                "title": "'widget X' disappeared from every queue"}
+
+    def _retire(self, sig, hist_entry):
+        rows = [self._row(sig)]
+        history = {sig: hist_entry} if hist_entry is not None else {}
+        retired = self.S.retire_derived_rows(rows, history, "2026-08-19T12:00:00+00:00")
+        return rows[0], retired
+
+    def test_a_signature_that_came_back_retracts_its_drop_row(self):
+        row, retired = self._retire("sig-aaa", {
+            "sig": "sig-aaa", "status": "OPEN", "present": True})
+        self.assertEqual(["lifecycle-drop-sig-aaa"], retired)
+        self.assertEqual("resolved", row["status"])
+        self.assertIn("back in a queue", row["resolution"])
+
+    def test_a_derived_subject_retracts_its_drop_row(self):
+        row, retired = self._retire("sig-bbb", {
+            "sig": "sig-bbb", "status": self.S.DERIVED_STATUS, "present": False})
+        self.assertEqual(["lifecycle-drop-sig-bbb"], retired)
+        self.assertIn("derived view", row["resolution"])
+
+    def test_POISON_PILL_a_real_loss_is_never_retracted(self):
+        """If this passes, the retraction has eaten the one row that matters."""
+        row, retired = self._retire("sig-ccc", {
+            "sig": "sig-ccc", "status": "SILENT_DROP", "present": False})
+        self.assertEqual([], retired,
+                         "the genuine silent drop was retired — the detector "
+                         "now closes exactly the row it exists to raise")
+        self.assertNotEqual("resolved", row.get("status"))
+
+    def test_a_subject_that_is_not_in_history_is_left_alone(self):
+        """"I cannot find it" is not a closure. Deferring is the right answer:
+        the row IS the escalation, and an owner is already looking at it."""
+        row, retired = self._retire("sig-ddd", None)
+        self.assertEqual([], retired)
+        self.assertNotEqual("resolved", row.get("status"))
+
+    def test_a_stale_row_is_not_retracted_by_a_present_subject(self):
+        """A lifecycle-stale-* row exists BECAUSE its subject is open. Applying
+        the drop rule to it would retire every SLA breach the moment it fired."""
+        rows = [{"id": "%ssig-eee" % self.S.STALE_ID_PREFIX, "status": "open",
+                 "title": "open past SLA"}]
+        history = {"sig-eee": {"sig": "sig-eee", "status": "OPEN", "present": True}}
+        retired = self.S.retire_derived_rows(rows, history,
+                                             "2026-08-19T12:00:00+00:00")
+        self.assertEqual([], retired)
+
+    def test_retraction_is_idempotent(self):
+        rows = [self._row("sig-aaa")]
+        history = {"sig-aaa": {"sig": "sig-aaa", "status": "OPEN", "present": True}}
+        first = self.S.retire_derived_rows(rows, history, "2026-08-19T12:00:00+00:00")
+        stamp = rows[0]["resolved_at"]
+        second = self.S.retire_derived_rows(rows, history, "2026-08-20T12:00:00+00:00")
+        self.assertEqual(1, len(first))
+        self.assertEqual([], second, "a second run re-retired an already closed row")
+        self.assertEqual(stamp, rows[0]["resolved_at"],
+                         "the stamp records when the view was retired, not when "
+                         "it was last read")
+
+
 class TestTheSLAViewIsRecognisedAfterItsIdIsGone(unittest.TestCase):
     """Once the board consumes an escalation, its title is all that is left.
 
