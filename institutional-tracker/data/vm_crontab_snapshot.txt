@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-19T03:06:30Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-19T08:42:06Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -163,7 +163,7 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # Chairman Decision SLA: app-inbox surfacing + 50-day board-escalation (Governance)
 30 12 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 chairman_decision_sla.py >> logs/chairman_sla_$(date +\%Y\%m\%d).log 2>&1
 20 */4 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 data_integrity_sentinel.py >> logs/data_integrity_$(date +\%Y\%m\%d).log 2>&1
-0 13 17 8 * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 pick_gate_trial_review.py --notify >> logs/pick_gate_trial.log 2>&1  # pick-gate trial review 2026-08-17
+0 13 * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 pick_gate_trial_review.py --notify >> logs/pick_gate_trial.log 2>&1  # pick-gate trial review - DAILY gate, due date lives in data/pick_gate_trial.json
 
 # ── SIGN-OFF LEDGER RED TEAM + CIT MIGRATION AUDIT — Sunday 08:00 UTC weekly ──
 # Adversarial re-verification of the full-auto guardrails + migration. Exit 1 => bypass found.
@@ -171,6 +171,10 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 30 8 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 signoff_promotion_gate.py >> logs/promotion_gate.log 2>&1
 # ── PROBLEM LIFECYCLE SENTINEL — every 2h at :55 (after pipeline-integrity :50) ──
 55 */2 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 problem_lifecycle_sentinel.py >> logs/lifecycle_$(date +\%Y\%m\%d).log 2>&1
+# Chairman queue compactor — 05 past the hour AFTER a sentinel pass, so every
+# closure this run archives has already been observed and recorded. Refuses
+# outright on a host that does not own the lifecycle history.
+5 13 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 chairman_queue_compactor.py --apply >> logs/queue_compactor_$(date +\%Y\%m\%d).log 2>&1
 # ── TECH-SHORT POD (Korea/AI-hardware regime shorts) — 3x/weekday ──
 20 13,17,20 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 tech_short_pod.py >> logs/tech_short_$(date +\%Y\%m\%d).log 2>&1
 
