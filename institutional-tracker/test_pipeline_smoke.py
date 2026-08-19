@@ -733,6 +733,20 @@ def patch_yfinance(tc, quotes: dict):
 
 class TestWiringContracts(unittest.TestCase):
 
+    def test_the_rejected_ledger_producer_and_consumer_name_one_file(self):
+        """New routed producer 2026-08-19: cit_director writes rejections.
+
+        Its only consumer is problem_lifecycle_sentinel.OUTCOME_LEDGERS, which
+        uses it to tell "the board said no" from "we lost it". If the two ever
+        name different files the sentinel goes quietly back to reporting every
+        rejected proposal as a silent drop — output produced, never consumed,
+        which is this firm's oldest bug class.
+        """
+        import cit_director, problem_lifecycle_sentinel as S
+        consumed = {Path(p).name for p, *_ in S.OUTCOME_LEDGERS}
+        self.assertIn(Path(cit_director.CIT_REJECTED).name, consumed)
+        self.assertIn(Path(cit_director.CIT_APPROVED).name, consumed)
+
     def test_international_analyst_is_actually_scheduled(self):
         """The agent that watches foreign markets must be RUN by something.
 
@@ -2968,9 +2982,37 @@ class TestProblemLifecycle(unittest.TestCase):
         rep = S.run()
         sig = S.signature(prob, "impl")
         self.assertIn(sig, rep["stale"])
-        self.assertEqual(rep["escalated_chairman"], 1)
+        # Stamped ON the row, not appended as a second row about it. This
+        # assertion read `escalated_chairman == 1` until 2026-08-19 and passed
+        # for the wrong reason: the queue list was frozen at import, so
+        # flag_stale_in_place searched the REAL data/ queues, never found this
+        # sandboxed signature, and fell through to the append path. The test was
+        # measuring the leak, not the policy.
+        self.assertEqual(1, rep["flagged_in_place"])
+        self.assertEqual(0, rep["escalated_chairman"])
+        row = json.loads(self.impl.read_text())[0]
+        self.assertTrue(row["sla_breached"])
+        self.assertGreaterEqual(row["stale_days"], S.STALE_SLA_DAYS)
+        self.assertFalse(self.chair.exists() and json.loads(self.chair.read_text()),
+                         "a breach we CAN attach must not also spawn a row")
+
+    def test_a_breach_that_cannot_be_attached_still_surfaces(self):
+        """The fallback half: no queue carries the signature any more.
+
+        A breach we cannot stamp must land somewhere rather than evaporate —
+        otherwise narrowing the escalation path would silently delete the
+        finding instead of relocating it.
+        """
+        S = self.S
+        h = {"sig": "sig-orphan", "title": "nowhere to stamp",
+             "first_seen": "2026-01-01T00:00:00+00:00",
+             "last_open": "2026-01-01T00:00:00+00:00"}
+        self._write(self.impl, [])
+        self._write(self.chair, [])
+        self.assertEqual(0, S.flag_stale_in_place("sig-orphan", h, S._now()))
+        self.assertTrue(S._escalate_chairman(h, "STALE", S._now()))
         chair = json.loads(self.chair.read_text())
-        self.assertTrue(any(e["id"] == f"lifecycle-stale-{sig}" for e in chair))
+        self.assertEqual(["lifecycle-stale-sig-orphan"], [e["id"] for e in chair])
 
     def test_vanished_without_resolution_is_SILENT_DROP(self):
         S = self.S
@@ -9283,16 +9325,80 @@ class TestCoherenceLaws(unittest.TestCase):
                       "verdict with no consequence")
 
     def test_the_runner_fails_the_exit_code_on_cannot_tell(self):
-        """Exit 0 means every law held. It must not mean 'nothing blew up'."""
+        """Exit 0 means every law held. It must not mean 'nothing blew up'.
+
+        Runs --dry-run and proves the subprocess wrote nothing. This test used
+        to run the plain entry point, which refreshed `checked_at` in
+        coherence_report.json — the very timestamp
+        wiring_audit.check_coherence_layer() reads to decide whether the layer
+        is still firing. Testing the detector was keeping the detector green.
+        The byte-comparison below is the guard: it fails if anyone drops the
+        flag, or if a write ever moves outside the flag's reach.
+        """
+        import hashlib
         import subprocess
+        data = Path(__file__).parent / "data"
+        watched = [data / n for n in ("coherence_report.json",
+                                      "chairman_action_required.json",
+                                      "coherence_notified.json")]
+
+        def digest():
+            return {p.name: hashlib.md5(p.read_bytes()).hexdigest()
+                    if p.exists() else None for p in watched}
+
+        before = digest()
         cl = self._law_sources()
         results = cl.run_all()
         expect_fail = any(r.verdict != cl.HOLDS for r in results)
-        out = subprocess.run([sys.executable, "coherence_laws.py", "--quiet"],
+        out = subprocess.run([sys.executable, "coherence_laws.py",
+                              "--quiet", "--dry-run"],
                              cwd=str(Path(__file__).parent),
                              capture_output=True, text=True, timeout=120)
         self.assertEqual(out.returncode, 1 if expect_fail else 0,
                          f"exit code disagrees with the verdicts:\n{out.stdout}")
+        after = digest()
+        self.assertEqual(before, after,
+                         "the suite wrote live firm state: "
+                         f"{[k for k in after if after[k] != before[k]]}")
+
+    def test_dry_run_suppresses_every_write_not_just_the_queue(self):
+        """--no-escalate and --dry-run are different promises.
+
+        --no-escalate still writes the report, on purpose: the scheduler wants
+        the report and not the queue row. --dry-run must write nothing, because
+        the report's own timestamp is a liveness signal. An AST check, not a
+        grep: the postmortem comment above the flag names both writes, so a
+        text search cannot tell the guard from its own explanation.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).parent / "coherence_laws.py").read_text())
+        fn = next((n for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef) and n.name == "main"), None)
+        self.assertIsNotNone(fn, "coherence_laws.main has been renamed")
+
+        def guarded_by_dry_run(call_name):
+            """Is every call to `call_name` inside an `if not ...dry_run...`?"""
+            found = False
+            for node in ast.walk(fn):
+                if not isinstance(node, ast.If):
+                    continue
+                names = {n.attr for n in ast.walk(node.test)
+                         if isinstance(n, ast.Attribute)}
+                if "dry_run" not in names:
+                    continue
+                if not (isinstance(node.test, ast.UnaryOp)
+                        and isinstance(node.test.op, ast.Not)):
+                    continue
+                for c in ast.walk(node):
+                    if isinstance(c, ast.Call) and isinstance(c.func, ast.Name) \
+                       and c.func.id == call_name:
+                        found = True
+            return found
+
+        for target in ("_write_report", "escalate_violations", "notify_violations"):
+            self.assertTrue(guarded_by_dry_run(target),
+                            f"{target}() is not gated on --dry-run, so a dry run "
+                            f"still writes live state")
 
     def test_two_sided_rejects_a_book_with_no_bid(self):
         """An ask with no bid is not a price.
@@ -10261,6 +10367,54 @@ class TestCoherenceLaws(unittest.TestCase):
                           "without this the job logs a failure on every run and "
                           "stops being read")
 
+
+
+class TestTheSuiteDoesNotWriteLiveState(unittest.TestCase):
+    """Running the tests must not change the firm.
+
+    Every in-process test here sandboxes itself by rebinding the module's path
+    globals. A SUBPROCESS cannot be sandboxed that way: it re-resolves DATA_DIR
+    from its own __file__ and writes the real data/. That is how the exit-code
+    test came to rewrite coherence_report.json on every run — the timestamp
+    wiring_audit.check_coherence_layer() reads to decide whether the coherence
+    layer is still firing. Testing the detector kept the detector green, so a
+    dead scheduler and a live one would have looked identical.
+
+    Measured 2026-08-19: with the whole suite instrumented to hash five live
+    queue/report files around every one of 681 tests, zero writes remain. This
+    test is what keeps that true.
+    """
+
+    # A shell-out must carry one of these, or it runs the firm for real.
+    SANDBOX_FLAGS = {"--dry-run", "--report", "--no-escalate", "--help"}
+
+    def test_every_shellout_to_a_firm_module_suppresses_its_writes(self):
+        """AST, not grep. The comments above name every flag in SANDBOX_FLAGS,
+        so a text search would match this docstring and pass on a file with no
+        guard at all."""
+        import ast
+        tree = ast.parse(Path(__file__).read_text())
+        offenders = []
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Attribute)
+                    and node.func.attr == "run"
+                    and isinstance(node.func.value, ast.Name)
+                    and node.func.value.id == "subprocess"):
+                continue
+            if not (node.args and isinstance(node.args[0], ast.List)):
+                continue
+            argv = [e.value for e in node.args[0].elts
+                    if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+            script = next((a for a in argv if a.endswith(".py")), None)
+            if script is None:
+                continue        # not launching a firm module
+            if not (self.SANDBOX_FLAGS & set(argv)):
+                offenders.append(f"line {node.lineno}: {script} {argv}")
+        self.assertEqual([], offenders,
+                         "these shell-outs run a firm entry point with nothing "
+                         "suppressing its writes, so the suite mutates live "
+                         "data/:\n  " + "\n  ".join(offenders))
 
 
 class TestMacDoesNotRunThePipeline(unittest.TestCase):
@@ -12849,10 +13003,12 @@ class TestGovernanceDoesNotEscalateItself(unittest.TestCase):
         }
         for p in self.paths.values():
             p.write_text("[]" if "history" not in p.name and "loops" not in p.name else "{}")
-        self.paths["SCANNED_QUEUES"] = (
-            (self.paths["PENDING_PATH"], "proposal"),
-            (self.paths["IMPL_QUEUE_PATH"], "impl"),
-            (self.paths["CHAIRMAN_PATH"], "chairman"))
+        # No fourth entry re-listing those three as a queue tuple: the module
+        # resolves them through scanned_queues() at call time now, so patching
+        # the paths is enough. It was NOT enough while that tuple was a
+        # module-level constant — it froze the real data/ paths at import and
+        # this "sandboxed" suite stamped sla_breached onto the firm's live
+        # queues, on a host that is not the designated writer.
         # The writer gate is the subject of its own tests at the bottom of this
         # class. Every OTHER test here is about WHAT the sentinel writes, so it
         # must be allowed to write no matter which host runs the suite —
@@ -13219,6 +13375,274 @@ class TestCompactorWillNotActOnAHistoryItCannotMaintain(unittest.TestCase):
         rows, arch = self._run(["c"], (False, "read-only on 'mac'"))
         self.assertEqual(1, len(rows))
         self.assertEqual([], arch)
+
+
+class TestABoardDecisionIsNotASilentDrop(unittest.TestCase):
+    '''"The board said no" and "we lost it" must be different states.
+
+    A proposal that leaves the pending queue has either been decided or lost,
+    and until 2026-08-19 the sentinel could not tell which: it read the three
+    QUEUES and no ledger, so every vote looked like a disappearance. Measured on
+    the VM that day — 17 signatures reported SILENT_DROP: 8 approved (sitting in
+    a 1688-row ledger nobody read), 9 rejected and deleted outright by
+    cit_director.clear_voted_proposals, which only ever wrote the approved half.
+
+    The detector that exists to catch a lost problem could therefore only cry
+    wolf about a decided one.
+    '''
+
+    def setUp(self):
+        import problem_lifecycle_sentinel as S
+        self.S = S
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.d = Path(self.tmp.name)
+        self.appr = self.d / "approved.json"
+        self.rej = self.d / "rejected.json"
+        self.appr.write_text("[]")
+        self.rej.write_text("[]")
+        led = patch.object(S, "OUTCOME_LEDGERS", (
+            (self.appr, "RESOLVED", "approved_at", "the board approved it"),
+            (self.rej, "WONT_FIX", "rejected_at", "the board rejected it")))
+        led.start()
+        self.addCleanup(led.stop)
+
+    # -- helpers ------------------------------------------------------------
+    PROB = {"id": "CIT-2026-900", "title": "widget X is wired to nothing"}
+
+    def _sig(self):
+        return self.S.signature(self.PROB, "proposal")
+
+    def _history(self, status="OPEN", last_open="2026-08-10T00:00:00+00:00"):
+        return {self._sig(): {"sig": self._sig(), "title": self.PROB["title"],
+                              "status": status, "present": True,
+                              "first_seen": "2026-08-10T00:00:00+00:00",
+                              "last_open": last_open, "occurrences": 1}}
+
+    def _ledger(self, path, ts_field, when):
+        row = dict(self.PROB)
+        if when is not None:
+            row[ts_field] = when
+        path.write_text(json.dumps([row]))
+
+    def _vanish(self, history):
+        """Every queue is empty: the signature left the firm."""
+        return self.S._update_history({}, history, "2026-08-19T12:00:00+00:00")
+
+    # -- the two decided states --------------------------------------------
+    def test_an_approved_proposal_is_RESOLVED_not_dropped(self):
+        self._ledger(self.appr, "approved_at", "2026-08-15T13:30:00")
+        h = self._vanish(self._history())[self._sig()]
+        self.assertEqual("RESOLVED", h["status"])
+        self.assertEqual(1, h.get("times_resolved"))
+        self.assertIn("approved", h["decision"])
+
+    def test_a_rejected_proposal_is_WONT_FIX_not_dropped(self):
+        self._ledger(self.rej, "rejected_at", "2026-08-15T13:30:00")
+        h = self._vanish(self._history())[self._sig()]
+        self.assertEqual("WONT_FIX", h["status"])
+        self.assertEqual(0, h.get("times_resolved", 0),
+                         "a rejection is not a resolution")
+
+    def test_the_poison_pill_a_real_loss_is_still_a_SILENT_DROP(self):
+        """Otherwise the two tests above pass because nothing is ever dropped."""
+        h = self._vanish(self._history())[self._sig()]
+        self.assertEqual("SILENT_DROP", h["status"])
+        self.assertFalse(h.get("undated_ledger_hit"))
+
+    # -- the guards on that lookup -----------------------------------------
+    def test_a_decision_that_predates_this_occurrence_does_not_close_it(self):
+        """The ledgers are permanent; the problem came back after that vote.
+
+        Same discipline as sample-outlived-its-rule: a verdict reached under one
+        occurrence does not settle the next one. Without this, every re-filing
+        of a problem the board once approved is auto-closed forever.
+        """
+        self._ledger(self.appr, "approved_at", "2026-06-01T13:30:00")
+        h = self._vanish(self._history())[self._sig()]
+        self.assertEqual("SILENT_DROP", h["status"])
+
+    def test_an_undated_ledger_row_does_not_close_it(self):
+        """727 of 1688 approved rows had no timestamp at all (2026-08-19).
+
+        With no date, the "must postdate the occurrence" guard has nothing to
+        compare and a missing value reads as YES — presence-is-not-currency. The
+        row stays open for a human, but it is labelled, because telling the
+        Chairman "NO recorded resolution" when a decision is sitting in the
+        ledger is how a detector earns the right to be ignored.
+        """
+        self._ledger(self.appr, "approved_at", None)
+        h = self._vanish(self._history())[self._sig()]
+        self.assertEqual("SILENT_DROP", h["status"])
+        self.assertTrue(h["undated_ledger_hit"])
+
+    def test_the_escalation_text_distinguishes_the_two(self):
+        S = self.S
+        with tempfile.TemporaryDirectory() as t:
+            chair = Path(t) / "chair.json"
+            chair.write_text("[]")
+            with patch.object(S, "CHAIRMAN_PATH", chair):
+                S._escalate_chairman({"sig": "s1", "title": "lost thing"},
+                                     "SILENT_DROP", "2026-08-19T00:00:00+00:00")
+                S._escalate_chairman({"sig": "s2", "title": "voted thing",
+                                      "undated_ledger_hit": True},
+                                     "SILENT_DROP", "2026-08-19T00:00:00+00:00")
+            rows = {r["id"]: r["description"] for r in json.loads(chair.read_text())}
+        self.assertIn("NO recorded", rows["lifecycle-drop-s1"])
+        self.assertNotIn("NO recorded", rows["lifecycle-drop-s2"])
+        self.assertIn("no timestamp", rows["lifecycle-drop-s2"])
+
+    def test_the_newest_qualifying_decision_wins(self):
+        """File order is append order across two ledgers, not decision order."""
+        row = dict(self.PROB)
+        self.appr.write_text(json.dumps([
+            {**row, "approved_at": "2026-08-12T00:00:00"},
+            {**row, "approved_at": "2026-08-18T00:00:00"},
+            {**row, "approved_at": "2026-08-14T00:00:00"}]))
+        h = self._vanish(self._history())[self._sig()]
+        self.assertEqual("2026-08-18T00:00:00", h["decided_at"])
+
+    def test_a_naive_board_stamp_is_not_read_as_older_than_an_aware_one(self):
+        """The queues write aware UTC; the board writes datetime.now().
+
+        Compared as STRINGS, '2026-08-19T09:12:00' sorts before
+        '2026-08-19T12:55:00+00:00', so a decision taken three hours AFTER the
+        occurrence opened reads as three hours before it and the item is filed
+        as a loss.
+        """
+        h = self._history(last_open="2026-08-19T09:00:00+00:00")
+        self._ledger(self.appr, "approved_at", "2026-08-19T09:12:00")
+        self.assertEqual("RESOLVED", self._vanish(h)[self._sig()]["status"])
+        self.assertIsNotNone(self.S._dt("2026-08-19T09:12:00").tzinfo)
+
+    def test_a_drop_already_on_file_is_re_examined_not_frozen(self):
+        """The verdict was reached on the one run where the row vanished.
+
+        Every later run skipped it (`if h.get("present")` was already False), so
+        a drop recorded before this check existed — all 17 of them — would have
+        stayed wrong forever no matter how good the ledger got.
+        """
+        self._ledger(self.appr, "approved_at", "2026-08-15T13:30:00")
+        hist = self._history(status="SILENT_DROP")
+        hist[self._sig()]["present"] = False
+        h = self._vanish(hist)[self._sig()]
+        self.assertEqual("RESOLVED", h["status"])
+        self.assertIn("re-check", h["decision"])
+
+    def test_the_ledgers_are_never_scanned_as_queues(self):
+        """An append-only ledger read as a queue would blind the detector.
+
+        Every proposal ever filed would look permanently present, so nothing
+        could ever be reported as dropped. The ledgers are consulted at exactly
+        one moment — when a signature disappears — and must not appear in
+        scanned_queues().
+        """
+        scanned = {str(p) for p, _ in self.S.scanned_queues()}
+        for path, *_ in self.S.OUTCOME_LEDGERS:
+            self.assertNotIn(str(path), scanned)
+
+    def test_rebinding_the_paths_actually_redirects_every_read_and_write(self):
+        """A sandbox that does not sandbox is worse than no sandbox.
+
+        The queue list used to be a module-level tuple built at import time, so
+        it held the real data/ Paths forever. Every test in this suite that
+        "sandboxed" the sentinel by rebinding PENDING_PATH/IMPL_QUEUE_PATH/
+        CHAIRMAN_PATH still scanned production through that copy — and
+        flag_stale_in_place wrote sla_breached back into it. Measured
+        2026-08-19: a single test run restamped all three live queues on the
+        Mac, which is not even the designated writer host.
+        """
+        S = self.S
+        d = self.d
+        pend, impl, chair = d / "p.json", d / "i.json", d / "c.json"
+        pend.write_text(json.dumps([{"id": "z", "title": "sandboxed problem",
+                                     "status": "queued"}]))
+        impl.write_text("[]")
+        chair.write_text("[]")
+        with patch.multiple(S, PENDING_PATH=pend, IMPL_QUEUE_PATH=impl,
+                            CHAIRMAN_PATH=chair):
+            self.assertEqual({str(pend), str(impl), str(chair)},
+                             {str(p) for p, _ in S.scanned_queues()})
+            snap = S._scan()
+        self.assertEqual(1, len(snap), "the scan read outside the sandbox")
+
+    def test_the_board_records_a_rejection_at_all(self):
+        """The fix at source: cit_director must write the rejected half too."""
+        import cit_director
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            pend, appr, rej = d / "p.json", d / "a.json", d / "r.json"
+            pend.write_text(json.dumps([{"id": "A", "title": "yes"},
+                                        {"id": "B", "title": "no"},
+                                        {"id": "C", "title": "not voted"}]))
+            appr.write_text("[]")
+            rej.write_text("[]")
+            with patch.object(cit_director, "CIT_PENDING", pend), \
+                 patch.object(cit_director, "CIT_APPROVED", appr), \
+                 patch.object(cit_director, "CIT_REJECTED", rej):
+                out = cit_director.clear_voted_proposals(["A", "B"], ["A"])
+            approved = json.loads(appr.read_text())
+            rejected = json.loads(rej.read_text())
+            remaining = json.loads(pend.read_text())
+        self.assertEqual({"approved": 1, "rejected": 1, "remaining": 1}, out)
+        self.assertEqual(["B"], [p["id"] for p in rejected])
+        self.assertEqual(["C"], [p["id"] for p in remaining])
+        self.assertTrue(rejected[0].get("rejected_at"), "a rejection with no date")
+        self.assertTrue(approved[0].get("approved_at"),
+                        "undated approvals are why 727 rows cannot be matched")
+
+
+class TestTheSLAViewIsRecognisedAfterItsIdIsGone(unittest.TestCase):
+    """Once the board consumes an escalation, its title is all that is left.
+
+    13 SLA escalations were filed before the derived-row rules existed. Their
+    ids are gone from every queue, so nothing can re-tag them by prefix, and
+    they sat in the history as ordinary problems — aged, escalated, and counted
+    against the firm as if the view were the thing it describes. The repair runs
+    on every load rather than as a one-shot script, because the two hosts share
+    no state and a migration run on one is not run on the other.
+    """
+
+    def setUp(self):
+        import problem_lifecycle_sentinel as S
+        self.S = S
+
+    def _row(self):
+        return {"h1": {"sig": "h1", "status": "OPEN", "last_open": "2026-07-01",
+                       "title": self.S.SLA_ESCALATION_TITLE_PREFIX +
+                                " (Chairman did not respond in 20d): cro-risk-high"}}
+
+    def test_a_consumed_sla_escalation_is_retagged_as_a_view(self):
+        h = self._row()
+        self.assertEqual(1, self.S.backfill_derived_from_titles(h))
+        self.assertEqual(self.S.DERIVED_STATUS, h["h1"]["status"])
+        self.assertEqual("cro-risk-high", h["h1"]["derived_of"])
+        self.assertIsNone(h["h1"]["last_open"], "a view is never aged")
+
+    def test_it_is_idempotent(self):
+        h = self._row()
+        self.S.backfill_derived_from_titles(h)
+        self.assertEqual(0, self.S.backfill_derived_from_titles(h),
+                         "re-tagging on every load must be a no-op after the first")
+
+    def test_the_poison_pill_a_real_problem_is_left_alone(self):
+        h = {"h2": {"sig": "h2", "status": "OPEN", "last_open": "2026-07-01",
+                    "title": "Board must decide on the Kalshi arm file"}}
+        self.assertEqual(0, self.S.backfill_derived_from_titles(h))
+        self.assertEqual("OPEN", h["h2"]["status"])
+
+    def test_the_producer_does_not_spell_the_prefix_itself(self):
+        """AST, not grep: the literal appears in postmortem comments in both
+        files, so a text search proves nothing about the code."""
+        import ast
+        src = Path(__file__).parent / "chairman_decision_sla.py"
+        tree = ast.parse(src.read_text())
+        literals = [n.value for n in ast.walk(tree)
+                    if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                    and self.S.SLA_ESCALATION_TITLE_PREFIX in n.value]
+        self.assertEqual([], literals,
+                         "a second copy of the title format is a second thing "
+                         "that can drift out of sync with the sentinel")
 
 
 # =============================================================================

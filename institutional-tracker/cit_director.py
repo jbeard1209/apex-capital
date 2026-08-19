@@ -266,6 +266,9 @@ def submit_to_pod_queue(proposal: dict) -> str:
 CIT_BACKLOG      = DATA_DIR / "cit_backlog.json"
 CIT_SENSITIVE    = DATA_DIR / "cit_sensitive.json"
 CIT_APPROVED     = DATA_DIR / "cit_approved_proposals.json"
+# The other half of the vote. Read by problem_lifecycle_sentinel.OUTCOME_LEDGERS
+# to tell a decided proposal from a lost one; see clear_voted_proposals().
+CIT_REJECTED     = DATA_DIR / "cit_rejected_proposals.json"
 CIT_HISTORY      = DATA_DIR / "cit_history.json"     # acceptance rate per agent
 CIT_HR_MEMO      = DATA_DIR / "cit_hr_memo.json"     # CIT → HR context channel
 CIT_THINK_TANK   = DATA_DIR / "cit_think_tank.json"  # ThinkTank radical proposals
@@ -4752,28 +4755,64 @@ def get_pending_proposals() -> list:
 def clear_voted_proposals(voted_ids: list, approved_ids: list):
     """
     Called by board_meeting.py after voting.
-    Moves approved proposals to cit_approved_proposals.json.
-    Removes all voted proposals from cit_pending_proposals.json.
+    Moves approved proposals to cit_approved_proposals.json, rejected ones to
+    cit_rejected_proposals.json, and removes both from cit_pending_proposals.json.
+
+    UNTIL 2026-08-19 A REJECTION LEFT NO TRACE. `remaining` dropped every voted
+    id and only the approved ones were written anywhere, so a proposal the
+    board considered and voted down was deleted outright — indistinguishable
+    from one lost to a crash, a bad merge or a truncated file. On 2026-08-19
+    problem_lifecycle_sentinel reported 17 signatures as SILENT_DROP; 8 were
+    sitting in the approved ledger it did not read, and the other 9 had been
+    rejected here and no longer existed anywhere in the firm. "The board said
+    no" and "we lost it" have to be different states, or the sentinel that
+    exists to catch the second one can only cry wolf about the first.
     """
     pending  = _load_json_list_safe(CIT_PENDING)
     approved = _load_json_list_safe(CIT_APPROVED)
+    rejected = _load_json_list_safe(CIT_REJECTED)
 
-    newly_approved = [p for p in pending if p.get("id") in approved_ids]
-    remaining      = [p for p in pending if p.get("id") not in voted_ids]
+    voted    = set(voted_ids or [])
+    approved_set = set(approved_ids or [])
+    newly_approved = [p for p in pending if p.get("id") in approved_set]
+    newly_rejected = [p for p in pending
+                      if p.get("id") in voted and p.get("id") not in approved_set]
+    remaining      = [p for p in pending if p.get("id") not in voted]
 
     # Strip re-vote housekeeping flags before archiving — they're process state, not history
+    now_iso = datetime.now().isoformat()
     for p in newly_approved:
         p.pop("needs_revote", None)
         p.pop("revote_reason", None)
+        # setdefault, not assignment: board_meeting/deputy_board stamp this on
+        # the paths they own, and their timestamp is the real vote time. But
+        # this archiver stamped nothing, which is why 727 of the 1688 rows in
+        # the approved ledger carry no date at all — and an undated decision is
+        # one problem_lifecycle_sentinel cannot match to an occurrence, so a
+        # genuinely approved proposal still reads as a possible silent drop.
+        p.setdefault("approved_at", now_iso)
+        p.setdefault("status", "approved")
+    for p in newly_rejected:
+        p.pop("needs_revote", None)
+        p.pop("revote_reason", None)
+        p["status"] = "rejected"
+        p["rejected_at"] = now_iso
+        # board_llm_reason is set by the vote itself; keep whatever it left.
+        p.setdefault("rejected_reason",
+                     p.get("board_llm_reason") or "board vote did not reach threshold")
 
     approved.extend(newly_approved)
+    rejected.extend(newly_rejected)
 
     with open(CIT_PENDING, "w") as f:
         json.dump(remaining, f, indent=2, default=str)
     with open(CIT_APPROVED, "w") as f:
         json.dump(approved, f, indent=2, default=str)
+    with open(CIT_REJECTED, "w") as f:
+        json.dump(rejected, f, indent=2, default=str)
 
-    return {"approved": len(newly_approved), "remaining": len(remaining)}
+    return {"approved": len(newly_approved), "rejected": len(newly_rejected),
+            "remaining": len(remaining)}
 
 
 # =============================================================================

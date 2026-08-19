@@ -550,6 +550,58 @@ CONTROL_CENSUS: List[FailureClass] = [
          "problem_lifecycle_sentinel.py::retire_derived_rows",
          "test_pipeline_smoke.py::TestGovernanceDoesNotEscalateItself"],
         "Problem Lifecycle Sentinel", "problem_lifecycle_sentinel"),
+
+    FailureClass(
+        "decision_recorded_nowhere",
+        "A decision is made and then deleted rather than written down, so the "
+        "detector for LOST work cannot tell a considered NO from a disappearance "
+        "and reports both as loss. The detector is then correct and useless: "
+        "every alarm it raises is indistinguishable from a false one.",
+        "clear_voted_proposals wrote only the approved half of each vote, so a "
+        "rejected proposal ceased to exist firm-wide. Of 17 signatures the "
+        "lifecycle sentinel reported as SILENT_DROP on 2026-08-19, 8 were "
+        "approved (in a 1688-row ledger no consumer read) and 9 had been "
+        "rejected and deleted. Exactly 1 was a genuine loss.",
+        ["cit_director.py::clear_voted_proposals",
+         "problem_lifecycle_sentinel.py::_decision_for",
+         "test_pipeline_smoke.py::TestABoardDecisionIsNotASilentDrop"],
+        "CIT / Problem Lifecycle Sentinel", "problem_lifecycle_sentinel"),
+
+    FailureClass(
+        "frozen_copy_of_configuration",
+        "A module-level constant captures mutable configuration at IMPORT time. "
+        "Whoever later rebinds the source is not the only reader, and the copy "
+        "never finds out — so a redirected component keeps reading, and writing, "
+        "the original target.",
+        "The lifecycle sentinel's queue list was a tuple of Paths built at "
+        "import. Every test that sandboxed the sentinel by rebinding its path "
+        "globals still scanned data/ through that copy, and flag_stale_in_place "
+        "stamped sla_breached onto 146 live rows across all three real queues — "
+        "on the Mac, which is not the designated writer host.",
+        ["problem_lifecycle_sentinel.py::scanned_queues",
+         "test_pipeline_smoke.py::TestABoardDecisionIsNotASilentDrop"],
+        "Problem Lifecycle Sentinel — NO GENERAL DETECTOR, tests only",
+        "private-diary-of-a-shared-fact"),
+
+    FailureClass(
+        "the_test_refreshes_the_liveness_signal",
+        "A test exercises a control by running its real entry point, and that "
+        "run emits the freshness artifact some OTHER detector reads to decide "
+        "the control is still firing. The act of testing the detector keeps the "
+        "detector green, so a dead scheduler is indistinguishable from a live "
+        "one for as long as anybody runs the suite.",
+        "test_pipeline_smoke shelled out to coherence_laws.py, which rewrote "
+        "data/coherence_report.json. wiring_audit.check_coherence_layer() reads "
+        "that file's timestamp as the tell that the conservation layer has "
+        "stopped running — the one detector in the firm that can find an "
+        "unanticipated bug. A subprocess cannot be sandboxed by rebinding "
+        "module globals the way the in-process tests are, so the write went to "
+        "the live data/ every time the suite ran.",
+        ["coherence_laws.py::main",
+         "test_pipeline_smoke.py::TestCoherenceLaws",
+         "test_pipeline_smoke.py::TestTheSuiteDoesNotWriteLiveState"],
+        "Coherence Laws / Wiring Audit",
+        "scheduler-stopped-while-reporting-healthy"),
 ]
 
 

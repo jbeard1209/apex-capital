@@ -119,6 +119,17 @@ SLA_ESCALATION_PREFIX = "sla-escalation-"
 DERIVED_ID_PREFIXES = (STALE_ID_PREFIX, DROP_ID_PREFIX, LOOP_ID_PREFIX,
                        SLA_ESCALATION_PREFIX)
 
+# History is keyed by a hash of the TITLE, not by the id, so once a derived row
+# leaves every queue its id is gone and derived_subject() has nothing to read.
+# For rows registered after 2026-08-19 that is harmless — derived_of is already
+# persisted on the history entry while the row is present, and survives its
+# removal. It is not harmless for rows that vanished BEFORE that: 8 of the VM's
+# 17 reported silent drops were spent SLA escalations, unrecognisable because
+# the only surviving field was the title. So the title's fixed prefix is a
+# constant here too, built into the title by chairman_decision_sla, and read
+# back by the one-time backfill below.
+SLA_ESCALATION_TITLE_PREFIX = "[SLA] Board must decide"
+
 # A terminal status that is emphatically NOT a silent drop. It means: we
 # stopped tracking this row as a problem in its own right, on purpose, and
 # here is the row it was a view of.
@@ -140,8 +151,50 @@ def derived_subject(item: dict):
     return None
 
 
+def backfill_derived_from_titles(history: dict) -> int:
+    """One-time repair: tag pre-2026-08-19 SLA escalations as views.
+
+    Idempotent and narrow on purpose — it only touches entries that carry no
+    derived_of and whose title starts with the SLA escalator's own prefix, and
+    it never un-tags anything. Runs on every load rather than as a script,
+    because there is no state sync between the hosts and a migration that must
+    be remembered separately on each one is a migration that will be run on one.
+    """
+    fixed = 0
+    for sig, h in history.items():
+        if not isinstance(h, dict) or h.get("derived_of"):
+            continue
+        title = str(h.get("title") or "")
+        if not title.startswith(SLA_ESCALATION_TITLE_PREFIX):
+            continue
+        # "…in 20d): watch-20260727-data-integrity" -> the subject's id.
+        subject = title.rsplit("):", 1)[-1].strip() or sig
+        h["derived_of"] = subject
+        h["status"] = DERIVED_STATUS
+        h["last_open"] = None
+        h["backfilled_derived"] = True
+        fixed += 1
+    return fixed
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _dt(s: str):
+    """Parse an ISO timestamp to an aware datetime, or None.
+
+    The queues carry aware UTC (`_now()`); the board's ledgers carry
+    `datetime.now().isoformat()`, which is naive. Comparing those two as
+    STRINGS puts a 09:12 local stamp before a 12:55Z one on the same day, so a
+    real decision reads as "before this occurrence" and the item is filed as a
+    silent drop. Naive values are read as UTC, which is what both hosts run.
+    """
+    try:
+        d = datetime.fromisoformat(str(s))
+    except Exception:
+        return None
+    return d.replace(tzinfo=timezone.utc) if d.tzinfo is None else d
 
 
 def _days_between(a: str, b: str) -> float:
@@ -242,11 +295,43 @@ def _register(snap: dict, sig: str, kind: str, title: str, st: str,
         cur["title"] = title
 
 
+# The queues a problem can be OPEN in. One definition, read by the scan, by the
+# in-place SLA stamp and by the retirement pass — it used to be spelled out
+# again inside _scan(), so a fourth queue added here would have been invisible
+# to the scan and every row in it reported as vanished.
+#
+# A FUNCTION, not a module-level tuple. As a tuple it captured the three Path
+# objects at IMPORT time, so rebinding PENDING_PATH/IMPL_QUEUE_PATH/CHAIRMAN_PATH
+# — which is how every test in this suite sandboxes itself — left this copy
+# pointing at data/. The tests therefore read the firm's real queues and
+# flag_stale_in_place STAMPED sla_breached onto real rows, on a host that is not
+# even the designated writer. A frozen copy of configuration is the same defect
+# as a frozen copy of state: whoever rebinds the source is not the only reader,
+# and the copy never finds out.
+def scanned_queues():
+    return ((PENDING_PATH, "proposal"),
+            (IMPL_QUEUE_PATH, "impl"),
+            (CHAIRMAN_PATH, "chairman"))
+
+# Where a decision is RECORDED once the item leaves the queues above. These are
+# append-only ledgers, not queues: they must never be scanned as if their
+# contents were open, or every proposal ever filed would look permanently
+# present and the drop detector would go blind. They are consulted at exactly
+# one moment — when a signature disappears — to answer "was this decided, or
+# lost?". Measured on the VM 2026-08-19: of 17 signatures reported as
+# SILENT_DROP, 8 had been approved by the board and were sitting in the first
+# of these files the whole time.
+OUTCOME_LEDGERS = (
+    (DATA / "cit_approved_proposals.json", "RESOLVED", "approved_at",
+     "the board approved it"),
+    (DATA / "cit_rejected_proposals.json", "WONT_FIX", "rejected_at",
+     "the board rejected it"),
+)
+
+
 def _scan() -> dict:
     snap: dict = {}
-    for path, kind in ((PENDING_PATH, "proposal"),
-                       (IMPL_QUEUE_PATH, "impl"),
-                       (CHAIRMAN_PATH, "chairman")):
+    for path, kind in scanned_queues():
         for item in _load(path, []):
             if not isinstance(item, dict):
                 continue
@@ -333,15 +418,103 @@ def _update_history(snap: dict, history: dict, now: str) -> dict:
 
     # Items in history but NOT in this scan: they left every queue.
     scanned = set(snap.keys())
+    outcomes = _outcome_index()
     for sig, h in history.items():
         if sig in scanned:
             continue
-        if h.get("present"):
-            h["present"] = False
-            # Vanished while still open and never recorded resolved == silent drop.
-            if h.get("status") == "OPEN":
-                h["status"] = "SILENT_DROP"
+        h["present"] = False
+        # Vanished while still open. Before calling that a silent drop, ask the
+        # outcome ledgers whether a decision was recorded — a proposal the board
+        # voted on leaves the queue by design, and treating that as a loss
+        # buries the real losses in noise.
+        #
+        # SILENT_DROP is re-examined, not just OPEN. A drop filed before this
+        # check existed (or before the board kept a rejection ledger) would
+        # otherwise stay wrong forever: the verdict was reached once, on the one
+        # run where the row happened to disappear, and nothing ever revisited
+        # it. A conclusion drawn from evidence that has since arrived is not
+        # history, it is a stale answer.
+        if h.get("status") not in ("OPEN", "SILENT_DROP"):
+            continue
+        verdict = _decision_for(sig, h, outcomes)
+        if verdict is None:
+            h["status"] = "SILENT_DROP"
+            # Not a decision, but not "no record anywhere" either. Kept on the
+            # row so the Chairman escalation can say which of the two it is.
+            h["undated_ledger_hit"] = _undated_hit(sig, outcomes)
+            continue
+        h.pop("undated_ledger_hit", None)
+        status, when, why = verdict
+        was_drop = h.get("status") == "SILENT_DROP"
+        h["status"] = status
+        h["last_open"] = None
+        h["decided_at"] = when
+        h["decision"] = why + (" (found on re-check; it was filed as a silent "
+                               "drop before the ledger was read)" if was_drop else "")
+        if status == "RESOLVED":
+            h["times_resolved"] = h.get("times_resolved", 0) + 1
     return history
+
+
+def _outcome_index() -> dict:
+    """signature -> list of (status, decided_at, why), newest last.
+
+    Read once per run; the approved ledger alone was 1688 rows on 2026-08-19.
+    """
+    idx: dict = {}
+    for path, status, ts_field, why in OUTCOME_LEDGERS:
+        for row in _load(path, []):
+            if not isinstance(row, dict):
+                continue
+            idx.setdefault(signature(row, "proposal"), []).append(
+                (status, str(row.get(ts_field) or row.get("ts") or ""), why))
+    return idx
+
+
+def _decision_for(sig: str, h: dict, outcomes: dict):
+    """The decision that closed THIS occurrence, or None.
+
+    A decision only closes the occurrence it postdates. The ledgers are
+    permanent, so a proposal approved in June is still in there when the same
+    problem is re-filed in August — accepting that entry would mark the new
+    occurrence resolved by an old vote and hide a genuine drop. This is the
+    same discipline as the Kalshi sample rule: a verdict from one regime does
+    not settle a question asked in another.
+
+    An UNDATED ledger row is therefore not evidence at all. 727 of the 1688
+    rows in the approved ledger on 2026-08-19 carry neither `approved_at` nor
+    `ts`, and the first cut of this function accepted them: with no date to
+    compare against, the "must postdate the occurrence" guard had nothing to
+    reject, so a missing value read as YES. That is presence-is-not-currency —
+    asking whether a decision exists *ever* instead of whether one closed *this*
+    occurrence — and it is the exact hole the anchor was added to plug. Undated
+    rows are skipped; `_undated_hit` lets the caller say so rather than report a
+    clean loss.
+    """
+    anchor = _dt(h.get("last_open") or h.get("first_seen") or "")
+    best = None
+    for status, when, why in outcomes.get(sig, []):
+        wdt = _dt(when)
+        if wdt is None:
+            continue        # undated: cannot be shown to postdate anything
+        if anchor and wdt < anchor:
+            continue        # decided before this occurrence started
+        # Newest wins. File order is append order across two ledgers, so the
+        # first qualifying row is not necessarily the decision that actually
+        # ended this occurrence.
+        if best is None or wdt > best[0]:
+            best = (wdt, status, when, why)
+    return None if best is None else (best[1], best[2], best[3])
+
+
+def _undated_hit(sig: str, outcomes: dict) -> bool:
+    """True if the only ledger evidence for `sig` is a row with no timestamp.
+
+    Reported, never acted on: the row still needs a human, but calling it a
+    silent drop with "NO record anywhere" would be a lie the Chairman can read
+    in his queue.
+    """
+    return bool(outcomes.get(sig))
 
 
 # ---------------------------------------------------------------------------
@@ -409,11 +582,6 @@ def _escalate_looping(h: dict, now: str) -> bool:
     return _append_deduped(PENDING_PATH, entry, "id")
 
 
-SCANNED_QUEUES = ((PENDING_PATH, "proposal"),
-                  (IMPL_QUEUE_PATH, "impl"),
-                  (CHAIRMAN_PATH, "chairman"))
-
-
 def flag_stale_in_place(sig: str, h: dict, now: str) -> int:
     """Stamp the SLA breach ON the stale row(s). Returns rows stamped.
 
@@ -430,7 +598,7 @@ def flag_stale_in_place(sig: str, h: dict, now: str) -> int:
     """
     stamped = 0
     age = _days_between(h.get("last_open") or h.get("first_seen"), now)
-    for path, kind in SCANNED_QUEUES:
+    for path, kind in scanned_queues():
         items = _load(path, [])
         if not isinstance(items, list):
             continue
@@ -469,8 +637,20 @@ def _escalate_chairman(h: dict, cls: str, now: str) -> bool:
                 f"be stamped on the problem itself.)")
         eid = f"lifecycle-stale-{sig}"
     else:  # SILENT_DROP
-        desc = (f"'{h.get('title')}' disappeared from every queue with NO recorded "
-                f"resolution. Verify it was actually fixed, not silently dropped.")
+        # Two different facts wear the same status, and the Chairman reads this
+        # sentence in his queue. "No record anywhere" is the alarm; "a decision
+        # exists but is undated" is a ledger defect wearing the alarm's clothes,
+        # and telling him the first when the second is true is how a detector
+        # earns the right to be ignored.
+        if h.get("undated_ledger_hit"):
+            desc = (f"'{h.get('title')}' disappeared from every queue. A board "
+                    f"decision for it IS in the outcome ledger, but that row "
+                    f"carries no timestamp, so it cannot be matched to this "
+                    f"occurrence — it may be an older vote on the same problem. "
+                    f"Confirm the outcome, and note the ledger row needs a date.")
+        else:
+            desc = (f"'{h.get('title')}' disappeared from every queue with NO recorded "
+                    f"resolution. Verify it was actually fixed, not silently dropped.")
         eid = f"lifecycle-drop-{sig}"
     entry = {
         "id": eid,
@@ -549,7 +729,7 @@ def _subject_is_settled(subject: str, history: dict, by_id: dict):
 def _sigs_flagged_in_place() -> set:
     """Signatures of rows that already carry the SLA breach on themselves."""
     out = set()
-    for path, kind in SCANNED_QUEUES:
+    for path, kind in scanned_queues():
         for it in _load(path, []):
             if isinstance(it, dict) and it.get("sla_breached"):
                 out.add(signature(it, kind))
@@ -640,6 +820,7 @@ def run(escalate: bool = True) -> dict:
     history = _load(HISTORY_PATH, {})
     if not isinstance(history, dict):
         history = {}
+    backfilled = backfill_derived_from_titles(history)
 
     may_write, why = writer_verdict()
     if escalate and not may_write:
@@ -662,7 +843,8 @@ def run(escalate: bool = True) -> dict:
               "looping": [], "stale": [], "silent_drop": [], "derived": [],
               "retired_derived": retired,
               "escalated_board": 0, "escalated_chairman": 0,
-              "flagged_in_place": 0,
+              "flagged_in_place": 0, "backfilled_derived": backfilled,
+              "decided_not_dropped": [],
               "writable": may_write, "writer_note": why}
 
     for sig, h in history.items():
@@ -685,6 +867,10 @@ def run(escalate: bool = True) -> dict:
                 report["escalated_chairman"] += 1
         elif cls == DERIVED_STATUS:
             report["derived"].append(sig)
+        elif h.get("decided_at"):
+            # Left the queues, but a vote is on record. Reported so the number
+            # is visible rather than inferred from a shrinking drop count.
+            report["decided_not_dropped"].append(sig)
 
     loops = _update_loops(history, write=escalate)
     report["loop_break_set"] = loops
@@ -715,6 +901,10 @@ def main(argv=None):
               f"-> board+{rep['escalated_board']} chairman+{rep['escalated_chairman']} "
               f"retired+{len(rep['retired_derived'])} "
               f"loop_break={len(rep['loop_break_set'])}")
+        if rep["decided_not_dropped"] or rep["backfilled_derived"]:
+            print(f"[lifecycle] decided-not-dropped="
+                  f"{len(rep['decided_not_dropped'])} "
+                  f"backfilled_derived={rep['backfilled_derived']}")
         if not rep["writable"]:
             print(f"[lifecycle] NOTHING WRITTEN — {rep['writer_note']}")
     return 0

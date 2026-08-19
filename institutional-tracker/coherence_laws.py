@@ -1504,6 +1504,20 @@ def main() -> int:
     ap.add_argument("--quiet", action="store_true", help="only print VIOLATED / CANNOT_TELL")
     ap.add_argument("--no-escalate", action="store_true",
                     help="write the report but do not touch the Chairman's queue")
+    # --dry-run exists because a TEST is not a run of the firm.
+    #
+    # test_pipeline_smoke's exit-code test shells out to this file, and a
+    # subprocess cannot be sandboxed the way the in-process tests sandbox
+    # themselves — it re-resolves DATA_DIR from its own __file__ and writes the
+    # real data/. That refreshed `checked_at` in coherence_report.json, which is
+    # exactly the timestamp wiring_audit.check_coherence_layer() reads to decide
+    # whether this layer is still firing. So running the test suite proved the
+    # coherence layer alive. If the scheduled job had died, the suite would have
+    # kept its freshness alarm green — the detector would have been defeated by
+    # the act of testing it. Same shape as the scheduler that reported healthy
+    # while stopped: a liveness signal must be produced only by the live thing.
+    ap.add_argument("--dry-run", action="store_true",
+                    help="evaluate and print; write no report, escalate nothing")
     # The strict exit code (1 on VIOLATED *or* CANNOT_TELL) is right for CI and
     # the pre-push gate: there, "I could not check" must not read as "fine".
     # It is wrong for a scheduler. CANNOT_TELL is the ordinary resting state of
@@ -1516,8 +1530,9 @@ def main() -> int:
     args = ap.parse_args()
 
     results = run_all()
-    _write_report(results)
-    if not args.no_escalate:
+    if not args.dry_run:
+        _write_report(results)
+    if not (args.no_escalate or args.dry_run):
         escalate_violations(results)
         notify_violations(results)
 

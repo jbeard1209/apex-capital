@@ -162,7 +162,11 @@ def _escalate_to_board(item):
         "category": "STRATEGY",   # always routes to the Full Board (deputy_board.py)
         "severity": item.get("severity", "MEDIUM"),
         "confidence": 100,
-        "title": f"[SLA] Board must decide (Chairman did not respond in {SLA_DAYS}d): {item['id']}",
+        # Prefix imported for the same reason as the id prefix: once this row is
+        # consumed by the board its id is gone and the title is all the sentinel
+        # has left to recognise it by.
+        "title": f"{_PLS.SLA_ESCALATION_TITLE_PREFIX} (Chairman did not respond "
+                 f"in {SLA_DAYS}d): {item['id']}",
         "description": (f"This decision was surfaced to the Chairman on "
                         f"{item.get('first_surfaced')} and remained undecided for "
                         f"{SLA_DAYS} days. Per standing governance policy, the board now "
