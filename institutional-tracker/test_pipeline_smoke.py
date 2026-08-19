@@ -12402,6 +12402,87 @@ class TestOneShotReviewCannotDieIntoALog(unittest.TestCase):
                         "from 'the interpreter fell over'")
 
 
+class TestQueueCompactionCannotForgeADrop(unittest.TestCase):
+    """Compacting the decision queue must not manufacture SILENT_DROPs.
+
+    problem_lifecycle_sentinel's whole job is catching problems that leave every
+    queue with no recorded resolution. Bulk-deleting closed rows would create
+    that condition wholesale — and invisibly, because the rows deleted are the
+    evidence the detector reads. The compactor's interlock is the sentinel's own
+    history, so these tests drive it through the sentinel's real definitions.
+    """
+
+    BASE = Path(__file__).resolve().parent
+
+    def _plan(self, rows, history, other=frozenset()):
+        import chairman_queue_compactor as C
+        return C.plan(rows, history, set(other))
+
+    def test_a_closed_row_the_sentinel_never_saw_is_kept(self):
+        import chairman_queue_compactor as C
+        import problem_lifecycle_sentinel as PLS
+        row = {"id": "x", "status": "resolved", "description": "a thing"}
+        ok, refused = self._plan([row], {})
+        self.assertEqual([], ok, "archived a row with no recorded closure")
+        self.assertEqual(1, len(refused))
+        self.assertIn("no history", refused[0][2])
+        # ...and once the sentinel HAS recorded the closure, it may go.
+        sig = PLS.signature(row, "chairman")
+        ok, refused = self._plan([row], {sig: {"status": "RESOLVED"}})
+        self.assertEqual(1, len(ok), "a recorded closure was still refused")
+        self.assertEqual([], refused)
+
+    def test_a_row_still_open_in_history_is_kept(self):
+        """The exact SILENT_DROP precondition: vanishes while history says OPEN."""
+        import problem_lifecycle_sentinel as PLS
+        row = {"id": "x", "status": "closed", "description": "a thing"}
+        sig = PLS.signature(row, "chairman")
+        ok, refused = self._plan([row], {sig: {"status": "OPEN"}})
+        self.assertEqual([], ok)
+        self.assertIn("still says OPEN", refused[0][2])
+
+    def test_an_open_row_is_never_a_candidate(self):
+        rows = [{"id": "a", "status": "awaiting_chairman", "description": "d"},
+                {"id": "b", "description": "no status at all"}]
+        ok, refused = self._plan(rows, {})
+        self.assertEqual(([], []), (ok, refused),
+                         "an undecided row was considered for removal")
+
+    def test_a_signature_surviving_elsewhere_may_be_archived(self):
+        """Removal is only unsafe if the problem's identity leaves entirely."""
+        import problem_lifecycle_sentinel as PLS
+        closed = {"id": "a", "status": "resolved", "description": "same thing"}
+        still = {"id": "b", "status": "awaiting_chairman", "description": "same thing"}
+        self.assertEqual(PLS.signature(closed, "chairman"),
+                         PLS.signature(still, "chairman"),
+                         "test premise broken: these should share a signature")
+        ok, refused = self._plan([closed, still], {})   # no history at all
+        self.assertEqual(["a"], [r["id"] for r, _, _ in ok])
+        self.assertEqual([], refused)
+
+    def test_it_does_not_keep_a_private_copy_of_the_closed_statuses(self):
+        """AST: the status vocabulary must come from the sentinel, not a literal.
+
+        A second copy of a definition is a second thing that can drift — the
+        reconciliation_check guardrail mirror sat 23 days out of date because
+        nothing compared the copies. Here a drifted copy would silently change
+        which rows are eligible to disappear.
+        """
+        tree = ast.parse((self.BASE / "chairman_queue_compactor.py").read_text())
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.Assign) and any(
+                    isinstance(t, ast.Name) and t.id == "CLOSED_STATUSES"
+                    for t in node.targets)):
+                continue
+            names = {n.attr for n in ast.walk(node.value)
+                     if isinstance(n, ast.Attribute)}
+            self.assertTrue({"RESOLVED_STATUSES", "WONT_FIX_STATUSES"} <= names,
+                            "CLOSED_STATUSES is not derived from the sentinel's "
+                            "own sets (found %s)" % sorted(names))
+            return
+        self.fail("CLOSED_STATUSES is not defined in chairman_queue_compactor.py")
+
+
 # =============================================================================
 # Runner
 # =============================================================================
