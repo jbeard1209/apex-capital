@@ -1332,6 +1332,15 @@ def escalate_violations(results: List[LawResult]) -> int:
         elif rid in mine:
             # The law holds again — close the row, do not delete it. See the
             # docstring: a deletion is what the sentinel has to read as a drop.
+            #
+            # DO NOT "tidy" the description to say the law now holds. It still
+            # reads "COHERENCE LAW VIOLATED — ..." on a resolved row, which
+            # looks wrong and is not: problem_lifecycle_sentinel.signature()
+            # keys on title-or-description, so rewriting it mints a NEW
+            # signature and makes the old one vanish — a silent drop, caused by
+            # the very code written to stop causing them. The status, the
+            # resolved_at stamp and the resolution line carry the closure; the
+            # description stays as the identity of what was wrong.
             if not row.get("resolved_at"):
                 row["status"] = "resolved"
                 row["resolved_at"] = _dt.now().isoformat()

@@ -12737,6 +12737,24 @@ class TestRetiredFindingIsClosedNotDeleted(unittest.TestCase):
         self.assertIn(self.PLS._status_of(out[0]), self.PLS.RESOLVED_STATUSES)
         self.assertTrue(out[0].get("resolved_at"))
 
+    def test_closing_a_row_does_not_change_the_signature_it_is_tracked_by(self):
+        """The closed row still says VIOLATED, and that is deliberate.
+
+        A resolved row whose headline reads 'COHERENCE LAW VIOLATED' looks like
+        something to tidy up. It is not. PLS.signature() keys on title-or-
+        description, so rewriting the description to 'holds again' mints a new
+        signature and retires the old one — a silent drop manufactured by the
+        code written to stop manufacturing them. This pins the identity.
+        """
+        name = self._law_name()
+        row = {"id": "coherence-%s" % name, "severity": "HIGH",
+               "description": "COHERENCE LAW VIOLATED — %s: x" % name}
+        before = self.PLS.signature(dict(row), "chairman")
+        closed = self._run([dict(row)], [])[0]
+        self.assertEqual(before, self.PLS.signature(closed, "chairman"),
+                         "closing the row changed the signature the sentinel "
+                         "tracks it by — the old one now reads as a drop")
+
     def test_the_sentinel_records_a_resolution_not_a_silent_drop(self):
         name = self._law_name()
         rows = [{"id": "coherence-%s" % name, "severity": "HIGH",
