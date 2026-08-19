@@ -73,6 +73,17 @@ class SingleWriterBlocked(RuntimeError):
     and the local ledger would drift from the account. Loud beats silent —
     that is the whole bug class this repo keeps re-learning."""
 
+try:
+    from risk_gate import RiskLimitBlocked
+except Exception:                                    # pragma: no cover
+    class RiskLimitBlocked(RuntimeError):
+        """Fallback so the `except` clause in the hook can never NameError.
+
+        Defined defensively on purpose: config.py swallows import errors, so a
+        module that fails to import here would otherwise disable its own guard
+        while the logs still read as if it were installed."""
+
+
 # Modules that merely relay a submission; skip them when attributing a source so
 # the stamp names the agent that DECIDED, not the plumbing it went through.
 _RELAY_MODULES = {"order_ledger", "alpaca_trader"}
@@ -273,6 +284,44 @@ def install():
             # broker. A guard that can take the firm offline is a bigger outage
             # than the one it prevents.
             logger.warning(f"  [order_ledger] single-writer guard unavailable: {e}")
+
+        # Pre-trade risk limits. Here for the same reason the stamp is here: the
+        # cash floor and position cap lived in AlpacaTrader.submit_buy, which is
+        # one of sixteen paths to this line. head_agent, both hedge buys, the
+        # short opener and the FI executor all reached the broker without ever
+        # consulting them — which is what "a buy bypassed the cash floor
+        # guardrail" actually meant. See risk_gate.py.
+        _rg_entry, _rg_cost = False, 0.0
+        try:
+            import risk_gate
+            _snap = risk_gate.snapshot()
+            allowed, verdict, reason = risk_gate.check(
+                symbol=getattr(req, "symbol", ""),
+                side=getattr(req, "side", ""),
+                qty=getattr(req, "qty", 0),
+                price=getattr(req, "limit_price", None),
+                snap=_snap,
+            )
+            if verdict != "ALLOW_WITHIN_LIMITS":
+                risk_gate.log(getattr(req, "symbol", ""), getattr(req, "side", ""),
+                              getattr(req, "qty", 0), verdict, reason, allowed)
+            if not allowed:
+                logger.error(f"  [risk_gate] BLOCKED {getattr(req, 'side', '')} "
+                             f"{getattr(req, 'qty', '')} {getattr(req, 'symbol', '')}: {reason}")
+                raise RiskLimitBlocked(reason)
+            if verdict not in ("ALLOW_EXIT", "ALLOW_UNVERIFIED"):
+                # An entry: it takes a slot. Only a BUY also takes cash — a
+                # short open raises it, so reserving its notional would tighten
+                # the floor against an order that loosens it.
+                _rg_entry = True
+                if "buy" in str(getattr(req, "side", "")).lower():
+                    _rg_cost = risk_gate._order_cost(
+                        getattr(req, "symbol", ""), getattr(req, "qty", 0),
+                        getattr(req, "limit_price", None), _snap) or 0.0
+        except RiskLimitBlocked:
+            raise
+        except Exception as e:
+            logger.warning(f"  [order_ledger] risk gate unavailable: {e}")
         try:
             existing = getattr(req, "client_order_id", None)
             if req is not None and not existing:
@@ -287,6 +336,17 @@ def install():
 
         order = original(self, order_data, *args, **kwargs) if order_data is not None \
             else original(self, *args, **kwargs)
+
+        # Reserve the slot and the cash NOW, not when the fill appears. A market
+        # order is not a position until it fills, so without this the next order
+        # in the same run sizes against capital this one already spent — which
+        # is how a cap of 20 comes to hold 21.
+        if _rg_entry:
+            try:
+                import risk_gate
+                risk_gate.reserve(getattr(req, "symbol", ""), _rg_cost)
+            except Exception:
+                pass
 
         try:
             record(getattr(order, "id", ""),

@@ -146,12 +146,28 @@ def run_reconciliation() -> dict:
     # overstating value by ~$6,700. Write the true equity to data/firm_value.json
     # so every report/briefing reads ONE honest number, and flag when the pod
     # ledger diverges >2% (that drift is itself a bug worth surfacing).
+    # The reconcile step below is what makes this an actionable finding rather
+    # than a recurring number. It marks the pod ledger to broker prices —
+    # `pod_ledger.update_prices()` was documented as a daily job and had no
+    # caller in the firm, so ETF-pod positions still sat at their entry price
+    # months later — and then splits whatever gap remains into named causes.
+    # A single "-6.3%" covers a stale-price bug, an attribution bug and a book
+    # entry that was never at the broker at all; three defects behind one number
+    # is a number nobody can close, and this one had been open for weeks.
     try:
-        pod_data = _load_json("data/pod_allocations.json") or {}
-        pod_sum = round(sum((p.get("total_value") or 0)
-                            for p in pod_data.get("pods", {}).values()), 2)
-        drift = portfolio_value - pod_sum
-        drift_pct = (drift / portfolio_value * 100.0) if portfolio_value else 0.0
+        import pod_ledger
+        broker_pos = {}
+        if positions is not None and not positions.empty:
+            for _, _p in positions.iterrows():
+                broker_pos[str(_p.get("ticker", "")).upper()] = {
+                    "qty": float(_p.get("qty", 0) or 0),
+                    "price": float(_p.get("current_price", 0) or 0),
+                }
+        recon = pod_ledger.reconcile_to_broker(broker_pos, portfolio_value, cash)
+        pod_sum = recon["pod_total_value"]
+        ledger_drift = -recon["residual"]              # broker minus ledger
+        drift_pct = -recon["residual_pct"]
+
         with open("data/firm_value.json", "w") as fh:
             json.dump({
                 "equity": round(portfolio_value, 2),
@@ -159,16 +175,25 @@ def run_reconciliation() -> dict:
                 "as_of": now.isoformat(),
                 "source": "alpaca_paper_account (ground truth)",
                 "pod_ledger_sum": pod_sum,
-                "pod_ledger_drift": round(drift, 2),
+                "pod_ledger_drift": round(ledger_drift, 2),
                 "pod_ledger_drift_pct": round(drift_pct, 2),
+                "reconciliation": recon,
             }, fh, indent=2)
         logger.info(f"  Authoritative firm value written: ${portfolio_value:,.2f} "
-                    f"(pod ledger ${pod_sum:,.2f}, drift {drift_pct:+.1f}%)")
+                    f"(pod ledger ${pod_sum:,.2f}, drift {drift_pct:+.1f}%, "
+                    f"marked to market {recon['marked_to_market']:+,.0f})")
+        for _c in recon["causes"]:
+            logger.info(f"    drift cause: {_c}")
+
         if abs(drift_pct) > 2.0:
+            lead = recon["causes"][0] if recon["causes"] else (
+                "no known cause accounts for it — the gap is unexplained, which "
+                "is a stronger finding than the drift itself")
             _flag(flags, "HIGH", "LEDGER_DRIFT",
                   f"Pod ledger (${pod_sum:,.0f}) diverges {drift_pct:+.1f}% from the real "
-                  f"account (${portfolio_value:,.0f}). Reports built on the pod ledger are "
-                  f"MISSTATING firm value by ${drift:,.0f}. Reconcile pod cash/positions to Alpaca.")
+                  f"account (${portfolio_value:,.0f}); reports built on it misstate firm "
+                  f"value by ${ledger_drift:,.0f}. Largest cause: {lead}. "
+                  f"Full split in data/firm_value.json.reconciliation.")
     except Exception as _fve:
         logger.warning(f"  Could not write authoritative firm value: {_fve}")
 

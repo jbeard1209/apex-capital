@@ -233,3 +233,29 @@ A detector grades findings by severity, and the escalation path is wired only to
 - **Detectors:**
   - `deputy_monitor.py::_upsert_chairman_row`
   - `test_pipeline_smoke.py::TestAReconciliationHIGHReachesSomebody`
+
+## `limit_enforced_on_one_path_of_many`
+
+A risk limit is implemented inside ONE function that reaches the outside world, while many others reach it directly. The limit is real, tested, mirrored and reported — and optional, because a caller that never learned about it cannot forget it. Nothing in the codebase reads as a bypass: the other paths simply never mentioned the check.
+
+- **Proved real by:** MIN_CASH_FLOOR_PCT and MAX_OPEN_POSITIONS lived in AlpacaTrader.submit_buy. Sixteen call sites across ten modules reach TradingClient.submit_order, and six of them open exposure without consulting either limit: head_agent.py:161, alpaca_trader.py:645 and :727 (hedge buys), alpaca_trader.py:927 (short open), fi_executor.py:431 (its own different floor) and main.py:1465. On 2026-08-19 the account stood at 6.0% cash against a 20% floor and 21 positions against a cap of 20. The fix moves enforcement to the same monkey-patch choke point order_ledger already uses for exactly this reason, and gates only exposure-INCREASING orders — blocking an entry costs an opportunity, blocking an exit costs money with no ceiling.
+- **Owner:** CRO / order_ledger
+- **Writeup:** memory `severity-below-the-escalation-floor`
+- **Detectors:**
+  - `risk_gate.py::check`
+  - `order_ledger.py::install`
+  - `test_pipeline_smoke.py::TestPreTradeRiskGate`
+  - `test_pipeline_smoke.py::TestTheRiskGateSitsAtTheChokePoint`
+  - `test_pipeline_smoke.py::TestTheCashFloorFailsClosed`
+
+## `an_aggregate_is_not_a_finding`
+
+A control reports a single reconciled TOTAL. The total is arithmetic, so it is always correct and never closable: it is the sum of several unrelated defects, and no owner can fix a sum. It re-fires every run with a slightly different number, which reads as noise rather than as several standing bugs.
+
+- **Proved real by:** reconciliation_check reported LEDGER_DRIFT -6.3% for weeks. Behind the one number: (a) pod_ledger.update_prices(), documented as a daily mark-to-market, had NO CALLER anywhere in the firm, so ETF-pod positions still carried current_price == avg_entry months after opening; (b) 6 of the broker's 21 positions belonged to no pod; (c) a $10,000 book reserve had no counterpart at the broker. The fix decomposes the residual into individually closable named causes and deliberately does NOT scale the total to force agreement — a reconciliation that forces agreement destroys the evidence of the thing it was built to find.
+- **Owner:** Pod Ledger / reconciliation_check
+- **Writeup:** memory `verdict-with-no-consequence`
+- **Detectors:**
+  - `pod_ledger.py::reconcile_to_broker`
+  - `pod_ledger.py::_drift_causes`
+  - `test_pipeline_smoke.py::TestPodLedgerDriftHasNamedCauses`

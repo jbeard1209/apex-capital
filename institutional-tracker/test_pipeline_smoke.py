@@ -13827,6 +13827,427 @@ class TestTheSLAViewIsRecognisedAfterItsIdIsGone(unittest.TestCase):
                          "that can drift out of sync with the sentinel")
 
 
+class TestPreTradeRiskGate(unittest.TestCase):
+    """The cash floor and the position cap, at the point every order shares.
+
+    Both limits existed, were mirrored in reconciliation_check, and were
+    reported on every run — while living in AlpacaTrader.submit_buy, one of
+    sixteen paths to the broker. head_agent, both hedge buys, the short opener
+    and the FI executor never consulted either. That is what "a buy bypassed
+    the cash floor guardrail" meant: not a defeated check, an optional one.
+    """
+
+    def setUp(self):
+        import risk_gate
+        self.G = risk_gate
+        risk_gate.clear_reservations()
+        self.addCleanup(risk_gate.clear_reservations)
+        p = patch.object(risk_gate, "limits",
+                         lambda: {"cash_floor": 0.20, "max_positions": 20})
+        p.start()
+        self.addCleanup(p.stop)
+
+    @staticmethod
+    def _snap(cash, pv, positions):
+        return {"cash": cash, "portfolio_value": pv,
+                "positions": {s: {"qty": q, "price": px}
+                              for s, (q, px) in positions.items()}}
+
+    def _many(self, n, price=100.0):
+        return {"SYM%02d" % i: (10.0, price) for i in range(n)}
+
+    # ── exits are never gated ────────────────────────────────────────────────
+
+    def test_an_exit_is_never_blocked_however_bad_the_account(self):
+        snap = self._snap(0.0, 100000.0, dict(self._many(40), NVDA=(50.0, 200.0)))
+        allowed, verdict, _ = self.G.check("NVDA", "sell", 50, snap=snap)
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_EXIT", verdict)
+
+    def test_a_cover_is_never_blocked(self):
+        """Buying back a short reduces exposure. Blocking it traps the firm in
+        the position — the failure with no ceiling."""
+        snap = self._snap(0.0, 100000.0, dict(self._many(40), XLE=(-30.0, 90.0)))
+        allowed, verdict, _ = self.G.check("XLE", "buy", 30, snap=snap)
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_EXIT", verdict)
+
+    def test_a_sell_past_flat_is_an_entry_not_an_exit(self):
+        """Selling 300 against a 100 long closes 100 and opens a 200 short."""
+        snap = self._snap(50000.0, 100000.0, dict(self._many(20), KO=(100.0, 80.0)))
+        _, verdict, _ = self.G.check("KO", "sell", 300, snap=snap)
+        self.assertNotEqual("ALLOW_EXIT", verdict)
+
+    # ── the position cap ─────────────────────────────────────────────────────
+
+    def test_a_new_symbol_is_blocked_at_the_cap(self):
+        snap = self._snap(50000.0, 100000.0, self._many(20))
+        allowed, verdict, reason = self.G.check("NVDA", "buy", 1, price=10.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+        self.assertIn("cap of 20", reason)
+
+    def test_adding_to_a_held_position_does_not_consume_a_slot(self):
+        """At the cap, an ADD is judged by cash only — it opens no new slot."""
+        snap = self._snap(50000.0, 100000.0, dict(self._many(19), KO=(10.0, 80.0)))
+        allowed, verdict, _ = self.G.check("KO", "buy", 1, price=80.0, snap=snap)
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_WITHIN_LIMITS", verdict)
+
+    def test_POISON_PILL_a_healthy_account_allows_a_new_entry(self):
+        """If this ever fails the gate has stopped being a limit and become a
+        wall — and every block above would prove nothing."""
+        snap = self._snap(50000.0, 100000.0, self._many(5))
+        allowed, verdict, _ = self.G.check("NVDA", "buy", 10, price=100.0, snap=snap)
+        self.assertTrue(allowed, "the gate blocked a buy that breaches nothing")
+        self.assertEqual("ALLOW_WITHIN_LIMITS", verdict)
+
+    # ── the cash floor ───────────────────────────────────────────────────────
+
+    def test_a_buy_is_blocked_when_cash_is_already_under_the_floor(self):
+        """The live state on 2026-08-19: cash 6.0% against a 20% floor."""
+        snap = self._snap(5863.0, 98066.0, self._many(5))
+        allowed, verdict, reason = self.G.check("NVDA", "buy", 1, price=10.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+        self.assertIn("6.0%", reason)
+
+    def test_a_buy_that_would_cross_the_floor_is_blocked(self):
+        snap = self._snap(25000.0, 100000.0, self._many(5))
+        allowed, verdict, reason = self.G.check("NVDA", "buy", 100, price=100.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+        self.assertIn("below the 20% floor", reason)
+
+    def test_an_unpriceable_buy_says_which_half_of_the_rule_ran(self):
+        """A reason that claims more than it checked is how a HIGH stops being
+        read. Cash is above the floor, so the order passes — but the
+        post-trade projection could not run and the reason must say so."""
+        snap = self._snap(50000.0, 100000.0, self._many(5))
+        with patch.object(self.G, "_quote", lambda s: None):
+            allowed, verdict, reason = self.G.check("NVDA", "buy", 10, snap=snap)
+        self.assertTrue(allowed)
+        self.assertIn("projection did not run", reason)
+
+    def test_a_short_open_is_not_judged_by_the_cash_floor(self):
+        """Shorting raises cash; a floor that blocked it would be arithmetic
+        run backwards."""
+        snap = self._snap(1000.0, 100000.0, self._many(5))
+        allowed, verdict, _ = self.G.check("TSLA", "sell", 10, price=400.0, snap=snap)
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_WITHIN_LIMITS", verdict)
+
+    def test_nan_cash_does_not_pass_the_floor(self):
+        """`nan < floor` is False, so a NaN balance passes a check it can never
+        satisfy. It must read as unverified, not as compliant."""
+        snap = self._snap(float("nan"), 100000.0, self._many(5))
+        allowed, verdict, _ = self.G.check("NVDA", "buy", 10, price=100.0, snap=snap)
+        self.assertEqual("ALLOW_UNVERIFIED", verdict)
+
+    def test_zero_equity_is_unverified_not_a_zero_floor(self):
+        """A 20% floor on $0 equity is $0, which no order can breach."""
+        snap = self._snap(0.0, 0.0, {})
+        _, verdict, _ = self.G.check("NVDA", "buy", 10, price=100.0, snap=snap)
+        self.assertEqual("ALLOW_UNVERIFIED", verdict)
+
+    # ── the unreadable broker ────────────────────────────────────────────────
+
+    def test_an_unreadable_broker_allows_and_says_it_could_not_check(self):
+        with patch.object(self.G, "snapshot", lambda *a, **k: None):
+            allowed, verdict, _ = self.G.check("NVDA", "buy", 10)
+        self.assertTrue(allowed, "a guard that goes offline with the API is a "
+                                 "bigger outage than the one it prevents")
+        self.assertEqual("ALLOW_UNVERIFIED", verdict)
+
+    def test_a_run_of_unverified_passes_is_countable(self):
+        """One blip and a week of not checking must not look the same."""
+        entries = [{"verdict": "ALLOW_WITHIN_LIMITS"},
+                   {"verdict": "ALLOW_UNVERIFIED"},
+                   {"verdict": "ALLOW_UNVERIFIED"}]
+        self.assertEqual(2, self.G.unverified_streak(entries))
+        self.assertEqual(0, self.G.unverified_streak(
+            entries + [{"verdict": "ALLOW_EXIT"}]))
+
+    # ── in-flight reservations: the intra-run race ───────────────────────────
+
+    def test_a_second_buy_in_the_same_run_sizes_against_the_first(self):
+        """A market order is not a position until it fills. Without the
+        reservation both buys read the same pre-trade cash and both pass a
+        check only one of them should — which is how a cap of 20 holds 21."""
+        snap = self._snap(30000.0, 100000.0, self._many(5))
+        allowed, _, _ = self.G.check("AAA", "buy", 100, price=100.0, snap=snap)
+        self.assertTrue(allowed)
+        self.G.reserve("AAA", 100 * 100.0)
+        allowed, verdict, _ = self.G.check("BBB", "buy", 100, price=100.0, snap=snap)
+        self.assertFalse(allowed, "the second buy did not see the first")
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+
+    def test_an_in_flight_entry_occupies_a_slot(self):
+        snap = self._snap(90000.0, 100000.0, self._many(19))
+        self.G.reserve("AAA", 0.0)
+        allowed, verdict, reason = self.G.check("BBB", "buy", 1, price=1.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+        self.assertIn("in flight", reason)
+
+    def test_a_reservation_is_retired_once_the_broker_confirms(self):
+        """Otherwise a filled order is counted twice — once in the snapshot and
+        once here — and the gate tightens below the real limit after every buy."""
+        self.G.reserve("KO", 5000.0)
+        snap = self._snap(50000.0, 100000.0, {"KO": (10.0, 80.0)})
+        syms, dollars = self.G._live_inflight(snap)
+        self.assertEqual(set(), syms)
+        self.assertEqual(0.0, dollars)
+
+    def test_a_reservation_expires(self):
+        self.G.reserve("KO", 5000.0, now=0.0)
+        syms, _ = self.G._live_inflight(self._snap(1.0, 1.0, {}),
+                                        now=self.G.INFLIGHT_TTL_S + 1)
+        self.assertEqual(set(), syms, "a rejected order sterilised a slot")
+
+    # ── the limits are not a third copy ──────────────────────────────────────
+
+    def test_the_limits_come_from_the_reconciler_mirror(self):
+        """AST: a local constant here would be a third copy of each guardrail,
+        free to drift from config.py and from the mirror both."""
+        tree = ast.parse((Path(__file__).parent / "risk_gate.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "limits")
+        names = {a.attr if isinstance(a, ast.Attribute) else getattr(a, "id", "")
+                 for a in ast.walk(fn) if isinstance(a, (ast.Name, ast.Attribute))}
+        self.assertIn("_mirror_check", names,
+                      "risk_gate invented its own copy of the limits")
+
+
+class TestTheRiskGateSitsAtTheChokePoint(unittest.TestCase):
+    """Where the check lives is the whole finding, so pin the location.
+
+    Putting it back inside submit_buy would pass every test above and change
+    nothing about the firm: sixteen call sites reach the broker, and only one
+    of them goes through submit_buy.
+    """
+
+    def setUp(self):
+        self.src = (Path(__file__).parent / "order_ledger.py").read_text()
+        self.tree = ast.parse(self.src)
+
+    def _hook(self):
+        install = next(n for n in ast.walk(self.tree)
+                       if isinstance(n, ast.FunctionDef) and n.name == "install")
+        return next(n for n in ast.walk(install)
+                    if isinstance(n, ast.FunctionDef) and n.name == "_submit_order")
+
+    def test_every_order_is_checked_before_it_reaches_the_broker(self):
+        hook = self._hook()
+        calls = [n for n in ast.walk(hook) if isinstance(n, ast.Call)]
+        gate = [c for c in calls if isinstance(c.func, ast.Attribute)
+                and c.func.attr == "check"
+                and getattr(c.func.value, "id", "") == "risk_gate"]
+        self.assertTrue(gate, "no risk_gate.check() in the submit hook")
+        original = [c for c in calls if getattr(c.func, "id", "") == "original"]
+        self.assertTrue(original)
+        self.assertLess(min(c.lineno for c in gate),
+                        min(c.lineno for c in original),
+                        "the gate runs after the order is already at the broker")
+
+    def test_a_block_raises_rather_than_returning_none(self):
+        """A caller that reads a blocked order as a placed one records a
+        position the broker never opened."""
+        hook = self._hook()
+        raises = [n for n in ast.walk(hook) if isinstance(n, ast.Raise)]
+        names = {getattr(getattr(r.exc, "func", None), "id", "") for r in raises}
+        self.assertIn("RiskLimitBlocked", names)
+
+    def test_the_choke_point_is_load_bearing(self):
+        """The count is the argument. If this ever drops to one module, the
+        check could move back into submit_buy without loss — until then, it
+        cannot."""
+        import ast as _ast
+        callers = set()
+        for py in sorted(Path(__file__).parent.glob("*.py")):
+            if py.name in ("order_ledger.py", "test_pipeline_smoke.py"):
+                continue
+            try:
+                t = _ast.parse(py.read_text())
+            except SyntaxError:
+                continue
+            for n in _ast.walk(t):
+                if isinstance(n, _ast.Call) and isinstance(n.func, _ast.Attribute) \
+                        and n.func.attr == "submit_order":
+                    callers.add(py.name)
+        self.assertGreater(len(callers), 4,
+                           "expected many modules to submit orders directly; "
+                           "found %s" % sorted(callers))
+
+
+class TestTheCashFloorFailsClosed(unittest.TestCase):
+    """submit_buy's floor ended in `except Exception: pass`.
+
+    A failed get_account() skipped the floor and the buy went through; a
+    missing equity defaulted to 1, making the floor $0.20; a NaN balance passed
+    a comparison it can never satisfy. Three ways a degraded read decided "go".
+    """
+
+    def _trader(self, account):
+        import alpaca_trader
+        t = alpaca_trader.AlpacaTrader.__new__(alpaca_trader.AlpacaTrader)
+        import pandas as pd
+        t.get_positions = lambda: pd.DataFrame()
+        t.calculate_position_size = lambda *a, **k: (10, 5000.0)
+        t.get_account = account
+        t.check_portfolio_correlation = lambda tk: {"safe_to_add": True,
+                                                    "high_corr": [], "max_corr": 0.0,
+                                                    "correlations": {}}
+        t.client = None
+        return t
+
+    def _raise(self):
+        raise RuntimeError("alpaca 503")
+
+    def test_an_unreadable_account_does_not_buy(self):
+        t = self._trader(self._raise)
+        self.assertIsNone(t.submit_buy("NVDA"))
+
+    def test_missing_equity_is_not_a_twenty_cent_floor(self):
+        t = self._trader(lambda: {"cash": 5000.0, "portfolio_value": None})
+        self.assertIsNone(t.submit_buy("NVDA"))
+
+    def test_nan_cash_does_not_buy(self):
+        t = self._trader(lambda: {"cash": float("nan"),
+                                  "portfolio_value": 100000.0})
+        self.assertIsNone(t.submit_buy("NVDA"))
+
+    def test_POISON_PILL_a_healthy_account_reaches_the_order(self):
+        """Without this, "returns None" proves nothing — a function that always
+        returns None passes every test above."""
+        t = self._trader(lambda: {"cash": 90000.0, "portfolio_value": 100000.0})
+        reached = {}
+
+        def _submit(req):
+            reached["yes"] = True
+            raise RuntimeError("stop here — the order path was reached")
+
+        t.client = type("C", (), {"submit_order": staticmethod(_submit)})()
+        t._MarketOrderRequest = lambda **kw: kw
+        t._OrderSide = type("S", (), {"BUY": "buy"})
+        t._TimeInForce = type("T", (), {"DAY": "day"})
+        t.submit_buy("NVDA")
+        self.assertTrue(reached.get("yes"), "the floor blocked a compliant buy")
+
+    def test_the_floor_block_has_no_silent_except(self):
+        """AST: `except Exception: pass` around the floor is the whole defect,
+        and it reads as ordinary defensive code."""
+        src = (Path(__file__).parent / "alpaca_trader.py").read_text()
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef) and n.name == "submit_buy")
+        for h in [n for n in ast.walk(fn) if isinstance(n, ast.ExceptHandler)]:
+            body = [s for s in h.body if not isinstance(s, ast.FunctionDef)]
+            self.assertFalse(
+                len(body) == 1 and isinstance(body[0], ast.Pass),
+                "a bare `except: pass` in submit_buy — line %d" % h.lineno)
+
+
+class TestPodLedgerDriftHasNamedCauses(unittest.TestCase):
+    """LEDGER_DRIFT quoted a total and no cause, so it could not be closed.
+
+    `update_prices()` — documented as a daily job — had no caller in the firm,
+    so ETF-pod positions still carried `current_price == avg_entry` months
+    after opening. That stale-price bug, an attribution bug, and a $10,000
+    reserve that was never at the broker all arrived as one "-6.3%".
+    """
+
+    def setUp(self):
+        import pod_ledger
+        self.P = pod_ledger
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "pod_allocations.json"
+        p = patch.object(pod_ledger, "_ALLOCATIONS_PATH", self.path)
+        p.start()
+        self.addCleanup(p.stop)
+
+    def _write(self, pods, reserve=0.0):
+        self.path.write_text(json.dumps(
+            {"pods": pods, "reserve": {"balance": reserve}, "last_updated": ""}))
+
+    @staticmethod
+    def _pod(cash, positions):
+        return {"cash_balance": cash,
+                "positions": {t: {"qty": q, "avg_entry": p, "current_price": p,
+                                  "side": "long"} for t, (q, p) in positions.items()}}
+
+    def test_positions_are_marked_to_broker_prices(self):
+        self._write({"pod1": self._pod(100.0, {"KO": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 60.0}},
+                                         600.0, 100.0)
+        self.assertEqual(100.0, out["marked_to_market"])
+        saved = json.loads(self.path.read_text())
+        self.assertEqual(60.0, saved["pods"]["pod1"]["positions"]["KO"]["current_price"])
+        self.assertEqual(700.0, saved["pods"]["pod1"]["total_value"])
+
+    def test_an_unpriceable_position_is_not_marked_to_zero(self):
+        """Marking to zero would 'reconcile' a pod by deleting its value."""
+        self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker({}, 500.0, 0.0)
+        saved = json.loads(self.path.read_text())
+        self.assertEqual(50.0, saved["pods"]["pod1"]["positions"]["KO"]["current_price"])
+        self.assertEqual(["KO"], out["unpriced_symbols"])
+
+    def test_the_reserve_is_named_as_a_cause(self):
+        self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})}, reserve=10000.0)
+        out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
+                                         500.0, 0.0)
+        self.assertTrue(any("reserve" in c for c in out["causes"]))
+        self.assertEqual(10000.0, out["residual"])
+
+    def test_broker_positions_no_pod_claims_are_named(self):
+        self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker(
+            {"KO": {"qty": 10.0, "price": 50.0},
+             "NVDA": {"qty": 5.0, "price": 200.0}}, 1500.0, 0.0)
+        self.assertEqual(["NVDA"], out["unledgered_symbols"])
+        self.assertEqual(1000.0, out["unledgered_value"])
+        self.assertTrue(any("no pod" in c for c in out["causes"]))
+
+    def test_a_pod_position_the_broker_does_not_hold_is_named(self):
+        self._write({"pod1": self._pod(0.0, {"GHOST": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker({}, 0.0, 0.0)
+        self.assertEqual(["GHOST"], out["phantom_symbols"])
+
+    def test_POISON_PILL_a_ledger_that_matches_reports_no_cause(self):
+        self._write({"pod1": self._pod(250.0, {"KO": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
+                                         750.0, 250.0)
+        self.assertEqual(0.0, out["residual"])
+        self.assertEqual([], out["causes"],
+                         "invented a cause for a ledger that agrees")
+
+    def test_the_total_is_not_scaled_to_force_agreement(self):
+        """A reconciliation that forces the sum to match destroys the evidence
+        of the thing it was built to find."""
+        self._write({"pod1": self._pod(1000.0, {"KO": (10.0, 50.0)})})
+        self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
+                                   99999.0, 1000.0)
+        saved = json.loads(self.path.read_text())
+        self.assertEqual(1500.0, saved["pods"]["pod1"]["total_value"])
+
+    def test_apply_false_writes_nothing(self):
+        self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
+        before = self.path.read_text()
+        self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 99.0}},
+                                   990.0, 0.0, apply=False)
+        self.assertEqual(before, self.path.read_text())
+
+    def test_the_reconciler_is_actually_called(self):
+        """AST: `update_prices` was written, documented as daily, and never
+        called by anything. A mark-to-market nobody runs is not a ledger."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        calls = {n.func.attr for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        self.assertIn("reconcile_to_broker", calls)
+
+
 # =============================================================================
 # Runner
 # =============================================================================

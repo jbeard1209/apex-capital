@@ -348,20 +348,49 @@ class AlpacaTrader:
             logger.warning(f"  Cannot size position for {ticker} (insufficient buying power or price unavailable)")
             return None
 
-        # Cash floor: never let cash drop below 20% of portfolio value
+        # Cash floor: never let cash drop below 20% of portfolio value.
+        #
+        # This block used to end in `except Exception: pass` and defaulted
+        # portfolio_value to 1 when absent. Both turned a degraded read into
+        # permission to buy: a failed get_account() skipped the floor entirely,
+        # and a missing equity made the floor $0.20, which no order can breach.
+        # NaN did the same more quietly — `nan < anything` is False, so a NaN
+        # cash balance passes a floor check it can never satisfy. A constant
+        # substituted for a failed read is a decision, and all three of these
+        # decided "go" (memories `fallback-that-means-act`, `nan-is-not-none`).
+        # Refusing to buy when the floor cannot be evaluated costs an
+        # opportunity; buying costs cash the firm may not have.
+        try:
+            from risk_gate import _finite as _num
+        except Exception:                                # pragma: no cover
+            def _num(x):
+                try:
+                    v = float(x)
+                except (TypeError, ValueError):
+                    return None
+                return v if v == v and abs(v) != float("inf") else None
         try:
             _acct_cf = self.get_account()
-            _cash_cf = _acct_cf.get("cash", 0) or 0
-            _pv_cf   = _acct_cf.get("portfolio_value", 1) or 1
-            if (_cash_cf - cost) < (_pv_cf * MIN_CASH_FLOOR_PCT):
-                logger.warning(
-                    f"  [CASH FLOOR] Skipping {ticker} — buying {shares} shares (${cost:,.0f}) "
-                    f"would drop cash to ${_cash_cf - cost:,.0f} "
-                    f"({(_cash_cf - cost) / _pv_cf * 100:.1f}%), below {MIN_CASH_FLOOR_PCT*100:.0f}% floor."
-                )
-                return None
-        except Exception:
-            pass
+        except Exception as _cf_e:
+            logger.warning(f"  [CASH FLOOR] Skipping {ticker} — could not read the "
+                           f"account to evaluate the floor: {_cf_e}")
+            return None
+        _cash_cf = _num(_acct_cf.get("cash"))
+        _pv_cf   = _num(_acct_cf.get("portfolio_value"))
+        if _cash_cf is None or _pv_cf is None or _pv_cf <= 0:
+            logger.warning(
+                f"  [CASH FLOOR] Skipping {ticker} — account returned cash="
+                f"{_acct_cf.get('cash')!r} equity={_acct_cf.get('portfolio_value')!r}; "
+                f"the floor cannot be evaluated against those."
+            )
+            return None
+        if (_cash_cf - cost) < (_pv_cf * MIN_CASH_FLOOR_PCT):
+            logger.warning(
+                f"  [CASH FLOOR] Skipping {ticker} — buying {shares} shares (${cost:,.0f}) "
+                f"would drop cash to ${_cash_cf - cost:,.0f} "
+                f"({(_cash_cf - cost) / _pv_cf * 100:.1f}%), below {MIN_CASH_FLOOR_PCT*100:.0f}% floor."
+            )
+            return None
 
         # Run pairwise correlation check — warn but don't block (Manager Agent decides)
         corr_result = self.check_portfolio_correlation(ticker)

@@ -262,6 +262,156 @@ def update_prices(price_dict: Dict[str, float]) -> None:
     log.info("Prices updated for %d tickers", len(price_dict))
 
 
+def reconcile_to_broker(
+    broker_positions: Dict[str, dict],
+    broker_equity: float,
+    broker_cash: float,
+    apply: bool = True,
+) -> dict:
+    """Mark the pod ledger to the broker and DECOMPOSE what still does not match.
+
+    Why this exists (2026-08-19)
+    ----------------------------
+    `reconciliation_check` had been raising
+
+        [HIGH] LEDGER_DRIFT — pod ledger ($104,284) diverges -6.3% from the real
+                              account ($98,066) ... Reconcile pod cash/positions
+                              to Alpaca.
+
+    on every run for weeks. Two things were wrong with it as a finding.
+
+    First, `update_prices()` — documented at the top of this module as "call
+    daily to mark positions to market" — **had no caller anywhere in the firm**.
+    Every ETF-pod position still carried `current_price == avg_entry` exactly,
+    i.e. it had never been marked once since it was opened. A ledger that is
+    never revalued does not drift, it simply stops being a measurement.
+
+    Second, the flag named a total and no cause. "-6.3%" cannot be acted on:
+    stale prices are a bug in this module, a broker position no pod claims is a
+    bug in trade attribution, and a cash gap is neither. One number for three
+    unrelated defects is a number nobody can close, which is why it stayed open.
+
+    So this marks to market from broker prices — the honest, mechanical part —
+    and then reports the residual split by cause. It deliberately does NOT
+    invent pod positions, move cash between pods, or scale `total_value` to make
+    the sum come out right. A reconciliation that forces agreement destroys the
+    evidence of the thing it was built to find.
+
+    `broker_positions` is {SYMBOL: {"qty": float, "price": float}}.
+    Returns the decomposition; writes marked prices back when `apply`.
+    """
+    data = _load()
+    pods = data.get("pods", {})
+    bp = {str(k).upper(): v for k, v in (broker_positions or {}).items()}
+
+    stale_delta = 0.0
+    unpriced: List[str] = []
+    ledgered: Dict[str, float] = {}          # SYMBOL -> qty claimed across pods
+
+    for pod_id, pod in pods.items():
+        positions = pod.get("positions", {})
+        pos_val = 0.0
+        for ticker, pos in positions.items():
+            sym = str(ticker).upper()
+            qty = float(pos.get("qty", 0.0) or 0.0)
+            ledgered[sym] = ledgered.get(sym, 0.0) + qty
+            old = float(pos.get("current_price", 0.0) or 0.0)
+            new = None
+            if sym in bp:
+                try:
+                    cand = float(bp[sym].get("price"))
+                    new = cand if cand == cand and cand > 0 else None
+                except (TypeError, ValueError):
+                    new = None
+            if new is None:
+                # No broker price: keep the old one and say so. Marking to zero
+                # would "reconcile" the pod by deleting its value.
+                unpriced.append(sym)
+                pos_val += qty * old
+                continue
+            stale_delta += qty * (new - old)
+            if apply:
+                pos["current_price"] = new
+            pos_val += qty * new
+        if apply:
+            pod["positions_value"] = round(pos_val, 2)
+            pod["total_value"] = round(float(pod.get("cash_balance", 0.0) or 0.0) + pos_val, 2)
+
+    if apply:
+        data["last_updated"] = _now_iso()
+        _save(data)
+
+    pod_total = sum(float(p.get("total_value", 0.0) or 0.0) for p in pods.values())
+    reserve_bal = float(data.get("reserve", {}).get("balance", 0.0) or 0.0)
+
+    unledgered = {s: v for s, v in bp.items()
+                  if float(v.get("qty", 0) or 0) != 0.0 and s not in ledgered}
+    phantom = {s: q for s, q in ledgered.items()
+               if s not in bp or float(bp[s].get("qty", 0) or 0) == 0.0}
+
+    def _mv(v) -> float:
+        try:
+            return abs(float(v.get("qty", 0) or 0) * float(v.get("price", 0) or 0))
+        except (TypeError, ValueError):
+            return 0.0
+
+    unledgered_value = round(sum(_mv(v) for v in unledgered.values()), 2)
+    pod_cash = round(sum(float(p.get("cash_balance", 0.0) or 0.0) for p in pods.values()), 2)
+
+    residual = round(pod_total + reserve_bal - float(broker_equity or 0.0), 2)
+
+    return {
+        "as_of": _now_iso(),
+        "broker_equity": round(float(broker_equity or 0.0), 2),
+        "broker_cash": round(float(broker_cash or 0.0), 2),
+        "pod_total_value": round(pod_total, 2),
+        "reserve_balance": reserve_bal,
+        "pod_cash_sum": pod_cash,
+        "residual": residual,
+        "residual_pct": round(residual / float(broker_equity) * 100.0, 2)
+                        if broker_equity else 0.0,
+        "marked_to_market": round(stale_delta, 2),
+        "unpriced_symbols": sorted(set(unpriced)),
+        "unledgered_symbols": sorted(unledgered),
+        "unledgered_value": unledgered_value,
+        "phantom_symbols": sorted(phantom),
+        "reserve_is_not_at_broker": reserve_bal > 0.0,
+        "causes": _drift_causes(residual, reserve_bal, unledgered_value,
+                                pod_cash, float(broker_cash or 0.0), phantom),
+    }
+
+
+def _drift_causes(residual, reserve_bal, unledgered_value, pod_cash,
+                  broker_cash, phantom) -> List[str]:
+    """Named, individually closable reasons the two totals disagree.
+
+    Ordered largest-first so the flag can quote the one that actually matters.
+    An empty list with a non-zero residual is itself informative: it means the
+    gap is real and none of the known causes explains it.
+    """
+    out: List[Tuple[float, str]] = []
+    if reserve_bal:
+        out.append((reserve_bal,
+                    f"the ${reserve_bal:,.0f} reserve is a book entry with no "
+                    f"broker counterpart — it inflates the pod total by "
+                    f"construction, not by drift"))
+    if unledgered_value:
+        out.append((unledgered_value,
+                    f"${unledgered_value:,.0f} of broker positions belong to no "
+                    f"pod, so the pod total cannot see them"))
+    if phantom:
+        out.append((0.0,
+                    f"{len(phantom)} pod position(s) the broker does not hold: "
+                    f"{', '.join(sorted(phantom)[:6])}"))
+    cash_gap = round(pod_cash - broker_cash, 2)
+    if abs(cash_gap) > 1.0:
+        out.append((abs(cash_gap),
+                    f"pod cash sums to ${pod_cash:,.0f} against ${broker_cash:,.0f} "
+                    f"at the broker (${cash_gap:+,.0f})"))
+    out.sort(key=lambda t: -t[0])
+    return [msg for _, msg in out]
+
+
 def get_pod_summary(pod_id: str) -> dict:
     """Return a clean summary dict for the requested pod."""
     data = _load()
