@@ -320,6 +320,16 @@ def apply_tombstones(items: list, arch_ids: set, arch_keys: set):
     recurrence would be deleted by the machinery meant to tidy up after it.
     Judged on each host's own copy, one host holding it open is enough to keep
     it, and it returns flagged rather than silently.
+
+    The "still open here" veto applies to PROBLEMS, not to views of problems.
+    A derived row (`lifecycle-stale-*`, `sla-escalation-*`, …) has no lifecycle
+    of its own — it cannot recur, because it is not a thing that happens, it is
+    a thing that gets written about a thing that happens. It stayed open on the
+    Mac for one reason only: the two hosts keep independent lifecycle histories,
+    the Mac's was discontinuous, so the two disagreed about which subjects had
+    gone stale. Vetoing on that produced 17 rows that were archived on one host
+    and permanently un-archivable on the other. The subject keeps its own row
+    and its own veto; the view follows the archive.
     """
     kept, suppressed, reopened = [], [], []
     for it in items:
@@ -330,6 +340,9 @@ def apply_tombstones(items: list, arch_ids: set, arch_keys: set):
             kept.append(it)
             continue
         if str(it.get("status") or "").lower() in CLOSED_STATUSES:
+            suppressed.append(it)
+            continue
+        if PLS.derived_subject(it):
             suppressed.append(it)
             continue
         it["reopened_after_archive"] = True

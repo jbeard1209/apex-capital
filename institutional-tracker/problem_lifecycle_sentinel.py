@@ -602,6 +602,36 @@ def retire_derived_rows(rows: list, history: dict, now: str) -> list:
     return retired
 
 
+def writer_verdict():
+    """(may_write, why) — only the designated host owns lifecycle state.
+
+    The lifecycle of a firm-wide problem is a firm-wide fact, and the two hosts
+    share no `data/`. Each kept its own history, so each had its own opinion of
+    when a problem went stale: on 2026-08-19 the VM retired 40 spent rows and
+    the Mac retired 18, and 17 rows ended up archived on one host and still
+    OPEN on the other — the private-diary failure, in the control that exists
+    to notice failures.
+
+    Unlike single_writer's trading guard this one is symmetric and blocks
+    outright, because the asymmetry there was about not trapping a position: an
+    exit blocked costs money with no ceiling. Nothing here can trap anything.
+    The worst case is that governance escalation lags while the designated host
+    is down, which chairman_decision_sla and the report-age checks already see.
+    """
+    try:
+        import single_writer
+        want, me = single_writer.designated_host(), single_writer.this_host()
+    except Exception as exc:                      # pragma: no cover - defensive
+        return True, "single_writer unavailable (%s); writing unguarded" % exc
+    if not want:
+        return True, "APEX_TRADING_HOST unset — shadow mode, writing allowed"
+    if want == me:
+        return True, "designated host"
+    return False, ("read-only on '%s': lifecycle state is owned by '%s'. Run "
+                   "the sentinel there; a second history is a second opinion "
+                   "about the same problem." % (me, want))
+
+
 # ---------------------------------------------------------------------------
 # Public entry point.
 # ---------------------------------------------------------------------------
@@ -610,6 +640,10 @@ def run(escalate: bool = True) -> dict:
     history = _load(HISTORY_PATH, {})
     if not isinstance(history, dict):
         history = {}
+
+    may_write, why = writer_verdict()
+    if escalate and not may_write:
+        escalate = False
 
     # Retire spent views BEFORE the scan, against the history as it stood at
     # the end of the last run, so this run observes them already closed and
@@ -628,7 +662,8 @@ def run(escalate: bool = True) -> dict:
               "looping": [], "stale": [], "silent_drop": [], "derived": [],
               "retired_derived": retired,
               "escalated_board": 0, "escalated_chairman": 0,
-              "flagged_in_place": 0}
+              "flagged_in_place": 0,
+              "writable": may_write, "writer_note": why}
 
     for sig, h in history.items():
         cls = classify(h, now)
@@ -680,6 +715,8 @@ def main(argv=None):
               f"-> board+{rep['escalated_board']} chairman+{rep['escalated_chairman']} "
               f"retired+{len(rep['retired_derived'])} "
               f"loop_break={len(rep['loop_break_set'])}")
+        if not rep["writable"]:
+            print(f"[lifecycle] NOTHING WRITTEN — {rep['writer_note']}")
     return 0
 
 

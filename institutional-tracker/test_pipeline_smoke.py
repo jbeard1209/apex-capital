@@ -2894,6 +2894,12 @@ class TestProblemLifecycle(unittest.TestCase):
         S.CHAIRMAN_PATH = self.chair
         S.HISTORY_PATH = d / "history.json"
         S.LOOPS_PATH = d / "loops.json"
+        # These tests are about classification, not about which host owns the
+        # history file. Without this they would pass vacuously on any host that
+        # is not the designated writer — by writing nothing at all.
+        wg = patch.object(S, "writer_verdict", lambda: (True, "test"))
+        wg.start()
+        self.addCleanup(wg.stop)
 
     def tearDown(self):
         S = self.S
@@ -12847,6 +12853,15 @@ class TestGovernanceDoesNotEscalateItself(unittest.TestCase):
             (self.paths["PENDING_PATH"], "proposal"),
             (self.paths["IMPL_QUEUE_PATH"], "impl"),
             (self.paths["CHAIRMAN_PATH"], "chairman"))
+        # The writer gate is the subject of its own tests at the bottom of this
+        # class. Every OTHER test here is about WHAT the sentinel writes, so it
+        # must be allowed to write no matter which host runs the suite —
+        # otherwise the whole class passes vacuously on the Mac by writing
+        # nothing at all, which is exactly the "a pass on zero items is not a
+        # pass" shape the coherence laws are built to reject.
+        wg = patch.object(self.P, "writer_verdict", lambda: (True, "test"))
+        wg.start()
+        self.addCleanup(wg.stop)
 
     def _patched(self):
         return patch.multiple(self.P, **self.paths)
@@ -13049,6 +13064,105 @@ class TestGovernanceDoesNotEscalateItself(unittest.TestCase):
         attrs = [n for n in ast.walk(tree) if isinstance(n, ast.Attribute)
                  and n.attr == "SLA_ESCALATION_PREFIX"]
         self.assertTrue(attrs, "it neither spells nor imports the prefix")
+
+    # -- one history, on one host ------------------------------------------
+    def test_a_non_designated_host_writes_nothing(self):
+        """Two histories of one problem are two opinions about it.
+
+        On 2026-08-19 the VM's history said 37 subjects were stale and the
+        Mac's said 25, because the Mac's history had been discontinuous. Both
+        hosts then acted: the VM retired 40 views, the Mac 18, and 17 rows
+        finished archived on one host and OPEN on the other. Nothing here can
+        trap a position, so unlike single_writer's asymmetric trading guard
+        this one blocks outright.
+        """
+        self._write("CHAIRMAN_PATH", [{"id": "real-problem", "title": "broken",
+                                       "status": "awaiting_chairman"}])
+        before = {k: p.read_text() for k, p in self.paths.items()
+                  if isinstance(p, Path)}
+        with self._patched(), \
+                patch.object(self.P, "writer_verdict",
+                             lambda: (False, "read-only on 'mac'")):
+            rep = self.P.run(escalate=True)
+        after = {k: p.read_text() for k, p in self.paths.items()
+                 if isinstance(p, Path)}
+        self.assertEqual(before, after,
+                         "the non-writer host advanced shared lifecycle state")
+        self.assertFalse(rep["writable"])
+        self.assertIn("read-only", rep["writer_note"])
+        # It must still SEE the problem — a read-only host that also reports
+        # nothing looks identical to a healthy firm.
+        self.assertEqual(1, rep["tracked"])
+
+    def test_the_poison_pill_the_designated_host_does_write(self):
+        """Proves the previous test measures the gate, not a broken run()."""
+        self._write("CHAIRMAN_PATH", [{"id": "real-problem", "title": "broken",
+                                       "status": "awaiting_chairman"}])
+        with self._patched(), \
+                patch.object(self.P, "writer_verdict", lambda: (True, "mine")):
+            rep = self.P.run(escalate=True)
+        self.assertTrue(rep["writable"])
+        self.assertNotEqual("{}", self.paths["HISTORY_PATH"].read_text().strip(),
+                            "history stayed empty on the host that owns it")
+
+    def test_the_gate_reads_the_one_host_identity_the_firm_already_has(self):
+        """AST: it must consult single_writer, not re-derive the host.
+
+        two_brains_one_account — host identity derived locally rather than read
+        from the one place that persists it is how the VM spent weeks looking
+        down while it was trading.
+        """
+        import ast
+        tree = ast.parse(Path("problem_lifecycle_sentinel.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "writer_verdict")
+        called = {n.func.attr for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        self.assertIn("designated_host", called)
+        self.assertIn("this_host", called)
+
+
+class TestDerivedRowsFollowTheArchive(unittest.TestCase):
+    """A view of a problem has no veto over its own archival.
+
+    chairman_queue_sync refuses to tombstone a row that is still OPEN on some
+    host — a problem that came back must not be deleted by the machinery that
+    tidies up after it. But a derived row cannot come back: it is not a thing
+    that happens, it is a thing written about a thing that happens. It was
+    "open" on the Mac only because the Mac's lifecycle history disagreed with
+    the VM's, which produced 17 rows archived on one host and permanently
+    un-archivable on the other.
+    """
+
+    def setUp(self):
+        import chairman_queue_sync as S
+        import problem_lifecycle_sentinel as P
+        self.S, self.P = S, P
+
+    def _row(self, rid):
+        return {"id": rid, "description": "d", "status": "awaiting_chairman"}
+
+    def test_a_derived_row_archived_elsewhere_is_suppressed_not_reopened(self):
+        row = self._row(self.P.STALE_ID_PREFIX + "sig-abc")
+        kept, supp, reopened = self.S.apply_tombstones([row], {row["id"]}, set())
+        self.assertEqual([], kept)
+        self.assertEqual([], reopened)
+        self.assertEqual(1, len(supp))
+
+    def test_the_poison_pill_a_real_problem_in_the_same_slot_is_kept(self):
+        """Same age, same queue, same archive — only the id differs."""
+        row = self._row("cro-risk-high-41-days")
+        kept, supp, reopened = self.S.apply_tombstones([row], {row["id"]}, set())
+        self.assertEqual(1, len(kept), "a genuine recurrence was deleted")
+        self.assertEqual(["cro-risk-high-41-days"], reopened)
+        self.assertTrue(kept[0]["reopened_after_archive"])
+
+    def test_every_derived_prefix_is_covered_not_just_the_stale_one(self):
+        for pre in self.P.DERIVED_ID_PREFIXES:
+            row = self._row(pre + "sig-abc")
+            kept, _, reopened = self.S.apply_tombstones([row], {row["id"]}, set())
+            self.assertEqual([], kept, "prefix %r still vetoes" % pre)
+            self.assertEqual([], reopened)
 
 
 # =============================================================================
