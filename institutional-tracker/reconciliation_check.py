@@ -212,10 +212,18 @@ def run_reconciliation() -> dict:
     # ── CHECK 1: Cash floor ────────────────────────────────────────────────
     logger.info("  [1/7] Cash floor...")
     if cash_pct < cash_floor:
+        # This used to end "A buy bypassed the cash floor guardrail." That was
+        # true and is not any more: the floor lived only in
+        # AlpacaTrader.submit_buy while six other paths reached the broker
+        # without it. It now sits in risk_gate, at the order_ledger choke point
+        # every path shares. Leaving the old sentence would keep reporting a
+        # fixed defect as live, and the reader would eventually stop believing
+        # the flag — so the wording states the breach and who is holding it.
         _flag(flags, "HIGH", "CASH_FLOOR",
               f"Cash is {cash_pct*100:.1f}% of portfolio (${cash:,.0f}) — "
-              f"below {cash_floor*100:.0f}% floor. "
-              f"A buy bypassed the cash floor guardrail.")
+              f"below {cash_floor*100:.0f}% floor. New buys are blocked by "
+              f"risk_gate until cash recovers; exits are not. Cash rises by "
+              f"selling, which is a Chairman decision, not a code change.")
     else:
         logger.info(f"    ✓ Cash {cash_pct*100:.1f}% ≥ {cash_floor*100:.0f}% floor")
 

@@ -14134,6 +14134,18 @@ class TestTheCashFloorFailsClosed(unittest.TestCase):
         t.submit_buy("NVDA")
         self.assertTrue(reached.get("yes"), "the floor blocked a compliant buy")
 
+    def test_the_flag_no_longer_reports_a_fixed_defect_as_live(self):
+        """The CASH_FLOOR text said "A buy bypassed the cash floor guardrail."
+        It was true, and it is what made the breach worth reading. Once the
+        gate covers every path it is false, and a flag that keeps asserting a
+        fixed defect is how a reader learns to skip the flag."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        strings = [n.value for n in ast.walk(tree)
+                   if isinstance(n, ast.Constant) and isinstance(n.value, str)]
+        joined = " ".join(strings)          # AST only — the comment says it too
+        self.assertNotIn("bypassed the cash floor", joined)
+
     def test_the_floor_block_has_no_silent_except(self):
         """AST: `except Exception: pass` around the floor is the whole defect,
         and it reads as ordinary defensive code."""
