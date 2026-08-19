@@ -9662,15 +9662,30 @@ class TestCoherenceLaws(unittest.TestCase):
                          "escalation appended a second row for the same law")
 
     def test_a_law_that_stops_violating_has_its_row_retired(self):
-        """A finding that outlives its cause is a false signal, just inverted."""
+        """A finding that outlives its cause is a false signal, just inverted.
+
+        Until 2026-08-19 "retired" meant DELETED, and this test asserted the
+        empty list. That is what made a law fixed by a deploy read to
+        problem_lifecycle_sentinel as a problem dropped with no resolution — it
+        cannot see a reason for a disappearance, only the disappearance. Retired
+        now means closed in place with the evidence; the row leaves later, via
+        chairman_queue_compactor, once the sentinel has recorded the closure.
+        What this test protects is unchanged: the finding must stop reading as
+        live the moment its cause is gone.
+        """
         cl = self._law_sources()
+        import problem_lifecycle_sentinel as PLS
         with tempfile.TemporaryDirectory() as d:
             rows = self._escalate_into(d, [self._violation("positions_conserve")])
             self.assertEqual(len(rows), 1)
             cleared = self._escalate_into(
                 d, [cl.LawResult("positions_conserve", cl.HOLDS, "fine", ("A", "B"))],
                 existing=rows)
-        self.assertEqual(cleared, [], "the row survived the law starting to hold")
+        self.assertEqual(len(cleared), 1,
+                         "the row was deleted — a disappearance is what the "
+                         "sentinel has to call a SILENT_DROP")
+        self.assertIn(PLS._status_of(cleared[0]), PLS.RESOLVED_STATUSES,
+                      "the row survived the law starting to hold, still open")
 
     def test_escalation_leaves_other_peoples_rows_alone(self):
         other = [{"id": "chairman-decision-something", "severity": "CRITICAL",
@@ -12481,6 +12496,306 @@ class TestQueueCompactionCannotForgeADrop(unittest.TestCase):
                             "own sets (found %s)" % sorted(names))
             return
         self.fail("CLOSED_STATUSES is not defined in chairman_queue_compactor.py")
+
+
+class TestArchivedRowsStayArchived(unittest.TestCase):
+    """A compaction on one host must survive the two-host reconciler.
+
+    On 2026-08-19 chairman_queue_compactor archived 12 closed rows out of the
+    VM's queue and chairman_queue_sync put all 12 back three minutes later: the
+    Mac still had them, and a union of two hosts resurrects anything removed
+    from only one. The rows then existed twice — queue AND archive — which is
+    worse than never compacting, and the byte-identical md5 across both hosts
+    was the only reason anyone noticed.
+    """
+
+    def setUp(self):
+        import chairman_queue_sync as S
+        self.S = S
+
+    def _tomb(self, archived):
+        return self.S.tombstones(archived)
+
+    def test_a_closed_row_that_is_archived_is_kept_out_of_the_queue(self):
+        arch = [{"id": "x1", "title": "thing done", "status": "resolved",
+                 "archived_on": "2026-08-19T00:00:00+00:00"}]
+        ids, keys = self._tomb(arch)
+        kept, sup, reo = self.S.apply_tombstones(
+            [{"id": "x1", "title": "thing done", "status": "resolved"}], ids, keys)
+        self.assertEqual([], kept, "the archived row came back into the queue")
+        self.assertEqual(1, len(sup))
+        self.assertEqual([], reo)
+
+    def test_an_archived_problem_that_reopened_is_NOT_suppressed(self):
+        """The tombstone must not outlive the problem's closure.
+
+        Suppressing on identity alone would delete a recurrence on arrival, and
+        the sentinel would never flag it: it only calls a vanishing row a
+        SILENT_DROP when its history says OPEN, and this one's says RESOLVED.
+        The failure would be perfectly silent, which is why it is tested.
+        """
+        arch = [{"id": "x1", "title": "thing done", "status": "resolved",
+                 "archived_on": "2026-08-19T00:00:00+00:00"}]
+        ids, keys = self._tomb(arch)
+        kept, sup, reo = self.S.apply_tombstones(
+            [{"id": "x1", "title": "thing done", "status": "awaiting_chairman"}],
+            ids, keys)
+        self.assertEqual(1, len(kept), "a re-opened problem was deleted")
+        self.assertTrue(kept[0].get("reopened_after_archive"),
+                        "it came back unflagged — nobody would know it recurred")
+        self.assertEqual(["x1"], reo)
+        self.assertEqual([], sup)
+
+    def test_one_host_holding_it_open_outvotes_the_other_host_closing_it(self):
+        """Why the filter runs per-host and BEFORE the merge.
+
+        ACTION_RANK puts "resolved" above "awaiting_chairman", so a merged
+        record of (closed on Mac, open on VM) reads as closed. Tombstoning the
+        merged result would therefore delete a live problem whenever any host
+        had ever marked it done. Poison pill for the ordering.
+        """
+        arch = [{"id": "x1", "title": "thing done", "status": "resolved",
+                 "archived_on": "2026-08-19T00:00:00+00:00"}]
+        ids, keys = self._tomb(arch)
+        mac, _, _ = self.S.apply_tombstones(
+            [{"id": "x1", "title": "thing done", "status": "resolved"}], ids, keys)
+        vm, _, reo = self.S.apply_tombstones(
+            [{"id": "x1", "title": "thing done", "status": "open"}], ids, keys)
+        merged = self.S.merge_actions(mac, vm)
+        self.assertEqual(1, len(merged), "the open copy was lost")
+        self.assertEqual(["x1"], reo)
+
+        # And the ordering this guards against, stated as an assertion rather
+        # than a comment: merging first really does hide the open copy.
+        merged_first = self.S.merge_actions(
+            [{"id": "x1", "title": "thing done", "status": "resolved"}],
+            [{"id": "x1", "title": "thing done", "status": "open"}])
+        self.assertEqual("resolved", merged_first[0]["status"])
+        after, sup_after, _ = self.S.apply_tombstones(merged_first, ids, keys)
+        self.assertEqual([], after,
+                         "merging before tombstoning silently drops a problem "
+                         "that is still open on one host")
+        self.assertEqual(1, len(sup_after))
+
+    def test_the_archive_union_is_shared_by_both_hosts_and_idempotent(self):
+        mac = [{"id": "a", "archived_on": "2026-08-19T10:00:00+00:00"}]
+        vm = [{"id": "a", "archived_on": "2026-08-18T10:00:00+00:00"},
+              {"id": "b", "archived_on": "2026-08-19T11:00:00+00:00"}]
+        u = self.S.merge_archives(mac, vm)
+        self.assertEqual({"a", "b"}, {r["id"] for r in u})
+        self.assertEqual("2026-08-18T10:00:00+00:00",
+                         next(r for r in u if r["id"] == "a")["archived_on"],
+                         "the earliest archival must win, or the tombstone's "
+                         "own clock drifts forward every run")
+        self.assertEqual(u, self.S.merge_archives(u, u))
+
+    def test_suppressing_a_row_with_no_archive_record_is_refused(self):
+        """The suppression must be backed by the archive, and proven each run.
+
+        This is the compactor's own rule applied to the reconciler: a row may
+        leave the queue only because something else is holding it. If the guard
+        is absent, a drift between the filter and the archive union deletes
+        evidence exactly the way the sentinel exists to catch.
+        """
+        import tempfile
+        S = self.S
+        with tempfile.TemporaryDirectory() as d:
+            calls = {}
+            local = {S.ACTION_FILE: [{"id": "x1", "title": "t", "status": "resolved"}],
+                     S.QUEUE_FILE: [],
+                     # the archive the tombstone claims to be backed by is EMPTY
+                     S.ARCHIVE_FILE: []}
+            with patch.object(S, "_load_local", lambda n: list(local.get(n, []))), \
+                 patch.object(S, "_load_remote", lambda n, missing_ok=False: []), \
+                 patch.object(S, "_write_local", lambda n, o: calls.setdefault(n, o)), \
+                 patch.object(S, "_write_remote", lambda n, o: calls.setdefault(n, o)), \
+                 patch.object(S, "tombstones", lambda a: ({"x1"}, set())), \
+                 patch.object(S, "DATA", Path(d)):
+                with self.assertRaises(RuntimeError) as cm:
+                    S.sync(write=True, local_only=True)
+            self.assertIn("no archive record", str(cm.exception))
+            self.assertEqual({}, calls, "it wrote despite refusing")
+
+
+class TestFoldKeepsTheTextTheSentinelReads(unittest.TestCase):
+    """Two de-dupers, two notions of identity, one feeding the other's detector.
+
+    chairman_queue_sync folds on `group_key` (digit-collapsed title PLUS
+    description); problem_lifecycle_sentinel identifies on `signature` (title OR
+    description). Where they disagree a fold erases the loser's text, and the
+    sentinel — which can only see text — has to read that as a problem that left
+    every queue unresolved.
+
+    Measured escapes to date: zero. These tests exist to prove the gap is
+    REACHABLE (test 1) and closed, not to commemorate an incident.
+    """
+
+    def setUp(self):
+        import chairman_queue_sync as S
+        import problem_lifecycle_sentinel as PLS
+        self.S, self.PLS = S, PLS
+        # Same sentence, split differently between the two fields by two
+        # producers. This is the disagreement, constructed minimally.
+        self.a = {"id": "a", "title": "Alpha", "description": "Beta gamma",
+                  "status": "awaiting_chairman"}
+        self.b = {"id": "b", "title": "Alpha Beta", "description": "gamma",
+                  "status": "awaiting_chairman"}
+
+    def test_the_two_identity_functions_really_can_disagree(self):
+        S, PLS = self.S, self.PLS
+        self.assertEqual(S.group_key(self.a), S.group_key(self.b),
+                         "constructed pair no longer folds — rewrite the pair, "
+                         "do not delete the test")
+        self.assertNotEqual(PLS.signature(self.a, "chairman"),
+                            PLS.signature(self.b, "chairman"),
+                            "constructed pair no longer diverges")
+
+    def test_a_fold_records_the_losing_text_not_just_its_id(self):
+        merged = self.S.merge_actions([self.a], [self.b])
+        self.assertEqual(1, len(merged))
+        self.assertIn("merged_titles", merged[0],
+                      "merged_ids alone cannot help a detector that keys on text")
+        self.assertTrue(any("Alpha" in t for t in merged[0]["merged_titles"]))
+
+    def test_the_sentinel_counts_a_folded_row_as_present(self):
+        S, PLS = self.S, self.PLS
+        merged = S.merge_actions([self.a], [self.b])
+        sig_lost = next(s for s in (PLS.signature(self.a, "chairman"),
+                                    PLS.signature(self.b, "chairman"))
+                        if s != PLS.signature(merged[0], "chairman"))
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)
+            (p / "c.json").write_text(json.dumps(merged))
+            (p / "e.json").write_text("[]")
+            with patch.object(PLS, "CHAIRMAN_PATH", p / "c.json"), \
+                 patch.object(PLS, "PENDING_PATH", p / "e.json"), \
+                 patch.object(PLS, "IMPL_QUEUE_PATH", p / "e.json"):
+                self.assertIn(sig_lost, PLS._scan(),
+                              "the folded row's signature vanished")
+
+                # Poison pill: strip the field the fix added and the same scan
+                # must lose it again. Without this the test could pass because
+                # the fold never erased anything.
+                stripped = [dict(r) for r in merged]
+                for r in stripped:
+                    r.pop("merged_titles", None)
+                (p / "c.json").write_text(json.dumps(stripped))
+                self.assertNotIn(sig_lost, PLS._scan())
+
+    def test_repeated_merges_do_not_grow_the_folded_text(self):
+        once = self.S.merge_actions([self.a], [self.b])
+        twice = self.S.merge_actions(once, once)
+        self.assertEqual(once[0].get("merged_titles"),
+                         twice[0].get("merged_titles"))
+        self.assertEqual(once, twice)
+
+    def test_old_folds_are_repaired_on_read(self):
+        S = self.S
+        row = {"id": "b", "title": "Alpha Beta", "description": "gamma",
+               "merged_ids": ["a"], "status": "awaiting_chairman"}
+        healed = S.backfill_merged_titles([row], {"a": "Alpha"})
+        self.assertEqual(1, healed)
+        self.assertEqual(["Alpha"], row["merged_titles"])
+        self.assertEqual(0, S.backfill_merged_titles([row], {"a": "Alpha"}),
+                         "the repair is not idempotent")
+
+
+class TestRetiredFindingIsClosedNotDeleted(unittest.TestCase):
+    """A producer withdrawing its own row must leave a resolution behind.
+
+    coherence_laws deleted the row of any law that started holding again. That
+    is indistinguishable, to problem_lifecycle_sentinel, from a problem being
+    quietly dropped — so on 2026-08-19 a law that a deploy had FIXED was filed
+    as a SILENT_DROP, with a lifecycle-drop row to the Chairman and a 20-day
+    board clock behind it. Thirteen of the eighteen SILENT_DROPs on the VM are
+    already `[SLA] Board must decide…` rows.
+    """
+
+    def setUp(self):
+        import coherence_laws as C
+        import problem_lifecycle_sentinel as PLS
+        self.C, self.PLS = C, PLS
+
+    def _run(self, rows, results):
+        with tempfile.TemporaryDirectory() as d:
+            q = Path(d) / "chairman_action_required.json"
+            q.write_text(json.dumps(rows))
+            with patch.object(self.C, "CHAIRMAN_QUEUE", q):
+                self.C.escalate_violations(results)
+            return json.loads(q.read_text())
+
+    def _law_name(self):
+        return self.C.LAWS[0][0].__name__.replace("law_", "")
+
+    def test_a_law_that_starts_holding_leaves_a_closed_row_behind(self):
+        name = self._law_name()
+        rows = [{"id": "coherence-%s" % name, "severity": "HIGH",
+                 "description": "COHERENCE LAW VIOLATED — %s: x" % name}]
+        out = self._run(rows, [])
+        self.assertEqual(1, len(out), "the row was deleted, not closed — that is "
+                                      "the disappearance the sentinel calls a drop")
+        self.assertIn(self.PLS._status_of(out[0]), self.PLS.RESOLVED_STATUSES)
+        self.assertTrue(out[0].get("resolved_at"))
+
+    def test_the_sentinel_records_a_resolution_not_a_silent_drop(self):
+        name = self._law_name()
+        rows = [{"id": "coherence-%s" % name, "severity": "HIGH",
+                 "description": "COHERENCE LAW VIOLATED — %s: x" % name}]
+        closed = self._run(rows, [])
+        PLS = self.PLS
+        sig = PLS.signature(closed[0], "chairman")
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d)
+            (p / "c.json").write_text(json.dumps(closed))
+            (p / "e.json").write_text("[]")
+            with patch.object(PLS, "CHAIRMAN_PATH", p / "c.json"), \
+                 patch.object(PLS, "PENDING_PATH", p / "e.json"), \
+                 patch.object(PLS, "IMPL_QUEUE_PATH", p / "e.json"):
+                hist = {sig: {"sig": sig, "status": "OPEN", "present": True,
+                              "title": "x", "kinds": ["chairman"]}}
+                hist = PLS._update_history(PLS._scan(), hist, "2026-08-19T00:00:00")
+        self.assertEqual("RESOLVED", hist[sig]["status"])
+
+        # Poison pill: the old behaviour (row gone) must still read as a drop,
+        # or this test proves nothing about which change fixed it.
+        hist2 = {sig: {"sig": sig, "status": "OPEN", "present": True,
+                       "title": "x", "kinds": ["chairman"]}}
+        hist2 = PLS._update_history({}, hist2, "2026-08-19T00:00:00")
+        self.assertEqual("SILENT_DROP", hist2[sig]["status"])
+
+    def test_a_law_that_violates_again_reopens_its_closed_row(self):
+        """Otherwise `status: resolved` hides a live violation from the inbox."""
+        name = self._law_name()
+        rows = [{"id": "coherence-%s" % name, "severity": "HIGH",
+                 "description": "COHERENCE LAW VIOLATED — %s: x" % name}]
+        closed = self._run(rows, [])
+        again = self.C.LawResult(name, self.C.VIOLATED, "it broke again",
+                                 ("A", "B"))
+        out = self._run(closed, [again])
+        self.assertEqual(1, len(out))
+        self.assertNotIn(self.PLS._status_of(out[0]), self.PLS.RESOLVED_STATUSES,
+                         "an active violation is sitting behind a resolved status")
+        self.assertIsNone(out[0].get("resolved_at"))
+        self.assertIn("it broke again", out[0]["description"])
+
+    def test_closing_is_done_once_not_re_stamped_every_run(self):
+        name = self._law_name()
+        rows = [{"id": "coherence-%s" % name, "severity": "HIGH",
+                 "description": "COHERENCE LAW VIOLATED — %s: x" % name}]
+        first = self._run(rows, [])
+        second = self._run(first, [])
+        self.assertEqual(first[0]["resolved_at"], second[0]["resolved_at"],
+                         "the closure timestamp moves every run, so the row "
+                         "never looks old enough to compact")
+
+    def test_rows_belonging_to_other_producers_are_untouched(self):
+        name = self._law_name()
+        rows = [{"id": "someone-elses-row", "description": "unrelated"},
+                {"id": "coherence-%s" % name, "description": "x"}]
+        out = self._run(rows, [])
+        self.assertEqual(2, len(out))
+        self.assertEqual("someone-elses-row", out[0]["id"])
+        self.assertNotIn("status", out[0])
 
 
 # =============================================================================

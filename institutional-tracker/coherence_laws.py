@@ -1276,8 +1276,25 @@ def escalate_violations(results: List[LawResult]) -> int:
     queue is how a CRITICAL sits for 50 days. Seven laws can therefore add seven
     rows and never an eighth.
 
-    A law that stops violating has its row REMOVED. A stale finding that outlives
-    its cause is the same false signal as a missing one, pointed the other way.
+    A law that stops violating has its row CLOSED IN PLACE, not deleted. A stale
+    finding that outlives its cause is the same false signal as a missing one,
+    pointed the other way — but deleting it is the other failure, and this file
+    caused it on 2026-08-19. `deployed_set_matches_repo` violated at 02:55, was
+    fixed by a deploy, and the row vanished on the next run. problem_lifecycle_
+    sentinel cannot see a reason for a disappearance, only the disappearance, so
+    a signature that left every queue while its history said OPEN is by
+    definition a SILENT_DROP: it filed one against us, plus a `lifecycle-drop-*`
+    row to the Chairman, which chairman_decision_sla then puts on a 20-day clock
+    to the board. Thirteen of the eighteen SILENT_DROPs on the VM are already
+    `[SLA] Board must decide…` rows, two of them about other lifecycle-drop rows.
+    Governance auditing governance auditing governance.
+
+    So the row is marked `status: resolved` with the evidence and left where it
+    is. The sentinel then observes a closure instead of inferring a drop, and
+    chairman_queue_compactor archives it on a later pass once that observation
+    is on record. That order — close in place → let the detector see it →
+    compact — is the firm's rule for retiring anything, and a producer withdrawing
+    its own row is not exempt from it.
 
     CANNOT_TELL does not escalate here. It is a finding and it is printed and it
     fails the exit code, but it is the ordinary state of a law whose host cannot
@@ -1303,10 +1320,28 @@ def escalate_violations(results: List[LawResult]) -> int:
             r = violated.pop(rid)
             row["description"] = f"COHERENCE LAW VIOLATED — {r.name}: {r.detail}"
             row["last_seen"] = _dt.now().isoformat()
+            if row.pop("resolved_at", None):
+                # It closed and violated again. Clearing the closure matters:
+                # left behind, `status: resolved` would keep an active violation
+                # out of the Chairman's inbox and out of the SLA clock.
+                row.pop("resolution", None)
+                row["status"] = "awaiting_chairman"
+                row["reopened_at"] = _dt.now().isoformat()
             kept.append(row)
             written += 1
         elif rid in mine:
-            continue                     # law now holds: the row is retired
+            # The law holds again — close the row, do not delete it. See the
+            # docstring: a deletion is what the sentinel has to read as a drop.
+            if not row.get("resolved_at"):
+                row["status"] = "resolved"
+                row["resolved_at"] = _dt.now().isoformat()
+                row["resolution"] = (
+                    f"law {rid[len('coherence-'):]} holds again; the row is kept "
+                    f"closed so problem_lifecycle_sentinel records a resolution "
+                    f"rather than inferring a silent drop. "
+                    f"chairman_queue_compactor archives it once it has.")
+                written += 1
+            kept.append(row)
         else:
             kept.append(row)
 

@@ -45,6 +45,48 @@ result to both hosts, so it is safe to run from either host's data being newer.
 If the Mac is off for a week the VM keeps queueing locally and the next run
 folds it in; nothing is lost, it is just late.
 
+THE ARCHIVE IS A TOMBSTONE, NOT A COPY  (2026-08-19)
+----------------------------------------------------
+chairman_queue_compactor.py archived 12 closed rows out of the VM's queue. This
+file put all 12 straight back, three minutes later, because a union of two hosts
+resurrects anything removed from only one of them. The rows then existed twice —
+once in the queue, once in the archive — which is strictly worse than never
+having compacted. So the union now reads `chairman_resolved_archive.json` from
+both hosts and suppresses any row whose identity is archived AND whose own
+status on that host is closed.
+
+The "AND its own status is closed" half is the safety. Tombstoning on identity
+alone would silence a genuine recurrence forever: a problem archived in July
+that a producer re-files as open in September would be deleted on arrival, and
+because problem_lifecycle_sentinel only calls a vanishing row a SILENT_DROP when
+its history says OPEN, nothing downstream would notice. Filtering each host's
+own record before the merge — never the merged result, whose status lattice puts
+"resolved" above "open" — means one host holding it open is enough to keep it,
+and it comes back flagged `reopened_after_archive`.
+
+FOLDING IS NOT DROPPING  (2026-08-19) — latent, measured at zero
+----------------------------------------------------------------
+This file and problem_lifecycle_sentinel.py de-duplicate the same rows on two
+DIFFERENT notions of identity: `group_key` here (digit-collapsed title PLUS
+description, 110 chars), `signature()` there (hashed normalized title OR
+description, 80 chars). Where those disagree, a fold deletes the loser's text
+from every queue and the sentinel — which only ever sees text — reads it as a
+problem that vanished with no recorded resolution: a SILENT_DROP, plus a
+`lifecycle-drop-*` row to the Chairman about a problem nobody dropped.
+
+They disagree whenever two producers split the same sentence differently
+between the two fields: title "Alpha" + description "Beta gamma" and title
+"Alpha Beta" + description "gamma" share a group_key and do not share a
+signature.
+
+Be clear about the evidence: across the last six sync runs, the number of
+signatures that existed pre-merge and not post-merge is ZERO. Nothing has
+escaped through this — the 2026-08-19 SILENT_DROP that prompted the audit was a
+coherence-law producer withdrawing its own row, not a fold. This is a reachable
+gap being closed while it is cheap, not a postmortem. A fold records
+`merged_titles`, the sentinel counts those as present, and folds recorded before
+today are repaired on read from the pre-merge snapshots this file already wrote.
+
 USAGE
     python3 chairman_queue_sync.py --report     # dry run, prints the plan
     python3 chairman_queue_sync.py              # merge + write both hosts
@@ -61,6 +103,8 @@ import sys
 from collections import OrderedDict
 from pathlib import Path
 
+import problem_lifecycle_sentinel as PLS
+
 BASE = Path(__file__).resolve().parent
 DATA = BASE / "data"
 
@@ -69,6 +113,11 @@ VM_BASE = "~/institutional-tracker"
 
 ACTION_FILE = "chairman_action_required.json"
 QUEUE_FILE = "chairman_decision_queue.json"
+ARCHIVE_FILE = "chairman_resolved_archive.json"
+
+# What counts as "closed" is the sentinel's definition, imported, never a second
+# copy — chairman_queue_compactor.py holds the same import for the same reason.
+CLOSED_STATUSES = PLS.RESOLVED_STATUSES | PLS.WONT_FIX_STATUSES
 
 # Status lattice. Merging may only move an item UP these ladders, never down.
 # "known_infrastructure" outranks "awaiting_chairman" because it is a triage
@@ -105,6 +154,12 @@ def group_key(item: dict) -> str:
     text = re.sub(r"\d+", "#", text.lower())
     text = re.sub(r"[^a-z#]+", " ", text).strip()
     return "tx:" + text[:110]
+
+
+def _text_of(item: dict) -> str:
+    """The text the sentinel would key on. Same fallback order as
+    problem_lifecycle_sentinel.signature(): title, else description."""
+    return str(item.get("title") or item.get("description") or "")[:200]
 
 
 def _richness(item: dict) -> int:
@@ -194,6 +249,24 @@ def _collapse(items, rank: dict, ts_fields, label: str) -> list:
         folded = sorted({i for i in ids if i != merged["id"]})
         if folded:
             merged["merged_ids"] = folded
+
+        # The TEXT of every folded row, not just its id. problem_lifecycle_
+        # sentinel derives a problem's identity from its title, so an id it has
+        # never seen tells it nothing: without this the loser of every fold reads
+        # to the sentinel as a problem that left the queue unresolved. Accumulate
+        # rather than overwrite — a group can already contain a previous run's
+        # merged record, and this must stay idempotent for the same reason
+        # times_seen uses max() below.
+        kept_text = _text_of(merged)
+        folded_titles = []
+        for x in grp:
+            for t in [_text_of(x)] + list(x.get("merged_titles") or []):
+                t = str(t)[:200] if t else ""
+                if t and t != kept_text and t not in folded_titles:
+                    folded_titles.append(t)
+        if folded_titles:
+            merged["merged_titles"] = folded_titles
+
         if len(grp) > 1:
             # MAX, not SUM. This merge is not a one-shot: the merged record is
             # written back to BOTH sides, so the next run folds a group that
@@ -224,6 +297,113 @@ def _collapse(items, rank: dict, ts_fields, label: str) -> list:
 def merge_actions(local: list, remote: list) -> list:
     return _collapse(list(local) + list(remote), ACTION_RANK,
                      ACTION_TS_FIELDS, "action")
+
+
+def tombstones(archived: list):
+    """(ids, group_keys) that chairman_queue_compactor has already filed away."""
+    ids, keys = set(), set()
+    for r in archived or []:
+        if not isinstance(r, dict):
+            continue
+        if r.get("id"):
+            ids.add(r["id"])
+        keys.add(group_key(r))
+    return ids, keys
+
+
+def apply_tombstones(items: list, arch_ids: set, arch_keys: set):
+    """(kept, suppressed, reopened_ids) for ONE host's own rows.
+
+    Deliberately applied per-host and BEFORE the merge. The merge's status
+    lattice ranks "resolved" above "open", so a row that one host has re-opened
+    would read as closed in the merged record and be tombstoned away — the
+    recurrence would be deleted by the machinery meant to tidy up after it.
+    Judged on each host's own copy, one host holding it open is enough to keep
+    it, and it returns flagged rather than silently.
+    """
+    kept, suppressed, reopened = [], [], []
+    for it in items:
+        if not isinstance(it, dict):
+            kept.append(it)
+            continue
+        if it.get("id") not in arch_ids and group_key(it) not in arch_keys:
+            kept.append(it)
+            continue
+        if str(it.get("status") or "").lower() in CLOSED_STATUSES:
+            suppressed.append(it)
+            continue
+        it["reopened_after_archive"] = True
+        reopened.append(it.get("id"))
+        kept.append(it)
+    return kept, suppressed, reopened
+
+
+def merge_archives(local: list, remote: list) -> list:
+    """Union both hosts' archives, one row per id, earliest archival kept.
+
+    The archive has to be the same on both hosts or the tombstone only holds on
+    whichever host ran the compactor, which is how the 12 rows came back.
+    """
+    out: "OrderedDict[str, dict]" = OrderedDict()
+    for r in list(local or []) + list(remote or []):
+        if not isinstance(r, dict):
+            continue
+        key = r.get("id") or group_key(r)
+        prev = out.get(key)
+        if prev is None:
+            out[key] = r
+        elif str(r.get("archived_on") or "") < str(prev.get("archived_on") or ""):
+            out[key] = r
+    return list(out.values())
+
+
+def backfill_merged_titles(items: list, recovered: dict) -> int:
+    """Repair folds recorded before merged_titles existed. Returns rows healed.
+
+    Self-healing on read, not a migration script: the two hosts share no state,
+    so nothing can be run "everywhere" from one machine — the same reasoning
+    sanitize_times_seen() above is built on.
+    """
+    healed = 0
+    for it in items:
+        if not isinstance(it, dict) or it.get("merged_titles"):
+            continue
+        found = [recovered[i] for i in (it.get("merged_ids") or [])
+                 if recovered.get(i)]
+        if found:
+            kept_text = _text_of(it)
+            it["merged_titles"] = [t for t in dict.fromkeys(found)
+                                   if t != kept_text]
+            healed += 1
+    return healed
+
+
+def _recoverable_titles() -> dict:
+    """id -> text, read from the newest pre-merge snapshot this file wrote.
+
+    Only the Mac has these snapshots (it is the only host that runs the sync),
+    which is enough: the repaired rows are written back to both hosts.
+    """
+    root = DATA / "chairman_queue_archive"
+    if not root.is_dir():
+        return {}
+    out: dict = {}
+    for stamp in sorted((d for d in root.iterdir() if d.is_dir()),
+                        key=lambda d: d.name)[-3:]:
+        for host in sorted(stamp.iterdir()):
+            f = host / ACTION_FILE
+            if not f.is_file():
+                continue
+            try:
+                rows = json.loads(f.read_text())
+            except Exception:
+                continue
+            for r in rows if isinstance(rows, list) else []:
+                if isinstance(r, dict) and r.get("id"):
+                    t = _text_of(r)
+                    if t:
+                        out[r["id"]] = t
+    return out
 
 
 def merge_decisions(local: list, remote: list, now=None) -> list:
@@ -282,10 +462,17 @@ def _load_local(name: str) -> list:
         return []
 
 
-def _load_remote(name: str) -> list:
+def _load_remote(name: str, missing_ok: bool = False) -> list:
     r = subprocess.run(["ssh", VM_HOST, f"cat {VM_BASE}/data/{name}"],
                        capture_output=True, text=True, timeout=60)
     if r.returncode != 0:
+        # missing_ok is for a file a host may legitimately not have yet (the
+        # archive before its first compaction). It does NOT cover an unreachable
+        # host: an ssh that fails to connect prints to stderr too, and treating
+        # that as "the VM has no rows" would let the merge quietly write the
+        # Mac's queue over the VM's.
+        if missing_ok and "No such file" in (r.stderr or ""):
+            return []
         raise RuntimeError(f"cannot read {name} on {VM_HOST}: {r.stderr.strip()[:200]}")
     try:
         v = json.loads(r.stdout)
@@ -324,17 +511,34 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
     stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
     loc_act, loc_dec = _load_local(ACTION_FILE), _load_local(QUEUE_FILE)
+    loc_arch = _load_local(ARCHIVE_FILE)
     if local_only:
-        rem_act, rem_dec = [], []
+        rem_act, rem_dec, rem_arch = [], [], []
     else:
         rem_act, rem_dec = _load_remote(ACTION_FILE), _load_remote(QUEUE_FILE)
+        rem_arch = _load_remote(ARCHIVE_FILE, missing_ok=True)
+
+    m_arch = merge_archives(loc_arch, rem_arch)
+    arch_ids, arch_keys = tombstones(m_arch)
+
+    # Per-host, pre-merge. See apply_tombstones' docstring for why not after.
+    n_in = (len(loc_act), len(rem_act))   # what each host actually held
+    loc_act, sup_loc, reo_loc = apply_tombstones(loc_act, arch_ids, arch_keys)
+    rem_act, sup_rem, reo_rem = apply_tombstones(rem_act, arch_ids, arch_keys)
+    suppressed = sup_loc + sup_rem
+
+    recovered = _recoverable_titles()
+    healed = (backfill_merged_titles(loc_act, recovered)
+              + backfill_merged_titles(rem_act, recovered))
 
     m_act = merge_actions(loc_act, rem_act)
     m_dec = merge_decisions(loc_dec, rem_dec)
 
     rep = {
         "generated_at": datetime.datetime.utcnow().isoformat(),
-        "actions": {"mac": len(loc_act), "vm": len(rem_act),
+        # mac/vm are what each host HELD, before tombstoning — reporting the
+        # post-filter count next to "N kept out" double-subtracts on the page.
+        "actions": {"mac": n_in[0], "vm": n_in[1],
                     "merged": len(m_act),
                     "awaiting": sum(1 for a in m_act
                                     if a.get("status") in ("awaiting_chairman", "open"))},
@@ -345,6 +549,11 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
                       "resolved": sum(1 for d in m_dec
                                       if d.get("status") in ("resolved", "decided"))},
         "overdue_after_merge": overdue_after_merge(m_dec),
+        "archive": {"mac": len(loc_arch), "vm": len(rem_arch),
+                    "merged": len(m_arch)},
+        "suppressed": sorted({x.get("id") for x in suppressed if x.get("id")}),
+        "reopened_after_archive": sorted({i for i in reo_loc + reo_rem if i}),
+        "titles_healed": healed,
         "wrote": False,
     }
     # Nothing may vanish: every input id must survive as an id or inside merged_ids.
@@ -362,6 +571,18 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
     if rep["ids_dropped"]:
         raise RuntimeError(f"merge would drop {len(rep['ids_dropped'])} id(s) — refusing to write")
 
+    # A suppressed row is only allowed to leave because the archive is holding
+    # it. If it is not actually in the archive we are deleting evidence, which
+    # is the failure chairman_queue_compactor exists to avoid — so prove it,
+    # every run, rather than trusting that the filter above and the archive
+    # union stay in agreement.
+    archived_ids = {x.get("id") for x in m_arch if isinstance(x, dict)}
+    unbacked = sorted(i for i in rep["suppressed"] if i not in archived_ids)
+    if unbacked:
+        raise RuntimeError(
+            f"{len(unbacked)} row(s) would be suppressed with no archive record "
+            f"— refusing to write: {unbacked[:5]}")
+
     if write:
         _archive(stamp, "mac", ACTION_FILE, loc_act)
         _archive(stamp, "mac", QUEUE_FILE, loc_dec)
@@ -370,11 +591,13 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
             _archive(stamp, "vm", QUEUE_FILE, rem_dec)
         _write_local(ACTION_FILE, m_act)
         _write_local(QUEUE_FILE, m_dec)
+        _write_local(ARCHIVE_FILE, m_arch)
         if not local_only:
             _write_remote(ACTION_FILE, m_act)
             _write_remote(QUEUE_FILE, m_dec)
+            _write_remote(ARCHIVE_FILE, m_arch)
         rep["wrote"] = True
-        rep["archive"] = str(DATA / "chairman_queue_archive" / stamp)
+        rep["snapshot"] = str(DATA / "chairman_queue_archive" / stamp)
     return rep
 
 
@@ -401,6 +624,18 @@ def main():
           f"-> {d['merged']:>4} merged  ({d['awaiting']} awaiting, "
           f"{d['resolved']} already decided)")
     print(f"  ids in {rep['ids_in']} -> ids preserved {rep['ids_out']}  (dropped: {len(rep['ids_dropped'])})")
+    ar = rep["archive"]
+    print(f"  archive         : mac {ar['mac']:>4} + vm {ar['vm']:>4} "
+          f"-> {ar['merged']:>4} tombstones  "
+          f"({len(rep['suppressed'])} row(s) kept out of the queue)")
+    if rep["titles_healed"]:
+        print(f"  repaired {rep['titles_healed']} pre-2026-08-19 fold(s) with the "
+              f"folded text the sentinel keys on")
+    if rep["reopened_after_archive"]:
+        print(f"\n  ⚠  {len(rep['reopened_after_archive'])} archived problem(s) are "
+              f"OPEN again on a host and were kept in the queue:")
+        for i in rep["reopened_after_archive"][:10]:
+            print(f"       • {i}")
     if rep["overdue_after_merge"]:
         print(f"\n  ⚠  {len(rep['overdue_after_merge'])} item(s) are past the {SLA_DAYS}-day SLA "
               f"on their true (earliest) clock.\n     chairman_decision_sla.py will escalate "
@@ -408,7 +643,7 @@ def main():
         for i in rep["overdue_after_merge"][:10]:
             print(f"       • {i}")
     if rep["wrote"]:
-        print(f"\n  wrote both hosts. pre-merge archive: {rep['archive']}")
+        print(f"\n  wrote both hosts. pre-merge snapshot: {rep['snapshot']}")
     print()
     return 0
 

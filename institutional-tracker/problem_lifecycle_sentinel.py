@@ -164,6 +164,25 @@ def _is_open(status: str) -> bool:
 # ---------------------------------------------------------------------------
 # Scan the live queues into a signature -> aggregate snapshot.
 # ---------------------------------------------------------------------------
+def _register(snap: dict, sig: str, kind: str, title: str, st: str) -> None:
+    cur = snap.setdefault(sig, {
+        "sig": sig, "kinds": set(), "titles": set(),
+        "open": False, "resolved": False, "wont_fix": False,
+        "title": title,
+    })
+    cur["kinds"].add(kind)
+    cur["titles"].add(title[:120])
+    if _is_open(st):
+        cur["open"] = True
+    elif _is_resolved(st):
+        cur["resolved"] = True
+    elif _is_wont_fix(st):
+        cur["wont_fix"] = True
+    # keep a human-readable representative title (prefer an open one)
+    if _is_open(st) or cur["title"] == "(untitled)":
+        cur["title"] = title
+
+
 def _scan() -> dict:
     snap: dict = {}
     for path, kind in ((PENDING_PATH, "proposal"),
@@ -172,25 +191,22 @@ def _scan() -> dict:
         for item in _load(path, []):
             if not isinstance(item, dict):
                 continue
-            sig = signature(item, kind)
             st = _status_of(item)
             title = item.get("title") or item.get("description") or "(untitled)"
-            cur = snap.setdefault(sig, {
-                "sig": sig, "kinds": set(), "titles": set(),
-                "open": False, "resolved": False, "wont_fix": False,
-                "title": title,
-            })
-            cur["kinds"].add(kind)
-            cur["titles"].add(title[:120])
-            if _is_open(st):
-                cur["open"] = True
-            elif _is_resolved(st):
-                cur["resolved"] = True
-            elif _is_wont_fix(st):
-                cur["wont_fix"] = True
-            # keep a human-readable representative title (prefer an open one)
-            if _is_open(st) or cur["title"] == "(untitled)":
-                cur["title"] = title
+            _register(snap, signature(item, kind), kind, title, st)
+
+            # A row folded into this one by chairman_queue_sync is still in the
+            # queue — it is just wearing the survivor's title. That file dedups
+            # on digit-collapsed text and this one on a hash of the normalized
+            # title, so a fold makes the loser's signature disappear from every
+            # queue and lands here as a SILENT_DROP, complete with a
+            # lifecycle-drop-* row to the Chairman about a problem nobody
+            # dropped. Its lineage is carried in merged_titles for exactly this
+            # reason; merged_ids cannot serve, because a signature is text.
+            for folded in (item.get("merged_titles") or []):
+                if isinstance(folded, str) and folded.strip():
+                    _register(snap, signature({"title": folded}, kind), kind,
+                              folded, st)
     return snap
 
 
