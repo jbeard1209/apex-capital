@@ -14019,6 +14019,416 @@ class TestPreTradeRiskGate(unittest.TestCase):
                       "risk_gate invented its own copy of the limits")
 
 
+class TestNetBetaIsMeasuredNotAssumed(unittest.TestCase):
+    """Exposure, measured in the unit the limits are actually about.
+
+    The cash % and the position count are PROXIES for risk capacity, and a
+    proxy fails at the boundary where it binds: on 2026-08-19 the book was 91%
+    gross-invested (which the proxies read as maximum risk) at a net beta of
+    0.64 (which is well inside the firm's own appetite). Anything that reasons
+    from the proxy alone will refuse the trade that relieves it.
+    """
+
+    def setUp(self):
+        import portfolio_beta
+        self.B = portfolio_beta
+        # No network in the suite. `measured_beta` is the only path that would
+        # reach for one, so it is stubbed to "not measurable" — every test here
+        # states the betas it depends on rather than downloading them.
+        p = patch.object(portfolio_beta, "measured_beta",
+                         lambda s, use_cache=True: self._measured.get(
+                             str(s).upper()))
+        self._measured = {}
+        p.start()
+        self.addCleanup(p.stop)
+
+    @staticmethod
+    def _pos(**kw):
+        return {s: {"qty": q, "price": px} for s, (q, px) in kw.items()}
+
+    # ── structural vs measured ───────────────────────────────────────────────
+
+    def test_a_structural_hedge_is_defined_by_its_mandate(self):
+        self.assertEqual(-1.0, self.B.structural_beta("SH"))
+        self.assertEqual(-2.0, self.B.structural_beta("SDS"))
+        self.assertTrue(self.B.is_structural_hedge("SH"))
+
+    def test_POISON_PILL_a_negative_measured_beta_is_not_a_hedge(self):
+        """VZ measured -0.3027 against SPY on 2026-08-19 and is a telecom long.
+
+        This is the test that keeps the carve-out from becoming a naming
+        convention: if `is_structural_hedge` ever consults a measured sign, any
+        symbol with a noisy year of returns becomes a way past a live limit.
+        """
+        self._measured["VZ"] = -0.3027
+        self.assertEqual((-0.3027, "measured"), self.B.beta_of("VZ"))
+        self.assertFalse(self.B.is_structural_hedge("VZ"),
+                         "a measured negative beta bought its way into the "
+                         "hedge exemption")
+
+    def test_an_index_conversion_is_applied_not_assumed_to_be_one(self):
+        """SQQQ is -3x the NASDAQ-100, which is not -3x the S&P."""
+        self.assertEqual(-3.3, self.B.structural_beta("SQQQ"))
+
+    def test_an_unknown_symbol_has_no_beta_rather_than_a_default_of_one(self):
+        b, src = self.B.beta_of("ZZZZ")
+        self.assertIsNone(b)
+        self.assertEqual("unknown", src)
+
+    # ── net beta ─────────────────────────────────────────────────────────────
+
+    def test_a_short_subtracts_without_a_special_case(self):
+        self._measured["KO"] = 1.0
+        pos = self._pos(SPY=(100.0, 100.0), KO=(-100.0, 100.0))
+        out = self.B.net_beta(pos, 100000.0)
+        self.assertAlmostEqual(0.0, out["beta"], places=4)
+        self.assertAlmostEqual(10000.0, out["long_beta_dollars"], places=2)
+        self.assertAlmostEqual(-10000.0, out["short_beta_dollars"], places=2)
+
+    def test_a_partly_covered_book_refuses_to_state_a_net_beta(self):
+        """A net beta computed from a third of the book is a fact about a third
+        of the book. Reporting it as the firm's is the pod-ledger error again."""
+        pos = self._pos(SPY=(100.0, 100.0), ZZZZ=(100.0, 900.0))
+        out = self.B.net_beta(pos, 100000.0)
+        self.assertIsNone(out["beta"])
+        self.assertIn("ZZZZ", out["unknown_symbols"])
+        self.assertIn("of the book has a beta", out["reason"])
+
+    def test_POISON_PILL_a_fully_covered_book_does_state_one(self):
+        """Without this, the refusal above would be indistinguishable from a
+        module that can never produce a number at all."""
+        pos = self._pos(SPY=(100.0, 100.0))
+        out = self.B.net_beta(pos, 100000.0)
+        self.assertIsNotNone(out["beta"], "net_beta never states a beta")
+        self.assertEqual(0.1, out["beta"])
+        self.assertEqual(1.0, out["coverage"])
+
+    def test_zero_equity_gives_no_beta_rather_than_a_division(self):
+        self.assertIsNone(self.B.net_beta(self._pos(SPY=(1.0, 1.0)), 0.0)["beta"])
+
+    def test_a_nan_price_is_skipped_not_propagated(self):
+        """One NaN in a position would otherwise make the whole net beta NaN,
+        and `nan >= threshold` is False everywhere (memory `nan-is-not-none`)."""
+        pos = self._pos(SPY=(100.0, 100.0), IVV=(1.0, float("nan")))
+        out = self.B.net_beta(pos, 100000.0)
+        self.assertEqual(0.1, out["beta"])
+
+    # ── the effect of one order ──────────────────────────────────────────────
+
+    def test_a_hedge_against_a_long_book_reduces(self):
+        pos = self._pos(SPY=(500.0, 100.0))          # +0.5 net beta on $100k
+        eff = self.B.beta_effect_of("SH", 100.0, 50.0, pos, 100000.0)
+        self.assertEqual("REDUCES", eff["verdict"])
+        self.assertLess(eff["delta_abs_beta"], 0)
+
+    def test_POISON_PILL_a_hedge_past_flat_overshoots(self):
+        """The line where a hedge stops being a hedge is exactly zero. Without
+        this, 'reduces beta' would license an unbounded short."""
+        pos = self._pos(SPY=(100.0, 100.0))          # +0.10
+        eff = self.B.beta_effect_of("SH", 1000.0, 50.0, pos, 100000.0)
+        self.assertEqual("OVERSHOOTS", eff["verdict"])
+
+    def test_a_cross_that_also_enlarges_is_reported_as_the_cross(self):
+        """+0.10 -> -0.40 both crosses flat and grows. The fact that decides
+        the case is the crossing, so that is what the verdict must say."""
+        pos = self._pos(SPY=(100.0, 100.0))
+        eff = self.B.beta_effect_of("SH", 1000.0, 50.0, pos, 100000.0)
+        self.assertEqual("OVERSHOOTS", eff["verdict"])
+        self.assertLess(eff["after"]["beta"], -abs(eff["before"]["beta"]))
+
+    def test_landing_exactly_flat_is_a_reduction_not_a_cross(self):
+        pos = self._pos(SPY=(100.0, 100.0))          # +$10,000 of beta
+        eff = self.B.beta_effect_of("SH", 200.0, 50.0, pos, 100000.0)
+        self.assertEqual("REDUCES", eff["verdict"])
+        self.assertAlmostEqual(0.0, eff["after"]["beta"], places=4)
+
+    def test_a_long_against_a_long_book_increases(self):
+        pos = self._pos(SPY=(100.0, 100.0))
+        eff = self.B.beta_effect_of("QQQ", 100.0, 100.0, pos, 100000.0)
+        self.assertEqual("INCREASES", eff["verdict"])
+
+    def test_an_unmeasurable_book_cannot_tell(self):
+        """Not 'no effect'. A verdict of CANNOT_TELL is a data problem someone
+        can fix; folded into a pass it is a limit quietly removed."""
+        pos = self._pos(ZZZZ=(100.0, 100.0))
+        eff = self.B.beta_effect_of("SH", 100.0, 50.0, pos, 100000.0)
+        self.assertEqual("CANNOT_TELL", eff["verdict"])
+
+    def test_an_unpriceable_order_cannot_tell(self):
+        pos = self._pos(SPY=(100.0, 100.0))
+        for qty, price in ((0.0, 50.0), (100.0, 0.0),
+                           (float("nan"), 50.0), (100.0, None)):
+            eff = self.B.beta_effect_of("SH", qty, price, pos, 100000.0)
+            self.assertEqual("CANNOT_TELL", eff["verdict"],
+                             f"qty={qty!r} price={price!r} produced a verdict")
+
+    def test_the_structural_table_is_explicit_not_inferred(self):
+        """AST: no regex or ticker-shape heuristic decides what a hedge is.
+
+        `startswith("S")` would make SPY a hedge and make the exemption
+        reachable by naming. The table is hand-reviewed on purpose.
+        """
+        tree = ast.parse((Path(__file__).parent / "portfolio_beta.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "structural_beta")
+        called = {n.func.attr for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        for banned in ("match", "search", "startswith", "endswith", "findall"):
+            self.assertNotIn(banned, called,
+                             f"structural_beta infers a hedge via {banned}()")
+
+
+class TestTheHedgeCarveOutIsNarrow(unittest.TestCase):
+    """An exemption is the obvious way to launder an entry past a live limit.
+
+    The gate's two tests are proxies, and on 2026-08-19 they refused the SH buy
+    — the one order that would have reduced the exposure they exist to bound.
+    Fixing that means letting something through, so every condition that keeps
+    it narrow is pinned here, and each has a poison pill: a carve-out whose
+    restrictions are untested is a carve-out that only has to be claimed.
+    """
+
+    def setUp(self):
+        import risk_gate, portfolio_beta
+        self.G, self.B = risk_gate, portfolio_beta
+        risk_gate.clear_reservations()
+        self.addCleanup(risk_gate.clear_reservations)
+        # `check()` never escalates — only `log()` does, and order_ledger calls
+        # it — so nothing here writes to the real Chairman queue. The two tests
+        # that exercise escalation redirect DATA themselves.
+        for p in (patch.object(risk_gate, "limits",
+                               lambda: {"cash_floor": 0.20, "max_positions": 20}),
+                  patch.object(portfolio_beta, "measured_beta",
+                               lambda s, use_cache=True: self._measured.get(
+                                   str(s).upper()))):
+            p.start()
+            self.addCleanup(p.stop)
+        self._measured = {"KO": 1.0, "VZ": -0.3027}
+
+    @staticmethod
+    def _snap(cash, pv, positions):
+        return {"cash": cash, "portfolio_value": pv,
+                "positions": {s: {"qty": q, "price": px}
+                              for s, (q, px) in positions.items()}}
+
+    def _long_book(self, cash, n=20):
+        """n long positions in a symbol with a known beta of 1.0, plus cash."""
+        pv = 100000.0
+        pos = {"KO%02d" % i: (100.0, 40.0) for i in range(n)}
+        self._measured.update({"KO%02d" % i: 1.0 for i in range(n)})
+        return self._snap(cash, pv, pos)
+
+    # ── the carve-out works at all ───────────────────────────────────────────
+
+    def test_POISON_PILL_the_hedge_the_gate_used_to_refuse_now_passes(self):
+        """The whole point. 20/20 positions, cash 13.4% against a 20% floor —
+        the live state on 2026-08-19 — and SH is the one order that helps."""
+        snap = self._long_book(13400.0, n=20)
+        allowed, verdict, reason = self.G.check("SH", "buy", 100, price=50.0,
+                                                snap=snap)
+        self.assertTrue(allowed, "the carve-out never fires, so every "
+                                 "restriction below proves nothing")
+        self.assertEqual("ALLOW_HEDGE_REDUCES_BETA", verdict)
+        self.assertIn("net beta", reason)
+
+    # ── ... and only for a real hedge ────────────────────────────────────────
+
+    def test_a_measured_negative_beta_gets_no_exemption(self):
+        """VZ measured -0.30. If a regression can buy an exemption, the limit
+        is escapable by symbol selection."""
+        snap = self._long_book(13400.0, n=20)
+        allowed, verdict, _ = self.G.check("VZ", "buy", 100, price=40.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+
+    def test_an_ordinary_long_gets_no_exemption(self):
+        snap = self._long_book(13400.0, n=20)
+        allowed, verdict, _ = self.G.check("NVDA", "buy", 10, price=100.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+
+    def test_a_hedge_that_overshoots_is_blocked_and_says_why(self):
+        """Big enough to carry the book past flat is a directional short.
+
+        The cap has to bind for the carve-out to be consulted at all — the gate
+        enforces cash and slots, not beta, so an overshooting hedge that
+        breaches neither limit is simply an allowed order and the gate has no
+        standing to refuse it. What is pinned here is that when a limit DOES
+        bind, overshooting forfeits the exemption.
+        """
+        snap = self._long_book(60000.0, n=20)     # +0.80 net beta, 20/20 slots
+        allowed, verdict, reason = self.G.check("SH", "buy", 3000, price=50.0,
+                                                snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+        self.assertIn("past flat", reason)
+        self.assertIn("directional short", reason)
+
+    def test_the_gate_does_not_police_beta_when_no_limit_binds(self):
+        """The counterpart. The carve-out relaxes the cash and slot rules; it
+        does not add a beta rule. An order that breaches neither limit passes
+        on its merits, whatever it does to net beta — a guard that grew a third
+        limit while nobody was looking is a guard nobody agreed to."""
+        snap = self._long_book(60000.0, n=2)
+        allowed, verdict, _ = self.G.check("SH", "buy", 400, price=50.0, snap=snap)
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_WITHIN_LIMITS", verdict)
+
+    def test_a_hedge_on_a_book_with_no_measurable_beta_cannot_tell(self):
+        """CANNOT_TELL keeps the block, and says it is a measurement problem —
+        not that hedges are simply refused."""
+        snap = self._snap(13400.0, 100000.0,
+                          {"ZZZZ%02d" % i: (100.0, 40.0) for i in range(20)})
+        allowed, verdict, reason = self.G.check("SH", "buy", 100, price=50.0,
+                                                snap=snap)
+        self.assertFalse(allowed)
+        self.assertIn("CANNOT_TELL", reason)
+
+    def test_a_sell_is_never_an_exemption(self):
+        """The carve-out is for entries. A sell is either an exit (never gated)
+        or a short open (judged by slots), and neither route needs it."""
+        snap = self._long_book(13400.0, n=20)
+        v = self.G._hedge_verdict("SH", "sell", 100, 50.0, snap)
+        self.assertFalse(v["allowed"])
+        self.assertFalse(v["consulted"])
+
+    # ── the limits it may NOT waive ──────────────────────────────────────────
+
+    def test_the_hard_liquidity_floor_is_never_waived(self):
+        """The 20% floor was doing two jobs. A hedge substitutes for dry powder;
+        nothing substitutes for settlement and margin liquidity."""
+        snap = self._long_book(6000.0, n=5)
+        allowed, verdict, reason = self.G.check("SH", "buy", 100, price=50.0,
+                                                snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_HARD_CASH_FLOOR", verdict)
+        self.assertIn("no hedge substitutes for", reason)
+
+    def test_between_the_two_floors_a_hedge_passes(self):
+        """Cash 13.4%: under the 20% buffer, well over the 5% minimum."""
+        snap = self._long_book(13400.0, n=5)
+        allowed, verdict, reason = self.G.check("SH", "buy", 100, price=50.0,
+                                                snap=snap)
+        self.assertTrue(allowed)
+        self.assertEqual("ALLOW_HEDGE_REDUCES_BETA", verdict)
+        self.assertIn("liquidity", reason)
+
+    def test_the_slot_exemption_is_bounded(self):
+        """MAX_HEDGE_SLOTS above the cap, not unbounded. Otherwise 'hedge' is a
+        second, uncapped book."""
+        snap = self._long_book(50000.0,
+                               n=20 + self.G.MAX_HEDGE_SLOTS)
+        allowed, verdict, _ = self.G.check("SH", "buy", 100, price=50.0, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_MAX_POSITIONS", verdict)
+
+    def test_an_unpriceable_hedge_is_blocked_and_says_it_could_not_measure(self):
+        """No price means no beta effect, so the carve-out has nothing to grant
+        an exemption on. It blocks, and names the measurement as the problem."""
+        snap = self._long_book(13400.0, n=5)
+        with patch.object(self.G, "_quote", lambda s: None):
+            allowed, verdict, reason = self.G.check("SH", "buy", 100, snap=snap)
+        self.assertFalse(allowed)
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+        self.assertIn("CANNOT_TELL", reason)
+
+    def test_POISON_PILL_an_allowed_but_unpriceable_hedge_still_blocks(self):
+        """A backstop for a failure that would otherwise be silent.
+
+        Today `_hedge_verdict` cannot say yes to an order it could not price,
+        so this path is unreachable — which is exactly why it needs a test. If
+        the carve-out is ever loosened, the liquidity floor must not be waived
+        by an order whose post-trade cash nobody could compute.
+        """
+        snap = self._long_book(13400.0, n=5)
+        loose = {"allowed": True, "consulted": True, "reason": "loosened"}
+        with patch.object(self.G, "_quote", lambda s: None), \
+             patch.object(self.G, "_hedge_verdict", lambda *a, **k: loose):
+            allowed, verdict, reason = self.G.check("SH", "buy", 100, snap=snap)
+        self.assertFalse(allowed, "an unpriceable order was waved past the "
+                                  "liquidity floor")
+        self.assertEqual("BLOCK_CASH_FLOOR", verdict)
+        self.assertIn("could not be priced", reason)
+
+    # ── it fails closed ──────────────────────────────────────────────────────
+
+    def test_POISON_PILL_the_carve_out_fails_closed_on_an_error(self):
+        """An exemption that fails open is not an exemption, it is the absence
+        of a limit."""
+        snap = self._long_book(13400.0, n=20)
+        def _boom(*a, **k):
+            raise RuntimeError("beta service down")
+        with patch.object(self.B, "beta_effect_of", _boom):
+            allowed, verdict, reason = self.G.check("SH", "buy", 100, price=50.0,
+                                                    snap=snap)
+        self.assertFalse(allowed, "an error in the beta check waved the order "
+                                  "past a live limit")
+        self.assertIn("carve-out not applied", reason)
+
+    def test_a_block_says_why_the_carve_out_did_not_apply(self):
+        """`consulted` exists so the reader learns the difference between 'not
+        a hedge' and 'a hedge we could not measure'."""
+        snap = self._long_book(13400.0, n=20)
+        _, _, hedge_reason = self.G.check("SH", "buy", 5000, price=50.0, snap=snap)
+        _, _, plain_reason = self.G.check("NVDA", "buy", 10, price=100.0, snap=snap)
+        self.assertIn("SH", hedge_reason)
+        self.assertNotIn("hedge", plain_reason.lower())
+
+    # ── every use is visible ─────────────────────────────────────────────────
+
+    def test_every_exemption_reaches_the_chairman_queue(self):
+        """A line in a log nobody reads on a schedule is how the original
+        limits came to be optional on fifteen of sixteen paths."""
+        import risk_gate
+        with tempfile.TemporaryDirectory() as td:
+            with patch.object(risk_gate, "DATA", Path(td)), \
+                 patch.object(risk_gate, "GATE_LOG", Path(td) / "gate.json"):
+                risk_gate.log("SH", "buy", 100, "ALLOW_HEDGE_REDUCES_BETA",
+                              "net beta 0.64 -> 0.59", True)
+                rows = json.loads((Path(td) / "chairman_action_required.json"
+                                   ).read_text())
+                self.assertEqual(1, len(rows))
+                self.assertIn("RISK LIMIT EXEMPTED", rows[0]["description"])
+                self.assertEqual("awaiting_chairman", rows[0]["status"])
+                # a run that hedges four times is ONE decision, not four
+                for _ in range(3):
+                    risk_gate.log("SH", "buy", 100, "ALLOW_HEDGE_REDUCES_BETA",
+                                  "net beta 0.64 -> 0.59", True)
+                rows = json.loads((Path(td) / "chairman_action_required.json"
+                                   ).read_text())
+                self.assertEqual(1, len(rows))
+                self.assertEqual(4, rows[0]["times_seen"])
+
+    def test_POISON_PILL_a_routine_pass_does_not_escalate(self):
+        """If every verdict escalated, the queue would carry no information and
+        the exemption row would be invisible inside it."""
+        import risk_gate
+        with tempfile.TemporaryDirectory() as td:
+            with patch.object(risk_gate, "DATA", Path(td)), \
+                 patch.object(risk_gate, "GATE_LOG", Path(td) / "gate.json"):
+                risk_gate.log("KO", "buy", 1, "BLOCK_CASH_FLOOR", "under", False)
+                risk_gate.log("KO", "sell", 1, "ALLOW_EXIT", "exit", True)
+                self.assertFalse((Path(td) / "chairman_action_required.json"
+                                  ).exists())
+
+    def test_the_exemption_is_an_entry_so_it_reserves_a_slot(self):
+        """AST: order_ledger decides what reserves by EXCLUDING exit-shaped
+        verdicts. A new allow-verdict that is an entry must not be added to
+        that exclusion list, or the intra-run race reopens for hedges only."""
+        tree = ast.parse((Path(__file__).parent / "order_ledger.py").read_text())
+        excluded = set()
+        for cmp_node in (n for n in ast.walk(tree) if isinstance(n, ast.Compare)):
+            if not any(isinstance(o, ast.NotIn) for o in cmp_node.ops):
+                continue
+            for c in cmp_node.comparators:
+                if isinstance(c, ast.Tuple):
+                    excluded |= {e.value for e in c.elts
+                                 if isinstance(e, ast.Constant)}
+        self.assertIn("ALLOW_EXIT", excluded, "the verdict exclusion list moved")
+        self.assertNotIn("ALLOW_HEDGE_REDUCES_BETA", excluded,
+                         "a hedge entry stopped reserving its slot and its cash")
+
+
 class TestTheRiskGateSitsAtTheChokePoint(unittest.TestCase):
     """Where the check lives is the whole finding, so pin the location.
 

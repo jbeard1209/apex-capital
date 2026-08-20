@@ -715,6 +715,35 @@ CONTROL_CENSUS: List[FailureClass] = [
          "test_pipeline_smoke.py::TestAttributionSitsAtTheChokePoint"],
         "Pod Ledger / order_ledger",
         "guardrail-on-one-path"),
+
+    FailureClass(
+        "a_proxy_that_binds_hardest_on_the_cure",
+        "A limit written on a PROXY for the quantity it means to bound. The "
+        "proxy tracks the real quantity in ordinary conditions and comes apart "
+        "at the boundary — so the rule is loosest when nothing is wrong and "
+        "tightest against the one action that would relieve it. The tell is a "
+        "rule people rewrite whenever it binds: that is not a rule, it is a "
+        "suggestion with extra steps.",
+        "risk_gate enforced a 20% cash floor and a 20-position cap. Both are "
+        "proxies for risk capacity. On 2026-08-19 the firm was 91% gross "
+        "invested at 20/20 positions with cash at 13.4% — maximum risk by both "
+        "proxies — while measured NET BETA was 0.6439 at 100% coverage, well "
+        "inside appetite. The gate refused the SH buy, the single order that "
+        "reduced the exposure the limits exist to bound. Fixed 2026-08-19 by "
+        "measuring the quantity itself (portfolio_beta) and carving out only "
+        "structural-mandate hedges that measurably reduce net beta, never past "
+        "flat, never below a separately derived hard liquidity floor, capped at "
+        "MAX_HEDGE_SLOTS, and escalated to the Chairman on every use. The "
+        "carve-out keys on the instrument's MANDATE, not a measured sign: VZ "
+        "measured beta -0.3027 the same day and is a telecom long.",
+        ["risk_gate.py::_hedge_verdict",
+         "risk_gate.py::_escalate_exemption",
+         "portfolio_beta.py::beta_effect_of",
+         "portfolio_beta.py::is_structural_hedge",
+         "test_pipeline_smoke.py::TestTheHedgeCarveOutIsNarrow",
+         "test_pipeline_smoke.py::TestNetBetaIsMeasuredNotAssumed"],
+        "CRO / Risk Gate",
+        "guardrail-on-one-path"),
 ]
 
 
