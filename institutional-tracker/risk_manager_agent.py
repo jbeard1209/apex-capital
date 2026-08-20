@@ -243,6 +243,98 @@ def compute_performance_metrics(account: dict,
 # MANAGER AGENT EVALUATION
 # =============================================================================
 
+# Approvals that are, by definition, an instruction NOT to send an order.
+# The numerator of the execution rate has always excluded these; the
+# denominator did not, which is the entire bug below.
+NOT_ACTIONABLE = ("HOLD", "WATCH")
+
+# An execution that failed because a firm control refused it is the system
+# working, not an outage. These are the refusal messages the firm's own
+# guards produce (risk_gate raises `RiskLimitBlocked("<VERDICT>: reason")`,
+# manager_agent writes "Pod budget: …", single_writer blocks a non-designated
+# host). Anything else is an ungoverned failure and belongs to Engineering.
+GOVERNED_REFUSALS = ("BLOCK_", "POD BUDGET", "SINGLEWRITERBLOCKED",
+                     "SINGLE-WRITER", "RISKLIMITBLOCKED", "CIRCUIT BREAKER")
+
+
+def _execution_partition(cycles: list) -> dict:
+    """Split APPROVED decisions into the four states they can actually be in.
+
+    THE BUG THIS REPLACES. The rate was
+
+        approved_executed / max(approved_count, 1)
+
+    where the numerator excluded HOLD/WATCH and the denominator did not. So a
+    day on which the Manager correctly approved 162 HOLDs and placed no order
+    read as "Execution gap: 100% of approved decisions not executed", cost the
+    full 25-point execution component, and recommended checking Alpaca API
+    connectivity — for a window in which no order was ever due. Measured on the
+    VM 2026-08-20: 1021 decisions over 10 cycles, every one of them HOLD.
+
+    A ratio whose numerator and denominator are drawn from different
+    populations is not a low number, it is a meaningless one, and it can never
+    close. Fix the denominator before reading the ratio.
+
+    The four states, because "not executed" hides three different owners:
+      executed    the order went through
+      governed    a firm control refused it (risk gate, pod budget, single
+                  writer) — designed behaviour, reported as such
+      ungoverned  the broker or the code failed — Engineering's
+      silent      APPROVED, actionable, and NO execution record exists at all.
+                  Nothing tried. This is the only one that means what the old
+                  message claimed, and it is the one worth waking someone for.
+
+    Matching is per cycle and on (ticker, action), one execution consumed per
+    decision: across the flattened 10-cycle window an execution of AAPL in
+    cycle 1 credited an approval of AAPL in cycle 9, and a BUY was
+    indistinguishable from a later SELL of the same name.
+    """
+    executed = 0
+    actionable = 0
+    governed, ungoverned, silent = [], [], []
+
+    for decisions, executions in cycles:
+        pools: dict = {}
+        for e in executions or []:
+            key = (str(e.get("ticker", "")).upper(), str(e.get("action", "")).upper())
+            pools.setdefault(key, []).append(e)
+
+        for d in decisions or []:
+            if d.get("manager_decision") != "APPROVED":
+                continue
+            action = str(d.get("manager_action") or "").upper()
+            if action in NOT_ACTIONABLE:
+                continue
+            actionable += 1
+            ticker = str(d.get("ticker", "")).upper()
+            pool   = pools.get((ticker, action)) or []
+            record = pool.pop(0) if pool else None
+
+            if record is None:
+                silent.append({"ticker": ticker, "action": action})
+            elif record.get("executed"):
+                executed += 1
+            else:
+                err  = str(record.get("error") or record.get("note") or "").strip()
+                item = {"ticker": ticker, "action": action, "error": err}
+                upper = err.upper()
+                (governed if any(t in upper for t in GOVERNED_REFUSALS)
+                 else ungoverned).append(item)
+
+    return {
+        "actionable": actionable,
+        "executed":   executed,
+        "governed":   governed,
+        "ungoverned": ungoverned,
+        "silent":     silent,
+        # None, never 0.0 — see memory `fallback-that-means-act`. There is no
+        # honest execution rate over zero executable orders, and substituting
+        # one is how this metric spent weeks reporting a defect that did not
+        # exist.
+        "rate_pct":   (100.0 * executed / actionable) if actionable else None,
+    }
+
+
 def evaluate_manager_agent(manager_log: list[dict],
                              account: dict,
                              positions_df: pd.DataFrame) -> dict:
@@ -260,12 +352,19 @@ def evaluate_manager_agent(manager_log: list[dict],
             "recommendations": [],
         }
 
-    # Aggregate all decisions across log entries
+    # Aggregate all decisions across log entries. `cycles` keeps the pairing:
+    # an execution belongs to the decision made in the SAME cycle, and matching
+    # against the flattened list credited an approval in cycle 9 with an
+    # execution from cycle 1.
     all_decisions  = []
     all_executions = []
+    cycles         = []
     for entry in manager_log[-10:]:   # assess last 10 cycles
-        all_decisions.extend(entry.get("decisions", []))
-        all_executions.extend(entry.get("executions", []))
+        decs = entry.get("decisions", []) or []
+        exes = entry.get("executions", []) or []
+        all_decisions.extend(decs)
+        all_executions.extend(exes)
+        cycles.append((decs, exes))
 
     total_decisions = len(all_decisions)
     if total_decisions == 0:
@@ -279,7 +378,12 @@ def evaluate_manager_agent(manager_log: list[dict],
     executed_count  = sum(1 for e in all_executions if e.get("executed"))
     failed_count    = sum(1 for e in all_executions if e.get("error"))
 
-    # Stop-loss adherence — check if stop-losses were auto-approved
+    # Stop-loss adherence — check if stop-losses were auto-approved.
+    # None, not 100.0, when nothing was observed: "perfect adherence" measured
+    # over zero stop-loss decisions is a credit for something that never
+    # happened, and it was worth a full 30 points (memory
+    # `presence-is-not-currency`). An unmeasured component drops out of the
+    # score below instead of scoring full marks.
     stop_loss_decisions = [
         d for d in all_decisions
         if "Stop-loss" in " ".join(d.get("manager_rationale", []))
@@ -287,27 +391,46 @@ def evaluate_manager_agent(manager_log: list[dict],
     stop_loss_approved  = sum(1 for d in stop_loss_decisions
                               if d.get("manager_decision") == "APPROVED")
     stop_loss_adherence = (stop_loss_approved / len(stop_loss_decisions) * 100
-                           if stop_loss_decisions else 100.0)
+                           if stop_loss_decisions else None)
 
     # Rationale quality — does each decision have written rationale?
     with_rationale = sum(1 for d in all_decisions if d.get("manager_rationale"))
     rationale_rate = with_rationale / total_decisions * 100 if total_decisions > 0 else 0
 
-    # Execution quality — approved but not executed is a problem
-    approved_executed = sum(
-        1 for d in all_decisions
-        if d.get("manager_decision") == "APPROVED"
-        and d.get("manager_action") not in ("HOLD", "WATCH")
-        and d.get("ticker") in [e.get("ticker") for e in all_executions if e.get("executed")]
-    )
-    exec_rate = (approved_executed / max(approved_count, 1)) * 100
+    # Execution quality. See _execution_partition: the denominator is approved
+    # orders that were SUPPOSED to reach the broker, not every approval.
+    ex_part   = _execution_partition(cycles)
+    exec_rate = ex_part["rate_pct"]          # None when nothing was executable
 
-    # Scoring (100 points total)
-    score = 0
-    score += min(30, int(stop_loss_adherence * 0.30))   # risk discipline (30 pts)
-    score += min(25, int(rationale_rate      * 0.25))   # decision quality (25 pts)
-    score += min(25, int(exec_rate           * 0.25))   # execution reliability (25 pts)
-    score += min(20, int((1 - failed_count / max(len(all_executions), 1)) * 20))  # execution success
+    # Execution SUCCESS is a different question from execution RATE, and it has
+    # its own denominator: attempts. The old version divided failures by
+    # `max(len(all_executions), 1)`, which awarded the full 20 points for a
+    # window with no executions at all — while the rate component docked the
+    # full 25 for the same zero. One function, two opposite readings of the
+    # same fact.
+    # A governed refusal is deliberately NOT in this denominator: the risk gate
+    # raises before `original(...)`, so that order never reached Alpaca and
+    # counting it as a failed attempt would grade the firm down for its own
+    # guardrail firing.
+    attempted    = ex_part["executed"] + len(ex_part["ungoverned"])
+    success_frac = (ex_part["executed"] / attempted) if attempted else None
+
+    # Scoring. Components with no denominator are DROPPED and the rest are
+    # rescaled, rather than being scored 0 (a penalty for something that never
+    # came up) or 100 (a credit for the same). `measured` is reported so a
+    # grade computed from two components cannot be mistaken for one computed
+    # from four.
+    _components = [
+        ("risk_discipline",   30, None if stop_loss_adherence is None
+                                  else stop_loss_adherence / 100.0),
+        ("decision_quality",  25, rationale_rate / 100.0),
+        ("execution_rate",    25, None if exec_rate is None else exec_rate / 100.0),
+        ("execution_success", 20, success_frac),
+    ]
+    _measured = [(n, w, f) for n, w, f in _components if f is not None]
+    _possible = sum(w for _, w, _ in _measured)
+    score = (int(round(sum(w * max(0.0, min(1.0, f)) for _, w, f in _measured)
+                       / _possible * 100)) if _possible else 0)
 
     # Adjust score using Trade Review Team's historical win-rate insights
     trade_review_note = None
@@ -361,8 +484,12 @@ def evaluate_manager_agent(manager_log: list[dict],
     if trade_review_note:
         strengths.append(f"Trade review adjustment: {trade_review_note}")
 
-    if stop_loss_adherence >= 95:
-        strengths.append("Excellent risk discipline — stop-loss rules consistently followed")
+    if stop_loss_adherence is None:
+        pass          # no stop-loss decision in the window; neither credit nor blame
+    elif stop_loss_adherence >= 95:
+        strengths.append(
+            f"Excellent risk discipline — {len(stop_loss_decisions)} stop-loss "
+            f"decision(s), rules consistently followed")
     else:
         weaknesses.append(
             f"Stop-loss adherence at {stop_loss_adherence:.0f}% — "
@@ -376,11 +503,39 @@ def evaluate_manager_agent(manager_log: list[dict],
         weaknesses.append("Decision rationale incomplete — Munger: document your thinking or repeat your mistakes")
         recommendations.append("Require written rationale for every approved and rejected decision")
 
-    if exec_rate >= 90:
-        strengths.append("Approved decisions reliably executed — no approval-execution gap")
-    else:
-        weaknesses.append(f"Execution gap: {100-exec_rate:.0f}% of approved decisions not executed")
+    # Execution reporting, by cause. Which bucket a shortfall lands in decides
+    # who owns it — a governed refusal is Risk's, a silent one is Engineering's
+    # — and the old single sentence sent all three to "check Alpaca API
+    # connectivity" regardless (memory `an-aggregate-is-not-a-finding`).
+    if exec_rate is None:
+        strengths.append(
+            f"Nothing to execute this window — {approved_count} approval(s), all "
+            f"HOLD/WATCH. Execution is not scored rather than scored zero.")
+    elif ex_part["silent"]:
+        _s = ex_part["silent"]
+        _named = ", ".join(f"{x['action']} {x['ticker']}" for x in _s[:4])
+        weaknesses.append(
+            f"Execution gap: {len(_s)} of {ex_part['actionable']} approved order(s) "
+            f"produced no execution record at all ({_named})")
+        recommendations.append(
+            "An approved order with no execution record never reached "
+            "execute_decision — trace the dispatch, not the broker connection.")
+    elif ex_part["ungoverned"]:
+        _u = ex_part["ungoverned"]
+        weaknesses.append(
+            f"{len(_u)} of {ex_part['actionable']} approved order(s) failed at the "
+            f"broker: {_u[0].get('error', '')[:90]}")
         recommendations.append("Investigate execution failures — check Alpaca API connectivity")
+    elif ex_part["governed"]:
+        _g = ex_part["governed"]
+        strengths.append(
+            f"{ex_part['executed']} of {ex_part['actionable']} approved order(s) "
+            f"executed; {len(_g)} refused by a firm control, as designed "
+            f"({_g[0].get('error', '')[:70]})")
+    else:
+        strengths.append(
+            f"All {ex_part['executed']} approved order(s) executed — no "
+            f"approval-execution gap")
 
     if total_return_pct := account.get("pnl_today_pct", 0):
         if total_return_pct > 0:
@@ -393,9 +548,18 @@ def evaluate_manager_agent(manager_log: list[dict],
         "approved_count":          approved_count,
         "rejected_count":          rejected_count,
         "modified_count":          modified_count,
-        "stop_loss_adherence_pct": round(stop_loss_adherence, 1),
+        "stop_loss_adherence_pct": (None if stop_loss_adherence is None
+                                    else round(stop_loss_adherence, 1)),
         "rationale_rate_pct":      round(rationale_rate,      1),
-        "execution_rate_pct":      round(exec_rate,           1),
+        # None means "no approved order was executable in this window", which is
+        # a different fact from 0.0 ("orders were due and none went through").
+        # A reader that cannot tell those apart raised a daily false alarm for
+        # weeks. Never coerce it to a number for display.
+        "execution_rate_pct":      (None if exec_rate is None
+                                    else round(exec_rate, 1)),
+        "execution_partition":     {k: (v if not isinstance(v, list) else len(v))
+                                    for k, v in ex_part.items()},
+        "scored_components":       [n for n, _, _ in _measured],
         "strengths":               strengths,
         "weaknesses":              weaknesses,
         "recommendations":         recommendations,

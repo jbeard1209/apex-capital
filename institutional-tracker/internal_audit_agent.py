@@ -163,6 +163,29 @@ def _pill_broker_host_census(law):
     return law(orders=[order], documented={})
 
 
+def _pill_broker_orders_are_ledgered(law):
+    """An order at the broker wearing this host's stamp that the ledger never saw.
+
+    Fully injected: the pill supplies the broker side, the ledger side AND the
+    host, so nothing here depends on a live account or on which machine the
+    audit runs. `ledger_ids` is deliberately non-empty — a pill against an
+    EMPTY ledger would also pass a law that simply flagged everything, and
+    would prove nothing about whether the law can match an order it should.
+    """
+    from order_ledger import STRICT_FROM
+    after = datetime.fromisoformat(STRICT_FROM).replace(microsecond=0)
+    ledgered = {"client_order_id": "apex-zzpillhost-audit-aaaaaaaaaaaa",
+                "id": "zzpill-order-known",
+                "submitted_at": after.isoformat(), "symbol": "AAPL", "side": "buy"}
+    ghost = {"client_order_id": "apex-zzpillhost-audit-bbbbbbbbbbbb",
+             "id": "zzpill-order-ghost",
+             "submitted_at": after.isoformat(), "symbol": "MSFT", "side": "buy"}
+    return law(orders=[ledgered, ghost],
+               ledger_ids={"zzpill-order-known",
+                           "apex-zzpillhost-audit-aaaaaaaaaaaa"},
+               host="zzpillhost")
+
+
 def _pill_deployed_set_matches_repo(law):
     """The trading host reporting a different md5 for a file we track."""
 
@@ -240,6 +263,9 @@ POISON_PILLS: Dict[str, Pill] = {
     "broker_host_census": Pill(
         _pill_broker_host_census,
         "an order stamped by a host in no registry row"),
+    "broker_orders_are_ledgered": Pill(
+        _pill_broker_orders_are_ledgered,
+        "an order at the broker, stamped by this host, that the ledger never recorded"),
     "deployed_set_matches_repo": Pill(
         _pill_deployed_set_matches_repo,
         "the trading host reports a different md5 than the repo"),
@@ -641,6 +667,7 @@ CONTROL_CENSUS: List[FailureClass] = [
         "costs an opportunity, blocking an exit costs money with no ceiling.",
         ["risk_gate.py::check",
          "order_ledger.py::install",
+         "coherence_laws.py::law_broker_orders_are_ledgered",
          "test_pipeline_smoke.py::TestPreTradeRiskGate",
          "test_pipeline_smoke.py::TestTheRiskGateSitsAtTheChokePoint",
          "test_pipeline_smoke.py::TestTheCashFloorFailsClosed"],
@@ -772,6 +799,35 @@ CONTROL_CENSUS: List[FailureClass] = [
          "test_pipeline_smoke.py::TestThePriceTheoryAgentCommentsWithNumbers"],
         "R&D Pod / Board",
         "a-decision-recorded-nowhere"),
+
+    FailureClass(
+        "a_ratio_of_two_different_populations",
+        "A rate whose numerator is filtered and whose denominator is not. Both "
+        "halves are individually correct, both are computed from real records, "
+        "and the quotient is meaningless — it measures the overlap of two "
+        "populations that were never the same set. It cannot reach its healthy "
+        "value no matter what the firm does, so the alarm it drives is "
+        "permanent, and a permanent alarm is one people learn to scroll past. "
+        "The tell is a metric that has never once been green.",
+        "risk_manager_agent.evaluate_manager_agent computed execution rate as "
+        "approved_executed / max(approved_count, 1). The numerator excluded "
+        "HOLD/WATCH; the denominator counted them. Measured on the VM "
+        "2026-08-20: 1021 decisions over 10 cycles, every one of them HOLD, 162 "
+        "approved, 0 executable — reported as 'Execution gap: 100% of approved "
+        "decisions not executed', recommending 'check Alpaca API connectivity' "
+        "for a window in which no order was ever due, and costing the Manager "
+        "the full 25-point execution component every run. The same function "
+        "then awarded the full 20-point execution-SUCCESS component for the "
+        "identical zero, because that component divided by "
+        "max(len(executions), 1). The fix gives the rate its own denominator, "
+        "returns None rather than 0.0 when nothing was executable, drops "
+        "unmeasurable components out of the score instead of scoring them, and "
+        "splits 'not executed' into governed / ungoverned / silent so a "
+        "shortfall names its owner.",
+        ["risk_manager_agent.py::_execution_partition",
+         "test_pipeline_smoke.py::TestTheExecutionRateHasItsOwnDenominator"],
+        "Risk Manager / Manager Agent",
+        "an-aggregate-is-not-a-finding"),
 ]
 
 

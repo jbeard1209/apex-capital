@@ -15018,6 +15018,376 @@ class TestThePriceTheoryAgentCommentsWithNumbers(unittest.TestCase):
                          f"lens(es) never run: {sorted(defined - registered)}")
 
 
+class TestTheExecutionRateHasItsOwnDenominator(unittest.TestCase):
+    """A rate whose numerator is filtered and whose denominator is not.
+
+    `approved_executed / max(approved_count, 1)`: the numerator dropped
+    HOLD/WATCH, the denominator kept them. On the VM 2026-08-20 that was 0/162
+    — reported as "Execution gap: 100% of approved decisions not executed",
+    recommending an Alpaca connectivity check, on a day when not one order was
+    ever due. The number could not reach 100% no matter what the firm did, so
+    the alarm was permanent, and a permanent alarm is one nobody reads.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import risk_manager_agent
+        cls.R = risk_manager_agent
+
+    def _cycle(self, decisions, executions=None):
+        return {"decisions": decisions, "executions": executions or []}
+
+    def _d(self, ticker, action, decision="APPROVED", rationale=("x",)):
+        return {"ticker": ticker, "manager_action": action,
+                "manager_decision": decision, "manager_rationale": list(rationale)}
+
+    def _e(self, ticker, action, executed=True, error=None):
+        return {"ticker": ticker, "action": action,
+                "executed": executed, "error": error}
+
+    # ── the denominator ──────────────────────────────────────────────────
+
+    def test_a_hold_is_not_in_the_denominator(self):
+        """The bug, exactly. 162 approved HOLDs, nothing executable."""
+        part = self.R._execution_partition(
+            [([self._d(f"T{i}", "HOLD") for i in range(162)], [])])
+        self.assertEqual(0, part["actionable"])
+        self.assertEqual(0, part["executed"])
+
+    def test_watch_is_not_in_the_denominator_either(self):
+        part = self.R._execution_partition([([self._d("AAPL", "WATCH")], [])])
+        self.assertEqual(0, part["actionable"])
+
+    def test_nothing_executable_yields_none_not_zero(self):
+        """0.0 says orders were due and none went through. None says none were
+        due. A reader that cannot tell those apart raised the false alarm."""
+        part = self.R._execution_partition([([self._d("AAPL", "HOLD")], [])])
+        self.assertIsNone(part["rate_pct"])
+
+    def test_a_real_gap_still_reads_zero_not_none(self):
+        part = self.R._execution_partition([([self._d("AAPL", "BUY_NEW")], [])])
+        self.assertEqual(1, part["actionable"])
+        self.assertEqual(0.0, part["rate_pct"])
+
+    def test_rejected_decisions_are_never_counted(self):
+        part = self.R._execution_partition(
+            [([self._d("AAPL", "BUY_NEW", decision="REJECTED")], [])])
+        self.assertEqual(0, part["actionable"])
+
+    # ── the four buckets ─────────────────────────────────────────────────
+
+    def test_an_executed_order_counts(self):
+        part = self.R._execution_partition(
+            [([self._d("AAPL", "BUY_NEW")], [self._e("AAPL", "BUY_NEW")])])
+        self.assertEqual(1, part["executed"])
+        self.assertEqual(100.0, part["rate_pct"])
+
+    def test_a_governed_refusal_is_not_an_execution_failure(self):
+        """The risk gate refusing an entry is the system working. Reporting it
+        as 'check Alpaca API connectivity' sends a control's success to the
+        wrong owner."""
+        part = self.R._execution_partition([(
+            [self._d("AAPL", "BUY_NEW")],
+            [self._e("AAPL", "BUY_NEW", executed=False,
+                     error="BLOCK_CASH_FLOOR: cash 13.4% below 20% floor")])])
+        self.assertEqual(1, len(part["governed"]))
+        self.assertEqual([], part["ungoverned"])
+
+    def test_a_pod_budget_refusal_is_governed_too(self):
+        part = self.R._execution_partition([(
+            [self._d("AAPL", "BUY_NEW")],
+            [self._e("AAPL", "BUY_NEW", executed=False,
+                     error="Pod budget: rd pod is out of capital")])])
+        self.assertEqual(1, len(part["governed"]))
+
+    def test_a_broker_error_is_ungoverned(self):
+        part = self.R._execution_partition([(
+            [self._d("AAPL", "BUY_NEW")],
+            [self._e("AAPL", "BUY_NEW", executed=False,
+                     error="HTTPError 502 from Alpaca")])])
+        self.assertEqual(1, len(part["ungoverned"]))
+        self.assertEqual([], part["governed"])
+
+    def test_an_approval_with_no_record_at_all_is_the_silent_bucket(self):
+        """The only one that means what the old message claimed: nothing even
+        tried. Distinct from a refusal, which at least left a record."""
+        part = self.R._execution_partition([([self._d("NVDA", "BUY_NEW")], [])])
+        self.assertEqual([{"ticker": "NVDA", "action": "BUY_NEW"}], part["silent"])
+
+    def test_the_three_shortfall_buckets_are_disjoint_and_total(self):
+        part = self.R._execution_partition([(
+            [self._d("A", "BUY_NEW"), self._d("B", "BUY_NEW"),
+             self._d("C", "BUY_NEW"), self._d("D", "BUY_NEW")],
+            [self._e("A", "BUY_NEW"),
+             self._e("B", "BUY_NEW", executed=False, error="BLOCK_MAX_POSITIONS: 20/20"),
+             self._e("C", "BUY_NEW", executed=False, error="connection reset")])])
+        self.assertEqual(4, part["actionable"])
+        self.assertEqual(part["actionable"],
+                         part["executed"] + len(part["governed"])
+                         + len(part["ungoverned"]) + len(part["silent"]))
+
+    # ── the matching ─────────────────────────────────────────────────────
+
+    def test_an_execution_cannot_credit_a_different_cycle(self):
+        """Flattening 10 cycles let an execution of AAPL in cycle 1 credit an
+        approval of AAPL in cycle 9."""
+        part = self.R._execution_partition([
+            ([], [self._e("AAPL", "BUY_NEW")]),        # cycle 1: executed
+            ([self._d("AAPL", "BUY_NEW")], []),        # cycle 2: approved, nothing
+        ])
+        self.assertEqual(0, part["executed"])
+        self.assertEqual(1, len(part["silent"]))
+
+    def test_a_buy_is_not_credited_by_a_sell_of_the_same_name(self):
+        part = self.R._execution_partition(
+            [([self._d("AAPL", "BUY_NEW")], [self._e("AAPL", "SELL")])])
+        self.assertEqual(0, part["executed"])
+        self.assertEqual(1, len(part["silent"]))
+
+    def test_one_execution_record_cannot_cover_two_approvals(self):
+        part = self.R._execution_partition([(
+            [self._d("AAPL", "ADD"), self._d("AAPL", "ADD")],
+            [self._e("AAPL", "ADD")])])
+        self.assertEqual(2, part["actionable"])
+        self.assertEqual(1, part["executed"])
+        self.assertEqual(1, len(part["silent"]))
+
+    def test_matching_is_case_insensitive_on_both_sides(self):
+        part = self.R._execution_partition(
+            [([self._d("aapl", "buy_new")], [self._e("AAPL", "BUY_NEW")])])
+        self.assertEqual(1, part["executed"])
+
+    # ── what the evaluation reports ──────────────────────────────────────
+
+    def _eval(self, cycles, account=None):
+        import pandas as _pd
+        return self.R.evaluate_manager_agent(
+            cycles, account or {"pnl_today_pct": 0.0, "portfolio_value": 100000},
+            _pd.DataFrame())
+
+    def test_a_hold_only_window_raises_no_execution_gap(self):
+        """The live regression: this exact input produced the daily alarm."""
+        out = self._eval([self._cycle(
+            [self._d(f"T{i}", "HOLD") for i in range(162)])])
+        self.assertFalse([w for w in out["weaknesses"] if "Execution gap" in w],
+                         f"still alarming: {out['weaknesses']}")
+        self.assertIsNone(out["execution_rate_pct"])
+
+    def test_a_hold_only_window_is_not_docked_for_execution(self):
+        """25 of 100 points for a component with no denominator. The same
+        function awarded the full 20-point execution-SUCCESS component for the
+        identical zero, so one run read the same fact both ways."""
+        out = self._eval([self._cycle(
+            [self._d(f"T{i}", "HOLD") for i in range(162)])])
+        self.assertNotIn("execution_rate", out["scored_components"])
+        self.assertGreaterEqual(out["score"], 90)
+
+    def test_a_genuine_silent_gap_is_still_reported(self):
+        """The fix must not be a mute button."""
+        out = self._eval([self._cycle([self._d("NVDA", "BUY_NEW")])])
+        self.assertTrue([w for w in out["weaknesses"] if "Execution gap" in w])
+        self.assertEqual(0.0, out["execution_rate_pct"])
+
+    def test_a_governed_block_is_reported_as_designed_not_as_a_failure(self):
+        out = self._eval([self._cycle(
+            [self._d("SH", "BUY_NEW")],
+            [self._e("SH", "BUY_NEW", executed=False,
+                     error="BLOCK_CASH_FLOOR: 13.4% below the 20% floor")])])
+        self.assertFalse([w for w in out["weaknesses"] if "Execution gap" in w])
+        self.assertTrue([s for s in out["strengths"] if "as designed" in s])
+
+    def test_the_recommendation_names_the_observed_cause(self):
+        """'Check Alpaca API connectivity' was emitted for all three causes,
+        including the one where the broker was never contacted."""
+        silent = self._eval([self._cycle([self._d("NVDA", "BUY_NEW")])])
+        self.assertFalse([r for r in silent["recommendations"]
+                          if "connectivity" in r.lower()])
+        broker = self._eval([self._cycle(
+            [self._d("NVDA", "BUY_NEW")],
+            [self._e("NVDA", "BUY_NEW", executed=False, error="502 Bad Gateway")])])
+        self.assertTrue([r for r in broker["recommendations"]
+                         if "connectivity" in r.lower()])
+
+    def test_stop_loss_adherence_is_none_when_none_were_observed(self):
+        """100% adherence over zero stop-loss decisions was worth 30 points."""
+        out = self._eval([self._cycle([self._d("AAPL", "HOLD")])])
+        self.assertIsNone(out["stop_loss_adherence_pct"])
+        self.assertNotIn("risk_discipline", out["scored_components"])
+        self.assertFalse([s for s in out["strengths"] if "risk discipline" in s])
+
+    def test_stop_loss_adherence_is_measured_when_it_was_observed(self):
+        out = self._eval([self._cycle([
+            self._d("AAPL", "SELL", rationale=("Stop-loss triggered",)),
+            self._d("MSFT", "SELL", decision="REJECTED",
+                    rationale=("Stop-loss triggered",))])])
+        self.assertEqual(50.0, out["stop_loss_adherence_pct"])
+        self.assertIn("risk_discipline", out["scored_components"])
+
+    def test_the_score_is_rescaled_over_measured_components_only(self):
+        """An unmeasured component must be neither scored 0 (a penalty for
+        something that never came up) nor 100 (a credit for the same).
+
+        Asserted as an invariant between two windows rather than against a
+        magic number: the trade-review adjustment reads a live file on disk, so
+        a hardcoded expected score would be a test of today's data.
+        """
+        holds_only = self._eval([self._cycle([self._d("AAPL", "HOLD")])])
+        self.assertEqual(["decision_quality"], holds_only["scored_components"])
+        # Same window plus one approved order that executed. Adding components
+        # that are all at 100% cannot move a correctly rescaled score.
+        with_exec = self._eval([self._cycle(
+            [self._d("AAPL", "HOLD"), self._d("NVDA", "BUY_NEW")],
+            [self._e("NVDA", "BUY_NEW")])])
+        self.assertIn("execution_rate", with_exec["scored_components"])
+        self.assertIn("execution_success", with_exec["scored_components"])
+        self.assertEqual(holds_only["score"], with_exec["score"])
+
+    def test_execution_rate_is_never_coerced_to_a_number_for_display(self):
+        out = self._eval([self._cycle([self._d("AAPL", "HOLD")])])
+        self.assertIsNone(out["execution_rate_pct"])
+        self.assertIsInstance(out["execution_partition"], dict)
+        self.assertEqual(0, out["execution_partition"]["actionable"])
+
+    def test_AST_the_substituted_denominators_are_gone(self):
+        """`max(approved_count, 1)` and `max(len(all_executions), 1)` are the
+        shape of the bug, not just its instance: a substituted denominator is a
+        decision disguised as arithmetic (memory `fallback-that-means-act`).
+        AST, so this cannot be satisfied by the postmortem comments above it."""
+        tree = ast.parse((Path(__file__).parent / "risk_manager_agent.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "evaluate_manager_agent")
+        for node in ast.walk(fn):
+            if not (isinstance(node, ast.Call)
+                    and isinstance(node.func, ast.Name) and node.func.id == "max"):
+                continue
+            if len(node.args) == 2 and isinstance(node.args[1], ast.Constant) \
+                    and node.args[1].value == 1:
+                self.fail("a denominator is being substituted with 1 again — "
+                          f"line {node.lineno}")
+
+
+class TestEveryOrderThisHostPlacedIsLedgered(unittest.TestCase):
+    """The question the gate log structurally cannot answer.
+
+    `risk_gate.check` is called inside the patched `submit_order`, before
+    `original(...)` — pinned by AST below. So nothing that goes through the hook
+    can skip the gate; they are the same call. The open question was whether an
+    order could reach the broker WITHOUT the hook, and an empty gate log looks
+    identical to a quiet day. Only the broker can answer, so the law asks it.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import coherence_laws
+        from order_ledger import STRICT_FROM
+        cls.CL = coherence_laws
+        cls.after = datetime.fromisoformat(STRICT_FROM).replace(microsecond=0)
+        cls.before = cls.after - timedelta(days=1)
+
+    def _o(self, coid, oid, when=None, sym="AAPL"):
+        return {"client_order_id": coid, "id": oid, "symbol": sym, "side": "buy",
+                "submitted_at": (when or self.after).isoformat()}
+
+    def _run(self, orders, ledger_ids, host="zzhost"):
+        return self.CL.law_broker_orders_are_ledgered(
+            orders=orders, ledger_ids=set(ledger_ids), host=host)
+
+    def test_it_holds_when_every_order_is_ledgered(self):
+        r = self._run([self._o("apex-zzhost-main-aaaaaaaaaaaa", "o1")], {"o1"})
+        self.assertEqual(self.CL.HOLDS, r.verdict)
+        self.assertEqual(1, r.n_examined)
+
+    def test_a_holds_carries_a_denominator(self):
+        r = self._run([self._o("apex-zzhost-main-aaaaaaaaaaaa", "o1")], {"o1"})
+        self.assertIsNotNone(r.n_examined, "a pass on zero items is not a pass")
+
+    def test_an_order_the_ledger_never_saw_violates(self):
+        r = self._run([self._o("apex-zzhost-main-aaaaaaaaaaaa", "o1"),
+                       self._o("apex-zzhost-main-bbbbbbbbbbbb", "o2", sym="MSFT")],
+                      {"o1"})
+        self.assertEqual(self.CL.VIOLATED, r.verdict)
+        self.assertEqual(1, len(r.evidence))
+        self.assertEqual("o2", r.evidence[0]["order_id"])
+
+    def test_the_client_order_id_alone_is_enough_to_match(self):
+        """order_ledger records both ids; a broker id that changed shape must
+        not read as an unledgered order."""
+        r = self._run([self._o("apex-zzhost-main-aaaaaaaaaaaa", "o1")],
+                      {"apex-zzhost-main-aaaaaaaaaaaa"})
+        self.assertEqual(self.CL.HOLDS, r.verdict)
+
+    def test_the_other_hosts_orders_are_not_this_hosts_problem(self):
+        """There is no state sync between hosts. Judging the VM's orders against
+        the Mac's ledger would VIOLATE every day, forever, and correctly."""
+        r = self._run([self._o("apex-otherhost-main-cccccccccccc", "o9")], {"o1"},
+                      host="zzhost")
+        self.assertEqual(self.CL.CANNOT_TELL, r.verdict)
+        self.assertIn("no order stamped", r.detail)
+
+    def test_pre_cutover_orders_are_not_judged(self):
+        """Nothing was stamped before STRICT_FROM, so attributing those orders
+        would brand weeks of legitimate history."""
+        r = self._run([self._o("apex-zzhost-main-aaaaaaaaaaaa", "o1", when=self.before)],
+                      set())
+        self.assertEqual(self.CL.CANNOT_TELL, r.verdict)
+
+    def test_an_unstamped_order_is_reported_but_not_attributed(self):
+        """An order with no stamp belongs to no host, so this law has nothing to
+        say about it — that is broker_host_census's finding. It is named rather
+        than dropped, because a dropped anomaly is an invisible one."""
+        r = self._run([self._o("apex-zzhost-main-aaaaaaaaaaaa", "o1"),
+                       self._o("someone-elses-id", "o8")], {"o1"})
+        self.assertEqual(self.CL.HOLDS, r.verdict)
+        self.assertIn("unstamped", r.detail)
+        self.assertIn("broker_host_census", r.detail)
+
+    def test_zero_of_my_orders_is_cannot_tell_not_holds(self):
+        """An untested choke point is not a proven one."""
+        r = self._run([], set())
+        self.assertEqual(self.CL.CANNOT_TELL, r.verdict)
+        self.assertIsNone(r.n_examined)
+
+    def test_an_unreadable_broker_is_not_a_clean_one(self):
+        import single_writer
+        with patch.object(single_writer, "fetch_broker_orders",
+                          side_effect=RuntimeError("network down")):
+            r = self.CL.law_broker_orders_are_ledgered(ledger_ids=set(), host="zzhost")
+        self.assertEqual(self.CL.CANNOT_TELL, r.verdict)
+
+    def test_it_reads_order_objects_as_well_as_dicts(self):
+        """fetch_broker_orders returns dicts, but positions_conserve's sibling
+        path hands objects. A law that only speaks one shape is a law that
+        silently examines nothing."""
+        class _O:
+            pass
+        o = _O()
+        o.client_order_id, o.id = "apex-zzhost-main-aaaaaaaaaaaa", "o1"
+        o.symbol, o.side = "AAPL", "buy"
+        o.submitted_at = self.after.isoformat()
+        r = self.CL.law_broker_orders_are_ledgered(
+            orders=[o], ledger_ids={"o1"}, host="zzhost")
+        self.assertEqual(self.CL.HOLDS, r.verdict)
+
+    def test_it_is_registered_in_LAWS(self):
+        names = [fn.__name__ for fn, _ in self.CL.LAWS]
+        self.assertIn("law_broker_orders_are_ledgered", names)
+
+    def test_it_declares_two_distinct_sources(self):
+        a, b = self.CL.law_broker_orders_are_ledgered.sources
+        self.assertNotEqual(a, b)
+        self.assertTrue(a and b)
+
+    def test_it_has_a_poison_pill(self):
+        """A new law without a pill fails the suite (CLAUDE.md). A law nobody
+        has shown capable of returning VIOLATED has HOLDS worth nothing."""
+        import internal_audit_agent as ia
+        self.assertIn("broker_orders_are_ledgered", ia.POISON_PILLS)
+        pill = ia.POISON_PILLS["broker_orders_are_ledgered"]
+        r = pill.run(self.CL.law_broker_orders_are_ledgered)
+        self.assertEqual(self.CL.VIOLATED, r.verdict)
+
+
 class TestTheRiskGateSitsAtTheChokePoint(unittest.TestCase):
     """Where the check lives is the whole finding, so pin the location.
 

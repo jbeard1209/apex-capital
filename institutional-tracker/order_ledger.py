@@ -308,7 +308,13 @@ def install():
             if not allowed:
                 logger.error(f"  [risk_gate] BLOCKED {getattr(req, 'side', '')} "
                              f"{getattr(req, 'qty', '')} {getattr(req, 'symbol', '')}: {reason}")
-                raise RiskLimitBlocked(reason)
+                # The verdict leads, not just the prose. Callers only ever see
+                # `str(e)`, and a caller that cannot tell a designed refusal
+                # from a broker outage reports both as an execution failure —
+                # which is what risk_manager_agent's evaluation did. The
+                # verdict names the rule that fired (BLOCK_CASH_FLOOR, …), so
+                # one prefix classifies the whole family.
+                raise RiskLimitBlocked(f"{verdict}: {reason}")
             if verdict not in ("ALLOW_EXIT", "ALLOW_UNVERIFIED"):
                 # An entry: it takes a slot. Only a BUY also takes cash — a
                 # short open raises it, so reserving its notional would tighten

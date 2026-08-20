@@ -1226,6 +1226,126 @@ def law_broker_host_census(orders: Optional[list] = None,
 
 
 # =============================================================================
+# LAW — every order this host placed went through the choke point
+# =============================================================================
+
+@sources("Alpaca order history for orders stamped by THIS host",
+         "data/order_ledger.json, written inside the patched submit_order")
+def law_broker_orders_are_ledgered(orders: Optional[list] = None,
+                                   ledger_ids: Optional[set] = None,
+                                   host: Optional[str] = None) -> LawResult:
+    """Every order the broker attributes to this host is one the ledger recorded.
+
+    SOURCE A: the broker's order history, filtered to the stamp of THIS host.
+              What actually reached Alpaca.
+    SOURCE B: `data/order_ledger.json`, appended by `order_ledger.record()`
+              from inside the patched `TradingClient.submit_order`.
+
+    WHY THIS EXISTS, and why the gate log could not answer it. `risk_gate.check`
+    is called inside that same patched hook, before `original(...)`, and the
+    smoke suite pins that by AST. So no order that goes THROUGH the hook can
+    skip the gate — the two are the same function call. The question the gate
+    log cannot answer is the other one: **did an order reach the broker without
+    going through the hook at all?** A raw REST POST, a second SDK client class,
+    a subprocess — none of them would appear in the gate log, and their absence
+    from it looks exactly like a quiet day. An empty gate log is not evidence.
+
+    This law asks the broker instead. If Alpaca shows an order carrying this
+    host's stamp that the ledger never recorded, that order was placed by a path
+    that skipped `record()` — and therefore skipped `risk_gate.check`, the
+    single-writer guard, and the stamp's own source attribution.
+
+    Measured on the VM 2026-08-20: 57 of 57 post-cutover orders stamped
+    `apexcapitalc` are in its ledger. That is what makes the choke point
+    complete, and it is a fact the gate log was structurally unable to report.
+
+    SCOPE, deliberately narrow on three axes:
+      · STRICT_FROM. Before the stamping cutover nothing was stamped, so
+        pre-cutover orders cannot be attributed and are not judged. Read from
+        the producer so the two cannot drift.
+      · This host only. There is no state sync between hosts (CLAUDE.md), so the
+        other host's orders are correctly absent from this ledger. Comparing
+        them would VIOLATE every day, forever, and correctly.
+      · UNSTAMPED orders are `law_broker_host_census`'s finding, not this one —
+        an order with no stamp cannot be attributed to any host, so this law has
+        nothing to say about it and says so rather than inventing an owner.
+    """
+    name = "broker_orders_are_ledgered"
+    src = law_broker_orders_are_ledgered.sources
+    try:
+        import single_writer
+        from order_ledger import STRICT_FROM, parse_stamp
+        strict_from = datetime.fromisoformat(STRICT_FROM)
+        if host is None:
+            host = single_writer.this_host()
+        if orders is None:
+            orders = single_writer.fetch_broker_orders(limit=500)
+        if ledger_ids is None:
+            ledger_ids = __import__("order_ledger").known_order_ids()
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL,
+                         f"cannot compare ({type(e).__name__}: {e}) — an unreadable "
+                         f"broker or ledger is not a clean one", src)
+
+    if orders is None:
+        return LawResult(name, CANNOT_TELL,
+                         "could not read the broker's order history", src)
+    if not host:
+        return LawResult(name, CANNOT_TELL,
+                         "this host has no stable identity, so no order can be "
+                         "attributed to it (see order_ledger._host_tag)", src)
+
+    mine, unattributed, missing = 0, 0, []
+    for o in orders:
+        get = o.get if isinstance(o, dict) else (lambda k, _o=o: getattr(_o, k, None))
+        raw = get("submitted_at") or get("created_at")
+        try:
+            ts = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+        if ts < strict_from:
+            continue
+        coid = get("client_order_id")
+        stamp = parse_stamp(coid)
+        if stamp is None:
+            unattributed += 1
+            continue
+        if stamp.get("host") != host:
+            continue
+        mine += 1
+        oid = get("id") or get("order_id")
+        if str(oid) not in ledger_ids and str(coid) not in ledger_ids:
+            missing.append({"order_id": str(oid), "client_order_id": str(coid),
+                            "symbol": str(get("symbol")), "side": str(get("side")),
+                            "submitted_at": str(raw)})
+
+    if missing:
+        return LawResult(name, VIOLATED,
+                         f"{len(missing)} of {mine} order(s) stamped '{host}' are at the "
+                         f"broker but were never recorded by order_ledger. An order that "
+                         f"skipped record() skipped the risk gate and the single-writer "
+                         f"guard in the same breath — there is a path to the broker that "
+                         f"does not go through the choke point.", src, missing[:10])
+
+    if mine == 0:
+        return LawResult(name, CANNOT_TELL,
+                         f"no order stamped '{host}' since the cutover ({STRICT_FROM}) — "
+                         f"zero orders is not a clean choke point, it is an untested one "
+                         f"(memory `presence-is-not-currency`)"
+                         + (f"; {unattributed} unstamped order(s) are "
+                            f"broker_host_census's finding" if unattributed else ""), src)
+
+    return LawResult(name, HOLDS,
+                     f"all {mine} order(s) stamped '{host}' since {strict_from.date()} "
+                     f"passed through order_ledger, and therefore through risk_gate.check"
+                     + (f"; {unattributed} unstamped (see broker_host_census)"
+                        if unattributed else ""),
+                     src, n_examined=mine)
+
+
+# =============================================================================
 # registry + runner
 # =============================================================================
 
@@ -1245,6 +1365,8 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "what the broker holds == what the ledger says we opened"),
     (law_broker_host_census,
      "every host trading the account is a host the firm has written down"),
+    (law_broker_orders_are_ledgered,
+     "every order the broker credits to this host went through the choke point"),
 ]
 
 

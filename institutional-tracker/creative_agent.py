@@ -417,15 +417,22 @@ def polish_email(
 
 def metrics_for_manager(decisions: list, executions: list,
                           account: dict, pdo_signal: str = "") -> dict:
+    # "Executed" must be counted from the executions, not the approvals. This
+    # row read `approved` — the count of orders the Manager APPROVED — under
+    # the label "Trades Executed", so a day on which the risk gate blocked
+    # every one of three approved buys reported three trades executed on the
+    # daily brief. `executions` was already a parameter and simply unused.
     approved  = sum(1 for d in decisions
                     if d.get("manager_decision") == "APPROVED"
                     and d.get("manager_action") not in ("HOLD", "WATCH"))
+    executed  = sum(1 for e in (executions or []) if e.get("executed"))
     rejected  = sum(1 for d in decisions if d.get("manager_decision") == "REJECTED")
     pnl       = account.get("pnl_today", 0)
     pnl_pct   = account.get("pnl_today_pct", 0)
     pnl_str   = f"{'+' if pnl >= 0 else ''}${abs(pnl):,.2f} ({pnl_pct:+.2f}%)"
     return {
-        "Trades Executed": approved,
+        "Trades Executed": executed,
+        "Trades Approved": approved,
         "Trades Rejected": rejected,
         "Today's P&L":     pnl_str,
         "Portfolio Value": f"${account.get('portfolio_value', 0):,.2f}",

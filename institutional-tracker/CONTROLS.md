@@ -244,6 +244,7 @@ A risk limit is implemented inside ONE function that reaches the outside world, 
 - **Detectors:**
   - `risk_gate.py::check`
   - `order_ledger.py::install`
+  - `coherence_laws.py::law_broker_orders_are_ledgered`
   - `test_pipeline_smoke.py::TestPreTradeRiskGate`
   - `test_pipeline_smoke.py::TestTheRiskGateSitsAtTheChokePoint`
   - `test_pipeline_smoke.py::TestTheCashFloorFailsClosed`
@@ -316,3 +317,14 @@ A decision the firm STATED and never funded. Approval is cheap and implementatio
 - **Detectors:**
   - `rd_price_theory_agent.py::lens_stated_priority_without_revealed_priority`
   - `test_pipeline_smoke.py::TestThePriceTheoryAgentCommentsWithNumbers`
+
+## `a_ratio_of_two_different_populations`
+
+A rate whose numerator is filtered and whose denominator is not. Both halves are individually correct, both are computed from real records, and the quotient is meaningless — it measures the overlap of two populations that were never the same set. It cannot reach its healthy value no matter what the firm does, so the alarm it drives is permanent, and a permanent alarm is one people learn to scroll past. The tell is a metric that has never once been green.
+
+- **Proved real by:** risk_manager_agent.evaluate_manager_agent computed execution rate as approved_executed / max(approved_count, 1). The numerator excluded HOLD/WATCH; the denominator counted them. Measured on the VM 2026-08-20: 1021 decisions over 10 cycles, every one of them HOLD, 162 approved, 0 executable — reported as 'Execution gap: 100% of approved decisions not executed', recommending 'check Alpaca API connectivity' for a window in which no order was ever due, and costing the Manager the full 25-point execution component every run. The same function then awarded the full 20-point execution-SUCCESS component for the identical zero, because that component divided by max(len(executions), 1). The fix gives the rate its own denominator, returns None rather than 0.0 when nothing was executable, drops unmeasurable components out of the score instead of scoring them, and splits 'not executed' into governed / ungoverned / silent so a shortfall names its owner.
+- **Owner:** Risk Manager / Manager Agent
+- **Writeup:** memory `an-aggregate-is-not-a-finding`
+- **Detectors:**
+  - `risk_manager_agent.py::_execution_partition`
+  - `test_pipeline_smoke.py::TestTheExecutionRateHasItsOwnDenominator`
