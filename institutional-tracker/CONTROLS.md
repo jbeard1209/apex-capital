@@ -299,3 +299,20 @@ A limit written on a PROXY for the quantity it means to bound. The proxy tracks 
   - `portfolio_beta.py::is_structural_hedge`
   - `test_pipeline_smoke.py::TestTheHedgeCarveOutIsNarrow`
   - `test_pipeline_smoke.py::TestNetBetaIsMeasuredNotAssumed`
+  - `derive_risk_limits.py::hard_floor`
+  - `derive_risk_limits.py::shadow_price`
+  - `derive_risk_limits.py::marginal_position`
+  - `rd_price_theory_agent.py::lens_proxy_disagrees_with_its_quantity`
+  - `rd_price_theory_agent.py::lens_binding_constraint_without_a_price`
+  - `test_pipeline_smoke.py::TestRiskLimitsAreDerivedNotInherited`
+
+## `an_approval_that_was_never_resourced`
+
+A decision the firm STATED and never funded. Approval is cheap and implementation is the price, so a board that approves faster than the firm can build accumulates a queue of stated priorities that no resource ever followed. Nothing fails: each proposal is correctly voted, correctly stored, and correctly ignored. The gap is only visible by comparing what was approved against what was built, which is a comparison no single artifact contains.
+
+- **Proved real by:** On 2026-08-20 all 36 proposals in rd_pod_approved.json were more than 30 days past their vote and unimplemented (oldest 69d), against 3 entries in cit_implemented_proposals.json for the firm's entire history. Every individual vote was valid; the ratio was the finding. Detected by the R&D pod's price-theory agent, which reads the two files against each other — revealed preference against stated preference — and routes the comparison to the pod board rather than acting on it.
+- **Owner:** R&D Pod / Board
+- **Writeup:** memory `a-decision-recorded-nowhere`
+- **Detectors:**
+  - `rd_price_theory_agent.py::lens_stated_priority_without_revealed_priority`
+  - `test_pipeline_smoke.py::TestThePriceTheoryAgentCommentsWithNumbers`

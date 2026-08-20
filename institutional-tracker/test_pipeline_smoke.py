@@ -14659,6 +14659,365 @@ class TestRiskLimitsAreDerivedNotInherited(unittest.TestCase):
         self.assertNotIn("hard_floor", out)
 
 
+class TestThePriceTheoryAgentCommentsWithNumbers(unittest.TestCase):
+    """An agent whose output is economic commentary is the purest instance of
+    the firm's worst failure mode: fluent, confident, unfalsifiable.
+
+    So the tests here are mostly about what it REFUSES to say. Every comment
+    carries numbers and a source or it is not emitted; "I looked and there is
+    nothing" and "I could not look" are different verdicts; and the run where
+    it cannot see anything at all escalates rather than passing quietly.
+    """
+
+    def setUp(self):
+        import rd_price_theory_agent
+        import risk_gate
+        import portfolio_beta
+        self.P = rd_price_theory_agent
+        self.RG = risk_gate
+        self.PB = portfolio_beta
+        self._td = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._td.name)
+        self._patches = [
+            patch.object(self.P, "DATA", self.tmp),
+            patch.object(self.P, "COMMENTS", self.tmp / "comments.json"),
+            patch.object(self.P, "POD_QUEUE", self.tmp / "rd_pod_pending.json"),
+            patch.object(self.P, "CHAIRMAN", self.tmp / "chairman.json"),
+            patch.object(self.P, "DERIVATION", self.tmp / "derivation.json"),
+            patch.object(self.P, "GATE_LOG", self.tmp / "gate_log.json"),
+            patch.object(self.P, "POD_APPROVED", self.tmp / "approved.json"),
+            patch.object(self.P, "IMPLEMENTED", self.tmp / "implemented.json"),
+        ]
+        for p in self._patches:
+            p.start()
+        self.addCleanup(self._td.cleanup)
+        for p in self._patches:
+            self.addCleanup(p.stop)
+
+    # ── helpers ──────────────────────────────────────────────────────────────
+
+    def _book(self, cash=13400.0, n=20, pv=100000.0):
+        pos = {f"S{i:02d}": {"qty": 100.0, "price": 10.0} for i in range(n)}
+        return {"cash": cash, "portfolio_value": pv, "positions": pos}
+
+    def _live(self, snap, beta=0.64, coverage=1.0):
+        """Patch the two live reads the lenses make.
+
+        Each patcher is started AND its own stop registered — an earlier
+        version registered `.stop` on one patcher object and started a
+        different one, so `risk_gate.snapshot` stayed monkeypatched for every
+        test that ran after this class. mock swallows `.stop()` on a patcher
+        that was never started, so nothing failed; the leak would simply have
+        made later tests read a fake broker.
+        """
+        lim = {"cash_floor": 0.20, "max_positions": 20}
+        nb = {"beta": beta, "coverage": coverage, "reason": "beta unmeasurable",
+              "long_beta_dollars": 75000.0, "short_beta_dollars": -11000.0}
+        for obj, attr, val in ((self.RG, "snapshot", lambda *a, **k: snap),
+                               (self.RG, "limits", lambda: lim),
+                               (self.PB, "net_beta", lambda *a, **k: nb)):
+            p = patch.object(obj, attr, val)
+            p.start()
+            self.addCleanup(p.stop)
+
+    def _write(self, name, obj):
+        (self.tmp / name).write_text(json.dumps(obj))
+
+    def _iso(self, days_ago):
+        return (datetime.now(timezone.utc)
+                - timedelta(days=days_ago)).isoformat()
+
+    # ── the refusal that defines the agent ───────────────────────────────────
+
+    def test_a_comment_with_no_numbers_is_refused(self):
+        """This is the whole guardrail. Without it the agent degenerates into
+        an opinion generator, and the firm has no shortage of opinions."""
+        r = self.P._emit("l", "q?", "sounds insightful", {}, ["src.json"],
+                         "HIGH", "do a thing", "sig")
+        self.assertEqual(self.P.SILENT, r.status)
+        self.assertIn("no numbers", r.reason)
+
+    def test_a_comment_with_no_source_is_refused(self):
+        r = self.P._emit("l", "q?", "headline", {"x": 1}, [], "HIGH", "fix", "s")
+        self.assertEqual(self.P.SILENT, r.status)
+        self.assertIn("no source", r.reason)
+
+    def test_all_none_numbers_do_not_count_as_numbers(self):
+        """`{"age_days": None}` is the shape a missing measurement takes, and a
+        comment built entirely from missing measurements is an assertion."""
+        r = self.P._emit("l", "q?", "h", {"a": None, "b": None}, ["s"],
+                         "HIGH", "f", "sig")
+        self.assertEqual(self.P.SILENT, r.status)
+
+    # ── lens 1 ───────────────────────────────────────────────────────────────
+
+    def test_a_binding_limit_with_no_derivation_is_commented_on(self):
+        self._live(self._book())
+        r = self.P.lens_binding_constraint_without_a_price()
+        self.assertEqual(self.P.COMMENT, r.status)
+        self.assertIn("no derivation has ever been written", r.comment["headline"])
+        self.assertEqual("HIGH", r.comment["severity"])
+
+    def test_POISON_PILL_a_fresh_derivation_closes_the_loop(self):
+        """The lens must be able to go quiet, or it is a permanent alarm and
+        will be ignored like one. This is the loop derive_risk_limits closes."""
+        self._live(self._book())
+        self._write("derivation.json",
+                    {"available": True, "as_of": self._iso(1)})
+        r = self.P.lens_binding_constraint_without_a_price()
+        self.assertEqual(self.P.SILENT, r.status)
+        self.assertEqual(2, r.n_examined, "a pass must say what it examined")
+
+    def test_a_stale_derivation_does_not_count_as_a_derivation(self):
+        self._live(self._book())
+        self._write("derivation.json",
+                    {"available": True, "as_of": self._iso(200)})
+        r = self.P.lens_binding_constraint_without_a_price()
+        self.assertEqual(self.P.COMMENT, r.status)
+        self.assertIn("200 days old", r.comment["headline"])
+
+    def test_a_derivation_that_could_not_be_computed_is_not_a_derivation(self):
+        self._live(self._book())
+        self._write("derivation.json",
+                    {"available": False, "as_of": self._iso(1)})
+        r = self.P.lens_binding_constraint_without_a_price()
+        self.assertEqual(self.P.COMMENT, r.status)
+
+    def test_a_limit_that_does_not_bind_is_not_commented_on(self):
+        """A constraint nobody is pressing against costs nothing, and asking
+        what it costs would be noise."""
+        self._live(self._book(cash=40000.0, n=5))
+        r = self.P.lens_binding_constraint_without_a_price()
+        self.assertEqual(self.P.SILENT, r.status)
+
+    def test_an_unreadable_book_cannot_tell_rather_than_passing(self):
+        self._live(None)
+        r = self.P.lens_binding_constraint_without_a_price()
+        self.assertEqual(self.P.CANNOT_TELL, r.status)
+
+    # ── lens 2 ───────────────────────────────────────────────────────────────
+
+    def test_POISON_PILL_the_case_that_actually_happened_is_caught(self):
+        """2026-08-19: both proxies read maximum risk, measured net beta 0.64.
+        If this lens cannot fire on that book it has no reason to exist."""
+        self._live(self._book(), beta=0.6439)
+        r = self.P.lens_proxy_disagrees_with_its_quantity()
+        self.assertEqual(self.P.COMMENT, r.status)
+        self.assertEqual(0.6439, r.comment["numbers"]["net_beta"])
+        self.assertIn("no stated beta limit", r.comment["headline"])
+
+    def test_the_lens_is_quiet_when_no_proxy_is_being_consulted(self):
+        """A proxy only fails where it binds, because that is the only place
+        anyone reads it."""
+        self._live(self._book(cash=40000.0, n=5), beta=0.6439)
+        r = self.P.lens_proxy_disagrees_with_its_quantity()
+        self.assertEqual(self.P.SILENT, r.status)
+
+    def test_an_unmeasurable_beta_cannot_tell_rather_than_going_silent(self):
+        """Silence here would read as 'the proxies are fine', which is exactly
+        the claim the agent has no basis for."""
+        self._live(self._book(), beta=None)
+        r = self.P.lens_proxy_disagrees_with_its_quantity()
+        self.assertEqual(self.P.CANNOT_TELL, r.status)
+
+    # ── lens 3 ───────────────────────────────────────────────────────────────
+
+    def test_a_marginal_number_that_understates_the_decision_is_flagged(self):
+        self._write("derivation.json", {"available": True, "as_of": self._iso(1),
+                                        "marginal_position": {
+                                            "marginal_bp_at_cap": 11.06,
+                                            "cumulative_bp_to_40": 120.5,
+                                            "diversification_achieved_pct": 90.6}})
+        r = self.P.lens_average_standing_in_for_a_margin()
+        self.assertEqual(self.P.COMMENT, r.status)
+        self.assertEqual(10.9, r.comment["numbers"]["ratio"])
+
+    def test_POISON_PILL_when_both_numbers_agree_the_lens_says_nothing(self):
+        """Otherwise it fires on every curve and means nothing on any of them."""
+        self._write("derivation.json", {"available": True, "as_of": self._iso(1),
+                                        "marginal_position": {
+                                            "marginal_bp_at_cap": 40.0,
+                                            "cumulative_bp_to_40": 60.0}})
+        r = self.P.lens_average_standing_in_for_a_margin()
+        self.assertEqual(self.P.SILENT, r.status)
+
+    def test_no_derivation_means_cannot_tell_not_agreement(self):
+        r = self.P.lens_average_standing_in_for_a_margin()
+        self.assertEqual(self.P.CANNOT_TELL, r.status)
+
+    # ── lens 4 ───────────────────────────────────────────────────────────────
+
+    def test_POISON_PILL_a_missing_gate_log_is_not_zero_blocks(self):
+        """The distinction this whole agent turns on. A gate that has never
+        written a line and a gate that has blocked nothing produce the same
+        empty directory, and only one of them is good news."""
+        r = self.P.lens_a_block_is_a_price_nobody_counted()
+        self.assertEqual(self.P.CANNOT_TELL, r.status)
+        self.assertIn("not the same as having blocked nothing", r.reason)
+
+    def test_blocks_are_counted_and_priced_as_a_standing_cost(self):
+        rows = [{"ts": self._iso(i), "symbol": f"S{i}", "verdict":
+                 "BLOCK_CASH_FLOOR", "allowed": False} for i in range(6)]
+        self._write("gate_log.json", rows)
+        r = self.P.lens_a_block_is_a_price_nobody_counted()
+        self.assertEqual(self.P.COMMENT, r.status)
+        self.assertEqual(6, r.comment["numbers"]["blocks"])
+        self.assertEqual(6, r.comment["numbers"]["distinct_symbols"])
+
+    def test_blocks_outside_the_window_are_not_counted(self):
+        old = [{"ts": self._iso(400), "symbol": "X", "verdict": "BLOCK_CASH_FLOOR",
+                "allowed": False} for _ in range(20)]
+        self._write("gate_log.json", old)
+        r = self.P.lens_a_block_is_a_price_nobody_counted()
+        self.assertEqual(self.P.SILENT, r.status)
+        self.assertEqual(0, r.n_examined)
+
+    def test_allowed_rows_are_not_blocks(self):
+        rows = [{"ts": self._iso(1), "symbol": "X", "verdict":
+                 "ALLOW_UNVERIFIED", "allowed": True} for _ in range(9)]
+        self._write("gate_log.json", rows)
+        r = self.P.lens_a_block_is_a_price_nobody_counted()
+        self.assertEqual(self.P.SILENT, r.status)
+        self.assertEqual(9, r.n_examined, "it examined them, it just found none")
+
+    # ── lens 5 ───────────────────────────────────────────────────────────────
+
+    def test_approved_but_never_built_is_a_revealed_preference(self):
+        self._write("approved.json", [{"id": f"P{i}", "title": f"t{i}",
+                                       "voted_at": self._iso(60)}
+                                      for i in range(8)])
+        self._write("implemented.json", [{"id": "P0", "title": "t0"}])
+        r = self.P.lens_stated_priority_without_revealed_priority()
+        self.assertEqual(self.P.COMMENT, r.status)
+        self.assertEqual(7, r.comment["numbers"]["stale_unimplemented"],
+                         "the one that was built is not counted against them")
+
+    def test_a_missing_implementation_record_cannot_tell(self):
+        """With no record of what was built, 'approved and untouched' and
+        'approved and done' are the same observation."""
+        self._write("approved.json", [{"id": "P1", "voted_at": self._iso(60)}])
+        r = self.P.lens_stated_priority_without_revealed_priority()
+        self.assertEqual(self.P.CANNOT_TELL, r.status)
+
+    def test_recent_approvals_are_not_yet_evidence_of_anything(self):
+        self._write("approved.json", [{"id": f"P{i}", "voted_at": self._iso(2)}
+                                      for i in range(20)])
+        self._write("implemented.json", [])
+        r = self.P.lens_stated_priority_without_revealed_priority()
+        self.assertEqual(self.P.SILENT, r.status)
+
+    # ── persistence, routing, and the agent's own blindness ──────────────────
+
+    def test_a_signature_survives_the_numbers_moving(self):
+        """`times_seen` is the only thing that distinguishes a condition that
+        has stood for six weeks from one seen this morning. A signature keyed
+        on the measurements would reset that count every time beta twitched."""
+        self._live(self._book(), beta=0.6439)
+        a = self.P.lens_proxy_disagrees_with_its_quantity().comment["signature"]
+        self._live(self._book(cash=9000.0), beta=0.2)
+        b = self.P.lens_proxy_disagrees_with_its_quantity().comment["signature"]
+        self.assertEqual(a, b)
+
+    def test_a_standing_comment_accumulates_rather_than_reappearing(self):
+        c = [{"signature": "s1", "headline": "h"}]
+        first = self.P._merge([dict(c[0])], [])
+        self.assertEqual(1, first[0]["times_seen"])
+        second = self.P._merge([dict(c[0])], first)
+        self.assertEqual(2, second[0]["times_seen"])
+        self.assertEqual(first[0]["first_seen"], second[0]["first_seen"])
+
+    def test_a_comment_is_routed_to_the_pod_board_exactly_once(self):
+        comments = [{"signature": "s1", "lens": "l", "question": "q?",
+                     "headline": "h", "numbers": {"x": 1}, "sources": ["a.json"],
+                     "severity": "HIGH", "proposal": "p", "routed": False}]
+        self.assertEqual(1, self.P._route(comments))
+        self.assertTrue(comments[0]["routed"])
+        self.assertEqual(0, self.P._route(comments), "a second run re-queues nothing")
+        rows = json.loads((self.tmp / "rd_pod_pending.json").read_text())
+        self.assertEqual(1, len(rows))
+
+    def test_the_routed_proposal_is_shaped_so_the_pod_board_reads_it(self):
+        """The wiring contract. rd_pod_board selects on status in
+        ('pending', None, ''); a comment queued with any other status would be
+        produced, stored, and never voted on — the bug class in CLAUDE.md."""
+        import rd_pod_board
+        comments = [{"signature": "s1", "lens": "l", "question": "q?",
+                     "headline": "h", "numbers": {"x": 1}, "sources": ["a.json"],
+                     "severity": "HIGH", "proposal": "p", "routed": False}]
+        self.P._route(comments)
+        row = json.loads((self.tmp / "rd_pod_pending.json").read_text())[0]
+        self.assertIn(row.get("status"), ("pending", None, ""))
+        for field in ("id", "agent", "category", "severity", "title",
+                      "description", "proposed_fix"):
+            self.assertIn(field, row)
+        self.assertEqual(self.P.POD_QUEUE.name,
+                         Path(rd_pod_board.PENDING_PATH).name,
+                         "the agent and the board must name the same queue")
+
+    def test_POISON_PILL_a_blind_run_escalates_instead_of_passing(self):
+        """Every lens dark, so the agent emits nothing — which is exactly what
+        it emits when the firm is healthy. Without this the agent's own failure
+        is invisible."""
+        with patch.object(self.P, "LENSES", [
+                lambda: self.P.Result("x", self.P.CANNOT_TELL, reason="dark"),
+                lambda: self.P.Result("y", self.P.CANNOT_TELL, reason="dark")]):
+            out = self.P.run(route=False)
+        self.assertTrue(out["blind"])
+        self.assertTrue(out["blindness_escalated"])
+        rows = json.loads((self.tmp / "chairman.json").read_text())
+        self.assertEqual(1, len(rows))
+        self.assertIn("BLIND", rows[0]["description"])
+
+    def test_POISON_PILL_one_working_lens_is_not_blindness(self):
+        with patch.object(self.P, "LENSES", [
+                lambda: self.P.Result("x", self.P.CANNOT_TELL, reason="dark"),
+                lambda: self.P.Result("y", self.P.SILENT, n_examined=3)]):
+            out = self.P.run(route=False)
+        self.assertFalse(out["blind"])
+        self.assertFalse((self.tmp / "chairman.json").exists())
+
+    def test_blindness_is_escalated_once_a_day_not_once_a_run(self):
+        dark = [lambda: self.P.Result("x", self.P.CANNOT_TELL, reason="d")]
+        with patch.object(self.P, "LENSES", dark):
+            self.assertTrue(self.P.run(route=False)["blindness_escalated"])
+            self.assertFalse(self.P.run(route=False)["blindness_escalated"])
+        self.assertEqual(1, len(json.loads((self.tmp / "chairman.json").read_text())))
+
+    # ── the boundary ─────────────────────────────────────────────────────────
+
+    def test_it_can_change_nothing(self):
+        """AST. It comments; the pod board decides. It must have no path to
+        config.py and no path to the broker — an economist with a trading
+        desk is not an economist."""
+        src = (Path(__file__).parent / "rd_price_theory_agent.py").read_text()
+        tree = ast.parse(src)
+        imported = {n.name.split(".")[0] for node in ast.walk(tree)
+                    if isinstance(node, ast.Import) for n in node.names}
+        imported |= {node.module.split(".")[0] for node in ast.walk(tree)
+                     if isinstance(node, ast.ImportFrom) and node.module}
+        self.assertNotIn("config", imported)
+        self.assertNotIn("alpaca_trader", imported)
+        forbidden = {"submit_order", "submit_buy", "submit_sell", "close_position",
+                     "cancel_order", "write_text_config"}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                fn = node.func
+                name = fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+                self.assertNotIn(name, forbidden,
+                                 f"the price-theory agent calls {name}")
+
+    def test_every_lens_is_registered(self):
+        """A lens defined and never added to LENSES is a control that does not
+        run, which this repo has shipped before (memory
+        `unregistered-test-is-absent`). Discovered, not enumerated."""
+        tree = ast.parse((Path(__file__).parent / "rd_price_theory_agent.py").read_text())
+        defined = {n.name for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef) and n.name.startswith("lens_")}
+        registered = {f.__name__ for f in self.P.LENSES}
+        self.assertEqual(defined, registered,
+                         f"lens(es) never run: {sorted(defined - registered)}")
+
+
 class TestTheRiskGateSitsAtTheChokePoint(unittest.TestCase):
     """Where the check lives is the whole finding, so pin the location.
 

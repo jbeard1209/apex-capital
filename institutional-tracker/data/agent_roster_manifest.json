@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-01T04:41:40.002963",
-  "count": 155,
+  "generated_at": "2026-08-20T01:43:27.627892",
+  "count": 161,
   "agents": [
     {
       "name": "BiotechResearchAgent",
@@ -10,11 +10,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -26,11 +25,10 @@
       "team": "cit",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -42,11 +40,10 @@
       "team": "cit",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -58,11 +55,10 @@
       "team": "cit",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -74,11 +70,10 @@
       "team": "cit",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -90,11 +85,10 @@
       "team": "cit",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -106,11 +100,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -122,11 +115,10 @@
       "team": null,
       "employment": "superseded",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -138,11 +130,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -152,13 +143,12 @@
       "file": "agents/cos_consumerdiscretionaryagent.py",
       "tier": 1,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -168,13 +158,12 @@
       "file": "agents/cos_cryptoequitiesagent.py",
       "tier": 2,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -186,11 +175,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -202,11 +190,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -218,11 +205,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -234,11 +220,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -250,11 +235,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -266,11 +250,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -282,11 +265,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -298,11 +280,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -314,11 +295,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -330,11 +310,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -346,11 +325,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -362,11 +340,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -378,11 +355,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -394,11 +370,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -410,11 +385,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -426,11 +400,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -442,11 +415,10 @@
       "team": "infrastructure",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -458,11 +430,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -474,11 +445,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -490,11 +460,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -506,11 +475,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -522,11 +490,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -538,11 +505,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -554,11 +520,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -570,11 +535,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -584,13 +548,12 @@
       "file": "agents/cos_financialsectoragent.py",
       "tier": 1,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -602,11 +565,10 @@
       "team": "r_and_d",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -618,11 +580,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -634,11 +595,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -650,11 +610,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -664,13 +623,12 @@
       "file": "agents/cos_globaltechagent.py",
       "tier": 1,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -682,11 +640,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -698,11 +655,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -712,13 +668,12 @@
       "file": "agents/cos_healthcarepharmaagent.py",
       "tier": 2,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -730,11 +685,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -746,11 +700,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -762,11 +715,10 @@
       "team": null,
       "employment": "superseded",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -776,13 +728,12 @@
       "file": "agents/cos_industrialsdefenseagent.py",
       "tier": 2,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -794,11 +745,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -810,11 +760,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -826,11 +775,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -842,11 +790,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -858,11 +805,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -874,11 +820,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -888,13 +833,12 @@
       "file": "agents/cos_materialsminingagent.py",
       "tier": 2,
       "team": "research",
-      "employment": "retired",
+      "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -906,11 +850,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -922,11 +865,10 @@
       "team": "analytics",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -938,11 +880,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -954,11 +895,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -970,11 +910,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -986,11 +925,10 @@
       "team": null,
       "employment": "superseded",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1002,11 +940,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1018,11 +955,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1034,11 +970,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1050,11 +985,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1066,11 +1000,10 @@
       "team": "research",
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1082,11 +1015,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1098,11 +1030,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1114,11 +1045,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1130,11 +1060,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1146,11 +1075,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1162,11 +1090,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1178,11 +1105,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1194,11 +1120,25 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "chairman_queue_compactor",
+      "kind": "module",
+      "file": "chairman_queue_compactor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "local"
+      ],
+      "first_declared": "2026-08-19",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1210,11 +1150,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1226,11 +1165,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1242,11 +1180,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1258,11 +1195,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1274,11 +1210,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1290,11 +1225,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1306,11 +1240,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1322,11 +1255,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1338,11 +1270,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1354,11 +1285,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1370,11 +1300,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1386,11 +1315,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1402,11 +1330,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1418,11 +1345,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1434,11 +1360,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1450,11 +1375,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1466,11 +1390,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1482,11 +1405,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1498,11 +1420,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1514,11 +1435,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1530,11 +1450,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1546,11 +1465,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1562,11 +1480,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1578,11 +1495,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1594,11 +1510,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1610,11 +1525,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1626,11 +1540,25 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "internal_audit_agent",
+      "kind": "module",
+      "file": "internal_audit_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "local"
+      ],
+      "first_declared": "2026-08-19",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1642,11 +1570,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1658,11 +1585,40 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "kalshi_board",
+      "kind": "module",
+      "file": "kalshi_board.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "local"
+      ],
+      "first_declared": "2026-08-19",
+      "last_seen": "2026-08-19",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "kalshi_watchdog",
+      "kind": "module",
+      "file": "kalshi_watchdog.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "local"
+      ],
+      "first_declared": "2026-08-19",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1674,11 +1630,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1690,11 +1645,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1706,11 +1660,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1722,11 +1675,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1738,11 +1690,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1754,11 +1705,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1770,11 +1720,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1786,11 +1735,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1802,11 +1750,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1818,11 +1765,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1834,11 +1780,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1850,11 +1795,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1866,11 +1810,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1882,11 +1825,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1898,11 +1840,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1914,11 +1855,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1930,11 +1870,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1946,11 +1885,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1962,11 +1900,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1978,11 +1915,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1994,11 +1930,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2010,11 +1945,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2026,11 +1960,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2042,11 +1975,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2058,11 +1990,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2074,11 +2005,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2090,11 +2020,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2106,11 +2035,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2122,11 +2050,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2138,11 +2065,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2154,11 +2080,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2170,11 +2095,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2186,11 +2110,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2202,11 +2125,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2218,11 +2140,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2234,11 +2155,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2250,11 +2170,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2266,11 +2185,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2282,11 +2200,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2298,11 +2215,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2314,11 +2230,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2330,11 +2245,25 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "rd_price_theory_agent",
+      "kind": "module",
+      "file": "rd_price_theory_agent.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "local"
+      ],
+      "first_declared": "2026-08-19",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2346,11 +2275,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2362,11 +2290,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2378,11 +2305,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2394,11 +2320,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2410,11 +2335,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2426,11 +2350,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2442,11 +2365,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2458,11 +2380,10 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2474,11 +2395,25 @@
       "team": null,
       "employment": "employed",
       "hosts": [
-        "mac",
-        "vm"
+        "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-01",
+      "last_seen": "2026-08-19",
+      "retired_at": null,
+      "retirement_reason": null
+    },
+    {
+      "name": "vm_state_monitor",
+      "kind": "module",
+      "file": "vm_state_monitor.py",
+      "tier": 0,
+      "team": null,
+      "employment": "employed",
+      "hosts": [
+        "local"
+      ],
+      "first_declared": "2026-08-19",
+      "last_seen": "2026-08-19",
       "retired_at": null,
       "retirement_reason": null
     }

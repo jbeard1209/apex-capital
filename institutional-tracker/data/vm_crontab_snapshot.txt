@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-20T00:56:26Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-20T01:43:17Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -349,3 +349,13 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # move daily, and a Chairman row every morning is noise. It NEVER edits
 # config.py (AST-pinned); it queues the decision.
 0 8 * * 0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 derive_risk_limits.py --report >> logs/risk_limits_$(date +\%Y\%m\%d).log 2>&1
+
+# ── R&D PRICE THEORY AGENT — 5:00 PM EDT = 21:00 UTC, Mon-Fri ──
+# The R&D pod economist. Runs 45 min after the 20:15 close pipeline so it
+# reads that day's gate decisions against a settled book. It changes nothing:
+# it comments, with numbers and a source, and routes to rd_pod_pending.json
+# where the R&D pod board actually votes. Every lens returns COMMENT, SILENT
+# (with n_examined) or CANNOT_TELL — and a run where EVERY lens is CANNOT_TELL
+# escalates to the Chairman, because a blind commentator emits exactly what a
+# healthy firm emits.
+0 21 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 rd_price_theory_agent.py --report >> logs/price_theory_$(date +\%Y\%m\%d).log 2>&1
