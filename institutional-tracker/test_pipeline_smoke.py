@@ -5817,9 +5817,18 @@ class TestHRSeesTheWholeFirm(unittest.TestCase):
     """
 
     def test_hr_audits_the_roster_not_just_the_registry(self):
+        """Compare against a live build, not data/agent_roster.json.
+
+        Third instance of the same mistake in one file. The saved snapshot is
+        host-local, is never deployed, and lags every deploy until that host's
+        11:25 UTC job runs; HR now rebuilds when it is out of date, so on the
+        VM this asserted 161 == 160 and failed for a reason that has nothing to
+        do with HR's population. Both sides must be measured at the same
+        instant or the equality is about the schedule.
+        """
         import hr_agent, agent_roster as ar
         res = hr_agent.audit_roster_coverage()
-        roster_n = len(ar._load(ar.ROSTER_PATH, {"agents": []})["agents"])
+        roster_n = len(ar.build()["agents"])
         self.assertEqual(res["checked"], roster_n,
                          "HR checked a different population than the roster holds")
         self.assertGreater(res["checked"], res["reviewed_by_hr"],
