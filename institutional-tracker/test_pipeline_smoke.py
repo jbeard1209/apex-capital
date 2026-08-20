@@ -14159,13 +14159,19 @@ class TestTheCashFloorFailsClosed(unittest.TestCase):
                 "a bare `except: pass` in submit_buy — line %d" % h.lineno)
 
 
-class TestPodLedgerDriftHasNamedCauses(unittest.TestCase):
+class TestPodLedgerAttributionHasNamedCauses(unittest.TestCase):
     """LEDGER_DRIFT quoted a total and no cause, so it could not be closed.
 
-    `update_prices()` — documented as a daily job — had no caller in the firm,
-    so ETF-pod positions still carried `current_price == avg_entry` months
-    after opening. That stale-price bug, an attribution bug, and a $10,000
-    reserve that was never at the broker all arrived as one "-6.3%".
+    Three unrelated defects arrived as one "-6.3%": `update_prices()` was
+    documented as a daily mark-to-market and had no caller anywhere in the firm;
+    most of the broker's positions belonged to no pod; and a $10,000 book
+    reserve had no counterpart at the broker. Worse, the two sides of the
+    subtraction were not the same kind of thing — pod "total value" was budget
+    headroom PLUS market value, an entitlement added to a price.
+
+    What is asserted here is a conservation identity between two independent
+    measurements of ONE quantity: the market value of the firm's positions, as
+    the broker reports it and as the pods claim it.
     """
 
     def setUp(self):
@@ -14183,65 +14189,102 @@ class TestPodLedgerDriftHasNamedCauses(unittest.TestCase):
             {"pods": pods, "reserve": {"balance": reserve}, "last_updated": ""}))
 
     @staticmethod
-    def _pod(cash, positions):
-        return {"cash_balance": cash,
+    def _pod(cash, positions, budget=30000.0):
+        return {"budget": budget, "budget_inception": budget,
+                "cash_balance": cash,
                 "positions": {t: {"qty": q, "avg_entry": p, "current_price": p,
                                   "side": "long"} for t, (q, p) in positions.items()}}
+
+    # -- the identity ------------------------------------------------------
 
     def test_positions_are_marked_to_broker_prices(self):
         self._write({"pod1": self._pod(100.0, {"KO": (10.0, 50.0)})})
         out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 60.0}},
                                          600.0, 100.0)
-        self.assertEqual(100.0, out["marked_to_market"])
         saved = json.loads(self.path.read_text())
         self.assertEqual(60.0, saved["pods"]["pod1"]["positions"]["KO"]["current_price"])
-        self.assertEqual(700.0, saved["pods"]["pod1"]["total_value"])
+        self.assertEqual(600.0, out["pod_deployed_total"])
+        self.assertEqual(600.0, out["broker_positions_value"])
+        self.assertEqual(0.0, out["residual"])
 
-    def test_an_unpriceable_position_is_not_marked_to_zero(self):
-        """Marking to zero would 'reconcile' a pod by deleting its value."""
+    def test_quantity_is_taken_from_the_broker_not_just_price(self):
+        """`update_prices` moved prices and left quantities alone, which is how a
+        claim survived the position being closed."""
         self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
-        out = self.P.reconcile_to_broker({}, 500.0, 0.0)
+        out = self.P.reconcile_to_broker({"KO": {"qty": 4.0, "price": 50.0}},
+                                         200.0, 0.0)
         saved = json.loads(self.path.read_text())
-        self.assertEqual(50.0, saved["pods"]["pod1"]["positions"]["KO"]["current_price"])
-        self.assertEqual(["KO"], out["unpriced_symbols"])
+        self.assertEqual(4.0, saved["pods"]["pod1"]["positions"]["KO"]["qty"])
+        self.assertEqual(1, len(out["requantified"]))
+        self.assertTrue(any("disagrees with" in c for c in out["causes"]))
 
-    def test_the_reserve_is_named_as_a_cause(self):
-        self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})}, reserve=10000.0)
-        out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
-                                         500.0, 0.0)
-        self.assertTrue(any("reserve" in c for c in out["causes"]))
-        self.assertEqual(10000.0, out["residual"])
+    def test_a_claim_the_broker_does_not_hold_is_retired_not_deleted(self):
+        """Deleting it makes a position closed elsewhere look like one that
+        never existed — the two hosts share no state but do share the account."""
+        self._write({"pod1": self._pod(0.0, {"GHOST": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker({}, 0.0, 0.0)
+        self.assertEqual(["GHOST"], out["retired_claims"])
+        saved = json.loads(self.path.read_text())
+        self.assertEqual({}, saved["pods"]["pod1"]["positions"])
+        retired = saved["retired_claims"]
+        self.assertEqual("GHOST", retired[0]["symbol"])
+        self.assertEqual(10.0, retired[0]["claimed_qty"])
+        self.assertTrue(retired[0].get("reason"))
 
-    def test_broker_positions_no_pod_claims_are_named(self):
+    def test_broker_positions_no_pod_claims_are_named_with_symbols(self):
         self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
         out = self.P.reconcile_to_broker(
             {"KO": {"qty": 10.0, "price": 50.0},
              "NVDA": {"qty": 5.0, "price": 200.0}}, 1500.0, 0.0)
-        self.assertEqual(["NVDA"], out["unledgered_symbols"])
-        self.assertEqual(1000.0, out["unledgered_value"])
-        self.assertTrue(any("no pod" in c for c in out["causes"]))
+        self.assertEqual(["NVDA"], out["unattributed_symbols"])
+        self.assertEqual(1000.0, out["unattributed_value"])
+        self.assertTrue(any("NVDA" in c for c in out["causes"]),
+                        "named a count but not the symbol to go look at")
 
-    def test_a_pod_position_the_broker_does_not_hold_is_named(self):
-        self._write({"pod1": self._pod(0.0, {"GHOST": (10.0, 50.0)})})
-        out = self.P.reconcile_to_broker({}, 0.0, 0.0)
-        self.assertEqual(["GHOST"], out["phantom_symbols"])
+    def test_unattributed_share_is_a_percentage_of_the_book(self):
+        """The headline number has to be the one with a decision attached:
+        exposure no pod's budget is charged for."""
+        self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
+        out = self.P.reconcile_to_broker(
+            {"KO": {"qty": 10.0, "price": 50.0},
+             "NVDA": {"qty": 5.0, "price": 300.0}}, 2000.0, 0.0)
+        self.assertEqual(75.0, out["unattributed_pct_of_book"])
+
+    def test_a_symbol_two_pods_claim_is_split_not_double_counted(self):
+        self._write({"pod1": self._pod(0.0, {"KO": (6.0, 50.0)}),
+                     "pod2": self._pod(0.0, {"KO": (2.0, 50.0)})})
+        out = self.P.reconcile_to_broker({"KO": {"qty": 8.0, "price": 50.0}},
+                                         400.0, 0.0)
+        self.assertEqual(400.0, out["pod_deployed_total"])
+        self.assertEqual(300.0, out["deployed_by_pod"]["pod1"])
+        self.assertEqual(100.0, out["deployed_by_pod"]["pod2"])
+        self.assertEqual(0.0, out["residual"])
+
+    def test_a_short_counts_as_deployed_exposure_not_negative_value(self):
+        self._write({"pod1": self._pod(0.0, {"VFC": (-320.0, 10.0)})})
+        out = self.P.reconcile_to_broker({"VFC": {"qty": -320.0, "price": 10.0}},
+                                         0.0, 0.0)
+        self.assertEqual(3200.0, out["pod_deployed_total"])
+        self.assertEqual(0.0, out["residual"])
 
     def test_POISON_PILL_a_ledger_that_matches_reports_no_cause(self):
         self._write({"pod1": self._pod(250.0, {"KO": (10.0, 50.0)})})
         out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
                                          750.0, 250.0)
         self.assertEqual(0.0, out["residual"])
+        self.assertEqual(0.0, out["unattributed_value"])
         self.assertEqual([], out["causes"],
                          "invented a cause for a ledger that agrees")
 
-    def test_the_total_is_not_scaled_to_force_agreement(self):
+    def test_nothing_is_scaled_to_force_agreement(self):
         """A reconciliation that forces the sum to match destroys the evidence
         of the thing it was built to find."""
         self._write({"pod1": self._pod(1000.0, {"KO": (10.0, 50.0)})})
-        self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
-                                   99999.0, 1000.0)
+        out = self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}},
+                                         99999.0, 1000.0)
         saved = json.loads(self.path.read_text())
-        self.assertEqual(1500.0, saved["pods"]["pod1"]["total_value"])
+        self.assertEqual(500.0, saved["pods"]["pod1"]["deployed_value"])
+        self.assertEqual(500.0, out["pod_deployed_total"])
 
     def test_apply_false_writes_nothing(self):
         self._write({"pod1": self._pod(0.0, {"KO": (10.0, 50.0)})})
@@ -14258,6 +14301,221 @@ class TestPodLedgerDriftHasNamedCauses(unittest.TestCase):
         calls = {n.func.attr for n in ast.walk(tree)
                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
         self.assertIn("reconcile_to_broker", calls)
+
+    def test_a_failed_reconciliation_is_itself_a_flag(self):
+        """The old block was one big try/except that logged a warning. A control
+        that fails silently is indistinguishable from one that passes."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        found = False
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Try):
+                continue
+            body_calls = {n.func.attr for n in ast.walk(node)
+                          if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+            if "reconcile_to_broker" not in body_calls:
+                continue
+            for handler in node.handlers:
+                names = {n.func.id for n in ast.walk(handler)
+                         if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+                if "_flag" in names:
+                    found = True
+        self.assertTrue(found,
+                        "the reconciliation's except branch raises no flag — a "
+                        "silent failure reads exactly like a clean pass")
+
+
+class TestAPodBudgetIsNotMoney(unittest.TestCase):
+    """`cash_balance` was a category error and `total_value` added it to prices.
+
+    There is ONE cash balance and it is at the broker. Three pods each holding
+    $30,000 of their own summed to $40,998 of "pod cash" against $13,262 real,
+    and pod totals plus a $10,000 reserve came to $104,646 against $98,965 of
+    equity. Pods are an ATTRIBUTION of firm equity, not custody accounts.
+    """
+
+    def setUp(self):
+        import pod_ledger
+        self.P = pod_ledger
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "pod_allocations.json"
+        p = patch.object(pod_ledger, "_ALLOCATIONS_PATH", self.path)
+        p.start()
+        self.addCleanup(p.stop)
+        self.path.write_text(json.dumps({
+            "pods": {"pod1": {"budget": 30000.0, "budget_inception": 30000.0,
+                              "cash_balance": 30000.0, "name": "R&D",
+                              "positions": {"KO": {"qty": 10.0, "avg_entry": 50.0,
+                                                   "current_price": 50.0,
+                                                   "side": "long"}}}},
+            "reserve": {"balance": 10000.0}, "last_updated": ""}))
+
+    def test_total_value_is_None_not_a_plausible_wrong_number(self):
+        """None makes a stale reader fail. A number makes it lie quietly."""
+        self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}}, 500.0, 0.0)
+        saved = json.loads(self.path.read_text())
+        self.assertIsNone(saved["pods"]["pod1"]["total_value"])
+
+    def test_budget_remaining_is_budget_minus_deployed(self):
+        self.P.reconcile_to_broker({"KO": {"qty": 10.0, "price": 50.0}}, 500.0, 0.0)
+        saved = json.loads(self.path.read_text())["pods"]["pod1"]
+        self.assertEqual(500.0, saved["deployed_value"])
+        self.assertEqual(29500.0, saved["budget_remaining"])
+
+    def test_the_firm_summary_refuses_to_produce_a_total(self):
+        summary = self.P.get_firm_summary()
+        self.assertIsNone(summary["firm_total_value"])
+        self.assertIn("broker equity", summary["firm_total_value_note"].lower())
+
+    def test_deployed_and_remaining_are_never_added(self):
+        """AST over pod_ledger: no expression adds a deployed/market quantity to
+        an entitlement. That sum is the bug, and it reads as ordinary code."""
+        src = (Path(__file__).parent / "pod_ledger.py").read_text()
+        tree = ast.parse(src)
+        entitle = {"cash_balance", "budget_remaining", "budget", "budget_inception"}
+        real = {"positions_value", "deployed_value", "market_value"}
+
+        def _names(node):
+            out = set()
+            for n in ast.walk(node):
+                if isinstance(n, ast.Constant) and isinstance(n.value, str):
+                    out.add(n.value)
+                elif isinstance(n, ast.Attribute):
+                    out.add(n.attr)
+                elif isinstance(n, ast.Name):
+                    out.add(n.id)
+            return out
+
+        offenders = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+                left, right = _names(node.left), _names(node.right)
+                if ((left & entitle and right & real) or
+                        (left & real and right & entitle)):
+                    offenders.append(ast.dump(node)[:120])
+        self.assertEqual([], offenders,
+                         "an entitlement is being added to a market value: %s"
+                         % offenders)
+
+    def test_a_pod_over_its_budget_is_reported(self):
+        self.path.write_text(json.dumps({
+            "pods": {"pod1": {"budget": 1000.0, "budget_inception": 1000.0,
+                              "cash_balance": 0.0,
+                              "positions": {"KO": {"qty": 100.0, "avg_entry": 50.0,
+                                                   "current_price": 50.0}}}},
+            "reserve": {"balance": 0.0}, "last_updated": ""}))
+        out = self.P.reconcile_to_broker({"KO": {"qty": 100.0, "price": 50.0}},
+                                         5000.0, 0.0)
+        self.assertEqual(1, len(out["budget_breaches"]))
+        self.assertEqual(4000.0, out["budget_breaches"][0]["over"])
+        self.assertTrue(any("over" in c for c in out["causes"]))
+
+    def test_budget_remaining_never_goes_negative(self):
+        """A negative entitlement would be spent as a credit by a naive sizer."""
+        self.path.write_text(json.dumps({
+            "pods": {"pod1": {"budget": 1000.0, "budget_inception": 1000.0,
+                              "cash_balance": 0.0,
+                              "positions": {"KO": {"qty": 100.0, "avg_entry": 50.0,
+                                                   "current_price": 50.0}}}},
+            "reserve": {"balance": 0.0}, "last_updated": ""}))
+        self.P.reconcile_to_broker({"KO": {"qty": 100.0, "price": 50.0}}, 5000.0, 0.0)
+        saved = json.loads(self.path.read_text())["pods"]["pod1"]
+        self.assertEqual(0.0, saved["budget_remaining"])
+
+    def test_no_consumer_still_sizes_off_total_value(self):
+        """The whole point of retiring the key. `total_value` is None now, so a
+        surviving reader either crashes or silently sizes against zero."""
+        import ast as _ast
+        here = Path(__file__).parent
+        offenders = []
+        for name in ("etf_pod_board.py", "logic_team.py", "logic_officer.py",
+                     "performance_forecaster.py"):
+            tree = _ast.parse((here / name).read_text())
+            for node in _ast.walk(tree):
+                if (isinstance(node, _ast.Call)
+                        and isinstance(node.func, _ast.Attribute)
+                        and node.func.attr == "get"
+                        and node.args
+                        and isinstance(node.args[0], _ast.Constant)
+                        and node.args[0].value == "total_value"):
+                    offenders.append("%s:%d" % (name, node.lineno))
+        self.assertEqual([], offenders,
+                         "still reading the retired key: %s" % offenders)
+
+
+class TestAttributionSitsAtTheChokePoint(unittest.TestCase):
+    """`record_trade` was called by 2 modules while 15 reached the broker.
+
+    On 2026-08-19 the pod books and the account intersected on exactly ONE
+    symbol out of 33. Same shape as the risk limits living in `submit_buy`: a
+    caller cannot forget a thing it never had to know about, so attribution
+    belongs where every order already passes.
+    """
+
+    def test_the_hook_claims_the_symbol(self):
+        src = (Path(__file__).parent / "order_ledger.py").read_text()
+        tree = ast.parse(src)
+        claims = [n for n in ast.walk(tree)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                  and n.func.attr == "claim"
+                  and isinstance(n.func.value, ast.Name)
+                  and n.func.value.id == "pod_ledger"]
+        self.assertTrue(claims, "order_ledger.install() never claims the symbol")
+
+    def test_an_undeclared_order_is_attributed_to_unattributed_with_its_source(self):
+        """A guess recorded as a fact is indistinguishable downstream from a
+        measurement — so an undeclared caller is named, not inferred."""
+        import pod_ledger
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "pod_allocations.json"
+        path.write_text(json.dumps({"pods": {}, "reserve": {"balance": 0.0}}))
+        with patch.object(pod_ledger, "_ALLOCATIONS_PATH", path):
+            pod_ledger.claim("NVDA", source="head_agent.py")
+            book = json.loads(path.read_text())["attribution"]
+        self.assertEqual(pod_ledger.UNATTRIBUTED, book["NVDA"]["pod"])
+        self.assertEqual("head_agent.py", book["NVDA"]["source"])
+
+    def test_a_declared_block_attributes_to_that_pod(self):
+        import pod_ledger
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "pod_allocations.json"
+        path.write_text(json.dumps({"pods": {}, "reserve": {"balance": 0.0}}))
+        with patch.object(pod_ledger, "_ALLOCATIONS_PATH", path):
+            with pod_ledger.attributing("pod3_macro"):
+                pod_ledger.claim("GLD", source="etf_pod_board.py")
+            book = json.loads(path.read_text())["attribution"]
+        self.assertEqual("pod3_macro", book["GLD"]["pod"])
+        self.assertIsNone(pod_ledger.current_attribution(),
+                          "the attribution stack leaked past the block")
+
+    def test_an_undeclared_add_does_not_steal_a_symbol_from_its_pod(self):
+        import pod_ledger
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        path = Path(tmp.name) / "pod_allocations.json"
+        path.write_text(json.dumps({"pods": {}, "reserve": {"balance": 0.0}}))
+        with patch.object(pod_ledger, "_ALLOCATIONS_PATH", path):
+            pod_ledger.claim("GLD", pod_id="pod3_macro")
+            pod_ledger.claim("GLD", source="head_agent.py")
+            book = json.loads(path.read_text())["attribution"]
+        self.assertEqual("pod3_macro", book["GLD"]["pod"])
+
+    def test_claim_never_raises(self):
+        """It runs inside the submit_order hook. An exception there would fail
+        an order that the broker has already accepted."""
+        import pod_ledger
+        with patch.object(pod_ledger, "_load", side_effect=OSError("disk gone")):
+            pod_ledger.claim("KO", source="test")     # must not raise
+
+    def test_POISON_PILL_the_stack_survives_an_exception_in_the_block(self):
+        import pod_ledger
+        with self.assertRaises(ValueError):
+            with pod_ledger.attributing("pod1_rd"):
+                raise ValueError("boom")
+        self.assertIsNone(pod_ledger.current_attribution())
 
 
 # =============================================================================

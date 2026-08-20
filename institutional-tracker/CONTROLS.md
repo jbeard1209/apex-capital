@@ -258,4 +258,29 @@ A control reports a single reconciled TOTAL. The total is arithmetic, so it is a
 - **Detectors:**
   - `pod_ledger.py::reconcile_to_broker`
   - `pod_ledger.py::_drift_causes`
-  - `test_pipeline_smoke.py::TestPodLedgerDriftHasNamedCauses`
+  - `test_pipeline_smoke.py::TestPodLedgerAttributionHasNamedCauses`
+
+## `an_entitlement_counted_as_an_asset`
+
+A book quantity that represents PERMISSION TO SPEND is summed with quantities that represent things actually owned. The sum is arithmetically valid, has a plausible magnitude, and describes nothing that exists — so no downstream check can tell it is wrong.
+
+- **Proved real by:** pod_ledger gave each of three pods its own `cash_balance` and defined `total_value = cash_balance + positions_value`. There is ONE cash balance and it is at the broker: pods are an ATTRIBUTION of firm equity, not custody accounts. Pod cash summed to $40,998 against $13,262 real, and pod totals plus a $10,000 reserve came to $104,646 against $98,965 of equity. Six modules sized, forecast and graded against that number. Fixed 2026-08-19: `total_value` returns None rather than a corrected number, so a reader that still wants it fails instead of quietly receiving something plausible; `deployed_value` (real, from the broker) and `budget_remaining` (an entitlement) are two numbers that must not be added, and an AST test asserts nothing adds them.
+- **Owner:** Pod Ledger / CFO
+- **Writeup:** memory `an-aggregate-is-not-a-finding`
+- **Detectors:**
+  - `pod_ledger.py::get_firm_summary`
+  - `pod_ledger.py::sync_from_broker`
+  - `test_pipeline_smoke.py::TestAPodBudgetIsNotMoney`
+
+## `recorded_by_whoever_remembered_to`
+
+A book that only learns about an event when a caller volunteers it. Every caller that does record looks correct, every caller that does not looks like ordinary code, and the book's coverage is invisible because it has no denominator.
+
+- **Proved real by:** pod_ledger.record_trade was called from 2 modules / 4 call sites while 15 modules reached TradingClient.submit_order. On 2026-08-19 the pod books and the broker account intersected on exactly ONE symbol out of 33: 13 pod claims the broker did not hold, 19 broker positions no pod owned. Same shape as the risk limits living in submit_buy. Fixed by claiming the symbol at the order_ledger choke point every path already passes through, with undeclared callers recorded as `unattributed` WITH their submitting module — an absence you can see is a finding, an absence you cannot see is what this ledger had been for three months.
+- **Owner:** Pod Ledger / order_ledger
+- **Writeup:** memory `guardrail-on-one-path`
+- **Detectors:**
+  - `pod_ledger.py::claim`
+  - `pod_ledger.py::attributing`
+  - `order_ledger.py::install`
+  - `test_pipeline_smoke.py::TestAttributionSitsAtTheChokePoint`

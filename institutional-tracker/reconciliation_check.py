@@ -140,20 +140,29 @@ def run_reconciliation() -> dict:
 
     logger.info(f"  Portfolio: ${portfolio_value:,.2f} | Cash: ${cash:,.2f} ({cash_pct*100:.1f}%) | Positions: {n_positions}")
 
-    # ── AUTHORITATIVE FIRM VALUE (2026-07-23) ──────────────────────────────
-    # The Alpaca account is ground truth. The pod ledger is a virtual overlay
-    # that drifted to $104,284 while the real account was $97,524 — reports were
-    # overstating value by ~$6,700. Write the true equity to data/firm_value.json
-    # so every report/briefing reads ONE honest number, and flag when the pod
-    # ledger diverges >2% (that drift is itself a bug worth surfacing).
-    # The reconcile step below is what makes this an actionable finding rather
-    # than a recurring number. It marks the pod ledger to broker prices —
-    # `pod_ledger.update_prices()` was documented as a daily job and had no
-    # caller in the firm, so ETF-pod positions still sat at their entry price
-    # months later — and then splits whatever gap remains into named causes.
-    # A single "-6.3%" covers a stale-price bug, an attribution bug and a book
-    # entry that was never at the broker at all; three defects behind one number
-    # is a number nobody can close, and this one had been open for weeks.
+    # ── AUTHORITATIVE FIRM VALUE (2026-07-23, rewritten 2026-08-19) ────────
+    # The Alpaca account is ground truth. It always was; the pod ledger is an
+    # ATTRIBUTION of that equity, not a second account holding its own money.
+    #
+    # This block used to compare `pod_ledger`'s total against broker equity and
+    # flag the difference as LEDGER_DRIFT. It fired every run for weeks and was
+    # never closed, for three reasons worth keeping written down:
+    #
+    #   1. The two sides were different kinds of thing. The pod total was
+    #      budget headroom PLUS market value — an entitlement added to a price
+    #      — so part of the "drift" was the units, not an error.
+    #   2. One number covered three unrelated defects (a mark-to-market job with
+    #      no caller, unattributed positions, a book reserve with no broker
+    #      counterpart). Nobody can close a sum.
+    #   3. It named no owner.
+    #
+    # What is compared now is a conservation identity between two measurements
+    # of the SAME quantity — the market value of the firm's positions, once as
+    # the broker reports it and once as the pods claim it — and the residual is
+    # decomposed into individually closable causes. The headline number is the
+    # share of the book that belongs to no pod, because that is the one with a
+    # decision attached: exposure nobody's budget is charged for is exposure
+    # nobody is sizing.
     try:
         import pod_ledger
         broker_pos = {}
@@ -164,9 +173,9 @@ def run_reconciliation() -> dict:
                     "price": float(_p.get("current_price", 0) or 0),
                 }
         recon = pod_ledger.reconcile_to_broker(broker_pos, portfolio_value, cash)
-        pod_sum = recon["pod_total_value"]
-        ledger_drift = -recon["residual"]              # broker minus ledger
-        drift_pct = -recon["residual_pct"]
+        deployed = recon["pod_deployed_total"]
+        book = recon["broker_positions_value"]
+        unattr_pct = recon["unattributed_pct_of_book"]
 
         with open("data/firm_value.json", "w") as fh:
             json.dump({
@@ -174,28 +183,45 @@ def run_reconciliation() -> dict:
                 "cash": round(cash, 2),
                 "as_of": now.isoformat(),
                 "source": "alpaca_paper_account (ground truth)",
-                "pod_ledger_sum": pod_sum,
-                "pod_ledger_drift": round(ledger_drift, 2),
-                "pod_ledger_drift_pct": round(drift_pct, 2),
+                "pod_deployed_total": deployed,
+                "broker_positions_value": book,
+                "attribution_residual": recon["residual"],
+                "unattributed_value": recon["unattributed_value"],
+                "unattributed_pct_of_book": unattr_pct,
                 "reconciliation": recon,
             }, fh, indent=2)
         logger.info(f"  Authoritative firm value written: ${portfolio_value:,.2f} "
-                    f"(pod ledger ${pod_sum:,.2f}, drift {drift_pct:+.1f}%, "
-                    f"marked to market {recon['marked_to_market']:+,.0f})")
+                    f"| book ${book:,.0f}, attributed to pods ${deployed:,.0f} "
+                    f"({100.0 - unattr_pct:.0f}% covered)")
         for _c in recon["causes"]:
-            logger.info(f"    drift cause: {_c}")
+            logger.info(f"    unreconciled: {_c}")
 
-        if abs(drift_pct) > 2.0:
+        # Threshold is on ATTRIBUTION COVERAGE, not on a dollar difference.
+        # 10% of the book unowned is the point at which pod-level risk numbers
+        # stop describing the firm.
+        if unattr_pct > 10.0:
             lead = recon["causes"][0] if recon["causes"] else (
                 "no known cause accounts for it — the gap is unexplained, which "
-                "is a stronger finding than the drift itself")
-            _flag(flags, "HIGH", "LEDGER_DRIFT",
-                  f"Pod ledger (${pod_sum:,.0f}) diverges {drift_pct:+.1f}% from the real "
-                  f"account (${portfolio_value:,.0f}); reports built on it misstate firm "
-                  f"value by ${ledger_drift:,.0f}. Largest cause: {lead}. "
+                "is a stronger finding than the residual itself")
+            _flag(flags, "HIGH", "LEDGER_ATTRIBUTION",
+                  f"{unattr_pct:.0f}% of the book (${recon['unattributed_value']:,.0f} "
+                  f"of ${book:,.0f}) belongs to no pod, so no pod's budget is "
+                  f"charged for it and pod-level exposure numbers understate the "
+                  f"firm. Largest gap: {lead}. "
                   f"Full split in data/firm_value.json.reconciliation.")
+        elif recon["causes"] and abs(recon["residual"]) > 0.02 * (book or 1.0):
+            _flag(flags, "MEDIUM", "LEDGER_ATTRIBUTION",
+                  f"Pod claims and the broker disagree by ${recon['residual']:,.0f} "
+                  f"on a ${book:,.0f} book. Largest cause: {recon['causes'][0]}.")
     except Exception as _fve:
-        logger.warning(f"  Could not write authoritative firm value: {_fve}")
+        # This used to swallow the whole block. A reconciliation that fails
+        # silently is indistinguishable from one that passes, so say so loudly
+        # and make the silence itself a flag.
+        logger.warning(f"  Could not reconcile the pod ledger: {_fve}")
+        _flag(flags, "MEDIUM", "LEDGER_ATTRIBUTION_UNAVAILABLE",
+              f"The pod-ledger reconciliation did not run ({_fve}). No claim is "
+              f"being made about attribution coverage this cycle — treat the "
+              f"absence of a LEDGER_ATTRIBUTION flag as unknown, not as clean.")
 
     # ── CHECK 0: do the two copies of the guardrails still agree? ──────────
     bounds, drift = _mirror_check()

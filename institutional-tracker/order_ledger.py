@@ -348,6 +348,23 @@ def install():
             except Exception:
                 pass
 
+        # Attribute the symbol to a pod HERE, at the choke point, for the same
+        # reason the risk limits moved here (see risk_gate.py). `pod_ledger`
+        # only learned about a position when someone remembered to call
+        # `record_trade`, and two modules did while fifteen reached the broker
+        # — so on 2026-08-19 the pod books and the account intersected on
+        # exactly one symbol out of 33. A caller cannot forget an attribution it
+        # never had to know about. Undeclared callers land in `unattributed`
+        # with their module recorded, which is a finding you can see rather than
+        # an absence you cannot. (2026-08-19)
+        if _rg_entry:
+            try:
+                import pod_ledger
+                pod_ledger.claim(getattr(order, "symbol", getattr(req, "symbol", "")),
+                                 source=src)
+            except Exception:
+                pass
+
         try:
             record(getattr(order, "id", ""),
                    stamp or getattr(order, "client_order_id", ""),

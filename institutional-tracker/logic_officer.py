@@ -241,7 +241,11 @@ def _rule_idle_capital(state: dict) -> Optional[dict]:
     idle_pods = []
     for pod_id, pod in pods.items():
         positions    = pod.get("positions", {})
-        total_value  = pod.get("total_value", 0) or 0
+        # See the same change in logic_team.CapitalLogicAgent: the quantity this
+        # rule is about is unspent entitlement, not the retired `total_value`.
+        total_value  = pod.get("budget_remaining")
+        if total_value is None:
+            total_value = pod.get("cash_balance", 0) or 0
         n_positions  = len(positions)
         budget       = pod.get("budget_inception", 0) or 0
 

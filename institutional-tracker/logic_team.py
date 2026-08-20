@@ -226,7 +226,15 @@ class CapitalLogicAgent:
         for pod_id, pod in pods.items():
             budget   = pod.get("budget_inception", 0) or 0
             n_pos    = len(pod.get("positions", {}))
-            total_v  = pod.get("total_value", 0) or 0
+            # Idle capital is UNSPENT ENTITLEMENT, not "total value". This read
+            # `total_value` — headroom plus market value — which for a pod with
+            # zero positions happened to equal the headroom, so the number was
+            # right by coincidence and would have been wrong the moment the pod
+            # held anything. `total_value` is now None on purpose; read the
+            # quantity the finding is actually about. (2026-08-19)
+            total_v  = pod.get("budget_remaining")
+            if total_v is None:
+                total_v = pod.get("cash_balance", 0) or 0
 
             cro_blocking_buys = cro in ("CRITICAL",)  # CRITICAL = systemically blocked, expected idle
             # DOCUMENTED idle is a decision, not a failure: if the pod carries an

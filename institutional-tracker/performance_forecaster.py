@@ -55,18 +55,28 @@ def _firm_snapshot() -> dict:
     """Current grounded state: equity, deployment, recent output, model status."""
     alloc = _load(DATA / "pod_allocations.json", {})
     pods = alloc.get("pods", {}) if isinstance(alloc, dict) else {}
-    equity, budget, deployed, positions = 0.0, 0.0, 0.0, 0
+    budget, deployed, positions = 0.0, 0.0, 0
     for p in (pods.values() if isinstance(pods, dict) else []):
-        v = p.get("total_value", 0) or 0
         b = p.get("budget_inception", 0) or 0
         npos = len(p.get("positions", {}) or {})
-        equity += v; budget += b; positions += npos
-        if npos:
-            deployed += v
-    _res = alloc.get("reserve", 0) or 0
-    if isinstance(_res, dict):
-        _res = _res.get("amount", _res.get("value", _res.get("cash", 0))) or 0
-    equity += float(_res or 0)
+        budget += b; positions += npos
+        v = p.get("deployed_value")
+        if v is None:
+            v = p.get("positions_value", 0) or 0
+        deployed += float(v or 0)
+    # Equity is the BROKER's, not a sum of pod book entries. This used to add
+    # each pod's `total_value` (entitlement + market value) plus a reserve with
+    # no broker counterpart, and forecast against a firm that was ~$5.7k larger
+    # than the one that exists. `firm_value.json` is written by
+    # reconciliation_check straight from the account. (2026-08-19)
+    _fv = _load(DATA / "firm_value.json", {})
+    equity = _fv.get("equity")
+    try:
+        equity = float(equity)
+        if equity != equity or equity <= 0:
+            equity = None
+    except (TypeError, ValueError):
+        equity = None
     # recent output (picks produced per pod, most recent files)
     def _n(f, *keys):
         d = _load(DATA / f, [])
@@ -84,17 +94,29 @@ def _firm_snapshot() -> dict:
                  "st_live": bool(m.get("auc") and m.get("auc") >= 0.57)}
     except Exception:
         model = {}
-    return {"equity": round(equity, 2), "budget": round(budget, 2),
+    return {"equity": round(equity, 2) if equity is not None else None,
+            "equity_source": ("data/firm_value.json (broker account)" if equity is not None
+                              else "UNAVAILABLE — reconciliation_check has not written it"),
+            "budget": round(budget, 2),
             "deployed": round(deployed, 2),
-            "deployed_pct": round(deployed / equity, 3) if equity else 0,
+            "deployed_pct": (round(deployed / equity, 3)
+                             if equity else None),
             "positions": positions, "output": output, "model": model,
-            "return_vs_budget_pct": round((equity / budget - 1) * 100, 2) if budget else None}
+            "return_vs_budget_pct": (round((equity / budget - 1) * 100, 2)
+                                     if (equity is not None and budget) else None)}
 
 
 def _forecast(snap: dict) -> list:
     """Honest, range-based goals per horizon. Assumptions explicit; LOW confidence
     until a realized-return track record exists."""
     eq = snap["equity"]; dep = snap["deployed_pct"]
+    if eq is None:
+        # No forecast is better than a forecast against a fabricated baseline:
+        # every goal here is `baseline_equity * (1 + r)`, so a wrong baseline
+        # produces targets that will be graded, recorded and believed. Return
+        # nothing and let `run()` say why. (2026-08-19)
+        return []
+    dep = dep if dep is not None else 0.1
     have_track = len(_load(RECORD, {}).get("graded", [])) >= 3
     conf = "MODERATE" if have_track else "LOW — no realized track record yet; ranges are assumption-based"
     goals = []
@@ -128,6 +150,12 @@ def _grade(snap: dict):
     rec = _load(RECORD, {"graded": []})
     today = datetime.now().strftime("%Y-%m-%d")
     still = []
+    if snap.get("equity") is None:
+        # Grading needs an actual. Without one, leave the goals ACTIVE rather
+        # than grading them against a guess — a goal graded wrong is worse than
+        # a goal graded late, because the grade feeds the calibration record.
+        logger.warning("  Not grading: firm equity unavailable this cycle")
+        return rec
     for g in goals.get("active", []):
         if g.get("target_date", "9999") > today:
             still.append(g); continue
@@ -149,6 +177,8 @@ def _grade(snap: dict):
 
 
 def _propose_to_board(goals: list):
+    if not goals:
+        return                       # _forecast refused; nothing to ratify
     pend = _load(CIT_PENDING, [])
     if not isinstance(pend, list): return
     title = f"Ratify firm performance goals ({datetime.now().strftime('%Y-%m-%d')})"
@@ -170,8 +200,15 @@ def _propose_to_board(goals: list):
 
 def run(report_only: bool = False) -> dict:
     snap = _firm_snapshot()
-    logger.info(f"  Firm equity ${snap['equity']:,.0f} ({snap['return_vs_budget_pct']}% vs budget) | "
-                f"{snap['positions']} positions | deployed {snap['deployed_pct']*100:.0f}%")
+    if snap["equity"] is None:
+        logger.warning("  Firm equity UNAVAILABLE (%s) — no goals set or graded "
+                       "this cycle. Run reconciliation_check first.",
+                       snap["equity_source"])
+    else:
+        logger.info(f"  Firm equity ${snap['equity']:,.0f} "
+                    f"({snap['return_vs_budget_pct']}% vs budget) | "
+                    f"{snap['positions']} positions | "
+                    f"deployed {(snap['deployed_pct'] or 0)*100:.0f}%")
     rec = _grade(snap)
     goals = _load(GOALS, {"active": [], "history": []})
     # set fresh goals only if none active for this week

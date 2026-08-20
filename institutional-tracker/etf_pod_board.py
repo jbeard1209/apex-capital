@@ -240,11 +240,51 @@ def _load_pod_state() -> dict:
         log.warning("Could not load pod3 state from ledger: %s — using empty state", exc)
         return {
             "pod_id": POD_ID,
+            "budget": 30000.0,
+            "budget_remaining": 30000.0,
             "cash_balance": 30000.0,
+            "deployed_value": 0.0,
             "positions_value": 0.0,
-            "total_value": 30000.0,
+            "total_value": None,
             "positions": {},
         }
+
+
+def _pod_budget(pod_state: dict) -> float:
+    """The pod's sizing denominator: its BUDGET, a constant it was granted.
+
+    This module used to size against `pod_state["total_value"]`, which was
+    budget headroom plus market value. Two problems with that as a denominator:
+    it moved with prices, so the "60% of budget" concentration test meant a
+    different dollar amount every day; and after a drawdown it shrank, which is
+    exactly backwards — a pod that has lost money is not entitled to less than
+    its mandate, it is entitled to the same mandate with less deployed.
+
+    `total_value` is now None on purpose, so a stale reader gets a TypeError
+    rather than a plausible wrong number. (2026-08-19)
+    """
+    for key in ("budget", "budget_inception"):
+        v = pod_state.get(key)
+        try:
+            v = float(v)
+            if v == v and v > 0:
+                return v
+        except (TypeError, ValueError):
+            pass
+    return 30000.0
+
+
+def _pod_unspent(pod_state: dict) -> float:
+    """Unspent entitlement. NOT cash this pod holds — there is one cash balance
+    and it is at the broker (see pod_ledger.get_firm_summary)."""
+    v = pod_state.get("budget_remaining")
+    if v is None:
+        v = pod_state.get("cash_balance")
+    try:
+        v = float(v)
+        return v if v == v else 0.0
+    except (TypeError, ValueError):
+        return 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -434,7 +474,7 @@ def _etf_risk_officer(brief: dict, proposed_etfs: List[str], pod_state: dict) ->
     etfs        = brief.get("etfs", {})
     vix         = regime.get("vix", 20.0)
     spy_rsi     = regime.get("spy_rsi", 50.0)
-    pod_total   = pod_state.get("total_value", 30000.0)
+    pod_total   = _pod_budget(pod_state)
 
     risk_flags: List[str] = []
     critical_flags = 0
@@ -953,13 +993,13 @@ def _generate_orders(
     Compare recommended ETFs to current pod3 positions.
     Generate BUY/SELL orders with quantities and dollar values.
 
-    Position size: min(cash_balance / n_etfs, total_value / n_etfs)
+    Position size: min(budget_remaining / n_etfs, budget / n_etfs)
     Quantity: math.floor(position_size / current_price)  — always floor, never exceed budget
     """
     etfs_data       = brief.get("etfs", {})
     current_pos     = pod_state.get("positions", {})
-    cash_balance    = pod_state.get("cash_balance", 30000.0)
-    total_value     = pod_state.get("total_value", 30000.0)
+    cash_balance    = _pod_unspent(pod_state)
+    total_value     = _pod_budget(pod_state)
     n_etfs          = len(final_etfs) if final_etfs else 1
 
     current_tickers = set(current_pos.keys())
@@ -1201,10 +1241,10 @@ def run() -> dict:
         regime.get("warning_count", 0),
     )
     log.info(
-        "Pod3 state: cash=$%.0f | positions_value=$%.0f | total=$%.0f | n_positions=%d",
-        pod_state.get("cash_balance", 0),
-        pod_state.get("positions_value", 0),
-        pod_state.get("total_value", 0),
+        "Pod3 state: unspent budget=$%.0f | deployed=$%.0f | budget=$%.0f | n_positions=%d",
+        _pod_unspent(pod_state),
+        pod_state.get("deployed_value", pod_state.get("positions_value", 0)),
+        _pod_budget(pod_state),
         len(pod_state.get("positions", {})),
     )
 
@@ -1251,8 +1291,8 @@ def run() -> dict:
             "target_etfs": [],
             "regime": regime,
             "pod_state_at_meeting": {
-                "cash_balance": pod_state.get("cash_balance"),
-                "total_value":  pod_state.get("total_value"),
+                "budget_remaining": _pod_unspent(pod_state),
+                "budget":       _pod_budget(pod_state),
                 "n_positions":  len(pod_state.get("positions", {})),
             },
             "emergency": {
@@ -1443,8 +1483,8 @@ def run() -> dict:
         "regime": regime,
         "canary_alerts": active_canary_alerts if active_canary_alerts else None,
         "pod_state_at_meeting": {
-            "cash_balance": pod_state.get("cash_balance"),
-            "total_value":  pod_state.get("total_value"),
+            "budget_remaining": _pod_unspent(pod_state),
+            "budget":       _pod_budget(pod_state),
             "n_positions":  len(pod_state.get("positions", {})),
         },
         "deliberations": deliberations_record,
