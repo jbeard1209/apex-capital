@@ -5998,6 +5998,52 @@ class TestHRSeesTheWholeFirm(unittest.TestCase):
         self.assertEqual(res["checked"], 4,
                          "a fresh snapshot was discarded and rebuilt anyway")
 
+    def test_a_module_newer_than_the_roster_makes_it_stale(self):
+        """Deploys, not the clock, are what make a roster wrong.
+
+        The first cut of this guard priced staleness in hours: 48, reasoned from
+        "the job is daily, so two missed runs means the writer died". That
+        reasons about the wrong hazard. A roster three days old on a host whose
+        code has not moved describes the firm exactly; one built four hours ago,
+        before a deploy that shipped an agent, does not — and deploys happen
+        several times a day while the roster job runs once. Measured on the VM
+        2026-08-20: a 19.7h-old snapshot, comfortably inside the threshold, had
+        160 agents where the tree had 161.
+
+        So the trigger is the real quantity — is any module newer than the
+        snapshot — with the hours kept only as a backstop. A scandir costs
+        microseconds against a rebuild's seconds against an invisible agent, so
+        it should fire on the true signal and fire early.
+        """
+        import hr_agent
+        td = Path(tempfile.mkdtemp())
+        (td / "old_agent.py").write_text("ok = True\n")
+        recent = datetime.utcnow() - timedelta(hours=2)
+        roster = {"generated_at": recent.isoformat(), "agents": [{"name": "x"}]}
+
+        import time as _t
+        old = _t.time() - 6 * 3600
+        os.utime(td / "old_agent.py", (old, old))
+        self.assertFalse(
+            hr_agent._roster_is_stale(roster, base=str(td)),
+            "a snapshot newer than every module was called stale")
+
+        (td / "just_shipped_agent.py").write_text("ok = True\n")
+        self.assertTrue(
+            hr_agent._roster_is_stale(roster, base=str(td)),
+            "a module landed after the roster was built and HR kept reading the "
+            "roster — every agent in that deploy is invisible, not unreviewed")
+
+    def test_an_unreadable_tree_is_not_reported_as_unchanged(self):
+        """"I could not look" must never come back as "nothing has changed"."""
+        import hr_agent
+        gone = os.path.join(tempfile.mkdtemp(), "not_here")
+        self.assertIsNone(hr_agent._newest_module_mtime(gone))
+        self.assertTrue(
+            hr_agent._roster_is_stale(
+                {"generated_at": datetime.utcnow().isoformat()}, base=gone),
+            "an unreadable tree was taken as evidence the roster is current")
+
     def test_a_roster_with_no_timestamp_is_stale(self):
         """An artifact that cannot say when it was made cannot say who works here.
 

@@ -44,6 +44,7 @@ import json
 import logging
 import os
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -1053,7 +1054,7 @@ def audit_attendance(base_dir: str = None) -> dict:
     runs_via, by_file = {}, {}
     try:
         roster = _safe_load(os.path.join(here, ROSTER_PATH))
-        if roster and _roster_is_stale(roster):
+        if roster and _roster_is_stale(roster, base=here):
             # Attendance decides which modules get imported and which are
             # reported missing. Off a frozen snapshot it would take the register
             # of a firm that has moved on: agents added since the freeze are not
@@ -1597,23 +1598,71 @@ def audit_retirement_coverage(registry=None) -> dict:
 
 ROSTER_PATH = "data/agent_roster.json"
 
-# The roster job runs daily (11:25 UTC on the VM). One missed run is a hiccup;
-# two means the writer has stopped, so that is where the snapshot stops being
-# evidence. Held as hours rather than days because a deploy that adds an agent
-# lands between runs, and HR should not spend most of a day blind to it.
+# Backstop only. This bounds the case where the roster job dies and the CODE
+# stops changing too — a quiet weekend on a host nobody deployed to. The job is
+# daily, so one missed run is a hiccup and two means the writer has stopped.
+#
+# It is deliberately NOT the main trigger. Age is a proxy for the thing that
+# actually matters, and a bad one: it prices staleness by the clock when the
+# hazard is priced by deploys. A roster three days old on a host whose code has
+# not moved describes the firm perfectly; one built four hours ago, before a
+# deploy that added an agent, does not. See _newest_module_mtime.
 ROSTER_MAX_AGE_H = 48
 
 
-def _roster_is_stale(roster, max_age_h: int = ROSTER_MAX_AGE_H) -> bool:
-    """Is this snapshot too old to be treated as a description of the firm?
+def _newest_module_mtime(base) -> Optional[float]:
+    """Epoch seconds of the most recently written agent module under `base`.
+
+    The real question behind "is the roster stale" is not how old it is, it is
+    whether the firm has changed since it was built. This measures that
+    directly instead of guessing a number of hours: rsync preserves mtimes, so
+    a module edited on the Mac at 06:00 still reads 06:00 on the VM, and a
+    deploy that lands a new agent is visible here the moment it arrives.
+
+    A scandir over ~320 files costs well under a millisecond; a rebuild costs
+    seconds; an agent HR cannot see is the outcome the whole audit exists to
+    prevent. With that asymmetry the check should fire on the real signal and
+    fire early, not wait out a threshold.
+
+    Returns None if the directory cannot be read — the caller must not turn an
+    unreadable tree into "nothing has changed".
+    """
+    newest = None
+    try:
+        with os.scandir(str(base)) as it:
+            for e in it:
+                if not e.name.endswith(".py") or e.name.startswith("test_"):
+                    continue
+                try:
+                    m = e.stat().st_mtime
+                except OSError:
+                    continue
+                if newest is None or m > newest:
+                    newest = m
+    except OSError:
+        return None
+    return newest
+
+
+def _roster_is_stale(roster, base=None, max_age_h: int = ROSTER_MAX_AGE_H) -> bool:
+    """Is this snapshot still a description of the firm, or only of a past one?
 
     Asking "does the roster exist?" is a question a file from any date answers
     yes to forever — presence is not currency. agent_roster stamps every build
     with `generated_at`; nothing read it until now.
 
-    Unparseable or absent stamp counts as stale. An artifact that cannot say
-    when it was made cannot be trusted to say who works here, and the remedy
-    (rebuild) is cheap, so the ambiguous case fails toward doing the work.
+    Three ways to fail, in order of what actually bites:
+      1. a module under `base` is NEWER than the snapshot — the firm changed
+         after the roster was written, which is every deploy that ships an
+         agent, and is the common case rather than the exotic one;
+      2. the snapshot is older than the backstop, covering a dead writer on a
+         host where nothing is being deployed either;
+      3. no stamp, or one that will not parse. An artifact that cannot say when
+         it was made cannot be trusted to say who works here, and since the
+         remedy is cheap the ambiguous case fails toward doing the work.
+
+    `base` is optional so the pure-timestamp behaviour stays callable and
+    testable on its own, but every real caller passes it.
     """
     if not isinstance(roster, dict):
         return True
@@ -1629,8 +1678,22 @@ def _roster_is_stale(roster, max_age_h: int = ROSTER_MAX_AGE_H) -> bool:
             when = when.replace(tzinfo=None) - when.utcoffset()
     except Exception:
         return True
-    age_h = (datetime.utcnow() - when).total_seconds() / 3600.0
-    return age_h > max_age_h
+
+    if (datetime.utcnow() - when).total_seconds() / 3600.0 > max_age_h:
+        return True
+
+    if base is not None:
+        newest = _newest_module_mtime(base)
+        if newest is None:
+            return True     # could not look; do not report "unchanged"
+        # generated_at is naive UTC; st_mtime is epoch. Compare in epoch via
+        # the same utcnow() reference, so a host running local time cannot
+        # make a fresh roster look ancient or an old one look current.
+        built_epoch = time.time() - (datetime.utcnow() - when).total_seconds()
+        if newest > built_epoch + 1:      # 1s slack for same-second writes
+            return True
+
+    return False
 
 # The agents that grade, retire, and reinstate everyone else. Every one of them
 # is a MODULE agent — not one has ever had a registry row — so HR's review has
@@ -1677,7 +1740,7 @@ def audit_roster_coverage() -> dict:
     here = os.path.dirname(os.path.abspath(__file__))
     roster = _safe_load(os.path.join(here, ROSTER_PATH))
     rows = roster.get("agents", []) if isinstance(roster, dict) else []
-    stale = _roster_is_stale(roster)
+    stale = _roster_is_stale(roster, base=here)
 
     if not rows or stale:
         # Never silently pass. A missing roster file is exactly the state in

@@ -855,12 +855,23 @@ CONTROL_CENSUS: List[FailureClass] = [
         "a guard for empty and none for old: had the roster job died, HR would "
         "have certified full coverage of a frozen firm indefinitely, and every "
         "agent hired after the freeze would have been not unreviewed but "
-        "invisible. Fix: the ratchet test builds live, and HR rebuilds when "
-        "generated_at is missing, unparseable, or older than 48h — pinned to "
-        "the caller's base_dir, because the first cut of that rebuild escaped "
-        "a sandbox and accused 32 real agents of absence from a tree they were "
-        "never in.",
-        ["hr_agent.py::_roster_is_stale",
+        "invisible. Fix: the ratchet test builds live, and HR rebuilds when the "
+        "snapshot is out of date. The trigger is deliberately NOT the clock — "
+        "the first cut priced staleness at 48h, reasoned from a daily job "
+        "missing two runs, which is the wrong hazard: a roster three days old "
+        "on a host whose code has not moved is exact, while one built four "
+        "hours ago before a deploy is not, and deploys outnumber roster runs "
+        "several to one. Measured on the VM the same day: a 19.7h snapshot, "
+        "well inside the threshold, held 160 agents where the tree held 161. "
+        "So the real quantity is measured instead — is any module mtime newer "
+        "than generated_at (rsync preserves mtimes, so a deploy is visible the "
+        "moment it lands) — with the hours kept only as a backstop for a dead "
+        "writer on a host nobody deploys to, and an unreadable tree failing "
+        "closed rather than reporting 'unchanged'. Both rebuilds are pinned to "
+        "the caller's base_dir, because the first cut escaped a sandbox and "
+        "accused 32 real agents of absence from a tree they were never in.",
+        ["hr_agent.py::_newest_module_mtime",
+         "hr_agent.py::_roster_is_stale",
          "test_pipeline_smoke.py::TestHRSeesTheWholeFirm"],
         "HR / Agent Roster",
         "presence-is-not-currency"),
