@@ -45,6 +45,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Optional
 
 logging.basicConfig(
@@ -1052,6 +1053,23 @@ def audit_attendance(base_dir: str = None) -> dict:
     runs_via, by_file = {}, {}
     try:
         roster = _safe_load(os.path.join(here, ROSTER_PATH))
+        if roster and _roster_is_stale(roster):
+            # Attendance decides which modules get imported and which are
+            # reported missing. Off a frozen snapshot it would take the register
+            # of a firm that has moved on: agents added since the freeze are not
+            # marked absent, they are never called, and an agent nobody calls
+            # roll for cannot be noticed missing. Same rebuild as the coverage
+            # audit below, for the same reason.
+            #
+            # Two things this must not do. Staleness is a property of a file
+            # that EXISTS — no file under an explicit base_dir is a caller
+            # scoping the audit to a sandbox, not a writer that died, and
+            # rebuilding there would drag the whole real firm into a run that
+            # was deliberately narrowed. And the rebuild is pinned to `here`,
+            # so it cannot answer a question about one tree by discovering
+            # another.
+            import agent_roster
+            roster = agent_roster.build(base=Path(here))
         for r in (roster.get("agents", []) if isinstance(roster, dict) else []):
             if r.get("name") and r.get("runs_via"):
                 runs_via[r["name"]] = r["runs_via"]
@@ -1579,6 +1597,41 @@ def audit_retirement_coverage(registry=None) -> dict:
 
 ROSTER_PATH = "data/agent_roster.json"
 
+# The roster job runs daily (11:25 UTC on the VM). One missed run is a hiccup;
+# two means the writer has stopped, so that is where the snapshot stops being
+# evidence. Held as hours rather than days because a deploy that adds an agent
+# lands between runs, and HR should not spend most of a day blind to it.
+ROSTER_MAX_AGE_H = 48
+
+
+def _roster_is_stale(roster, max_age_h: int = ROSTER_MAX_AGE_H) -> bool:
+    """Is this snapshot too old to be treated as a description of the firm?
+
+    Asking "does the roster exist?" is a question a file from any date answers
+    yes to forever — presence is not currency. agent_roster stamps every build
+    with `generated_at`; nothing read it until now.
+
+    Unparseable or absent stamp counts as stale. An artifact that cannot say
+    when it was made cannot be trusted to say who works here, and the remedy
+    (rebuild) is cheap, so the ambiguous case fails toward doing the work.
+    """
+    if not isinstance(roster, dict):
+        return True
+    ts = roster.get("generated_at")
+    if not ts:
+        return True
+    try:
+        # fromisoformat cannot read a trailing "Z" on 3.9, and agent_roster
+        # writes a naive utcnow() stamp — normalise both shapes to naive UTC
+        # without importing timezone, which this module does not carry.
+        when = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        if when.tzinfo is not None:
+            when = when.replace(tzinfo=None) - when.utcoffset()
+    except Exception:
+        return True
+    age_h = (datetime.utcnow() - when).total_seconds() / 3600.0
+    return age_h > max_age_h
+
 # The agents that grade, retire, and reinstate everyone else. Every one of them
 # is a MODULE agent — not one has ever had a registry row — so HR's review has
 # never once scored its own chain of command. That is the point of listing them
@@ -1624,11 +1677,23 @@ def audit_roster_coverage() -> dict:
     here = os.path.dirname(os.path.abspath(__file__))
     roster = _safe_load(os.path.join(here, ROSTER_PATH))
     rows = roster.get("agents", []) if isinstance(roster, dict) else []
+    stale = _roster_is_stale(roster)
 
-    if not rows:
+    if not rows or stale:
         # Never silently pass. A missing roster file is exactly the state in
         # which HR would report "all clear" while knowing nothing — build it
         # live rather than grade an empty set as OK.
+        #
+        # A *stale* roster is the same failure wearing a disguise. This block
+        # used to ask only "does the file have rows?", which is a question a
+        # snapshot from any date answers yes to, forever. data/agent_roster.json
+        # is host-local, is not deployed, and is rewritten only by this host's
+        # 11:25 UTC job; if that job dies the file freezes and HR keeps grading
+        # a firm that no longer exists, reporting full coverage the whole time.
+        # Every agent added after the freeze is not "unreviewed" — it is
+        # invisible, which is the one outcome this audit exists to prevent.
+        # Rebuilding costs a couple of seconds; missing an agent is the thing
+        # Jack has called disastrous, so the threshold is tight.
         try:
             import agent_roster
             rows = agent_roster.build().get("agents", [])
@@ -1639,6 +1704,7 @@ def audit_roster_coverage() -> dict:
                 "error": f"no roster to audit against: {type(e).__name__}: {e}"[:200],
                 "note": ("HR cannot claim coverage without a roster. Run "
                          "`python3 agent_roster.py --merge-remote --adopt`."),
+                "roster_was_stale": stale,
             }
 
     registry = _safe_load(os.path.join(here, REGISTRY_PATH))

@@ -5741,15 +5741,69 @@ class TestRosterMergeLosesNobody(unittest.TestCase):
                       "alone — the VM's 75 jobs were invisible to it")
 
     def test_the_live_manifest_still_declares_every_live_agent(self):
-        """The ratchet is only real if it runs against what is actually shipped."""
+        """The ratchet is only real if it runs against what is actually shipped.
+
+        Build the roster; do not read data/agent_roster.json. The two sides of
+        this comparison arrive by different routes and at different times: the
+        manifest is git-tracked and lands with every deploy, while the roster
+        snapshot is host-local, is never deployed, and is only rewritten when
+        this host's daily 11:25 UTC job runs. So for the hours between a deploy
+        that adds an agent and the next roster rebuild, the manifest declares
+        someone the snapshot has never heard of, and reading the file reports
+        that agent as VANISHED on a host where its module is sitting right
+        there. Measured on the VM 2026-08-20: manifest written 01:43, snapshot
+        written 11:25 the previous day, rd_price_theory_agent "vanished" while
+        rd_price_theory_agent.py was present and scheduled in cron.
+
+        That is the same misspecified comparison as a ratio over two different
+        populations — both sides correct, sampled at times that do not line up.
+        `agent_roster.py --check` on cron already builds live and was therefore
+        never fooled; only this test read the stale copy, which made it fail on
+        the VM and pass on the Mac for a reason that had nothing to do with
+        agents being lost. A detector that cries wolf after every deploy is how
+        the one alarm guarding against a silently dropped agent gets ignored.
+        """
         import agent_roster as ar
-        res = ar.check(ar._load(ar.ROSTER_PATH, {"agents": []}),
-                       ar._load(ar.MANIFEST_PATH, {"agents": []}))
+        res = ar.check(ar.build(), ar._load(ar.MANIFEST_PATH, {"agents": []}))
         self.assertNotEqual(res["declared"], 0,
                             "no manifest — the shrink ratchet is not armed")
         self.assertEqual(res["vanished"], [],
                          f"agents on the books have disappeared with no recorded "
                          f"retirement: {[v['name'] for v in res['vanished']]}")
+
+    def test_the_ratchet_is_not_read_from_a_snapshot_nobody_refreshes(self):
+        """AST: this class must call build(), never _load(ROSTER_PATH).
+
+        Pinned rather than left to convention, because reading the saved file is
+        the obvious-looking shortcut and it is wrong for a reason that is only
+        visible on the host that does not write it. A grep would match the
+        postmortem above, so walk the tree.
+        """
+        import ast, inspect, textwrap
+        src = textwrap.dedent(inspect.getsource(TestRosterMergeLosesNobody))
+        tree = ast.parse(src)
+
+        fn = next((n for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef)
+                   and n.name == "test_the_live_manifest_still_declares_every_live_agent"), None)
+        self.assertIsNotNone(fn, "the ratchet test has been renamed or removed")
+
+        loads_roster = [
+            n for n in ast.walk(fn)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Attribute) and n.func.attr == "_load"
+            and any(isinstance(a, ast.Attribute) and a.attr == "ROSTER_PATH"
+                    for a in n.args)
+        ]
+        self.assertEqual(loads_roster, [],
+                         "the ratchet is reading data/agent_roster.json — a "
+                         "host-local snapshot that is never deployed and lags "
+                         "the manifest by up to a day. Call build().")
+
+        builds = [n for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                  and n.func.attr == "build"]
+        self.assertTrue(builds, "the ratchet must discover agents live")
 
 
 class TestHRSeesTheWholeFirm(unittest.TestCase):
@@ -5820,6 +5874,163 @@ class TestHRSeesTheWholeFirm(unittest.TestCase):
                          "HR could not see a single agent and did not raise its hand")
         self.assertIn("disk gone", res.get("error", ""),
                       "the failure was swallowed instead of reported")
+
+    def test_a_stale_roster_rebuilds_too(self):
+        """A frozen snapshot answers "do you exist?" yes, forever.
+
+        data/agent_roster.json is host-local, is never deployed, and is only
+        rewritten by this host's daily job. If that job dies the file stays put
+        and HR keeps auditing it — reporting full coverage of a firm that has
+        moved on. Every agent hired after the freeze is not flagged unreviewed,
+        it is invisible, which is the failure this audit exists to prevent.
+
+        Driven with a roster that is well-formed and populated and merely old,
+        because the pre-existing guard already caught empty and missing and
+        would have let this through.
+        """
+        import hr_agent, agent_roster
+        old = (datetime.utcnow()
+               - timedelta(hours=hr_agent.ROSTER_MAX_AGE_H + 6)).isoformat()
+        snapshot = {
+            "generated_at": old,
+            "host": "vm",
+            "agents": [{"name": "only_agent_left", "kind": "module",
+                        "file": "only_agent_left.py", "file_exists": True,
+                        "employment": "employed", "runs_via": ["cron"],
+                        "tier": 0, "team": None}],
+        }
+        td = tempfile.mkdtemp()
+        p = os.path.join(td, "roster.json")
+        with open(p, "w") as fh:
+            json.dump(snapshot, fh)
+
+        orig = hr_agent.ROSTER_PATH
+        try:
+            hr_agent.ROSTER_PATH = p
+            res = hr_agent.audit_roster_coverage()
+        finally:
+            hr_agent.ROSTER_PATH = orig
+
+        self.assertGreater(
+            res["checked"], 1,
+            "HR graded the firm against a stale one-row snapshot instead of "
+            "rebuilding — a dead roster job would look like full coverage")
+        self.assertGreaterEqual(
+            res["checked"], len(agent_roster.build()["agents"]) - 5,
+            "the rebuild did not produce a live-sized roster")
+
+    def test_a_stale_rebuild_stays_inside_the_callers_base_dir(self):
+        """The rebuild must answer the question that was asked.
+
+        audit_attendance takes base_dir and every other path it reads honours
+        it. A rebuild that calls agent_roster.build() with no base discovers the
+        real 161-agent firm and reports it against a sandbox that holds two
+        modules — 32 agents accused of never coming to work in a tree they were
+        never part of. The first cut of this guard did exactly that, and the
+        no-schedule-document test caught it.
+
+        The sandbox here HAS a roster file and it is merely old, which is the
+        one shape the existing missing-file test cannot reach.
+        """
+        import sys as _sys
+        import hr_agent, wiring_audit
+
+        sandbox = Path(tempfile.mkdtemp())
+        (sandbox / "hr_scoped_probe.py").write_text("ok = True\n")
+        (sandbox / "data").mkdir()
+        (sandbox / "data" / "vm_crontab_snapshot.txt").write_text(
+            "0 6 * * * python3 hr_scoped_probe.py\n")
+        stale_ts = (datetime.utcnow()
+                    - timedelta(hours=hr_agent.ROSTER_MAX_AGE_H + 24)).isoformat()
+        (sandbox / "data" / "agent_roster.json").write_text(json.dumps({
+            "generated_at": stale_ts, "host": "sandbox",
+            "agents": [{"name": "hr_scoped_probe", "kind": "module",
+                        "file": "hr_scoped_probe.py", "file_exists": True,
+                        "employment": "employed", "runs_via": ["cron"],
+                        "tier": 0, "team": None}],
+        }))
+
+        real_modules = getattr(wiring_audit, "AGENT_MODULES", None)
+        _sys.path.insert(0, str(sandbox))
+        try:
+            wiring_audit.AGENT_MODULES = ["hr_scoped_probe"]
+            res = hr_agent.audit_attendance(base_dir=str(sandbox))
+        finally:
+            _sys.path.remove(str(sandbox))
+            if real_modules is None:
+                delattr(wiring_audit, "AGENT_MODULES")
+            else:
+                wiring_audit.AGENT_MODULES = real_modules
+            shutil.rmtree(sandbox, ignore_errors=True)
+
+        accused = [a["agent"] for a in res.get("never_scheduled", [])]
+        strangers = [a for a in accused if not a.startswith("hr_scoped_probe")]
+        self.assertEqual(
+            strangers, [],
+            "the stale-roster rebuild escaped base_dir and judged agents from "
+            f"the real repo against a two-file sandbox: {strangers[:8]}")
+
+    def test_a_fresh_roster_is_used_as_written(self):
+        """The staleness guard must not become an unconditional rebuild.
+
+        If it fired every run the saved roster would be decorative, HR would
+        pay the discovery cost on every pass, and the one thing the snapshot is
+        good for — telling you what the firm looked like when the job last ran
+        — would be gone. So a fresh file must be honoured exactly as written.
+        """
+        import hr_agent
+        fresh = datetime.utcnow().isoformat()
+        rows = [{"name": f"agent_{i}", "kind": "module", "file": f"agent_{i}.py",
+                 "file_exists": True, "employment": "employed",
+                 "runs_via": ["cron"], "tier": 0, "team": None}
+                for i in range(4)]
+        td = tempfile.mkdtemp()
+        p = os.path.join(td, "roster.json")
+        with open(p, "w") as fh:
+            json.dump({"generated_at": fresh, "host": "mac", "agents": rows}, fh)
+
+        orig = hr_agent.ROSTER_PATH
+        try:
+            hr_agent.ROSTER_PATH = p
+            res = hr_agent.audit_roster_coverage()
+        finally:
+            hr_agent.ROSTER_PATH = orig
+        self.assertEqual(res["checked"], 4,
+                         "a fresh snapshot was discarded and rebuilt anyway")
+
+    def test_a_roster_with_no_timestamp_is_stale(self):
+        """An artifact that cannot say when it was made cannot say who works here.
+
+        The ambiguous case fails toward doing the work, because rebuilding costs
+        seconds and losing an agent is the outcome Jack has called disastrous.
+        """
+        import hr_agent
+        self.assertTrue(hr_agent._roster_is_stale({"agents": [{"name": "x"}]}),
+                        "an undated roster was accepted as current")
+        self.assertTrue(hr_agent._roster_is_stale({"generated_at": "not a date"}),
+                        "an unparseable stamp was accepted as current")
+        self.assertTrue(hr_agent._roster_is_stale(None))
+        self.assertFalse(
+            hr_agent._roster_is_stale(
+                {"generated_at": datetime.utcnow().isoformat()}),
+            "a just-written roster was called stale")
+
+    def test_the_stamp_hr_reads_is_the_one_the_roster_writes(self):
+        """Two modules, one field name — the contract nobody was checking.
+
+        agent_roster has stamped `generated_at` on every build since it was
+        written; nothing read it until the staleness guard. If the producer
+        renames it, _roster_is_stale silently starts returning True on every
+        run and the guard degrades into an unconditional rebuild — working, but
+        no longer measuring anything.
+        """
+        import agent_roster, hr_agent
+        built = agent_roster.build()
+        self.assertIn("generated_at", built,
+                      "agent_roster.build no longer stamps the field HR reads")
+        self.assertFalse(hr_agent._roster_is_stale(built),
+                         "a roster built one second ago read as stale — the "
+                         "producer's stamp format and HR's parser have diverged")
 
     def test_zombies_are_reported_and_never_touch_a_rating(self):
         """Retired on paper, still loaded every cycle."""

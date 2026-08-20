@@ -828,6 +828,42 @@ CONTROL_CENSUS: List[FailureClass] = [
          "test_pipeline_smoke.py::TestTheExecutionRateHasItsOwnDenominator"],
         "Risk Manager / Manager Agent",
         "an-aggregate-is-not-a-finding"),
+
+    FailureClass(
+        "a_snapshot_read_as_the_present",
+        "A consumer reads a generated artifact as if it described now. The "
+        "artifact carries a generation timestamp; nobody reads it. Asking "
+        "'does the file have rows?' is a question a snapshot from any date "
+        "answers yes to, forever, so a writer that stops is indistinguishable "
+        "from a firm that stopped changing. The sharper form is a COMPARISON "
+        "between two artifacts refreshed on different clocks: one deployed "
+        "with every push, the other rewritten by a daily job that is never "
+        "deployed. Both are correct about their own instant; the difference "
+        "between them is an artefact of the schedule, not a finding.",
+        "data/agent_roster.json is host-local, is excluded from deploy.sh, and "
+        "is rewritten only by the 11:25 UTC ratchet job, while "
+        "agent_roster_manifest.json is git-tracked and lands with every "
+        "deploy. On 2026-08-20 the manifest arrived at 01:43 declaring "
+        "rd_price_theory_agent; the VM's snapshot was from 11:25 the previous "
+        "day. The shrink ratchet's smoke test read the snapshot and reported "
+        "the agent VANISHED — RED, on the one detector whose whole job is to "
+        "notice a silently dropped agent — while rd_price_theory_agent.py sat "
+        "in the deploy and in that host's crontab. `agent_roster.py --check` "
+        "on cron builds live and was never fooled, so the alarm existed only "
+        "on the host that did not write the file. Separately, hr_agent read "
+        "the same snapshot in audit_attendance and audit_roster_coverage with "
+        "a guard for empty and none for old: had the roster job died, HR would "
+        "have certified full coverage of a frozen firm indefinitely, and every "
+        "agent hired after the freeze would have been not unreviewed but "
+        "invisible. Fix: the ratchet test builds live, and HR rebuilds when "
+        "generated_at is missing, unparseable, or older than 48h — pinned to "
+        "the caller's base_dir, because the first cut of that rebuild escaped "
+        "a sandbox and accused 32 real agents of absence from a tree they were "
+        "never in.",
+        ["hr_agent.py::_roster_is_stale",
+         "test_pipeline_smoke.py::TestHRSeesTheWholeFirm"],
+        "HR / Agent Roster",
+        "presence-is-not-currency"),
 ]
 
 
