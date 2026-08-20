@@ -14429,6 +14429,236 @@ class TestTheHedgeCarveOutIsNarrow(unittest.TestCase):
                          "a hedge entry stopped reserving its slot and its cash")
 
 
+class TestRiskLimitsAreDerivedNotInherited(unittest.TestCase):
+    """A 20% cash floor and a 20-position cap with no derivation anywhere.
+
+    Round numbers that arrived as defaults and governed every entry the firm
+    ever made. Being inherited does not make a parameter wrong; not knowing
+    whether it is wrong does. The three measurements are pinned here, along
+    with the boundary this module may not cross.
+    """
+
+    def setUp(self):
+        import derive_risk_limits
+        self.D = derive_risk_limits
+
+    @staticmethod
+    def _snap(**kw):
+        base = {"equity": 100000.0, "cash": 13400.0,
+                "long_market_value": 90000.0, "short_market_value": -4600.0,
+                "maintenance_margin": 30000.0, "positions": {}, "n_positions": 0}
+        base.update(kw)
+        return base
+
+    # ── A. the hard floor ────────────────────────────────────────────────────
+
+    def test_the_hard_floor_is_computed_from_the_short_book_not_picked(self):
+        """30% maintenance on $4,600 of shorts plus a 2-sigma adverse day on
+        beta-weighted short exposure. Every term is a measurement."""
+        out = self.D.hard_floor(self._snap(), sigma=0.01,
+                                short_beta_dollars=-11240.0)
+        self.assertAlmostEqual(0.30 * 4600.0 + 2.0 * 0.01 * 11240.0,
+                               out["required_usd"], places=0)
+        self.assertEqual("COVERED", out["verdict"])
+        self.assertGreater(out["safety_multiple"], 2.0)
+
+    def test_POISON_PILL_a_bigger_short_book_breaches_the_configured_floor(self):
+        """The check has to be able to FAIL, or 'COVERED' every week means
+        nothing. The inputs here — short size and daily vol — are exactly the
+        ones that move faster than anyone revisits a constant."""
+        out = self.D.hard_floor(self._snap(short_market_value=-40000.0),
+                                sigma=0.03, short_beta_dollars=-90000.0)
+        self.assertEqual("BREACHED", out["verdict"])
+        self.assertIn("no longer covers it", out["headline"])
+
+    def test_an_unmeasurable_vol_yields_no_verdict_rather_than_a_default(self):
+        """Substituting the 1% used as an illustration in the risk_gate header
+        would turn an illustration into a measurement."""
+        out = self.D.hard_floor(self._snap(), sigma=None,
+                                short_beta_dollars=-11240.0)
+        self.assertIsNone(out["required_usd"])
+        self.assertEqual("CANNOT_TELL", out["verdict"])
+
+    def test_the_brokers_own_margin_number_is_carried_as_a_second_reading(self):
+        out = self.D.hard_floor(self._snap(), sigma=0.01,
+                                short_beta_dollars=-11240.0)
+        self.assertEqual(30000.0, out["broker_maintenance_margin"])
+        self.assertEqual(70000.0, out["excess_liquidity"])
+
+    def test_longs_are_not_in_the_liquidity_requirement(self):
+        """A long that falls costs equity, which is the buffer's job and the
+        CRO's. This number is the level below which a CLAIM cannot be met."""
+        a = self.D.hard_floor(self._snap(long_market_value=90000.0), 0.01, -11240.0)
+        b = self.D.hard_floor(self._snap(long_market_value=900000.0), 0.01, -11240.0)
+        self.assertEqual(a["required_usd"], b["required_usd"])
+
+    # ── B. the shadow price ──────────────────────────────────────────────────
+
+    def test_a_short_return_history_refuses_to_price_the_buffer(self):
+        """A mean return from twelve days is a number, not a measurement."""
+        hard = {"required_pct": 0.0157}
+        out = self.D.shadow_price(self._snap(), hard, [0.001] * 12, 0.20)
+        self.assertIsNone(out["annual_cost_usd"])
+        self.assertIn("not a measurement", out["reason"])
+
+    def test_the_shadow_price_reports_an_interval_not_just_a_number(self):
+        import random
+        random.seed(11)
+        rets = [random.gauss(0.0004, 0.01) for _ in range(63)]
+        out = self.D.shadow_price(self._snap(), {"required_pct": 0.0157},
+                                  rets, 0.20)
+        self.assertIsNotNone(out["annual_cost_usd"])
+        lo, hi = out["ci95_annual_cost_usd"]
+        self.assertLess(lo, out["annual_cost_usd"])
+        self.assertGreater(hi, out["annual_cost_usd"])
+        self.assertIn("deployed return inferred", " ".join(out["assumptions"]))
+
+    def test_POISON_PILL_a_loud_enough_signal_is_distinguishable(self):
+        """Otherwise 'cannot distinguish from zero' would be this function's
+        only possible answer, and it would be reassuring rather than true."""
+        out = self.D.shadow_price(self._snap(), {"required_pct": 0.0157},
+                                  [0.002] * 80, 0.20)
+        self.assertTrue(out["distinguishable_from_zero"])
+        self.assertGreater(out["annual_cost_usd"], 0)
+
+    def test_only_the_waivable_part_of_the_floor_is_priced(self):
+        """The hard liquidity minimum is not a choice, so charging the firm for
+        holding it would price a constraint that is not up for discussion."""
+        out = self.D.shadow_price(self._snap(), {"required_pct": 0.05},
+                                  [0.0005] * 63, 0.20)
+        self.assertAlmostEqual(0.15, out["buffer_pct"], places=6)
+
+    def test_a_hard_floor_above_the_cash_floor_prices_no_buffer(self):
+        out = self.D.shadow_price(self._snap(), {"required_pct": 0.30},
+                                  [0.0005] * 63, 0.20)
+        self.assertEqual(0.0, out["buffer_pct"])
+
+    # ── C. the marginal position ─────────────────────────────────────────────
+
+    def test_correlations_are_aligned_on_dates_not_on_position(self):
+        """The book's tickers have 248-251 observations over the same year.
+        Lining them up by index pairs one name's Tuesday with another's
+        Wednesday — which does not fail, it just biases every correlation
+        toward zero and makes the book look better diversified than it is."""
+        base = {f"2026-01-{d:02d}": float(d) for d in range(1, 20)}
+        a = {"A": dict(base)}
+        # B is missing one interior day, so a positional pairing would offset
+        # every later observation by one.
+        b = {k: v for k, v in base.items() if k != "2026-01-05"}
+        r = {"A": self.D._returns_by_date(base),
+             "B": self.D._returns_by_date(b)}
+        shared = set(r["A"]) & set(r["B"])
+        self.assertNotIn("2026-01-05", shared)
+        self.assertLess(len(shared), len(r["A"]))
+
+    def test_pearson_works_on_python_39(self):
+        """`statistics.correlation` is 3.10+. On the Mac it raised inside an
+        `except Exception: continue`, so the whole measurement reported 'not
+        enough history' while sitting on a year of it for twenty names."""
+        self.assertAlmostEqual(1.0, self.D._pearson([1, 2, 3, 4], [2, 4, 6, 8]),
+                               places=6)
+        self.assertAlmostEqual(-1.0, self.D._pearson([1, 2, 3, 4], [4, 3, 2, 1]),
+                               places=6)
+        self.assertIsNone(self.D._pearson([1, 1, 1, 1], [1, 2, 3, 4]))
+
+    def test_the_diversification_curve_is_monotone_and_flattens(self):
+        """The whole argument about a cap rests on this shape. If marginal
+        benefit ever rose with n, the model would be wrong, not the cap."""
+        sig, rho = 0.02, 0.25
+        vols = [self.D._portfolio_sigma(sig, rho, n) for n in range(1, 41)]
+        for i in range(1, len(vols)):
+            self.assertLessEqual(vols[i], vols[i - 1] + 1e-12)
+        first = vols[0] - vols[1]
+        last = vols[-2] - vols[-1]
+        self.assertGreater(first, last * 10)
+
+    def test_a_book_too_small_to_correlate_says_so(self):
+        out = self.D.marginal_position(self._snap(positions={"KO": {}}), 20)
+        self.assertIsNone(out["marginal_bp_at_cap"])
+        self.assertIn("no correlation to measure", out["reason"])
+
+    def test_pairs_without_enough_overlap_are_counted_not_silently_dropped(self):
+        """A rho from eleven overlapping days is not the same object as one
+        from two hundred, and a caller has to be able to tell. D here has a
+        long history of its own — it just doesn't overlap the rest of the
+        book, which is what a name added last week looks like."""
+        import random
+        random.seed(5)
+        early = [f"d{i:04d}" for i in range(120)]
+        late = [f"d{i:04d}" for i in range(500, 620)]
+        mk = lambda days: {d: random.gauss(0, 0.01) for d in days}
+        agg = self.D._avg_pairwise_correlation({
+            "A": mk(early), "B": mk(early), "C": mk(early), "D": mk(late)})
+        self.assertIsNotNone(agg)
+        self.assertEqual(4, agg["n_symbols"], "D had enough history of its own")
+        self.assertEqual(3, agg["n_pairs"], "only the A/B/C pairs overlap")
+        self.assertEqual(3, agg["pairs_skipped_for_overlap"],
+                         "the D pairs were dropped, and the drop was counted")
+        self.assertEqual(120, agg["min_shared_days"])
+
+    # ── the boundary this module may not cross ───────────────────────────────
+
+    def test_it_never_writes_config_py(self):
+        """AST. `MIN_CASH_FLOOR_PCT` and `MAX_OPEN_POSITIONS` are live risk
+        limits; an agent that can quietly move the limit it was built to
+        evaluate is not an evaluator. Same pin as pick_gate_trial_review.
+        """
+        src = (Path(__file__).parent / "derive_risk_limits.py").read_text()
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call):
+                fn = node.func
+                name = fn.attr if isinstance(fn, ast.Attribute) else getattr(fn, "id", "")
+                if name in ("write_text", "open", "replace", "unlink"):
+                    for c in ast.walk(node):
+                        if isinstance(c, ast.Constant) and isinstance(c.value, str):
+                            self.assertNotIn("config", c.value.lower())
+            if isinstance(node, ast.Name) and node.id == "config" \
+                    and isinstance(node.ctx, ast.Store):
+                self.fail("derive_risk_limits assigns to config")
+        # and it must not import config for writing either
+        imported = {n.name.split(".")[0] for node in ast.walk(tree)
+                    if isinstance(node, ast.Import) for n in node.names}
+        imported |= {node.module.split(".")[0] for node in ast.walk(tree)
+                     if isinstance(node, ast.ImportFrom) and node.module}
+        self.assertNotIn("config", imported,
+                         "the deriver imported the file it may not change")
+
+    def test_the_decision_reaches_the_chairman_with_all_three_measurements(self):
+        with tempfile.TemporaryDirectory() as td:
+            q = Path(td) / "chairman_action_required.json"
+            with patch.object(self.D, "DATA", Path(td)), \
+                 patch.object(self.D, "CHAIRMAN", q):
+                result = {"hard_floor": {"headline": "H-headline"},
+                          "shadow_price": {"headline": "S-headline"},
+                          "marginal_position": {"headline": "M-headline"}}
+                self.assertTrue(self.D._queue_decision(result))
+                rows = json.loads(q.read_text())
+                self.assertEqual(1, len(rows))
+                for frag in ("H-headline", "S-headline", "M-headline"):
+                    self.assertIn(frag, rows[0]["description"])
+                self.assertIn("Nothing has been changed", rows[0]["description"])
+                # one derivation per day, not one per run
+                self.assertFalse(self.D._queue_decision(result))
+                self.assertEqual(1, len(json.loads(q.read_text())))
+
+    def test_a_breached_hard_floor_raises_the_severity(self):
+        with tempfile.TemporaryDirectory() as td:
+            q = Path(td) / "chairman_action_required.json"
+            with patch.object(self.D, "DATA", Path(td)), \
+                 patch.object(self.D, "CHAIRMAN", q):
+                self.D._queue_decision({
+                    "hard_floor": {"headline": "x", "verdict": "BREACHED"},
+                    "shadow_price": {}, "marginal_position": {}})
+                self.assertEqual("HIGH", json.loads(q.read_text())[0]["severity"])
+
+    def test_an_unreadable_account_derives_nothing_rather_than_guessing(self):
+        with patch.object(self.D, "account_snapshot", lambda client=None: None):
+            out = self.D.run(queue=False)
+        self.assertFalse(out["available"])
+        self.assertNotIn("hard_floor", out)
+
+
 class TestTheRiskGateSitsAtTheChokePoint(unittest.TestCase):
     """Where the check lives is the whole finding, so pin the location.
 
