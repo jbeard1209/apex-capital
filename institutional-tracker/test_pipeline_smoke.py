@@ -16451,6 +16451,342 @@ class TestLatenessComesFromTheSchedule(unittest.TestCase):
                           % fname)
 
 
+class TestPendingFixAlertIsPricedInRuns(unittest.TestCase):
+    """deputy_monitor's pending-fix alert, 2026-08-21.
+
+    Two defects, one fix. It emailed Jack about any HIGH/CRITICAL meeting
+    request older than two hours — priced in wall-clock hours against a
+    producer (the CoS, inside main.py) that runs `* * 1-5`, so every weekend
+    manufactured the alert. And it ran the same two-hour clock over
+    chairman_action_required.json, where the implementer *is* the Chairman:
+    7 of 95 archived decisions ever landed inside 2h, and 51 of 51 live
+    entries were over it. That half is deleted; chairman_decision_sla.py owns
+    Chairman-queue latency at SLA_DAYS = 20, with a board escalation behind it.
+    """
+
+    def _fn(self):
+        import ast
+        src = (Path(__file__).parent / "deputy_monitor.py").read_text()
+        for node in ast.walk(ast.parse(src)):
+            if isinstance(node, ast.FunctionDef) and node.name == "_check_pending_fixes":
+                return node
+        self.fail("_check_pending_fixes has gone missing from deputy_monitor.py")
+
+    def test_the_chairman_queue_half_is_gone(self):
+        """One quantity, one owner. Re-adding a second alarm on the Chairman
+        queue here would drown the one that can actually escalate."""
+        import ast
+        fn = self._fn()
+        # A bare string statement is prose — the docstring, or a block comment
+        # written as a string. The postmortem below explains *why* the queue is
+        # no longer read, so matching it would fail this test for exactly the
+        # reason it was written to prevent (memory: AST, never grep).
+        prose = {id(n.value) for n in ast.walk(fn)
+                 if isinstance(n, ast.Expr) and isinstance(n.value, ast.Constant)}
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Name) and node.id == "CHAIRMAN_PATH":
+                self.fail(
+                    "_check_pending_fixes reads the Chairman queue again — "
+                    "that quantity belongs to chairman_decision_sla.SLA_DAYS")
+            if isinstance(node, ast.Constant) and isinstance(node.value, str) \
+                    and "chairman_action_required" in node.value \
+                    and id(node) not in prose:
+                self.fail("_check_pending_fixes names chairman_action_required.json")
+
+    def test_the_gate_counts_runs_not_hours(self):
+        import ast
+        fn = self._fn()
+        called = {n.func.id for n in ast.walk(fn)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+        self.assertIn("_missed_cos_runs", called,
+                      "the alert must gate on missed scheduled CoS runs")
+        # _age_hours may still appear — it is reported in the email body as
+        # context. What must not exist is an hours *threshold*.
+        import deputy_monitor as D
+        self.assertFalse(hasattr(D, "_PENDING_FIX_ALERT_H"),
+                         "the hours threshold is back")
+        self.assertGreaterEqual(
+            D._COS_RUNS_BEFORE_ALERT, 2,
+            "one missed run can be the run that was already mid-flight when "
+            "the request landed; two is the first unambiguous miss")
+
+    def test_a_degraded_schedule_read_does_not_email_jack(self):
+        """memory `fallback-that-means-act`: when the crontab cannot be read
+        there is no denominator, so there is no verdict — and inventing a big
+        number here would email Jack on the strength of a failed `crontab -l`."""
+        import deputy_monitor as D
+        import schedule_expectations as sched
+        ts = (datetime.now() - timedelta(days=30)).isoformat()
+        with patch.object(sched, "missed_fires_since", return_value=None), \
+             patch.object(sched, "peer_crontab", return_value=None):
+            self.assertEqual(D._missed_cos_runs(ts), 0)
+        self.assertEqual(D._missed_cos_runs(""), 0)
+        self.assertEqual(D._missed_cos_runs("not-a-timestamp"), 0)
+
+    def test_a_weekend_does_not_manufacture_the_alert(self):
+        """The original defect, reproduced. A request filed Friday 18:00 and
+        read Saturday noon is 18h old and has missed nothing: the CoS was not
+        scheduled to run. Priced in hours it alerted; priced in runs it does
+        not."""
+        import deputy_monitor as D
+        import schedule_expectations as sched
+        cron = "0 9,11,14,16 * * 1-5 cd ~/institutional-tracker && python3 main.py\n"
+        friday_1800 = datetime(2026, 8, 21, 18, 0).timestamp()   # Fri
+        saturday_noon = datetime(2026, 8, 22, 12, 0)             # Sat
+        missed = sched.missed_fires_since("main.py", friday_1800,
+                                          now=saturday_noon, cron_text=cron)
+        self.assertEqual(missed, 0, "no CoS run was due — nothing was missed")
+        self.assertLess(missed, D._COS_RUNS_BEFORE_ALERT)
+
+        # ...and a genuine miss inside the trading week still fires.
+        monday_0800 = datetime(2026, 8, 24, 8, 0).timestamp()
+        monday_1500 = datetime(2026, 8, 24, 15, 0)
+        self.assertGreaterEqual(
+            sched.missed_fires_since("main.py", monday_0800,
+                                     now=monday_1500, cron_text=cron),
+            D._COS_RUNS_BEFORE_ALERT,
+            "three fires (09:00, 11:00, 14:00) came and went unanswered")
+
+
+class TestStalenessIsPricedInFires(unittest.TestCase):
+    """deputy_monitor's freshness alarms, against the schedules they judge.
+
+    Seven of nine hardcoded thresholds were below the largest gap the producing
+    schedule itself asks for, so they alarmed by arithmetic on a healthy firm.
+    Two of the seven escalate to the emergency board. The generalisation of the
+    48h roster guard: hours are a proxy, missed scheduled fires are the real
+    quantity.
+    """
+
+    def _gap(self, script):
+        """Largest gap the schedule asks for, from whichever host has it."""
+        import schedule_expectations as sched
+        g = sched.max_legit_gap_h(script)
+        if g is None:
+            peer = sched.peer_crontab()
+            if peer:
+                g = sched.max_legit_gap_h(script, cron_text=peer)
+        return g
+
+    def test_the_three_tables_describe_the_same_files(self):
+        import deputy_monitor as D
+        watched = set(D._STALE_THRESHOLDS_H)
+        self.assertEqual(watched, set(D._PRODUCER_SCRIPT),
+                         "a watched file with no producer cannot be judged by "
+                         "a schedule; a producer for an unwatched file is dead")
+        self.assertEqual(watched, set(D._RECOVERY_SCRIPTS),
+                         "a watched file with no recovery entry falls through "
+                         "_RECOVERY_SCRIPTS.get() -> None and silently escalates")
+
+    def test_no_backstop_fires_by_arithmetic(self):
+        import deputy_monitor as D
+        offenders = []
+        for f, thr in D._STALE_THRESHOLDS_H.items():
+            gap = self._gap(D._PRODUCER_SCRIPT[f])
+            if gap is not None and thr < gap:
+                offenders.append(f"{f}: {thr}h threshold < {gap:.2f}h schedule gap")
+        self.assertEqual(offenders, [],
+                         "these alarm on a healthy firm every time the "
+                         "schedule takes its own longest break:\n  " +
+                         "\n  ".join(offenders))
+
+    def test_a_producer_scheduled_only_on_the_peer_is_not_judged_here(self):
+        """There is no state sync between hosts, so this host's copy of a file
+        the peer produces has no local producer to be late."""
+        import deputy_monitor as D, schedule_expectations as sched
+        peer = sched.peer_crontab()
+        if not peer:
+            self.skipTest("no peer crontab snapshot to test against")
+        checked = 0
+        for f, prod in D._PRODUCER_SCRIPT.items():
+            if sched.entries_for(prod) or not sched.entries_for(prod, peer):
+                continue
+            checked += 1
+            v = D._schedule_verdict(prod, f)
+            self.assertEqual(v.get("verdict"), "PEER_OWNED",
+                             f"{f} is produced by {prod}, which runs only on "
+                             f"the peer; judging our stale copy against the "
+                             f"peer's crontab reports LATE forever")
+        if not checked:
+            self.skipTest("every producer is scheduled on this host")
+
+    def test_an_unmeasurable_age_is_not_a_stale_verdict(self):
+        """`inf` is a decision to act. Only a genuinely absent file earns it."""
+        import deputy_monitor as D, json, tempfile, os as _os
+        d = tempfile.mkdtemp()
+
+        missing = _os.path.join(d, "gone.json")
+        self.assertEqual(D._output_age_h(missing), float("inf"),
+                         "an absent output really is infinitely old")
+
+        broken = _os.path.join(d, "broken.json")
+        open(broken, "w").write("{not json")
+        self.assertIsNone(D._output_age_h(broken),
+                          "unreadable means cannot tell, not stale")
+
+        # A dict with no `generated_at` — canary_state.json and
+        # chief_of_staff_report.json are both shaped like this, and both were
+        # minutes old while being judged infinitely stale and re-run every pass.
+        nots = _os.path.join(d, "nots.json")
+        json.dump({"status": "GREEN"}, open(nots, "w"))
+        age = D._output_age_h(nots)
+        self.assertIsNotNone(age)
+        self.assertLess(age, 1.0, "mtime is a real measurement; inf is not")
+
+        # A list — manager_decisions.json. `content.get(...)` raised
+        # `'list' object has no attribute 'get'` on every run since this check
+        # was written, so the firm's trade-decision record was never checked.
+        lst = _os.path.join(d, "list.json")
+        json.dump([{"ts": datetime.now().isoformat(), "sym": "AAPL"}],
+                  open(lst, "w"))
+        age = D._output_age_h(lst)
+        self.assertIsNotNone(age, "a list-shaped output must still be measurable")
+        self.assertLess(age, 1.0)
+
+    def test_dry_run_reaches_every_side_effecting_path(self):
+        """`--report` used to run the live monitor, whose first act is closing
+        positions at the broker. An unknown flag must not mean consent."""
+        import ast
+        src = open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "deputy_monitor.py")).read()
+        tree = ast.parse(src)
+        guarded = {f.name for f in ast.walk(tree)
+                   if isinstance(f, ast.FunctionDef)
+                   and any(isinstance(n, ast.Name) and n.id == "DRY_RUN"
+                           for n in ast.walk(f))}
+        for fn in ("_post", "_email", "_wake_board",
+                   "_check_stop_losses", "_check_position_drift"):
+            self.assertIn(fn, guarded,
+                          f"{fn} can act on the world without checking DRY_RUN")
+
+        # And the flag must fail closed: anything unrecognised is a dry run.
+        main = [n for n in tree.body if isinstance(n, ast.If)
+                and getattr(n.test.left, "id", "") == "__name__"]
+        self.assertTrue(main, "no __main__ block")
+        body = ast.unparse(main[0])
+        self.assertIn("_known", body,
+                      "argv must be whitelisted, not blacklisted: an unknown "
+                      "flag has to land in DRY_RUN, not in live trading")
+
+
+class TestAWakeIsNotAPipelineRun(unittest.TestCase):
+    """wake_agent's --inbox-only contract, enforced instead of documented.
+
+    35 of 45 registered targets ignored the flag, so a wake ran the target's
+    ENTIRE pipeline. Six of those reach the broker; deputy_monitor's first act
+    is closing any position down 7%. Python does not object to an argument
+    nobody reads.
+    """
+
+    def test_every_registered_target_exists_and_honours_the_flag(self):
+        import wake_agent as W
+        missing, ignores = [], []
+        for name, (script, _args) in W.AGENT_REGISTRY.items():
+            path = script if os.path.isabs(script) else os.path.join(
+                os.path.dirname(os.path.abspath(W.__file__)), script)
+            if not os.path.exists(path):
+                missing.append(f"{name} -> {script}")
+                continue
+            if W._honours_inbox_only(path) is not True:
+                ignores.append(f"{name} -> {script}")
+        self.assertEqual(missing, [],
+                         "registered but not on disk — a wake can only fail:\n  "
+                         + "\n  ".join(missing))
+        self.assertEqual(ignores, [],
+                         "registered targets that would run their full pipeline "
+                         "on a wake:\n  " + "\n  ".join(ignores))
+
+    def test_all_three_wake_paths_go_through_the_one_gate(self):
+        """A guard on one path is not a guard (memory `guardrail-on-one-path`).
+        wake_nonblocking and wake_for_thread_reply are the two anything
+        actually calls, and neither was gated or even logged."""
+        import ast, wake_agent as W
+        tree = ast.parse(open(W.__file__).read())
+        for fname in ("wake", "wake_nonblocking", "wake_for_thread_reply"):
+            fn = next((f for f in ast.walk(tree)
+                       if isinstance(f, ast.FunctionDef) and f.name == fname), None)
+            self.assertIsNotNone(fn, f"{fname} is gone")
+            calls = {getattr(c.func, "id", getattr(c.func, "attr", ""))
+                     for c in ast.walk(fn) if isinstance(c, ast.Call)}
+            self.assertIn("_resolve_target", calls,
+                          f"{fname} launches a target without resolving it")
+            self.assertIn("_log_wake", calls,
+                          f"{fname} can wake an agent leaving no trace — "
+                          f"wake_log.json read [] for months beside real locks")
+
+    def test_the_inbox_handler_has_no_free_variables(self):
+        """`quiet` was undefined in main_inbox_only, so all five sections
+        raised NameError into a `logger.debug` swallow and the run printed
+        clean. Fixing it exposed a second layer: get_bulletin, get_open_polls
+        and get_my_action_items were never imported either."""
+        import builtins, symtable
+        path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "agent_inbox.py")
+        st = symtable.symtable(open(path).read(), path, "exec")
+        known = set(st.get_identifiers()) | set(dir(builtins))
+        bad = []
+
+        def walk(t, prefix=""):
+            for c in t.get_children():
+                name = f"{prefix}/{c.get_name()}"
+                if c.get_type() == "function":
+                    bad.extend(f"{name}: {s.get_name()}" for s in c.get_symbols()
+                               if s.is_referenced() and s.is_global()
+                               and s.get_name() not in known)
+                walk(c, name)
+
+        walk(st)
+        self.assertEqual(bad, [],
+                         "names that resolve to a module global that does not "
+                         "exist — each is a NameError at runtime:\n  "
+                         + "\n  ".join(bad))
+
+    def test_a_wake_reaches_the_inbox_it_names(self):
+        """Twelve registry names differ from the name hardcoded in the target.
+
+        That is fine for the eleven that route through
+        handle_wake_if_requested, which reads the `--as` wake_agent appends.
+        It was not fine for alpaca_ws_listener, which called
+        main_inbox_only("WSListener") directly: a wake for AlpacaWSListener
+        opened a different agent's inbox and reported success.
+        """
+        import ast, wake_agent as W
+        base = os.path.dirname(os.path.abspath(W.__file__))
+        offenders = []
+        for name, (script, _args) in W.AGENT_REGISTRY.items():
+            path = script if os.path.isabs(script) else os.path.join(base, script)
+            if not os.path.exists(path):
+                continue
+            tree = ast.parse(open(path).read())
+            honours_as, literals = False, set()
+            for c in ast.walk(tree):
+                if not isinstance(c, ast.Call):
+                    continue
+                fn = getattr(c.func, "id", getattr(c.func, "attr", ""))
+                if fn in ("handle_wake_if_requested", "_wake"):
+                    honours_as = True
+                if fn in ("handle_wake_if_requested", "_wake", "main_inbox_only"):
+                    literals |= {a.value for a in c.args
+                                 if isinstance(a, ast.Constant)
+                                 and isinstance(a.value, str)}
+            if not honours_as and name not in literals:
+                offenders.append(f"{name} -> {script} opens {sorted(literals)}")
+        self.assertEqual(offenders, [],
+                         "a wake for these lands in another agent's inbox:\n  "
+                         + "\n  ".join(offenders))
+
+    def test_a_refused_wake_leaves_a_record(self):
+        """An agent that cannot be woken must be visible, not merely absent."""
+        import ast, wake_agent as W
+        tree = ast.parse(open(W.__file__).read())
+        fn = next(f for f in ast.walk(tree)
+                  if isinstance(f, ast.FunctionDef) and f.name == "_resolve_target")
+        calls = {getattr(c.func, "id", getattr(c.func, "attr", ""))
+                 for c in ast.walk(fn) if isinstance(c, ast.Call)}
+        self.assertIn("_record_contract_breach", calls,
+                      "_resolve_target refuses silently")
+
+
 # =============================================================================
 # Runner
 # =============================================================================

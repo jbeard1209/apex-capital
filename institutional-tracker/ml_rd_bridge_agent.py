@@ -499,6 +499,12 @@ def run():
 
 if __name__ == "__main__":
     # Single-instance lock
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('MLRDBridgeAgent'):
+        raise SystemExit(0)
     _lock_file = open(_LOCK_PATH, "w")
     try:
         fcntl.flock(_lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)

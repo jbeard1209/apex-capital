@@ -3417,6 +3417,12 @@ def run_chief_of_staff(send_email: bool = True) -> dict:
 # =============================================================================
 
 if __name__ == "__main__":
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('Chief of Staff'):
+        raise SystemExit(0)
     no_email     = "--no-email"     in sys.argv
     factory_only = "--factory-only" in sys.argv
 

@@ -484,6 +484,12 @@ def run(universe: list | None = None) -> dict:
 
 
 if __name__ == "__main__":
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('InternationalAnalyst'):
+        raise SystemExit(0)
     import sys
     report = run()
     print(f"\n  Sentiment:  {report['sentiment']} ({report['sentiment_score']:+d})")

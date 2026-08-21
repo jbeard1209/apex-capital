@@ -1528,6 +1528,12 @@ def run() -> dict:
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('ETFPodBoard'):
+        raise SystemExit(0)
     lock = SingleInstanceLock(LOCK_FILE)
     if not lock.acquire():
         log.error("Another instance of etf_pod_board is already running. Exiting.")

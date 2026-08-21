@@ -375,6 +375,12 @@ def run_signal_scan(verbose: bool = True) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('SignalEngine'):
+        raise SystemExit(0)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     signals = run_signal_scan()
     if not signals.empty:

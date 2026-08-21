@@ -74,3 +74,19 @@ def run_cio_synthesis(picks: list, lane_capital: float = 5000.0) -> list:
 
     logger.info("[CIO] Slate: %d picks (%d gold, %d equity)", len(slate), len(gold), len(final))
     return slate
+
+
+if __name__ == "__main__":
+    # This module is a library: fe_pipeline.py imports run_cio_synthesis() and
+    # hands it the picks and the lane capital. There is no standalone run — but
+    # FECIOAgent is a named agent with an inbox, and wake_agent.py has had it in
+    # AGENT_REGISTRY all along, pointed at a file with no __main__ at all. Every
+    # wake therefore imported the module, ran nothing, and exited 0: a wake that
+    # reported success and delivered nothing.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('FECIOAgent'):
+        raise SystemExit(0)
+    raise SystemExit(
+        "fe_cio_agent is a library — its synthesis step runs inside "
+        "fe_pipeline.py. Use --inbox-only to process this agent's inbox."
+    )

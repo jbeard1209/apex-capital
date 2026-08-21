@@ -149,9 +149,14 @@ def run_websocket():
         run_polling_fallback()
 
 if __name__ == "__main__":
-    if "--inbox-only" in sys.argv:
-        from agent_inbox import main_inbox_only
-        main_inbox_only("WSListener"); sys.exit(0)
+    # Was `main_inbox_only("WSListener")` — a hardcoded name that ignores the
+    # `--as` wake_agent passes. AGENT_REGISTRY knows this script as
+    # "AlpacaWSListener", so a wake for AlpacaWSListener opened WSListener's
+    # inbox instead: the exact silent identifier mismatch CLAUDE.md names as
+    # this system's main bug class, one layer below where we usually look for it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('WSListener'):
+        raise SystemExit(0)
 
     if "--status" in sys.argv:
         alerts = _load(ALERTS_FILE, [])

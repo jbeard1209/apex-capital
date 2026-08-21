@@ -810,5 +810,11 @@ def load_trade_review() -> dict:
 # =============================================================================
 
 if __name__ == "__main__":
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('TradeReviewTeam'):
+        raise SystemExit(0)
     no_email = "--no-email" in sys.argv
     run_trade_review(send_email=not no_email)

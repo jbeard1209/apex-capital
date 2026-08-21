@@ -383,15 +383,70 @@ def run_inbox(agent_name: str, quiet: bool = False) -> dict:
     return summary
 
 
-def main_inbox_only(agent_name: str) -> None:
+def handle_wake_if_requested(default_agent_name: str) -> bool:
+    """One line at the top of a script's __main__ makes it wakeable.
+
+        from agent_inbox import handle_wake_if_requested as _wake
+        if _wake("MyAgentName"):
+            raise SystemExit(0)
+
+    Returns True when this process was launched by wake_agent.py and the inbox
+    has now been handled — the caller must exit without running its pipeline.
+
+    `--as <name>` overrides the default. Six agent names share cit_director.py;
+    without it, waking CITDataQualityAnalyst reads CITDirector's inbox and the
+    request that caused the wake stays unread. wake_agent.py always passes it.
+    """
+    argv = sys.argv
+    if "--inbox-only" not in argv and "--thread-id" not in argv:
+        return False
+    name = default_agent_name
+    if "--as" in argv:
+        i = argv.index("--as")
+        if i + 1 < len(argv) and not argv[i + 1].startswith("-"):
+            name = argv[i + 1]
+    main_inbox_only(name)
+    return True
+
+
+def main_inbox_only(agent_name: str, quiet: bool = False) -> None:
     """
     Entry point for --inbox-only mode.
     Agents call this when woken by wake_agent.py instead of running full pipeline.
+
+    `quiet` was missing until 2026-08-21. Sections 7-11 below were copied out of
+    run_inbox(), which takes `quiet` as a parameter; here it resolved to nothing
+    and every section raised NameError on its FIRST item. Each was wrapped in
+    `except Exception: logger.debug(...)`, so at the default INFO level the run
+    printed "N item(s) handled" and looked clean.
+
+    What that cost: a woken agent never saw a bulletin (and never called
+    mark_bulletin_read, so they re-accumulated), never saw a poll it was meant
+    to vote in, never saw an action item, never saw its own PIP, and — the one
+    that matters most — never saw a thread reply. wake_for_thread_reply()
+    exists solely to make an agent answer a reply fast; it bypasses the cooldown
+    to do it, launches the target with --thread-id, and then this handler threw
+    before printing the message. The feature had never once worked.
+
+    The second half of the fix is that the swallows are no longer invisible: a
+    section that fails now logs at WARNING and lands in summary["errors"], so
+    the next one of these announces itself instead of reading as a clean run.
     """
     logger.info("[InboxOnly] %s woken for inbox processing", agent_name)
-    summary = run_inbox(agent_name, quiet=False)
+    summary = run_inbox(agent_name, quiet=quiet)
+    errors: list = []
+
+    def _section_failed(name: str, exc: Exception) -> None:
+        errors.append(f"{name}: {exc}")
+        logger.warning("  [INBOX:%s] section '%s' failed: %s", agent_name, name, exc)
     # ── 7. Bulletin board posts from other agents ────────────────────────────
     try:
+        # These live in agent_meeting, like the threads/PIP sections below, and
+        # were never imported here — the second layer of the same bug. `quiet`
+        # raised first, so fixing it only exposed this: NameError again, in the
+        # same swallowed try. Sections 10-11 always worked because they import
+        # what they call; 7-9 were copied out of run_inbox without its imports.
+        from agent_meeting import get_bulletin, mark_bulletin_read
         posts = get_bulletin(max_age_hours=6.0, agent_name=agent_name)
         for post in posts:
             if not quiet:
@@ -403,10 +458,11 @@ def main_inbox_only(agent_name: str) -> None:
             mark_bulletin_read(post.get("bulletin_id",""), agent_name)
             summary["bulletins"] = summary.get("bulletins", 0) + 1
     except Exception as e:
-        logger.debug("non-fatal inbox bulletins: %s", e)
+        _section_failed("bulletins", e)
 
     # ── 8. Open polls awaiting my vote ────────────────────────────────────
     try:
+        from agent_meeting import get_open_polls
         polls = get_open_polls(agent_name=agent_name)
         for poll in polls:
             if not quiet:
@@ -422,10 +478,11 @@ def main_inbox_only(agent_name: str) -> None:
                 )
             summary["polls"] = summary.get("polls", 0) + 1
     except Exception as e:
-        logger.debug("non-fatal inbox polls: %s", e)
+        _section_failed("polls", e)
 
     # ── 9. Open action items ──────────────────────────────────────────────
     try:
+        from agent_meeting import get_my_action_items
         action_items = get_my_action_items(agent_name, max_age_hours=168.0)
         for item in action_items:
             if not quiet:
@@ -438,7 +495,7 @@ def main_inbox_only(agent_name: str) -> None:
                 )
             summary["action_items"] = summary.get("action_items", 0) + 1
     except Exception as e:
-        logger.debug("non-fatal inbox action_items: %s", e)
+        _section_failed("action_items", e)
 
     # ── 10. Active conversation threads (replies needing attention) ───────
     try:
@@ -459,7 +516,7 @@ def main_inbox_only(agent_name: str) -> None:
                 )
             summary["threads"] = summary.get("threads", 0) + 1
     except Exception as e:
-        logger.debug("non-fatal inbox threads: %s", e)
+        _section_failed("threads", e)
 
     # ── 8. Active PIP (Performance Improvement Plan) ──────────────────────
     try:
@@ -475,7 +532,18 @@ def main_inbox_only(agent_name: str) -> None:
             )
             summary["active_pip"] = True
     except Exception as e:
-        logger.debug("non-fatal inbox pip: %s", e)
+        _section_failed("pip", e)
 
-    total = sum(v for k, v in summary.items() if k not in ("agent", "active_pip"))
-    logger.info("[InboxOnly] %s done — %d item(s) handled", agent_name, total)
+    if errors:
+        summary["errors"] = errors
+    total = sum(v for k, v in summary.items()
+                if k not in ("agent", "active_pip", "errors")
+                and isinstance(v, (int, float)))
+    if errors:
+        # Never report a clean run over a broken one: "0 item(s) handled"
+        # and "every section crashed" read identically for months.
+        logger.warning("[InboxOnly] %s done — %d item(s) handled, "
+                       "%d section(s) FAILED: %s",
+                       agent_name, total, len(errors), "; ".join(errors)[:300])
+    else:
+        logger.info("[InboxOnly] %s done — %d item(s) handled", agent_name, total)

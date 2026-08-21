@@ -1517,6 +1517,12 @@ if __name__ == "__main__":
     # A stalled previous run (slow yfinance downloads) that overlaps with a
     # new cron invocation doubles the open-FD count and can exhaust the limit.
     # This lock ensures only one rd_team_leader process runs at a time.
+    # Woken by wake_agent.py — handle the inbox and exit. Must be the first
+    # statement in __main__: everything below this line is the full pipeline,
+    # and a wake is explicitly not a request to run it.
+    from agent_inbox import handle_wake_if_requested as _wake
+    if _wake('RDTeamLeader'):
+        raise SystemExit(0)
     _LOCK_PATH = "data/.rd_team_leader.lock"
     os.makedirs("data", exist_ok=True)
     _lock_fh = open(_LOCK_PATH, "w")
