@@ -138,20 +138,30 @@ CIT_PENDING      = DATA_DIR / "cit_pending_proposals.json"
 # the main board queue, which board_meeting.py + deputy_board.py both consume.
 _LIVE_POD_QUEUES = {"rd", "r&d", "pod1", "ml", "pod2"}
 
-_POD_PENDING_FILES = {
-    "rd":    DATA_DIR / "rd_pod_pending.json",
-    "r&d":   DATA_DIR / "rd_pod_pending.json",
-    "pod1":  DATA_DIR / "rd_pod_pending.json",
-    "ml":    DATA_DIR / "ml_pod_pending.json",
-    "pod2":  DATA_DIR / "ml_pod_pending.json",
-    "fi":    DATA_DIR / "fi_pod_pending.json",   # fi_board reads fi_picks_queue; ops via fi_pod_pending
-    "fixed income": DATA_DIR / "fi_pod_pending.json",
-    "fe":    DATA_DIR / "fe_pod_pending.json",
-    "first eagle": DATA_DIR / "fe_pod_pending.json",
-    "etf":   DATA_DIR / "etf_pod_pending.json",
-    "macro": DATA_DIR / "etf_pod_pending.json",
-    "pod3":  DATA_DIR / "etf_pod_pending.json",
-}
+# A FUNCTION, not a module-level dict, for the reason problem_lifecycle_sentinel
+# .scanned_queues() is one: `DATA_DIR / "..."` evaluates at IMPORT, so a caller
+# that redirects DATA_DIR — the one knob a sandbox reaches for — moves everything
+# except this map, and submit_to_pod_queue() WRITES through it (see the
+# `target_path` line below). The suite got away with it only because one test
+# rebuilt this dict by hand next to its DATA_DIR rebind; the next test to
+# sandbox this module without knowing that would have appended real proposals to
+# the real pod queues. Correctness that depends on every future author
+# remembering an undocumented second step is not correctness.
+def _pod_pending_files():
+    return {
+        "rd":    DATA_DIR / "rd_pod_pending.json",
+        "r&d":   DATA_DIR / "rd_pod_pending.json",
+        "pod1":  DATA_DIR / "rd_pod_pending.json",
+        "ml":    DATA_DIR / "ml_pod_pending.json",
+        "pod2":  DATA_DIR / "ml_pod_pending.json",
+        "fi":    DATA_DIR / "fi_pod_pending.json",   # fi_board reads fi_picks_queue; ops via fi_pod_pending
+        "fixed income": DATA_DIR / "fi_pod_pending.json",
+        "fe":    DATA_DIR / "fe_pod_pending.json",
+        "first eagle": DATA_DIR / "fe_pod_pending.json",
+        "etf":   DATA_DIR / "etf_pod_pending.json",
+        "macro": DATA_DIR / "etf_pod_pending.json",
+        "pod3":  DATA_DIR / "etf_pod_pending.json",
+    }
 
 _FIRM_LEVEL_KEYWORDS = [
     "cross-pod", "firm-wide", "all pods", "budget allocation", "cro",
@@ -188,7 +198,7 @@ def route_proposal_to_pod(proposal: dict) -> str:
     4. Default → rd (most proposals relate to R&D pipeline)
     """
     explicit_pod = proposal.get("pod", proposal.get("target_pod", "")).lower().strip()
-    if explicit_pod and explicit_pod in _POD_PENDING_FILES:
+    if explicit_pod and explicit_pod in _pod_pending_files():
         return explicit_pod
     if explicit_pod == "main":
         return "main"
@@ -235,7 +245,7 @@ def submit_to_pod_queue(proposal: dict) -> str:
     if pod == "main":
         target_path = CIT_PENDING
     else:
-        target_path = _POD_PENDING_FILES.get(pod, DATA_DIR / "rd_pod_pending.json")
+        target_path = _pod_pending_files().get(pod, DATA_DIR / "rd_pod_pending.json")
 
     # Load, dedup, append, save
     try:

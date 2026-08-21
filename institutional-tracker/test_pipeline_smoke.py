@@ -736,14 +736,14 @@ class TestWiringContracts(unittest.TestCase):
     def test_the_rejected_ledger_producer_and_consumer_name_one_file(self):
         """New routed producer 2026-08-19: cit_director writes rejections.
 
-        Its only consumer is problem_lifecycle_sentinel.OUTCOME_LEDGERS, which
+        Its only consumer is problem_lifecycle_sentinel.outcome_ledgers(), which
         uses it to tell "the board said no" from "we lost it". If the two ever
         name different files the sentinel goes quietly back to reporting every
         rejected proposal as a silent drop — output produced, never consumed,
         which is this firm's oldest bug class.
         """
         import cit_director, problem_lifecycle_sentinel as S
-        consumed = {Path(p).name for p, *_ in S.OUTCOME_LEDGERS}
+        consumed = {Path(p).name for p, *_ in S.outcome_ledgers()}
         self.assertIn(Path(cit_director.CIT_REJECTED).name, consumed)
         self.assertIn(Path(cit_director.CIT_APPROVED).name, consumed)
 
@@ -1792,14 +1792,13 @@ class TestWiringContracts(unittest.TestCase):
         sandbox = Path(tempfile.mkdtemp())
         real_data_dir = cit_director.DATA_DIR
         real_cit_pending = cit_director.CIT_PENDING
-        real_pod_files = dict(cit_director._POD_PENDING_FILES)
 
         try:
             cit_director.DATA_DIR = sandbox
             cit_director.CIT_PENDING = sandbox / "cit_pending_proposals.json"
-            cit_director._POD_PENDING_FILES = {
-                k: sandbox / v.name for k, v in real_pod_files.items()
-            }
+            # The pod map used to need rebuilding by hand right here, because it
+            # was a dict of Paths frozen at import. It is a function of DATA_DIR
+            # now, so the line above is the whole sandbox.
 
             fake_event = {
                 "rule": "INDEX_GAP", "ticker": "QQQ", "value_pct": 3.3,
@@ -1830,7 +1829,6 @@ class TestWiringContracts(unittest.TestCase):
         finally:
             cit_director.DATA_DIR = real_data_dir
             cit_director.CIT_PENDING = real_cit_pending
-            cit_director._POD_PENDING_FILES = real_pod_files
             shutil.rmtree(sandbox, ignore_errors=True)
 
     def test_market_event_monitor_reports_blind_rules_instead_of_quiet(self):
@@ -13735,7 +13733,7 @@ class TestABoardDecisionIsNotASilentDrop(unittest.TestCase):
         self.rej = self.d / "rejected.json"
         self.appr.write_text("[]")
         self.rej.write_text("[]")
-        led = patch.object(S, "OUTCOME_LEDGERS", (
+        led = patch.object(S, "outcome_ledgers", lambda: (
             (self.appr, "RESOLVED", "approved_at", "the board approved it"),
             (self.rej, "WONT_FIX", "rejected_at", "the board rejected it")))
         led.start()
@@ -13872,7 +13870,7 @@ class TestABoardDecisionIsNotASilentDrop(unittest.TestCase):
         scanned_queues().
         """
         scanned = {str(p) for p, _ in self.S.scanned_queues()}
-        for path, *_ in self.S.OUTCOME_LEDGERS:
+        for path, *_ in self.S.outcome_ledgers():
             self.assertNotIn(str(path), scanned)
 
     def test_rebinding_the_paths_actually_redirects_every_read_and_write(self):
@@ -13899,6 +13897,90 @@ class TestABoardDecisionIsNotASilentDrop(unittest.TestCase):
                              {str(p) for p, _ in S.scanned_queues()})
             snap = S._scan()
         self.assertEqual(1, len(snap), "the scan read outside the sandbox")
+
+    def test_rebinding_the_data_root_moves_the_ledgers_too(self):
+        """POISON PILL. Half a sandbox produces a confident wrong answer.
+
+        SILENT_DROP is a two-part claim: it is in no queue, AND no decision was
+        recorded. scanned_queues() resolves DATA at call time; outcome_ledgers()
+        was a frozen module-level tuple for a month after that same fix landed
+        twelve lines above it. So a run that redirected DATA got its queues from
+        the sandbox and its decisions from the real data/ — two populations, one
+        verdict, and no error anywhere to say the pair did not belong together.
+
+        Fails against the tuple form: the ledger Paths would still resolve under
+        the real data/ no matter what DATA was rebound to.
+        """
+        S = self.S
+        with patch.object(S, "DATA", self.d):
+            for path, *_ in S.outcome_ledgers():
+                self.assertEqual(
+                    self.d, Path(path).parent,
+                    "outcome_ledgers() resolved %s outside the sandbox — the "
+                    "queues moved and the decision record did not" % path)
+
+    def test_no_module_level_container_freezes_a_derived_path(self):
+        """The general detector for a class we have now fixed three times.
+
+        The shape: a module defines a rebindable root (`DATA = Path(...)`), then
+        builds a tuple/list/dict of `DATA / "x.json"` at module level. Rebinding
+        DATA — the only knob anyone reaches for, and the one every sandbox and
+        any future per-host data root would use — moves every scalar constant
+        and leaves the container pointing at production. It fails silently in
+        the worst direction: the run still produces an answer, assembled from
+        two different sets of files.
+
+        A single scalar (`PENDING_PATH = DATA / "x.json"`) is fine — it is a
+        name, so rebinding reaches it. A CONTAINER is not, because rebinding its
+        inputs does nothing to it and nobody thinks to rebind the container
+        itself. That is the whole rule, and it is why the fix is always the same
+        one line: make it a function so the paths resolve at call time.
+
+        Prior instances: scanned_queues() (2026-08-19, after a test run stamped
+        sla_breached onto all three live queues on a non-writer host),
+        outcome_ledgers(), and cit_director._pod_pending_files() — the last of
+        which is a WRITE path. Written as a sweep rather than three more
+        one-off assertions so instance four fails here instead of in production.
+        """
+        import ast
+        here = Path(__file__).resolve().parent
+        offenders = []
+        for f in sorted(here.glob("*.py")):
+            try:
+                tree = ast.parse(f.read_text())
+            except (SyntaxError, UnicodeDecodeError):
+                continue
+            # Module-level names that hold a Path, including ones derived from
+            # an earlier such name (BASE_DIR -> DATA_DIR).
+            roots = set()
+            for n in tree.body:
+                if (isinstance(n, ast.Assign) and len(n.targets) == 1
+                        and isinstance(n.targets[0], ast.Name)):
+                    src = ast.unparse(n.value)
+                    head = src.split("/")[0].strip()
+                    if "Path(" in src or head in roots:
+                        roots.add(n.targets[0].id)
+            for n in tree.body:
+                if not isinstance(n, ast.Assign):
+                    continue
+                if not isinstance(n.value, (ast.Tuple, ast.List, ast.Set, ast.Dict)):
+                    continue
+                for sub in ast.walk(n.value):
+                    if not (isinstance(sub, ast.BinOp) and isinstance(sub.op, ast.Div)):
+                        continue
+                    left = sub.left
+                    while isinstance(left, ast.BinOp):
+                        left = left.left
+                    if isinstance(left, ast.Name) and left.id in roots:
+                        offenders.append("%s:%d  %s <- %s"
+                                         % (f.name, n.lineno,
+                                            ast.unparse(n.targets[0]), left.id))
+                        break
+        self.assertEqual(
+            [], offenders,
+            "module-level container(s) of derived Paths — rebinding the root "
+            "will not move these, so a redirected run reads or writes "
+            "production. Make it a function:\n  " + "\n  ".join(offenders))
 
     def test_the_board_records_a_rejection_at_all(self):
         """The fix at source: cit_director must write the rejected half too."""
@@ -17145,6 +17227,15 @@ class TestAControlMustNotReadBackItsOwnOutput(unittest.TestCase):
         import importlib, tempfile, problem_lifecycle_sentinel as S
         from pathlib import Path
         importlib.reload(S)
+        # ...and reload it again on the way OUT. Everything below rebinds module
+        # attributes in place, and reload() re-executes into the SAME module
+        # object, so without this the last sandbox to run leaves the real module
+        # pointing at a deleted tmpdir for every test that comes after it. The
+        # reload above only protects the tests inside this class; it protects
+        # nothing from this class. Caught 2026-08-21 when a filtered run put one
+        # of these before TestWiringContracts and the contract test read a
+        # one-entry ledger list that a sibling had installed.
+        self.addCleanup(importlib.reload, S)
         d = Path(tempfile.mkdtemp(prefix="selfread_"))
         S.PENDING_PATH, S.IMPL_QUEUE_PATH = d / "p.json", d / "i.json"
         S.CHAIRMAN_PATH, S.HISTORY_PATH = d / "c.json", d / "h.json"
@@ -17294,12 +17385,21 @@ class TestArchivedIsNotDecided(unittest.TestCase):
         import importlib, tempfile, problem_lifecycle_sentinel as S
         from pathlib import Path
         importlib.reload(S)
+        # ...and reload it again on the way OUT. Everything below rebinds module
+        # attributes in place, and reload() re-executes into the SAME module
+        # object, so without this the last sandbox to run leaves the real module
+        # pointing at a deleted tmpdir for every test that comes after it. The
+        # reload above only protects the tests inside this class; it protects
+        # nothing from this class. Caught 2026-08-21 when a filtered run put one
+        # of these before TestWiringContracts and the contract test read a
+        # one-entry ledger list that a sibling had installed.
+        self.addCleanup(importlib.reload, S)
         d = Path(tempfile.mkdtemp(prefix="arch_"))
         S.DATA = d
         S.PENDING_PATH, S.IMPL_QUEUE_PATH = d / "p.json", d / "i.json"
         S.CHAIRMAN_PATH, S.HISTORY_PATH = d / "c.json", d / "h.json"
         S.LOOPS_PATH = d / "l.json"
-        S.OUTCOME_LEDGERS = ()
+        S.outcome_ledgers = lambda: ()
         S.writer_verdict = lambda: (True, "test sandbox")
         return S, d
 
@@ -17361,7 +17461,7 @@ class TestArchivedIsNotDecided(unittest.TestCase):
         S, d = self._S()
         led = d / "cit_approved_proposals.json"
         led.write_text(json.dumps([{"id": "SUBJ-1", "status": "pending"}]))
-        S.OUTCOME_LEDGERS = ((led, "RESOLVED", "approved_at", "approved"),)
+        S.outcome_ledgers = lambda: ((led, "RESOLVED", "approved_at", "approved"),)
         self.assertEqual("resolved", S.archived_statuses()["SUBJ-1"],
                          "an approved proposal read as still pending")
         rows = [self._view()]
@@ -17375,7 +17475,7 @@ class TestArchivedIsNotDecided(unittest.TestCase):
             [{"id": "SUBJ-1", "status": "awaiting_chairman"}]))
         led = d / "cit_rejected_proposals.json"
         led.write_text(json.dumps([{"id": "SUBJ-1", "status": "pending"}]))
-        S.OUTCOME_LEDGERS = ((led, "WONT_FIX", "rejected_at", "rejected"),)
+        S.outcome_ledgers = lambda: ((led, "WONT_FIX", "rejected_at", "rejected"),)
         self.assertEqual("rejected", S.archived_statuses()["SUBJ-1"])
         rows = [self._view()]
         self.assertEqual(1, len(S.retire_derived_rows(rows, {}, S._now())))
@@ -17411,11 +17511,20 @@ class TestAVerdictNamesTheLedgerItCouldNotRead(unittest.TestCase):
         import importlib, tempfile, problem_lifecycle_sentinel as S
         from pathlib import Path
         importlib.reload(S)
+        # ...and reload it again on the way OUT. Everything below rebinds module
+        # attributes in place, and reload() re-executes into the SAME module
+        # object, so without this the last sandbox to run leaves the real module
+        # pointing at a deleted tmpdir for every test that comes after it. The
+        # reload above only protects the tests inside this class; it protects
+        # nothing from this class. Caught 2026-08-21 when a filtered run put one
+        # of these before TestWiringContracts and the contract test read a
+        # one-entry ledger list that a sibling had installed.
+        self.addCleanup(importlib.reload, S)
         d = Path(tempfile.mkdtemp(prefix="ledger_absent_"))
         S.PENDING_PATH, S.IMPL_QUEUE_PATH = d / "p.json", d / "i.json"
         S.CHAIRMAN_PATH, S.HISTORY_PATH = d / "c.json", d / "h.json"
         S.LOOPS_PATH = d / "l.json"
-        S.OUTCOME_LEDGERS = (
+        S.outcome_ledgers = lambda: (
             (d / "approved.json", "RESOLVED", "approved_at", "the board approved it"),
             (d / "rejected.json", "WONT_FIX", "rejected_at", "the board rejected it"),
         )

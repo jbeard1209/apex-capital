@@ -493,12 +493,22 @@ def scanned_queues():
 # lost?". Measured on the VM 2026-08-19: of 17 signatures reported as
 # SILENT_DROP, 8 had been approved by the board and were sitting in the first
 # of these files the whole time.
-OUTCOME_LEDGERS = (
-    (DATA / "cit_approved_proposals.json", "RESOLVED", "approved_at",
-     "the board approved it"),
-    (DATA / "cit_rejected_proposals.json", "WONT_FIX", "rejected_at",
-     "the board rejected it"),
-)
+#
+# A FUNCTION for the same reason scanned_queues() is one, and it was left a
+# frozen tuple for a month after that lesson was learned twelve lines above.
+# `DATA / "..."` evaluates at IMPORT, so rebinding DATA — which is how a
+# sandbox, and any future per-host data root, redirects this module — moved the
+# queues and left the ledgers pointing at the real data/. The two halves of the
+# SILENT_DROP verdict then came from different machines' worth of files: "it is
+# not in ANY queue (yours)" plus "no decision was recorded (the real firm's)".
+# That comparison is not wrong in a way that raises an error; it is wrong in a
+# way that produces a confident answer about the wrong pair of populations, and
+# nothing in the run would say so.
+def outcome_ledgers():
+    return ((DATA / "cit_approved_proposals.json", "RESOLVED", "approved_at",
+             "the board approved it"),
+            (DATA / "cit_rejected_proposals.json", "WONT_FIX", "rejected_at",
+             "the board rejected it"))
 
 
 def _scan() -> dict:
@@ -730,7 +740,7 @@ def absent_decision_ledgers() -> list:
     Mac's copy over would destroy VM records. What the verdict needs is not the
     other host's file, it is to stop claiming certainty it does not have.
     """
-    return [path.name for path, _s, _t, _w in OUTCOME_LEDGERS
+    return [path.name for path, _s, _t, _w in outcome_ledgers()
             if not path.exists()]
 
 
@@ -740,7 +750,7 @@ def _outcome_index() -> dict:
     Read once per run; the approved ledger alone was 1688 rows on 2026-08-19.
     """
     idx: dict = {}
-    for path, status, ts_field, why in OUTCOME_LEDGERS:
+    for path, status, ts_field, why in outcome_ledgers():
         for row in _load(path, []):
             if not isinstance(row, dict):
                 continue
@@ -1122,7 +1132,7 @@ def archived_statuses() -> dict:
         for r in _load(path, []):
             if isinstance(r, dict) and r.get("id"):
                 out.setdefault(str(r["id"]), _status_of(r))
-    for path, status, _ts, _why in OUTCOME_LEDGERS:
+    for path, status, _ts, _why in outcome_ledgers():
         canon = "resolved" if status == "RESOLVED" else "rejected"
         for r in _load(path, []):
             if isinstance(r, dict) and r.get("id"):
