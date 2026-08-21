@@ -160,6 +160,7 @@ DERIVED_ID_PREFIXES = (STALE_ID_PREFIX, DROP_ID_PREFIX, LOOP_ID_PREFIX,
 # constant here too, built into the title by chairman_decision_sla, and read
 # back by the one-time backfill below.
 SLA_ESCALATION_TITLE_PREFIX = "[SLA] Board must decide"
+SUBJECT_SEP = "):"          # what separates the SLA blurb from the subject's id
 
 # A terminal status that is emphatically NOT a silent drop. It means: we
 # stopped tracking this row as a problem in its own right, on purpose, and
@@ -199,13 +200,89 @@ def backfill_derived_from_titles(history: dict) -> int:
         if not title.startswith(SLA_ESCALATION_TITLE_PREFIX):
             continue
         # "…in 20d): watch-20260727-data-integrity" -> the subject's id.
-        subject = title.rsplit("):", 1)[-1].strip() or sig
+        # str.rsplit hands the WHOLE string back when the separator is absent,
+        # so the separator has to be checked for explicitly: without this, a
+        # title that does not carry a subject at all yields the title itself as
+        # the "subject" — extraction failing open into a value that reads as
+        # success. A subject is an id, so it also cannot contain whitespace.
+        subject = title.rsplit(SUBJECT_SEP, 1)[-1].strip() if SUBJECT_SEP in title else ""
+        if subject.split() != [subject]:
+            subject = ""
+        if not subject or subject == sig:
+            # Extraction failed. The old code fell back to `or sig`, which
+            # declares the row a view OF ITSELF — and a view is retired when its
+            # subject settles, so it waits on itself and is parked in a status
+            # that never ages, never escalates and never closes. A degraded read
+            # must not substitute a value that happens to mean "act": if we
+            # cannot name the subject, this is not provably a view, so leave it
+            # a real problem and let it age like one.
+            continue
         h["derived_of"] = subject
         h["status"] = DERIVED_STATUS
         h["last_open"] = None
         h["backfilled_derived"] = True
         fixed += 1
     return fixed
+
+
+def repair_self_derived(history: dict) -> int:
+    """Un-park entries that claim to be a view OF THEMSELVES.
+
+    DERIVED is a silencing status: a view never ages, never escalates, and is
+    closed only when retire_derived_rows observes its SUBJECT settle. An entry
+    whose subject is itself therefore waits on itself — parked, silent and
+    unretirable, permanently. Ten of the VM's 131 derived entries were in that
+    state on 2026-08-21, two of them having already reached the Chairman's queue
+    wearing a nested title: an escalation about an escalation.
+
+    Two producers made them, and both are fixed above: the signature collision
+    (view_aware_signature) and the `or sig` fallback in
+    backfill_derived_from_titles. This repairs the entries already written, on
+    each host, because there is no state sync and a migration that must be
+    remembered separately is a migration that gets run once.
+
+    Deliberately narrower than the defect census. 42 further entries point at a
+    subject that is not a signature in history — but `_subject_is_settled` also
+    resolves a subject by ROW ID, and those subjects are upstream ids
+    ("LTIA-20260728160104"), not signatures, so "absent from history" is not
+    proof they are unresolvable. The first cut of this function used that test
+    and turned 43 parked entries into 43 fresh MEDIUM escalations on a Chairman
+    queue already holding 134. Measuring first showed 0 of them were false —
+    and also that 42 had a retirement path I had not shown to be dead. Fixing
+    what is proven broken beats fixing what merely looks wrong; the dangling
+    count is reported instead, so the question stays visible.
+
+    Restores status from the entry's own evidence rather than assuming OPEN.
+    Idempotent: after one pass no entry satisfies the condition, and it never
+    creates a derived_of.
+    """
+    fixed = 0
+    for sig, h in history.items():
+        if not isinstance(h, dict) or h.get("derived_of") != sig:
+            continue
+        h["derived_of"] = None
+        h["unparked_from_derived"] = sig
+        if h.get("status") == DERIVED_STATUS:
+            h["status"] = "OPEN" if h.get("present") else "SILENT_DROP"
+            # last_open was cleared when it was parked. Restart the clock from
+            # the raise date the entry already carries, never from now — "we
+            # lost track of this" must not read as "this just started".
+            h["last_open"] = h.get("last_open") or h.get("first_seen")
+        fixed += 1
+    return fixed
+
+
+def dangling_derived(history: dict) -> int:
+    """Entries whose `derived_of` resolves to no signature in history.
+
+    Reported, not acted on — see repair_self_derived. A subject may legitimately
+    be an upstream row id rather than a signature, which `_subject_is_settled`
+    resolves through `by_id`. Counting it keeps the open question in the report
+    instead of in someone's memory.
+    """
+    return sum(1 for sig, h in history.items()
+               if isinstance(h, dict) and h.get("derived_of")
+               and h["derived_of"] != sig and h["derived_of"] not in history)
 
 
 def _now() -> str:
@@ -279,6 +356,37 @@ def signature(item: dict, kind: str) -> str:
         title = item.get("title") or item.get("description") or ""
         base = f"{kind}:{normalize_title(title)}"
     return "sig-" + hashlib.sha1(base.encode()).hexdigest()[:12]
+
+
+def view_aware_signature(item: dict, kind: str) -> str:
+    """`signature()`, except a VIEW row is identified by its own id.
+
+    A view's description opens by quoting its subject's title, and
+    normalize_title() truncates at 80 characters — so once the wrapper text is
+    pushed past character 80, the view normalises to exactly the same string as
+    the thing it is a view OF, and the two get the same signature. An 80-char
+    prefix is not an identity.
+
+    That collision is not cosmetic; it closes a loop. _register merges the two
+    rows into one history entry and then stamps `derived_of` from the view,
+    which now points at the merged entry itself. Measured on the VM 2026-08-21,
+    before this fix: 10 of 131 derived entries had derived_of == their own
+    signature, and 42 more pointed at a signature no longer in history (the
+    losers of the same collision). DERIVED never ages and never escalates, and
+    retire_derived_rows closes a view when its SUBJECT settles — so an entry
+    waiting on itself is parked, silent and unretirable, forever. Two of them
+    had already reached the Chairman's queue wearing a nested title: an
+    escalation about an escalation.
+
+    A view already has a unique, stable, collision-proof identity — its id,
+    which embeds the subject's signature. Use it. The subject keeps the
+    title-derived signature, so nothing else in the file changes.
+    """
+    subj = derived_subject(item)
+    if subj:
+        return "sig-" + hashlib.sha1(
+            ("view:" + str(item.get("id") or "")).encode()).hexdigest()[:12]
+    return signature(item, kind)
 
 
 def _status_of(item: dict) -> str:
@@ -402,8 +510,8 @@ def _scan() -> dict:
             st = _status_of(item)
             title = item.get("title") or item.get("description") or "(untitled)"
             subj = derived_subject(item)
-            _register(snap, signature(item, kind), kind, title, st, subj,
-                      raised_at(item))
+            _register(snap, view_aware_signature(item, kind), kind, title, st,
+                      subj, raised_at(item))
 
             # A row folded into this one by chairman_queue_sync is still in the
             # queue — it is just wearing the survivor's title. That file dedups
@@ -1061,6 +1169,10 @@ def run(escalate: bool = True) -> dict:
     if not isinstance(history, dict):
         history = {}
     backfilled = backfill_derived_from_titles(history)
+    # AFTER the title backfill, not before: that function is the other producer
+    # of derived_of, so running the repair first would leave anything it parks
+    # on this run un-checked until the next one.
+    unparked = repair_self_derived(history)
 
     may_write, why = writer_verdict()
     if escalate and not may_write:
@@ -1094,6 +1206,8 @@ def run(escalate: bool = True) -> dict:
               "retired_derived": retired,
               "escalated_board": 0, "escalated_chairman": 0,
               "flagged_in_place": 0, "backfilled_derived": backfilled,
+              "unparked_from_derived": unparked,
+              "dangling_derived": dangling_derived(history),
               "rebased_to_raise_date": rebased,
               "decision_ledgers_absent": absent_decision_ledgers(),
               "decided_not_dropped": [],

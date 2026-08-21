@@ -17058,6 +17058,150 @@ class TestTheStalenessClockStartsWhenTheProblemWasRaised(unittest.TestCase):
                                  f"{src} must not claim a raise date")
 
 
+class TestAControlMustNotReadBackItsOwnOutput(unittest.TestCase):
+    """normalize_title() truncates at 80 characters, and a lifecycle escalation
+    opens by quoting its subject's title — so once the wrapper text is pushed
+    past character 80, the escalation normalises to the same string as the
+    problem it escalates and inherits its signature. An 80-char prefix is not an
+    identity.
+
+    The collision closes a loop: _register merges the two rows, then stamps
+    derived_of from the view, which now names the merged entry itself. DERIVED
+    never ages and never escalates, and a view is retired when its SUBJECT
+    settles — so the entry waits on itself, forever. Measured on the VM
+    2026-08-21: 10 of 131 derived entries, two already in the Chairman's queue
+    wearing a nested title.
+    """
+
+    def _S(self):
+        import importlib, tempfile, problem_lifecycle_sentinel as S
+        from pathlib import Path
+        importlib.reload(S)
+        d = Path(tempfile.mkdtemp(prefix="selfread_"))
+        S.PENDING_PATH, S.IMPL_QUEUE_PATH = d / "p.json", d / "i.json"
+        S.CHAIRMAN_PATH, S.HISTORY_PATH = d / "c.json", d / "h.json"
+        S.LOOPS_PATH = d / "l.json"
+        S.writer_verdict = lambda: (True, "test sandbox")
+        return S, d
+
+    LONG = ("Email buffer overflow -- 87 unsent emails in buffer (threshold 50); "
+            "email sender may be broken")
+
+    def test_a_long_title_and_its_escalation_collide_under_the_plain_signature(self):
+        """The premise. If this ever stops being true the fix below is moot —
+        but it is asserted, not assumed, so the reason the fix exists stays
+        visible instead of becoming folklore."""
+        S, _ = self._S()
+        subject = {"id": "cit-1", "title": self.LONG}
+        view = {"id": "lifecycle-stale-sig-abc",
+                "description": f"'{self.LONG}' has been OPEN with no resolution "
+                               f"past the 20d SLA — open 72d (raised 2026-06-10)."}
+        self.assertEqual(S.signature(subject, "chairman"),
+                         S.signature(view, "chairman"),
+                         "premise gone: the plain signature no longer collides")
+
+    def test_the_view_gets_its_own_identity(self):
+        """POISON PILL: the escalation must not inherit its subject's signature.
+        If it does, the subject's history entry becomes a view of itself and is
+        silenced permanently."""
+        S, _ = self._S()
+        subject = {"id": "cit-1", "title": self.LONG}
+        view = {"id": "lifecycle-stale-sig-abc",
+                "description": f"'{self.LONG}' has been OPEN with no resolution "
+                               f"past the 20d SLA — open 72d (raised 2026-06-10)."}
+        self.assertNotEqual(S.view_aware_signature(subject, "chairman"),
+                            S.view_aware_signature(view, "chairman"))
+        # the subject's own identity is unchanged — nothing else in the file moves
+        self.assertEqual(S.signature(subject, "chairman"),
+                         S.view_aware_signature(subject, "chairman"))
+
+    def test_no_entry_is_ever_a_view_of_itself(self):
+        S, d = self._S()
+        rows = [{"id": "cit-1", "title": self.LONG, "status": "queued",
+                 "queued_at": "2026-06-10T00:00:00"},
+                {"id": "lifecycle-stale-sig-abc", "status": "awaiting_chairman",
+                 "description": f"'{self.LONG}' has been OPEN with no resolution "
+                                f"past the 20d SLA — open 72d (raised 2026-06-10)."}]
+        S.CHAIRMAN_PATH.write_text(json.dumps(rows))
+        S.run()
+        hist = json.loads(S.HISTORY_PATH.read_text())
+        selfloops = [s for s, h in hist.items() if h.get("derived_of") == s]
+        self.assertEqual([], selfloops, "an entry claims to be a view of itself")
+
+    def test_a_failed_subject_extraction_does_not_manufacture_a_self_view(self):
+        """`or sig` is a fallback that means ACT: unable to name the subject, it
+        declared the row a view of itself and parked it in a status that never
+        ages, never escalates and never closes. Unknown must stay a real
+        problem."""
+        S, _ = self._S()
+        hist = {"sig-q": {"sig": "sig-q", "status": "OPEN",
+                          "title": S.SLA_ESCALATION_TITLE_PREFIX + " (no colon sep)",
+                          "first_seen": "2026-06-01T00:00:00+00:00",
+                          "last_open": "2026-06-01T00:00:00+00:00"}}
+        S.backfill_derived_from_titles(hist)
+        self.assertNotEqual("sig-q", hist["sig-q"].get("derived_of"))
+        self.assertEqual("OPEN", hist["sig-q"]["status"],
+                         "an unextractable subject must not silence the row")
+
+    def test_extraction_fails_closed_when_the_separator_is_absent(self):
+        """str.rsplit hands the WHOLE string back when the separator is missing,
+        so a title carrying no subject yielded the title itself AS the subject —
+        extraction failing open into a value that reads as success. Measured on
+        the VM 2026-08-21: all 41 live SLA titles extract identically under the
+        strict rule, so this closes the fail-open path and nothing else."""
+        S, _ = self._S()
+        P = S.SLA_ESCALATION_TITLE_PREFIX
+        cases = {
+            "no-sep":    P + " something with no separator at all",
+            "sentence":  P + " (open 40d): this is prose, not an id",
+            "empty":     P + " (open 40d):   ",
+            "good":      P + " (open 40d): watch-20260727-data-integrity",
+        }
+        hist = {k: {"sig": k, "title": t, "status": "OPEN",
+                    "first_seen": "2026-06-01T00:00:00+00:00",
+                    "last_open": "2026-06-01T00:00:00+00:00"}
+                for k, t in cases.items()}
+        self.assertEqual(1, S.backfill_derived_from_titles(hist),
+                         "only the row with a real id is a provable view")
+        for k in ("no-sep", "sentence", "empty"):
+            self.assertIsNone(hist[k].get("derived_of"), k)
+            self.assertEqual("OPEN", hist[k]["status"], k)
+        self.assertEqual("watch-20260727-data-integrity",
+                         hist["good"]["derived_of"])
+        self.assertEqual(S.DERIVED_STATUS, hist["good"]["status"])
+
+    def test_the_repair_unparks_a_self_view_and_is_idempotent(self):
+        S, _ = self._S()
+        hist = {"sig-z": {"sig": "sig-z", "derived_of": "sig-z",
+                          "status": S.DERIVED_STATUS, "present": True,
+                          "first_seen": "2026-06-01T00:00:00+00:00",
+                          "last_open": None}}
+        self.assertEqual(1, S.repair_self_derived(hist))
+        self.assertEqual("OPEN", hist["sig-z"]["status"])
+        self.assertIsNone(hist["sig-z"]["derived_of"])
+        # the clock restarts from what the entry already knew, never from now
+        self.assertTrue(hist["sig-z"]["last_open"].startswith("2026-06-01"))
+        self.assertEqual(0, S.repair_self_derived(hist))
+
+    def test_the_repair_leaves_a_resolvable_view_alone(self):
+        """Scope discipline. The first cut also unparked every entry whose
+        subject was absent from history — 42 of them, whose subjects are
+        upstream row ids that _subject_is_settled resolves through by_id. That
+        would have turned 43 silenced entries into 43 fresh MEDIUM items on a
+        Chairman queue already holding 134."""
+        S, _ = self._S()
+        hist = {"sig-a": {"sig": "sig-a", "status": "OPEN"},
+                "sig-b": {"sig": "sig-b", "derived_of": "sig-a",
+                          "status": S.DERIVED_STATUS},
+                "sig-c": {"sig": "sig-c", "derived_of": "LTIA-20260728160104",
+                          "status": S.DERIVED_STATUS}}
+        self.assertEqual(0, S.repair_self_derived(hist))
+        self.assertEqual(S.DERIVED_STATUS, hist["sig-b"]["status"])
+        self.assertEqual(S.DERIVED_STATUS, hist["sig-c"]["status"])
+        # the unproven case is counted and reported, not acted on
+        self.assertEqual(1, S.dangling_derived(hist))
+
+
 class TestAVerdictNamesTheLedgerItCouldNotRead(unittest.TestCase):
     """SILENT_DROP asserts "no decision was recorded". That is only as strong as
     the ledgers consulted, and `_load` returns [] for a file that does not exist
