@@ -17202,6 +17202,130 @@ class TestAControlMustNotReadBackItsOwnOutput(unittest.TestCase):
         self.assertEqual(1, S.dangling_derived(hist))
 
 
+class TestArchivedIsNotDecided(unittest.TestCase):
+    """A subject can be in three places; only two were ever read.
+
+    A row that was decided and then archived left history AND left the queues,
+    so it was indistinguishable from a row that vanished — and the escalation
+    about it could never retire. Measured on the VM 2026-08-21: 18 history
+    entries named a subject resolving nowhere, 8 of them sitting in an archive
+    (7 decided, 1 not). The lookup retires 0 rows today — 34 of the 39 eligible
+    view rows point at a subject that is genuinely still open — so these tests
+    are the only thing holding the behaviour up. It is a gap closed, not a
+    backlog cleared.
+
+    The trap in the fix is that "archived" and "decided" are not the same state.
+    chairman_resolved_archive.json holds rows with status "resolved";
+    chairman_action_archived_2026-07-27.json holds rows with status
+    "awaiting_chairman" — swept out of the queue with no decision recorded.
+    Reading archival itself as closure would collapse the two, which is exactly
+    the defect the drop detector exists to catch.
+    """
+
+    def _S(self):
+        import importlib, tempfile, problem_lifecycle_sentinel as S
+        from pathlib import Path
+        importlib.reload(S)
+        d = Path(tempfile.mkdtemp(prefix="arch_"))
+        S.DATA = d
+        S.PENDING_PATH, S.IMPL_QUEUE_PATH = d / "p.json", d / "i.json"
+        S.CHAIRMAN_PATH, S.HISTORY_PATH = d / "c.json", d / "h.json"
+        S.LOOPS_PATH = d / "l.json"
+        S.OUTCOME_LEDGERS = ()
+        S.writer_verdict = lambda: (True, "test sandbox")
+        return S, d
+
+    def _view(self):
+        return {"id": "lifecycle-stale-SUBJ-1", "status": "awaiting_chairman",
+                "description": "watching SUBJ-1"}
+
+    def test_a_decided_then_archived_subject_retires_its_view(self):
+        S, d = self._S()
+        (d / "chairman_resolved_archive.json").write_text(json.dumps(
+            [{"id": "SUBJ-1", "status": "resolved"}]))
+        rows = [self._view()]
+        retired = S.retire_derived_rows(rows, {}, S._now())
+        self.assertEqual(1, len(retired))
+        self.assertTrue(rows[0].get("resolved_at"))
+
+    def test_archived_while_still_open_is_not_a_closure(self):
+        """POISON PILL. The row left the queue with no decision recorded — the
+        one state this whole file exists to distinguish from a real outcome. If
+        this ever retires, archival has become a way to close anything."""
+        S, d = self._S()
+        (d / "chairman_action_archived_2026-07-27.json").write_text(json.dumps(
+            [{"id": "SUBJ-1", "status": "awaiting_chairman",
+              "_archived_reason": "queue compaction"}]))
+        rows = [self._view()]
+        self.assertEqual([], S.retire_derived_rows(rows, {}, S._now()))
+        self.assertFalse(rows[0].get("resolved_at"))
+        ok, why = S._subject_is_settled("SUBJ-1", {}, {}, S.archived_statuses())
+        self.assertFalse(ok)
+        self.assertIn("no decision was recorded", why)
+
+    def test_a_subject_in_no_archive_at_all_still_does_not_retire(self):
+        S, _d = self._S()
+        rows = [self._view()]
+        self.assertEqual([], S.retire_derived_rows(rows, {}, S._now()))
+        ok, why = S._subject_is_settled("SUBJ-1", {}, {}, S.archived_statuses())
+        self.assertFalse(ok)
+        self.assertIn("archive", why, "the verdict must say what it checked")
+
+    def test_archive_files_are_globbed_so_a_new_dated_file_is_covered(self):
+        """chairman_queue_compactor writes a NEW dated file each time it runs.
+        An enumerated list would stop covering the newest archive the first time
+        it rolled — silently, and only for rows archived after that date."""
+        S, d = self._S()
+        (d / "chairman_action_archived_2099-01-01.json").write_text(json.dumps(
+            [{"id": "SUBJ-1", "status": "resolved"}]))
+        self.assertIn("SUBJ-1", S.archived_statuses())
+        rows = [self._view()]
+        self.assertEqual(1, len(S.retire_derived_rows(rows, {}, S._now())))
+
+    def test_an_outcome_ledger_is_a_decision_not_a_filing_cabinet(self):
+        """POISON PILL for the mirror-image bug, which a dry run caught in this
+        very fix before it shipped: 257 of the rows in
+        cit_approved_proposals.json — an APPROVALS ledger — still carry status
+        "pending" from their life before the decision. Presence in an outcome
+        ledger IS the decision; the row's own status there is stale by
+        construction. Reading it made the first cut of this fix retire nothing
+        at all."""
+        S, d = self._S()
+        led = d / "cit_approved_proposals.json"
+        led.write_text(json.dumps([{"id": "SUBJ-1", "status": "pending"}]))
+        S.OUTCOME_LEDGERS = ((led, "RESOLVED", "approved_at", "approved"),)
+        self.assertEqual("resolved", S.archived_statuses()["SUBJ-1"],
+                         "an approved proposal read as still pending")
+        rows = [self._view()]
+        self.assertEqual(1, len(S.retire_derived_rows(rows, {}, S._now())))
+
+    def test_the_ledger_disposition_overrides_an_older_archived_copy(self):
+        """Same id in both places: the archive holds the row as it looked when
+        swept, the ledger records what was later decided. The decision wins."""
+        S, d = self._S()
+        (d / "chairman_action_archived_2026-07-27.json").write_text(json.dumps(
+            [{"id": "SUBJ-1", "status": "awaiting_chairman"}]))
+        led = d / "cit_rejected_proposals.json"
+        led.write_text(json.dumps([{"id": "SUBJ-1", "status": "pending"}]))
+        S.OUTCOME_LEDGERS = ((led, "WONT_FIX", "rejected_at", "rejected"),)
+        self.assertEqual("rejected", S.archived_statuses()["SUBJ-1"])
+        rows = [self._view()]
+        self.assertEqual(1, len(S.retire_derived_rows(rows, {}, S._now())))
+
+    def test_a_live_queue_row_still_wins_over_the_archive(self):
+        """Precedence: if the subject is open in a queue right now, an old
+        archived copy of it must not retire the view."""
+        S, d = self._S()
+        (d / "chairman_resolved_archive.json").write_text(json.dumps(
+            [{"id": "SUBJ-1", "status": "resolved"}]))
+        live = {"SUBJ-1": {"id": "SUBJ-1", "status": "awaiting_chairman"}}
+        ok, why = S._subject_is_settled("SUBJ-1", {}, live, S.archived_statuses())
+        self.assertFalse(ok)
+        self.assertIn("awaiting_chairman", why, "the live status must be the "
+                      "one reported, not the stale archived one")
+        self.assertNotIn("archived", why)
+
+
 class TestAVerdictNamesTheLedgerItCouldNotRead(unittest.TestCase):
     """SILENT_DROP asserts "no decision was recorded". That is only as strong as
     the ledgers consulted, and `_load` returns [] for a file that does not exist

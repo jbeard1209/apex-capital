@@ -1020,7 +1020,8 @@ def is_loop_broken(item: dict, kind: str = "impl") -> bool:
     return signature(item, kind) in loops
 
 
-def _subject_is_settled(subject: str, history: dict, by_id: dict):
+def _subject_is_settled(subject: str, history: dict, by_id: dict,
+                        archived: Optional[dict] = None):
     """(settled, why) for the thing a derived row points at.
 
     Two kinds of subject, because two producers mint derived rows: this file
@@ -1029,6 +1030,30 @@ def _subject_is_settled(subject: str, history: dict, by_id: dict):
     identified — a view is only safe to retire once we can SAY what happened to
     what it was watching. "I can't find it" is not a closure; it is the reason
     _escalate_chairman exists.
+
+    Three places a subject can be, and only two were ever read. A row that was
+    decided and then ARCHIVED left history and left the queues, so it looked
+    exactly like a row that vanished — and the escalation about it could never
+    retire.
+
+    Measured on the VM 2026-08-21: 18 history entries named a subject that
+    resolved nowhere, and 8 of those subjects were sitting in an archive — 7
+    decided, 1 archived while still awaiting_chairman. But of the 39 view rows
+    actually eligible for retirement in the Chairman's queue, 34 point at a
+    subject that is genuinely still OPEN, and this lookup retires ZERO of them
+    today. The 8 are held by history entries whose queue row is already gone, so
+    they cost nothing right now. This closes a gap that is real and growing —
+    the compactor archives more rows every run, and 524 archived ids already
+    index as decided — not a queue backlog. Recorded plainly so the next reader
+    does not credit it with a compression it did not perform.
+
+    Being in an archive is NOT itself a closure, and the distinction is the
+    whole point. chairman_resolved_archive.json holds rows with status
+    "resolved"; chairman_action_archived_2026-07-27.json holds rows with status
+    "awaiting_chairman" — swept out of the queue without a decision. Reading
+    "archived" as "settled" would collapse those two into one state, which is
+    precisely the defect the drop detector exists to catch. So the archived
+    row's OWN status is what is tested, exactly as for a live row.
     """
     h = history.get(subject)
     if h is not None:
@@ -1042,7 +1067,67 @@ def _subject_is_settled(subject: str, history: dict, by_id: dict):
         if _is_resolved(st) or _is_wont_fix(st):
             return True, "underlying item %s is %s" % (subject, st or "closed")
         return False, "underlying item %s is %s" % (subject, st or "open")
-    return False, "underlying %s is not in history or any queue" % subject
+    if archived is not None and subject in archived:
+        st = archived[subject]
+        if _is_resolved(st) or _is_wont_fix(st):
+            return True, "underlying item %s was archived as %s" % (subject, st)
+        # Archived while still open: the row left the queue without a decision.
+        # That is not a closure, and saying so is the finding.
+        return False, ("underlying item %s was archived while still %s — no "
+                       "decision was recorded" % (subject, st or "open"))
+    return False, "underlying %s is not in history, any queue, or any archive" % subject
+
+
+def archive_files() -> list:
+    """Where a row goes after it leaves the queues. A function, not a frozen
+    module-level tuple of real DATA paths, so a sandboxed test can point it
+    somewhere else — the same reason scanned_queues() is one.
+
+    Globbed rather than listed: chairman_queue_compactor writes a new dated file
+    each time it runs, so an enumerated list would silently stop covering the
+    newest archive the first time it rolled.
+    """
+    return (sorted(DATA.glob("chairman_resolved_archive.json"))
+            + sorted(DATA.glob("chairman_action_archived_*.json")))
+
+
+def archived_statuses() -> dict:
+    """{row id: the status that row's resting place attributes to it}.
+
+    Built once per run: cit_approved_proposals.json alone holds 1688 rows, so a
+    per-subject scan would be quadratic in the queue size.
+
+    Two kinds of resting place, and they answer the question differently — this
+    distinction is the whole function:
+
+      * An ARCHIVE is a filing cabinet. A row is there because someone swept the
+        queue, which says nothing about whether it was decided, so the row's own
+        status is what counts. Measured on the VM 2026-08-21: 10 rows sit in
+        chairman_action_archived_2026-07-27.json still reading
+        "awaiting_chairman".
+      * An OUTCOME LEDGER is a decision record. Presence in one IS the decision;
+        the status the row carries is left over from its life BEFORE that
+        decision and is stale by construction. Measured the same day: 257 of the
+        rows in cit_approved_proposals.json — an approvals ledger — still read
+        "pending". Reading that status would call an approved proposal
+        undecided, which is the mirror image of the archive bug and would have
+        made this fix retire nothing at all. It is what the first dry run
+        actually did.
+
+    So the ledger's declared disposition wins for ledger rows, and it is applied
+    last so it overrides any earlier archived copy of the same id.
+    """
+    out = {}
+    for path in archive_files():
+        for r in _load(path, []):
+            if isinstance(r, dict) and r.get("id"):
+                out.setdefault(str(r["id"]), _status_of(r))
+    for path, status, _ts, _why in OUTCOME_LEDGERS:
+        canon = "resolved" if status == "RESOLVED" else "rejected"
+        for r in _load(path, []):
+            if isinstance(r, dict) and r.get("id"):
+                out[str(r["id"])] = canon
+    return out
 
 
 def _sigs_flagged_in_place() -> set:
@@ -1069,6 +1154,7 @@ def retire_derived_rows(rows: list, history: dict, now: str) -> list:
     """
     by_id = {str(r.get("id")): r for r in rows if isinstance(r, dict) and r.get("id")}
     flagged = _sigs_flagged_in_place()
+    archived = archived_statuses()      # built once: 1688 rows in one ledger alone
     retired = []
     for row in rows:
         subject = derived_subject(row)
@@ -1076,7 +1162,7 @@ def retire_derived_rows(rows: list, history: dict, now: str) -> list:
             continue
         if _status_of(row) in RESOLVED_STATUSES | WONT_FIX_STATUSES:
             continue
-        settled, why = _subject_is_settled(subject, history, by_id)
+        settled, why = _subject_is_settled(subject, history, by_id, archived)
         if not settled and str(row.get("id", "")).startswith(DROP_ID_PREFIX):
             # A drop row asserts one thing: this problem vanished with no record
             # of a decision. That assertion can stop being true two ways, and
