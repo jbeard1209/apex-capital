@@ -16153,6 +16153,304 @@ class TestAttributionSitsAtTheChokePoint(unittest.TestCase):
         self.assertIsNone(pod_ledger.current_attribution())
 
 
+class TestTheWatchlistCheckSurvivesItsOwnInput(unittest.TestCase):
+    """`data/fe_watchlist.json` is not homogeneous, and the checker died on it.
+
+    2026-08-21, found on the VM: 14 entries, 12 objects and two bare strings
+    ("LLY", "DIS"). `item.get("ticker")` raised AttributeError on the first
+    string and took fe_cit_agent down mid-run, so checks C and D and the
+    Chairman hand-off had never executed there. The Mac has no
+    fe_watchlist.json, so every local run was green.
+
+    Two properties worth pinning: a malformed entry is a *finding*, not an
+    exception; and staleness is keyed on a field the file actually carries.
+    """
+
+    FIXTURE = {
+        "last_updated": "2026-07-06",
+        "description": "FE deep-value watchlist",
+        "watchlist": [
+            {"ticker": "MKL", "name": "Markel Group", "target_price": None},
+            {"ticker": "BSVN", "target_entry_price": 32.21,
+             "added_date": "2026-05-23"},
+            "LLY", "DIS",                       # <-- the two that crashed it
+        ],
+    }
+
+    def _run(self, payload):
+        import fe_cit_agent as F
+        d = tempfile.mkdtemp()
+        p = os.path.join(d, "fe_watchlist.json")
+        with open(p, "w") as fh:
+            json.dump(payload, fh)
+        props = []
+        with patch.object(F, "_WATCHLIST_PATH", p):
+            F.check_data_quality(props)
+        return props
+
+    def test_a_bare_string_entry_is_a_finding_not_an_exception(self):
+        props = self._run(self.FIXTURE)          # must not raise
+        hits = [p for p in props if "bare strings" in p["description"]]
+        self.assertEqual(len(hits), 1, "malformed entries must be reported")
+        self.assertIn("LLY", hits[0]["description"])
+        self.assertIn("DIS", hits[0]["description"])
+
+    def test_staleness_reads_a_field_the_file_actually_has(self):
+        """`added_date` was on 2 of 14 entries, and `if added and ...` scored a
+        missing field as current -- the twelve oldest names could not be
+        flagged however stale they got."""
+        import fe_cit_agent as F
+        stale = dict(self.FIXTURE, last_updated="2020-01-01")
+        props = self._run(stale)
+        self.assertTrue(
+            any("last revised" in p["description"] for p in props),
+            "a years-old watchlist must produce a staleness finding")
+        # ...and the same file, revised today, must not.
+        fresh = dict(self.FIXTURE,
+                     last_updated=datetime.now().strftime("%Y-%m-%d"))
+        props2 = self._run(fresh)
+        self.assertFalse(
+            any("last revised" in p["description"] for p in props2),
+            "a freshly revised watchlist must be able to come back green")
+
+    def test_an_unmeasurable_watchlist_says_so(self):
+        """No `last_updated` at all is 'cannot tell', which is a finding --
+        never a silent pass (memory `verdict-with-no-consequence`)."""
+        payload = {"watchlist": [{"ticker": "MKL"}]}
+        props = self._run(payload)
+        self.assertTrue(
+            any("cannot be measured" in p["description"] for p in props))
+
+    def test_the_edgar_window_is_a_filing_cycle_not_a_taste(self):
+        """10 days against quarterly filings reported 84 of 84 stale on the VM
+        -- 100%, every run. The window is now derived from the filing cadence."""
+        import fe_cit_agent as F
+        self.assertEqual(F._EDGAR_STALE_DAYS,
+                         F._FILING_CYCLE_DAYS + F._FILING_LAG_DAYS)
+        self.assertGreater(F._EDGAR_STALE_DAYS, 91,
+                           "must clear one full filing cycle or it is red by "
+                           "construction on any name that files quarterly")
+
+
+class TestLatenessComesFromTheSchedule(unittest.TestCase):
+    """A staleness alarm must be priced by the producer's own schedule.
+
+    2026-08-21. Six agents asked "is this file older than N hours?" with N
+    hand-picked between 12 and 26. Every one of their producers is on a
+    `* * * * 1-5` crontab line, which *by its own definition* leaves a
+    Friday-evening-to-Monday-morning gap of up to 72.0h. So the alarm was
+    arithmetically certain to fire every Saturday, Sunday and Monday morning
+    on a firm that was working perfectly — roughly 44h/week of red — and,
+    much worse, a producer that had genuinely died over the weekend was
+    indistinguishable from one that was merely resting.
+
+    Hours were a proxy. The real quantity is "did a scheduled fire pass with
+    no output after it?", and the host already writes that quantity down in
+    its own crontab. These tests pin the four verdicts and the weekend case;
+    the AST test at the end stops a fresh constant from growing back.
+    """
+
+    WEEKDAY_CRON = (
+        "SHELL=/bin/bash\n"
+        "# a comment line\n"
+        "30 14 * * 1-5 cd ~/institutional-tracker && ~/venv/bin/python3 fi_pipeline.py\n"
+        "0 6 * * * cd ~/institutional-tracker && ~/venv/bin/python3 canary_agent.py\n"
+        "25 11 * * 1-5 cd ~/institutional-tracker && ~/venv/bin/python3 hr_agent.py\n"
+        "0 3 * * 6 cd ~/institutional-tracker && ~/venv/bin/python3 hr_retirement_audit.py\n"
+    )
+
+    @staticmethod
+    def _epoch(dt):
+        return dt.timestamp()
+
+    def test_a_weekday_only_job_has_a_72h_legitimate_gap(self):
+        """The number the six agents should have been comparing against."""
+        import schedule_expectations as sched
+        gap = sched.max_legit_gap_h("fi_pipeline.py", cron_text=self.WEEKDAY_CRON)
+        self.assertIsNotNone(gap)
+        self.assertAlmostEqual(gap, 72.0, places=1,
+                               msg="Fri 14:30 -> Mon 14:30 is 72h; any alarm "
+                                   "with a threshold under this fires every weekend")
+        # The daily job's gap is 24h, so the fix is not just "make N bigger" --
+        # the right N differs per producer, which is why it must be derived.
+        self.assertAlmostEqual(
+            sched.max_legit_gap_h("canary_agent.py", cron_text=self.WEEKDAY_CRON),
+            24.0, places=1)
+
+    def test_monday_morning_does_not_accuse_a_healthy_friday_producer(self):
+        """The exact false alarm. 66.4h old, and correct."""
+        import schedule_expectations as sched
+        from datetime import datetime
+        monday_9am = datetime(2026, 8, 24, 9, 0)      # a Monday
+        friday_run = datetime(2026, 8, 21, 14, 35)    # its last scheduled fire
+        v = sched.lateness("fi_pipeline.py", self._epoch(friday_run),
+                           now=monday_9am, cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(v["verdict"], sched.ON_TIME)
+        self.assertGreater(v["output_age_h"], 60.0,
+                           "the file really is >60h old -- that is the point: "
+                           "age is not the quantity that decides")
+
+    def test_a_genuinely_missed_run_is_late_the_same_day(self):
+        """And the alarm must still work -- 45 min after the fire, not 26h."""
+        import schedule_expectations as sched
+        from datetime import datetime
+        monday_late = datetime(2026, 8, 24, 15, 20)   # 14:30 fire + grace
+        friday_run  = datetime(2026, 8, 21, 14, 35)
+        v = sched.lateness("fi_pipeline.py", self._epoch(friday_run),
+                           now=monday_late, cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(v["verdict"], sched.LATE)
+        self.assertEqual(v["missed_fire"], "2026-08-24T14:30:00")
+
+    def test_inside_the_grace_window_is_not_late(self):
+        """A job that fired 5 minutes ago may still be running."""
+        import schedule_expectations as sched
+        from datetime import datetime
+        v = sched.lateness("fi_pipeline.py",
+                           self._epoch(datetime(2026, 8, 21, 14, 35)),
+                           now=datetime(2026, 8, 24, 14, 35),
+                           cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(v["verdict"], sched.ON_TIME)
+
+    def test_grace_is_the_firms_own_largest_job_budget(self):
+        """Derived, not guessed -- and imported so it cannot drift apart."""
+        import schedule_expectations as sched
+        import catch_up
+        self.assertAlmostEqual(sched.DEFAULT_GRACE_MIN,
+                               catch_up.PIPELINE_TIMEOUT_S / 60.0, places=6)
+
+    def test_absent_output_is_late_only_after_a_fire_has_come_due(self):
+        """An absent output is not evidence against a producer that has not
+        yet been asked to run -- but it IS evidence once one has."""
+        import schedule_expectations as sched
+        from datetime import datetime
+        v = sched.lateness("fi_pipeline.py", None,
+                           now=datetime(2026, 8, 24, 16, 0),
+                           cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(v["verdict"], sched.LATE)
+        # A job whose only fire is 1 January is scheduled here all year. Writing
+        # that off as NOT_SCHEDULED_HERE would read to every caller as "not my
+        # problem" for 364 days -- it gets its own verdict instead.
+        yearly = "0 0 1 1 * cd ~/x && python3 annual_rollover.py\n"
+        v2 = sched.lateness("annual_rollover.py", None,
+                            now=datetime(2026, 8, 24, 16, 0),
+                            cron_text=yearly)
+        self.assertEqual(v2["verdict"], sched.NO_FIRE_YET)
+        self.assertNotEqual(v2["verdict"], sched.NOT_SCHEDULED_HERE)
+        self.assertEqual(sched.entries_for("annual_rollover.py",
+                                           cron_text=yearly), [("0", "0", "1", "1", "*")])
+
+    def test_a_producer_this_host_does_not_run_is_its_own_verdict(self):
+        """There is no state sync: judging the VM's producer by the Mac's
+        data/ compares two hosts' facts. NOT_SCHEDULED_HERE, never a pass."""
+        import schedule_expectations as sched
+        v = sched.lateness("board_meeting.py", None,
+                           cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(v["verdict"], sched.NOT_SCHEDULED_HERE)
+        self.assertEqual(sched.entries_for("board_meeting.py",
+                                           cron_text=self.WEEKDAY_CRON), [])
+
+    def test_an_unreadable_scheduler_is_not_an_empty_scheduler(self):
+        """fallback-that-means-act: `crontab -l` failing used to return "",
+        which reads as "this host schedules nothing" -- a silent all-clear."""
+        import schedule_expectations as sched
+        from datetime import datetime
+        with patch.object(sched.subprocess, "run",
+                          side_effect=OSError("no crontab binary")):
+            self.assertIsNone(sched.read_crontab())
+            self.assertIsNone(sched.entries_for("fi_pipeline.py"))
+            v = sched.lateness("fi_pipeline.py", None,
+                               now=datetime(2026, 8, 24, 16, 0))
+            self.assertEqual(v["verdict"], sched.SCHEDULE_UNREADABLE)
+        # "no crontab for jack" IS a readable answer, and a different one.
+        done = subprocess.CompletedProcess([], 1, stdout="",
+                                           stderr="no crontab for jack\n")
+        with patch.object(sched.subprocess, "run", return_value=done):
+            self.assertEqual(sched.read_crontab(), "")
+            self.assertEqual(sched.entries_for("fi_pipeline.py"), [])
+
+    def test_script_matching_is_word_bounded(self):
+        """`hr_agent.py` must not match `hr_retirement_audit.py`, and the
+        Saturday-only audit must not lend its schedule to the weekday job."""
+        import schedule_expectations as sched
+        hr = sched.entries_for("hr_agent.py", cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(len(hr), 1)
+        self.assertEqual(hr[0][1], "11")
+        audit = sched.entries_for("hr_retirement_audit.py",
+                                  cron_text=self.WEEKDAY_CRON)
+        self.assertEqual(len(audit), 1)
+        self.assertEqual(audit[0][4], "6")
+
+    def test_no_rewired_checker_regrows_an_hours_constant(self):
+        """AST, not grep -- a grep would match the postmortem comments that
+        these very modules now carry, and pass for the wrong reason.
+
+        Each module below had a module-level staleness-in-hours constant that
+        was compared against a file age. They now import the schedule. If one
+        comes back, this fails with the constant's name."""
+        import ast
+        rewired = ["fi_cit_agent.py", "fe_cit_agent.py",
+                   "cit_pipeline_integrity_agent.py"]
+        # Hour-denominated names only. That is the defect this pins: a *number
+        # of hours* judged against a producer whose schedule the module never
+        # read. Day-scale thresholds are a separate question (is 10 days the
+        # right window for quarterly EDGAR data?) and are argued on their own
+        # merits, not banned here -- widening this regex to catch them would
+        # make the test assert something it cannot justify.
+        pat = re.compile(r"_(H|HOURS)$")
+        # Constants the firm derives elsewhere and merely aliases here are fine;
+        # what is banned is a *literal number* of hours defined in this module.
+        # An alias is an ast.Attribute, not an ast.Constant, so the dead-man's
+        # switch numbers aliased from deadmans_switch.py never reach the check.
+        # These two are the documented *fallback* ladder in
+        # check_peer_host_liveness -- reached only when the VM's schedule cannot
+        # be read at all, and the finding says so when they are. They measure an
+        # outage duration from a confirmed ssh contact, not a file age against a
+        # schedule, so they are a different quantity from the defect above.
+        allowed = {"_PEER_UNREACHABLE_H", "_PEER_DOWN_H"}
+        offenders = []
+        for fname in rewired:
+            p = Path(__file__).parent / fname
+            if not p.exists():
+                continue
+            tree = ast.parse(p.read_text())
+            for node in tree.body:                     # module level only
+                if not isinstance(node, ast.Assign):
+                    continue
+                for tgt in node.targets:
+                    if not isinstance(tgt, ast.Name):
+                        continue
+                    if not pat.search(tgt.id):
+                        continue
+                    if tgt.id in allowed:
+                        continue
+                    if isinstance(node.value, ast.Constant) and isinstance(
+                            node.value.value, (int, float)):
+                        offenders.append("%s::%s = %r" % (fname, tgt.id,
+                                                          node.value.value))
+        self.assertEqual(
+            offenders, [],
+            "staleness must come from schedule_expectations.lateness(), not a "
+            "hand-picked number of hours: " + "; ".join(offenders))
+
+    def test_every_rewired_checker_actually_imports_the_schedule(self):
+        """The other half of the test above: deleting the constant without
+        wiring the replacement would also pass it."""
+        import ast
+        for fname in ["fi_cit_agent.py", "fe_cit_agent.py",
+                      "cit_pipeline_integrity_agent.py"]:
+            p = Path(__file__).parent / fname
+            tree = ast.parse(p.read_text())
+            names = set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    names.update(a.name for a in node.names)
+                elif isinstance(node, ast.ImportFrom) and node.module:
+                    names.add(node.module)
+            self.assertIn("schedule_expectations", names,
+                          "%s judges freshness but never reads the schedule"
+                          % fname)
+
+
 # =============================================================================
 # Runner
 # =============================================================================

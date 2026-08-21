@@ -45,7 +45,23 @@ SMTP_PORT       = 465
 # right path would have crashed rather than worked.
 CHAIRMAN_FILE = DATA_DIR / "chairman_action_required.json"
 _CHAIRMAN_MAX_ENTRIES = 20
-STALE_HOURS   = 25   # file is stale if older than this
+
+# STALE_HOURS = 25 used to live here, and it was arithmetically incapable of
+# being right. fi_pipeline.py is scheduled `30 14 * * 1-5` — weekdays only —
+# so the largest gap the schedule ITSELF asks for is 72.0h, Friday's run to
+# Monday's. A 25h threshold against a 72h legitimate gap is not a strict
+# standard: it is a HIGH "fi_pipeline.py has not run in 66.4 hours" filed every
+# single Monday morning about a pipeline that ran exactly on time, and it made
+# the one Monday where fi_pipeline genuinely died look identical to the fifty
+# where it did not.
+#
+# Lateness now comes from the producer's own schedule (schedule_expectations),
+# which is the real quantity — did it miss a scheduled run — rather than a
+# proxy for it. Measured against the live VM crontab: weekend false alarms go
+# from ~44h/week to zero, and a genuinely missed 14:30 run is detected at
+# 15:15 instead of never being distinguishable from the weekend. Same
+# correction as hr_agent.ROSTER_MAX_AGE_H (commit 63084f3).
+import schedule_expectations as sched
 
 # Live credit spreads, written by fi_credit_monitor.py every pipeline run.
 # This used to read data/fi_spread_cache.json -- a file NOTHING in the repo
@@ -126,14 +142,21 @@ def _host_runs_fi_pipeline():
     Asking the local crontab rather than hardcoding a hostname keeps the answer
     correct if the pipeline ever moves, and needs no second source of truth.
     """
-    try:
-        r = subprocess.run(["crontab", "-l"],
-                           capture_output=True, text=True, timeout=10)
-    except Exception:
-        return None
-    if r.returncode != 0:      # no crontab at all -> this host schedules nothing
-        return False
-    return "fi_pipeline.py" in r.stdout
+    ents = sched.entries_for("fi_pipeline.py")
+    return None if ents is None else bool(ents)
+
+
+def _missed_a_run(script: str, path) -> dict:
+    """Did `script` miss a scheduled run, per THIS host's own crontab?
+
+    The whole freshness question, asked the way `catch_up.py` has always asked
+    it, instead of the way this file used to: not "is the file older than N
+    hours" but "has a scheduled fire time passed, with grace, that this file
+    predates". No threshold to tune and no weekend special-case, because a
+    weekday-only producer has no scheduled fire on a Saturday to miss.
+    """
+    mt = path.stat().st_mtime if path.exists() else None
+    return sched.lateness(script, mt)
 
 
 def run_fi_cit_agent() -> dict:
@@ -149,37 +172,59 @@ def run_fi_cit_agent() -> dict:
     # 1. Did fi_pipeline.py run today?
     pipeline_log = DATA_DIR / "fi_pipeline_log.json"
     age_h = _file_age_hours(pipeline_log)
-    if age_h > STALE_HOURS:
+    late  = _missed_a_run("fi_pipeline.py", pipeline_log)
+    if late["verdict"] == sched.LATE:
         issues.append({
             "severity": "HIGH",
             "type":     "PIPELINE_NOT_RUN",
-            "message":  f"fi_pipeline.py has not run in {age_h:.1f} hours (threshold {STALE_HOURS}h). "
+            "message":  f"fi_pipeline.py missed its {late['missed_fire']} scheduled run — "
+                        f"fi_pipeline_log.json is {age_h:.1f}h old and predates it "
+                        f"({sched.describe('fi_pipeline.py')}). "
                         "Check the fi_pipeline cron on the pipeline host.",
         })
+    elif late["verdict"] == sched.SCHEDULE_UNREADABLE:
+        # Not a pass. `crontab -l` failing means this agent cannot answer its
+        # own question, and a check that cannot read its inputs must not be
+        # able to report success (memory `verdict-with-no-consequence`).
+        issues.append({
+            "severity": "MEDIUM",
+            "type":     "FRESHNESS_UNVERIFIABLE",
+            "message":  f"fi_pipeline_log.json is {age_h:.1f}h old and this host's crontab "
+                        "could not be read, so whether that is late is unknowable here. "
+                        "Owner: whoever owns this host's scheduler.",
+        })
     else:
-        logger.info("fi_pipeline.py ran %.1f hours ago -- OK", age_h)
+        logger.info("fi_pipeline.py: %s (log %.1fh old, last scheduled fire %s)",
+                    late["verdict"], age_h, late.get("last_fire") or "n/a")
 
     # 2. Are credit spread data files fresh?
-    # FI runs once a day; the FRED cache has a 4h TTL, so a few hours of age is
-    # expected behaviour, not a bug. Only flag MEDIUM past 26 hours (a whole day
-    # missed).
+    # `fi_credit_monitor.run_credit_monitor` is called from inside fi_pipeline
+    # (fi_pipeline.py:131) and is on no crontab of its own, so its output's
+    # schedule IS fi_pipeline's. Judging it against the same last-scheduled-fire
+    # keeps the useful half of the old 26h check — a pipeline run that
+    # succeeded while the credit read inside it silently did not leaves this
+    # file predating a fire that fi_pipeline_log.json is newer than — without
+    # the weekend half, which only ever produced Monday noise.
     spreads, cache_age = _load_credit_conditions()
-    if cache_age > 26:
+    if _missed_a_run("fi_pipeline.py", SPREADS_PATH)["verdict"] == sched.LATE:
         issues.append({
             "severity": "MEDIUM",
             "type":     "STALE_SPREAD_DATA",
-            "message":  f"{SPREADS_PATH.name} is {cache_age:.1f} hours old "
-                        "(threshold 26h). FI credit monitor may not have run today.",
+            "message":  f"{SPREADS_PATH.name} is {cache_age:.1f} hours old and predates "
+                        "fi_pipeline.py's last scheduled run. The credit monitor inside "
+                        "that run did not write.",
         })
 
     # 3. fi_picks_queue.json valid?
     picks_file = DATA_DIR / "fi_picks_queue.json"
     picks_age  = _file_age_hours(picks_file)
-    if picks_age > STALE_HOURS:
+    # Same producer, same question, same answer source.
+    if _missed_a_run("fi_pipeline.py", picks_file)["verdict"] == sched.LATE:
         issues.append({
             "severity": "MEDIUM",
             "type":     "STALE_PICKS_QUEUE",
-            "message":  f"fi_picks_queue.json is {picks_age:.1f} hours old. No fresh picks.",
+            "message":  f"fi_picks_queue.json is {picks_age:.1f} hours old and predates "
+                        "fi_pipeline.py's last scheduled run. No fresh picks.",
         })
     elif picks_file.exists():
         try:

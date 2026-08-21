@@ -87,6 +87,7 @@ from datetime import datetime, timedelta
 
 import chairman_queue
 import deadmans_switch as dms
+import schedule_expectations as sched
 
 # ── Working directory ─────────────────────────────────────────────────────────
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -121,7 +122,14 @@ _LOCK_PATH         = "data/.pipeline_integrity.lock"
 _HEARTBEAT_FRESH_H      = dms.HEARTBEAT_FRESH_H
 _HEARTBEAT_STALE_H      = dms.HEARTBEAT_STALE_H
 _MANAGER_STALE_H        = dms.WIRING_BUG_STALE_H
-_AGENT_STALE_H          = 26   # research_team, risk_bulletin, canary max age
+# (_AGENT_STALE_H = 26 lived here until 2026-08-21. Every one of the three
+#  files it watched is produced on a `* * * * 1-5` crontab line, so their own
+#  schedule guarantees a Friday-to-Monday gap of up to 72.0h — this alarm was
+#  arithmetically certain to fire all weekend and every Monday morning on a
+#  firm that was working perfectly, and a producer that had actually died over
+#  the weekend looked exactly the same. Hours were a proxy; the question is
+#  "did a scheduled fire pass with no output after it?", which the host already
+#  writes down in its own crontab. See schedule_expectations.py.)
 _EMAIL_LOOP_THRESHOLD   = 5    # same subject N+ times = loop
                                # (raised from 3: R&D runs 4×/day; IRM REVIEW copies now excluded
                                # so threshold of 5 catches genuine loops while not flagging R&D)
@@ -131,6 +139,9 @@ _CHAIRMAN_MAX_ENTRIES   = 20   # keep only the most recent N entries
 # ── Peer host ─────────────────────────────────────────────────────────────────
 _PEER_HOST          = "apex-capital"   # ssh alias of the GCP VM
 _PEER_BASE          = "~/institutional-tracker"
+# Fallback only. The live ladder counts MISSED SCHEDULED RUNS (see
+# check_peer_host_liveness); these two are used solely when the VM's schedule
+# cannot be read, and the finding says so when they are.
 _PEER_UNREACHABLE_H = 6.0   # no contact for this long on the always-on host = HIGH
 _PEER_DOWN_H        = 24.0  # ...and this long = CRITICAL, the firm is running on one leg
 _PEER_SSH_TIMEOUT_S = 20
@@ -188,6 +199,20 @@ def _ts_age_hours(ts: str) -> float:
         return (datetime.now() - datetime.fromisoformat(ts[:19])).total_seconds() / 3600
     except Exception:
         return float("inf")
+
+
+def _parse_epoch(ts: str):
+    """ISO timestamp -> epoch seconds, or None if blank/unparseable.
+
+    None means "no readable production time", which is a different fact from
+    "produced long ago" and must not be flattened into a large age.
+    """
+    if not ts:
+        return None
+    try:
+        return datetime.fromisoformat(str(ts)[:19]).timestamp()
+    except Exception:
+        return None
 
 
 def _get_timestamp_from_json(data, *keys) -> str:
@@ -450,32 +475,50 @@ def check_email_loop(issues: list, skipped: dict):
 def check_agent_freshness(issues: list, skipped: dict):
     logger.info("\n  [3/6] Agent file freshness check...")
 
-    watch_files = {
-        _RESEARCH_PATH: "research_team_report.json",
-        _RISK_PATH:     "risk_bulletin.json",
-        _CANARY_PATH:   "canary_state.json",
-    }
+    # (path, label, the script whose crontab line is responsible for it).
+    # research_team.py is on no crontab of its own — main.py invokes it — so
+    # main.py's schedule is the one that decides whether its report is late.
+    watch_files = [
+        (_RESEARCH_PATH, "research_team_report.json", "main.py"),
+        (_RISK_PATH,     "risk_bulletin.json",        "main.py"),
+        (_CANARY_PATH,   "canary_state.json",         "canary_agent.py"),
+    ]
 
-    stale = []
-    for path, label in watch_files.items():
+    late, unverifiable, not_ours = [], [], []
+    for path, label, producer in watch_files:
         data = _load_json(path)
-        if data is None:
-            stale.append((label, float("inf")))
-            logger.warning(f"    {label}: MISSING")
-            continue
-
         ts = _get_timestamp_from_json(
             data, "generated_at", "timestamp", "last_level_time", "ts"
-        )
-        age_h = _ts_age_hours(ts) if ts else _file_age_hours(path)
-        logger.info(f"    {label}: {age_h:.1f}h old")
-        if age_h > _AGENT_STALE_H:
-            stale.append((label, age_h))
+        ) if data is not None else ""
 
-    if stale:
-        details = "; ".join(f"{lbl} ({age:.0f}h)" for lbl, age in stale)
+        # Prefer the file's own "when was this produced" stamp over the mtime:
+        # a deploy or a chmod moves the mtime without producing anything.
+        produced = _parse_epoch(ts)
+        if produced is None and data is not None:
+            try:
+                produced = os.path.getmtime(path)
+            except OSError:
+                produced = None
+
+        v = sched.lateness(producer, produced)
+        age_txt = ("missing" if produced is None
+                   else "%.1fh old" % ((datetime.now().timestamp() - produced) / 3600))
+        logger.info("    %s: %s — %s (%s)", label, age_txt, v["verdict"],
+                    sched.describe(producer))
+
+        if v["verdict"] == sched.LATE:
+            late.append((label, producer, v))
+        elif v["verdict"] == sched.SCHEDULE_UNREADABLE:
+            unverifiable.append(label)
+        elif v["verdict"] == sched.NOT_SCHEDULED_HERE:
+            not_ours.append((label, producer))
+
+    if late:
+        details = "; ".join(
+            "%s (producer %s missed its %s run)" % (
+                lbl, prod, v["missed_fire"][11:16]) for lbl, prod, v in late)
         msg = (
-            f"{len(stale)} agent output file(s) are >{_AGENT_STALE_H}h old "
+            f"{len(late)} agent output file(s) are missing a scheduled run "
             f"and no recovery appears in progress: {details}"
         )
         logger.warning(f"    MEDIUM: {msg}")
@@ -485,8 +528,35 @@ def check_agent_freshness(issues: list, skipped: dict):
             "message":    msg,
             "auto_fixed": False,
         })
-    else:
-        logger.info("    OK — all watched files are fresh.")
+
+    # "Could not read the scheduler" is not "everything is fine". Without the
+    # crontab this check has no denominator at all, and silently returning OK
+    # would be the fallback-that-means-act shape: a degraded read substituting
+    # the reassuring answer.
+    if unverifiable:
+        msg = (
+            "Could not read this host's crontab, so freshness of %s is "
+            "unverifiable — this check reported neither pass nor fail."
+            % ", ".join(unverifiable)
+        )
+        logger.warning(f"    MEDIUM: {msg}")
+        issues.append({
+            "severity":   "MEDIUM",
+            "check":      "agent_file_freshness",
+            "message":    msg,
+            "auto_fixed": False,
+        })
+
+    # There is no state sync between the Mac and the VM. Judging a file this
+    # host never produces against this host's data/ compares two hosts' facts,
+    # which is how the roster ratchet accused live agents of vanishing.
+    if not_ours:
+        logger.info("    %d file(s) belong to the other host (%s) — not judged "
+                    "here.", len(not_ours),
+                    ", ".join("%s←%s" % (l, p) for l, p in not_ours))
+
+    if not (late or unverifiable):
+        logger.info("    OK — every watched file this host owns is on schedule.")
 
 
 # =============================================================================
@@ -737,21 +807,58 @@ def check_peer_host_liveness(issues: list, skipped: dict):
     logger.info(f"    last confirmed contact: {down_h:.1f}h ago "
                 f"({state['consecutive_failures']} consecutive failures)")
 
-    if down_h > _PEER_DOWN_H:
-        sev = "CRITICAL"
-    elif down_h > _PEER_UNREACHABLE_H:
-        sev = "HIGH"
+    # Severity in the firm's own units, not in hours.
+    #
+    # This ladder used to be 6h = HIGH, 24h = CRITICAL. Both numbers were
+    # picked, and an hour does not mean the same thing twice: ten hours
+    # overnight costs the firm nothing, ten hours across a trading afternoon
+    # costs it four pipeline runs, and a 60-hour weekend outage on a
+    # weekday-only schedule costs it nothing at all while scoring CRITICAL
+    # twice over. What actually matters is how many scheduled main.py runs
+    # went missing while the box was unreachable — so count those.
+    #
+    # The VM's schedule is not on this host's crontab, so it is read from the
+    # snapshot the VM mirrors daily through git. If that snapshot is missing or
+    # too old to trust, peer_crontab() returns None and this falls back to the
+    # old hour ladder, saying so in the message: a degraded read must announce
+    # itself, not quietly substitute a number (memory `fallback-that-means-act`).
+    peer_cron = sched.peer_crontab()
+    missed = sched.missed_fires_since("main.py", _parse_epoch(str(last_ok)),
+                                      cron_text=peer_cron) if peer_cron else None
+    per_day = sched.fires_per_busiest_day("main.py", cron_text=peer_cron) \
+        if peer_cron else None
+
+    if missed is not None and per_day:
+        basis = (f"{missed} scheduled main.py run(s) have been missed since then "
+                 f"({per_day} run(s) is a full trading day)")
+        if missed >= per_day:
+            sev = "CRITICAL"
+        elif missed >= 1:
+            sev = "HIGH"
+        else:
+            logger.info("    Not yet an outage — no scheduled run missed since "
+                        "last contact (%s).", basis)
+            return
     else:
-        logger.info(f"    Not yet an outage — under the {_PEER_UNREACHABLE_H}h threshold.")
-        return
+        basis = (f"the VM's schedule could not be read (no trustworthy "
+                 f"vm_crontab_snapshot), so this falls back to elapsed hours "
+                 f"— thresholds {_PEER_UNREACHABLE_H}h/{_PEER_DOWN_H}h")
+        if down_h > _PEER_DOWN_H:
+            sev = "CRITICAL"
+        elif down_h > _PEER_UNREACHABLE_H:
+            sev = "HIGH"
+        else:
+            logger.info("    Not yet an outage — under the "
+                        f"{_PEER_UNREACHABLE_H}h fallback threshold, and {basis}.")
+            return
 
     msg = (f"{_PEER_HOST} has been unreachable for {down_h:.1f}h "
            f"(last contact {str(last_ok)[:19]}, {state['consecutive_failures']} consecutive "
-           f"failed probes; {detail}). This is the ALWAYS-ON host: ~63 cron jobs including "
-           f"main.py ~6x/day on the same Alpaca paper account. While it is down the Mac is "
-           f"the firm's only host and it only runs while awake. If the instance was "
-           f"restarted its external IP has changed — update it with "
-           f"gcp_setup/update_ip.sh <NEW_IP>.")
+           f"failed probes; {detail}). {basis[0].upper()}{basis[1:]}. This is the ALWAYS-ON "
+           f"host: ~63 cron jobs including main.py on the same Alpaca paper account. "
+           f"While it is down the Mac is the firm's only host and it only runs while "
+           f"awake. If the instance was restarted its external IP has changed — update "
+           f"it with gcp_setup/update_ip.sh <NEW_IP>.")
     logger.warning(f"    {sev}: {msg}")
     issues.append({"severity": sev, "check": me, "message": msg, "auto_fixed": False})
 

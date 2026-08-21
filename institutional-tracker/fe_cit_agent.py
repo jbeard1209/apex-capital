@@ -47,7 +47,6 @@ logger = logging.getLogger("fe_cit_agent")
 # -- File paths ---------------------------------------------------------------
 _APPROVED_PATH     = "data/fe_approved_picks.json"
 _REJECTED_PATH     = "data/fe_rejected_picks.json"
-_BOARD_REPORT_PATH = "data/fe_board_report.json"
 _WATCHLIST_PATH    = "data/fe_watchlist.json"
 _EDGAR_CACHE_DIR   = "data/edgar_cache"
 _CHAIRMAN_PATH     = "data/chairman_action_required.json"
@@ -58,11 +57,35 @@ _PIPELINE_LOG_PATH = "data/fe_pipeline_log.json"
 _REJECTION_RATE_FLOOR     = 0.80   # >80% rejection rate triggers flag
 _NO_PICKS_DAYS            = 7      # no picks in last N days triggers stall flag
 _LOW_MOS_THRESHOLD        = 0.27   # approved average MoS below this = borderline
-_EDGAR_STALE_DAYS         = 10     # edgar cache files older than N days = stale
-_WATCHLIST_STALE_DAYS     = 30     # watchlist target never updated after N days
 _FRAUD_RATE_HIGH          = 0.30   # >30% fraud-flagged picks triggers flag
-_BOARD_STALE_DAYS         = 8      # no board report in N days
-_PIPELINE_LOG_STALE_HOURS = 25     # pipeline log older than this = real stall
+
+# What actually makes an EDGAR cache entry wrong is a NEW FILING it has not
+# picked up, so the threshold is a filing cadence, not a taste in freshness.
+# US issuers file 10-Q/10-K on a ~91-day cycle; the deadline for a large
+# accelerated filer's 10-Q is 40 days after quarter end (45 for accelerated),
+# so a cache entry can be legitimately untouched for a full cycle plus the lag
+# before it is missing anything.
+#
+# The old value was 10 days, and it reported 84 of 84 files stale on the VM --
+# 100%, every single run, forever. A guard the firm cannot satisfy no matter
+# what it does is not a strict standard, it is a broken comparison, and its
+# only effect is to teach people to scroll past a MEDIUM
+# (memory `both-sides-of-a-comparison`).
+_FILING_CYCLE_DAYS        = 91     # one fiscal quarter
+_FILING_LAG_DAYS          = 45     # 10-Q deadline, accelerated filer
+_EDGAR_STALE_DAYS         = _FILING_CYCLE_DAYS + _FILING_LAG_DAYS
+
+# A deep-value target price is a function of the last filing, so it should be
+# revised at least once per filing cycle. Same derivation, one cycle, no lag --
+# the target is ours to update the moment the filing lands.
+_WATCHLIST_REVIEW_DAYS    = _FILING_CYCLE_DAYS
+
+# (_BOARD_STALE_DAYS = 8 lived here with _BOARD_REPORT_PATH; both were dead --
+#  defined, never read, no check ever written. Removed 2026-08-21 rather than
+#  left as a threshold that looks like coverage. If FE board-report freshness
+#  is worth alarming on, it gets a check that runs, not a constant.)
+# (a _PIPELINE_LOG_STALE_HOURS = 25 lived here; retired 2026-08-21 — the
+#  producer's own schedule answers this, see _fe_pipeline_missed_a_run())
 _CHAIRMAN_MAX_ENTRIES     = 20
 
 # -- Required FE scripts ------------------------------------------------------
@@ -143,16 +166,31 @@ def _raise_issue(proposals, severity, category, description, source="fe_cit_agen
 
 
 def _get_crontab():
-    """Return crontab output as a string, or empty string on failure."""
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["crontab", "-l"],
-            capture_output=True, text=True, timeout=10
-        )
-        return result.stdout
-    except Exception:
-        return ""
+    """This host's crontab, or None if it could not be read.
+
+    Returned "" on failure until 2026-08-21, which made an unreadable scheduler
+    indistinguishable from a host that schedules nothing — so a `crontab -l`
+    that errored filed a HIGH "FE crontab entries missing, pipeline will not
+    run automatically" about a crontab nobody had looked at. One sentinel for
+    two states with different owners is memory `fallback-that-means-act`.
+    """
+    import schedule_expectations as sched
+    return sched.read_crontab()
+
+
+def _host_runs_fe_pipeline(cron_text=None) -> bool:
+    """Does THIS host schedule fe_pipeline.py? False when unknown-but-readable."""
+    import schedule_expectations as sched
+    return bool(sched.entries_for("fe_pipeline.py", cron_text))
+
+
+def _fe_pipeline_missed_a_run() -> str:
+    """LATE / ON_TIME / NOT_SCHEDULED_HERE / SCHEDULE_UNREADABLE for the FE log."""
+    import schedule_expectations as sched
+    import os
+    p = str(_PIPELINE_LOG_PATH)          # a str path in this module, not a Path
+    mt = os.path.getmtime(p) if os.path.exists(p) else None
+    return sched.lateness("fe_pipeline.py", mt)["verdict"]
 
 
 # =============================================================================
@@ -214,14 +252,20 @@ def check_pick_quality(proposals):
         logger.info("    No picks in the 30-day window.")
 
     # Stall check: distinguish real stall from market-expensive 0-picks day
-    # Real stall  = pipeline log not updated in >25h (pipeline did not run)
+    # Real stall  = the pipeline missed a run the schedule actually asked for
     # False alarm = pipeline log is fresh but picks are 0 (market too expensive)
+    #
+    # The >25h form of this check was a third false alarm on top of those two.
+    # fe_pipeline.py is `0 15 * * 1-5`, so the largest gap its own schedule
+    # asks for is 72.0h (Fri 15:00 -> Mon 15:00) and 25h was guaranteed to file
+    # a HIGH "pipeline did not run as scheduled" every Saturday, Sunday and
+    # Monday morning. Asking the schedule removes the threshold entirely.
     pipeline_log_age_hours = _file_age_days(_PIPELINE_LOG_PATH) * 24
-    if pipeline_log_age_hours > _PIPELINE_LOG_STALE_HOURS:
+    if _fe_pipeline_missed_a_run() == "LATE":
         _raise_issue(
             proposals, "HIGH", "BUG_FIX",
-            "FE pipeline stalled -- fe_pipeline_log.json is %.1fh old (>25h); "
-            "pipeline did not run as scheduled" % pipeline_log_age_hours
+            "FE pipeline stalled -- fe_pipeline_log.json is %.1fh old and predates "
+            "fe_pipeline.py's last scheduled run" % pipeline_log_age_hours
         )
     else:
         # Pipeline ran — 0 picks just means market is expensive today
@@ -333,24 +377,68 @@ def check_data_quality(proposals):
                         stale_count, len(cache_files), _EDGAR_STALE_DAYS)
                 )
 
-    # Watchlist staleness
+    # ── Watchlist staleness ───────────────────────────────────────────────────
+    # 2026-08-21. This block used to read `item.get("ticker")` over a list that
+    # is not homogeneous: `data/fe_watchlist.json` on the VM holds 12 dicts and
+    # two bare strings ("LLY", "DIS"), and `str` has no `.get`. It raised
+    # AttributeError and took the whole agent down with it -- checks C and D and
+    # the Chairman hand-off after this point had never once run on the VM. The
+    # Mac has no fe_watchlist.json at all, so the crash was invisible locally:
+    # the host-divergence bug class (memory `host_divergence_is_a_bug_class`).
+    #
+    # Second, quieter defect in the same six lines: staleness was keyed on
+    # `added_date`, which only 2 of the 14 entries carry. `if added and ...`
+    # means an entry WITHOUT the field is silently counted as current, so the
+    # check could not have flagged the twelve oldest names no matter how stale
+    # they got -- a guard that reads as a pass because its input is absent. And
+    # `added_date` is the wrong quantity anyway: it records when a ticker joined
+    # the list, not when anyone last revised its target, so it would have
+    # accused every long-held name and cleared every recent one.
+    #
+    # The real quantity is on the file already -- top-level `last_updated`, i.e.
+    # when the targets were last revised. Missing per-item fields are now a
+    # finding rather than a silent pass.
     watchlist_data = _load_json(_WATCHLIST_PATH)
     if watchlist_data is not None:
-        items = watchlist_data if isinstance(watchlist_data, list) else watchlist_data.get("watchlist", [])
-        stale_tickers = []
-        for item in items:
-            ticker = item.get("ticker", "?")
-            added = item.get("added_date", "")
-            if added and _ts_age_days(added) > _WATCHLIST_STALE_DAYS:
-                stale_tickers.append(ticker)
-        if stale_tickers:
+        items = (watchlist_data if isinstance(watchlist_data, list)
+                 else watchlist_data.get("watchlist", []))
+        malformed = [i for i in items if not isinstance(i, dict)]
+        entries = [i for i in items if isinstance(i, dict)]
+        if malformed:
+            _raise_issue(
+                proposals, "MEDIUM", "BUG_FIX",
+                "FE watchlist has %d of %d entr(ies) that are bare strings, not "
+                "objects (%s) -- every consumer that reads a field off them "
+                "raises AttributeError. Normalise them to "
+                "{\"ticker\": ...} in data/fe_watchlist.json." % (
+                    len(malformed), len(items),
+                    ", ".join(str(m) for m in malformed[:5]))
+            )
+
+        # When were the targets last revised? File-level, because that is the
+        # only place the answer is actually recorded.
+        revised = (watchlist_data.get("last_updated", "")
+                   if isinstance(watchlist_data, dict) else "")
+        age_d = _ts_age_days(revised) if revised else None
+        if age_d is None:
+            _raise_issue(
+                proposals, "LOW", "IMPROVEMENT",
+                "FE watchlist carries no readable `last_updated`, so target-price "
+                "staleness cannot be measured at all -- the check that was "
+                "supposed to catch it has no input."
+            )
+        elif age_d > _WATCHLIST_REVIEW_DAYS:
             _raise_issue(
                 proposals, "MEDIUM", "IMPROVEMENT",
-                "FE watchlist has %d ticker(s) with target prices not updated in >%d days: %s" % (
-                    len(stale_tickers), _WATCHLIST_STALE_DAYS, ", ".join(stale_tickers[:5]))
+                "FE watchlist target prices last revised %.0f days ago (review "
+                "cadence %d days), covering %d name(s). A deep-value target is a "
+                "function of the last filing; an unrevised one is a stale anchor "
+                "that the pipeline still compares live prices against." % (
+                    age_d, _WATCHLIST_REVIEW_DAYS, len(entries))
             )
         else:
-            logger.info("    Watchlist items are current (or watchlist is empty).")
+            logger.info("    Watchlist targets revised %.0f day(s) ago (<= %dd).",
+                        age_d, _WATCHLIST_REVIEW_DAYS)
     else:
         logger.info("    fe_watchlist.json not found -- skipping watchlist staleness check.")
 
@@ -379,18 +467,25 @@ def check_module_health(proposals):
 
     # Crontab wiring
     crontab_text = _get_crontab()
-    missing_cron = []
-    for keyword in _REQUIRED_CRON_KEYWORDS:
-        if keyword not in crontab_text:
-            missing_cron.append(keyword)
-    if missing_cron:
-        _raise_issue(
-            proposals, "HIGH", "BUG_FIX",
-            "FE crontab entries missing for: %s -- pipeline will not run automatically" % (
-                ", ".join(missing_cron))
-        )
+    if crontab_text is None:
+        logger.warning("    Crontab unreadable on this host — FE cron wiring "
+                       "could not be checked (not the same as 'missing').")
+    elif not _host_runs_fe_pipeline(crontab_text):
+        # This host does not run the FE pipeline at all. Every keyword will be
+        # "missing" and none of them is a defect: the schedule lives on the
+        # designated host and there is no state sync between hosts.
+        logger.info("    This host does not schedule fe_pipeline.py — cron "
+                    "wiring is the pipeline host's to answer.")
     else:
-        logger.info("    All required cron entries found.")
+        missing_cron = [k for k in _REQUIRED_CRON_KEYWORDS if k not in crontab_text]
+        if missing_cron:
+            _raise_issue(
+                proposals, "HIGH", "BUG_FIX",
+                "FE crontab entries missing for: %s -- pipeline will not run automatically" % (
+                    ", ".join(missing_cron))
+            )
+        else:
+            logger.info("    All required cron entries found.")
 
     logger.info("    Module health check done.")
 
@@ -472,9 +567,32 @@ def _update_chairman_queue(proposals):
     # queue -- so this agent silently evicted other producers' open items
     # (one run took the file from 153 entries to 20 on 2026-07-31). An agent
     # may only ever cap its OWN entries.
+    #
+    # Host gate, same as fi_cit_agent's. Every check above measures files in
+    # *this* host's data/ directory, but fe_pipeline.py runs on exactly one
+    # host and there is no state sync between them. Run anywhere else, the
+    # identical code files "EDGAR cache directory missing -- fe_edgar_
+    # fundamentals may not be running" about a cache that is present and fresh
+    # on the host that actually feeds it. Those are host-local observations,
+    # not findings, and escalating them is how a 136-entry Chairman queue gets
+    # built out of a healthy firm.
+    cron = _get_crontab()
+    if cron is None or not _host_runs_fe_pipeline(cron):
+        why = ("this host does not schedule fe_pipeline.py" if cron is not None
+               else "this host's crontab could not be read, so it cannot be "
+                    "confirmed to run fe_pipeline.py")
+        logger.warning(
+            "Not raising %d FE finding(s) to the Chairman queue -- %s. They "
+            "describe this host's data/ directory, not the pipeline host's.",
+            len(proposals), why)
+        for p in proposals:
+            logger.warning("  [local only] [%s] %s", p["severity"],
+                           p["description"][:100])
+        return 0
     chairman_queue.submit(proposals, "fe_cit_agent",
                           path=_CHAIRMAN_PATH,
                           max_entries=_CHAIRMAN_MAX_ENTRIES)
+    return len(proposals)
 
 
 # =============================================================================
@@ -515,11 +633,10 @@ def main():
         check_improvement_proposals(proposals)
 
         if proposals:
-            _update_chairman_queue(proposals)
+            raised = _update_chairman_queue(proposals)
             logger.info(
-                "\n  DONE -- %d proposal(s) raised to chairman_action_required.json.",
-                len(proposals)
-            )
+                "\n  DONE -- %d finding(s), %d raised to "
+                "chairman_action_required.json.", len(proposals), raised)
         else:
             logger.info("\n  ALL CLEAR -- no FE pod issues detected.")
 
