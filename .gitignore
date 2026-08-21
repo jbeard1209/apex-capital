@@ -162,3 +162,35 @@ institutional-tracker/data/agent_roster_archive/
 # and its runs_via differs by crontab). The MANIFEST beside it is the declared
 # roster the shrink-ratchet measures against, so that one stays tracked.
 institutional-tracker/data/agent_roster.json
+
+# ── Runtime junk that `git add -A` swept in on 2026-08-21 ────────────────────
+# data/ is deny-by-name, so anything a new agent starts writing is tracked by
+# default. One `git add -A` staged 148 files: six abandoned atomic-write temps,
+# three generations of chairman-queue backup, eight per-day email sentinel
+# flags, and 43 cached web lookups. deploy.sh derives its excludes from
+# `git ls-files --others`, so ignoring these also keeps them off the VM, which
+# is right — every one of them is per-host by nature.
+institutional-tracker/data/tmp*.tmp
+institutional-tracker/data/*.bak.json
+institutional-tracker/data/*.bak_*.json
+institutional-tracker/data/*.corrupt_backup_*.json
+institutional-tracker/data/*_email_sent_*.flag
+institutional-tracker/data/web_research_cache/
+institutional-tracker/data/fe_fundamentals_cache/
+institutional-tracker/data/beta_cache.json
+
+# Live broker/ledger state and per-host liveness. Same reason as state.json
+# above: these describe what THIS host did, and there is no state sync between
+# hosts. Committing them would let one host's history read as the firm's.
+institutional-tracker/data/order_ledger.json
+institutional-tracker/data/signoff_ledger.json
+institutional-tracker/data/signoff_shadow_log.json
+institutional-tracker/data/signoff_mode.json
+institutional-tracker/data/circuit_breaker_state.json
+institutional-tracker/data/single_writer_log.json
+institutional-tracker/data/peer_host_liveness.json
+institutional-tracker/data/position_sizes.json
+institutional-tracker/data/kalshi_predictions.json
+institutional-tracker/data/wake_log.json
+institutional-tracker/data/wake_contract_breaches.json
+institutional-tracker/data/agent_status.json
