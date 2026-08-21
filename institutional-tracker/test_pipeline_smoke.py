@@ -9440,6 +9440,90 @@ class TestCoherenceLaws(unittest.TestCase):
         import coherence_laws as cl
         return cl
 
+    # ---- the shipped-config law and the ratchet under it -------------------
+
+    # The set the firm has decided must reach the trading host. This is a
+    # SHRINK-ONLY ratchet, and it is the price of law_shipped_config_matches_repo
+    # enumerating from deploy.sh instead of from git. Every other law here reads
+    # its denominator from a source nobody edits to make a check pass; this one
+    # reads an include list, so deleting a line would narrow the law's
+    # denominator and silence it — with a HOLDS, the worst possible way. Adding
+    # entries is free. Removing one has to fail here first, where a human sees
+    # the name of the file that would stop being checked.
+    SHIPPED_CONFIG_FLOOR = {
+        "data/orphan_agents_baseline.json",
+        "data/vm_crontab_snapshot.txt",
+        "data/agent_roster_manifest.json",
+        "data/pick_gate_trial.json",
+        "data/parameter_derivations.json",
+        "data/parameter_audit_baseline.json",
+        "data/signoff_mode.json",
+    }
+
+    def test_the_shipped_config_allowlist_only_grows(self):
+        import re
+        cl = self._law_sources()
+        deploy = (Path(__file__).resolve().parent
+                  / "gcp_setup" / "deploy.sh").read_text()
+        allowed = {p for p in re.findall(cl._ALLOWLIST_RE, deploy)
+                   if not p.endswith("/")}
+        dropped = self.SHIPPED_CONFIG_FLOOR - allowed
+        self.assertEqual(
+            set(), dropped,
+            "these file(s) were removed from deploy.sh's data/ allowlist: %s. "
+            "The VM stops receiving them AND law_shipped_config_matches_repo "
+            "stops counting them, so the loss reports as a clean HOLDS. If the "
+            "removal is deliberate, delete the name here too and say why."
+            % ", ".join(sorted(dropped)))
+
+    def test_an_allowlisted_but_untracked_file_is_an_inert_include(self):
+        """POISON PILL for the branch the audit's pill does not exercise.
+
+        deploy.sh builds DEPLOY_EXCLUDES from `git ls-files --others`, so an
+        UNTRACKED file is held back no matter how many --include lines name it.
+        Both halves are required and either alone is inert — an include for an
+        untracked file reads like a decision and ships nothing. This branch
+        needs no network, so it must not be able to hide behind a CANNOT_TELL
+        when the VM is unreachable.
+        """
+        cl = self._law_sources()
+
+        class _R:
+            def __init__(self, out, rc=0):
+                self.stdout, self.stderr, self.returncode = out, "", rc
+
+        def runner(cmd, timeout):
+            if cmd[0] == "git":
+                return _R("")            # git tracks NONE of the allowlist
+            raise AssertionError("must not need the host to see an inert include")
+
+        r = cl.law_shipped_config_matches_repo(runner, has_checkout=True)
+        self.assertEqual(cl.VIOLATED, r.verdict,
+                         "an allowlist naming only untracked files read as clean")
+        self.assertIn("inert", r.detail)
+        self.assertTrue(any("inert_include" in e for e in (r.evidence or [])),
+                        "the verdict must name which include ships nothing")
+
+    def test_a_holds_from_the_shipped_config_law_counts_something(self):
+        """n=0 is not a pass. If every allowlisted file were untracked-and-gone
+        the law must say CANNOT_TELL, never HOLDS over an empty set."""
+        cl = self._law_sources()
+
+        class _R:
+            def __init__(self, out):
+                self.stdout, self.stderr, self.returncode = out, "", 0
+
+        def runner(cmd, timeout):
+            if cmd[0] == "git":
+                return _R("data/zz_does_not_exist_on_disk.json")
+            raise AssertionError("nothing on disk to compare — must not ssh")
+
+        # The one tracked path git reports is not in the allowlist, so `local`
+        # is empty and `inert` covers every real entry: still VIOLATED, never a
+        # silent HOLDS. The dangerous shape is HOLDS with nothing behind it.
+        r = cl.law_shipped_config_matches_repo(runner, has_checkout=True)
+        self.assertNotEqual(cl.HOLDS, r.verdict)
+
     def test_every_law_names_two_distinct_sources(self):
         """The defining property. A law with one source is an assertion, not a law.
 

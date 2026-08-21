@@ -201,6 +201,34 @@ def _pill_deployed_set_matches_repo(law):
     return law(runner, has_checkout=True)
 
 
+def _pill_shipped_config_matches_repo(law):
+    """The trading host holding a different md5 for a file we chose to ship.
+
+    Drives EVERY allowlist entry through as tracked, parsed from the real
+    deploy.sh. Returning one path would also make the law say VIOLATED — but via
+    the `inert_include` branch, because every other entry would look untracked.
+    The pill would then certify a branch the failure it names never touches,
+    which is the trap the nested-probabilities pill was rebuilt to escape: a law
+    proven against the wrong condition is a law whose HOLDS still means nothing.
+    """
+    import re
+    import coherence_laws as cl
+    allowed = [p for p in sorted(set(re.findall(
+        cl._ALLOWLIST_RE, (cl.BASE_DIR / "gcp_setup" / "deploy.sh").read_text())))
+        if not p.endswith("/")]
+
+    class _R:
+        def __init__(self, out):
+            self.stdout, self.stderr, self.returncode = out, "", 0
+
+    def runner(cmd, timeout):
+        if cmd[0] == "git":
+            return _R("\n".join(allowed))
+        return _R("\n".join("0" * 32 + "  " + p for p in allowed))
+
+    return law(runner, has_checkout=True)
+
+
 def _pill_nested_probabilities_are_monotone(law):
     """"Over 1.5 goals" BID above what "over 0.5 goals" ASKS — impossible.
 
@@ -269,6 +297,9 @@ POISON_PILLS: Dict[str, Pill] = {
     "deployed_set_matches_repo": Pill(
         _pill_deployed_set_matches_repo,
         "the trading host reports a different md5 than the repo"),
+    "shipped_config_matches_repo": Pill(
+        _pill_shipped_config_matches_repo,
+        "a data/ file the firm chose to ship holds a different md5 there"),
     "nested_probabilities_are_monotone": Pill(
         _pill_nested_probabilities_are_monotone,
         "a higher rung priced above a lower one"),

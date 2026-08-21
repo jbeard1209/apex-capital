@@ -915,6 +915,148 @@ def law_deployed_set_matches_repo(runner: Optional[Callable] = None,
                      f"no uncommitted files there", src, n_examined=len(local))
 
 
+# The `data/` files the firm deliberately ships. Enumerating these from git —
+# the way the .py law does — is wrong here and would be the opposite error:
+# most tracked data/*.json is a report that is MEANT to stay per-host, and
+# flagging all of it would bury the handful that matter. For code, "tracked"
+# means "should be running there". For data, the allowlist IS the decision, so
+# that is the honest source. The risk of enumerating from an include list —
+# that deleting a line silences the check — is not left hanging: a smoke test
+# pins the set as shrink-only, so removing an entry fails the suite rather
+# than quietly narrowing this law's denominator.
+_ALLOWLIST_RE = r'--include="(data/[^"]+)"'
+
+
+@sources("deploy.sh data/ allowlist ∩ git ls-files + local md5 (what we chose to ship)",
+         "md5sum on the trading host (what it actually has)")
+def law_shipped_config_matches_repo(runner: Optional[Callable] = None,
+                                    has_checkout: Optional[bool] = None) -> LawResult:
+    """Every data/ file the firm chose to deploy is present and identical there.
+
+    The .py law above cannot see this class at all, and the gap was not
+    theoretical. `data/signoff_mode.json` — the autonomy gate's SHADOW/ENFORCE
+    record — was tracked in git from 2026-07-29 and never named in deploy.sh's
+    allowlist, so it had never once reached the VM. Nothing reported it: the .py
+    law does not look at data/, and `get_mode()` returns SHADOW for an absent
+    file exactly as it does for a recorded one, so both hosts printed the same
+    string for entirely different reasons.
+
+    Two ways to fail, and the first needs no network:
+
+    1. AN INERT INCLUDE. `deploy.sh` builds its exclude list from
+       `git ls-files --others`, so an UNTRACKED file is held back no matter how
+       many --include lines name it. An allowlist entry for an untracked file is
+       a line that reads like a decision and ships nothing.
+    2. ABSENT OR DRIFTED. The file is allowlisted and tracked and still is not
+       byte-identical on the trading host.
+
+    Owner on a non-checkout host is the Mac, same as the .py law: deploy is
+    one-way, and the question "what did we choose to ship" can only be asked
+    where deploy.sh and the repo are.
+    """
+    name = "shipped_config_matches_repo"
+    src = law_shipped_config_matches_repo.sources
+    import re
+    import subprocess
+    import hashlib
+    runner = runner or (lambda cmd, timeout: subprocess.run(
+        cmd, capture_output=True, text=True, timeout=timeout))
+
+    if has_checkout is None:
+        has_checkout = ((BASE_DIR / ".git").exists()
+                        or (BASE_DIR.parent / ".git").exists())
+    if not has_checkout:
+        return LawResult(name, CANNOT_TELL,
+                         "no git checkout on this host — what the firm CHOSE to ship "
+                         "is only knowable where deploy.sh and the repo are. "
+                         "Owner: the Mac (dev host).", src)
+
+    deploy_sh = BASE_DIR / "gcp_setup" / "deploy.sh"
+    if not deploy_sh.exists():
+        return LawResult(name, CANNOT_TELL,
+                         f"{deploy_sh.name} not found — the shipped set is unknown, "
+                         f"not known-good. Owner: whoever owns deploy.sh", src)
+    allowed = sorted(set(re.findall(_ALLOWLIST_RE, deploy_sh.read_text())))
+    # `--include="data/"` is the directory itself, not a file to compare.
+    allowed = [p for p in allowed if not p.endswith("/")]
+    if not allowed:
+        return LawResult(name, CANNOT_TELL,
+                         "no data/ allowlist entries parsed out of deploy.sh — "
+                         "refusing to report a match against an empty set", src)
+
+    try:
+        ls = runner(["git", "-C", str(BASE_DIR), "ls-files"] + allowed, 30)
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL, f"git ls-files failed: {e}", src)
+    if getattr(ls, "returncode", 1) != 0:
+        return LawResult(name, CANNOT_TELL, "git ls-files failed on this host", src)
+    tracked = set(ls.stdout.split())
+
+    inert = sorted(p for p in allowed if p not in tracked)
+    local = {}
+    for rel in allowed:
+        if rel not in tracked:
+            continue
+        f = BASE_DIR / rel
+        if f.exists():
+            local[rel] = hashlib.md5(f.read_bytes()).hexdigest()
+
+    if not local and not inert:
+        return LawResult(name, CANNOT_TELL,
+                         "every allowlisted data/ file is tracked but missing on "
+                         "disk here — nothing to compare", src)
+
+    remote_md5, missing = {}, []
+    if local:
+        paths = " ".join("'" + p.replace("'", "'\\''") + "'" for p in sorted(local))
+        try:
+            out = runner(["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=12",
+                          REMOTE_ALIAS,
+                          f"cd {REMOTE_DIR} 2>/dev/null || exit 9; "
+                          f"md5sum {paths} 2>&1"], 60)
+        except Exception as e:
+            return LawResult(name, CANNOT_TELL,
+                             f"cannot reach {REMOTE_ALIAS} ({type(e).__name__}: {e}) — "
+                             f"the shipped set is unknown, not known-good. "
+                             f"Owner: Chairman (host reachability).", src)
+        if getattr(out, "returncode", 1) == 9:
+            return LawResult(name, CANNOT_TELL,
+                             f"{REMOTE_DIR} does not exist on {REMOTE_ALIAS}", src)
+        if not (getattr(out, "stdout", "") or "").strip():
+            return LawResult(name, CANNOT_TELL,
+                             f"ssh to {REMOTE_ALIAS} returned nothing "
+                             f"({(getattr(out, 'stderr', '') or '')[:180]})", src)
+        for line in out.stdout.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if ": No such file" in line or "cannot open" in line:
+                parts = line.split(":")
+                if len(parts) >= 3:
+                    missing.append(parts[1].strip())
+                continue
+            parts = line.split(None, 1)
+            if len(parts) == 2 and len(parts[0]) == 32:
+                remote_md5[parts[1].strip()] = parts[0]
+
+    absent = sorted(set(local) - set(remote_md5) | set(missing))
+    differs = sorted(p for p, h in local.items()
+                     if p in remote_md5 and remote_md5[p] != h)
+
+    ev = ([{"inert_include": p} for p in inert[:8]]
+          + [{"absent_on_host": p} for p in absent[:8]]
+          + [{"differs": p} for p in differs[:8]])
+    if inert or absent or differs:
+        return LawResult(name, VIOLATED,
+                         f"{len(inert)} allowlist entr(ies) name an untracked file so "
+                         f"the include is inert, {len(absent)} chosen file(s) absent "
+                         f"from {REMOTE_ALIAS}, {len(differs)} differ. The host is not "
+                         f"running the configuration the firm decided on.", src, ev)
+    return LawResult(name, HOLDS,
+                     f"{len(local)} allowlisted data/ file(s) tracked and identical "
+                     f"on {REMOTE_ALIAS}", src, n_examined=len(local))
+
+
 # =============================================================================
 # LAW — every verb emitted is a verb handled
 # =============================================================================
@@ -1359,6 +1501,8 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "pipeline starts observed == pipeline starts scheduled"),
     (law_deployed_set_matches_repo,
      "every tracked file in the repo is the file running on the trading host"),
+    (law_shipped_config_matches_repo,
+     "every data/ file the firm chose to ship is present and identical there"),
     (law_emitted_verbs_are_handled,
      "every verb a producer emits is a verb the consumer can name"),
     (law_positions_conserve,
