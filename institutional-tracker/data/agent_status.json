@@ -1,0 +1,284 @@
+{
+  "ApexSystemCIT": {
+    "status": "OK",
+    "last_run": "2026-07-31T14:21:32.589435",
+    "last_output": "",
+    "metrics": {}
+  },
+  "MLLTExpRunner": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:19:06.994186",
+    "last_output": "",
+    "metrics": {}
+  },
+  "LogReviewAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T01:04:45.156724",
+    "last_output": "",
+    "metrics": {}
+  },
+  "MLLongTermCITAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.981172",
+    "last_output": "",
+    "metrics": {}
+  },
+  "FECITAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:27:58.630418",
+    "last_output": "",
+    "metrics": {}
+  },
+  "WSListener": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:41.866566",
+    "last_output": "",
+    "metrics": {}
+  },
+  "ApexImprovementBoard": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:41.907868",
+    "last_output": "",
+    "metrics": {}
+  },
+  "Board": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:41.954754",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CITArchitectureAdvisor": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:42.013747",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CITAutoImplementer": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:42.056436",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CITPipelineMonitor": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:42.100871",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CITWatchdog": {
+    "status": "OK",
+    "last_run": "2026-08-21T01:04:41.519883",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CROAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:42.179614",
+    "last_output": "",
+    "metrics": {}
+  },
+  "Canary": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.054579",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CapitalEfficiencyAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.691015",
+    "last_output": "",
+    "metrics": {}
+  },
+  "Chief of Staff": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.782999",
+    "last_output": "",
+    "metrics": {}
+  },
+  "CryptoSignalAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.817429",
+    "last_output": "",
+    "metrics": {}
+  },
+  "DeputyBoard": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.854881",
+    "last_output": "",
+    "metrics": {}
+  },
+  "DeputyMonitor": {
+    "status": "OK",
+    "last_run": "2026-08-21T01:04:43.087287",
+    "last_output": "",
+    "metrics": {}
+  },
+  "ETFPodBoard": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.934325",
+    "last_output": "",
+    "metrics": {}
+  },
+  "ETFResearchAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:43.974525",
+    "last_output": "",
+    "metrics": {}
+  },
+  "EarningsPredictor": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:44.544238",
+    "last_output": "",
+    "metrics": {}
+  },
+  "EnergyResearchTeam": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.044572",
+    "last_output": "",
+    "metrics": {}
+  },
+  "FEBoard": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.115902",
+    "last_output": "",
+    "metrics": {}
+  },
+  "FEResearchOrchestrator": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.179307",
+    "last_output": "",
+    "metrics": {}
+  },
+  "FIBoard": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.214453",
+    "last_output": "",
+    "metrics": {}
+  },
+  "HRDevelopmentOfficer": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.262431",
+    "last_output": "",
+    "metrics": {}
+  },
+  "HeadAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.297158",
+    "last_output": "",
+    "metrics": {}
+  },
+  "InternationalAnalyst": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:45.858692",
+    "last_output": "",
+    "metrics": {}
+  },
+  "MLRDBridgeAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.017223",
+    "last_output": "",
+    "metrics": {}
+  },
+  "MLResearchTeamLeader": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.055767",
+    "last_output": "",
+    "metrics": {}
+  },
+  "MLShortTermCITAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.092707",
+    "last_output": "",
+    "metrics": {}
+  },
+  "Manager Agent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.520006",
+    "last_output": "",
+    "metrics": {}
+  },
+  "MorningBriefing": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.591490",
+    "last_output": "",
+    "metrics": {}
+  },
+  "OperationsDirector": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.623419",
+    "last_output": "",
+    "metrics": {}
+  },
+  "PodMacroAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.658612",
+    "last_output": "",
+    "metrics": {}
+  },
+  "PositionRiskMonitor": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:46.693173",
+    "last_output": "",
+    "metrics": {}
+  },
+  "PremarketCheck": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:47.226296",
+    "last_output": "",
+    "metrics": {}
+  },
+  "QuiverSignalAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:47.304806",
+    "last_output": "",
+    "metrics": {}
+  },
+  "RDGeopoliticalTeam": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:47.745756",
+    "last_output": "",
+    "metrics": {}
+  },
+  "RDHistoricalAnalyst": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:48.217202",
+    "last_output": "",
+    "metrics": {}
+  },
+  "RDTeamLeader": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:48.703550",
+    "last_output": "",
+    "metrics": {}
+  },
+  "ResearchTeam": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:52.298022",
+    "last_output": "",
+    "metrics": {}
+  },
+  "ReviewAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:52.896232",
+    "last_output": "",
+    "metrics": {}
+  },
+  "SignalEngine": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:53.350070",
+    "last_output": "",
+    "metrics": {}
+  },
+  "TCAAgent": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:53.421333",
+    "last_output": "",
+    "metrics": {}
+  },
+  "TradeReviewTeam": {
+    "status": "OK",
+    "last_run": "2026-08-21T00:50:53.870945",
+    "last_output": "",
+    "metrics": {}
+  }
+}

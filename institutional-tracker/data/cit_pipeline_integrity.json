@@ -1,22 +1,22 @@
 {
-  "checked_at": "2026-08-18T05:04:04.187540",
+  "checked_at": "2026-08-21T00:50:09.099590",
   "issues": [
     {
       "severity": "HIGH",
       "check": "deadmans_switch_sanity",
-      "message": "pipeline_heartbeat.json is 82.2h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
+      "message": "pipeline_heartbeat.json is 149.9h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
       "auto_fixed": false
     },
     {
       "severity": "HIGH",
       "check": "email_loop_detection",
-      "message": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Coherence: 2 law(s) violated on MacBook-Air-173\" \u00d712",
+      "message": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"Coherence: 2 law(s) violated on MacBook-Air-173\" \u00d726; \"Coherence: 1 law(s) violated on MacBook-Air-173\" \u00d77",
       "auto_fixed": false
     },
     {
-      "severity": "MEDIUM",
-      "check": "agent_file_freshness",
-      "message": "3 agent output file(s) are >26h old and no recovery appears in progress: research_team_report.json (82h); risk_bulletin.json (84h); canary_state.json (155h)",
+      "severity": "HIGH",
+      "check": "single_writer",
+      "message": "the designated writer 'apexcapitalc' has been silent 45h (last order 2026-08-19T08:00) and no other host traded after it \u2014 so a market closure cannot be told apart from an outage from here. Verify the host directly. Guard mode is 'enforce', designated writer 'apexcapitalc'.",
       "auto_fixed": false
     }
   ],
@@ -24,10 +24,10 @@
   "verdicts": {
     "deadmans_switch_sanity": "FAIL",
     "email_loop_detection": "FAIL",
-    "agent_file_freshness": "FAIL",
+    "agent_file_freshness": "PASS",
     "ml_model_health": "SKIP",
     "peer_host_liveness": "PASS",
-    "single_writer": "PASS"
+    "single_writer": "FAIL"
   },
   "skipped": {
     "ml_model_health": "model_v2_meta.json carries no AUC field \u2014 nothing to compare"

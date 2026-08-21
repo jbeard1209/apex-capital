@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-08-01T20:20:15.720915",
+  "host": "MacBook-Air-173.local",
+  "headline": "107 finding(s) across 6 kind(s); 6 proposal(s) to the board; 80 open HR item(s).",
+  "proposals": [
+    {
+      "title": "Sweep: 18 finding(s) \u2014 agent inputs that nobody produces",
+      "category": "INTEGRATION",
+      "severity": "MEDIUM",
+      "kind": "AGENT_INPUT_UNPRODUCED"
+    },
+    {
+      "title": "Sweep: 2 finding(s) \u2014 agents that speak to no other agent",
+      "category": "INTEGRATION",
+      "severity": "HIGH",
+      "kind": "AGENT_ISOLATED"
+    },
+    {
+      "title": "Sweep: 9 finding(s) \u2014 agent outputs that nobody reads",
+      "category": "INTEGRATION",
+      "severity": "MEDIUM",
+      "kind": "AGENT_OUTPUT_UNCONSUMED"
+    },
+    {
+      "title": "Sweep: 27 finding(s) \u2014 agents never reviewed by HR",
+      "category": "IMPROVEMENT",
+      "severity": "LOW",
+      "kind": "AGENT_UNREVIEWED"
+    },
+    {
+      "title": "Sweep: 45 finding(s) \u2014 employed agents that run nowhere",
+      "category": "INTEGRATION",
+      "severity": "MEDIUM",
+      "kind": "AGENT_UNSCHEDULED"
+    },
+    {
+      "title": "Sweep: 6 finding(s) \u2014 agents that mutate firm state at import time",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
+      "kind": "AGENT_WRITES_ON_IMPORT"
+    }
+  ],
+  "closed_since_last_sweep": [],
+  "newly_opened": []
+}

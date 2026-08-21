@@ -1,16 +1,6 @@
 [
   {
-    "ts": "2026-08-16T23:35:12.300591",
-    "ticker": "NVDA",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "RDTeamLeader",
-    "cro_level": "LOW",
-    "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-16T23:35:53.258705",
+    "ts": "2026-08-19T07:38:26.869587",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -22,7 +12,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-16T23:36:18.720533",
+    "ts": "2026-08-19T07:39:16.629297",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -32,7 +22,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-16T23:36:18.723205",
+    "ts": "2026-08-19T07:39:16.632161",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -42,7 +32,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-16T23:36:58.321642",
+    "ts": "2026-08-19T07:40:47.142229",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -54,7 +44,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T03:37:01.509860",
+    "ts": "2026-08-19T07:43:36.716678",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -64,7 +54,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T03:37:01.512446",
+    "ts": "2026-08-19T07:43:36.722748",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -74,7 +64,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T03:37:40.601815",
+    "ts": "2026-08-19T07:45:04.291033",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -86,7 +76,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:28:56.399134",
+    "ts": "2026-08-19T07:46:01.001387",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -96,7 +86,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:28:56.402527",
+    "ts": "2026-08-19T07:46:01.012952",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -106,7 +96,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:29:36.182650",
+    "ts": "2026-08-19T07:47:40.439122",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -118,7 +108,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:35:46.697160",
+    "ts": "2026-08-19T07:51:43.329406",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -128,7 +118,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:35:46.700358",
+    "ts": "2026-08-19T07:51:43.342023",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -138,7 +128,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:36:24.897091",
+    "ts": "2026-08-19T07:53:15.586069",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -150,7 +140,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:52:27.695610",
+    "ts": "2026-08-19T07:54:27.175775",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -160,7 +150,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:52:27.699359",
+    "ts": "2026-08-19T07:54:27.178897",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -170,7 +160,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:53:09.231858",
+    "ts": "2026-08-19T07:55:54.499605",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -182,7 +172,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:57:59.672131",
+    "ts": "2026-08-19T07:56:39.628375",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -192,7 +182,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:57:59.675182",
+    "ts": "2026-08-19T07:56:39.635561",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -202,7 +192,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T07:58:40.626762",
+    "ts": "2026-08-19T07:58:05.512869",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -214,7 +204,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:06:24.544991",
+    "ts": "2026-08-19T11:58:13.098983",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -224,29 +214,17 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:06:24.549341",
+    "ts": "2026-08-19T11:58:13.105930",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
     "source_agent": "RDTeamLeader",
     "cro_level": "LOW",
     "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-17T08:07:04.138157",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "LOW",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:07:33.763333",
+    "ts": "2026-08-19T07:59:43.937141",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -256,7 +234,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:07:33.766044",
+    "ts": "2026-08-19T07:59:43.940151",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -266,7 +244,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:08:12.919558",
+    "ts": "2026-08-19T08:01:12.615282",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -278,7 +256,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:13:24.351446",
+    "ts": "2026-08-19T12:01:21.145830",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -288,7 +266,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:13:24.354455",
+    "ts": "2026-08-19T12:01:21.152324",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -298,7 +276,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:14:03.034118",
+    "ts": "2026-08-19T12:02:49.794817",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -310,7 +288,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:15:45.698675",
+    "ts": "2026-08-19T08:08:26.259457",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -320,7 +298,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:15:45.701357",
+    "ts": "2026-08-19T08:08:26.265577",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -330,7 +308,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:16:25.346021",
+    "ts": "2026-08-19T08:09:54.204009",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -342,7 +320,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:20:35.672090",
+    "ts": "2026-08-19T08:11:01.704287",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -352,7 +330,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:20:35.675028",
+    "ts": "2026-08-19T08:11:01.711714",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -362,7 +340,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:21:14.736708",
+    "ts": "2026-08-19T08:12:31.088075",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -374,7 +352,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:21:27.860466",
+    "ts": "2026-08-19T12:12:39.233103",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -384,7 +362,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:21:27.863222",
+    "ts": "2026-08-19T12:12:39.237075",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -394,7 +372,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:22:06.286805",
+    "ts": "2026-08-19T12:14:04.215014",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -406,7 +384,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:22:21.154428",
+    "ts": "2026-08-19T08:17:44.243850",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -416,7 +394,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:22:21.157077",
+    "ts": "2026-08-19T08:17:44.250043",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -426,7 +404,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:23:00.705802",
+    "ts": "2026-08-19T08:19:22.939669",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -438,7 +416,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:25:19.757721",
+    "ts": "2026-08-19T08:20:25.803640",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -448,7 +426,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:25:19.760844",
+    "ts": "2026-08-19T08:20:25.807082",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -458,7 +436,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:25:57.776892",
+    "ts": "2026-08-19T08:21:53.543983",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -470,7 +448,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:29:55.691175",
+    "ts": "2026-08-19T12:22:04.631558",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -480,7 +458,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:29:55.694085",
+    "ts": "2026-08-19T12:22:04.637122",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -490,7 +468,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:30:33.074679",
+    "ts": "2026-08-19T12:23:31.733462",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -502,7 +480,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:32:58.117856",
+    "ts": "2026-08-19T16:44:35.285072",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -512,7 +490,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:32:58.120638",
+    "ts": "2026-08-19T16:44:35.292274",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -522,7 +500,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:33:42.516287",
+    "ts": "2026-08-19T16:46:52.281231",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -534,7 +512,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:35:01.841769",
+    "ts": "2026-08-19T16:48:32.071675",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -544,7 +522,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:35:01.844959",
+    "ts": "2026-08-19T16:48:32.081581",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -554,7 +532,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:35:42.058204",
+    "ts": "2026-08-19T16:50:04.900225",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -566,7 +544,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:35:47.359615",
+    "ts": "2026-08-19T16:50:45.340918",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -576,7 +554,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:35:47.361888",
+    "ts": "2026-08-19T16:50:45.349096",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -586,7 +564,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T08:36:26.284986",
+    "ts": "2026-08-19T16:52:24.888506",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -598,7 +576,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T11:50:34.672144",
+    "ts": "2026-08-19T20:52:32.951038",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -608,7 +586,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T11:50:34.679950",
+    "ts": "2026-08-19T20:52:32.958535",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -618,7 +596,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T11:51:19.659896",
+    "ts": "2026-08-19T20:54:03.195480",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -630,7 +608,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T11:53:55.893597",
+    "ts": "2026-08-19T16:59:05.239500",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -640,7 +618,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T11:53:55.898717",
+    "ts": "2026-08-19T16:59:05.243214",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -650,7 +628,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T11:54:34.636409",
+    "ts": "2026-08-19T17:00:40.139589",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -662,7 +640,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T18:06:58.050864",
+    "ts": "2026-08-19T17:01:05.154834",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -672,7 +650,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T18:06:58.062678",
+    "ts": "2026-08-19T17:01:05.160312",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -682,7 +660,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T18:07:46.290008",
+    "ts": "2026-08-19T17:02:50.186618",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -694,7 +672,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:13:25.320216",
+    "ts": "2026-08-19T21:03:03.000082",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -704,7 +682,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:13:25.326534",
+    "ts": "2026-08-19T21:03:03.007998",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -714,7 +692,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:14:14.973836",
+    "ts": "2026-08-19T21:04:52.952619",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -726,7 +704,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:14:54.659072",
+    "ts": "2026-08-19T19:56:16.455775",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -736,7 +714,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:14:54.662603",
+    "ts": "2026-08-19T19:56:16.460317",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -746,7 +724,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:15:41.732586",
+    "ts": "2026-08-19T19:57:47.718621",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -758,7 +736,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:15:50.893474",
+    "ts": "2026-08-19T19:58:16.225848",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -768,7 +746,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:15:50.896131",
+    "ts": "2026-08-19T19:58:16.229928",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -778,7 +756,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:16:38.030515",
+    "ts": "2026-08-19T19:59:47.998397",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -790,7 +768,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:19:51.808591",
+    "ts": "2026-08-19T20:00:39.181505",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -800,7 +778,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:19:51.819171",
+    "ts": "2026-08-19T20:00:39.185138",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -810,7 +788,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:21:16.886021",
+    "ts": "2026-08-19T20:02:11.860908",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -822,7 +800,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:23:06.149898",
+    "ts": "2026-08-19T20:02:31.653747",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -832,7 +810,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:23:06.153628",
+    "ts": "2026-08-19T20:02:31.662247",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -842,7 +820,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:24:04.598438",
+    "ts": "2026-08-19T20:04:06.520485",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -854,7 +832,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:24:12.918452",
+    "ts": "2026-08-19T20:04:45.663830",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -864,7 +842,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:24:12.921031",
+    "ts": "2026-08-19T20:04:45.667646",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -874,7 +852,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:25:16.360182",
+    "ts": "2026-08-19T20:06:22.528504",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -886,7 +864,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:41:09.813768",
+    "ts": "2026-08-20T00:06:30.171092",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -896,7 +874,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:41:09.819614",
+    "ts": "2026-08-20T00:06:30.173513",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -906,7 +884,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:42:00.244969",
+    "ts": "2026-08-20T00:08:05.382490",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -918,7 +896,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:42:48.952680",
+    "ts": "2026-08-19T20:33:52.895639",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -928,7 +906,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:42:48.959948",
+    "ts": "2026-08-19T20:33:52.899355",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -938,7 +916,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:43:39.585687",
+    "ts": "2026-08-19T20:35:30.041034",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -950,7 +928,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:43:48.444387",
+    "ts": "2026-08-19T20:36:23.057328",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -960,7 +938,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:43:48.451056",
+    "ts": "2026-08-19T20:36:23.062720",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -970,7 +948,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:44:36.161787",
+    "ts": "2026-08-19T20:37:54.280975",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -982,7 +960,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:46:42.178793",
+    "ts": "2026-08-20T00:38:03.703638",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -992,7 +970,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:46:42.185366",
+    "ts": "2026-08-20T00:38:03.706413",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1002,19 +980,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:47:27.670525",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "LOW",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-17T19:47:39.821894",
+    "ts": "2026-08-19T20:38:26.222664",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1024,7 +990,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:47:39.827157",
+    "ts": "2026-08-19T20:38:26.228681",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1034,7 +1000,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:48:26.001098",
+    "ts": "2026-08-19T20:39:55.753611",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1046,7 +1012,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:49:00.443199",
+    "ts": "2026-08-20T00:40:12.843332",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1056,7 +1022,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:49:00.446392",
+    "ts": "2026-08-20T00:40:12.849848",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1066,7 +1032,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:49:51.626249",
+    "ts": "2026-08-20T00:41:47.784854",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1078,7 +1044,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:50:54.626294",
+    "ts": "2026-08-19T20:52:19.941891",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1088,7 +1054,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:50:54.630783",
+    "ts": "2026-08-19T20:52:19.948812",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1098,7 +1064,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T19:52:27.314206",
+    "ts": "2026-08-19T20:53:51.181963",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1110,7 +1076,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:52:39.542843",
+    "ts": "2026-08-19T20:54:03.168492",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1120,7 +1086,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:52:39.550672",
+    "ts": "2026-08-19T20:54:03.172250",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1130,7 +1096,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:53:39.708963",
+    "ts": "2026-08-19T20:55:33.337822",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1142,7 +1108,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:12:04.995007",
+    "ts": "2026-08-19T20:57:13.169374",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1152,7 +1118,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:12:05.002728",
+    "ts": "2026-08-19T20:57:13.175181",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1162,7 +1128,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:12:53.132100",
+    "ts": "2026-08-19T20:58:44.237511",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1174,7 +1140,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:13:30.160128",
+    "ts": "2026-08-20T00:58:52.345976",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1184,7 +1150,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:13:30.166541",
+    "ts": "2026-08-20T00:58:52.352314",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1194,7 +1160,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:14:18.607420",
+    "ts": "2026-08-20T01:00:22.996525",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1206,7 +1172,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:14:27.183613",
+    "ts": "2026-08-19T21:43:57.473323",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1216,7 +1182,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:14:27.188125",
+    "ts": "2026-08-19T21:43:57.478236",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1226,7 +1192,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:15:12.866793",
+    "ts": "2026-08-19T21:45:53.368798",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1238,7 +1204,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:29:55.782112",
+    "ts": "2026-08-19T21:46:53.290737",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1248,7 +1214,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:29:55.785665",
+    "ts": "2026-08-19T21:46:53.298413",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1258,7 +1224,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:30:42.204995",
+    "ts": "2026-08-19T21:48:34.084592",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1270,7 +1236,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:33:08.839663",
+    "ts": "2026-08-20T01:48:41.087105",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1280,7 +1246,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:33:08.845948",
+    "ts": "2026-08-20T01:48:41.090136",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1290,7 +1256,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:33:54.434659",
+    "ts": "2026-08-20T01:50:15.143750",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1302,7 +1268,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:34:39.690863",
+    "ts": "2026-08-20T01:52:48.196078",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1312,7 +1278,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:34:39.697240",
+    "ts": "2026-08-20T01:52:48.200182",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1322,7 +1288,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:35:26.090735",
+    "ts": "2026-08-20T01:54:25.001237",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1334,7 +1300,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:35:34.552441",
+    "ts": "2026-08-20T01:55:13.745955",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1344,7 +1310,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:35:34.558163",
+    "ts": "2026-08-20T01:55:13.752212",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1354,7 +1320,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:36:20.238945",
+    "ts": "2026-08-20T01:56:50.613737",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1366,7 +1332,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:40:15.683303",
+    "ts": "2026-08-20T02:00:26.496856",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1376,7 +1342,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:40:15.689124",
+    "ts": "2026-08-20T02:00:26.504147",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1386,7 +1352,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:41:02.640969",
+    "ts": "2026-08-20T02:01:58.625604",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1398,7 +1364,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:41:33.521741",
+    "ts": "2026-08-20T02:02:09.104383",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1408,7 +1374,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:41:33.526094",
+    "ts": "2026-08-20T02:02:09.110675",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1418,7 +1384,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:42:18.850844",
+    "ts": "2026-08-20T02:03:41.278773",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1430,7 +1396,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:42:27.063776",
+    "ts": "2026-08-20T02:04:01.436708",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1440,7 +1406,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:42:27.070256",
+    "ts": "2026-08-20T02:04:01.442240",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1450,7 +1416,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:43:12.787290",
+    "ts": "2026-08-20T02:05:36.836368",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1462,7 +1428,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:45:40.036078",
+    "ts": "2026-08-20T06:05:45.281614",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1472,7 +1438,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:45:40.041472",
+    "ts": "2026-08-20T06:05:45.288601",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1482,7 +1448,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:46:27.158712",
+    "ts": "2026-08-20T06:07:17.652304",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1494,7 +1460,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:46:46.299553",
+    "ts": "2026-08-20T02:21:33.949512",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1504,7 +1470,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:46:46.305425",
+    "ts": "2026-08-20T02:21:33.955485",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1514,7 +1480,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:47:32.278407",
+    "ts": "2026-08-20T02:23:46.486420",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1526,7 +1492,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:47:41.115996",
+    "ts": "2026-08-20T02:24:02.877257",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1536,17 +1502,29 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:47:41.119115",
+    "ts": "2026-08-20T02:24:02.881554",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
     "source_agent": "RDTeamLeader",
     "cro_level": "LOW",
     "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-20T02:26:26.735098",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:48:27.551985",
+    "ts": "2026-08-20T02:29:00.749326",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1558,7 +1536,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:49:30.481424",
+    "ts": "2026-08-20T02:29:11.409758",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1568,7 +1546,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:49:30.486337",
+    "ts": "2026-08-20T02:29:11.413930",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1578,7 +1556,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:50:21.067203",
+    "ts": "2026-08-20T02:31:30.078747",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1590,7 +1568,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:51:22.026912",
+    "ts": "2026-08-20T02:32:18.502829",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1600,7 +1578,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:51:22.038066",
+    "ts": "2026-08-20T02:32:18.509209",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1610,7 +1588,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T22:52:20.903484",
+    "ts": "2026-08-20T02:34:20.163868",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1622,7 +1600,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:52:29.534353",
+    "ts": "2026-08-20T02:35:01.868557",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1632,7 +1610,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:52:29.541565",
+    "ts": "2026-08-20T02:35:01.876190",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1642,7 +1620,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T02:53:25.430916",
+    "ts": "2026-08-20T02:37:00.212571",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1654,7 +1632,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:11:38.473200",
+    "ts": "2026-08-20T06:37:07.505087",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1664,7 +1642,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:11:38.480378",
+    "ts": "2026-08-20T06:37:07.509837",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1674,7 +1652,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:12:25.349658",
+    "ts": "2026-08-20T06:39:08.804576",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1686,7 +1664,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:12:36.811946",
+    "ts": "2026-08-20T02:50:01.387847",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1696,7 +1674,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:12:36.818540",
+    "ts": "2026-08-20T02:50:01.394265",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1706,7 +1684,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:13:26.415045",
+    "ts": "2026-08-20T02:52:45.190838",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1718,7 +1696,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:14:50.419968",
+    "ts": "2026-08-20T02:53:08.333139",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1728,7 +1706,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:14:50.425812",
+    "ts": "2026-08-20T02:53:08.336411",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1738,7 +1716,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:16:05.712400",
+    "ts": "2026-08-20T02:56:09.366690",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1750,7 +1728,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:17:05.927539",
+    "ts": "2026-08-20T02:56:49.181082",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1760,7 +1738,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:17:05.944647",
+    "ts": "2026-08-20T02:56:49.185647",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1770,7 +1748,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:18:22.565685",
+    "ts": "2026-08-20T03:00:03.275694",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1782,7 +1760,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:18:35.643753",
+    "ts": "2026-08-20T07:00:11.107465",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1792,29 +1770,17 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:18:35.648386",
+    "ts": "2026-08-20T07:00:11.109858",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
     "source_agent": "RDTeamLeader",
     "cro_level": "LOW",
     "concerns": [],
-    "severity": "LOW"
-  },
-  {
-    "ts": "2026-08-18T03:19:44.303951",
-    "ticker": "LQD",
-    "conviction": 4,
-    "sector": "?",
-    "source_agent": "ReviewAgent",
-    "cro_level": "LOW",
-    "concerns": [
-      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
-    ],
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:20:12.231347",
+    "ts": "2026-08-20T03:01:54.039769",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1824,7 +1790,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:20:12.234208",
+    "ts": "2026-08-20T03:01:54.047167",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1834,7 +1800,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:21:27.302771",
+    "ts": "2026-08-20T03:04:45.834885",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1846,7 +1812,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:21:40.686817",
+    "ts": "2026-08-20T07:04:53.236911",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1856,7 +1822,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:21:40.690897",
+    "ts": "2026-08-20T07:04:53.243138",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1866,7 +1832,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:22:42.235444",
+    "ts": "2026-08-20T07:07:42.989075",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1878,7 +1844,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:23:00.597215",
+    "ts": "2026-08-20T03:07:59.613884",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1888,7 +1854,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:23:00.599897",
+    "ts": "2026-08-20T03:07:59.618853",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1898,7 +1864,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:24:13.412003",
+    "ts": "2026-08-20T03:10:47.235580",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1910,7 +1876,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:24:25.745931",
+    "ts": "2026-08-20T07:10:54.645556",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1920,7 +1886,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:24:25.753398",
+    "ts": "2026-08-20T07:10:54.652281",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1930,7 +1896,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:25:17.386151",
+    "ts": "2026-08-20T07:13:42.367324",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1942,7 +1908,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:37:39.015215",
+    "ts": "2026-08-20T03:32:52.974928",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1952,7 +1918,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:37:39.022210",
+    "ts": "2026-08-20T03:32:52.981487",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1962,7 +1928,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:38:28.689111",
+    "ts": "2026-08-20T03:36:01.984465",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -1974,7 +1940,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:39:03.087550",
+    "ts": "2026-08-20T03:36:24.799050",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1984,7 +1950,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:39:03.093488",
+    "ts": "2026-08-20T03:36:24.803446",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -1994,7 +1960,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:39:50.651993",
+    "ts": "2026-08-20T03:39:50.675041",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -2006,7 +1972,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:39:58.828684",
+    "ts": "2026-08-20T07:40:00.184229",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2016,7 +1982,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:39:58.834091",
+    "ts": "2026-08-20T07:40:00.190083",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2026,7 +1992,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:40:47.990216",
+    "ts": "2026-08-20T07:43:08.097147",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -2035,10 +2001,30 @@
     "concerns": [
       "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
     ],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-21T00:08:19.823045",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-21T00:08:19.830012",
+    "ticker": "NVDA",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "RDTeamLeader",
+    "cro_level": "LOW",
+    "concerns": [],
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:42:31.621005",
+    "ts": "2026-08-21T00:11:05.275437",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2048,7 +2034,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:42:31.628715",
+    "ts": "2026-08-21T00:11:05.280399",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2058,7 +2044,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:43:19.957295",
+    "ts": "2026-08-21T00:12:26.848184",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -2070,7 +2056,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:43:50.381299",
+    "ts": "2026-08-21T00:14:00.331270",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2080,7 +2066,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:43:50.387424",
+    "ts": "2026-08-21T00:14:00.335774",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2090,7 +2076,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-17T23:44:38.828081",
+    "ts": "2026-08-21T00:16:02.469701",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",
@@ -2102,7 +2088,7 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:44:46.253702",
+    "ts": "2026-08-21T00:16:26.636927",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
@@ -2112,17 +2098,29 @@
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:44:46.256782",
+    "ts": "2026-08-21T00:16:26.642161",
     "ticker": "NVDA",
     "conviction": 4,
     "sector": "?",
     "source_agent": "RDTeamLeader",
     "cro_level": "LOW",
     "concerns": [],
+    "severity": "LOW"
+  },
+  {
+    "ts": "2026-08-21T00:18:54.314072",
+    "ticker": "LQD",
+    "conviction": 4,
+    "sector": "?",
+    "source_agent": "ReviewAgent",
+    "cro_level": "LOW",
+    "concerns": [
+      "Pick sourced from single agent (ReviewAgent) \u2014 no cross-validation from multiple independent research streams."
+    ],
     "severity": "LOW"
   },
   {
-    "ts": "2026-08-18T03:45:34.790802",
+    "ts": "2026-08-21T00:20:02.344181",
     "ticker": "LQD",
     "conviction": 4,
     "sector": "?",

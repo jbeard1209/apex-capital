@@ -1,16 +1,16 @@
 {
-  "generated_at": "2026-08-18T06:10:10.501777",
+  "generated_at": "2026-08-20T21:01:45.281613",
   "canary_level": "GREEN",
   "cro_level": "LOW",
   "buys_blocked": true,
   "assigned_sectors": [
     "biotech",
-    "communication services",
-    "consumer discretionary",
+    "consumer staples",
     "cybersecurity",
     "defense & aerospace",
+    "financials",
+    "healthcare",
     "materials",
-    "retail",
     "technology"
   ],
   "streak_agents": [

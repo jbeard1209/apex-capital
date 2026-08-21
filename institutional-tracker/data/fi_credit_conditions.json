@@ -1,35 +1,30 @@
 {
-  "fetched_at": "2026-08-18T03:45:25.001982",
+  "fetched_at": "2026-08-21T00:19:46.769442",
   "data_quality": "DEGRADED",
   "degraded": [
     "HYG (high-yield spread proxy)"
   ],
   "spreads": {
     "hy_spread": null,
-    "ig_spread": 280.0,
+    "ig_spread": 163.0,
     "hy_spread_bps": null,
-    "ig_spread_bps": 280.0,
-    "treasury_10yr": 100.0,
-    "yield_curve_slope": 94.7,
+    "ig_spread_bps": 163.0,
+    "treasury_10yr": 4.706,
+    "yield_curve_slope": -0.594,
     "spread_regime": "UNKNOWN",
     "hyg_price": null,
-    "lqd_price": 100.0
+    "lqd_price": 105.84
   },
   "signals": [
     {
       "type": "IG_OPPORTUNITY",
-      "message": "IG spreads at ~280bps \u2014 above normal; IG names attractive",
+      "message": "IG spreads at ~163bps \u2014 above normal; IG names attractive",
       "direction": "BUY"
     },
     {
-      "type": "STEEPENING_CURVE",
-      "message": "Yield curve steepening (+94.70). Long duration bonds may benefit from duration extension.",
-      "direction": "OPPORTUNITY"
-    },
-    {
-      "type": "HIGH_RATES",
-      "message": "10yr Treasury at 100.00% \u2014 IG bonds yielding well above historical avg.",
-      "direction": "BUY"
+      "type": "INVERTED_CURVE",
+      "message": "Yield curve inverted (-0.59). Favor short duration; avoid long-maturity bonds.",
+      "direction": "CAUTION"
     }
   ],
   "regime_context": "Credit read unavailable \u2014 HYG (high-yield spread proxy) did not return. No FI positioning opinion is valid on this read; the pipeline abstains."

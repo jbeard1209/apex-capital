@@ -1,0 +1,273 @@
+{
+  "model": "LongTerm LightGBM (outcome_252d)",
+  "run_at": "2026-07-31T13:58:06.009775",
+  "elapsed_seconds": 41.1,
+  "log_file": "/Users/jackbeard/Claude investment strategy/institutional-tracker/logs/longterm_validation_20260731_135804.log",
+  "features": [
+    "conviction_score",
+    "n_institutions",
+    "herding_flag",
+    "quant_consensus",
+    "days_since_filing",
+    "portfolio_weight"
+  ],
+  "target": "outcome_252d",
+  "lgb_params": {
+    "n_estimators": 500,
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "class_weight": "balanced",
+    "random_state": 42,
+    "verbosity": -1
+  },
+  "results": {
+    "test1_walk_forward": {
+      "status": "PASS",
+      "details": {
+        "mean_auc": 0.5345,
+        "std_auc": 0.0212,
+        "min_auc": 0.4938,
+        "max_auc": 0.5564,
+        "pass_threshold": 0.53,
+        "folds": [
+          {
+            "fold": 1,
+            "train_size": 7060,
+            "test_size": 1766,
+            "auc": 0.5378
+          },
+          {
+            "fold": 2,
+            "train_size": 8826,
+            "test_size": 1765,
+            "auc": 0.5564
+          },
+          {
+            "fold": 3,
+            "train_size": 10591,
+            "test_size": 1765,
+            "auc": 0.4938
+          },
+          {
+            "fold": 4,
+            "train_size": 11473,
+            "test_size": 1766,
+            "auc": 0.5538
+          },
+          {
+            "fold": 5,
+            "train_size": 12356,
+            "test_size": 1765,
+            "auc": 0.5417
+          },
+          {
+            "fold": 6,
+            "train_size": 13239,
+            "test_size": 1765,
+            "auc": 0.5236
+          }
+        ],
+        "note": "No lookahead gap; 1-year label horizon already provides natural separation."
+      }
+    },
+    "test2_regime_auc": {
+      "status": "WARN",
+      "details": {
+        "regime_source": "rd_regime_bull",
+        "n_bear_low": 2274,
+        "n_bull_high": 1257,
+        "auc_bear_low": 0.5287,
+        "auc_bull_high": 0.5477
+      }
+    },
+    "test3_calibration": {
+      "status": "PASS",
+      "details": {
+        "positive_rate_val": 0.5735,
+        "baseline_brier": 0.2446,
+        "model_brier": 0.2485,
+        "ratio_model_baseline": 1.016,
+        "reliability_curve": [
+          {
+            "bin": 1,
+            "mean_pred": 0.3215,
+            "frac_pos": 0.4548
+          },
+          {
+            "bin": 2,
+            "mean_pred": 0.4528,
+            "frac_pos": 0.5351
+          },
+          {
+            "bin": 3,
+            "mean_pred": 0.4991,
+            "frac_pos": 0.5734
+          },
+          {
+            "bin": 4,
+            "mean_pred": 0.5221,
+            "frac_pos": 0.6043
+          },
+          {
+            "bin": 5,
+            "mean_pred": 0.538,
+            "frac_pos": 0.6377
+          },
+          {
+            "bin": 6,
+            "mean_pred": 0.5559,
+            "frac_pos": 0.5662
+          },
+          {
+            "bin": 7,
+            "mean_pred": 0.5838,
+            "frac_pos": 0.5546
+          },
+          {
+            "bin": 8,
+            "mean_pred": 0.6058,
+            "frac_pos": 0.6119
+          },
+          {
+            "bin": 9,
+            "mean_pred": 0.6344,
+            "frac_pos": 0.5894
+          },
+          {
+            "bin": 10,
+            "mean_pred": 0.7082,
+            "frac_pos": 0.6121
+          }
+        ]
+      }
+    },
+    "test4_lift": {
+      "status": "FAIL",
+      "details": {
+        "overall_positive_rate": 0.5735,
+        "top10_rate": 0.6091,
+        "top10_lift": 1.062,
+        "top20_rate": 0.6006,
+        "top20_lift": 1.0472,
+        "top30_rate": 0.6043,
+        "top30_lift": 1.0538,
+        "bottom50_rate": 0.5603,
+        "bottom50_lift": 0.9771
+      }
+    },
+    "test5_permutation": {
+      "status": "PASS",
+      "details": {
+        "base_auc": 0.5367,
+        "top_feature": "conviction_score",
+        "top_feature_auc_drop": 0.03114,
+        "all_features": [
+          {
+            "feature": "conviction_score",
+            "auc_drop": 0.03114
+          },
+          {
+            "feature": "n_institutions",
+            "auc_drop": 0.00131
+          },
+          {
+            "feature": "days_since_filing",
+            "auc_drop": 0.00093
+          },
+          {
+            "feature": "herding_flag",
+            "auc_drop": 0.0
+          },
+          {
+            "feature": "quant_consensus",
+            "auc_drop": 0.0
+          },
+          {
+            "feature": "portfolio_weight",
+            "auc_drop": -0.002
+          }
+        ]
+      }
+    },
+    "test6_leakage": {
+      "status": "WARN",
+      "details": {
+        "real_auc": 0.5367,
+        "mean_shuffled_auc": 0.5088,
+        "auc_drop": 0.0279,
+        "shuffled_aucs": [
+          0.5187,
+          0.5098,
+          0.4979
+        ],
+        "note": "Shuffled AUC near 0.5 = no leakage. Drop from real to shuffled should be > 0.03."
+      }
+    },
+    "test7_signal_decay": {
+      "status": "PASS",
+      "details": {
+        "horizon_aucs": {
+          "outcome_252d": 0.5367,
+          "outcome_20d_with_365d_model": 0.5031,
+          "outcome_20d_native": 0.5226
+        },
+        "note": "365d model better predicts 365d (0.5367) than 20d (0.5031) \u2014 signal is horizon-specific."
+      }
+    },
+    "test8_quintile": {
+      "status": "WARN",
+      "details": {
+        "quintiles": [
+          {
+            "quintile": "Q1",
+            "count": 706,
+            "positive_rate": 0.6006,
+            "mean_predicted_prob": 0.6708
+          },
+          {
+            "quintile": "Q2",
+            "count": 706,
+            "positive_rate": 0.5836,
+            "mean_predicted_prob": 0.5947
+          },
+          {
+            "quintile": "Q3",
+            "count": 706,
+            "positive_rate": 0.602,
+            "mean_predicted_prob": 0.5465
+          },
+          {
+            "quintile": "Q4",
+            "count": 706,
+            "positive_rate": 0.5878,
+            "mean_predicted_prob": 0.5104
+          },
+          {
+            "quintile": "Q5",
+            "count": 707,
+            "positive_rate": 0.4936,
+            "mean_predicted_prob": 0.385
+          }
+        ],
+        "q1_positive_rate": 0.6006,
+        "q5_positive_rate": 0.4936,
+        "pseudo_sharpe_q1_q5": 1.2168,
+        "is_monotone": false,
+        "note": "Pseudo-Sharpe = Q1_rate / Q5_rate; monotone = each quintile lower than previous."
+      }
+    },
+    "test9_label_contamination": {
+      "status": "PASS",
+      "details": {
+        "val_positive_rate": 0.5735,
+        "overall_positive_rate": 0.5557,
+        "nan_in_X": 0,
+        "nan_in_y": 0,
+        "duplicate_ticker_date_pairs_conflicting": 0,
+        "lag1_autocorr_y": 0.0679,
+        "issues": [],
+        "warnings": []
+      }
+    }
+  }
+}

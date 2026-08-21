@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-08-18T06:10:15.306598",
-  "total_findings": 7,
+  "generated_at": "2026-08-20T21:01:47.333574",
+  "total_findings": 5,
   "findings": [
     {
       "agent": "CITDataQualityAnalyst",
@@ -19,7 +19,7 @@
       "severity": "MEDIUM",
       "confidence": 85,
       "title": "None score in sector_assignments.json (8 sector(s))",
-      "description": "Sectors assigned with None scores: ['Technology', 'Biotech', 'Defense & Aerospace', 'Consumer Discretionary', 'Materials', 'Communication Services', 'Cybersecurity', 'Retail']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
+      "description": "Sectors assigned with None scores: ['Cybersecurity', 'Technology', 'Financials', 'Healthcare', 'Biotech', 'Materials', 'Defense & Aerospace', 'Consumer Staples']. Agent assignment decisions based on null scores may produce arbitrary sector priority ordering.",
       "evidence": "data/sector_assignments.json: 8 assignments with score=None",
       "proposed_fix": "In rd_team_leader.py: filter out sectors with None scores before ranking. Treat None as score=0 or skip entirely.",
       "auto_implementable": false
@@ -38,33 +38,11 @@
     {
       "agent": "CITDataQualityAnalyst",
       "category": "BUG_FIX",
-      "severity": "MEDIUM",
-      "confidence": 88,
-      "title": "Stale data file: data/earnings_predictions.json (51h old, threshold 26h)",
-      "description": "data/earnings_predictions.json has not been updated in 51h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-      "evidence": "data/earnings_predictions.json: file age 51h. Max acceptable: 26h.",
-      "proposed_fix": "Check that the agent producing data/earnings_predictions.json ran successfully in recent logs. Verify its cron schedule is active.",
-      "auto_implementable": false
-    },
-    {
-      "agent": "CITDataQualityAnalyst",
-      "category": "BUG_FIX",
       "severity": "HIGH",
       "confidence": 88,
-      "title": "Stale data file: data/canary_state.json (156h old, threshold 13h)",
-      "description": "data/canary_state.json has not been updated in 156h. Expected refresh interval: 13h. Data from this file may be leading to decisions based on stale market state.",
-      "evidence": "data/canary_state.json: file age 156h. Max acceptable: 13h.",
-      "proposed_fix": "Check that the agent producing data/canary_state.json ran successfully in recent logs. Verify its cron schedule is active.",
-      "auto_implementable": false
-    },
-    {
-      "agent": "CITDataQualityAnalyst",
-      "category": "BUG_FIX",
-      "severity": "HIGH",
-      "confidence": 88,
-      "title": "Stale data file: data/risk_manager_report.json (85h old, threshold 26h)",
-      "description": "data/risk_manager_report.json has not been updated in 85h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
-      "evidence": "data/risk_manager_report.json: file age 85h. Max acceptable: 26h.",
+      "title": "Stale data file: data/risk_manager_report.json (148h old, threshold 26h)",
+      "description": "data/risk_manager_report.json has not been updated in 148h. Expected refresh interval: 26h. Data from this file may be leading to decisions based on stale market state.",
+      "evidence": "data/risk_manager_report.json: file age 148h. Max acceptable: 26h.",
       "proposed_fix": "Check that the agent producing data/risk_manager_report.json ran successfully in recent logs. Verify its cron schedule is active.",
       "auto_implementable": false
     },
@@ -74,7 +52,7 @@
       "severity": "HIGH",
       "confidence": 90,
       "title": "yfinance beat_rate coverage restored: 100% of sample tickers",
-      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 102 day(s).",
+      "description": "yfinance earnings history now available for 5/5 sample tickers. Earnings predictor beat_rate can now be re-enabled. Gap lasted 105 day(s).",
       "proposed_fix": "Re-enable beat_rate in earnings_predictor.py and remove the MEDIUM known-gap finding.",
       "auto_implementable": false
     }

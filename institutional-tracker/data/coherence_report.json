@@ -1,0 +1,80 @@
+{
+  "checked_at": "2026-08-20T21:02:29.184688",
+  "laws": 8,
+  "violated": 0,
+  "cannot_tell": 4,
+  "results": [
+    {
+      "law": "nested_probabilities_are_monotone",
+      "verdict": "CANNOT_TELL",
+      "detail": "last scan is 70h old (limit 36h) \u2014 these quotes are history, not evidence about the book now. Owner: Kalshi sector cron. Owner: Kalshi sector.",
+      "source_a": "kalshi quote, low rung",
+      "source_b": "kalshi quote, high rung (same event)",
+      "n_examined": null,
+      "evidence": []
+    },
+    {
+      "law": "quoted_prices_have_two_sides",
+      "verdict": "CANNOT_TELL",
+      "detail": "last scan is 70h old (limit 36h) \u2014 these quotes are history, not evidence about the book now. Owner: Kalshi sector cron. Owner: Kalshi sector.",
+      "source_a": "recorded ask (market_price)",
+      "source_b": "bid on the same contract",
+      "n_examined": null,
+      "evidence": []
+    },
+    {
+      "law": "runs_match_schedule",
+      "verdict": "CANNOT_TELL",
+      "detail": "this host (mac) schedules no main.py runs \u2014 correct since it was narrowed to exit-only. The pipeline cadence belongs to 'apexcapitalc' and there is no state sync between hosts. Owner: apexcapitalc.",
+      "source_a": "pipeline_heartbeat.json starts (observed)",
+      "source_b": "host schedule (intended)",
+      "n_examined": null,
+      "evidence": []
+    },
+    {
+      "law": "deployed_set_matches_repo",
+      "verdict": "HOLDS",
+      "detail": "322 tracked .py identical on apex-capital, no uncommitted files there",
+      "source_a": "git ls-files + local md5 (repo)",
+      "source_b": "md5sum + find on the trading host (deployed)",
+      "n_examined": 322,
+      "evidence": []
+    },
+    {
+      "law": "emitted_verbs_are_handled",
+      "verdict": "HOLDS",
+      "detail": "3 verb(s) emitted (BUY, HOLD, WATCH), all handled",
+      "source_a": "agents/*.py action|signal literals (producers)",
+      "source_b": "manager_agent KNOWN_ACTIONS + ACTION_ALIASES (consumer)",
+      "n_examined": 3,
+      "evidence": []
+    },
+    {
+      "law": "positions_conserve",
+      "verdict": "CANNOT_TELL",
+      "detail": "this host is 'mac'; the ledger that matters belongs to 'apexcapitalc' and there is no state sync between hosts. Owner: apexcapitalc.",
+      "source_a": "Alpaca get_all_positions (broker)",
+      "source_b": "state.json entry_dates (internal ledger)",
+      "n_examined": null,
+      "evidence": []
+    },
+    {
+      "law": "broker_host_census",
+      "verdict": "HOLDS",
+      "detail": "UNSTAMPED last traded 2026-07-30; apexcapitalc last traded 2026-08-19; mac last traded 2026-08-14; macbookair17 last traded 2026-08-07",
+      "source_a": "Alpaca order history, host tag off client_order_id",
+      "source_b": "DOCUMENTED_HOST_TAGS / INFRASTRUCTURE.md",
+      "n_examined": 4,
+      "evidence": []
+    },
+    {
+      "law": "broker_orders_are_ledgered",
+      "verdict": "HOLDS",
+      "detail": "all 19 order(s) stamped 'mac' since 2026-07-30 passed through order_ledger, and therefore through risk_gate.check",
+      "source_a": "Alpaca order history for orders stamped by THIS host",
+      "source_b": "data/order_ledger.json, written inside the patched submit_order",
+      "n_examined": 19,
+      "evidence": []
+    }
+  ]
+}

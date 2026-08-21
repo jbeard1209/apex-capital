@@ -1,0 +1,119 @@
+{
+  "as_of": "2026-08-20T00:51:38.117037+00:00",
+  "available": true,
+  "configured": {
+    "cash_floor_pct": 0.2,
+    "max_positions": 20
+  },
+  "book": {
+    "equity": 99256.2,
+    "cash": 13262.05,
+    "cash_pct": 0.1336,
+    "n_positions": 20,
+    "net_beta": 0.6436
+  },
+  "hard_floor": {
+    "equity": 99256.2,
+    "short_market_value": 4598.4,
+    "maintenance_requirement": 1379.52,
+    "maintenance_source": "Reg-T 30% of short market value (broker reports $30,704 on the whole book)",
+    "adverse_sigmas": 2.0,
+    "market_daily_vol": 0.008087,
+    "short_beta_dollars": -11244.97,
+    "adverse_day_claim": 181.88,
+    "required_usd": 1561.4,
+    "required_pct": 0.015731,
+    "reason": "",
+    "broker_maintenance_margin": 30704.05,
+    "excess_liquidity": 68552.15,
+    "excess_liquidity_pct": 0.6907,
+    "configured_hard_floor_pct": 0.05,
+    "safety_multiple": 3.18,
+    "verdict": "COVERED",
+    "headline": "the derived liquidity requirement is 1.57% of equity ($1,561); the configured 5% hard floor covers it 3.2x"
+  },
+  "shadow_price": {
+    "cash_floor_pct": 0.2,
+    "hard_floor_pct": 0.015731,
+    "n_observations": 62,
+    "buffer_usd": 18289.84,
+    "annual_cost_usd": 2309.49,
+    "annual_return_pct": 12.63,
+    "ci95_annual_cost_usd": [
+      -4758.46,
+      9377.43
+    ],
+    "distinguishable_from_zero": false,
+    "assumptions": [
+      "cash earns 0.0% (Alpaca paper pays nothing)",
+      "deployed return inferred from equity return / deployed fraction (87%), assumed roughly constant over the window",
+      "n=62 daily observations \u2014 the CI is the honest width of this"
+    ],
+    "buffer_pct": 0.184269,
+    "deployed_fraction": 0.8664,
+    "ci95_annual_return_pct": [
+      -26.02,
+      51.27
+    ],
+    "reason": "",
+    "headline": "the 18-point buffer ($18,290) has a point-estimate cost of $2,309/yr, but at n=62 the 95% interval spans zero ($-4,758 to $9,377) \u2014 this is not evidence the buffer is expensive, it is evidence the firm cannot yet measure what it costs"
+  },
+  "marginal_position": {
+    "max_positions": 20,
+    "n_symbols_measured": 20,
+    "avg_correlation": 0.1029,
+    "avg_daily_vol": 0.024984,
+    "curve": [
+      {
+        "n": 1,
+        "annual_vol_pct": 39.66,
+        "marginal_bp": null
+      },
+      {
+        "n": 5,
+        "annual_vol_pct": 21.072,
+        "marginal_bp": 161.25
+      },
+      {
+        "n": 10,
+        "annual_vol_pct": 17.404,
+        "marginal_bp": 44.48
+      },
+      {
+        "n": 15,
+        "annual_vol_pct": 15.996,
+        "marginal_bp": 20.87
+      },
+      {
+        "n": 20,
+        "annual_vol_pct": 15.243,
+        "marginal_bp": 12.13
+      },
+      {
+        "n": 21,
+        "annual_vol_pct": 15.132,
+        "marginal_bp": 11.06
+      },
+      {
+        "n": 40,
+        "annual_vol_pct": 14.038,
+        "marginal_bp": 3.22
+      }
+    ],
+    "marginal_bp_at_cap": 11.06,
+    "reason": "",
+    "n_pairs": 190,
+    "pairs_skipped_for_overlap": 0,
+    "min_shared_days": 248,
+    "correlation_range": [
+      -0.2185,
+      0.7569
+    ],
+    "annualized_avg_vol_pct": 39.66,
+    "floor_annual_vol_pct": 12.719,
+    "diversification_achieved_pct": 90.63,
+    "cumulative_bp_to_30": 79.2,
+    "cumulative_bp_to_40": 120.5,
+    "headline": "average pairwise correlation 0.10 across 20 held names (190 pairs, >= 248 shared days); the 21st position lowers annualized portfolio vol by 11.1 bp, with 91% of all available diversification already captured at 20, but raising the cap to 40 would lower it by 120 bp in total"
+  }
+}

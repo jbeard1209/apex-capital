@@ -1,0 +1,128 @@
+{
+  "ticker": "OMC",
+  "retrieved_at": "2026-08-07T14:37:01.297962+00:00",
+  "recent_filings": [
+    {
+      "form_type": "",
+      "filed_at": "2026-07-28",
+      "company": "OMNICOM GROUP INC.  (OMC)  (CIK 0000029989)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-08-06",
+      "company": "ONITY GROUP INC.  (ONIT)  (CIK 0000873860)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-01",
+      "company": "Finance of America Companies Inc.  (FOA)  (CIK 0001828937)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-28",
+      "company": "OMNICOM GROUP INC.  (OMC)  (CIK 0000029989)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-28",
+      "company": "OMNICOM GROUP INC.  (OMC)  (CIK 0000029989)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-11",
+      "company": "Finance of America Companies Inc.  (FOA)  (CIK 0001828937)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-29",
+      "company": "OMNICOM GROUP INC.  (OMC)  (CIK 0000029989)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-08-06",
+      "company": "AEMETIS, INC  (AMTX)  (CIK 0000738214)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-08-06",
+      "company": "AEMETIS, INC  (AMTX)  (CIK 0000738214)",
+      "description": "",
+      "accession": ""
+    }
+  ],
+  "recent_headlines": [
+    {
+      "title": "Zacks Industry Outlook WPP, Nexxen and Quad/Graphics",
+      "date": "Fri, 07 Aug 2026 10:02:00 +0000",
+      "link": "https://finance.yahoo.com/media-advertising/articles/zacks-industry-outlook-wpp-nexxen-100200570.html?.tsrc=rss"
+    },
+    {
+      "title": "3 Advertising & Marketing Stocks to Watch Amid Industry Woes",
+      "date": "Thu, 06 Aug 2026 16:22:00 +0000",
+      "link": "https://finance.yahoo.com/media-advertising/articles/3-advertising-marketing-stocks-watch-162200612.html?.tsrc=rss"
+    },
+    {
+      "title": "Omnicom Media Exec at Beet Retreat Discusses AI\u2019s Influence Across Ad Industry",
+      "date": "Wed, 05 Aug 2026 14:06:58 +0000",
+      "link": "https://finance.yahoo.com/video/omnicom-media-exec-beet-retreat-140658645.html?.tsrc=rss"
+    },
+    {
+      "title": "MMC Introduces a New AI Methodology for Understanding Culture",
+      "date": "Tue, 04 Aug 2026 15:00:00 +0000",
+      "link": "https://finance.yahoo.com/technology/ai/articles/mmc-introduces-ai-methodology-understanding-150000105.html?.tsrc=rss"
+    },
+    {
+      "title": "2 Growth Stocks to Stash and 1 We Question",
+      "date": "Sat, 01 Aug 2026 01:39:57 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/2-growth-stocks-stash-1-013957612.html?.tsrc=rss"
+    },
+    {
+      "title": "OMC Pays More Than A Treasury. And It Grows",
+      "date": "Fri, 31 Jul 2026 20:59:26 +0000",
+      "link": "https://www.trefis.com/articles/609662/omc-pays-more-than-a-treasury-and-it-grows-3/2026-07-31?.tsrc=rss"
+    },
+    {
+      "title": "Omnicom's Data and Analytics Push Reshapes Its Merger Outlook",
+      "date": "Fri, 31 Jul 2026 15:32:00 +0000",
+      "link": "https://finance.yahoo.com/media-advertising/articles/omnicoms-data-analytics-push-reshapes-153200134.html?.tsrc=rss"
+    },
+    {
+      "title": "Is OMC Stock a Value Opportunity or a Trap After Its Earnings Beat?",
+      "date": "Fri, 31 Jul 2026 15:29:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/omc-stock-value-opportunity-trap-152900210.html?.tsrc=rss"
+    },
+    {
+      "title": "Understanding Omnicom (OMC) Reliance on International Revenue",
+      "date": "Fri, 31 Jul 2026 13:15:01 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/understanding-omnicom-omc-reliance-international-131501646.html?.tsrc=rss"
+    },
+    {
+      "title": "Does Omnicom\u2019s Post\u2011Interpublic Expansion and Buyback Activity Reshape the Bull Case for OMC?",
+      "date": "Fri, 31 Jul 2026 10:08:14 +0000",
+      "link": "https://finance.yahoo.com/media-advertising/articles/does-omnicom-post-interpublic-expansion-100814700.html?.tsrc=rss"
+    }
+  ],
+  "headline_sentiment": "POSITIVE",
+  "bullish_signals": [
+    "beat",
+    "buyback"
+  ],
+  "red_flags": [],
+  "research_summary": "OMC has 0 recent SEC filing(s) in the past 90 days and 10 recent news headline(s). News sentiment is POSITIVE with signals including: beat, buyback."
+}

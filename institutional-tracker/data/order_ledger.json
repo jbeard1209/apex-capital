@@ -1,0 +1,272 @@
+[
+  {
+    "order_id": "3fd13f94-c33f-4799-a849-1b8f9cee3470",
+    "client_order_id": "apex-macbookair17-manageragent-5fe0ea9dc358",
+    "symbol": "USB",
+    "side": "OrderSide.BUY",
+    "qty": "108",
+    "source": "manageragent",
+    "host": "macbookair17",
+    "ts": "2026-07-31T18:04:37.730830+00:00"
+  },
+  {
+    "order_id": "745f11c8-e964-411c-9e1f-8149871b8e16",
+    "client_order_id": "apex-macbookair17-manageragent-1808147345f8",
+    "symbol": "TFC",
+    "side": "OrderSide.BUY",
+    "qty": "131",
+    "source": "manageragent",
+    "host": "macbookair17",
+    "ts": "2026-07-31T18:04:38.421274+00:00"
+  },
+  {
+    "order_id": "494fb6c2-d404-4705-b51d-193c719f34ae",
+    "client_order_id": "apex-mac-main-c1969b79e8da",
+    "symbol": "RF",
+    "side": "OrderSide.SELL",
+    "qty": "158",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-03T18:21:56.420953+00:00"
+  },
+  {
+    "order_id": "4e52ed7d-c34d-449c-a929-f4b3f349a793",
+    "client_order_id": "apex-mac-manageragent-60467f92d761",
+    "symbol": "ZION",
+    "side": "OrderSide.BUY",
+    "qty": "76",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:27.746368+00:00"
+  },
+  {
+    "order_id": "bfaba111-b766-40bf-a23f-a4dc0eeb5c0c",
+    "client_order_id": "apex-mac-manageragent-53b5174b600d",
+    "symbol": "USB",
+    "side": "OrderSide.BUY",
+    "qty": "106",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:28.323887+00:00"
+  },
+  {
+    "order_id": "3c3b066b-567e-4510-81f2-700dce1a5ab4",
+    "client_order_id": "apex-mac-manageragent-84eb76bd79f4",
+    "symbol": "BAC",
+    "side": "OrderSide.BUY",
+    "qty": "109",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:29.369866+00:00"
+  },
+  {
+    "order_id": "8e4319ee-b06f-46ea-b1f7-9740de65981f",
+    "client_order_id": "apex-mac-manageragent-3bdc552e12ec",
+    "symbol": "U",
+    "side": "OrderSide.BUY",
+    "qty": "116",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:29.955790+00:00"
+  },
+  {
+    "order_id": "51cf62a2-6593-484a-9aa8-14ae39f0769d",
+    "client_order_id": "apex-mac-manageragent-9ac65f8b039e",
+    "symbol": "AFRM",
+    "side": "OrderSide.BUY",
+    "qty": "52",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:30.523525+00:00"
+  },
+  {
+    "order_id": "409b2bb1-2192-4bae-b556-7c2329708927",
+    "client_order_id": "apex-mac-manageragent-0320e09d6ff8",
+    "symbol": "BILL",
+    "side": "OrderSide.BUY",
+    "qty": "84",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:31.051895+00:00"
+  },
+  {
+    "order_id": "18ca205d-0654-4b02-b7eb-c0a3176d48e9",
+    "client_order_id": "apex-mac-manageragent-772d22acf682",
+    "symbol": "NNN",
+    "side": "OrderSide.BUY",
+    "qty": "104",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:31.710848+00:00"
+  },
+  {
+    "order_id": "86c33689-52fa-4452-83f8-d62ea581976f",
+    "client_order_id": "apex-mac-manageragent-17d7451056c7",
+    "symbol": "SOFI",
+    "side": "OrderSide.BUY",
+    "qty": "167",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:32.242256+00:00"
+  },
+  {
+    "order_id": "feb30b31-13ab-4438-8c48-2d16e023d63c",
+    "client_order_id": "apex-mac-manageragent-4df5495b5941",
+    "symbol": "KVYO",
+    "side": "OrderSide.BUY",
+    "qty": "165",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-04T18:50:33.015067+00:00"
+  },
+  {
+    "order_id": "11ddf6ab-61c0-4aa5-853f-a48b9fbb2301",
+    "client_order_id": "apex-mac-main-cf6f5987511f",
+    "symbol": "ZION",
+    "side": "OrderSide.SELL",
+    "qty": "76",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-04T19:10:42.112815+00:00"
+  },
+  {
+    "order_id": "534f9238-db10-4966-b1f5-3f621d4883a6",
+    "client_order_id": "apex-mac-main-d1c5e62178e4",
+    "symbol": "KVYO",
+    "side": "OrderSide.SELL",
+    "qty": "165",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-06T13:57:25.980237+00:00"
+  },
+  {
+    "order_id": "b04cfa74-b5bc-47fe-9800-98041c4c0017",
+    "client_order_id": "apex-mac-manageragent-7126f51477af",
+    "symbol": "USB",
+    "side": "OrderSide.BUY",
+    "qty": "91",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-06T16:07:19.597235+00:00"
+  },
+  {
+    "order_id": "78bba28c-15a2-4d60-a33a-5cd250a6bd8f",
+    "client_order_id": "apex-mac-manageragent-cc457845975c",
+    "symbol": "AFRM",
+    "side": "OrderSide.BUY",
+    "qty": "42",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-06T16:07:20.175129+00:00"
+  },
+  {
+    "order_id": "32a7b577-6ccd-4d19-b2fc-a74e0197f30c",
+    "client_order_id": "apex-mac-manageragent-e9edf2f683c1",
+    "symbol": "BAC",
+    "side": "OrderSide.BUY",
+    "qty": "92",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-06T16:07:20.845873+00:00"
+  },
+  {
+    "order_id": "6cf089ce-37f4-4fd0-8ab4-1a636e532611",
+    "client_order_id": "apex-mac-manageragent-723eab7434e9",
+    "symbol": "CART",
+    "side": "OrderSide.BUY",
+    "qty": "99",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-06T16:07:21.668862+00:00"
+  },
+  {
+    "order_id": "c6c4ddd9-dce8-44ec-8b6d-2c34701c0d1f",
+    "client_order_id": "apex-mac-manageragent-fa8ad3e4e7c0",
+    "symbol": "UL",
+    "side": "OrderSide.BUY",
+    "qty": "55",
+    "source": "manageragent",
+    "host": "mac",
+    "ts": "2026-08-06T16:07:22.876055+00:00"
+  },
+  {
+    "order_id": "cfb30491-4e57-49f0-94e2-bf1205479f22",
+    "client_order_id": "apex-mac-main-486edde001d9",
+    "symbol": "D",
+    "side": "OrderSide.SELL",
+    "qty": "95",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-06T17:00:11.525681+00:00"
+  },
+  {
+    "order_id": "1b338a17-1e4b-4171-a0c9-ca5109c14997",
+    "client_order_id": "apex-macbookair17-main-8159da287a47",
+    "symbol": "CFG",
+    "side": "OrderSide.SELL",
+    "qty": "60",
+    "source": "main",
+    "host": "macbookair17",
+    "ts": "2026-08-07T14:02:42.154530+00:00"
+  },
+  {
+    "order_id": "37fd3dbf-d203-479f-b199-b80f58fa1285",
+    "client_order_id": "apex-macbookair17-main-3904f5bddf77",
+    "symbol": "U",
+    "side": "OrderSide.SELL",
+    "qty": "116",
+    "source": "main",
+    "host": "macbookair17",
+    "ts": "2026-08-07T14:02:42.205223+00:00"
+  },
+  {
+    "order_id": "8d4a6632-bfde-484c-89e0-17e85c95bf4a",
+    "client_order_id": "apex-mac-main-5e7996420444",
+    "symbol": "GTLB",
+    "side": "OrderSide.SELL",
+    "qty": "125",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-14T15:35:05.677623+00:00"
+  },
+  {
+    "order_id": "51c913e2-d447-4b94-8666-afb998433a3f",
+    "client_order_id": "apex-mac-main-532938b7f49a",
+    "symbol": "S",
+    "side": "OrderSide.SELL",
+    "qty": "169",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-14T15:35:05.729323+00:00"
+  },
+  {
+    "order_id": "c632407c-cc61-4f10-99d5-09a69957fe50",
+    "client_order_id": "apex-mac-main-bf86974177c9",
+    "symbol": "SMCI",
+    "side": "OrderSide.BUY",
+    "qty": "155",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-14T15:35:05.776639+00:00"
+  },
+  {
+    "order_id": "9b4ec958-7e7f-40e0-9cd5-ad78a0252075",
+    "client_order_id": "apex-mac-main-64b9c5f5f4e1",
+    "symbol": "DXCM",
+    "side": "OrderSide.SELL",
+    "qty": "52",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-14T15:35:06.090029+00:00"
+  },
+  {
+    "order_id": "274037a6-7f15-481a-a30d-5334476e6551",
+    "client_order_id": "apex-mac-main-7a5650867df0",
+    "symbol": "ORCL",
+    "side": "OrderSide.BUY",
+    "qty": "33",
+    "source": "main",
+    "host": "mac",
+    "ts": "2026-08-14T15:35:06.875114+00:00"
+  }
+]

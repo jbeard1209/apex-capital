@@ -1,0 +1,234 @@
+{
+  "generated_at": "2026-08-21T04:47:28.827775+00:00",
+  "session": "asia_open",
+  "sentiment": "RISK_OFF",
+  "sentiment_score": -3,
+  "indices": [
+    {
+      "name": "Nikkei 225",
+      "ticker": "^N225",
+      "pct": -0.45,
+      "price": 65920.9062
+    },
+    {
+      "name": "Hang Seng",
+      "ticker": "^HSI",
+      "pct": 0.72,
+      "price": 25883.2402
+    },
+    {
+      "name": "Shanghai Comp",
+      "ticker": "000001.SS",
+      "pct": 0.0,
+      "price": 3903.8054
+    },
+    {
+      "name": "KOSPI",
+      "ticker": "^KS11",
+      "pct": 0.36,
+      "price": 6877.4399
+    },
+    {
+      "name": "Taiwan Weighted",
+      "ticker": "^TWII",
+      "pct": 0.22,
+      "price": 45032.1914
+    },
+    {
+      "name": "ASX 200",
+      "ticker": "^AXJO",
+      "pct": -0.34,
+      "price": 9053.2998
+    },
+    {
+      "name": "DAX",
+      "ticker": "^GDAXI",
+      "pct": -0.42,
+      "price": 25983.0391
+    },
+    {
+      "name": "FTSE 100",
+      "ticker": "^FTSE",
+      "pct": 0.04,
+      "price": 10748.2002
+    },
+    {
+      "name": "CAC 40",
+      "ticker": "^FCHI",
+      "pct": -0.57,
+      "price": 8453.0898
+    },
+    {
+      "name": "Euro Stoxx 50",
+      "ticker": "^STOXX50E",
+      "pct": -0.35,
+      "price": 6422.0601
+    }
+  ],
+  "currencies": [
+    {
+      "name": "EUR/USD",
+      "ticker": "EURUSD=X",
+      "pct": 0.19,
+      "price": 1.1696
+    },
+    {
+      "name": "GBP/USD",
+      "ticker": "GBPUSD=X",
+      "pct": 0.32,
+      "price": 1.3643
+    },
+    {
+      "name": "USD/JPY",
+      "ticker": "USDJPY=X",
+      "pct": 0.48,
+      "price": 159.043
+    },
+    {
+      "name": "USD/CNH",
+      "ticker": "USDCNH=X",
+      "pct": -0.02,
+      "price": 6.7218
+    },
+    {
+      "name": "AUD/USD",
+      "ticker": "AUDUSD=X",
+      "pct": 0.24,
+      "price": 0.7142
+    },
+    {
+      "name": "DXY",
+      "ticker": "DX-Y.NYB",
+      "pct": -0.14,
+      "price": 98.763
+    }
+  ],
+  "etfs": [
+    {
+      "name": "Japan (EWJ)",
+      "ticker": "EWJ",
+      "pct": null,
+      "price": 94.27
+    },
+    {
+      "name": "Germany (EWG)",
+      "ticker": "EWG",
+      "pct": null,
+      "price": 43.92
+    },
+    {
+      "name": "China LC (FXI)",
+      "ticker": "FXI",
+      "pct": -0.03,
+      "price": 35.67
+    },
+    {
+      "name": "UK (EWU)",
+      "ticker": "EWU",
+      "pct": null,
+      "price": 48.54
+    },
+    {
+      "name": "Europe (VGK)",
+      "ticker": "VGK",
+      "pct": -0.24,
+      "price": 92.01
+    },
+    {
+      "name": "EM broad (EEM)",
+      "ticker": "EEM",
+      "pct": 0.77,
+      "price": 66.62
+    },
+    {
+      "name": "EAFE (EFA)",
+      "ticker": "EFA",
+      "pct": -0.29,
+      "price": 107.35
+    },
+    {
+      "name": "Korea (EWY)",
+      "ticker": "EWY",
+      "pct": 2.14,
+      "price": 178.16
+    },
+    {
+      "name": "Taiwan (EWT)",
+      "ticker": "EWT",
+      "pct": -0.6,
+      "price": 104.07
+    }
+  ],
+  "commodities": [
+    {
+      "name": "Brent Crude",
+      "ticker": "BZ=F",
+      "pct": -0.21,
+      "price": 93.58
+    },
+    {
+      "name": "WTI Crude",
+      "ticker": "CL=F",
+      "pct": -1.49,
+      "price": 86.52
+    },
+    {
+      "name": "Gold",
+      "ticker": "GC=F",
+      "pct": 1.83,
+      "price": 4598.7998
+    },
+    {
+      "name": "Copper",
+      "ticker": "HG=F",
+      "pct": 1.29,
+      "price": 6.5435
+    },
+    {
+      "name": "Silver",
+      "ticker": "SI=F",
+      "pct": 1.54,
+      "price": 69.075
+    }
+  ],
+  "notable_indices": [],
+  "notable_currencies": [
+    {
+      "name": "USD/JPY",
+      "ticker": "USDJPY=X",
+      "pct": 0.48,
+      "price": 159.043
+    }
+  ],
+  "notable_commodities": [
+    {
+      "name": "Gold",
+      "ticker": "GC=F",
+      "pct": 1.83,
+      "price": 4598.7998
+    },
+    {
+      "name": "Silver",
+      "ticker": "SI=F",
+      "pct": 1.54,
+      "price": 69.075
+    },
+    {
+      "name": "WTI Crude",
+      "ticker": "CL=F",
+      "pct": -1.49,
+      "price": 86.52
+    },
+    {
+      "name": "Copper",
+      "ticker": "HG=F",
+      "pct": 1.29,
+      "price": 6.5435
+    }
+  ],
+  "us_implications": [
+    "Gold +1.8% \u2014 flight-to-safety bid, corroborating the RISK_OFF reading."
+  ],
+  "watch_tickers": [],
+  "unreadable": []
+}

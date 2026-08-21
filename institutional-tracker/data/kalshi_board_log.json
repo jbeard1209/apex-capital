@@ -1,0 +1,37 @@
+{
+  "session_at": "2026-08-14T18:33:52.204176+00:00",
+  "scanned_at": "2026-08-14T18:31:46.499670+00:00",
+  "considered": 1,
+  "approved": 0,
+  "decisions": [
+    {
+      "strategy": "DISAGREEMENT",
+      "ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S2026CD9E7C918EE-76068AACF1C",
+      "title": "yes Daniel Milavsky,yes Pablo Carreno Busta,yes Matteo Berrettini,yes Panaitolikos,yes 100",
+      "approved": false,
+      "votes": [
+        {
+          "seat": "Settlement Counsel",
+          "vote": "NO",
+          "reason": "resolution text is 0 chars \u2014 too thin to read"
+        },
+        {
+          "seat": "Liquidity Officer",
+          "vote": "NO",
+          "reason": "zero traded volume \u2014 a quote nobody has ever hit"
+        },
+        {
+          "seat": "Calibration Officer",
+          "vote": "NO",
+          "reason": "quarantined: NOT YET \u2014 0/200 settled observations. Separating 96% from 99% is a 3-point question and this sample cannot resolve it."
+        }
+      ],
+      "blocked_by": [
+        "Settlement Counsel",
+        "Liquidity Officer",
+        "Calibration Officer"
+      ]
+    }
+  ],
+  "note": "Approval is eligibility, not execution. No code path in this sector transmits an order: kalshi_client.place_order raises KalshiNotArmed unless the Chairman arms it."
+}

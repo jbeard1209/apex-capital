@@ -1,0 +1,40 @@
+{
+  "computed_at": "2026-07-31T12:14:13.932270+00:00",
+  "regime": "BULL",
+  "confidence": 0.875,
+  "probabilities": {
+    "BULL": 0.875,
+    "LATE_CYCLE": 0.125,
+    "CONTRACTION": 0.0,
+    "RECOVERY": 0.0
+  },
+  "rules_fired": [
+    "SPY well above 200MA",
+    "Positive yield curve",
+    "Strong 12-1 momentum",
+    "Credit spreads widening",
+    "Low VIX",
+    "Improving breadth"
+  ],
+  "signals": {
+    "spy_dist_200ma": 6.42,
+    "spy_mom12_1": 18.74,
+    "spy_above_200ma": 1,
+    "spy_above_50ma": 0,
+    "vix_level": 16.92,
+    "vix_zscore_20d": -0.25,
+    "yield_spread_10_2": 0.988,
+    "yield_spread_trend_20d": 0.213,
+    "yield_curve_inverted": 0,
+    "credit_spread_proxy": 1.1416,
+    "credit_spread_trend_20d": -1.027,
+    "credit_spreads_widening": 1,
+    "breadth_ew_vs_cw": 1.477,
+    "breadth_improving": 1
+  },
+  "rd_regime_bull": 1,
+  "is_bull": 1,
+  "is_late_cycle": 0,
+  "is_contraction": 0,
+  "is_recovery": 0
+}

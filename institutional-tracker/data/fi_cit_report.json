@@ -1,0 +1,15 @@
+{
+  "run_at": "2026-08-21T04:15:50.165259+00:00",
+  "on_fi_pipeline_host": false,
+  "issues": [
+    {
+      "severity": "HIGH",
+      "type": "DEGRADED_CREDIT_READ",
+      "message": "Credit read is degraded (regime=UNKNOWN; no reading for: HY spread). fi_pipeline abstains on this read \u2014 zero FI picks and zero orders until the feed returns. If this repeats across days, the yfinance proxy for those tickers has broken, not the market."
+    }
+  ],
+  "issue_count": 1,
+  "improvements": [],
+  "improvement_count": 0,
+  "raised_to_chairman": 0
+}

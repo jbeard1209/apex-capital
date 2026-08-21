@@ -1,0 +1,2122 @@
+{
+  "generated_at": "2026-08-01T20:20:15.720915",
+  "host": "MacBook-Air-173.local",
+  "dry_run": false,
+  "findings": 107,
+  "by_kind": {
+    "AGENT_OUTPUT_UNCONSUMED": 9,
+    "AGENT_INPUT_UNPRODUCED": 18,
+    "AGENT_UNREVIEWED": 27,
+    "AGENT_UNSCHEDULED": 45,
+    "AGENT_ISOLATED": 2,
+    "AGENT_WRITES_ON_IMPORT": 6
+  },
+  "collectors": {
+    "agent_sweep": {
+      "generated_at": "2026-08-01T20:20:15.744377",
+      "host": "MacBook-Air-173.local",
+      "stats": {
+        "agents_seen": 155,
+        "probed": 90,
+        "attendance_assessable": 0,
+        "unconsumed_terminal": 43,
+        "attendance_skipped_wrong_host": 49,
+        "findings": 107,
+        "by_kind": {
+          "AGENT_OUTPUT_UNCONSUMED": 9,
+          "AGENT_INPUT_UNPRODUCED": 18,
+          "AGENT_UNREVIEWED": 27,
+          "AGENT_UNSCHEDULED": 45,
+          "AGENT_ISOLATED": 2,
+          "AGENT_WRITES_ON_IMPORT": 6
+        }
+      },
+      "roster_counts": {
+        "total": 155,
+        "registry": 67,
+        "module": 88,
+        "employed": 152,
+        "superseded": 3,
+        "retired": 0,
+        "research_cycle": 51,
+        "unscheduled": 45,
+        "zombie": 0
+      }
+    },
+    "detector_mutation_harness": {
+      "generated_at": "2026-08-01T20:20:41.926485",
+      "host": "MacBook-Air-173.local",
+      "detectors": 14,
+      "cases": 14,
+      "results": [
+        {
+          "detector": "hr_agent.audit_retirement_coverage",
+          "result": "PASS",
+          "note": "uncovered lane holes=1 covered lane holes=0"
+        },
+        {
+          "detector": "hr_retirement_audit.assess",
+          "result": "PASS",
+          "note": "blind=NOT_ASSESSABLE measurable=TERMINATE"
+        },
+        {
+          "detector": "agent_roster.check",
+          "result": "PASS",
+          "note": "shrunk=RED full=GREEN"
+        },
+        {
+          "detector": "problem_lifecycle_sentinel.classify",
+          "result": "PASS",
+          "note": "old=STALE fresh=OPEN"
+        },
+        {
+          "detector": "chairman_queue.submit",
+          "result": "PASS",
+          "note": "critical survived 40-LOW flood=True (kept 20); calm batch intact=True"
+        },
+        {
+          "detector": "wiring_audit.check_orphan_queues",
+          "result": "PASS",
+          "note": "one-referencer=1 two-referencers=0"
+        },
+        {
+          "detector": "agent_sweep.import_probe",
+          "result": "PASS",
+          "note": "broken=FAIL fine=OK"
+        },
+        {
+          "detector": "agent_sweep.isolation_graph",
+          "result": "PASS",
+          "note": "hermit alone=True pair wired=True"
+        },
+        {
+          "detector": "sweep_taxonomy.make_finding",
+          "result": "PASS",
+          "note": "unrouted raised=True routed raised=False"
+        },
+        {
+          "detector": "hr_agent.review_sweep_queue",
+          "result": "PASS",
+          "note": "unmapped=TAXONOMY_DRIFT mapped=OK"
+        },
+        {
+          "detector": "sweep_governance.blind_closure_guard",
+          "result": "PASS",
+          "note": "blind_held=True healthy_closed=True"
+        },
+        {
+          "detector": "cit_director.sweep_deadman",
+          "result": "PASS",
+          "note": "stale60=True fresh1=False"
+        },
+        {
+          "detector": "agent_roster.attendance_host_gate",
+          "result": "PASS",
+          "note": "off_host=0 on_host=3"
+        },
+        {
+          "detector": "hr_agent.pip_evidence_guard",
+          "result": "PASS",
+          "note": "unverified_pips=[] verified_pips=['a']"
+        }
+      ],
+      "passed": 14
+    }
+  },
+  "hr_queue": {
+    "open": 80,
+    "closed_this_run": [],
+    "opened_this_run": [],
+    "held_open_unverifiable": [
+      "AGENT_OUTPUT_STALE::etf_pod_board",
+      "AGENT_OUTPUT_STALE::fe_board",
+      "AGENT_OUTPUT_STALE::fe_pipeline",
+      "AGENT_OUTPUT_STALE::freshness_sentinel",
+      "AGENT_OUTPUT_STALE::logic_team_trainer",
+      "AGENT_OUTPUT_STALE::missed_winners_agent"
+    ]
+  },
+  "board": {
+    "filed": 6,
+    "newly_added": 0,
+    "already_open": 6,
+    "already_decided_not_refiled": 0,
+    "already_decided_titles": [],
+    "undelivered": 0,
+    "undelivered_titles": [],
+    "errors": []
+  },
+  "chairman": {
+    "filed": 0
+  },
+  "proposals": [
+    {
+      "title": "Sweep: 18 finding(s) \u2014 agent inputs that nobody produces",
+      "category": "INTEGRATION",
+      "severity": "MEDIUM",
+      "kind": "AGENT_INPUT_UNPRODUCED"
+    },
+    {
+      "title": "Sweep: 2 finding(s) \u2014 agents that speak to no other agent",
+      "category": "INTEGRATION",
+      "severity": "HIGH",
+      "kind": "AGENT_ISOLATED"
+    },
+    {
+      "title": "Sweep: 9 finding(s) \u2014 agent outputs that nobody reads",
+      "category": "INTEGRATION",
+      "severity": "MEDIUM",
+      "kind": "AGENT_OUTPUT_UNCONSUMED"
+    },
+    {
+      "title": "Sweep: 27 finding(s) \u2014 agents never reviewed by HR",
+      "category": "IMPROVEMENT",
+      "severity": "LOW",
+      "kind": "AGENT_UNREVIEWED"
+    },
+    {
+      "title": "Sweep: 45 finding(s) \u2014 employed agents that run nowhere",
+      "category": "INTEGRATION",
+      "severity": "MEDIUM",
+      "kind": "AGENT_UNSCHEDULED"
+    },
+    {
+      "title": "Sweep: 6 finding(s) \u2014 agents that mutate firm state at import time",
+      "category": "BUG_FIX",
+      "severity": "MEDIUM",
+      "kind": "AGENT_WRITES_ON_IMPORT"
+    }
+  ],
+  "detail": [
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "cit_director -> watchdog_escalated_tasks.json",
+      "detail": "cit_director writes watchdog_escalated_tasks.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "watchdog_escalated_tasks.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "cit_director <- etf_pod_pending.json",
+      "detail": "cit_director reads etf_pod_pending.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "etf_pod_pending.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "cit_director <- fe_pod_pending.json",
+      "detail": "cit_director reads fe_pod_pending.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "fe_pod_pending.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "cit_director <- latest_signals.json",
+      "detail": "cit_director reads latest_signals.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "latest_signals.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "cit_director <- research_picks.json",
+      "detail": "cit_director reads research_picks.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "research_picks.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "CanaryAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "FECITAgent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "fe_cit_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FECITAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "fe_cit_agent <- fe_rejected_picks.json",
+      "detail": "fe_cit_agent reads fe_rejected_picks.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "fe_rejected_picks.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FECapitalAllocationAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEContrarianRecoveryAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEFamilyBusinessAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEHardMoneyAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEHiddenAssetsAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEInsuranceValueAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEInternationalValueAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEPipeline",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "fe_pipeline -> fe_research_nominations.json",
+      "detail": "fe_pipeline writes fe_research_nominations.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "fe_research_nominations.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "fe_pipeline <- synthesis_memo.json",
+      "detail": "fe_pipeline reads synthesis_memo.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "synthesis_memo.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FEQualityCompoundersAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FESmallMidCapValueAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FESpecialSituationsAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FICITAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIConvertibleAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FICreditSpreadAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIDistressedAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIDurationAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIHighYieldAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIInvestmentGradeAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIPipeline",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FIPreferredAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FirstEagleValueAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "FraudWatchdog",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "ManagementQualityAnalyzer",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "ManagerAgent",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNREVIEWED",
+      "subject": "MoatAnalyzer",
+      "detail": "No HR evaluation record exists for this agent, so its performance has never been graded.",
+      "evidence": [
+        "absent from hr_history.json agent_records"
+      ],
+      "severity": "LOW",
+      "owner": "HR",
+      "category": "IMPROVEMENT",
+      "remedy": "HR adds the agent to its review roster and scores it in the next cycle.",
+      "why": "The graders were ungraded: agents HR never scores can never be found wanting, so poor performance in that set is structurally invisible.",
+      "sla_days": 45,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "activist_investor_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "fe_research_agents/activist_investor_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "apex_improvement_board",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "apex_improvement_board.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "apex_improvement_board <- ml_validation_report.json",
+      "detail": "apex_improvement_board reads ml_validation_report.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "ml_validation_report.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "behavioral_analyst",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "irm_board/behavioral_analyst.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "board_meeting <- resolution_registry.json",
+      "detail": "board_meeting reads resolution_registry.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "resolution_registry.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "chief_learning_officer",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "teaching_division/chief_learning_officer.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "cit_watchdog",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "cit_watchdog.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "cos_fi_municipal_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "agents/cos_fi_municipal_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "cos_fi_tips_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "agents/cos_fi_tips_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "crypto_signal_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "crypto_signal_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "deputy_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "deputy_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "dynamic_position_sizer",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "dynamic_position_sizer.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "dynamic_position_sizer -> position_sizes.json",
+      "detail": "dynamic_position_sizer writes position_sizes.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "position_sizes.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "dynamic_position_sizer <- cro_state.json",
+      "detail": "dynamic_position_sizer reads cro_state.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "cro_state.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "dynamic_position_sizer <- portfolio_summary.json",
+      "detail": "dynamic_position_sizer reads portfolio_summary.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "portfolio_summary.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "dynamic_position_sizer <- positions.json",
+      "detail": "dynamic_position_sizer reads positions.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "positions.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "dynamic_position_sizer <- signals.json",
+      "detail": "dynamic_position_sizer reads signals.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "signals.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "edgar_transcript_agent -> edgar_tone_signals.json",
+      "detail": "edgar_transcript_agent writes edgar_tone_signals.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "edgar_tone_signals.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "edgar_transcript_agent <- cik_map.json",
+      "detail": "edgar_transcript_agent reads cik_map.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "cik_map.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "fe_cio_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "fe_cio_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "fi_position_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "fi_position_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "fi_risk_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "fi_risk_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "head_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "head_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "log_review_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "log_review_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "macro_analyst",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "irm_board/macro_analyst.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_alpha_decay_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_alpha_decay_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_alt_data_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_alt_data_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_data_watchdog",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_data_watchdog.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_drift_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_drift_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "ml_drift_monitor <- _meta.json",
+      "detail": "ml_drift_monitor reads _meta.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "_meta.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_feature_drift_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_feature_drift_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_improvement_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_improvement_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_longterm_cit_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_longterm_cit_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "ml_longterm_cit_agent <- ml_longterm_team_brief.json",
+      "detail": "ml_longterm_cit_agent reads ml_longterm_team_brief.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "ml_longterm_team_brief.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_longterm_data_watchdog",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_longterm_data_watchdog.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_ISOLATED",
+      "subject": "ml_longterm_data_watchdog",
+      "detail": "ml_longterm_data_watchdog speaks to no other module in the firm: nothing reads its output, nothing produces its input, it imports nothing of ours and nothing imports it. It runs alone and its conclusions reach no one.",
+      "evidence": [
+        "registry name: ml_longterm_data_watchdog",
+        "writes: ['ml_longterm_data_quality_report.json']",
+        "reads: nothing"
+      ],
+      "severity": "HIGH",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Decide and implement one of: (a) wire the agent's output to a real consumer, (b) wire a real producer to its input, or (c) take it to the board for retirement. Notify HR either way so the roster reflects reality.",
+      "why": "The Chairman's standing instruction: the firm must never lose track of an agent, because a key agent that quietly stops doing its job is disastrous. An agent that reads nothing anyone writes and writes nothing anyone reads is already lost \u2014 it is running and irrelevant.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_longterm_drift_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_longterm_drift_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_ISOLATED",
+      "subject": "ml_longterm_drift_monitor",
+      "detail": "ml_longterm_drift_monitor speaks to no other module in the firm: nothing reads its output, nothing produces its input, it imports nothing of ours and nothing imports it. It runs alone and its conclusions reach no one.",
+      "evidence": [
+        "registry name: ml_longterm_drift_monitor",
+        "writes: ['ml_longterm_drift_report.json']",
+        "reads: nothing"
+      ],
+      "severity": "HIGH",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Decide and implement one of: (a) wire the agent's output to a real consumer, (b) wire a real producer to its input, or (c) take it to the board for retirement. Notify HR either way so the roster reflects reality.",
+      "why": "The Chairman's standing instruction: the firm must never lose track of an agent, because a key agent that quietly stops doing its job is disastrous. An agent that reads nothing anyone writes and writes nothing anyone reads is already lost \u2014 it is running and irrelevant.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_longterm_experiment_runner",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_longterm_experiment_runner.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_longterm_improvement_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_longterm_improvement_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "ml_pod_board -> ml_pod_approved.json",
+      "detail": "ml_pod_board writes ml_pod_approved.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "ml_pod_approved.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_shortterm_cit_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_shortterm_cit_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "ml_shortterm_cit_agent <- ml_validation_report.json",
+      "detail": "ml_shortterm_cit_agent reads ml_validation_report.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "ml_validation_report.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "ml_shortterm_cit_agent <- ml_validation_report_prior.json",
+      "detail": "ml_shortterm_cit_agent reads ml_validation_report_prior.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "ml_validation_report_prior.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "ml_shortterm_experiment_runner",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "ml_shortterm_experiment_runner.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "ml_shortterm_experiment_runner -> ml_shortterm_experiment_queue.json",
+      "detail": "ml_shortterm_experiment_runner writes ml_shortterm_experiment_queue.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "ml_shortterm_experiment_queue.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "performance_tracker",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "performance_tracker.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "pipeline_ops_analyst",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "irm_board/pipeline_ops_analyst.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_INPUT_UNPRODUCED",
+      "subject": "pod_health_monitor <- deploy_stamp.json",
+      "detail": "pod_health_monitor reads deploy_stamp.json, but no module writes it and it has never existed on MacBook-Air-173.local \u2014 the agent runs on a default forever.",
+      "evidence": [
+        "deploy_stamp.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Write the missing producer, or change the agent to degrade honestly when its input is absent (never to fail open).",
+      "why": "A reader whose producer does not exist does not crash \u2014 it reads an empty default and reports all-clear forever.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "pod_macro_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "pod_macro_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "portfolio_attribution_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "portfolio_attribution_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "portfolio_tracker",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "portfolio_tracker.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "position_aging_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "position_aging_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "position_risk_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "position_risk_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "pretrade_compliance_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "pretrade_compliance_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "quant_risk_analyst",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "irm_board/quant_risk_analyst.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "quiver_signal_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "quiver_signal_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "rd_market_event_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "rd_market_event_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "rd_pod_board -> rd_pod_approved.json",
+      "detail": "rd_pod_board writes rd_pod_approved.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "rd_pod_approved.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "short_interest_monitor",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "short_interest_monitor.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "short_interest_monitor -> short_interest_alerts.json",
+      "detail": "short_interest_monitor writes short_interest_alerts.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "short_interest_alerts.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "st_daily_tracker",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "st_daily_tracker.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "synthesis_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "fe_research_agents/synthesis_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_UNSCHEDULED",
+      "subject": "tca_agent",
+      "detail": "Employed on the roster but reachable from no crontab entry and no scheduler root on MacBook-Air-173.local. It never runs.",
+      "evidence": [
+        "tca_agent.py"
+      ],
+      "severity": "MEDIUM",
+      "owner": "BOARD",
+      "category": "INTEGRATION",
+      "remedy": "Board decides SCHEDULE / RETIRE / DELETE for each agent. HR updates the roster to match the decision; CIT implements it.",
+      "why": "An employed agent that runs nowhere costs nothing and does nothing, but it inflates the roster and hides real coverage gaps behind a plausible-looking name.",
+      "sla_days": 30,
+      "to_board": true,
+      "to_hr": true,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_OUTPUT_UNCONSUMED",
+      "subject": "tech_short_pod -> tech_short_candidates.json",
+      "detail": "tech_short_pod writes tech_short_candidates.json every run and no module in the firm reads it. That work is produced and discarded.",
+      "evidence": [
+        "tech_short_candidates.json"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "INTEGRATION",
+      "remedy": "Either wire a consumer to the output file or stop producing it. Record which, so the next sweep does not re-raise a decision already made.",
+      "why": "fi_cit_agent wrote to a file no consumer read \u2014 work performed every cycle and discarded every cycle.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_WRITES_ON_IMPORT",
+      "subject": "dynamic_position_sizer",
+      "detail": "Merely importing dynamic_position_sizer tries to change firm state (open(position_sizer.log, 'a')). Import must be side-effect free.",
+      "evidence": [
+        "open(position_sizer.log, 'a')"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "BUG_FIX",
+      "remedy": "Move the write into a function called by main()/run(); importing a module must not mutate firm state.",
+      "why": "Import-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_WRITES_ON_IMPORT",
+      "subject": "institution_performance_tracker",
+      "detail": "Merely importing institution_performance_tracker tries to change firm state (open(institution_tracker.log, 'a')). Import must be side-effect free.",
+      "evidence": [
+        "open(institution_tracker.log, 'a')"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "BUG_FIX",
+      "remedy": "Move the write into a function called by main()/run(); importing a module must not mutate firm state.",
+      "why": "Import-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_WRITES_ON_IMPORT",
+      "subject": "ml_alpha_decay_monitor",
+      "detail": "Merely importing ml_alpha_decay_monitor tries to change firm state (subprocess.Popen). Import must be side-effect free.",
+      "evidence": [
+        "subprocess.Popen"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "BUG_FIX",
+      "remedy": "Move the write into a function called by main()/run(); importing a module must not mutate firm state.",
+      "why": "Import-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_WRITES_ON_IMPORT",
+      "subject": "ml_data_watchdog",
+      "detail": "Merely importing ml_data_watchdog tries to change firm state (open(ml_data_watchdog.log, 'a')). Import must be side-effect free.",
+      "evidence": [
+        "open(ml_data_watchdog.log, 'a')"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "BUG_FIX",
+      "remedy": "Move the write into a function called by main()/run(); importing a module must not mutate firm state.",
+      "why": "Import-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_WRITES_ON_IMPORT",
+      "subject": "ml_drift_monitor",
+      "detail": "Merely importing ml_drift_monitor tries to change firm state (subprocess.Popen). Import must be side-effect free.",
+      "evidence": [
+        "subprocess.Popen"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "BUG_FIX",
+      "remedy": "Move the write into a function called by main()/run(); importing a module must not mutate firm state.",
+      "why": "Import-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    },
+    {
+      "kind": "AGENT_WRITES_ON_IMPORT",
+      "subject": "ml_feature_drift_monitor",
+      "detail": "Merely importing ml_feature_drift_monitor tries to change firm state (open(ml_feature_drift.log, 'a')). Import must be side-effect free.",
+      "evidence": [
+        "open(ml_feature_drift.log, 'a')"
+      ],
+      "severity": "MEDIUM",
+      "owner": "CIT",
+      "category": "BUG_FIX",
+      "remedy": "Move the write into a function called by main()/run(); importing a module must not mutate firm state.",
+      "why": "Import-time writes mean merely inspecting the firm changes it, which makes every audit unreliable and every dry run a live run.",
+      "sla_days": 20,
+      "to_board": true,
+      "to_hr": false,
+      "to_chairman": false,
+      "host": "MacBook-Air-173.local"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "generated_at": "2026-07-31T14:58:08.323042+00:00",
+  "status": "ok",
+  "total_snapshots": 383129,
+  "total_labeled": 17652,
+  "coverage_pct": 4.61,
+  "stale_null_ticker_count": 4351,
+  "stale_null_cutoff_date": "2025-06-26",
+  "stale_null_sample": [
+    {
+      "ticker": "FLWS",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "VNET",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "MMM",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "AOS",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "AIR",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ABT",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ABBV",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ANF",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "GSM",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ACTG",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ACAD",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "AKR",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ACN",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ACCO",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ARAY",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "LBRDA",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ACIW",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "BLFS",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "ACTU",
+      "snapshot_date": "2013-08-14"
+    },
+    {
+      "ticker": "AYI",
+      "snapshot_date": "2013-08-14"
+    }
+  ],
+  "last_backfill_date": "2025-05-15"
+}

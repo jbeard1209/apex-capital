@@ -1,0 +1,111 @@
+{
+  "ticker": "UVSP",
+  "retrieved_at": "2026-08-04T19:45:44.900264+00:00",
+  "recent_filings": [
+    {
+      "form_type": "",
+      "filed_at": "2026-07-23",
+      "company": "UNIVEST FINANCIAL Corp  (UVSP)  (CIK 0000102212)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-27",
+      "company": "UNIVEST FINANCIAL Corp  (UVSP)  (CIK 0000102212)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-27",
+      "company": "UNIVEST FINANCIAL Corp  (UVSP)  (CIK 0000102212)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-23",
+      "company": "UNIVEST FINANCIAL Corp  (UVSP)  (CIK 0000102212)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-20",
+      "company": "TRUSTCO BANK CORP N Y  (TRST)  (CIK 0000357301)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-27",
+      "company": "S&T BANCORP INC  (STBA)  (CIK 0000719220)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-28",
+      "company": "UNIVEST FINANCIAL Corp  (UVSP)  (CIK 0000102212)",
+      "description": "",
+      "accession": ""
+    }
+  ],
+  "recent_headlines": [
+    {
+      "title": "Here's Why Univest (UVSP) is a Great Momentum Stock to Buy",
+      "date": "Mon, 03 Aug 2026 16:00:02 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/heres-why-univest-uvsp-great-160002676.html?.tsrc=rss"
+    },
+    {
+      "title": "Are You Looking for a High-Growth Dividend Stock?",
+      "date": "Fri, 31 Jul 2026 15:45:01 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/looking-high-growth-dividend-stock-154501901.html?.tsrc=rss"
+    },
+    {
+      "title": "Univest Financial Corp (UVSP) Q2 2026 Earnings Call Highlights: Strong Loan and Deposit Growth ...",
+      "date": "Sat, 25 Jul 2026 01:03:13 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/univest-financial-corp-uvsp-q2-010313439.html?.tsrc=rss"
+    },
+    {
+      "title": "Univest Corporation of Pennsylvania Q2 Earnings Call Highlights",
+      "date": "Thu, 23 Jul 2026 15:07:22 +0000",
+      "link": "https://www.marketbeat.com/instant-alerts/univest-corporation-of-pennsylvania-q2-earnings-call-highlights-2026-07-23/?utm_source=yahoofinance&utm_medium=yahoofinance&.tsrc=rss"
+    },
+    {
+      "title": "Univest Financial Corporation Q2 2026 Earnings Call Summary",
+      "date": "Thu, 23 Jul 2026 12:30:00 +0000",
+      "link": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-univest-financial-corporation-q2-2026-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss&.tsrc=rss"
+    },
+    {
+      "title": "Univest (UVSP) Q2 Earnings and Revenues Lag Estimates",
+      "date": "Wed, 22 Jul 2026 23:35:04 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/univest-uvsp-q2-earnings-revenues-233504653.html?.tsrc=rss"
+    },
+    {
+      "title": "Univest Financial Corporation Reports Second Quarter Results",
+      "date": "Wed, 22 Jul 2026 20:15:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/univest-financial-corporation-reports-second-201500510.html?.tsrc=rss"
+    },
+    {
+      "title": "Bank First Corporation (BFC) Tops Q2 Earnings and Revenue Estimates",
+      "date": "Tue, 21 Jul 2026 22:35:02 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/bank-first-corporation-bfc-tops-223502850.html?.tsrc=rss"
+    },
+    {
+      "title": "Univest (UVSP) Could Be a Great Choice",
+      "date": "Wed, 15 Jul 2026 15:45:03 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/univest-uvsp-could-great-choice-154503441.html?.tsrc=rss"
+    },
+    {
+      "title": "Univest Financial Corporation to Hold Second Quarter 2026 Earnings Call",
+      "date": "Tue, 07 Jul 2026 15:50:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/univest-financial-corporation-hold-second-155000757.html?.tsrc=rss"
+    }
+  ],
+  "headline_sentiment": "NEUTRAL",
+  "bullish_signals": [],
+  "red_flags": [],
+  "research_summary": "UVSP has 0 recent SEC filing(s) in the past 90 days and 10 recent news headline(s). News sentiment is NEUTRAL with no dominant bullish or bearish signals."
+}

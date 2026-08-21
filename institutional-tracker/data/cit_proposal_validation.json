@@ -1,38 +1,17 @@
 {
-  "generated_at": "2026-08-18T06:10:15.312306",
-  "proposals_reviewed": 5,
+  "generated_at": "2026-08-20T21:01:47.336746",
+  "proposals_reviewed": 2,
   "backtester_available": true,
   "validation_log": [
     {
-      "id": "fund-sanity-FICO",
-      "title": "Impossible fundamentals for FICO \u2014 quarantine from valuation",
-      "category": "LOGIC_ERROR",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "fund-sanity-MSCI",
-      "title": "Impossible fundamentals for MSCI \u2014 quarantine from valuation",
-      "category": "LOGIC_ERROR",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "fund-sanity-SBAC",
-      "title": "Impossible fundamentals for SBAC \u2014 quarantine from valuation",
-      "category": "LOGIC_ERROR",
-      "pre_validated": false,
-      "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
-    },
-    {
-      "id": "CIT-2026-874",
+      "id": "CIT-2026-881",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "category": "VISION",
       "pre_validated": false,
       "validation_note": "Improvement/architectural proposal \u2014 review manually before board vote"
     },
     {
-      "id": "CIT-2026-875",
+      "id": "CIT-2026-882",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "category": "VISION",
       "pre_validated": false,

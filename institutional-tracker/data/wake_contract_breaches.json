@@ -1,0 +1,260 @@
+[
+  {
+    "agent": "Board",
+    "script": "board_meeting.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.403560"
+  },
+  {
+    "agent": "CITArchitectureAdvisor",
+    "script": "cit_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.442685"
+  },
+  {
+    "agent": "CITCodeInspector",
+    "script": "cit_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.483675"
+  },
+  {
+    "agent": "CITDataQualityAnalyst",
+    "script": "cit_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.520695"
+  },
+  {
+    "agent": "CITDirector",
+    "script": "cit_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.558169"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "script": "cit_pipeline_integrity_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.564873"
+  },
+  {
+    "agent": "CITSelfImprovement",
+    "script": "cit_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.601120"
+  },
+  {
+    "agent": "CITStrategyAnalyst",
+    "script": "cit_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.639702"
+  },
+  {
+    "agent": "CITWatchdog",
+    "script": "cit_watchdog.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.643922"
+  },
+  {
+    "agent": "CROAgent",
+    "script": "irm_review_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.656954"
+  },
+  {
+    "agent": "Canary",
+    "script": "canary_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.665432"
+  },
+  {
+    "agent": "CapitalEfficiencyAgent",
+    "script": "capital_efficiency_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.669371"
+  },
+  {
+    "agent": "Chief of Staff",
+    "script": "chief_of_staff_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.687677"
+  },
+  {
+    "agent": "DeputyBoard",
+    "script": "deputy_board.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.695857"
+  },
+  {
+    "agent": "DeputyMonitor",
+    "script": "deputy_monitor.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.701441"
+  },
+  {
+    "agent": "ETFPodBoard",
+    "script": "etf_pod_board.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.711837"
+  },
+  {
+    "agent": "ETFResearchAgent",
+    "script": "etf_research_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.717376"
+  },
+  {
+    "agent": "EarningsPredictor",
+    "script": "earnings_predictor.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.720317"
+  },
+  {
+    "agent": "EnergyResearchTeam",
+    "script": "energy_research_team.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.725293"
+  },
+  {
+    "agent": "FEBoard",
+    "script": "fe_board.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.727232"
+  },
+  {
+    "agent": "FECIOAgent",
+    "script": "fe_cio_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.728370"
+  },
+  {
+    "agent": "FIBoard",
+    "script": "fi_board.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.734318"
+  },
+  {
+    "agent": "HRDevelopmentOfficer",
+    "script": "hr_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.750151"
+  },
+  {
+    "agent": "HRPerformanceOfficer",
+    "script": "hr_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.765301"
+  },
+  {
+    "agent": "HeadAgent",
+    "script": "head_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.768525"
+  },
+  {
+    "agent": "IndependentRiskManager",
+    "script": "irm_review_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.781203"
+  },
+  {
+    "agent": "InternationalAnalyst",
+    "script": "international_analyst.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.786153"
+  },
+  {
+    "agent": "LogReviewAgent",
+    "script": "log_review_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.790363"
+  },
+  {
+    "agent": "MLRDBridgeAgent",
+    "script": "ml_rd_bridge_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.798622"
+  },
+  {
+    "agent": "MLResearchTeamLeader",
+    "script": "ml_research_team_leader.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.804306"
+  },
+  {
+    "agent": "Manager Agent",
+    "script": "manager_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.821355"
+  },
+  {
+    "agent": "ManagerAgent",
+    "script": "manager_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.835453"
+  },
+  {
+    "agent": "MorningBriefing",
+    "script": "morning_briefing.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.844675"
+  },
+  {
+    "agent": "OperationsDirector",
+    "script": "operations_director.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.846750"
+  },
+  {
+    "agent": "PodMacroAgent",
+    "script": "pod_macro_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.849696"
+  },
+  {
+    "agent": "PremarketCheck",
+    "script": "premarket_check.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.855253"
+  },
+  {
+    "agent": "RDGeopoliticalTeam",
+    "script": "rd_geopolitical_team.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.860079"
+  },
+  {
+    "agent": "RDHistoricalAnalyst",
+    "script": "rd_historical_analyst.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.864796"
+  },
+  {
+    "agent": "RDTeamLeader",
+    "script": "rd_team_leader.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.876995"
+  },
+  {
+    "agent": "ResearchTeam",
+    "script": "research_team.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.882114"
+  },
+  {
+    "agent": "ReviewAgent",
+    "script": "review_agent.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.887157"
+  },
+  {
+    "agent": "SignalEngine",
+    "script": "signal_engine.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.890362"
+  },
+  {
+    "agent": "TradeReviewTeam",
+    "script": "trade_review_team.py",
+    "verdict": "IGNORES_FLAG",
+    "ts": "2026-08-21T00:48:36.897680"
+  }
+]

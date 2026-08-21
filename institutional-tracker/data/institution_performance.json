@@ -1,0 +1,475 @@
+{
+  "timestamp": "2026-07-31T17:45:27.952860+00:00",
+  "lookback_days": 365,
+  "recent_days": 90,
+  "overall": {
+    "label": "Overall",
+    "n": 4052,
+    "win_rate": 0.5471,
+    "mean_ret_20d": 0.02187,
+    "std_ret_20d": 0.18816,
+    "sharpe_like": 0.1162,
+    "best_tickers": [
+      {
+        "ticker": "SOGP",
+        "mean_ret": 1.04817,
+        "n": 7
+      },
+      {
+        "ticker": "FOSL",
+        "mean_ret": 0.38941,
+        "n": 12
+      },
+      {
+        "ticker": "AEVA",
+        "mean_ret": 0.28463,
+        "n": 18
+      }
+    ],
+    "worst_tickers": [
+      {
+        "ticker": "IPST",
+        "mean_ret": -0.62955,
+        "n": 2
+      },
+      {
+        "ticker": "MSPR",
+        "mean_ret": -0.47779,
+        "n": 4
+      },
+      {
+        "ticker": "DFNS",
+        "mean_ret": -0.42282,
+        "n": 2
+      }
+    ]
+  },
+  "institutions": {
+    "AQR Capital": {
+      "label": "AQR Capital",
+      "n": 593,
+      "win_rate": 0.5734,
+      "mean_ret_20d": 0.02419,
+      "std_ret_20d": 0.14193,
+      "sharpe_like": 0.1704,
+      "best_tickers": [
+        {
+          "ticker": "IVVD",
+          "mean_ret": 0.38849,
+          "n": 2
+        },
+        {
+          "ticker": "AVR",
+          "mean_ret": 0.27013,
+          "n": 4
+        },
+        {
+          "ticker": "AEVA",
+          "mean_ret": 0.25606,
+          "n": 4
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "ADCT",
+          "mean_ret": -0.15026,
+          "n": 4
+        },
+        {
+          "ticker": "PCT",
+          "mean_ret": -0.13806,
+          "n": 4
+        },
+        {
+          "ticker": "SLND",
+          "mean_ret": -0.12749,
+          "n": 4
+        }
+      ],
+      "conviction_auc": 0.5077,
+      "recent": {
+        "label": "AQR Capital (last 90d)",
+        "n": 155,
+        "win_rate": 0.7161,
+        "mean_ret_20d": 0.05792,
+        "std_ret_20d": 0.13821,
+        "sharpe_like": 0.4191,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "Bridgewater": {
+      "label": "Bridgewater",
+      "n": 177,
+      "win_rate": 0.5876,
+      "mean_ret_20d": 0.02666,
+      "std_ret_20d": 0.129,
+      "sharpe_like": 0.2067,
+      "best_tickers": [
+        {
+          "ticker": "LZB",
+          "mean_ret": 0.19787,
+          "n": 2
+        },
+        {
+          "ticker": "FCAP",
+          "mean_ret": 0.17543,
+          "n": 4
+        },
+        {
+          "ticker": "ALAB",
+          "mean_ret": 0.17238,
+          "n": 4
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "P",
+          "mean_ret": -0.15889,
+          "n": 2
+        },
+        {
+          "ticker": "AMTM",
+          "mean_ret": -0.06915,
+          "n": 2
+        },
+        {
+          "ticker": "SBSW",
+          "mean_ret": -0.06417,
+          "n": 4
+        }
+      ],
+      "conviction_auc": 0.5,
+      "recent": {
+        "label": "Bridgewater (last 90d)",
+        "n": 45,
+        "win_rate": 0.8,
+        "mean_ret_20d": 0.09329,
+        "std_ret_20d": 0.13318,
+        "sharpe_like": 0.7005,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "Citadel": {
+      "label": "Citadel",
+      "n": 908,
+      "win_rate": 0.5286,
+      "mean_ret_20d": 0.02097,
+      "std_ret_20d": 0.22424,
+      "sharpe_like": 0.0935,
+      "best_tickers": [
+        {
+          "ticker": "SOGP",
+          "mean_ret": 0.95005,
+          "n": 4
+        },
+        {
+          "ticker": "FOSL",
+          "mean_ret": 0.39926,
+          "n": 4
+        },
+        {
+          "ticker": "CCLD",
+          "mean_ret": 0.28054,
+          "n": 4
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "MSPR",
+          "mean_ret": -0.47779,
+          "n": 2
+        },
+        {
+          "ticker": "JEM",
+          "mean_ret": -0.36895,
+          "n": 3
+        },
+        {
+          "ticker": "DAIC",
+          "mean_ret": -0.35586,
+          "n": 4
+        }
+      ],
+      "conviction_auc": 0.5355,
+      "recent": {
+        "label": "Citadel (last 90d)",
+        "n": 236,
+        "win_rate": 0.6059,
+        "mean_ret_20d": 0.02319,
+        "std_ret_20d": 0.18388,
+        "sharpe_like": 0.1261,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "D.E. Shaw": {
+      "label": "D.E. Shaw",
+      "n": 555,
+      "win_rate": 0.5568,
+      "mean_ret_20d": 0.01843,
+      "std_ret_20d": 0.14561,
+      "sharpe_like": 0.1266,
+      "best_tickers": [
+        {
+          "ticker": "AEVA",
+          "mean_ret": 0.31382,
+          "n": 3
+        },
+        {
+          "ticker": "PRE",
+          "mean_ret": 0.20242,
+          "n": 4
+        },
+        {
+          "ticker": "MOV",
+          "mean_ret": 0.19941,
+          "n": 4
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "DAIC",
+          "mean_ret": -0.35586,
+          "n": 4
+        },
+        {
+          "ticker": "ADCT",
+          "mean_ret": -0.35341,
+          "n": 2
+        },
+        {
+          "ticker": "WLDN",
+          "mean_ret": -0.25385,
+          "n": 2
+        }
+      ],
+      "conviction_auc": 0.5017,
+      "recent": {
+        "label": "D.E. Shaw (last 90d)",
+        "n": 142,
+        "win_rate": 0.6831,
+        "mean_ret_20d": 0.04305,
+        "std_ret_20d": 0.1479,
+        "sharpe_like": 0.2911,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "Millennium Mgmt": {
+      "label": "Millennium Mgmt",
+      "n": 775,
+      "win_rate": 0.5419,
+      "mean_ret_20d": 0.02219,
+      "std_ret_20d": 0.18185,
+      "sharpe_like": 0.122,
+      "best_tickers": [
+        {
+          "ticker": "FOSL",
+          "mean_ret": 0.42313,
+          "n": 3
+        },
+        {
+          "ticker": "IOBTQ",
+          "mean_ret": 0.38084,
+          "n": 3
+        },
+        {
+          "ticker": "AEVA",
+          "mean_ret": 0.27239,
+          "n": 3
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "MSPR",
+          "mean_ret": -0.47779,
+          "n": 2
+        },
+        {
+          "ticker": "DAIC",
+          "mean_ret": -0.35586,
+          "n": 4
+        },
+        {
+          "ticker": "RPID",
+          "mean_ret": -0.23478,
+          "n": 2
+        }
+      ],
+      "conviction_auc": 0.5292,
+      "recent": {
+        "label": "Millennium Mgmt (last 90d)",
+        "n": 192,
+        "win_rate": 0.6198,
+        "mean_ret_20d": 0.02973,
+        "std_ret_20d": 0.20273,
+        "sharpe_like": 0.1467,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "Point72": {
+      "label": "Point72",
+      "n": 427,
+      "win_rate": 0.548,
+      "mean_ret_20d": 0.01382,
+      "std_ret_20d": 0.15193,
+      "sharpe_like": 0.0909,
+      "best_tickers": [
+        {
+          "ticker": "SVRA",
+          "mean_ret": 0.28058,
+          "n": 3
+        },
+        {
+          "ticker": "AEVA",
+          "mean_ret": 0.27239,
+          "n": 3
+        },
+        {
+          "ticker": "OCGN",
+          "mean_ret": 0.23039,
+          "n": 2
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "CANG",
+          "mean_ret": -0.35178,
+          "n": 3
+        },
+        {
+          "ticker": "ARBE",
+          "mean_ret": -0.23005,
+          "n": 2
+        },
+        {
+          "ticker": "SGHT",
+          "mean_ret": -0.17522,
+          "n": 2
+        }
+      ],
+      "conviction_auc": 0.5167,
+      "recent": {
+        "label": "Point72 (last 90d)",
+        "n": 130,
+        "win_rate": 0.6308,
+        "mean_ret_20d": 0.02352,
+        "std_ret_20d": 0.14566,
+        "sharpe_like": 0.1615,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "Renaissance Tech": {
+      "label": "Renaissance Tech",
+      "n": 616,
+      "win_rate": 0.5341,
+      "mean_ret_20d": 0.02768,
+      "std_ret_20d": 0.24033,
+      "sharpe_like": 0.1152,
+      "best_tickers": [
+        {
+          "ticker": "SOGP",
+          "mean_ret": 1.179,
+          "n": 3
+        },
+        {
+          "ticker": "FOSL",
+          "mean_ret": 0.52635,
+          "n": 3
+        },
+        {
+          "ticker": "OCGN",
+          "mean_ret": 0.42782,
+          "n": 2
+        }
+      ],
+      "worst_tickers": [
+        {
+          "ticker": "SLNH",
+          "mean_ret": -0.22884,
+          "n": 2
+        },
+        {
+          "ticker": "CISO",
+          "mean_ret": -0.20135,
+          "n": 2
+        },
+        {
+          "ticker": "ORGN",
+          "mean_ret": -0.19441,
+          "n": 4
+        }
+      ],
+      "conviction_auc": 0.5306,
+      "recent": {
+        "label": "Renaissance Tech (last 90d)",
+        "n": 159,
+        "win_rate": 0.5283,
+        "mean_ret_20d": -0.00565,
+        "std_ret_20d": 0.19674,
+        "sharpe_like": -0.0287,
+        "best_tickers": [],
+        "worst_tickers": []
+      },
+      "ranking_eligible": true
+    },
+    "Two Sigma": {
+      "label": "Two Sigma",
+      "n": 1,
+      "win_rate": 1.0,
+      "mean_ret_20d": 0.15342,
+      "std_ret_20d": 0.0,
+      "sharpe_like": 0.0,
+      "best_tickers": [],
+      "worst_tickers": [],
+      "conviction_auc_note": "not computed: N=1 < 10",
+      "recent": {
+        "n": 0,
+        "label": "Two Sigma (last 90d)"
+      },
+      "ranking_eligible": false,
+      "ranking_exclusion_reason": "N=1, below ranking floor of 30"
+    }
+  },
+  "ranking_floor_n": 30,
+  "ranking_excluded": {
+    "Two Sigma": "N=1, below ranking floor of 30"
+  },
+  "ranking_win_rate": [
+    "Bridgewater",
+    "AQR Capital",
+    "D.E. Shaw",
+    "Point72",
+    "Millennium Mgmt",
+    "Renaissance Tech",
+    "Citadel"
+  ],
+  "ranking_sharpe": [
+    "Bridgewater",
+    "AQR Capital",
+    "D.E. Shaw",
+    "Millennium Mgmt",
+    "Renaissance Tech",
+    "Citadel",
+    "Point72"
+  ],
+  "ranking_conviction_auc": [
+    "Citadel",
+    "Renaissance Tech",
+    "Millennium Mgmt",
+    "Point72",
+    "AQR Capital",
+    "D.E. Shaw",
+    "Bridgewater"
+  ]
+}

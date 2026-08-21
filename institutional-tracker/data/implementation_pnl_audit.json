@@ -1,0 +1,821 @@
+[
+  {
+    "audited_at": "2026-07-03T13:52:58.102242",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2-benchmark-adjusted",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T13:54:12.381043",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T13:54:13.031029",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T14:19:53.936497",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T17:20:44.523141",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T17:42:15.480260",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T18:01:52.006965",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-03T18:47:36.592111",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T11:35:42.771759",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T11:46:39.775286",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T12:08:13.589435",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T12:29:48.523747",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T12:51:21.185661",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T13:12:49.587731",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T13:34:19.035465",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T13:55:47.547179",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T14:17:14.354874",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T14:38:46.772548",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T15:00:12.141147",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T15:21:41.166530",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T15:43:10.989494",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T16:04:09.191600",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T16:26:14.140861",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T16:47:36.230692",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T17:08:56.748120",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T17:30:18.252358",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-23T17:51:39.848895",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T10:06:59.103413",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T10:29:58.769352",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T10:51:22.738174",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T11:12:44.890586",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T11:34:16.239936",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T12:01:08.595372",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T12:27:23.975234",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T12:49:15.128499",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T13:11:05.351986",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T13:32:59.745839",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T13:54:53.262083",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T14:16:49.057641",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T14:38:16.892012",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T14:59:35.706306",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T15:20:59.890600",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T15:42:24.380959",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T16:03:11.615581",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T16:25:08.293824",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T16:46:27.601590",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T17:07:46.089937",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T17:29:04.229200",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-24T17:50:22.482016",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T15:12:35.957657",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T15:33:22.804573",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T15:54:08.565479",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T16:14:57.294768",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T16:37:40.966530",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T17:24:06.305094",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-29T17:45:36.361659",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T10:10:05.151512",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T10:32:13.309212",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T10:53:45.511033",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T11:15:16.798454",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T11:37:18.014762",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T11:58:53.707178",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T12:50:05.526250",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T12:54:03.939898",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T13:15:34.702784",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T13:39:54.355430",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T14:05:53.715607",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T14:32:00.373852",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T15:02:17.115589",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T15:23:55.029885",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T15:45:42.677170",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T16:06:37.082157",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T16:29:01.915326",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T17:14:04.505655",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T17:35:37.794510",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-30T17:57:07.300726",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T10:05:25.167329",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T10:26:54.090523",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T11:08:29.161129",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T11:30:03.902368",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T11:51:41.631215",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T12:16:16.818878",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T12:37:57.033154",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T12:59:25.683404",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T13:20:54.508625",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T13:42:47.335680",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T14:04:46.515392",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T14:26:23.623072",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T14:48:15.659830",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T15:15:09.987379",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T15:36:45.815261",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T15:58:16.958300",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T16:19:44.185993",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-07-31T16:43:09.201070",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T13:49:23.814543",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T14:12:08.880020",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T14:34:29.228240",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T14:56:39.984387",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T15:18:52.171442",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T15:41:00.712727",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T16:02:58.351522",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T16:25:30.638146",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T16:47:25.482234",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T17:09:08.558349",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T17:30:53.786303",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-07T17:52:53.584465",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T12:47:20.122596",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T13:12:45.919725",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T13:35:12.979456",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T13:58:10.231867",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T14:22:05.640160",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T14:45:47.879367",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T15:09:54.248359",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T15:33:42.858482",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T15:58:05.887908",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T16:22:17.150126",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  },
+  {
+    "audited_at": "2026-08-14T16:46:45.272291",
+    "checked": 17,
+    "flags": [],
+    "formula_version": "v2.1-shared-window-split",
+    "status": "PASS"
+  }
+]

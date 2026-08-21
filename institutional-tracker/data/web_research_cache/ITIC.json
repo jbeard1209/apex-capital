@@ -1,0 +1,90 @@
+{
+  "ticker": "ITIC",
+  "retrieved_at": "2026-08-17T03:10:32.957790+00:00",
+  "recent_filings": [
+    {
+      "form_type": "",
+      "filed_at": "2026-05-20",
+      "company": "INVESTORS TITLE CO  (ITIC)  (CIK 0000720858)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-08-06",
+      "company": "INVESTORS TITLE CO  (ITIC)  (CIK 0000720858)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-08-06",
+      "company": "INVESTORS TITLE CO  (ITIC)  (CIK 0000720858)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-08-10",
+      "company": "INVESTORS TITLE CO  (ITIC)  (CIK 0000720858)",
+      "description": "",
+      "accession": ""
+    }
+  ],
+  "recent_headlines": [
+    {
+      "title": "Investors Title Q2 Earnings Rise Y/Y on Higher Title Activity",
+      "date": "Fri, 14 Aug 2026 17:45:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/investors-title-q2-earnings-rise-174500748.html?.tsrc=rss"
+    },
+    {
+      "title": "ITIC vs DGICA: Which Insurance Stock is the Better Buy?",
+      "date": "Thu, 09 Jul 2026 17:07:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/itic-vs-dgica-insurance-stock-170700801.html?.tsrc=rss"
+    },
+    {
+      "title": "Investors Title Rises 22% in a Year: Should You Buy the Stock?",
+      "date": "Fri, 12 Jun 2026 17:53:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/investors-title-rises-22-buy-175300225.html?.tsrc=rss"
+    },
+    {
+      "title": "Investors Title Company: Quiet Compounder in a Noisy Market",
+      "date": "Wed, 20 May 2026 10:30:52 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/investors-title-company-quiet-compounder-103052614.html?.tsrc=rss"
+    },
+    {
+      "title": "Investors Title's Q1 Earnings Soar Y/Y, Revenues Grow 13%",
+      "date": "Wed, 13 May 2026 17:41:00 +0000",
+      "link": "https://finance.yahoo.com/news/investors-titles-q1-earnings-soar-174100716.html?.tsrc=rss"
+    },
+    {
+      "title": "Investors Title Independent Director Acquires 17% More Stock",
+      "date": "Fri, 15 May 2026 10:19:26 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/investors-title-independent-director-acquires-101926314.html?.tsrc=rss"
+    },
+    {
+      "title": "Investors Title Company Announces Second Quarter 2026 Results",
+      "date": "Thu, 06 Aug 2026 12:29:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/investors-title-company-announces-second-122900236.html?.tsrc=rss"
+    },
+    {
+      "title": "The Zacks Analyst Blog Highlights JPMorgan Chase, GE Aerospace, Western Digital, Syntec Optics and Investors Title",
+      "date": "Mon, 01 Jun 2026 14:10:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/zacks-analyst-blog-highlights-jpmorgan-141000491.html?.tsrc=rss"
+    },
+    {
+      "title": "Undiscovered Gems in the US Market April 2026",
+      "date": "Wed, 22 Apr 2026 11:32:55 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/undiscovered-gems-us-market-april-113255641.html?.tsrc=rss"
+    },
+    {
+      "title": "Top Stock Reports for JPMorgan, GE Aerospace & Western Digital",
+      "date": "Fri, 29 May 2026 20:30:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/top-stock-reports-jpmorgan-ge-203000915.html?.tsrc=rss"
+    }
+  ],
+  "headline_sentiment": "NEUTRAL",
+  "bullish_signals": [],
+  "red_flags": [],
+  "research_summary": "ITIC has 0 recent SEC filing(s) in the past 90 days and 10 recent news headline(s). News sentiment is NEUTRAL with no dominant bullish or bearish signals."
+}

@@ -1,0 +1,50 @@
+{
+  "run_at": "2026-08-17T02:53:04.730748+00:00",
+  "regime": "NORMAL",
+  "curve_inverted": true,
+  "yield_curve_slope": -0.604,
+  "duration_target": 8.0,
+  "weighted_duration": 4.92,
+  "total_deployed_usd": 37500.0,
+  "deployment_pct": 125.0,
+  "approved_picks": 8,
+  "risk_flags": [
+    {
+      "type": "DURATION_MISMATCH",
+      "message": "Portfolio weighted duration 4.9yr vs target 8.0yr (diff=3.1yr). Rebalancing recommended."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer VCIT: $5,000 = 16.7% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer SHY: $5,000 = 16.7% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer VCSH: $5,000 = 16.7% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer IGSB: $5,000 = 16.7% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer SLQD: $5,000 = 16.7% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer IEF: $5,000 = 16.7% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer IGIB: $3,750 = 12.5% of FI capital (max 10%). Reduce position."
+    },
+    {
+      "type": "CONCENTRATION_BREACH",
+      "message": "Issuer USIG: $3,750 = 12.5% of FI capital (max 10%). Reduce position."
+    }
+  ],
+  "risk_flag_count": 9
+}

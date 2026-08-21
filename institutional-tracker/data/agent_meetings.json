@@ -1,0 +1,50 @@
+[
+  {
+    "type": "INFO_REQUEST",
+    "request_id": "f778fd83c1a8",
+    "from_agent": "Manager Agent",
+    "to_agent": "RDTeamLeader",
+    "topic": "Urgent research update: AES position held 0d without fresh coverage",
+    "context": "AES: held 0 days, PnL +0.2%, no R&D coverage in 999 days. Need fresh thesis review to justify continued hold.",
+    "urgency": "HIGH",
+    "callback_hint": "needed before next trading cycle",
+    "status": "open",
+    "filed_at": "2026-07-30T13:23:25.707549",
+    "fulfilled_at": null,
+    "result": null,
+    "confidence": null,
+    "fulfilling_agent": null
+  },
+  {
+    "type": "INFO_REQUEST",
+    "request_id": "ace81fb10f05",
+    "from_agent": "Manager Agent",
+    "to_agent": "RDTeamLeader",
+    "topic": "Urgent research update: DIS position held 0d without fresh coverage",
+    "context": "DIS: held 0 days, PnL +3.5%, no R&D coverage in 999 days. Need fresh thesis review to justify continued hold.",
+    "urgency": "HIGH",
+    "callback_hint": "needed before next trading cycle",
+    "status": "open",
+    "filed_at": "2026-07-30T13:23:25.760069",
+    "fulfilled_at": null,
+    "result": null,
+    "confidence": null,
+    "fulfilling_agent": null
+  },
+  {
+    "type": "INFO_REQUEST",
+    "request_id": "61eb6dcd0357",
+    "from_agent": "Manager Agent",
+    "to_agent": "RDTeamLeader",
+    "topic": "Urgent research update: NTNX position held 0d without fresh coverage",
+    "context": "NTNX: held 0 days, PnL +3.4%, no R&D coverage in 999 days. Need fresh thesis review to justify continued hold.",
+    "urgency": "HIGH",
+    "callback_hint": "needed before next trading cycle",
+    "status": "open",
+    "filed_at": "2026-07-30T13:23:25.804493",
+    "fulfilled_at": null,
+    "result": null,
+    "confidence": null,
+    "fulfilling_agent": null
+  }
+]

@@ -1,0 +1,118 @@
+{
+  "ticker": "GMED",
+  "retrieved_at": "2026-08-04T18:16:01.510989+00:00",
+  "recent_filings": [
+    {
+      "form_type": "",
+      "filed_at": "2026-06-04",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-07",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-07",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-07",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-07",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-07",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-07",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-06-04",
+      "company": "GLOBUS MEDICAL INC  (GMED)  (CIK 0001237831)",
+      "description": "",
+      "accession": ""
+    }
+  ],
+  "recent_headlines": [
+    {
+      "title": "1 Cash-Producing Stock Worth Investigating and 2 We Ignore",
+      "date": "Fri, 31 Jul 2026 19:31:57 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/1-cash-producing-stock-worth-193157282.html?.tsrc=rss"
+    },
+    {
+      "title": "GMED's Q2 Earnings on Deck: Will Enabling Technologies Lead Results?",
+      "date": "Fri, 31 Jul 2026 17:24:00 +0000",
+      "link": "https://finance.yahoo.com/healthcare/articles/gmeds-q2-earnings-deck-enabling-172400050.html?.tsrc=rss"
+    },
+    {
+      "title": "Globus Medical (GMED) Stock Still Looks Undervalued Ahead Of Earnings",
+      "date": "Thu, 30 Jul 2026 12:07:25 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/globus-medical-gmed-stock-still-120725848.html?.tsrc=rss"
+    },
+    {
+      "title": "The Best House On The Block Costs The Most: ISRG",
+      "date": "Wed, 29 Jul 2026 13:46:30 +0000",
+      "link": "https://www.trefis.com/articles/609286/the-best-house-on-the-block-costs-the-most-isrg/2026-07-29?.tsrc=rss"
+    },
+    {
+      "title": "Intuitive Surgical Stock Is On Sale, But Is The Growth Story Changing?",
+      "date": "Fri, 24 Jul 2026 12:47:32 +0000",
+      "link": "https://www.trefis.com/articles/608746/intuitive-surgical-stock-is-on-sale-but-is-the-growth-story-changing/2026-07-24?.tsrc=rss"
+    },
+    {
+      "title": "Reasons to Retain Globus Medical Stock in Your Portfolio for Now",
+      "date": "Wed, 22 Jul 2026 13:34:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/reasons-retain-globus-medical-stock-133400879.html?.tsrc=rss"
+    },
+    {
+      "title": "ISRG Stock: The Math Hidden In Its Price",
+      "date": "Tue, 21 Jul 2026 18:43:03 +0000",
+      "link": "https://www.trefis.com/articles/608165/isrg-stock-the-math-hidden-in-its-price/2026-07-21?.tsrc=rss"
+    },
+    {
+      "title": "The Robot Maker's Paradox",
+      "date": "Mon, 20 Jul 2026 19:15:05 +0000",
+      "link": "https://www.trefis.com/articles/607985/the-robot-makers-paradox/2026-07-20?.tsrc=rss"
+    },
+    {
+      "title": "What's More Important For Intuitive Surgical: Today's Robots Or Tomorrow's Growth?",
+      "date": "Mon, 20 Jul 2026 18:21:05 +0000",
+      "link": "https://www.trefis.com/articles/607980/whats-more-important-for-intuitive-surgical-todays-robots-or-tomorrows-growth/2026-07-20?.tsrc=rss"
+    },
+    {
+      "title": "3 Medical Device Stocks Giving Investors a Different Healthcare Play",
+      "date": "Mon, 20 Jul 2026 13:40:00 +0000",
+      "link": "https://www.marketbeat.com/articles/3-medical-device-stocks-giving-investors-a-different-healthcare-play/?utm_source=yahoofinance&utm_medium=yahoofinance&.tsrc=rss"
+    }
+  ],
+  "headline_sentiment": "NEUTRAL",
+  "bullish_signals": [],
+  "red_flags": [],
+  "research_summary": "GMED has 0 recent SEC filing(s) in the past 90 days and 10 recent news headline(s). News sentiment is NEUTRAL with no dominant bullish or bearish signals."
+}

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "lt_feature_pb_ratio",
+    "title": "Add P/B ratio as fundamental feature",
+    "rationale": "Price-to-book ratio is a core value signal for 1-year horizons. Institutions accumulating low P/B stocks tend to outperform over 365d. Source: yfinance ticker.info['priceToBook'].",
+    "category": "feature_engineering",
+    "estimated_auc_delta": 0.012,
+    "effort": "medium",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_feature_fcf_yield",
+    "title": "Add FCF yield as fundamental feature",
+    "rationale": "Free cash flow yield (FCF / market cap) captures quality at a price. Strong predictor of institutional accumulation payoff over 365d. Source: yfinance financials + market cap.",
+    "category": "feature_engineering",
+    "estimated_auc_delta": 0.015,
+    "effort": "medium",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_feature_revenue_growth",
+    "title": "Add revenue growth rate (YoY) as fundamental feature",
+    "rationale": "Revenue growth rate (YoY) captures business momentum that institutions track for multi-year conviction positions. Source: yfinance quarterly financials.",
+    "category": "feature_engineering",
+    "estimated_auc_delta": 0.01,
+    "effort": "medium",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_feature_roic",
+    "title": "Add ROIC as fundamental feature",
+    "rationale": "Return on invested capital (ROIC) identifies durable competitive advantage. Stocks with ROIC > WACC compound over 365d. Source: yfinance financials + balance sheet.",
+    "category": "feature_engineering",
+    "estimated_auc_delta": 0.013,
+    "effort": "high",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_feature_net_debt_ebitda",
+    "title": "Add net debt / EBITDA as fundamental feature",
+    "rationale": "Leverage ratio filters out financially stressed positions. Low net debt/EBITDA tickers accumulate safely by institutions for 1-year holds. Source: yfinance balance sheet + earnings.",
+    "category": "feature_engineering",
+    "estimated_auc_delta": 0.009,
+    "effort": "medium",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_remove_short_rsi",
+    "title": "Remove short-term RSI features from long-term model",
+    "rationale": "RSI (14d, 20d) is noise at the 365-day horizon. Including it may cause overfitting to short-term momentum patterns that have no predictive value over 1 year.",
+    "category": "feature_pruning",
+    "estimated_auc_delta": 0.006,
+    "effort": "low",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_post2018_only",
+    "title": "Train only on post-2018 data",
+    "rationale": "Pre-2018 market structure (low rates, pre-passive-investing dominance) may introduce distributional shift. Restricting training to 2018+ aligns with current institutional behavior.",
+    "category": "data_filtering",
+    "estimated_auc_delta": 0.007,
+    "effort": "low",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_weight_value_2x",
+    "title": "Weight value stocks 2x in training",
+    "rationale": "Long-term institutional mandates (First Eagle, Dodge & Cox style) are concentrated in value stocks. Overweighting value tickers aligns the loss function with how long-horizon managers actually operate.",
+    "category": "training_strategy",
+    "estimated_auc_delta": 0.008,
+    "effort": "medium",
+    "status": "pending",
+    "created_at": "2026-07-30T17:23:43.845861+00:00",
+    "labeled_rows_at_creation": 0
+  },
+  {
+    "id": "lt_retrain_20260731",
+    "title": "Retrain long-term model (17652 new labeled rows)",
+    "rationale": "17652 new outcome_252d rows were labeled since last check (total: 17652). Retraining will incorporate fresh ground truth.",
+    "category": "retrain",
+    "estimated_auc_delta": 0.005,
+    "effort": "low",
+    "status": "pending",
+    "created_at": "2026-07-31T14:58:08.514819+00:00",
+    "new_rows_trigger": 17652,
+    "total_labeled_at_trigger": 17652
+  }
+]

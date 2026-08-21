@@ -1,0 +1,9 @@
+{
+  "is_active": false,
+  "active": false,
+  "activated_at": null,
+  "reason": null,
+  "cleared_at": "2026-07-27T21:35:51.695597+00:00",
+  "cleared_by": "Chairman (Jack Beard) \u2014 board-ratified 2026-07-27, memo chairman-decision-20260727-cro-unfreeze",
+  "ratification": "Option A \u2014 unfreeze ratified; standard deployment resumes under existing CRO/Canary controls"
+}

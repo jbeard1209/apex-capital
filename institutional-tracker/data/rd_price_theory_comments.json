@@ -1,0 +1,187 @@
+{
+  "as_of": "2026-08-20T01:39:43.739683+00:00",
+  "agent": "RDPriceTheoryAgent",
+  "lenses_run": 5,
+  "commented": 3,
+  "silent": 1,
+  "cannot_tell": 1,
+  "blind": false,
+  "blindness_escalated": false,
+  "routed_to_pod_board": 0,
+  "results": [
+    {
+      "lens": "a_binding_constraint_with_no_price",
+      "status": "SILENT",
+      "n_examined": 2,
+      "reason": "cash floor and position cap binding, but a derivation 0d old is on file",
+      "comment": null
+    },
+    {
+      "lens": "a_proxy_that_disagrees_with_its_quantity",
+      "status": "COMMENT",
+      "n_examined": 0,
+      "reason": "",
+      "comment": {
+        "lens": "a_proxy_that_disagrees_with_its_quantity",
+        "signature": "a_proxy_that_disagrees_with_its_quantity-4c5996bc24",
+        "question": "the rule is written on a proxy \u2014 does the proxy still track the thing?",
+        "headline": "cash floor and position cap read fully utilised, but the quantity they proxy for is a net beta of 0.64 at 100% coverage \u2014 and the firm has no stated beta limit for that number to be measured against",
+        "numbers": {
+          "net_beta": 0.6436,
+          "coverage": 1.0,
+          "cash_pct": 0.1336,
+          "cash_floor_pct": 0.2,
+          "positions": 20,
+          "max_positions": 20,
+          "long_beta_dollars": 75114.39,
+          "short_beta_dollars": -11244.97
+        },
+        "sources": [
+          "config.py",
+          "portfolio_beta.net_beta",
+          "risk_gate.snapshot"
+        ],
+        "severity": "HIGH",
+        "proposal": "State a beta appetite the firm can be held to, and let the proxies bind only where they agree with it. Until that number exists, every block issued at this boundary is a decision about risk taken by a measure of something else.",
+        "last_seen": "2026-08-20T01:39:43.739673+00:00",
+        "first_seen": "2026-08-20T01:39:43.739673+00:00",
+        "times_seen": 1,
+        "routed": false
+      }
+    },
+    {
+      "lens": "an_average_standing_in_for_a_margin",
+      "status": "COMMENT",
+      "n_examined": 0,
+      "reason": "",
+      "comment": {
+        "lens": "an_average_standing_in_for_a_margin",
+        "signature": "an_average_standing_in_for_a_margin-e360b49c6f",
+        "question": "the decision is made at the margin \u2014 is that the number being quoted?",
+        "headline": "the marginal name buys 11.1 bp and that is the number in the report, but moving the cap to 40 buys 120.5 bp \u2014 11x more, and the cap is the thing actually being decided (91% 'already captured' is an average, and averages do not decide caps)",
+        "numbers": {
+          "marginal_bp_at_cap": 11.06,
+          "cumulative_bp_to_40": 120.5,
+          "ratio": 10.9,
+          "diversification_achieved_pct": 90.63
+        },
+        "sources": [
+          "risk_limit_derivation.json"
+        ],
+        "severity": "MEDIUM",
+        "proposal": "Put the cumulative figure next to the marginal one wherever the cap is argued. The marginal number defends the cap; the cumulative number is what the Chairman is choosing between. Both are true and only one is responsive.",
+        "last_seen": "2026-08-20T01:39:43.739673+00:00",
+        "first_seen": "2026-08-20T01:39:43.739673+00:00",
+        "times_seen": 1,
+        "routed": false
+      }
+    },
+    {
+      "lens": "a_block_is_a_price_nobody_counted",
+      "status": "CANNOT_TELL",
+      "n_examined": 0,
+      "reason": "risk_gate_log.json does not exist on this host \u2014 the gate has recorded no decision here, which is not the same as having blocked nothing",
+      "comment": null
+    },
+    {
+      "lens": "a_stated_priority_with_nothing_revealed_behind_it",
+      "status": "COMMENT",
+      "n_examined": 0,
+      "reason": "",
+      "comment": {
+        "lens": "a_stated_priority_with_nothing_revealed_behind_it",
+        "signature": "a_stated_priority_with_nothing_revealed_behind_it-07da7fda09",
+        "question": "the firm approved this. Where did the resources actually go?",
+        "headline": "36 of 36 approved proposals have gone unimplemented for over 30 days (oldest 69d: \"16 ERROR lines \u2014 dominant: `v1`\"), against 3 implemented in total \u2014 the firm's stated priorities and its revealed ones are not the same list",
+        "numbers": {
+          "approved_total": 36,
+          "stale_unimplemented": 36,
+          "implemented_total": 3,
+          "oldest_age_days": 69.5
+        },
+        "sources": [
+          "cit_implemented_proposals.json",
+          "rd_pod_approved.json"
+        ],
+        "severity": "MEDIUM",
+        "proposal": "Either budget implementation capacity against the approval rate, or stop approving at a rate the firm cannot fund. An approval that is never resourced costs the same as a rejection and teaches the board that its votes are free.",
+        "last_seen": "2026-08-20T01:39:43.739673+00:00",
+        "first_seen": "2026-08-20T01:39:43.739673+00:00",
+        "times_seen": 1,
+        "routed": false
+      }
+    }
+  ],
+  "comments": [
+    {
+      "lens": "a_proxy_that_disagrees_with_its_quantity",
+      "signature": "a_proxy_that_disagrees_with_its_quantity-4c5996bc24",
+      "question": "the rule is written on a proxy \u2014 does the proxy still track the thing?",
+      "headline": "cash floor and position cap read fully utilised, but the quantity they proxy for is a net beta of 0.64 at 100% coverage \u2014 and the firm has no stated beta limit for that number to be measured against",
+      "numbers": {
+        "net_beta": 0.6436,
+        "coverage": 1.0,
+        "cash_pct": 0.1336,
+        "cash_floor_pct": 0.2,
+        "positions": 20,
+        "max_positions": 20,
+        "long_beta_dollars": 75114.39,
+        "short_beta_dollars": -11244.97
+      },
+      "sources": [
+        "config.py",
+        "portfolio_beta.net_beta",
+        "risk_gate.snapshot"
+      ],
+      "severity": "HIGH",
+      "proposal": "State a beta appetite the firm can be held to, and let the proxies bind only where they agree with it. Until that number exists, every block issued at this boundary is a decision about risk taken by a measure of something else.",
+      "last_seen": "2026-08-20T01:39:43.739673+00:00",
+      "first_seen": "2026-08-20T01:39:43.739673+00:00",
+      "times_seen": 1,
+      "routed": false
+    },
+    {
+      "lens": "an_average_standing_in_for_a_margin",
+      "signature": "an_average_standing_in_for_a_margin-e360b49c6f",
+      "question": "the decision is made at the margin \u2014 is that the number being quoted?",
+      "headline": "the marginal name buys 11.1 bp and that is the number in the report, but moving the cap to 40 buys 120.5 bp \u2014 11x more, and the cap is the thing actually being decided (91% 'already captured' is an average, and averages do not decide caps)",
+      "numbers": {
+        "marginal_bp_at_cap": 11.06,
+        "cumulative_bp_to_40": 120.5,
+        "ratio": 10.9,
+        "diversification_achieved_pct": 90.63
+      },
+      "sources": [
+        "risk_limit_derivation.json"
+      ],
+      "severity": "MEDIUM",
+      "proposal": "Put the cumulative figure next to the marginal one wherever the cap is argued. The marginal number defends the cap; the cumulative number is what the Chairman is choosing between. Both are true and only one is responsive.",
+      "last_seen": "2026-08-20T01:39:43.739673+00:00",
+      "first_seen": "2026-08-20T01:39:43.739673+00:00",
+      "times_seen": 1,
+      "routed": false
+    },
+    {
+      "lens": "a_stated_priority_with_nothing_revealed_behind_it",
+      "signature": "a_stated_priority_with_nothing_revealed_behind_it-07da7fda09",
+      "question": "the firm approved this. Where did the resources actually go?",
+      "headline": "36 of 36 approved proposals have gone unimplemented for over 30 days (oldest 69d: \"16 ERROR lines \u2014 dominant: `v1`\"), against 3 implemented in total \u2014 the firm's stated priorities and its revealed ones are not the same list",
+      "numbers": {
+        "approved_total": 36,
+        "stale_unimplemented": 36,
+        "implemented_total": 3,
+        "oldest_age_days": 69.5
+      },
+      "sources": [
+        "cit_implemented_proposals.json",
+        "rd_pod_approved.json"
+      ],
+      "severity": "MEDIUM",
+      "proposal": "Either budget implementation capacity against the approval rate, or stop approving at a rate the firm cannot fund. An approval that is never resourced costs the same as a rejection and teaches the board that its votes are free.",
+      "last_seen": "2026-08-20T01:39:43.739673+00:00",
+      "first_seen": "2026-08-20T01:39:43.739673+00:00",
+      "times_seen": 1,
+      "routed": false
+    }
+  ]
+}

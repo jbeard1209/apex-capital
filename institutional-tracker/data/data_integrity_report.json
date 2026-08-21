@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-07-29T18:40:02.449649",
+  "overall": "RED",
+  "healed_files": [],
+  "sections": {
+    "fundamentals": {
+      "status": "RED",
+      "findings": [
+        {
+          "note": "3 ticker(s) with physically-impossible fundamentals: FICO, MSCI, SBAC"
+        }
+      ]
+    },
+    "risk_and_model": {
+      "status": "GREEN",
+      "findings": []
+    },
+    "freshness": {
+      "status": "GREEN",
+      "findings": []
+    },
+    "json_health": {
+      "status": "GREEN",
+      "findings": []
+    }
+  }
+}

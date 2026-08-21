@@ -1,0 +1,80 @@
+{
+  "ts": "2026-07-30T15:32:24.684567+00:00",
+  "thesis": "Korea/AI-hardware regime short (KOSPI crash 2026-07, China DUV shock)",
+  "signal": {
+    "level": "ACUTE",
+    "score": -13.11,
+    "proxies": {
+      "EWY": -16.09,
+      "SMH": -10.12
+    },
+    "ts": "2026-07-30T15:32:22.551109+00:00"
+  },
+  "active": true,
+  "smh_60d_return_pct": 2.5,
+  "candidates": [
+    {
+      "ticker": "ORCL",
+      "score": -65.28,
+      "extension_pctile": 8.8,
+      "pct_from_50": -24.2,
+      "pct_from_200": -31.4,
+      "pct_from_high": -61.4,
+      "rel_vs_smh": -34.6,
+      "rationale": "-24.2% vs 50MA, -31.4% vs 200MA, -61.4% off 52w high, -34.6% vs SMH"
+    },
+    {
+      "ticker": "PLTR",
+      "score": -34.23,
+      "extension_pctile": 17.5,
+      "pct_from_50": -7.6,
+      "pct_from_200": -21.0,
+      "pct_from_high": -41.6,
+      "rel_vs_smh": -13.4,
+      "rationale": "-7.6% vs 50MA, -21.0% vs 200MA, -41.6% off 52w high, -13.4% vs SMH"
+    },
+    {
+      "ticker": "SMCI",
+      "score": -29.57,
+      "extension_pctile": 33.1,
+      "pct_from_50": -14.2,
+      "pct_from_200": -15.4,
+      "pct_from_high": -54.2,
+      "rel_vs_smh": -2.5,
+      "rationale": "-14.2% vs 50MA, -15.4% vs 200MA, -54.2% off 52w high, -2.5% vs SMH"
+    }
+  ],
+  "excluded_too_extended": [
+    {
+      "ticker": "QCOM",
+      "extension_pctile": 0.0,
+      "reason": "-24.1% vs 50MA is the 0.0th percentile of its own history \u2014 mean-reversion/squeeze risk, not a short"
+    },
+    {
+      "ticker": "VRT",
+      "extension_pctile": 0.4,
+      "reason": "-25.5% vs 50MA is the 0.4th percentile of its own history \u2014 mean-reversion/squeeze risk, not a short"
+    }
+  ],
+  "tickers": [
+    "ORCL",
+    "PLTR",
+    "SMCI"
+  ],
+  "thesis_watch": {
+    "ts": "2026-07-30T15:32:25.019672+00:00",
+    "verdict_under_review": "STRAT-2026-0730-kr-tech-short (DO NOT SHORT)",
+    "baseline_as_of": "2026-07-30",
+    "entry_window_open": false,
+    "credit_channel": {
+      "measurable": true,
+      "cracking": false,
+      "hy_minus_ig_60d_pct": 1.66,
+      "orcl_drawdown_pct": -61.3,
+      "detail": "HY-IG 60d +1.66pts vs baseline +1.67 (-0.01pts; trigger -3.0pts AND negative) | ORCL -61.3% off high vs baseline -61.5% (+0.2pts; trigger -10.0pts)"
+    },
+    "triggers": [],
+    "escalated": [],
+    "status": "VERDICT STANDS \u2014 no flip condition has moved since 2026-07-30"
+  }
+}

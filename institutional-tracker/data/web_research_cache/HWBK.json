@@ -1,0 +1,120 @@
+{
+  "ticker": "HWBK",
+  "retrieved_at": "2026-08-03T18:27:09.107175+00:00",
+  "recent_filings": [
+    {
+      "form_type": "",
+      "filed_at": "2026-07-29",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-06-08",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-06",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-14",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-29",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-29",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-06",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-08",
+      "company": "HAWTHORN BANCSHARES, INC.  (HWBK)  (CIK 0000893847)",
+      "description": "",
+      "accession": ""
+    }
+  ],
+  "recent_headlines": [
+    {
+      "title": "Hawthorn Bancshares Reports Second Quarter 2026 Results",
+      "date": "Wed, 29 Jul 2026 21:14:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hawthorn-bancshares-reports-second-quarter-211400010.html?.tsrc=rss"
+    },
+    {
+      "title": "Hawthorn Bancshares Announces Cash Dividend",
+      "date": "Wed, 29 Jul 2026 20:50:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hawthorn-bancshares-announces-cash-dividend-205000196.html?.tsrc=rss"
+    },
+    {
+      "title": "HWBK vs. CCNE: Which Community Bank Stock Is the Better Buy?",
+      "date": "Tue, 14 Jul 2026 16:58:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hwbk-vs-ccne-community-bank-165800333.html?.tsrc=rss"
+    },
+    {
+      "title": "Axos Financial Stock Is Up 15%, but One Fund Just Sold $3.6 Million Worth of Shares",
+      "date": "Wed, 20 May 2026 19:37:20 +0000",
+      "link": "https://www.fool.com/coverage/filings/2026/05/20/axos-financial-stock-is-up-15-but-one-fund-just-sold-usd3-6-million-worth-of-shares/?.tsrc=rss"
+    },
+    {
+      "title": "US Undiscovered Gems With Strong Fundamentals For May 2026",
+      "date": "Tue, 12 May 2026 17:33:22 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/us-undiscovered-gems-strong-fundamentals-173322016.html?.tsrc=rss"
+    },
+    {
+      "title": "Hawthorn Bancshares Stock Dips Post Q1 Earnings, NIM Gains",
+      "date": "Wed, 06 May 2026 16:18:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hawthorn-bancshares-stock-dips-post-161800677.html?.tsrc=rss"
+    },
+    {
+      "title": "With EPS Growth And More, Hawthorn Bancshares (NASDAQ:HWBK) Makes An Interesting Case",
+      "date": "Wed, 06 May 2026 11:26:29 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/eps-growth-more-hawthorn-bancshares-112629616.html?.tsrc=rss"
+    },
+    {
+      "title": "Hawthorn Bancshares Reports First Quarter 2026 Results",
+      "date": "Wed, 29 Apr 2026 21:04:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hawthorn-bancshares-reports-first-quarter-210400712.html?.tsrc=rss"
+    },
+    {
+      "title": "Hawthorn Bancshares, Inc. Announces Appointment of Grant Burcham to its Board of Directors",
+      "date": "Wed, 29 Apr 2026 20:32:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hawthorn-bancshares-inc-announces-appointment-203200903.html?.tsrc=rss"
+    },
+    {
+      "title": "Hawthorn Bancshares, Inc. Expands Missouri Presence with Acquisition of FSC Bancshares, Inc.",
+      "date": "Wed, 29 Apr 2026 20:31:00 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/hawthorn-bancshares-inc-expands-missouri-203100466.html?.tsrc=rss"
+    }
+  ],
+  "headline_sentiment": "NEGATIVE",
+  "bullish_signals": [],
+  "red_flags": [
+    "miss"
+  ],
+  "research_summary": "HWBK has 0 recent SEC filing(s) in the past 90 days and 10 recent news headline(s). News sentiment is NEGATIVE with concern signals: miss. Red flags detected: miss. Monitor closely."
+}

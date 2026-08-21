@@ -1,0 +1,452 @@
+{
+ "checked_at": "2026-08-20T21:23:19.223973",
+ "falsifiability": [
+  {
+   "control": "nested_probabilities_are_monotone",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "a higher rung priced above a lower one",
+   "detail": "rejected the pill: 1 of 1 testable ladder(s) quote a nested pair that no set of probabilities can produce; 0 ladder(s) not testable (one-sided), 0 non-monotone on asks alone but s"
+  },
+  {
+   "control": "quoted_prices_have_two_sides",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "an ask recorded with no bid against it",
+   "detail": "rejected the pill: 1 of 1 cleared row(s) carry a bid that is absent or crossed \u2014 `two_sided()` passed a quote with no live counterparty (rows supplied by caller)"
+  },
+  {
+   "control": "runs_match_schedule",
+   "verdict": "PROVEN",
+   "injected": false,
+   "pill": "more pipeline starts observed than the schedule asks for",
+   "detail": "rejected the pill: main.py started 4 time(s) today; the schedule asks for 1. An overrun is never legitimate \u2014 something is launching the pipeline outside the schedule."
+  },
+  {
+   "control": "deployed_set_matches_repo",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "the trading host reports a different md5 than the repo",
+   "detail": "rejected the pill: 0 tracked file(s) absent from apex-capital, 1 differ, 0 file(s) run there that are in no commit. The host is not running the repo."
+  },
+  {
+   "control": "emitted_verbs_are_handled",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "an agent emits a verb outside the manager's vocabulary",
+   "detail": "rejected the pill: 1 verb(s) emitted that the manager cannot name: ZZPILLVERB. An unrecognised verb is not rejected, it is unheard."
+  },
+  {
+   "control": "positions_conserve",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "broker holds a symbol the ledger has never heard of",
+   "detail": "rejected the pill: 1 position(s) held at the broker with no ledger entry, 0 ledger entr(ies) with no position. Every stop-loss and holding-period rule reads the ledger."
+  },
+  {
+   "control": "broker_host_census",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "an order stamped by a host in no registry row",
+   "detail": "rejected the pill: 1 host(s) placed orders on this account that are in no registry row: zzpillhost. An unlisted writer sizes against the same capital and cannot be seen by anythin"
+  },
+  {
+   "control": "broker_orders_are_ledgered",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "an order at the broker, stamped by this host, that the ledger never recorded",
+   "detail": "rejected the pill: 1 of 2 order(s) stamped 'zzpillhost' are at the broker but were never recorded by order_ledger. An order that skipped record() skipped the risk gate and the sin"
+  }
+ ],
+ "census": [
+  {
+   "class": "unhandled_verb",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "CIT + Logic Team",
+   "what": "A producer emits a token no consumer handles; .get()/try-except swallow it, so output is produced and never acted on.",
+   "memory": "unknown-verb-approved-nothing",
+   "detectors": [
+    "coherence_laws.py::law_emitted_verbs_are_handled",
+    "wiring_audit.py::check_logic_rule_handlers",
+    "test_pipeline_smoke.py::TestWiringContracts"
+   ],
+   "missing": []
+  },
+  {
+   "class": "reader_without_producer",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "CIT",
+   "what": "A consumer reads a file or queue nothing writes any more; the empty read is indistinguishable from 'nothing to do'.",
+   "memory": "reader-outlived-its-producer",
+   "detectors": [
+    "wiring_audit.py::check_glob_consumers_have_producers",
+    "wiring_audit.py::check_orphan_queues",
+    "coherence_laws.py::law_runs_match_schedule"
+   ],
+   "missing": []
+  },
+  {
+   "class": "undeployed_fix",
+   "verdict": "COVERED",
+   "detail": "1 detector(s) present",
+   "owner": "whoever owns deploy.sh",
+   "what": "Correct code that cannot physically reach the machine that runs it.",
+   "memory": "fix-that-cannot-reach-production",
+   "detectors": [
+    "coherence_laws.py::law_deployed_set_matches_repo"
+   ],
+   "missing": []
+  },
+  {
+   "class": "undocumented_actor",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Chairman + HR",
+   "what": "A host, agent or job that exists in reality and in no document. The inventory is asked how many there are and answers from itself.",
+   "memory": "oracle_third_host",
+   "detectors": [
+    "coherence_laws.py::law_broker_host_census",
+    "wiring_audit.py::check_orphan_agents",
+    "test_pipeline_smoke.py::TestHRSeesTheWholeFirm"
+   ],
+   "missing": []
+  },
+  {
+   "class": "unfalsifiable_control",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Internal Audit (this module)",
+   "what": "A check whose success path is reachable without evidence \u2014 it cannot fail, so its GREEN means nothing and no one can tell.",
+   "memory": "presence-is-not-currency",
+   "detectors": [
+    "internal_audit_agent.py::prove_can_fail",
+    "internal_audit_agent.py::audit_denominators",
+    "test_pipeline_smoke.py::TestInternalAudit"
+   ],
+   "missing": []
+  },
+  {
+   "class": "fallback_that_acts",
+   "verdict": "COVERED",
+   "detail": "2 detector(s) present",
+   "owner": "CIT \u2014 NO RUNTIME DETECTOR, tests only",
+   "what": "A degraded read substitutes a constant, and downstream that constant is an instruction. The direction is what matters: most of ours meant ACT.",
+   "memory": "fallback-that-means-act",
+   "detectors": [
+    "test_pipeline_smoke.py::TestEntryDateLedger",
+    "entry_date_ledger.py::reconcile_state_file"
+   ],
+   "missing": []
+  },
+  {
+   "class": "private_ledger_of_shared_fact",
+   "verdict": "COVERED",
+   "detail": "6 detector(s) present",
+   "owner": "designated writer",
+   "what": "Host-local state describing something an external system owns. Wrong by design, not by bug: it diverges every time anything happens off-host.",
+   "memory": "private-diary-of-a-shared-fact",
+   "detectors": [
+    "coherence_laws.py::law_positions_conserve",
+    "entry_date_ledger.py::reconcile",
+    "problem_lifecycle_sentinel.py::writer_verdict",
+    "chairman_queue_compactor.py::main",
+    "test_pipeline_smoke.py::TestSingleWriterGuard",
+    "test_pipeline_smoke.py::TestCompactorWillNotActOnAHistoryItCannotMaintain"
+   ],
+   "missing": []
+  },
+  {
+   "class": "host_divergence",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "both hosts",
+   "what": "Green on the Mac is not green. Python version, host paths, undeployed config and ET-vs-UTC clocks all differ between the two hosts.",
+   "memory": "host_divergence_is_a_bug_class",
+   "detectors": [
+    "coherence_laws.py::law_deployed_set_matches_repo",
+    "test_pipeline_smoke.py::TestHostSpecificChecksStayOnTheirHost",
+    "test_pipeline_smoke.py::TestThePushGateIsTheGateTheRepoShips"
+   ],
+   "missing": []
+  },
+  {
+   "class": "silent_bad_data",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Data Integrity Sentinel",
+   "what": "A value that is impossible, NaN, or stale passes every guard. NaN in particular satisfies `is not None` and fails every threshold, so bad data becomes silence rather than an alarm.",
+   "memory": "nan-is-not-none",
+   "detectors": [
+    "data_integrity_sentinel.py::check_fundamentals",
+    "metric_sanity_sentinel.py::check_risk_metrics",
+    "data_integrity_sentinel.py::check_json_health"
+   ],
+   "missing": []
+  },
+  {
+   "class": "schedule_drift",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "whoever owns the host's scheduler",
+   "what": "A scheduled job stops, over-runs, or is disabled while its own status still reports healthy.",
+   "memory": "scheduler-stopped-while-reporting-healthy",
+   "detectors": [
+    "coherence_laws.py::law_runs_match_schedule",
+    "freshness_sentinel.py::run",
+    "test_pipeline_smoke.py::TestDesignatedWriterSilence"
+   ],
+   "missing": []
+  },
+  {
+   "class": "never_closed_problem",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Problem Lifecycle Sentinel",
+   "what": "A problem is found, filed, and never solved \u2014 or is band-aided and recurs under a slightly different title forever.",
+   "memory": "problem_lifecycle_sentinel",
+   "detectors": [
+    "problem_lifecycle_sentinel.py::signature",
+    "problem_lifecycle_sentinel.py::normalize_title",
+    "test_pipeline_smoke.py::TestProblemLifecycle"
+   ],
+   "missing": []
+  },
+  {
+   "class": "incoherent_external_data",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Kalshi sector",
+   "what": "The counterparty's own numbers are not arithmetic. Our code is correct and the input is not a probability/price at all.",
+   "memory": "kalshi_sector",
+   "detectors": [
+    "coherence_laws.py::law_nested_probabilities_are_monotone",
+    "coherence_laws.py::law_quoted_prices_have_two_sides",
+    "test_pipeline_smoke.py::TestKalshiSector"
+   ],
+   "missing": []
+  },
+  {
+   "class": "stale_sample",
+   "verdict": "COVERED",
+   "detail": "1 detector(s) present",
+   "owner": "Kalshi sector \u2014 NO GENERAL DETECTOR, one sector only",
+   "what": "A real measurement, honestly computed, about a producer that no longer exists \u2014 a verdict on a rule we already replaced.",
+   "memory": "sample-outlived-its-rule",
+   "detectors": [
+    "kalshi_calibration.py::is_edge_proven"
+   ],
+   "missing": []
+  },
+  {
+   "class": "fix_erases_its_detector",
+   "verdict": "COVERED",
+   "detail": "1 detector(s) present",
+   "owner": "CIT \u2014 NO RUNTIME DETECTOR, tests only",
+   "what": "A remediation deletes the field, file or record its own check reads, so the check goes quiet and the quiet reads as fixed.",
+   "memory": "fix_that_erased_its_detector",
+   "detectors": [
+    "test_pipeline_smoke.py::TestWrongfulRetirement"
+   ],
+   "missing": []
+  },
+  {
+   "class": "control_output_becomes_its_own_input",
+   "verdict": "COVERED",
+   "detail": "4 detector(s) present",
+   "owner": "Problem Lifecycle Sentinel",
+   "what": "A control writes its finding into the queue it scans, so the finding is tracked as a new problem, ages, and earns a finding about itself. Every step is individually correct and the queue fills with governance about governance until nobody reads it \u2014 and a queue nobody reads is not a control.",
+   "memory": "problem_lifecycle_sentinel",
+   "detectors": [
+    "problem_lifecycle_sentinel.py::derived_subject",
+    "problem_lifecycle_sentinel.py::flag_stale_in_place",
+    "problem_lifecycle_sentinel.py::retire_derived_rows",
+    "test_pipeline_smoke.py::TestGovernanceDoesNotEscalateItself"
+   ],
+   "missing": []
+  },
+  {
+   "class": "decision_recorded_nowhere",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "CIT / Problem Lifecycle Sentinel",
+   "what": "A decision is made and then deleted rather than written down, so the detector for LOST work cannot tell a considered NO from a disappearance and reports both as loss. The detector is then correct and useless: every alarm it raises is indistinguishable from a false one.",
+   "memory": "problem_lifecycle_sentinel",
+   "detectors": [
+    "cit_director.py::clear_voted_proposals",
+    "problem_lifecycle_sentinel.py::_decision_for",
+    "test_pipeline_smoke.py::TestABoardDecisionIsNotASilentDrop"
+   ],
+   "missing": []
+  },
+  {
+   "class": "frozen_copy_of_configuration",
+   "verdict": "COVERED",
+   "detail": "2 detector(s) present",
+   "owner": "Problem Lifecycle Sentinel \u2014 NO GENERAL DETECTOR, tests only",
+   "what": "A module-level constant captures mutable configuration at IMPORT time. Whoever later rebinds the source is not the only reader, and the copy never finds out \u2014 so a redirected component keeps reading, and writing, the original target.",
+   "memory": "private-diary-of-a-shared-fact",
+   "detectors": [
+    "problem_lifecycle_sentinel.py::scanned_queues",
+    "test_pipeline_smoke.py::TestABoardDecisionIsNotASilentDrop"
+   ],
+   "missing": []
+  },
+  {
+   "class": "the_test_refreshes_the_liveness_signal",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Coherence Laws / Wiring Audit",
+   "what": "A test exercises a control by running its real entry point, and that run emits the freshness artifact some OTHER detector reads to decide the control is still firing. The act of testing the detector keeps the detector green, so a dead scheduler is indistinguishable from a live one for as long as anybody runs the suite.",
+   "memory": "scheduler-stopped-while-reporting-healthy",
+   "detectors": [
+    "coherence_laws.py::main",
+    "test_pipeline_smoke.py::TestCoherenceLaws",
+    "test_pipeline_smoke.py::TestTheSuiteDoesNotWriteLiveState"
+   ],
+   "missing": []
+  },
+  {
+   "class": "severity_below_the_escalation_floor",
+   "verdict": "COVERED",
+   "detail": "2 detector(s) present",
+   "owner": "Deputy Monitor",
+   "what": "A detector grades findings by severity, and the escalation path is wired only to the top grade. Everything below it is written to a report and rendered somewhere a human might read, which is not an owner. The finding is detected, published, and actioned by nobody.",
+   "memory": "verdict-with-no-consequence",
+   "detectors": [
+    "deputy_monitor.py::_upsert_chairman_row",
+    "test_pipeline_smoke.py::TestAReconciliationHIGHReachesSomebody"
+   ],
+   "missing": []
+  },
+  {
+   "class": "limit_enforced_on_one_path_of_many",
+   "verdict": "COVERED",
+   "detail": "6 detector(s) present",
+   "owner": "CRO / order_ledger",
+   "what": "A risk limit is implemented inside ONE function that reaches the outside world, while many others reach it directly. The limit is real, tested, mirrored and reported \u2014 and optional, because a caller that never learned about it cannot forget it. Nothing in the codebase reads as a bypass: the other paths simply never mentioned the check.",
+   "memory": "severity-below-the-escalation-floor",
+   "detectors": [
+    "risk_gate.py::check",
+    "order_ledger.py::install",
+    "coherence_laws.py::law_broker_orders_are_ledgered",
+    "test_pipeline_smoke.py::TestPreTradeRiskGate",
+    "test_pipeline_smoke.py::TestTheRiskGateSitsAtTheChokePoint",
+    "test_pipeline_smoke.py::TestTheCashFloorFailsClosed"
+   ],
+   "missing": []
+  },
+  {
+   "class": "an_aggregate_is_not_a_finding",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Pod Ledger / reconciliation_check",
+   "what": "A control reports a single reconciled TOTAL. The total is arithmetic, so it is always correct and never closable: it is the sum of several unrelated defects, and no owner can fix a sum. It re-fires every run with a slightly different number, which reads as noise rather than as several standing bugs.",
+   "memory": "verdict-with-no-consequence",
+   "detectors": [
+    "pod_ledger.py::reconcile_to_broker",
+    "pod_ledger.py::_drift_causes",
+    "test_pipeline_smoke.py::TestPodLedgerAttributionHasNamedCauses"
+   ],
+   "missing": []
+  },
+  {
+   "class": "an_entitlement_counted_as_an_asset",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "Pod Ledger / CFO",
+   "what": "A book quantity that represents PERMISSION TO SPEND is summed with quantities that represent things actually owned. The sum is arithmetically valid, has a plausible magnitude, and describes nothing that exists \u2014 so no downstream check can tell it is wrong.",
+   "memory": "an-aggregate-is-not-a-finding",
+   "detectors": [
+    "pod_ledger.py::get_firm_summary",
+    "pod_ledger.py::sync_from_broker",
+    "test_pipeline_smoke.py::TestAPodBudgetIsNotMoney"
+   ],
+   "missing": []
+  },
+  {
+   "class": "recorded_by_whoever_remembered_to",
+   "verdict": "COVERED",
+   "detail": "4 detector(s) present",
+   "owner": "Pod Ledger / order_ledger",
+   "what": "A book that only learns about an event when a caller volunteers it. Every caller that does record looks correct, every caller that does not looks like ordinary code, and the book's coverage is invisible because it has no denominator.",
+   "memory": "guardrail-on-one-path",
+   "detectors": [
+    "pod_ledger.py::claim",
+    "pod_ledger.py::attributing",
+    "order_ledger.py::install",
+    "test_pipeline_smoke.py::TestAttributionSitsAtTheChokePoint"
+   ],
+   "missing": []
+  },
+  {
+   "class": "a_proxy_that_binds_hardest_on_the_cure",
+   "verdict": "COVERED",
+   "detail": "12 detector(s) present",
+   "owner": "CRO / Risk Gate",
+   "what": "A limit written on a PROXY for the quantity it means to bound. The proxy tracks the real quantity in ordinary conditions and comes apart at the boundary \u2014 so the rule is loosest when nothing is wrong and tightest against the one action that would relieve it. The tell is a rule people rewrite whenever it binds: that is not a rule, it is a suggestion with extra steps.",
+   "memory": "guardrail-on-one-path",
+   "detectors": [
+    "risk_gate.py::_hedge_verdict",
+    "risk_gate.py::_escalate_exemption",
+    "portfolio_beta.py::beta_effect_of",
+    "portfolio_beta.py::is_structural_hedge",
+    "test_pipeline_smoke.py::TestTheHedgeCarveOutIsNarrow",
+    "test_pipeline_smoke.py::TestNetBetaIsMeasuredNotAssumed",
+    "derive_risk_limits.py::hard_floor",
+    "derive_risk_limits.py::shadow_price",
+    "derive_risk_limits.py::marginal_position",
+    "rd_price_theory_agent.py::lens_proxy_disagrees_with_its_quantity",
+    "rd_price_theory_agent.py::lens_binding_constraint_without_a_price",
+    "test_pipeline_smoke.py::TestRiskLimitsAreDerivedNotInherited"
+   ],
+   "missing": []
+  },
+  {
+   "class": "an_approval_that_was_never_resourced",
+   "verdict": "COVERED",
+   "detail": "2 detector(s) present",
+   "owner": "R&D Pod / Board",
+   "what": "A decision the firm STATED and never funded. Approval is cheap and implementation is the price, so a board that approves faster than the firm can build accumulates a queue of stated priorities that no resource ever followed. Nothing fails: each proposal is correctly voted, correctly stored, and correctly ignored. The gap is only visible by comparing what was approved against what was built, which is a comparison no single artifact contains.",
+   "memory": "a-decision-recorded-nowhere",
+   "detectors": [
+    "rd_price_theory_agent.py::lens_stated_priority_without_revealed_priority",
+    "test_pipeline_smoke.py::TestThePriceTheoryAgentCommentsWithNumbers"
+   ],
+   "missing": []
+  },
+  {
+   "class": "a_ratio_of_two_different_populations",
+   "verdict": "COVERED",
+   "detail": "2 detector(s) present",
+   "owner": "Risk Manager / Manager Agent",
+   "what": "A rate whose numerator is filtered and whose denominator is not. Both halves are individually correct, both are computed from real records, and the quotient is meaningless \u2014 it measures the overlap of two populations that were never the same set. It cannot reach its healthy value no matter what the firm does, so the alarm it drives is permanent, and a permanent alarm is one people learn to scroll past. The tell is a metric that has never once been green.",
+   "memory": "an-aggregate-is-not-a-finding",
+   "detectors": [
+    "risk_manager_agent.py::_execution_partition",
+    "test_pipeline_smoke.py::TestTheExecutionRateHasItsOwnDenominator"
+   ],
+   "missing": []
+  },
+  {
+   "class": "a_snapshot_read_as_the_present",
+   "verdict": "COVERED",
+   "detail": "3 detector(s) present",
+   "owner": "HR / Agent Roster",
+   "what": "A consumer reads a generated artifact as if it described now. The artifact carries a generation timestamp; nobody reads it. Asking 'does the file have rows?' is a question a snapshot from any date answers yes to, forever, so a writer that stops is indistinguishable from a firm that stopped changing. The sharper form is a COMPARISON between two artifacts refreshed on different clocks: one deployed with every push, the other rewritten by a daily job that is never deployed. Both are correct about their own instant; the difference between them is an artefact of the schedule, not a finding.",
+   "memory": "presence-is-not-currency",
+   "detectors": [
+    "hr_agent.py::_newest_module_mtime",
+    "hr_agent.py::_roster_is_stale",
+    "test_pipeline_smoke.py::TestHRSeesTheWholeFirm"
+   ],
+   "missing": []
+  }
+ ],
+ "denominators": [],
+ "blind": [],
+ "unproven": [],
+ "uncovered": [],
+ "empty_success": []
+}

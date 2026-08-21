@@ -1,0 +1,50 @@
+[
+  {
+    "id": "fund-sanity-FICO",
+    "source": "Fundamentals Sanity Validator (CIT)",
+    "category": "LOGIC_ERROR",
+    "severity": "HIGH",
+    "confidence": 88,
+    "title": "Impossible fundamentals for FICO \u2014 quarantine from valuation",
+    "description": "long_term_debt/total_assets=1.64 (FY2025: long-term debt $3.06B exceeds total assets $1.87B \u2014 physically impossible; likely a bad EDGAR source value.)",
+    "evidence": "fundamentals_sanity: FICO fails plausibility: long_term_debt/total_assets=1.64 (FY2025: long-term debt $3.06B exceeds total assets $1.87B \u2014 physically impossible; likely a bad EDGAR source value.)",
+    "proposed_fix": "Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDGAR source fact \u2014 quarantine the ticker via is_reliable() so no pod values or trades it until corrected.",
+    "auto_implementable": false,
+    "ts": "2026-07-29T18:28:51.622229",
+    "status": "IMPLEMENTED",
+    "resolution": "Actuated 2026-07-29: fe_intrinsic_value.calculate_iv() now gates on fundamentals_sanity.is_reliable(), so this ticker is quarantined from valuation firm-wide. Guarded by test_iv_valuation_actually_calls_the_reliability_gate.",
+    "implemented_at": "2026-07-29T14:43:05.662341"
+  },
+  {
+    "id": "fund-sanity-MSCI",
+    "source": "Fundamentals Sanity Validator (CIT)",
+    "category": "LOGIC_ERROR",
+    "severity": "HIGH",
+    "confidence": 88,
+    "title": "Impossible fundamentals for MSCI \u2014 quarantine from valuation",
+    "description": "long_term_debt/total_assets=1.09 (FY2025: long-term debt $6.20B exceeds total assets $5.70B \u2014 physically impossible; likely a bad EDGAR source value.)",
+    "evidence": "fundamentals_sanity: MSCI fails plausibility: long_term_debt/total_assets=1.09 (FY2025: long-term debt $6.20B exceeds total assets $5.70B \u2014 physically impossible; likely a bad EDGAR source value.)",
+    "proposed_fix": "Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDGAR source fact \u2014 quarantine the ticker via is_reliable() so no pod values or trades it until corrected.",
+    "auto_implementable": false,
+    "ts": "2026-07-29T18:28:51.622229",
+    "status": "IMPLEMENTED",
+    "resolution": "Actuated 2026-07-29: fe_intrinsic_value.calculate_iv() now gates on fundamentals_sanity.is_reliable(), so this ticker is quarantined from valuation firm-wide. Guarded by test_iv_valuation_actually_calls_the_reliability_gate.",
+    "implemented_at": "2026-07-29T14:43:05.662341"
+  },
+  {
+    "id": "fund-sanity-SBAC",
+    "source": "Fundamentals Sanity Validator (CIT)",
+    "category": "LOGIC_ERROR",
+    "severity": "HIGH",
+    "confidence": 88,
+    "title": "Impossible fundamentals for SBAC \u2014 quarantine from valuation",
+    "description": "long_term_debt/total_assets=1.11 (FY2025: long-term debt $12.90B exceeds total assets $11.58B \u2014 physically impossible; likely a bad EDGAR source value.)",
+    "evidence": "fundamentals_sanity: SBAC fails plausibility: long_term_debt/total_assets=1.11 (FY2025: long-term debt $12.90B exceeds total assets $11.58B \u2014 physically impossible; likely a bad EDGAR source value.)",
+    "proposed_fix": "Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDGAR source fact \u2014 quarantine the ticker via is_reliable() so no pod values or trades it until corrected.",
+    "auto_implementable": false,
+    "ts": "2026-07-29T18:28:51.622229",
+    "status": "IMPLEMENTED",
+    "resolution": "Actuated 2026-07-29: fe_intrinsic_value.calculate_iv() now gates on fundamentals_sanity.is_reliable(), so this ticker is quarantined from valuation firm-wide. Guarded by test_iv_valuation_actually_calls_the_reliability_gate.",
+    "implemented_at": "2026-07-29T14:43:05.662341"
+  }
+]

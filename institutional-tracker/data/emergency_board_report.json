@@ -1,21 +1,19 @@
 {
-  "timestamp": "2026-08-14T16:44:35.858524",
+  "timestamp": "2026-08-21T00:40:16.127985",
   "session_type": "EMERGENCY",
   "convened_by": "CRO",
   "alert": {
     "raised_by": "Chief Risk Officer",
     "urgency": "HIGH",
-    "risk_score": 5,
-    "summary": "Anonymous risk assessment: 3 concern(s) identified at severity 5/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+    "risk_score": 7,
+    "summary": "Emergency board session called by Deputy Monitor. Severity: HIGH. Reason: irm_daily_check.json is 152h old (threshold 26h) and cannot be auto-recovered. Board should investigate why the producing agent has not run.",
     "concerns": [
-      "REGIME MISALIGNMENT: Portfolio is 73% deployed in equities. For BULL_LATE regime, Dalio/Klarman frameworks suggest optimal equity allocation is 45\u201365%. Currently 8pp overextended. Recommended action: raise cash buffer to at least 35%.",
-      "Canary Agent \u2014 output is 70h old (threshold: 13h). Agent may have missed a cycle.",
-      "CANARY CONTINUITY: canary_state.json is 70h old. Canary should update every few hours \u2014 a 70h gap suggests it may have stopped running."
+      "irm_daily_check.json is 152h old (threshold 26h) and cannot be auto-recovered. Board should investigate why the producing agent has not run."
     ],
     "findings": [
-      "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-67,844) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-      "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,491) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
-      "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
+      "Caller: Deputy Monitor",
+      "Severity: HIGH",
+      "Anonymous: False"
     ]
   },
   "positions": [
@@ -23,8 +21,8 @@
       "agent": "Manager Agent",
       "role": "Capital Allocation & Execution",
       "positions": [
-        "The CRO has raised an urgent risk alert (score 5/10). I am suspending all new position opens effective immediately until this session produces a resolution.",
-        "CRO flagged 3 specific concern(s): REGIME MISALIGNMENT: Portfolio is 73% deployed in equities. For BULL_LATE regime; Canary Agent \u2014 output is 70h old (threshold: 13h). Agent may have missed a cycle; CANARY CONTINUITY: canary_state.json is 70h old. Canary should update every few "
+        "The CRO has raised an urgent risk alert (score 7/10). I am suspending all new position opens effective immediately until this session produces a resolution.",
+        "CRO flagged 1 specific concern(s): irm_daily_check.json is 152h old (threshold 26h) and cannot be auto-recovered. B"
       ],
       "actions": [
         {
@@ -71,7 +69,7 @@
       "agent": "Risk Manager",
       "role": "Portfolio Risk & Compliance",
       "positions": [
-        "This alert is consistent with the portfolio risk picture I see: score 5/10 with 3 flagged concern(s). I fully support the buy halt and have verified our current VaR and concentration metrics are within bounds \u2014 but only just."
+        "This alert is consistent with the portfolio risk picture I see: score 7/10 with 1 flagged concern(s). I fully support the buy halt and have verified our current VaR and concentration metrics are within bounds \u2014 but only just."
       ],
       "actions": [
         {
@@ -94,7 +92,7 @@
       "agent": "Independent Risk Manager",
       "role": "Governance & Independent Oversight",
       "positions": [
-        "The CRO's concern is credible and well-founded. The risk score of 5/10 combined with the specific concerns raised justifies an emergency session. I support immediate action.",
+        "The CRO's concern is credible and well-founded. The risk score of 7/10 combined with the specific concerns raised justifies an emergency session. I support immediate action.",
         "From a governance perspective: this session validates that the firm's risk escalation mechanisms are functioning. The CRO acted correctly by convening the board. I recommend we record this session as a positive governance precedent."
       ],
       "actions": [
@@ -221,7 +219,7 @@
         "id": "PAUSE_NEW_BUYS"
       }
     ],
-    "timestamp": "2026-08-14T16:44:35.821587",
+    "timestamp": "2026-08-21T00:40:16.030200",
     "dry_run": false
   }
 }

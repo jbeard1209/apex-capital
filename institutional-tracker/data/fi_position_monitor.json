@@ -1,0 +1,19 @@
+{
+  "run_at": "2026-08-17T02:53:05.611691+00:00",
+  "quarter": "Q3 2026",
+  "regime": "NORMAL",
+  "spreads": {
+    "hy_spread": 315.0,
+    "ig_spread": 158.0,
+    "hy_spread_bps": 315.0,
+    "ig_spread_bps": 158.0,
+    "treasury_10yr": 4.696,
+    "yield_curve_slope": -0.604,
+    "spread_regime": "NORMAL",
+    "hyg_price": 79.70999908447266,
+    "lqd_price": 106.12000274658203
+  },
+  "positions_reviewed": 8,
+  "positions_with_actions": 0,
+  "actions": []
+}

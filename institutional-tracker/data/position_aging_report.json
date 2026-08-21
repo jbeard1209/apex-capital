@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-07-30T17:23:25.811486+00:00",
+  "positions_checked": 20,
+  "high_alerts": 3,
+  "medium_alerts": 0,
+  "results": [
+    {
+      "ticker": "AES",
+      "hold_days": 0,
+      "pnl_pct": 0.2,
+      "market_value": 4508.32,
+      "days_since_research": 999,
+      "last_research": "NEVER",
+      "status": "STALE_RESEARCH_HIGH",
+      "alert_level": "HIGH"
+    },
+    {
+      "ticker": "ARQT",
+      "hold_days": 0,
+      "pnl_pct": -0.23,
+      "market_value": 3617.25,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "CFG",
+      "hold_days": 52,
+      "pnl_pct": 11.48,
+      "market_value": 4302.3,
+      "days_since_research": 0.2,
+      "last_research": "2026-07-30",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "D",
+      "hold_days": 0,
+      "pnl_pct": -2.59,
+      "market_value": 6630.52,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "DIS",
+      "hold_days": 0,
+      "pnl_pct": 3.48,
+      "market_value": 8822.8,
+      "days_since_research": 999,
+      "last_research": "NEVER",
+      "status": "STALE_RESEARCH_HIGH",
+      "alert_level": "HIGH"
+    },
+    {
+      "ticker": "DXCM",
+      "hold_days": 0,
+      "pnl_pct": -2.37,
+      "market_value": 3849.04,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "FITB",
+      "hold_days": 0,
+      "pnl_pct": -0.78,
+      "market_value": 6826.2,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "GTLB",
+      "hold_days": 0,
+      "pnl_pct": 0.21,
+      "market_value": 4116.25,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "KEY",
+      "hold_days": 52,
+      "pnl_pct": 3.23,
+      "market_value": 5031.99,
+      "days_since_research": 0.2,
+      "last_research": "2026-07-30",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "NTNX",
+      "hold_days": 0,
+      "pnl_pct": 3.4,
+      "market_value": 5319.45,
+      "days_since_research": 999,
+      "last_research": "NEVER",
+      "status": "STALE_RESEARCH_HIGH",
+      "alert_level": "HIGH"
+    },
+    {
+      "ticker": "NVO",
+      "hold_days": 0,
+      "pnl_pct": 4.2,
+      "market_value": 2701.14,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "PINS",
+      "hold_days": 0,
+      "pnl_pct": 2.88,
+      "market_value": 5638.71,
+      "days_since_research": 1.1,
+      "last_research": "2026-07-29",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "QQQ",
+      "hold_days": 0,
+      "pnl_pct": 4.63,
+      "market_value": 7507.39,
+      "days_since_research": 0,
+      "last_research": "ETF",
+      "status": "ETF_NO_RESEARCH_NEEDED",
+      "alert_level": null
+    },
+    {
+      "ticker": "RF",
+      "hold_days": 58,
+      "pnl_pct": 11.25,
+      "market_value": 4872.72,
+      "days_since_research": 0.2,
+      "last_research": "2026-07-30",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "S",
+      "hold_days": 0,
+      "pnl_pct": -1.01,
+      "market_value": 3074.95,
+      "days_since_research": 0.2,
+      "last_research": "2026-07-30",
+      "status": "OK",
+      "alert_level": null
+    },
+    {
+      "ticker": "XLF",
+      "hold_days": 0,
+      "pnl_pct": 2.9,
+      "market_value": 5804.31,
+      "days_since_research": 0,
+      "last_research": "ETF",
+      "status": "ETF_NO_RESEARCH_NEEDED",
+      "alert_level": null
+    },
+    {
+      "ticker": "XLK",
+      "hold_days": 0,
+      "pnl_pct": -2.04,
+      "market_value": 7544.35,
+      "days_since_research": 0,
+      "last_research": "ETF",
+      "status": "ETF_NO_RESEARCH_NEEDED",
+      "alert_level": null
+    },
+    {
+      "ticker": "XLV",
+      "hold_days": 0,
+      "pnl_pct": 6.09,
+      "market_value": 5383.95,
+      "days_since_research": 0,
+      "last_research": "ETF",
+      "status": "ETF_NO_RESEARCH_NEEDED",
+      "alert_level": null
+    },
+    {
+      "ticker": "XLY",
+      "hold_days": 0,
+      "pnl_pct": 2.78,
+      "market_value": 7856.8,
+      "days_since_research": 0,
+      "last_research": "ETF",
+      "status": "ETF_NO_RESEARCH_NEEDED",
+      "alert_level": null
+    },
+    {
+      "ticker": "ZION",
+      "hold_days": 58,
+      "pnl_pct": 0.24,
+      "market_value": 5503.14,
+      "days_since_research": 0.2,
+      "last_research": "2026-07-30",
+      "status": "OK",
+      "alert_level": null
+    }
+  ]
+}

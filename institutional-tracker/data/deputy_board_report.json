@@ -1,98 +1,111 @@
 {
-  "generated_at": "2026-08-18T06:11:55.093612",
+  "generated_at": "2026-08-20T21:02:27.147275",
   "dry_run": false,
-  "proposals_reviewed": 5,
+  "proposals_reviewed": 2,
   "approved_count": 0,
   "rejected_count": 0,
   "deferred_count": 0,
-  "needs_info_count": 0,
-  "clarify_path": null,
+  "needs_info_count": 2,
+  "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "fund-sanity-FICO",
-      "title": "Impossible fundamentals for FICO \u2014 quarantine from valuation",
-      "passed": false,
-      "classification": "ESCALATED",
-      "approves": 0,
-      "rejects": 0,
-      "defers": 0,
-      "clarifies": 0,
-      "votes": [
-        {
-          "deputy": "Deputy Board",
-          "vote": "ESCALATE",
-          "rationale": "Max clarification rounds (3) exceeded."
-        }
-      ]
-    },
-    {
-      "proposal_id": "fund-sanity-MSCI",
-      "title": "Impossible fundamentals for MSCI \u2014 quarantine from valuation",
-      "passed": false,
-      "classification": "ESCALATED",
-      "approves": 0,
-      "rejects": 0,
-      "defers": 0,
-      "clarifies": 0,
-      "votes": [
-        {
-          "deputy": "Deputy Board",
-          "vote": "ESCALATE",
-          "rationale": "Max clarification rounds (3) exceeded."
-        }
-      ]
-    },
-    {
-      "proposal_id": "fund-sanity-SBAC",
-      "title": "Impossible fundamentals for SBAC \u2014 quarantine from valuation",
-      "passed": false,
-      "classification": "ESCALATED",
-      "approves": 0,
-      "rejects": 0,
-      "defers": 0,
-      "clarifies": 0,
-      "votes": [
-        {
-          "deputy": "Deputy Board",
-          "vote": "ESCALATE",
-          "rationale": "Max clarification rounds (3) exceeded."
-        }
-      ]
-    },
-    {
-      "proposal_id": "CIT-2026-874",
+      "proposal_id": "CIT-2026-881",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
+      "severity": "MEDIUM",
+      "category": "VISION",
       "passed": false,
-      "classification": "ESCALATED",
-      "approves": 0,
+      "classification": "NEEDS_INFO",
+      "approves": 2,
       "rejects": 0,
-      "defers": 0,
-      "clarifies": 0,
+      "defers": 2,
+      "clarifies": 3,
       "votes": [
         {
-          "deputy": "Deputy Board",
-          "vote": "ESCALATE",
-          "rationale": "Max clarification rounds (3) exceeded."
+          "deputy": "Deputy Manager",
+          "vote": "APPROVE",
+          "rationale": "[MEDIUM/78%] Evidence is specific, fix is actionable, no trading risk \u2014 approve."
+        },
+        {
+          "deputy": "Deputy CRO",
+          "vote": "DEFER",
+          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+        },
+        {
+          "deputy": "Deputy CIT Director",
+          "vote": "CLARIFY",
+          "rationale": "Evidence for 'Replace fixed R&D cadence with event-triggered research cycl' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
+        },
+        {
+          "deputy": "Deputy Chief of Staff",
+          "vote": "CLARIFY",
+          "rationale": "CoS cannot prioritise a fix with no specific evidence. Provide file:line or a data metric."
+        },
+        {
+          "deputy": "Deputy IRM",
+          "vote": "DEFER",
+          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
+        },
+        {
+          "deputy": "Deputy R&D Leader",
+          "vote": "APPROVE",
+          "rationale": "Research pipeline bug with specific evidence [78%] \u2014 fixing will improve signal quality."
+        },
+        {
+          "deputy": "Deputy Operations Director",
+          "vote": "CLARIFY",
+          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
         }
       ]
     },
     {
-      "proposal_id": "CIT-2026-875",
+      "proposal_id": "CIT-2026-882",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
+      "severity": "LOW",
+      "category": "VISION",
       "passed": false,
-      "classification": "ESCALATED",
-      "approves": 0,
+      "classification": "NEEDS_INFO",
+      "approves": 2,
       "rejects": 0,
-      "defers": 0,
-      "clarifies": 0,
+      "defers": 3,
+      "clarifies": 2,
       "votes": [
         {
-          "deputy": "Deputy Board",
-          "vote": "ESCALATE",
-          "rationale": "Max clarification rounds (3) exceeded."
+          "deputy": "Deputy Manager",
+          "vote": "APPROVE",
+          "rationale": "Standard VISION bug, evidence verified, safe to implement."
+        },
+        {
+          "deputy": "Deputy CRO",
+          "vote": "DEFER",
+          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+        },
+        {
+          "deputy": "Deputy CIT Director",
+          "vote": "CLARIFY",
+          "rationale": "Evidence for 'Pre-trade devil's advocate: adversarial challenge before hig' contains no verifiable reference (no file:line, metric, data path). CIT Director: add a specific citation."
+        },
+        {
+          "deputy": "Deputy Chief of Staff",
+          "vote": "DEFER",
+          "rationale": "LOW severity \u2014 acceptable to batch with next scheduled CIT cycle rather than acting now."
+        },
+        {
+          "deputy": "Deputy IRM",
+          "vote": "DEFER",
+          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
+        },
+        {
+          "deputy": "Deputy R&D Leader",
+          "vote": "APPROVE",
+          "rationale": "Research pipeline bug with specific evidence [72%] \u2014 fixing will improve signal quality."
+        },
+        {
+          "deputy": "Deputy Operations Director",
+          "vote": "CLARIFY",
+          "rationale": "Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference."
         }
       ]
     }
   ],
-  "status": "NONE_APPROVED"
+  "status": "NEEDS_INFO"
 }

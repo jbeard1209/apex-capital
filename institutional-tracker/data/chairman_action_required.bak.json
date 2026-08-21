@@ -1,0 +1,1546 @@
+[
+  {
+    "id": "chairman-decision-20260727-cro-unfreeze",
+    "severity": "CRITICAL",
+    "description": "DECISION NEEDED: The CRO has blocked ALL buys for 272 days due to a risk-calc BUG (VaR/Herfindahl weighted by signed NET exposure -> ~87x inflation on the market-neutral book; VaR read 44.9% vs real ~0.5%; HHI 240.87 vs real 0.072). Fix committed (149e513) but NOT deployed to the live VM, because Chairman directive 2026-06-09 reserves un-freezing the buy block for a board vote. To un-stick the firm and resume deploying the ~$96k idle cash, deploy with: bash gcp_setup/deploy.sh . To hold the freeze, do nothing / revert the commit.",
+    "source": "chairman_checkup_2026-07-27",
+    "ts": "2026-07-27T04:16:15.586598",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "info-20260727-oracle-terminated",
+    "severity": "HIGH",
+    "description": "RESOLVED: Hidden 3rd host (Oracle Always-Free VM 150.136.182.51, ~69 days, 47 cron jobs on the SHARED Alpaca account, source of the ghost 'Short-Term ML Board Weekly Report' emails) has been archived to ~/Desktop/apex_oracle_archive_20260727/ and TERMINATED via OCI API. INFRASTRUCTURE.md corrected.",
+    "source": "chairman_checkup_2026-07-27",
+    "ts": "2026-07-27T04:16:15.586598",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "watch-20260727-data-integrity",
+    "severity": "MEDIUM",
+    "description": "WATCH ITEMS (not blocking): (1) state.json shows 0 positions while Alpaca holds 16 -> internal ledger diverged from broker (broker is source of truth, healthy). (2) CIT backlog = 500 open items, proposals generated faster than actioned -> prune. (3) 3 agents silent >7d on firm channel (Chief of Staff, IRM Director, Operations Director). (4) 2 date-gated June-only cron leftovers on the VM (harmless). (5) 10% win-rate stat and CVaR=0 flags were symptoms of the same risk-calc bug; should self-correct once the fix deploys.",
+    "source": "chairman_checkup_2026-07-27",
+    "ts": "2026-07-27T04:16:15.586598",
+    "status": "awaiting_chairman"
+  },
+  {
+    "id": "pip-integrity-20260630-20-email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun 30, 2026\" \u00d76",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-06-30T20:50:01.080036",
+    "status": "awaiting_chairman",
+    "dedup_key": "Repeated email subjects in buffer (# unique subject(s) appear #+ times): \"Apex Capital \u2014 R&D Team Briefing | Jun #, #\" \u00d7#",
+    "times_seen": 3,
+    "first_seen_of_group": "2026-06-30T16:50:00.866216"
+  },
+  {
+    "id": "pip-integrity-20260702-00-deadmans_switch_sani",
+    "severity": "HIGH",
+    "description": "pipeline_heartbeat.json is 292.6h old on a weekday (threshold 26h) \u2014 possible genuine pipeline outage or VM issue.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-07-02T00:50:01.076806",
+    "status": "awaiting_chairman",
+    "dedup_key": "pipeline_heartbeat.json is #.#h old on a weekday (threshold #h) \u2014 possible genuine pipeline outage or VM issue.",
+    "times_seen": 15,
+    "first_seen_of_group": "2026-06-30T18:50:00.761971"
+  },
+  {
+    "id": "LTIA-20260701000009",
+    "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
+    "category": "IMPROVEMENT",
+    "description": "ML finding: 'ST model AUC 0.545 \u2014 barely above random; weak edge'. An AUC below 0.50 means the model loses to a coin flip; any capital on its signals has negative expectancy.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 42,
+    "queued_at": "2026-07-01T13:30:00.842048"
+  },
+  {
+    "id": "LTIA-20260701000009",
+    "title": "[LTIA] Expected agents silent \u2014 check they're still running",
+    "category": "IMPROVEMENT",
+    "description": "Communication finding: '3 expected agent(s) silent on firm channel >7 days'. Silent agents are invisible agents.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 60,
+    "queued_at": "2026-07-01T13:30:00.842048"
+  },
+  {
+    "id": "PHM-20260702014906-FE",
+    "source": "Pod Health Monitor",
+    "severity": "HIGH",
+    "description": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report 2h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "resolved",
+    "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
+    "ts": "2026-07-02T01:49:06.406014",
+    "dedup_key": "[FE] ZERO_PICKS: First Eagle Value pod health \u2014 First Eagle Value pipeline ran (report #h old) but produced # qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python# fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still # \u2014 keep the #% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "times_seen": 2,
+    "first_seen_of_group": "2026-07-02T01:49:06.406014"
+  },
+  {
+    "id": "PHM-20260702090133-ETF",
+    "source": "Pod Health Monitor",
+    "severity": "HIGH",
+    "description": "[ETF] ZERO_PICKS: Macro/ETF pod health \u2014 Macro/ETF pipeline ran (report 1h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.\n\nRecommended fix: python3 pod3_macro.py\nOwner: Macro Pod Board. Auto-raised by pod_health_monitor.",
+    "status": "resolved",
+    "resolution_note": "Resolved 2026-07-03: FE redeployed (EOG 37%, UPBD 27% MoS); ETF was a monitor false-positive (holds XLK/XLV/XLF) \u2014 monitor fixed to count held positions.",
+    "ts": "2026-07-02T09:01:33.574732"
+  },
+  {
+    "id": "AUD-20260702094001",
+    "source": "Deep Audit 2026-07-02",
+    "severity": "MEDIUM",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-02T09:40:01.849001",
+    "description": "[Audit] ml_research_team_leader / ml_data_watchdog orphaned \u2014 data_quality_report 469h stale \u2014 nothing invokes it (not in cron, not in overnight_ml_runner). Decide: schedule it, fold the data watchdog into an existing run, or retire the report (freshness_sentinel budget expects 54h)."
+  },
+  {
+    "id": "PHM-20260702014906-FE",
+    "title": "[FE] ZERO_PICKS: First Eagle Value pod health",
+    "category": "INTEGRATION",
+    "description": "First Eagle Value pipeline ran (report 2h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-02T09:58:42.283692"
+  },
+  {
+    "id": "PHM-20260702090133-ETF",
+    "title": "[ETF] ZERO_PICKS: Macro/ETF pod health",
+    "category": "INTEGRATION",
+    "description": "Macro/ETF pipeline ran (report 1h old) but produced 0 qualified picks \u2014 the pod is deploying no capital.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-02T09:58:42.283692"
+  },
+  {
+    "id": "LTIA-20260702120033",
+    "title": "[LTIA] Decide on idle pod capital: ML / Quantitative: $30,000 capital, zero posi",
+    "category": "IMPROVEMENT",
+    "description": "Logic Team flagged idle capital: 'ML / Quantitative: $30,000 capital, zero positions' (first seen 2026-06-11, 81x). This needs a decision, not a rerun.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 48,
+    "queued_at": "2026-07-02T13:30:16.041454"
+  },
+  {
+    "id": "LTIA-20260702120033",
+    "title": "[LTIA] CIT backlog bloat \u2014 tighten proposal quality or action path",
+    "category": "IMPROVEMENT",
+    "description": "Backlog finding: 'CIT backlog has 500 open items \u2014 proposals not being actioned'. Proposals are accumulating faster than the boards act on them.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 48,
+    "queued_at": "2026-07-02T13:30:16.041454"
+  },
+  {
+    "id": "INVEST-2026-0703-ml-parquet",
+    "title": "ML v3/v4/v5 fail every nightly run \u2014 pyarrow never installed",
+    "severity": "HIGH",
+    "category": "BUG_FIX",
+    "description": "ML models v3 (macro walk-forward), v4 (Optuna LGB), and v5 (macro-conditioned stack) fail with ModuleNotFoundError: pyarrow every time overnight_ml_runner.py runs. pyarrow was never added to requirements.txt. FORENSIC FIX APPLIED 2026-07-03: installed pyarrow 21.0.0 + added to requirements.txt. Next nightly run should succeed. Verify in logs/ml_overnight_*.log or ml_runner_daily_*.log.",
+    "evidence": "overnight_ml_runner.py:197,160,179 | predictive_model/macro_features.py:92,134",
+    "source": "forensic_investigator",
+    "ts": "2026-07-03T18:48:38.661806",
+    "status": "open",
+    "fix_applied": true,
+    "fix_description": "pip3 install pyarrow>=12.0.0; added pyarrow>=12.0.0 to requirements.txt"
+  },
+  {
+    "id": "INVEST-2026-0703-lt-noon-miss",
+    "title": "logic_team noon run missed when Mac sleeps \u2014 not in wakeup_recovery",
+    "severity": "MEDIUM",
+    "category": "INTEGRATION",
+    "description": "wakeup_recovery.py catches up main pipeline, rd_team_leader, board_meeting, etc. but does NOT include logic_team.py. When the Mac sleeps through the noon EDT run (0 12 * * * = noon EDT), the logic_team run is permanently skipped. Evidence: logic_team_20260703.log = 0 bytes (only midnight run), noon run at 12:00 EDT missed today (confirmed 18:42 EDT). File recovery.py does not log or catch logic_team. Additionally, midnight runs (0 0 * * *) consistently produce 0-byte logs since Jun 17 \u2014 likely a Mac sleep/wake timing issue at 8 PM EDT.",
+    "evidence": "wakeup_recovery.py (no logic_team reference) | logs/logic_team_20260703.log (0 bytes)",
+    "proposed_fix": "Add logic_team.py and logic_team_implementation_agent.py to wakeup_recovery catchup schedule.",
+    "source": "forensic_investigator",
+    "ts": "2026-07-03T18:48:38.661806",
+    "status": "open"
+  },
+  {
+    "id": "INVEST-BUG-2026-0703-pyarrow",
+    "title": "ML v3/v4/v5 fail every run \u2014 pyarrow never in requirements.txt",
+    "category": "BUG_FIX",
+    "description": "overnight_ml_runner.py runs v3/v4/v5 models nightly. All three fail with \"ModuleNotFoundError: No module named pyarrow\" because macro_features.py uses pd.to_parquet/pd.read_parquet (lines 92, 134). pyarrow was never in requirements.txt.",
+    "proposed_fix": "ALREADY APPLIED: pip3 install pyarrow; added pyarrow>=12.0.0 to requirements.txt",
+    "evidence": "predictive_model/macro_features.py:92 and :134 | overnight_ml_runner.py:197",
+    "confidence": 99,
+    "severity": "HIGH",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-07-04T11:32:53.583050"
+  },
+  {
+    "id": "INVEST-BUG-2026-0703-lt-cron",
+    "title": "wakeup_recovery.py missing logic_team.py catchup \u2014 noon runs permanently missed ",
+    "category": "INTEGRATION",
+    "description": "wakeup_recovery.py catches up main pipeline and supporting jobs but does not include logic_team.py or logic_team_implementation_agent.py. When Mac sleeps through noon EDT (the cron 0 12 * * *), the logic_team run is skipped for the day with no recovery. Evidence: logic_team_20260703.log = 0 bytes, noon run missed on 2026-07-03.",
+    "proposed_fix": "Add logic_team.py to wakeup_recovery.py catchup jobs list alongside main pipeline.",
+    "evidence": "wakeup_recovery.py:22 \u2014 wakeup_recovery.py (grep logic_team = empty) | logs/logic_team_20260703.log (0 bytes)",
+    "confidence": 95,
+    "severity": "MEDIUM",
+    "approved_by": "Deputy Board (MAJORITY)",
+    "status": "awaiting_chairman",
+    "times_approved": 1,
+    "queued_at": "2026-07-04T11:32:54.645966"
+  },
+  {
+    "id": "LT-125400-cro_extended_no_review",
+    "title": "CRO=HIGH for 7 cycles (28 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 7 consecutive pipeline cycles (~28 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-16T09:43:07.430496",
+    "dedup_key": "CRO=HIGH for # cycles (# days) \u2014 board must vote",
+    "times_seen": 9,
+    "first_seen_of_group": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LT-160139-cro_paralysis",
+    "title": "CRO at HIGH for 52+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 13 cycles (~52 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-15T09:46:13.573650",
+    "dedup_key": "CRO at HIGH for #+ days \u2014 firm has no buy strategy",
+    "times_seen": 6,
+    "first_seen_of_group": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LTIA-20260715115334",
+    "title": "[LTIA] Governance action: CRO=HIGH for 5 cycles (20 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "Governance check failed: 'CRO=HIGH for 5 cycles (20 days) \u2014 board must vote' (open 0d, 1x).",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-16T09:43:07.430496",
+    "dedup_key": "[LTIA] Governance action: CRO=HIGH for # cycles (# days) \u2014 board must vote",
+    "times_seen": 2,
+    "first_seen_of_group": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LTIA-20260714133149",
+    "title": "[LTIA] CRO extended block needs a vote with explicit exit criteria",
+    "category": "IMPROVEMENT",
+    "description": "CRO paralysis: 'CRO at HIGH for 32+ days \u2014 firm has no buy strategy'. A perpetual buy-block with no exit condition is a strategy vacuum.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "LTIA-20260714133205",
+    "title": "[LTIA] Governance action: 4 Chairman action item(s) unresolved for >3 days",
+    "category": "IMPROVEMENT",
+    "description": "Governance check failed: '4 Chairman action item(s) unresolved for >3 days' (open 0d, 1x).",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-15T09:46:13.573650"
+  },
+  {
+    "id": "PHM-20260723112501-FI",
+    "source": "Pod Health Monitor",
+    "severity": "CRITICAL",
+    "description": "[FI] STALE: Fixed Income pod health \u2014 Fixed Income pipeline report is 214h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fi_pipeline.py\nOwner: FI Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:01.794639"
+  },
+  {
+    "id": "PHM-20260723112501-FE",
+    "source": "Pod Health Monitor",
+    "severity": "CRITICAL",
+    "description": "[FE] STALE: First Eagle Value pod health \u2014 First Eagle Value pipeline report is 478h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 fe_pipeline.py  (then widen FE_VALUE_UNIVERSE if still 0 \u2014 keep the 25% MoS bar)\nOwner: FE Pod Board + Chairman. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:01.800983"
+  },
+  {
+    "id": "PHM-20260723112501-ETF",
+    "source": "Pod Health Monitor",
+    "severity": "CRITICAL",
+    "description": "[ETF] STALE: Macro/ETF pod health \u2014 Macro/ETF pipeline report is 474h old (max 30h) \u2014 the pipeline may not be running.\n\nRecommended fix: python3 pod3_macro.py\nOwner: Macro Pod Board. Auto-raised by pod_health_monitor.",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:01.804414"
+  },
+  {
+    "id": "FOD-20260723112502",
+    "source": "Foreign Order Detector",
+    "severity": "HIGH",
+    "status": "open",
+    "resolution_note": "",
+    "ts": "2026-07-23T11:25:02.979301",
+    "description": "[ForeignOrders] 2026-07-23 \u2014 3 account order(s) with NO local decision record (SH). Either another host is trading this account (e.g. the GCP VM) or local decision logging broke. Both demand investigation."
+  },
+  {
+    "id": "PHM-20260723112501-FI",
+    "title": "[FI] STALE: Fixed Income pod health",
+    "category": "INTEGRATION",
+    "root_cause": "Mac off \u2192 pipeline skipped \u2192 data files not refreshed",
+    "resolution": "AUTOMATIC once Oracle 24/7 server is live. catch_up.py now runs on Mac wake to partially mitigate.",
+    "status": "known_infrastructure",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:25:10.431313"
+  },
+  {
+    "id": "PHM-20260723112501-FE",
+    "title": "[FE] STALE: First Eagle Value pod health",
+    "category": "INTEGRATION",
+    "root_cause": "Mac off \u2192 pipeline skipped \u2192 data files not refreshed",
+    "resolution": "AUTOMATIC once Oracle 24/7 server is live. catch_up.py now runs on Mac wake to partially mitigate.",
+    "status": "known_infrastructure",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:25:10.431313"
+  },
+  {
+    "id": "PHM-20260723112501-ETF",
+    "title": "[ETF] STALE: Macro/ETF pod health",
+    "category": "INTEGRATION",
+    "root_cause": "Mac off \u2192 pipeline skipped \u2192 data files not refreshed",
+    "resolution": "AUTOMATIC once Oracle 24/7 server is live. catch_up.py now runs on Mac wake to partially mitigate.",
+    "status": "known_infrastructure",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:25:10.431313"
+  },
+  {
+    "id": "LT-113031-cro_extended_no_review",
+    "title": "CRO=HIGH for 12 cycles (48 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 12 consecutive pipeline cycles (~48 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 6,
+    "queued_at": "2026-07-23T11:35:43.164168"
+  },
+  {
+    "id": "LT-113031-cro_paralysis",
+    "title": "CRO at HIGH for 48+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 12 cycles (~48 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 6,
+    "queued_at": "2026-07-23T11:35:43.164168"
+  },
+  {
+    "id": "LTIA-20260723113542",
+    "title": "[LTIA] Reconcile contradicting risk signals: CRO=HIGH but Canary=GREEN and IRM h",
+    "category": "IMPROVEMENT",
+    "description": "Risk monitors disagree: 'CRO=HIGH but Canary=GREEN and IRM has 0 flags'. The board cannot act on signals that point opposite directions.",
+    "confidence": 85,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:35:43.164168"
+  },
+  {
+    "id": "LO-20260723113542-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 12 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 12 consecutive cycles (roughly 48 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-23T11:35:43.164168"
+  },
+  {
+    "id": "LT-114639-cro_extended_no_review",
+    "title": "CRO=HIGH for 13 cycles (52 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 13 consecutive pipeline cycles (~52 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-23T11:46:40.153286"
+  },
+  {
+    "id": "LO-20260723114639-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 13 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 13 consecutive cycles (roughly 52 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T11:46:40.153286"
+  },
+  {
+    "id": "LT-120813-cro_extended_no_review",
+    "title": "CRO=HIGH for 14 cycles (56 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 14 consecutive pipeline cycles (~56 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:08:14.001570"
+  },
+  {
+    "id": "LT-120813-cro_paralysis",
+    "title": "CRO at HIGH for 56+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 14 cycles (~56 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:08:14.001570"
+  },
+  {
+    "id": "LO-20260723120813-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 14 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 14 consecutive cycles (roughly 56 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:08:14.001570"
+  },
+  {
+    "id": "LT-122948-cro_extended_no_review",
+    "title": "CRO=HIGH for 15 cycles (60 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 15 consecutive pipeline cycles (~60 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:29:48.903128"
+  },
+  {
+    "id": "LT-122948-cro_paralysis",
+    "title": "CRO at HIGH for 60+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 15 cycles (~60 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:29:48.903128"
+  },
+  {
+    "id": "LO-20260723122948-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 15 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 15 consecutive cycles (roughly 60 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:29:48.903128"
+  },
+  {
+    "id": "LT-125120-cro_extended_no_review",
+    "title": "CRO=HIGH for 16 cycles (64 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 16 consecutive pipeline cycles (~64 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:51:21.559901"
+  },
+  {
+    "id": "LT-125120-cro_paralysis",
+    "title": "CRO at HIGH for 64+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 16 cycles (~64 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:51:21.559901"
+  },
+  {
+    "id": "LO-20260723125120-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 16 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 16 consecutive cycles (roughly 64 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T12:51:21.559901"
+  },
+  {
+    "id": "LT-131249-cro_extended_no_review",
+    "title": "CRO=HIGH for 17 cycles (68 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 17 consecutive pipeline cycles (~68 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-23T13:12:50.014652"
+  },
+  {
+    "id": "LT-131249-cro_paralysis",
+    "title": "CRO at HIGH for 68+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 17 cycles (~68 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T13:12:50.014652"
+  },
+  {
+    "id": "LO-20260723131249-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 17 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 17 consecutive cycles (roughly 68 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-23T13:12:50.014652"
+  },
+  {
+    "id": "LT-133418-cro_extended_no_review",
+    "title": "CRO=HIGH for 18 cycles (72 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 18 consecutive pipeline cycles (~72 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-23T13:34:19.415597"
+  },
+  {
+    "id": "LT-133418-cro_paralysis",
+    "title": "CRO at HIGH for 72+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 18 cycles (~72 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T13:34:19.415597"
+  },
+  {
+    "id": "LO-20260723133418-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 18 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 18 consecutive cycles (roughly 72 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 4,
+    "queued_at": "2026-07-23T13:34:19.415597"
+  },
+  {
+    "id": "LT-135547-cro_extended_no_review",
+    "title": "CRO=HIGH for 19 cycles (76 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 19 consecutive pipeline cycles (~76 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T13:55:47.912483"
+  },
+  {
+    "id": "LT-135547-cro_paralysis",
+    "title": "CRO at HIGH for 76+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 19 cycles (~76 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T13:55:47.912483"
+  },
+  {
+    "id": "LO-20260723135547-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 19 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 19 consecutive cycles (roughly 76 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T13:55:47.912483"
+  },
+  {
+    "id": "LT-141714-cro_extended_no_review",
+    "title": "CRO=HIGH for 20 cycles (80 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 20 consecutive pipeline cycles (~80 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T14:17:14.748766"
+  },
+  {
+    "id": "LT-141714-cro_paralysis",
+    "title": "CRO at HIGH for 80+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 20 cycles (~80 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T14:17:14.748766"
+  },
+  {
+    "id": "LO-20260723141714-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 20 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 20 consecutive cycles (roughly 80 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T14:17:14.748766"
+  },
+  {
+    "id": "LT-143846-cro_extended_no_review",
+    "title": "CRO=HIGH for 21 cycles (84 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 21 consecutive pipeline cycles (~84 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T14:38:47.151294"
+  },
+  {
+    "id": "LT-143846-cro_paralysis",
+    "title": "CRO at HIGH for 84+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 21 cycles (~84 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T14:38:47.151294"
+  },
+  {
+    "id": "LO-20260723143846-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 21 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 21 consecutive cycles (roughly 84 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T14:38:47.151294"
+  },
+  {
+    "id": "LT-150011-cro_extended_no_review",
+    "title": "CRO=HIGH for 22 cycles (88 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 22 consecutive pipeline cycles (~88 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:00:12.532716"
+  },
+  {
+    "id": "LT-150011-cro_paralysis",
+    "title": "CRO at HIGH for 88+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 22 cycles (~88 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:00:12.532716"
+  },
+  {
+    "id": "LO-20260723150011-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 22 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 22 consecutive cycles (roughly 88 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:00:12.532716"
+  },
+  {
+    "id": "LT-152140-cro_extended_no_review",
+    "title": "CRO=HIGH for 23 cycles (92 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 23 consecutive pipeline cycles (~92 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:21:41.543492"
+  },
+  {
+    "id": "LT-152140-cro_paralysis",
+    "title": "CRO at HIGH for 92+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 23 cycles (~92 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:21:41.543492"
+  },
+  {
+    "id": "LO-20260723152140-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 23 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 23 consecutive cycles (roughly 92 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:21:41.543492"
+  },
+  {
+    "id": "LT-154310-cro_extended_no_review",
+    "title": "CRO=HIGH for 24 cycles (96 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 24 consecutive pipeline cycles (~96 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:43:11.449866"
+  },
+  {
+    "id": "LT-154310-cro_paralysis",
+    "title": "CRO at HIGH for 96+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 24 cycles (~96 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:43:11.449866"
+  },
+  {
+    "id": "LO-20260723154310-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 24 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 24 consecutive cycles (roughly 96 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T15:43:11.449866"
+  },
+  {
+    "id": "LT-160408-cro_extended_no_review",
+    "title": "CRO=HIGH for 25 cycles (100 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 25 consecutive pipeline cycles (~100 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:04:09.579923"
+  },
+  {
+    "id": "LT-160408-cro_paralysis",
+    "title": "CRO at HIGH for 100+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 25 cycles (~100 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:04:09.579923"
+  },
+  {
+    "id": "LO-20260723160408-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 25 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 25 consecutive cycles (roughly 100 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:04:09.579923"
+  },
+  {
+    "id": "LT-162613-cro_extended_no_review",
+    "title": "CRO=HIGH for 26 cycles (104 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 26 consecutive pipeline cycles (~104 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:26:14.497517"
+  },
+  {
+    "id": "LT-162613-cro_paralysis",
+    "title": "CRO at HIGH for 104+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 26 cycles (~104 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:26:14.497517"
+  },
+  {
+    "id": "LO-20260723162613-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 26 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 26 consecutive cycles (roughly 104 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:26:14.497517"
+  },
+  {
+    "id": "LT-164736-cro_extended_no_review",
+    "title": "CRO=HIGH for 27 cycles (108 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 27 consecutive pipeline cycles (~108 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:47:36.599104"
+  },
+  {
+    "id": "LT-164736-cro_paralysis",
+    "title": "CRO at HIGH for 108+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 27 cycles (~108 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:47:36.599104"
+  },
+  {
+    "id": "LO-20260723164736-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 27 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 27 consecutive cycles (roughly 108 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T16:47:36.599104"
+  },
+  {
+    "id": "LT-170856-cro_extended_no_review",
+    "title": "CRO=HIGH for 28 cycles (112 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 28 consecutive pipeline cycles (~112 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:08:57.141973"
+  },
+  {
+    "id": "LT-170856-cro_paralysis",
+    "title": "CRO at HIGH for 112+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 28 cycles (~112 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:08:57.141973"
+  },
+  {
+    "id": "LO-20260723170856-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 28 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 28 consecutive cycles (roughly 112 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:08:57.141973"
+  },
+  {
+    "id": "LT-173017-cro_extended_no_review",
+    "title": "CRO=HIGH for 29 cycles (116 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 29 consecutive pipeline cycles (~116 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:30:18.648932"
+  },
+  {
+    "id": "LT-173017-cro_paralysis",
+    "title": "CRO at HIGH for 116+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 29 cycles (~116 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:30:18.648932"
+  },
+  {
+    "id": "LO-20260723173018-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 29 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 29 consecutive cycles (roughly 116 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:30:18.648932"
+  },
+  {
+    "id": "LT-175139-cro_extended_no_review",
+    "title": "CRO=HIGH for 30 cycles (120 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 30 consecutive pipeline cycles (~120 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:51:40.226370"
+  },
+  {
+    "id": "LT-175139-cro_paralysis",
+    "title": "CRO at HIGH for 120+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 30 cycles (~120 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:51:40.226370"
+  },
+  {
+    "id": "LO-20260723175139-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 30 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 30 consecutive cycles (roughly 120 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-23T17:51:40.226370"
+  },
+  {
+    "id": "LT-100631-cro_extended_no_review",
+    "title": "CRO=HIGH for 31 cycles (124 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 31 consecutive pipeline cycles (~124 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:06:59.512808"
+  },
+  {
+    "id": "LT-100631-cro_paralysis",
+    "title": "CRO at HIGH for 124+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 31 cycles (~124 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:06:59.512808"
+  },
+  {
+    "id": "LO-20260724100658-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 31 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 31 consecutive cycles (roughly 124 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:06:59.512808"
+  },
+  {
+    "id": "LT-102958-cro_extended_no_review",
+    "title": "CRO=HIGH for 32 cycles (128 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 32 consecutive pipeline cycles (~128 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:29:59.108913"
+  },
+  {
+    "id": "LT-102958-cro_paralysis",
+    "title": "CRO at HIGH for 128+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 32 cycles (~128 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:29:59.108913"
+  },
+  {
+    "id": "LO-20260724102958-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 32 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 32 consecutive cycles (roughly 128 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:29:59.108913"
+  },
+  {
+    "id": "LT-105122-cro_extended_no_review",
+    "title": "CRO=HIGH for 33 cycles (132 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 33 consecutive pipeline cycles (~132 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:51:23.063720"
+  },
+  {
+    "id": "LT-105122-cro_paralysis",
+    "title": "CRO at HIGH for 132+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 33 cycles (~132 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:51:23.063720"
+  },
+  {
+    "id": "LO-20260724105122-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 33 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 33 consecutive cycles (roughly 132 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T10:51:23.063720"
+  },
+  {
+    "id": "LT-111244-cro_extended_no_review",
+    "title": "CRO=HIGH for 34 cycles (136 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 34 consecutive pipeline cycles (~136 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T11:12:45.278680"
+  },
+  {
+    "id": "LT-111244-cro_paralysis",
+    "title": "CRO at HIGH for 136+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 34 cycles (~136 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T11:12:45.278680"
+  },
+  {
+    "id": "LO-20260724111244-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 34 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 34 consecutive cycles (roughly 136 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T11:12:45.278680"
+  },
+  {
+    "id": "LT-113415-cro_extended_no_review",
+    "title": "CRO=HIGH for 35 cycles (140 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 35 consecutive pipeline cycles (~140 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T11:34:16.580990"
+  },
+  {
+    "id": "LT-113415-cro_paralysis",
+    "title": "CRO at HIGH for 140+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 35 cycles (~140 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T11:34:16.580990"
+  },
+  {
+    "id": "LO-20260724113415-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 35 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 35 consecutive cycles (roughly 140 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T11:34:16.580990"
+  },
+  {
+    "id": "LT-115608-cro_extended_no_review",
+    "title": "CRO=HIGH for 36 cycles (144 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 36 consecutive pipeline cycles (~144 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:01:09.028529"
+  },
+  {
+    "id": "LT-115608-cro_paralysis",
+    "title": "CRO at HIGH for 144+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 36 cycles (~144 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:01:09.028529"
+  },
+  {
+    "id": "LO-20260724120108-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 36 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 36 consecutive cycles (roughly 144 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:01:09.028529"
+  },
+  {
+    "id": "LT-122723-cro_extended_no_review",
+    "title": "CRO=HIGH for 37 cycles (148 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 37 consecutive pipeline cycles (~148 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:27:24.349116"
+  },
+  {
+    "id": "LT-122723-cro_paralysis",
+    "title": "CRO at HIGH for 148+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 37 cycles (~148 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:27:24.349116"
+  },
+  {
+    "id": "LO-20260724122723-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 37 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 37 consecutive cycles (roughly 148 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:27:24.349116"
+  },
+  {
+    "id": "LT-124914-cro_extended_no_review",
+    "title": "CRO=HIGH for 38 cycles (152 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 38 consecutive pipeline cycles (~152 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:49:15.479659"
+  },
+  {
+    "id": "LT-124914-cro_paralysis",
+    "title": "CRO at HIGH for 152+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 38 cycles (~152 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:49:15.479659"
+  },
+  {
+    "id": "LO-20260724124914-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 38 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 38 consecutive cycles (roughly 152 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T12:49:15.479659"
+  },
+  {
+    "id": "LT-131105-cro_extended_no_review",
+    "title": "CRO=HIGH for 39 cycles (156 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 39 consecutive pipeline cycles (~156 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:11:05.707781"
+  },
+  {
+    "id": "LT-131105-cro_paralysis",
+    "title": "CRO at HIGH for 156+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 39 cycles (~156 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:11:05.707781"
+  },
+  {
+    "id": "LO-20260724131105-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 39 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 39 consecutive cycles (roughly 156 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:11:05.707781"
+  },
+  {
+    "id": "LT-133259-cro_extended_no_review",
+    "title": "CRO=HIGH for 40 cycles (160 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 40 consecutive pipeline cycles (~160 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:33:00.155777"
+  },
+  {
+    "id": "LT-133259-cro_paralysis",
+    "title": "CRO at HIGH for 160+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 40 cycles (~160 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:33:00.155777"
+  },
+  {
+    "id": "LO-20260724133259-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 40 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 40 consecutive cycles (roughly 160 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:33:00.155777"
+  },
+  {
+    "id": "LT-135452-cro_extended_no_review",
+    "title": "CRO=HIGH for 41 cycles (164 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 41 consecutive pipeline cycles (~164 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:54:53.634974"
+  },
+  {
+    "id": "LT-135452-cro_paralysis",
+    "title": "CRO at HIGH for 164+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 41 cycles (~164 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:54:53.634974"
+  },
+  {
+    "id": "LO-20260724135452-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 41 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 41 consecutive cycles (roughly 164 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T13:54:53.634974"
+  },
+  {
+    "id": "LT-141648-cro_extended_no_review",
+    "title": "CRO=HIGH for 42 cycles (168 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 42 consecutive pipeline cycles (~168 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:16:49.429914"
+  },
+  {
+    "id": "LT-141648-cro_paralysis",
+    "title": "CRO at HIGH for 168+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 42 cycles (~168 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:16:49.429914"
+  },
+  {
+    "id": "LO-20260724141648-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 42 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 42 consecutive cycles (roughly 168 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:16:49.429914"
+  },
+  {
+    "id": "LT-143816-cro_extended_no_review",
+    "title": "CRO=HIGH for 43 cycles (172 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 43 consecutive pipeline cycles (~172 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:38:17.246926"
+  },
+  {
+    "id": "LT-143816-cro_paralysis",
+    "title": "CRO at HIGH for 172+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 43 cycles (~172 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:38:17.246926"
+  },
+  {
+    "id": "LO-20260724143816-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 43 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 43 consecutive cycles (roughly 172 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:38:17.246926"
+  },
+  {
+    "id": "LT-145935-cro_extended_no_review",
+    "title": "CRO=HIGH for 44 cycles (176 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 44 consecutive pipeline cycles (~176 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:59:36.114257"
+  },
+  {
+    "id": "LT-145935-cro_paralysis",
+    "title": "CRO at HIGH for 176+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 44 cycles (~176 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:59:36.114257"
+  },
+  {
+    "id": "LO-20260724145935-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 44 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 44 consecutive cycles (roughly 176 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T14:59:36.114257"
+  },
+  {
+    "id": "LT-152059-cro_extended_no_review",
+    "title": "CRO=HIGH for 45 cycles (180 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 45 consecutive pipeline cycles (~180 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T15:21:00.269974"
+  },
+  {
+    "id": "LT-152059-cro_paralysis",
+    "title": "CRO at HIGH for 180+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 45 cycles (~180 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T15:21:00.269974"
+  },
+  {
+    "id": "LO-20260724152059-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 45 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 45 consecutive cycles (roughly 180 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T15:21:00.269974"
+  },
+  {
+    "id": "LT-154224-cro_extended_no_review",
+    "title": "CRO=HIGH for 46 cycles (184 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 46 consecutive pipeline cycles (~184 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T15:42:24.704405"
+  },
+  {
+    "id": "LT-154224-cro_paralysis",
+    "title": "CRO at HIGH for 184+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 46 cycles (~184 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T15:42:24.704405"
+  },
+  {
+    "id": "LO-20260724154224-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 46 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 46 consecutive cycles (roughly 184 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T15:42:24.704405"
+  },
+  {
+    "id": "LT-160311-cro_extended_no_review",
+    "title": "CRO=HIGH for 47 cycles (188 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 47 consecutive pipeline cycles (~188 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:03:11.983884"
+  },
+  {
+    "id": "LT-160311-cro_paralysis",
+    "title": "CRO at HIGH for 188+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 47 cycles (~188 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:03:11.983884"
+  },
+  {
+    "id": "LO-20260724160311-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 47 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 47 consecutive cycles (roughly 188 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:03:11.983884"
+  },
+  {
+    "id": "LT-162508-cro_extended_no_review",
+    "title": "CRO=HIGH for 48 cycles (192 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 48 consecutive pipeline cycles (~192 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:25:08.635745"
+  },
+  {
+    "id": "LT-162508-cro_paralysis",
+    "title": "CRO at HIGH for 192+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 48 cycles (~192 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:25:08.635745"
+  },
+  {
+    "id": "LO-20260724162508-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 48 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 48 consecutive cycles (roughly 192 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:25:08.635745"
+  },
+  {
+    "id": "LT-164627-cro_extended_no_review",
+    "title": "CRO=HIGH for 49 cycles (196 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 49 consecutive pipeline cycles (~196 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:46:27.946306"
+  },
+  {
+    "id": "LT-164627-cro_paralysis",
+    "title": "CRO at HIGH for 196+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 49 cycles (~196 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:46:27.946306"
+  },
+  {
+    "id": "LO-20260724164627-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 49 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 49 consecutive cycles (roughly 196 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T16:46:27.946306"
+  },
+  {
+    "id": "LT-170745-cro_extended_no_review",
+    "title": "CRO=HIGH for 50 cycles (200 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 50 consecutive pipeline cycles (~200 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:07:46.445202"
+  },
+  {
+    "id": "LT-170745-cro_paralysis",
+    "title": "CRO at HIGH for 200+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 50 cycles (~200 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:07:46.445202"
+  },
+  {
+    "id": "LO-20260724170745-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 50 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 50 consecutive cycles (roughly 200 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:07:46.445202"
+  },
+  {
+    "id": "LT-172904-cro_extended_no_review",
+    "title": "CRO=HIGH for 51 cycles (204 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 51 consecutive pipeline cycles (~204 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:29:04.706081"
+  },
+  {
+    "id": "LT-172904-cro_paralysis",
+    "title": "CRO at HIGH for 204+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 51 cycles (~204 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:29:04.706081"
+  },
+  {
+    "id": "LO-20260724172904-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 51 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 51 consecutive cycles (roughly 204 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:29:04.706081"
+  },
+  {
+    "id": "LT-175022-cro_extended_no_review",
+    "title": "CRO=HIGH for 52 cycles (208 days) \u2014 board must vote",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 52 consecutive pipeline cycles (~208 days). During this time, all new buy orders have been blocked. The board last met 0 days ago.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:50:22.857186"
+  },
+  {
+    "id": "LT-175022-cro_paralysis",
+    "title": "CRO at HIGH for 208+ days \u2014 firm has no buy strategy",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has blocked all buys for 52 cycles (~208 days). The firm currently holds 12 position(s) and is generating picks it cannot deploy. This is not a risk posture \u2014 it is a strategy vacuum.",
+    "confidence": 88,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:50:22.857186"
+  },
+  {
+    "id": "LO-20260724175022-extended_cro_high_no_review",
+    "title": "CRO has been at HIGH for 52 cycles \u2014 no board review",
+    "category": "IMPROVEMENT",
+    "description": "The CRO has been at HIGH for 52 consecutive cycles (roughly 208 days). During this entire period, all new buy orders have been blocked or severely restricted. The board has not formally voted on whether this posture is still appropriate.",
+    "confidence": 90,
+    "status": "awaiting_chairman",
+    "times_approved": 2,
+    "queued_at": "2026-07-24T17:50:22.857186"
+  }
+]

@@ -1,0 +1,125 @@
+{
+  "ticker": "LADR",
+  "retrieved_at": "2026-07-28T14:42:09.627526+00:00",
+  "recent_filings": [
+    {
+      "form_type": "",
+      "filed_at": "2026-07-23",
+      "company": "Ladder Capital Corp  (LADR)  (CIK 0001577670)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-06-05",
+      "company": "Ladder Capital Corp  (LADR)  (CIK 0001577670)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-23",
+      "company": "Ladder Capital Corp  (LADR)  (CIK 0001577670)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-06-29",
+      "company": "CIM REAL ESTATE FINANCE TRUST, INC.  (CMRF)  (CIK 0001498547)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-05-08",
+      "company": "ARBOR REALTY TRUST INC  (ABR, ABR-PD, ABR-PE, ABR-PF)  (CIK 0001253986)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-06-18",
+      "company": "Chicago Atlantic Real Estate Finance, Inc.  (REFI)  (CIK 0001867949)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-06-18",
+      "company": "Chicago Atlantic BDC, Inc.  (LIEN)  (CIK 0001843162)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-07-27",
+      "company": "Ladder Capital Corp  (LADR)  (CIK 0001577670)",
+      "description": "",
+      "accession": ""
+    },
+    {
+      "form_type": "",
+      "filed_at": "2026-04-29",
+      "company": "Kennedy-Wilson Holdings, Inc.  (KW)  (CIK 0001408100)",
+      "description": "",
+      "accession": ""
+    }
+  ],
+  "recent_headlines": [
+    {
+      "title": "LADR Q2 Deep Dive: Loan Portfolio Growth and Strategic Asset Rotation Define Quarter",
+      "date": "Mon, 27 Jul 2026 14:45:02 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/ladr-q2-deep-dive-loan-144502830.html?.tsrc=rss"
+    },
+    {
+      "title": "Did Ladder Capital's (LADR) Q2 2026 Profit Margin Reveal a Deeper Shift in Its Model?",
+      "date": "Sun, 26 Jul 2026 03:18:24 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/did-ladder-capitals-ladr-q2-031824139.html?.tsrc=rss"
+    },
+    {
+      "title": "Is Ladder Capital (LADR) Fully Valued Following Its Q2 Earnings And Loan Portfolio Growth?",
+      "date": "Sat, 25 Jul 2026 21:17:20 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/ladder-capital-ladr-fully-valued-211720701.html?.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital Corp Q2 2026 Earnings Call Summary",
+      "date": "Thu, 23 Jul 2026 21:18:43 +0000",
+      "link": "https://app.moby.co/home/research/tools/earningsCalendar/earnings-ladder-capital-corp-q2-2026-earnings-call-summary?utm_source=yahoo_finance&utm_medium=rss&.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital Q2 Earnings Call Highlights",
+      "date": "Thu, 23 Jul 2026 21:07:28 +0000",
+      "link": "https://www.marketbeat.com/instant-alerts/ladder-capital-q2-earnings-call-highlights-2026-07-23/?utm_source=yahoofinance&utm_medium=yahoofinance&.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital Corp (LADR) Q2 2026 Earnings Call Highlights: Strong Loan Origination and High ...",
+      "date": "Thu, 23 Jul 2026 21:03:28 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/ladder-capital-corp-ladr-q2-210328022.html?.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital (LADR) Q2 Earnings Meet Estimates",
+      "date": "Thu, 23 Jul 2026 13:45:02 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/ladder-capital-ladr-q2-earnings-134502354.html?.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital (NYSE:LADR) Exceeds Q2 CY2026 Expectations",
+      "date": "Thu, 23 Jul 2026 12:52:05 +0000",
+      "link": "https://finance.yahoo.com/real-estate/articles/ladder-capital-nyse-ladr-exceeds-125205548.html?.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital Corp Reports Results for the Quarter Ended June 30, 2026",
+      "date": "Thu, 23 Jul 2026 12:30:00 +0000",
+      "link": "https://finance.yahoo.com/real-estate/articles/ladder-capital-corp-reports-results-123000537.html?.tsrc=rss"
+    },
+    {
+      "title": "Ladder Capital (LADR) Reports Earnings Tomorrow: What To Expect",
+      "date": "Wed, 22 Jul 2026 05:58:27 +0000",
+      "link": "https://finance.yahoo.com/markets/stocks/articles/ladder-capital-ladr-reports-earnings-055827359.html?.tsrc=rss"
+    }
+  ],
+  "headline_sentiment": "NEUTRAL",
+  "bullish_signals": [],
+  "red_flags": [],
+  "research_summary": "LADR has 0 recent SEC filing(s) in the past 90 days and 10 recent news headline(s). News sentiment is NEUTRAL with no dominant bullish or bearish signals."
+}

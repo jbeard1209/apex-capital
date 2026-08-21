@@ -1,0 +1,8 @@
+{
+  "checked_at": "2026-08-21T04:57:27.312225+00:00",
+  "power": "PASS",
+  "gcp_status": "RUNNING",
+  "writer": "HIGH",
+  "detail": "RUNNING",
+  "writer_msg": "the designated writer 'apexcapitalc' has been silent 45h (last order 2026-08-19T08:00) and no other host traded after it \u2014 so a market closure cannot be told apart from an outage from here. Verify the host directly."
+}

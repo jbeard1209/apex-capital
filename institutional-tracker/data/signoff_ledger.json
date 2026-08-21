@@ -1,0 +1,27 @@
+{
+  "boardmeeting-apply-code-changes": {
+    "change_id": "boardmeeting-apply-code-changes",
+    "title": "board _apply_code_changes",
+    "files": [
+      "chief_of_staff_agent.py",
+      "main.py"
+    ],
+    "added": 0,
+    "removed": 0,
+    "category": "GOVERNANCE",
+    "test_result": null,
+    "proposed_at": "2026-07-30T11:45:17.586914",
+    "signatures": [],
+    "veto": null,
+    "vetoes": [],
+    "hard_line_hits": [
+      "main.py"
+    ],
+    "status": "ROUTE_TO_HUMAN",
+    "outcome": null,
+    "deployed_at": null,
+    "reproposed_at": "2026-08-21T04:40:16.122247+00:00",
+    "test_commit": null,
+    "test_fingerprint": null
+  }
+}

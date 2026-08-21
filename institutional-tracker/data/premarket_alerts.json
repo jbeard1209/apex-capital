@@ -1,28 +1,34 @@
 {
-  "generated_at": "2026-08-17T08:34:06.966645",
+  "generated_at": "2026-08-20T08:37:59.063055",
   "agent": "Pre-Market Check",
   "overall_status": "MEDIUM",
-  "portfolio_value": 99290.39,
-  "n_positions": 17,
+  "portfolio_value": 98945.04,
+  "n_positions": 20,
   "vix": {
-    "vix": 14.93,
+    "vix": 15.96,
     "elevated": false,
     "data_available": true
   },
   "spy_proxy": {
-    "spy_gap_pct": 0.03,
+    "spy_gap_pct": -0.6,
     "data_available": true,
-    "direction": "up"
+    "direction": "down"
   },
   "severity_counts": {
-    "MEDIUM": 1
+    "MEDIUM": 2
   },
   "alerts": [
     {
       "severity": "MEDIUM",
       "category": "STOP_PROXIMITY",
-      "ticker": "UL",
-      "message": "Near stop-loss: overnight gap -1.41%, projected P&L -5.4% (stop at -7.0%, margin: +1.6pp)."
+      "ticker": "NNN",
+      "message": "Near stop-loss: overnight gap -2.47%, projected P&L -6.8% (stop at -7.0%, margin: +0.2pp)."
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "GAP_DOWN",
+      "ticker": "SQM",
+      "message": "Large overnight gap-down: -4.48% (threshold: -3%). Review thesis."
     }
   ]
 }

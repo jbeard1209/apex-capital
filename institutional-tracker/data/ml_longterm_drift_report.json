@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-07-31T14:58:07.953838+00:00",
+  "status": "ok",
+  "periods": {
+    "pre_2020": {
+      "total": 4584,
+      "positive": 2781,
+      "positive_rate": 0.6067
+    },
+    "post_2020": {
+      "total": 13068,
+      "positive": 7028,
+      "positive_rate": 0.5378
+    },
+    "pre_2022": {
+      "total": 6797,
+      "positive": 3937,
+      "positive_rate": 0.5792
+    },
+    "post_2022": {
+      "total": 10855,
+      "positive": 5872,
+      "positive_rate": 0.5409
+    },
+    "all_time": {
+      "total": 17652,
+      "positive": 9809,
+      "positive_rate": 0.5557
+    }
+  },
+  "warnings": [],
+  "total_labeled": 17652
+}
