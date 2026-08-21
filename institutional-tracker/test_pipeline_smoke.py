@@ -17447,6 +17447,321 @@ class TestAnAbortedRoundIsNotAPassedRound(unittest.TestCase):
 # =============================================================================
 # Runner
 # =============================================================================
+class TestAReasonIsNotADerivation(unittest.TestCase):
+    """parameter_audit.py — the census of dials nobody priced.
+
+    Jack, 2026-08-21: "I initially priced the staleness guard at 48h, then
+    measured it... Age was the wrong margin; the hazard is deploys." The
+    threshold was fine; the QUANTITY under it was wrong. That defect was found
+    because someone looked. These tests exist so the next one is found because
+    something checked.
+
+    Every test below is an ATTACK on the auditor. The interesting ones are the
+    three ways it could report a clean bill of health while being blind:
+      * accept prose as a derivation (rubber stamp),
+      * go quiet when it cannot tell what code is live (fail closed = excuse),
+      * grade itself against the postmortem comments in its own source.
+    """
+
+    def _P(self, tmpdir):
+        """parameter_audit pointed at a sandbox, never the real data/."""
+        import importlib, parameter_audit as P
+        importlib.reload(P)
+        P.REGISTRY_PATH = tmpdir / "reg.json"
+        P.BASELINE_PATH = tmpdir / "base.json"
+        P.REPORT_PATH = tmpdir / "rep.json"
+        return P
+
+    def _tmp(self, name):
+        d = Path(tempfile.mkdtemp(prefix="paramaudit_" + name))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        return d
+
+    # -- the module actually finds a consequential dial ----------------------
+    def test_a_threshold_that_gates_a_consequence_is_found(self):
+        d = self._tmp("find")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "MAX_LOSS_PCT = 7.5\n"
+            "def check(x):\n"
+            "    if x > MAX_LOSS_PCT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        rep = P.run(root=d)
+        keys = [e["key"] for e in rep["undocumented"]]
+        self.assertIn("worker.py::MAX_LOSS_PCT", keys)
+        self.assertEqual(1, rep["n_consequential"])
+
+    def test_a_threshold_that_gates_only_a_log_line_is_not_a_policy(self):
+        """False-positive control. If everything is consequential, the number
+        the ratchet guards is noise and nobody will ever move it."""
+        d = self._tmp("logonly")
+        (d / "main.py").write_text("import quiet\n")
+        (d / "quiet.py").write_text(
+            "CHATTY_LIMIT = 12\n"
+            "def check(x):\n"
+            "    if x > CHATTY_LIMIT:\n"
+            "        print('noisy')\n")
+        P = self._P(d)
+        rep = P.run(root=d)
+        self.assertEqual(0, rep["n_consequential"])
+        self.assertEqual(1, rep["n_gating_a_branch"],
+                         "it is still a threshold — only the consequence is absent")
+
+    # -- POISON PILL 1: prose must not pass for a measurement ----------------
+    def test_a_rationale_without_a_measurement_does_not_count_as_derived(self):
+        """POISON PILL. Register the parameter with a paragraph of confident,
+        entirely reasonable prose and NO measurement. If the audit calls it
+        documented, then this registry is a rubber stamp and the whole control
+        degrades to 'does an explanation exist?' — a question one stale
+        paragraph answers yes to, forever."""
+        d = self._tmp("prose")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "MAX_LOSS_PCT = 7.5\n"
+            "def check(x):\n"
+            "    if x > MAX_LOSS_PCT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        P.REGISTRY_PATH.write_text(json.dumps({
+            "worker.py::MAX_LOSS_PCT": {
+                "value": 7.5,
+                "rationale": "A cumulative cap is needed because a big change "
+                             "split into small ones each passes the per-change "
+                             "limit. Industry practice supports this range.",
+            }}))
+        rep = P.run(root=d)
+        self.assertEqual(0, rep["n_documented"], "prose is not a derivation")
+        self.assertEqual(1, rep["n_undocumented"])
+        self.assertEqual(1, rep["n_asserted_not_measured"],
+                         "and it must be named as an assertion, not silently dropped")
+
+    def test_a_measurement_with_a_real_n_does_count(self):
+        d = self._tmp("measured")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "MAX_LOSS_PCT = 7.5\n"
+            "def check(x):\n"
+            "    if x > MAX_LOSS_PCT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        P.REGISTRY_PATH.write_text(json.dumps({
+            "worker.py::MAX_LOSS_PCT": {
+                "value": 7.5,
+                "measured": {"quantity": "drawdown at exit", "n": 412,
+                             "on": "2026-08-21"},
+            }}))
+        rep = P.run(root=d)
+        self.assertEqual(1, rep["n_documented"])
+        self.assertEqual(0, rep["n_undocumented"])
+
+    def test_an_analytic_derivation_needs_no_sample_but_must_say_so(self):
+        """A standard-error argument measures no sample. n=null is legitimate
+        ONLY when the entry declares itself analytic — otherwise a missing n is
+        indistinguishable from an entry nobody finished."""
+        d = self._tmp("analytic")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "MIN_N = 200\n"
+            "def check(x):\n"
+            "    if x < MIN_N:\n"
+            "        return 'not yet'\n")
+        P = self._P(d)
+        base = {"value": 200, "measured": {"quantity": "SE of a 97% rate",
+                                           "n": None, "on": "2026-08-14"}}
+        P.REGISTRY_PATH.write_text(json.dumps({"worker.py::MIN_N": base}))
+        self.assertEqual(0, P.run(root=d)["n_documented"],
+                         "n=null with no analytic flag is an unfinished entry")
+        base["measured"]["analytic"] = True
+        P.REGISTRY_PATH.write_text(json.dumps({"worker.py::MIN_N": base}))
+        self.assertEqual(1, P.run(root=d)["n_documented"])
+
+    # -- POISON PILL 2: a derivation that no longer describes the value ------
+    def test_a_derivation_that_no_longer_matches_the_live_value_is_reported(self):
+        """POISON PILL. Someone derives 7.5, records it, then edits the code to
+        9.0. The registry now reads as due diligence for a number nobody ever
+        priced — worse than an empty entry, because it stops anyone looking."""
+        d = self._tmp("drift")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "MAX_LOSS_PCT = 9.0\n"
+            "def check(x):\n"
+            "    if x > MAX_LOSS_PCT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        P.REGISTRY_PATH.write_text(json.dumps({
+            "worker.py::MAX_LOSS_PCT": {
+                "value": 7.5,
+                "measured": {"quantity": "drawdown at exit", "n": 412,
+                             "on": "2026-08-21"},
+            }}))
+        rep = P.run(root=d)
+        self.assertEqual(1, rep["n_drifted"])
+        self.assertEqual(9.0, rep["drifted"][0]["value"])
+        self.assertEqual(7.5, rep["drifted"][0]["registered_value"])
+
+    # -- POISON PILL 3: reachability must fail OPEN -------------------------
+    def test_unreachable_code_is_reported_but_not_ratcheted(self):
+        d = self._tmp("dormant")
+        (d / "main.py").write_text("x = 1\n")          # imports nothing
+        (d / "orphan.py").write_text(
+            "DEAD_LIMIT = 42\n"
+            "def check(x):\n"
+            "    if x > DEAD_LIMIT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        rep = P.run(root=d)
+        self.assertEqual(1, rep["n_consequential"])
+        self.assertEqual(0, rep["n_consequential_reachable"])
+        self.assertEqual(0, rep["n_undocumented"], "dormant must not inflate the ratchet")
+        self.assertEqual(1, rep["n_dormant"], "but it must still be reported")
+
+    def test_when_it_cannot_tell_what_is_live_it_audits_everything(self):
+        """POISON PILL. Delete every scheduler source. The tempting behaviour is
+        'no roots -> nothing is reachable -> 0 undocumented', a perfect green
+        run produced by knowing nothing. Fail OPEN: not knowing what is live
+        must never be a reason to excuse a live parameter."""
+        d = self._tmp("noroots")
+        (d / "orphan.py").write_text(
+            "DEAD_LIMIT = 42\n"
+            "def check(x):\n"
+            "    if x > DEAD_LIMIT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        P.ENTRY_POINTS = ()            # no entry points, no crontab snapshot
+        rep = P.run(root=d)
+        self.assertEqual(1, rep["n_undocumented"],
+                         "with no way to tell what runs, everything is audited")
+        self.assertEqual(0, rep["n_dormant"])
+
+    def test_a_module_reached_only_through_another_module_counts_as_live(self):
+        """risk_gate.py appears in no crontab line yet is plainly live. Direct
+        reference count is not reachability; the transitive closure is."""
+        d = self._tmp("transitive")
+        (d / "main.py").write_text("import mid\n")
+        (d / "mid.py").write_text("import deep\n")
+        (d / "deep.py").write_text(
+            "HEDGE_SLOTS = 2\n"
+            "def check(x):\n"
+            "    if x > HEDGE_SLOTS:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        rep = P.run(root=d)
+        self.assertEqual(1, rep["n_consequential_reachable"])
+        self.assertEqual(0, rep["n_dormant"])
+
+    # -- POISON PILL 4: the auditor must not read its own prose --------------
+    def test_a_comment_claiming_the_value_was_derived_proves_nothing(self):
+        """POISON PILL. This repo's source is full of postmortem comments that
+        say 'measured', 'derived', 'threshold', usually right next to the dial.
+        A grep-based auditor would read those and mark the parameter done —
+        grading itself against my own explanatory prose. The AST cannot see
+        comments, and this test is what keeps it that way."""
+        d = self._tmp("comment")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "# DERIVED 2026-08-21: measured n=412 observations, threshold\n"
+            "# validated against the walk-forward harness. Fully priced.\n"
+            "MAX_LOSS_PCT = 7.5\n"
+            "def check(x):\n"
+            "    if x > MAX_LOSS_PCT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        rep = P.run(root=d)
+        self.assertEqual(1, rep["n_undocumented"],
+                         "a comment is not the registry; prose must not confer credit")
+
+    # -- the ratchet ---------------------------------------------------------
+    def test_the_ratchet_regresses_when_a_new_unpriced_dial_appears(self):
+        d = self._tmp("ratchet")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "A_LIMIT = 5\n"
+            "def check(x):\n"
+            "    if x > A_LIMIT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        first = P.run(root=d)
+        self.assertEqual("SET", P.ratchet(first)["status"])
+        (d / "worker.py").write_text(
+            "A_LIMIT = 5\nB_LIMIT = 9\n"
+            "def check(x):\n"
+            "    if x > A_LIMIT:\n"
+            "        submit_sell(x)\n"
+            "    if x > B_LIMIT:\n"
+            "        submit_sell(x)\n")
+        second = P.ratchet(P.run(root=d))
+        self.assertEqual("REGRESSED", second["status"])
+        self.assertEqual(1, second["delta"])
+        self.assertEqual(1, json.loads(P.BASELINE_PATH.read_text())["undocumented"],
+                         "a regression must NOT quietly rewrite the baseline")
+
+    def test_the_ratchet_tightens_when_a_dial_gets_priced(self):
+        d = self._tmp("tighten")
+        (d / "main.py").write_text("import worker\n")
+        (d / "worker.py").write_text(
+            "A_LIMIT = 5\n"
+            "def check(x):\n"
+            "    if x > A_LIMIT:\n"
+            "        submit_sell(x)\n")
+        P = self._P(d)
+        P.ratchet(P.run(root=d))
+        P.REGISTRY_PATH.write_text(json.dumps({
+            "worker.py::A_LIMIT": {"value": 5, "measured": {
+                "quantity": "breaches per week", "n": 88, "on": "2026-08-21"}}}))
+        r = P.ratchet(P.run(root=d))
+        self.assertEqual("IMPROVED", r["status"])
+        self.assertEqual(0, json.loads(P.BASELINE_PATH.read_text())["undocumented"])
+
+    # -- the separation of powers -------------------------------------------
+    def test_the_auditor_can_never_edit_a_parameter(self):
+        """AST-pinned, same rule as pick_gate_trial_review.py. Deriving a number
+        and changing a live limit are different acts and the second is the
+        Chairman's. An auditor that can rewrite config.py is not an auditor."""
+        src = Path(__file__).parent / "parameter_audit.py"
+        text = src.read_text()
+        tree = ast.parse(text)
+
+        # (a) every write must target one of this module's own two artefacts.
+        allowed = ("BASELINE_PATH", "REPORT_PATH")
+        for n in ast.walk(tree):
+            if not isinstance(n, ast.Call):
+                continue
+            if getattr(n.func, "attr", None) not in ("write_text", "writelines",
+                                                     "dump", "open"):
+                continue
+            seg = ast.get_source_segment(text, n) or ""
+            self.assertTrue(any(a in seg for a in allowed),
+                            "parameter_audit writes somewhere it must not: %s"
+                            % seg[:120])
+
+        # (b) it must not import the live config at all — you cannot edit what
+        # you never hold. Asserted on the AST, NOT on the text: this module's
+        # own docstring says the words "config.py" while explaining that it
+        # refuses to touch it, and a substring check would fail on that
+        # sentence. That is the same trap the audited code is built to dodge —
+        # assert the claim form, never the word.
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Import):
+                for a in n.names:
+                    self.assertNotEqual("config", a.name.split(".")[0])
+            elif isinstance(n, ast.ImportFrom) and n.module:
+                self.assertNotEqual("config", n.module.split(".")[0])
+
+    def test_the_real_registry_is_valid_and_every_entry_is_measured(self):
+        """The shipped registry has to obey the rule it enforces on others."""
+        import parameter_audit as P
+        importlib = __import__("importlib")
+        importlib.reload(P)
+        reg = P.load_registry()
+        self.assertTrue(reg, "the registry must not be empty or unparseable")
+        for k, rec in reg.items():
+            if k.startswith("_"):
+                continue
+            self.assertTrue(P._is_measured(rec),
+                            "registry entry %s cites no measurement" % k)
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

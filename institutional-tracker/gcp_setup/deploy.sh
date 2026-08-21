@@ -100,6 +100,15 @@ echo "[1/2] Syncing project files..."
 # (agent_roster_manifest.json below is safe: it is DECLARED, git-tracked, and
 # regenerated from the merged view of both hosts by --adopt.)
 #
+# parameter_derivations.json + parameter_audit_baseline.json are safe for a
+# different reason, and it is worth stating so nobody generalises from the
+# agent_registry disaster above. Both are pure functions of the source tree:
+# parameter_audit reads CODE, never runtime state, so given the same checkout
+# both hosts compute byte-identical numbers and a one-way rsync cannot destroy
+# anything one host learned and the other did not. They must travel with the
+# code because the alternative is what signoff_ledger's deploy budget became —
+# a limit described as firm-wide that was quietly enforced per-host.
+#
 # data/.host_id is excluded FIRST, ahead of the includes, so it survives anyone
 # later broadening the allowlist. It is this host's stable trading identity; if
 # the Mac's copy reached the VM, both hosts would stamp orders `mac` and the
@@ -156,6 +165,8 @@ rsync -avz --progress \
     --include="data/vm_crontab_snapshot.txt" \
     --include="data/agent_roster_manifest.json" \
     --include="data/pick_gate_trial.json" \
+    --include="data/parameter_derivations.json" \
+    --include="data/parameter_audit_baseline.json" \
     --exclude="data/*" \
     --exclude-from="$DEPLOY_EXCLUDES" \
     --exclude="logs/" \

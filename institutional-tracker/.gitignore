@@ -62,6 +62,11 @@ data/thematic_positions.json
 data/trade_review_report.json
 data/cit_morning_report.json
 data/cit_evening_report.json
+# parameter_audit's run output: regenerated from the source tree on every run and
+# stamped with a fresh ts, so tracking it would dirty the tree on every audit.
+# The two artefacts that DO matter — the derivation registry and the shrink-only
+# baseline — are tracked and deployed, because they are decisions, not output.
+data/parameter_audit_report.json
 data/cit_pending_proposals.json
 data/cit_backlog.json
 data/cit_sensitive.json

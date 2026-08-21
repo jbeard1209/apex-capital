@@ -1,0 +1,77 @@
+{
+  "_README": [
+    "Derivations for the firm's consequential parameters. Read by parameter_audit.py.",
+    "",
+    "An entry counts as DOCUMENTED only if it carries a `measured` block with a",
+    "quantity, an `on` date, and either n>0 or analytic:true. Prose in",
+    "`rationale` does NOT make a parameter documented — a reason explains why a",
+    "dial exists, not why it is set to 60. Letting rationale count would turn",
+    "this file into a rubber stamp and reduce the audit to 'does an explanation",
+    "exist?', which one stale paragraph satisfies forever.",
+    "",
+    "Keys are 'module.py::NAME'. A bare 'NAME' key also matches, for parameters",
+    "the AST scan cannot see (see LOOP_RECUR_THRESHOLD).",
+    "",
+    "Recording a derivation is NOT permission to change the value. parameter_audit",
+    "never edits a parameter; live limits are the Chairman's call."
+  ],
+
+  "problem_lifecycle_sentinel.py::CHRONIC_OCCURRENCE": {
+    "value": 20,
+    "gates": "an OPEN problem raised this many distinct times escalates as a chronic loop",
+    "measured": {
+      "quantity": "occurrences per lifecycle entry, on the writer host",
+      "n": 430,
+      "on": "2026-08-21",
+      "host": "apex-capital (VM, the designated lifecycle writer)",
+      "result": "max 9; distribution {1:364, 2:34, 3:2, 4:2, 5:1, 6:12, 7:13, 9:2}; count at or above 20 = 0"
+    },
+    "verdict": "UNREACHABLE — the branch has never fired and cannot fire under the current counting rule.",
+    "rationale": "Deliberately NOT lowered here. The value was priced against an older counting rule; picking a new one from this distribution would be fitting a governance threshold to a single sample, and the honest range (6? 7?) changes who gets escalated to the Chairman. Derivation queued for the board instead. Left at 20 so the dead branch stays visibly dead rather than quietly becoming live.",
+    "queued_for": "board — derive the chronic-loop threshold from the recurrence distribution"
+  },
+
+  "problem_lifecycle_sentinel.py::STALE_SLA_DAYS": {
+    "value": 20,
+    "gates": "an open problem older than this escalates to the Chairman as STALE",
+    "measured": {
+      "quantity": "age in days of open lifecycle entries, clock rebased to when the problem was RAISED rather than when the sentinel first looked",
+      "n": 430,
+      "on": "2026-08-21",
+      "host": "apex-capital (VM)",
+      "result": "p50 3.9d, p90 22.7d, max 72.4d; 135 entries past 20d, 28 past 30d"
+    },
+    "verdict": "VALUE SOUND, QUANTITY WAS WRONG — fixed in 7f94d84.",
+    "rationale": "20d is not free-floating: it is tied to the 20-day Chairman decision SLA, so an item goes stale exactly when the board's own escalation clock says it is overdue. The defect was never the 20 — it was that the clock started when the sentinel first observed the problem, so a problem raised weeks earlier reset to age zero the first time the sentinel ran. Same shape as Jack's 48h staleness guard: the threshold was fine, the quantity underneath it was not.",
+    "recheck_when": "the Chairman decision SLA changes, since this value is derived FROM it"
+  },
+
+  "kalshi_calibration.py::MIN_SETTLED_FOR_VERDICT": {
+    "value": 200,
+    "gates": "below this many settled observations is_edge_proven() returns 'not yet', never 'proven' and never 'no edge'",
+    "measured": {
+      "quantity": "standard error of an observed settle rate near 97%",
+      "n": null,
+      "analytic": true,
+      "on": "2026-08-14",
+      "result": "SE at n=200 on a 97% rate is ~1.2 points, only just inside the 3-point gap between 96% and 99% that the verdict has to resolve"
+    },
+    "verdict": "DERIVED — the number falls out of the precision the question requires.",
+    "rationale": "Distinguishing a 96% market from a 99% market is a 3-point question, so the sample must resolve better than 3 points. This is a floor, not a target: it may be raised, never lowered to reach a verdict sooner."
+  },
+
+  "LOOP_RECUR_THRESHOLD": {
+    "module": "problem_lifecycle_sentinel.py",
+    "value": 1,
+    "gates": "a problem that returns after a recorded resolution escalates as a failed fix",
+    "measured": {
+      "quantity": "definitional — the smallest number of recurrences that contradicts a claimed fix",
+      "n": null,
+      "analytic": true,
+      "on": "2026-08-21",
+      "result": "1. Any value above 1 means tolerating a known-failed fix for a while before saying so, and there is no quantity that makes the second recurrence more informative than the first."
+    },
+    "verdict": "DERIVED — correctly at its floor.",
+    "rationale": "Registered by hand: parameter_audit's scan excludes 0 and 1 as sentinels, so this genuinely-priced parameter is invisible to it. That exclusion is a deliberate signal-to-noise trade (including 0/1 buried real findings 6:1), and this entry is the cost of it being paid explicitly rather than silently."
+  }
+}
