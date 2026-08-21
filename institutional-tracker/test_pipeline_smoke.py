@@ -2506,6 +2506,86 @@ class TestSignoffLedger(unittest.TestCase):
         self.assertTrue(pf["would_block"], "should record it WOULD have blocked")
         self.assertEqual(L.shadow_summary()["would_block_events"], 1)
 
+    def test_an_absent_mode_file_is_a_default_not_a_decision(self):
+        """POISON PILL. get_mode() must keep collapsing these; nothing else may.
+
+        "SHADOW because the firm decided SHADOW" and "SHADOW because this host
+        has no file" are the same string and different facts. Measured
+        2026-08-21: the Mac held a record from 2026-07-29 and the VM had NO FILE
+        AT ALL — signoff_mode.json was tracked in git but absent from deploy.sh's
+        data/ allowlist, and the VM is not a checkout, so it had never arrived.
+        Both hosts printed SHADOW, so the gap was invisible from the value.
+
+        It is free while the default happens to match. It stops being free the
+        moment board+CIT vote ENFORCE: that write lands on one host, and the
+        other keeps actuating on a fallback against the same broker account.
+        """
+        L = self.L
+        self.assertFalse(os.path.exists(L.MODE_PATH))
+        mode, src, detail = L.mode_provenance()
+        self.assertEqual("SHADOW", mode, "the fail-safe default must not change")
+        self.assertEqual("SHADOW", L.get_mode(),
+                         "get_mode must still answer with a usable mode")
+        self.assertEqual("default", src,
+                         "an absent file read as a recorded decision")
+        self.assertIn("not a decision", detail)
+
+        # ...and a real record is distinguishable from it. Without this half the
+        # test only proves the function is pessimistic, not that it discriminates.
+        L.set_mode("SHADOW", [], note="observation window")
+        mode, src, _ = L.mode_provenance()
+        self.assertEqual(("SHADOW", "recorded"), (mode, src))
+
+    def test_a_corrupt_mode_file_is_not_a_clean_default(self):
+        """Three states, not two. A file that exists but does not parse is a
+        damaged record; calling it "default" would say the host is untouched
+        when in fact its decision was destroyed."""
+        L = self.L
+        with open(L.MODE_PATH, "w") as fh:
+            fh.write("{not json")
+        mode, src, detail = L.mode_provenance()
+        self.assertEqual("SHADOW", mode, "must still fail safe")
+        self.assertEqual("invalid", src)
+        with open(L.MODE_PATH, "w") as fh:
+            json.dump({"mode": "ENFORCED"}, fh)      # near-miss of a valid mode
+        self.assertEqual("invalid", L.mode_provenance()[1],
+                         "an unrecognised mode string read as an absent file")
+
+    def test_the_board_sees_where_the_mode_came_from(self):
+        """A producer with no consumer is this firm's oldest bug. shadow_summary
+        is what board+CIT read to decide the flip, so provenance travels in it —
+        otherwise the distinction exists in a function nobody calls."""
+        s = self.L.shadow_summary()
+        self.assertEqual("default", s.get("mode_source"))
+        self.assertTrue(s.get("mode_detail"))
+
+    def test_the_gate_mode_can_actually_reach_the_second_host(self):
+        """The fix the test above exists to force.
+
+        deploy.sh excludes data/* and re-includes an allowlist, and its
+        DEPLOY_EXCLUDES comes from `git ls-files --others`, so BOTH halves are
+        required: named in the allowlist AND tracked. Same two-host shape as
+        pick_gate_trial.json — the Mac is the checkout and can ask git; the VM
+        is not, so there the question is simply whether the file arrived.
+        """
+        rel = "data/signoff_mode.json"
+        base = Path(__file__).resolve().parent
+        deploy = (base / "gcp_setup" / "deploy.sh").read_text()
+        self.assertIn('--include="%s"' % rel, deploy,
+                      "%s is not in deploy.sh's data/ allowlist, so an ENFORCE "
+                      "flip decided by the board cannot reach the VM — which "
+                      "runs 93 cron jobs on the same Alpaca account" % rel)
+        tracked = subprocess.run(["git", "ls-files", "--error-unmatch", rel],
+                                 cwd=str(base), capture_output=True, text=True)
+        if tracked.returncode == 128 and "not a git repository" in tracked.stderr:
+            self.assertTrue((base / rel).is_file(),
+                            "%s absent on this non-checkout host — the allowlist "
+                            "entry did not deliver it" % rel)
+            return
+        self.assertEqual(0, tracked.returncode,
+                         "%s is untracked, so ls-files --others excludes it and "
+                         "the --include line is inert" % rel)
+
     def test_enforce_flip_requires_joint_board_and_cit(self):
         L = self.L
         self.assertFalse(L.set_mode("ENFORCE", ["BOARD"])[0], "board alone flipped")

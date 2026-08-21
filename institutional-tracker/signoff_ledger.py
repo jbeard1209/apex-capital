@@ -814,12 +814,61 @@ def get_mode() -> str:
     return mode if mode in _VALID_MODES else "SHADOW"
 
 
+def mode_provenance() -> tuple:
+    """(mode, source, detail) — where this host's mode actually came from.
+
+    get_mode() collapses two different states into the same string, and it must
+    keep doing so: every caller needs a mode, and SHADOW is the right default.
+    But "the firm decided SHADOW" and "this host has no idea" are not the same
+    fact, and the distinction is the whole safety of the ENFORCE flip.
+
+    Measured 2026-08-21: the Mac carried a recorded SHADOW from 2026-07-29; the
+    VM had NO FILE AT ALL, and never had — signoff_mode.json was tracked in git
+    but missing from deploy.sh's data/ allowlist, and the VM is not a checkout.
+    Both hosts returned "SHADOW", so the gap was invisible from the value alone.
+    It cost nothing while the answer happened to match the default. It stops
+    costing nothing the moment board+CIT vote ENFORCE: that write lands on one
+    host, and the other keeps actuating on a default it cannot tell from a
+    decision, against the same broker account.
+
+    `source` is "recorded" (a set_mode() write is present and valid), "default"
+    (no file — this host is running the fallback, not a decision), or "invalid"
+    (a file exists but does not parse to a known mode, which is a corrupted
+    record and must never read as a clean default).
+    """
+    raw = _load(MODE_PATH, None)
+    if raw is None or raw == {}:
+        if not os.path.exists(MODE_PATH):
+            return ("SHADOW", "default",
+                    "no %s on this host — running the fallback, not a decision"
+                    % os.path.basename(MODE_PATH))
+        return ("SHADOW", "invalid", "%s is present but empty or unreadable"
+                % os.path.basename(MODE_PATH))
+    mode = raw.get("mode") if isinstance(raw, dict) else None
+    if mode not in _VALID_MODES:
+        return ("SHADOW", "invalid",
+                "%s holds mode=%r, which is not one of %s"
+                % (os.path.basename(MODE_PATH), mode, _VALID_MODES))
+    return (mode, "recorded", "set %s on %s at head %s"
+            % (raw.get("set_at") or "?", raw.get("set_host") or "an unnamed host",
+               raw.get("set_head") or "?"))
+
+
 def set_mode(mode: str, approvals: list, note: str = "") -> tuple[bool, str]:
     """Flip the gate mode. Going to ENFORCE requires a joint board+CIT vote —
     `approvals` must contain distinct entries covering BOTH {BOARD, CIT}
     (Chairman directive 2026-07-29: 'if the board AND the cit team agrees, it
     can be flipped to enforce'). Flipping BACK to SHADOW is always allowed
-    (de-risking is never gated). Returns (ok, message)."""
+    (de-risking is never gated). Returns (ok, message).
+
+    PROPAGATION: this writes a per-host file and there is no state sync between
+    hosts. signoff_mode.json is in deploy.sh's data/ allowlist as of 2026-08-21,
+    and deploy is one-way Mac→VM, so a flip is only firm-wide once it is
+    recorded ON THE MAC, committed, and deployed. Flip it on the VM and the next
+    deploy overwrites it with the Mac's copy — which is the right precedence
+    (one checkout, one deploying host, one decision), but it means the vote must
+    be recorded where the deploy originates. mode_provenance() is how any host
+    reports that it is running a default rather than a decision."""
     mode = str(mode).upper()
     if mode not in _VALID_MODES:
         return (False, f"mode must be one of {_VALID_MODES}")
@@ -907,8 +956,14 @@ def shadow_summary() -> dict:
     for e in blocks:
         for r in e.get("reasons", []):
             reason_heads[r.split(" (")[0].split(" —")[0][:60]] += 1
+    # Provenance travels with the mode. This dict is what the board and CIT read
+    # to decide the ENFORCE flip, and "SHADOW" alone does not tell them whether
+    # they are looking at a decision or at a host that never received one.
+    mode, mode_source, mode_detail = mode_provenance()
     return {
-        "mode": get_mode(),
+        "mode": mode,
+        "mode_source": mode_source,
+        "mode_detail": mode_detail,
         "events": len(log),
         "would_block_events": len(blocks),
         "would_clear_events": len(clears),
@@ -925,7 +980,12 @@ def _report() -> None:
     led = _ledger()
     from collections import Counter
     st = Counter(c.get("status") for c in led.values())
+    mode, src, detail = mode_provenance()
     print("=== Sign-off ledger ===")
+    print(f"  gate mode: {mode}  ({src}) — {detail}")
+    if src != "recorded":
+        print("  ⚠  this host is not running a recorded decision. If the firm has "
+              "flipped the gate,\n     that flip did not reach here.")
     print(f"  changes tracked: {len(led)}  ·  deploys today: {deploys_today()}/{DAILY_DEPLOY_BUDGET}")
     print("  by status:", dict(st))
     rep = reputation()

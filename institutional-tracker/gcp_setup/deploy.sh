@@ -168,6 +168,15 @@ trap 'rm -f "$DEPLOY_EXCLUDES"' EXIT
 git -C "$LOCAL_DIR" ls-files --others | sed 's|^|/|' > "$DEPLOY_EXCLUDES"
 echo "  $(wc -l < "$DEPLOY_EXCLUDES" | tr -d ' ') untracked path(s) held back — git decides what deploys."
 
+# data/signoff_mode.json is in the allowlist because the autonomy gate is a
+# firm-wide decision carried in a per-host file. It was tracked in git from the
+# start but never shipped, and the VM is not a checkout — so it had never once
+# arrived there. Both hosts read SHADOW today, which is why nothing showed:
+# get_mode() returns SHADOW for an absent file exactly as it does for a recorded
+# one. The day board+CIT vote ENFORCE, that write lands on whichever host ran
+# the vote; without this line the VM keeps auto-actuating on a default while the
+# firm believes it is enforcing, on the same Alpaca account. A guardrail that
+# reaches one of two hosts is the shape of guardrail-on-one-path.
 rsync -avz --progress \
     --exclude="data/.host_id" \
     --include="data/" \
@@ -177,6 +186,7 @@ rsync -avz --progress \
     --include="data/pick_gate_trial.json" \
     --include="data/parameter_derivations.json" \
     --include="data/parameter_audit_baseline.json" \
+    --include="data/signoff_mode.json" \
     --exclude="data/*" \
     --exclude-from="$DEPLOY_EXCLUDES" \
     --exclude="logs/" \
