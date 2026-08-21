@@ -63,6 +63,7 @@ import re
 import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional          # py3.9 on the Mac: never `str | None`
 
 DATA = Path(__file__).resolve().parent / "data"
 
@@ -78,7 +79,37 @@ LOOPS_PATH   = DATA / "problem_loops.json"
 # --- policy ----------------------------------------------------------------
 STALE_SLA_DAYS = 20          # aligns with the Chairman decision SLA
 LOOP_RECUR_THRESHOLD = 1     # 1 recurrence after a "resolution" == a failed fix
+# CHRONIC_OCCURRENCE was priced against the OLD counting rule and has never
+# fired. It dates from the incident where one proposal was re-raised 210x — but
+# that count came from an id-keyed tracker, and under signature dedup the same
+# incident counts as ~1. Measured on the VM's live 308-signature history
+# 2026-08-21: max occurrences 9, distribution {1:242, 2:34, 3:2, 4:2, 5:1, 6:12,
+# 7:13, 9:2}, and ZERO signatures at >= 20 across 72 days of queue data. So this
+# half of the LOOPING test is a branch that cannot be reached, priced 2.2x above
+# the observed maximum. Left at 20 deliberately: lowering it changes what gets
+# escalated to the FULL board, which is the Chairman's call, not a tidy-up.
+# Queued as a derivation for board review rather than silently retuned.
 CHRONIC_OCCURRENCE = 20      # raised this many distinct times == chronic loop
+
+# Fields that record when a row was RAISED. Write-once only — this list is the
+# whole correctness of the staleness clock.
+#
+# `ts` is deliberately EXCLUDED even though it is the most common date-ish field
+# in these queues (48 of 57 pending proposals, 91 of 145 Chairman rows). It is
+# refreshed on write, not set on creation, and the proof is in the data: on
+# 2026-08-21, 12 rows carried an sla_breached_at stamp — an event that by
+# definition cannot happen before day 20 — while their `ts` claimed they were
+# under 4 days old. Seeding the clock from `ts` would not merely be imprecise,
+# it would reset every problem's age on every write and make an aging queue read
+# as permanently new. A field that looks like a date is not a date.
+RAISED_AT_FIELDS = ("queued_at", "created_at", "raised_at")
+
+# first_seen_source values that mean "settled — do not reconsider this entry".
+# Only "row" licenses age_phrase to state a raise date; everything else renders
+# as a floor. Keeping the two ideas in one place is deliberate: the bug this
+# guards against is a future value being added to the skip set and silently
+# inheriting the right to make a claim it cannot source.
+_SOURCE_FINAL = ("row", "observed_before_row")
 
 # A finding is CLOSED only if its status is terminal-resolved. Everything else
 # (queued/needs_human/systemic/routed_to_human/pending/awaiting_*) is OPEN.
@@ -269,13 +300,46 @@ def _is_open(status: str) -> bool:
 # ---------------------------------------------------------------------------
 # Scan the live queues into a signature -> aggregate snapshot.
 # ---------------------------------------------------------------------------
+def raised_at(item: dict) -> Optional[str]:
+    """When the ROW says it was raised, normalised to a tz-aware ISO string.
+
+    None when the row does not say — which is a real answer and callers must
+    branch on it, rather than substituting the observation time and reporting a
+    guess as a fact. Coverage measured on the VM 2026-08-21: 148/148 impl-queue
+    rows, 53/145 Chairman rows, 6/57 pending proposals.
+    """
+    if not isinstance(item, dict):
+        return None
+    for field in RAISED_AT_FIELDS:
+        raw = item.get(field)
+        if not raw:
+            continue
+        try:
+            t = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        except (TypeError, ValueError):
+            continue
+        if t.tzinfo is None:
+            # These queues write naive local stamps (queued_at is naive on all
+            # 148 impl rows). Treating naive as UTC is the same convention _now()
+            # uses, so the two are comparable; guessing a local zone here would
+            # reintroduce the ET-vs-UTC split that already bit this firm.
+            t = t.replace(tzinfo=timezone.utc)
+        return t.isoformat()
+    return None
+
+
 def _register(snap: dict, sig: str, kind: str, title: str, st: str,
-              derived_of: str = None) -> None:
+              derived_of: str = None, raised: Optional[str] = None) -> None:
     cur = snap.setdefault(sig, {
         "sig": sig, "kinds": set(), "titles": set(),
         "open": False, "resolved": False, "wont_fix": False,
-        "title": title, "derived_of": None,
+        "title": title, "derived_of": None, "raised": None,
     })
+    # Earliest wins: one signature can be carried by rows in several queues, and
+    # the problem is as old as the OLDEST of them, not as old as whichever the
+    # scan happened to read last.
+    if raised and (cur.get("raised") is None or raised < cur["raised"]):
+        cur["raised"] = raised
     # Derived-ness is a property of the row, not of the run: once any producer
     # of this signature is a view of something else, it stays one. Recording
     # the subject (not just a bool) is what lets retire_derived_rows close it
@@ -338,7 +402,8 @@ def _scan() -> dict:
             st = _status_of(item)
             title = item.get("title") or item.get("description") or "(untitled)"
             subj = derived_subject(item)
-            _register(snap, signature(item, kind), kind, title, st, subj)
+            _register(snap, signature(item, kind), kind, title, st, subj,
+                      raised_at(item))
 
             # A row folded into this one by chairman_queue_sync is still in the
             # queue — it is just wearing the survivor's title. That file dedups
@@ -359,17 +424,78 @@ def _scan() -> dict:
 # Merge the scan into persistent history. Idempotent under repeated runs with an
 # unchanged queue state (present-last-run guard => no double counting).
 # ---------------------------------------------------------------------------
+def backfill_raised_from_rows(snap: dict, history: dict) -> int:
+    """Correct first_seen on entries recorded before the clock was fixed.
+
+    Returns how many entries moved. Without this the fix only helps problems
+    raised from today on, and the 308 signatures already in the VM's history —
+    the ones actually in front of the Chairman — keep reporting an age that is a
+    median 49.8 days short.
+
+    Idempotent three ways: it only ever moves first_seen EARLIER, it stamps a
+    terminal first_seen_source so a corrected entry is never reconsidered, and
+    the row timestamps it reads are write-once (see RAISED_AT_FIELDS).
+
+    last_open is pulled back only when the entry has never been observed
+    resolving or recurring. If it has, some later moment is the real start of
+    the current open spell and the raise date is not it — moving it would age
+    a freshly-reopened problem by however long its first incarnation ran.
+    """
+    moved = 0
+    for sig, cur in snap.items():
+        raised = cur.get("raised")
+        h = history.get(sig)
+        if not raised or h is None or h.get("first_seen_source") in _SOURCE_FINAL:
+            continue
+        prev = h.get("first_seen")
+        if prev and raised >= prev:
+            # We saw this signature BEFORE the row in front of us was written —
+            # it recurred, and this row is the later incarnation. first_seen is
+            # already the earlier, correct value, so there is nothing to move.
+            #
+            # Do NOT stamp "row" here. "row" is what makes age_phrase print
+            # `raised <date>` as a fact, and the date it would print came from
+            # our own observation, not from any row — the row says something
+            # later. Stamping it would turn "at least this old" into a specific
+            # raise claim we cannot source, which is the exact substitution this
+            # whole fix exists to remove. Measured on the VM 2026-08-21: 18 of
+            # the 69 entries this loop touches land here, so it is not a corner
+            # case. A distinct terminal value stops the rescan without lying.
+            h["first_seen_source"] = "observed_before_row"
+            continue
+        h["first_seen"] = raised
+        h["first_seen_source"] = "row"
+        if (h.get("last_open") and h["last_open"] > raised
+                and not h.get("recurred_after_resolution")
+                and not h.get("times_resolved")):
+            h["last_open"] = raised
+        moved += 1
+    return moved
+
+
 def _update_history(snap: dict, history: dict, now: str) -> dict:
     for sig, cur in snap.items():
         h = history.get(sig)
         if h is None:
+            # The staleness clock starts when the problem was RAISED, not when
+            # this sentinel first happened to look. Those differed by a median
+            # of 49.8 days on the VM (2026-08-21): the impl queue's 148 rows
+            # were all queued 2026-06-10 and the history only began 2026-07-29,
+            # so every Chairman escalation reported a 72-day-old problem as 22
+            # days old — a 3.2x understatement, in the understating direction.
+            # Same shape as the 48h staleness guard that was priced in hours
+            # against a hazard measured in deploys: the threshold was fine, the
+            # quantity underneath it was not.
+            raised = cur.get("raised")
             h = {
-                "sig": sig, "first_seen": now, "last_seen": now,
+                "sig": sig, "first_seen": raised or now, "last_seen": now,
+                "first_seen_source": "row" if raised else "observed",
                 "title": cur["title"], "kinds": sorted(cur["kinds"]),
                 "occurrences": 1, "times_resolved": 0,
                 "recurred_after_resolution": 0,
                 "status": "OPEN" if cur["open"] else ("RESOLVED" if cur["resolved"] else "WONT_FIX"),
-                "present": True, "last_open": now if cur["open"] else None,
+                "present": True,
+                "last_open": (raised or now) if cur["open"] else None,
             }
             if cur.get("derived_of"):
                 h["derived_of"] = cur["derived_of"]
@@ -419,6 +545,7 @@ def _update_history(snap: dict, history: dict, now: str) -> dict:
     # Items in history but NOT in this scan: they left every queue.
     scanned = set(snap.keys())
     outcomes = _outcome_index()
+    missing_ledgers = absent_decision_ledgers()
     for sig, h in history.items():
         if sig in scanned:
             continue
@@ -442,8 +569,17 @@ def _update_history(snap: dict, history: dict, now: str) -> dict:
             # Not a decision, but not "no record anywhere" either. Kept on the
             # row so the Chairman escalation can say which of the two it is.
             h["undated_ledger_hit"] = _undated_hit(sig, outcomes)
+            # Which ledgers this verdict could not consult at all. Stamped on
+            # the row, not just reported in aggregate, because the row is what
+            # the Chairman reads weeks later — an aggregate in a report nobody
+            # rereads is not a caveat attached to the claim.
+            if missing_ledgers:
+                h["ledgers_absent"] = missing_ledgers
+            else:
+                h.pop("ledgers_absent", None)
             continue
         h.pop("undated_ledger_hit", None)
+        h.pop("ledgers_absent", None)
         status, when, why = verdict
         was_drop = h.get("status") == "SILENT_DROP"
         h["status"] = status
@@ -454,6 +590,40 @@ def _update_history(snap: dict, history: dict, now: str) -> dict:
         if status == "RESOLVED":
             h["times_resolved"] = h.get("times_resolved", 0) + 1
     return history
+
+
+def _host_label() -> str:
+    """Which host this run is speaking for. Persisted identity via single_writer,
+    never derived from a hostname here — see memory two_brains_one_account."""
+    try:
+        import single_writer
+        return single_writer.this_host() or "this host"
+    except Exception:                              # pragma: no cover - defensive
+        return "this host"
+
+
+def absent_decision_ledgers() -> list:
+    """Which OUTCOME_LEDGERS files do not exist on THIS host.
+
+    SILENT_DROP means "it left every queue and no decision was recorded". That
+    verdict is only as good as the ledgers it consulted, and `_load` returns []
+    for a missing file exactly as it does for an empty one — so a ledger that
+    was never created reads as a ledger that recorded nothing, and every item
+    the board decided through that route escalates to the Chairman as a loss.
+
+    Measured 2026-08-21: `cit_rejected_proposals.json` exists on the Mac (2
+    signatures) and does NOT exist on the VM — and the VM is the designated
+    lifecycle writer, so the WONT_FIX half of the verdict is unreachable on the
+    only host that reaches a verdict. It costs nothing *today*: all 26 of the
+    VM's current SILENT_DROPs were checked against the Mac's ledgers and none
+    had been decided anywhere. It is recorded rather than "fixed" because the
+    obvious fix is wrong — the ledgers are per-host with no sync, and the VM's
+    approved ledger is AHEAD of the Mac's (92 signatures vs 87), so shipping the
+    Mac's copy over would destroy VM records. What the verdict needs is not the
+    other host's file, it is to stop claiming certainty it does not have.
+    """
+    return [path.name for path, _s, _t, _w in OUTCOME_LEDGERS
+            if not path.exists()]
 
 
 def _outcome_index() -> dict:
@@ -582,6 +752,36 @@ def _escalate_looping(h: dict, now: str) -> bool:
     return _append_deduped(PENDING_PATH, entry, "id")
 
 
+def age_phrase(h: dict, now: str) -> str:
+    """"open 72d (raised 2026-06-10)" — or, when the row never said when it was
+    raised, "open >= 22d (first observed 2026-07-29; the row carries no raise
+    date, so this is a floor)".
+
+    Two different facts used to render as one sentence. Before 2026-08-21 every
+    escalation said "first seen <date>" and meant "when this sentinel started
+    keeping notes", which on the VM was a median 49.8 days after the problem was
+    actually raised. The Chairman was reading 22d for a 72d-old problem. Where
+    the raise date is genuinely unknown the number is now marked as the floor it
+    is, rather than quietly presented as the age.
+    """
+    started = h.get("last_open") or h.get("first_seen")
+    days = int(_days_between(started, now) or 0)
+    src = h.get("first_seen_source")
+    seen = str(h.get("first_seen", "?"))[:10]
+    if src == "row":
+        return f"open {days}d (raised {seen})"
+    if src == "observed_before_row":
+        # We hold a raise date, but it is LATER than our own first sighting —
+        # this signature recurred. The floor is still the honest number; the
+        # reason it is a floor is different, and saying the wrong reason would
+        # send someone looking for a missing field that is not missing.
+        return (f"open >= {days}d (first observed {seen}; the row in the queue "
+                f"was raised later, so this problem recurred and this is a "
+                f"floor, not the age)")
+    return (f"open >= {days}d (first observed {seen}; the row carries no raise "
+            f"date, so this is a floor, not the age)")
+
+
 def flag_stale_in_place(sig: str, h: dict, now: str) -> int:
     """Stamp the SLA breach ON the stale row(s). Returns rows stamped.
 
@@ -617,9 +817,9 @@ def flag_stale_in_place(sig: str, h: dict, now: str) -> int:
             if it.get("stale_days") != int(age):
                 it["stale_days"] = int(age)
                 it["sla_note"] = (
-                    f"OPEN with no resolution for >= {STALE_SLA_DAYS}d "
-                    f"(first seen {h.get('first_seen','?')[:10]}). It needs a "
-                    f"decision — resolve, reassign, or explicitly close.")
+                    f"OPEN with no resolution past the {STALE_SLA_DAYS}d SLA — "
+                    f"{age_phrase(h, now)}. It needs a decision — resolve, "
+                    f"reassign, or explicitly close.")
                 touched = True
             stamped += 1
         if touched:
@@ -630,8 +830,8 @@ def flag_stale_in_place(sig: str, h: dict, now: str) -> int:
 def _escalate_chairman(h: dict, cls: str, now: str) -> bool:
     sig = h["sig"]
     if cls == "STALE":
-        desc = (f"'{h.get('title')}' has been OPEN with no resolution for "
-                f">= {STALE_SLA_DAYS}d (first seen {h.get('first_seen','?')[:10]}). "
+        desc = (f"'{h.get('title')}' has been OPEN with no resolution past the "
+                f"{STALE_SLA_DAYS}d SLA — {age_phrase(h, now)}. "
                 f"It needs a decision — resolve, reassign, or explicitly close. "
                 f"(No queue row carries this signature, so the breach could not "
                 f"be stamped on the problem itself.)")
@@ -651,6 +851,17 @@ def _escalate_chairman(h: dict, cls: str, now: str) -> bool:
         else:
             desc = (f"'{h.get('title')}' disappeared from every queue with NO recorded "
                     f"resolution. Verify it was actually fixed, not silently dropped.")
+        # "No decision was recorded" and "one of the places a decision gets
+        # recorded does not exist on this host" are different claims, and only
+        # the first one is an alarm. Scoped conservatism: the verdict still
+        # escalates — an unverifiable drop is not a safe drop — but it says what
+        # it could not check, so nobody spends an hour hunting a decision that
+        # was never lost.
+        absent = h.get("ledgers_absent")
+        if absent:
+            desc += (f" NOTE: this host has no {', '.join(absent)}, so that "
+                     f"decision route could not be checked at all — 'no record' "
+                     f"here means 'no record I can see from {_host_label()}'.")
         eid = f"lifecycle-drop-{sig}"
     entry = {
         "id": eid,
@@ -866,14 +1077,27 @@ def run(escalate: bool = True) -> dict:
         _save(CHAIRMAN_PATH, chairman_rows)
 
     snap = _scan()
+    rebased = backfill_raised_from_rows(snap, history)
     history = _update_history(snap, history, now)
 
+    # LOOPING / STALE / SILENT_DROP are all statements about a problem's history
+    # ACROSS runs. A run that will not persist history is not a run that found
+    # none of them — it is a run that could not look: the next run reloads an
+    # empty file, every signature is first-seen again, and all three lists are
+    # unreachable BY CONSTRUCTION. A control that can never be red must say so,
+    # or its permanent zeros get read as a clean bill of health. Measured
+    # 2026-08-21: the red team scored the loop detector CRITICAL-BYPASSED off
+    # exactly these zeros, on a host where they could not have been anything
+    # else, while the designated writer held 4 LOOPING and 86 STALE.
     report = {"ts": now, "tracked": len(history),
               "looping": [], "stale": [], "silent_drop": [], "derived": [],
               "retired_derived": retired,
               "escalated_board": 0, "escalated_chairman": 0,
               "flagged_in_place": 0, "backfilled_derived": backfilled,
+              "rebased_to_raise_date": rebased,
+              "decision_ledgers_absent": absent_decision_ledgers(),
               "decided_not_dropped": [],
+              "evaluated": may_write,
               "writable": may_write, "writer_note": why}
 
     for sig, h in history.items():
@@ -922,6 +1146,15 @@ def main(argv=None):
     rep = run(escalate=not args.report)
     if args.json:
         print(json.dumps(rep, indent=2))
+    elif not rep["evaluated"]:
+        # Deliberately printed INSTEAD of the counts, not after them. The old
+        # order led with `looping=0 stale=0 silent_drop=0` and put the caveat on
+        # the following line, so the first thing any reader — human or grep —
+        # took from a blind run was three zeros.
+        print(f"[lifecycle] NOT EVALUATED — {rep['writer_note']}")
+        print(f"[lifecycle] scanned {rep['tracked']} signature(s), but lifecycle "
+              f"class (LOOPING/STALE/SILENT_DROP) needs a history this host does "
+              f"not maintain. No counts are reported because none were measured.")
     else:
         print(f"[lifecycle] tracked={rep['tracked']} "
               f"looping={len(rep['looping'])} stale={len(rep['stale'])} "
@@ -934,8 +1167,6 @@ def main(argv=None):
             print(f"[lifecycle] decided-not-dropped="
                   f"{len(rep['decided_not_dropped'])} "
                   f"backfilled_derived={rep['backfilled_derived']}")
-        if not rep["writable"]:
-            print(f"[lifecycle] NOTHING WRITTEN — {rep['writer_note']}")
     return 0
 
 

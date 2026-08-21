@@ -16787,6 +16787,395 @@ class TestAWakeIsNotAPipelineRun(unittest.TestCase):
                       "_resolve_target refuses silently")
 
 
+class TestBeingNamedIsNotEmployment(unittest.TestCase):
+    """The orphan check must judge INVOCATION, not mention.
+
+    Three times now, a module has looked employed because a scheduled module
+    merely wrote its name down: in a test's WIRED_AGENTS list (2026-07-30), in a
+    docstring (2026-07-31), and in a plain data table (2026-08-21). The third
+    was the widest — wake_agent.py's AGENT_REGISTRY names ~50 scripts, and
+    hr_agent.py's _GOVERNANCE_CHAIN names the officers HR has never reviewed, so
+    a list written to say "nobody watches these" was what claimed they were
+    watched. 25 agents ran nowhere while the baseline ratchet read 3.
+
+    These cases are written as SYNTHETIC source on purpose. Asserting against
+    the real hr_agent.py would make the test a hostage of that file's contents:
+    it would go green the day someone deletes the list, without the detector
+    having improved at all.
+    """
+
+    def _edges(self, src):
+        import wiring_audit
+        return wiring_audit._invocation_edges(src, {"alpha", "beta", "gamma"})
+
+    def test_a_name_in_a_collection_literal_is_not_a_call(self):
+        for literal in ('_CHAIN = frozenset({"alpha", "beta"})',
+                        '_T = ["alpha", "beta"]',
+                        '_R = {"A": ("alpha.py", ["--inbox-only"])}',
+                        '_D = {"alpha": "beta"}'):
+            edges, unresolved = self._edges(literal)
+            self.assertEqual(edges, set(),
+                             f"a bare name in {literal!r} counted as employment")
+            self.assertFalse(unresolved,
+                             f"{literal!r} is data, not an unreadable dispatch")
+
+    def test_an_import_or_a_literal_subprocess_arg_is_a_call(self):
+        for src, want in (
+            ("import alpha", {"alpha"}),
+            ("from beta import run", {"beta"}),
+            ('subprocess.run(["python3", "gamma.py"])', {"gamma"}),
+            ('runpy.run_path("alpha.py")', {"alpha"}),
+            ('importlib.import_module("beta")', {"beta"}),
+        ):
+            edges, _ = self._edges(src)
+            self.assertTrue(want <= edges, f"{src!r} should invoke {want}, got {edges}")
+
+    def test_sys_executable_does_not_make_a_resolved_call_unreadable(self):
+        # Nearly every subprocess call here passes sys.executable. Treating "has
+        # a non-constant" as unreadable would mark almost every dispatcher loose
+        # and preserve exactly the blindness this fix removes.
+        edges, unresolved = self._edges(
+            'subprocess.run([sys.executable, "alpha.py"], cwd=BASE)')
+        self.assertEqual(edges, {"alpha"})
+        self.assertFalse(unresolved)
+
+    def test_an_unreadable_dispatch_stays_conservative(self):
+        # "I cannot tell who you run" must never be reported as "you run nobody"
+        # (memory `verdict-with-no-consequence`).
+        _, unresolved = self._edges('subprocess.run([sys.executable, script])')
+        self.assertTrue(unresolved, "a variable target must force the loose rule")
+        _, unresolved = self._edges('subprocess.run([sys.executable, f"{stem}.py"])')
+        self.assertTrue(unresolved, "an f-string target must force the loose rule")
+
+    def test_unparseable_source_claims_nothing_and_says_so(self):
+        edges, unresolved = self._edges("def (:")
+        self.assertEqual(edges, set())
+        self.assertTrue(unresolved)
+
+    def test_the_registry_does_not_employ_the_agents_it_lists(self):
+        # Ground truth, against the real file: wake_agent's registry rows are
+        # tuples of literals, so no target may become reachable through them.
+        import wiring_audit
+        src = Path("wake_agent.py").read_text()
+        stems = {p.name[:-3] for p in Path(".").glob("*.py")}
+        edges, _ = wiring_audit._invocation_edges(wiring_audit._code_only(src), stems)
+        self.assertNotIn("deputy_monitor", edges,
+                         "a registry row is being read as a call — a wake is "
+                         "on-demand, and nothing schedules wake_agent itself")
+
+
+class TestAControlMustNotGradeTheHostItRanOn(unittest.TestCase):
+    """A guardrail test whose verdict changes with the host is not measuring the
+    guardrail.
+
+    2026-08-21: the red team scored the Problem Lifecycle Sentinel's loop
+    detector CRITICAL-BYPASSED on the Mac. The detector was fine — the VM, which
+    is the designated lifecycle writer, held 4 LOOPING and 86 STALE in its live
+    history at that moment. `_fresh_sentinel()` rebound the five path globals but
+    not writer_verdict(), so on a non-writer host run() fell to escalate=False,
+    which also skips saving history; every run reloaded an empty file and
+    LOOPING was unreachable by construction.
+
+    The smoke suite's own sentinel fixture has patched writer_verdict since
+    2026-08-19 for the identical reason, with the mirror-image symptom (there it
+    made the tests pass VACUOUSLY). One root cause, two controls, and the fix
+    reached only one of them — so it is pinned here in the file that already
+    knew, against the file that did not.
+    """
+
+    def test_the_redteam_sentinel_sandbox_neutralises_the_writer_guard(self):
+        import signoff_ledger_redteam as R
+        S = R._fresh_sentinel()
+        may_write, why = S.writer_verdict()
+        self.assertTrue(may_write,
+                        "the red team's sentinel sandbox is host-dependent: on a "
+                        "non-writer host every lifecycle attack scores a bypass "
+                        "against a guardrail that simply never ran")
+        self.assertNotIn("read-only", why)
+
+    def test_a_sentinel_that_persists_nothing_reports_evaluated_false(self):
+        """Structurally-empty is not measured-empty."""
+        import signoff_ledger_redteam as R
+        S = R._fresh_sentinel()
+        S.writer_verdict = lambda: (False, "not the designated host")
+        S.IMPL_QUEUE_PATH.write_text(json.dumps(
+            [{"id": "x", "title": "t", "dedup_key": "d", "status": "queued"}]))
+        rep = S.run()
+        self.assertFalse(rep["evaluated"],
+                         "a run that cannot keep a history must not report its "
+                         "empty LOOPING/STALE/SILENT_DROP lists as findings")
+        self.assertFalse(S.HISTORY_PATH.exists())
+
+    def test_the_unevaluated_banner_replaces_the_counts_it_would_be_read_past(self):
+        """The caveat has to come INSTEAD of the zeros, not after them."""
+        import io, contextlib
+        import signoff_ledger_redteam as R
+        S = R._fresh_sentinel()
+        S.writer_verdict = lambda: (False, "not the designated host")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            S.main([])
+        out = buf.getvalue()
+        self.assertIn("NOT EVALUATED", out)
+        self.assertNotIn("looping=0", out)
+        self.assertNotIn("stale=0", out)
+
+
+class TestTheStalenessClockStartsWhenTheProblemWasRaised(unittest.TestCase):
+    """A threshold is only as good as the quantity it is applied to.
+
+    STALE_SLA_DAYS=20 was measured against first_seen, which meant "when this
+    sentinel started keeping notes" — not when the problem was raised. On the VM
+    2026-08-21 the gap was a median 49.8 days: all 148 impl-queue rows were
+    queued 2026-06-10, the history began 2026-07-29, and every Chairman
+    escalation reported a 72-day-old problem as 22 days old. The SLA was fine;
+    the clock under it was measuring the observer.
+    """
+
+    def _S(self):
+        import signoff_ledger_redteam as R
+        return R._fresh_sentinel()          # sandboxed paths + writer guard
+
+    def test_raise_date_beats_observation_time(self):
+        S = self._S()
+        S.IMPL_QUEUE_PATH.write_text(json.dumps([{
+            "id": "a", "title": "old problem", "dedup_key": "old",
+            "status": "queued", "queued_at": "2026-06-10T03:50:41.991502"}]))
+        S.run()
+        h = json.loads(S.HISTORY_PATH.read_text())
+        entry = h[S.signature({"dedup_key": "old"}, "impl")]
+        self.assertTrue(entry["first_seen"].startswith("2026-06-10"))
+        self.assertEqual("row", entry["first_seen_source"])
+
+    def test_a_row_with_no_raise_date_is_marked_a_floor_not_an_age(self):
+        """Scoped conservatism: "I cannot tell how old this is" must not render
+        as "it is new"."""
+        S = self._S()
+        S.IMPL_QUEUE_PATH.write_text(json.dumps([{
+            "id": "b", "title": "undated", "dedup_key": "und", "status": "queued"}]))
+        S.run()
+        h = json.loads(S.HISTORY_PATH.read_text())
+        entry = h[S.signature({"dedup_key": "und"}, "impl")]
+        self.assertEqual("observed", entry["first_seen_source"])
+        self.assertIn("floor", S.age_phrase(entry, S._now()))
+        self.assertNotIn("floor", S.age_phrase(
+            {**entry, "first_seen_source": "row"}, S._now()))
+
+    def test_ts_is_never_read_as_a_raise_date(self):
+        """The poison pill. `ts` is refreshed on write, and it is the most
+        common date-ish field in these queues (48/57 pending proposals). Reading
+        it would reset every problem's age on every write — an aging queue would
+        read as permanently new, which is the failure this whole fix is against
+        and would look like a success. Proven from live data on 2026-08-21: 12
+        rows carried an sla_breached_at stamp (impossible before day 20) while
+        their `ts` claimed they were under 4 days old.
+        """
+        import datetime as _dt
+        S = self._S()
+        self.assertNotIn("ts", S.RAISED_AT_FIELDS)
+        recent = _dt.datetime.now(_dt.timezone.utc).isoformat()
+        self.assertIsNone(S.raised_at({"ts": recent}))
+        # ...and it must still find a real one sitting next to it.
+        self.assertTrue(S.raised_at(
+            {"ts": recent, "queued_at": "2026-06-10T03:50:41"}
+        ).startswith("2026-06-10"))
+
+    def test_backfill_only_moves_earlier_and_only_once(self):
+        S = self._S()
+        hist = {"sig-x": {"sig": "sig-x", "first_seen": "2026-07-29T00:00:00+00:00",
+                          "last_open": "2026-07-29T00:00:00+00:00", "status": "OPEN"}}
+        snap = {"sig-x": {"raised": "2026-06-10T00:00:00+00:00"}}
+        self.assertEqual(1, S.backfill_raised_from_rows(snap, hist))
+        self.assertTrue(hist["sig-x"]["first_seen"].startswith("2026-06-10"))
+        self.assertTrue(hist["sig-x"]["last_open"].startswith("2026-06-10"))
+        # idempotent: a second pass moves nothing
+        self.assertEqual(0, S.backfill_raised_from_rows(snap, hist))
+        # and it never moves a clock FORWARD, which would erase an SLA breach
+        hist2 = {"sig-y": {"sig": "sig-y", "first_seen": "2026-06-01T00:00:00+00:00",
+                           "status": "OPEN"}}
+        S.backfill_raised_from_rows({"sig-y": {"raised": "2026-08-01T00:00:00+00:00"}}, hist2)
+        self.assertTrue(hist2["sig-y"]["first_seen"].startswith("2026-06-01"))
+
+    def test_a_reopened_problem_keeps_its_current_open_spell(self):
+        """last_open is when THIS spell started. Dragging it back to the
+        original raise date would age a freshly-reopened problem by however long
+        its first incarnation ran."""
+        S = self._S()
+        hist = {"s": {"sig": "s", "first_seen": "2026-07-29T00:00:00+00:00",
+                      "last_open": "2026-08-20T00:00:00+00:00", "status": "OPEN",
+                      "times_resolved": 1, "recurred_after_resolution": 1}}
+        S.backfill_raised_from_rows({"s": {"raised": "2026-06-10T00:00:00+00:00"}}, hist)
+        self.assertTrue(hist["s"]["first_seen"].startswith("2026-06-10"))
+        self.assertTrue(hist["s"]["last_open"].startswith("2026-08-20"))
+
+    def test_a_later_row_date_never_licenses_a_raise_claim(self):
+        """POISON PILL for the fix itself.
+
+        When the row's raise date is LATER than our own first sighting, the
+        signature recurred: first_seen is already correct and nothing moves. The
+        tempting shortcut is to stamp first_seen_source="row" anyway so the
+        entry stops being rescanned — but "row" is exactly what licenses
+        age_phrase to print `raised <date>` as a sourced fact, and the date it
+        would print came from our own observation, not from any row. That turns
+        "at least this old" back into a specific claim we cannot source, which
+        is the substitution this whole fix exists to remove.
+
+        Measured on the VM 2026-08-21: 18 of the 69 entries the backfill touches
+        take this branch. If this test fails, the floor has started lying.
+        """
+        S = self._S()
+        hist = {"r": {"sig": "r", "first_seen": "2026-06-01T00:00:00+00:00",
+                      "last_open": "2026-06-01T00:00:00+00:00", "status": "OPEN"}}
+        snap = {"r": {"raised": "2026-08-01T00:00:00+00:00"}}   # row is NEWER
+        self.assertEqual(0, S.backfill_raised_from_rows(snap, hist))
+        self.assertNotEqual("row", hist["r"]["first_seen_source"])
+        phrase = S.age_phrase(hist["r"], "2026-08-21T00:00:00+00:00")
+        # The forbidden thing is the CLAIM `raised <date>`, not the word — the
+        # honest floor sentence explains itself using the same word.
+        self.assertNotIn("raised 2026-", phrase)
+        self.assertIn(">=", phrase)
+        self.assertIn("recurred", phrase)
+        # still terminal: the entry is not rescanned on the next pass
+        self.assertIn(hist["r"]["first_seen_source"], S._SOURCE_FINAL)
+        self.assertEqual(0, S.backfill_raised_from_rows(snap, hist))
+
+    def test_every_terminal_source_but_row_renders_a_floor(self):
+        """_SOURCE_FINAL is a skip set; only "row" may state a raise date. A
+        value added to the skip set must not silently inherit the right to make
+        a claim it cannot source — so assert the relationship, not the list."""
+        S = self._S()
+        now = "2026-08-21T00:00:00+00:00"
+        for src in S._SOURCE_FINAL:
+            h = {"sig": "s", "first_seen": "2026-06-10T00:00:00+00:00",
+                 "last_open": "2026-06-10T00:00:00+00:00",
+                 "first_seen_source": src, "status": "OPEN"}
+            phrase = S.age_phrase(h, now)
+            if src == "row":
+                self.assertIn("raised 2026-06-10", phrase)
+            else:
+                self.assertIn(">=", phrase, f"{src} must render a floor")
+                self.assertNotIn("raised 2026-", phrase,
+                                 f"{src} must not claim a raise date")
+
+
+class TestAVerdictNamesTheLedgerItCouldNotRead(unittest.TestCase):
+    """SILENT_DROP asserts "no decision was recorded". That is only as strong as
+    the ledgers consulted, and `_load` returns [] for a file that does not exist
+    exactly as it does for one that recorded nothing.
+
+    Measured 2026-08-21: cit_rejected_proposals.json exists on the Mac and does
+    NOT exist on the VM — the designated lifecycle writer — so the WONT_FIX half
+    of the verdict is unreachable on the only host that reaches a verdict. It
+    costs nothing today (0 of the VM's 26 drops had been decided anywhere), so
+    the fix is not to ship a file across hosts that have no sync and divergent
+    ledgers; it is to stop claiming certainty the run does not have.
+    """
+
+    def _S(self):
+        import importlib, tempfile, problem_lifecycle_sentinel as S
+        from pathlib import Path
+        importlib.reload(S)
+        d = Path(tempfile.mkdtemp(prefix="ledger_absent_"))
+        S.PENDING_PATH, S.IMPL_QUEUE_PATH = d / "p.json", d / "i.json"
+        S.CHAIRMAN_PATH, S.HISTORY_PATH = d / "c.json", d / "h.json"
+        S.LOOPS_PATH = d / "l.json"
+        S.OUTCOME_LEDGERS = (
+            (d / "approved.json", "RESOLVED", "approved_at", "the board approved it"),
+            (d / "rejected.json", "WONT_FIX", "rejected_at", "the board rejected it"),
+        )
+        S.writer_verdict = lambda: (True, "test sandbox")
+        return S, d
+
+    def test_an_absent_ledger_is_reported_not_read_as_empty(self):
+        S, d = self._S()
+        (d / "approved.json").write_text("[]")          # exists, records nothing
+        self.assertEqual(["rejected.json"], S.absent_decision_ledgers())
+        (d / "rejected.json").write_text("[]")          # exists, records nothing
+        self.assertEqual([], S.absent_decision_ledgers(),
+                         "an EMPTY ledger is measured-empty, not absent")
+
+    def test_the_drop_escalation_says_what_it_could_not_check(self):
+        """POISON PILL: make the ledger vanish and the alarm must caveat itself.
+        If this passes with an unqualified 'NO recorded resolution', the verdict
+        is asserting the absence of evidence it never looked for."""
+        S, d = self._S()
+        (d / "approved.json").write_text("[]")          # rejected.json: absent
+        row = {"id": "z1", "title": "vanishing item", "dedup_key": "vanish",
+               "status": "queued", "queued_at": "2026-06-01T00:00:00"}
+        S.IMPL_QUEUE_PATH.write_text(json.dumps([row]))
+        S.run()                                          # first sighting
+        S.IMPL_QUEUE_PATH.write_text("[]")               # left every queue
+        rep = S.run()
+        self.assertEqual(["rejected.json"], rep["decision_ledgers_absent"])
+        self.assertEqual(1, len(rep["silent_drop"]))
+        chair = json.loads(S.CHAIRMAN_PATH.read_text())
+        drop = [c for c in chair if c["id"].startswith("lifecycle-drop-")]
+        self.assertEqual(1, len(drop))
+        self.assertIn("rejected.json", drop[0]["description"])
+        self.assertIn("could not be checked", drop[0]["description"])
+
+    def test_no_caveat_when_every_ledger_was_actually_read(self):
+        """The caveat must be evidence-driven. A verdict that always hedges is
+        as useless as one that never does — the note has to disappear the moment
+        both ledgers are present and empty."""
+        S, d = self._S()
+        (d / "approved.json").write_text("[]")
+        (d / "rejected.json").write_text("[]")
+        row = {"id": "z2", "title": "clean drop", "dedup_key": "clean",
+               "status": "queued", "queued_at": "2026-06-01T00:00:00"}
+        S.IMPL_QUEUE_PATH.write_text(json.dumps([row]))
+        S.run()
+        S.IMPL_QUEUE_PATH.write_text("[]")
+        rep = S.run()
+        self.assertEqual([], rep["decision_ledgers_absent"])
+        chair = json.loads(S.CHAIRMAN_PATH.read_text())
+        drop = [c for c in chair if c["id"].startswith("lifecycle-drop-")][0]
+        self.assertNotIn("could not be checked", drop["description"])
+
+
+class TestAnAbortedRoundIsNotAPassedRound(unittest.TestCase):
+    """The red team's header counted verdicts and called them attempts.
+
+    When attack_r6_loops raised in its third attack, the fourth through sixth
+    never ran and left no trace: one ERROR row, and a total that still read as
+    full coverage. An attack that did not run is UNTESTED, not held — the same
+    shape as a test class the runner never registered.
+    """
+
+    def test_declared_count_is_a_floor_read_from_the_ast(self):
+        import signoff_ledger_redteam as R
+        n = R._declared_attacks(R.attack_r6_loops)
+        self.assertGreaterEqual(n, 6,
+                                "the R6 round declares at least its six original "
+                                "attacks plus the two writer-guard attacks")
+        # Counted from source, so it cannot be satisfied by a hand-kept number
+        # that drifts; and it must not be a grep, because this file's comments
+        # say `_check` in prose.
+        self.assertEqual(0, R._declared_attacks(lambda: None))
+
+    def test_a_round_that_aborts_early_reports_its_own_shortfall(self):
+        import signoff_ledger_redteam as R
+        saved_rounds, saved_decl = R._ROUNDS, R._declared_attacks
+        saved_findings = list(R.findings)
+        try:
+            def broken():
+                R._check("poison", "ran", "LOW", True, False)
+                raise FileNotFoundError(2, "No such file or directory")
+            R._declared_attacks = lambda fn: 8 if fn is broken else 0
+            R._ROUNDS = (broken,)
+            R.findings.clear()
+            out = R.run()
+            gaps = [f for f in out if f["id"] == "RT-GAP"]
+            self.assertEqual(1, len(gaps), "a silent shortfall is the whole bug")
+            self.assertIn("7 of 8", gaps[0]["detail"])
+            self.assertEqual("ERROR", gaps[0]["verdict"],
+                             "the shortfall must colour the report red, not sit "
+                             "in it as an informational note")
+        finally:
+            R._ROUNDS, R._declared_attacks = saved_rounds, saved_decl
+            R.findings[:] = saved_findings
+
+
 # =============================================================================
 # Runner
 # =============================================================================

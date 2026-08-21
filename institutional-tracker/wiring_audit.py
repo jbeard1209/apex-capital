@@ -179,6 +179,92 @@ def _code_only(txt: str) -> str:
     return re.sub(r'#[^\n]*', '', txt)
 
 
+# The callables that actually START another module. A module name inside any
+# OTHER call is data, not employment.
+_INVOKERS = frozenset({
+    "run", "Popen", "call", "check_call", "check_output", "system",
+    "spawnl", "spawnv", "spawnlp", "spawnvp",
+    "run_path", "run_module", "import_module", "__import__",
+    "spec_from_file_location",
+})
+
+
+def _invocation_edges(txt: str, stems: set) -> tuple:
+    """Which module stems does this one IMPORT or RUN — as opposed to merely name?
+
+    Returns (edges, unresolved). `unresolved` is True when the module dispatches
+    to a target this cannot read statically (a variable, an f-string, a table
+    lookup); the caller must then fall back to the loose text rule for that
+    module, because "I cannot tell who you run" must never be reported as "you
+    run nobody" (memory `verdict-with-no-consequence`).
+
+    WHY THIS EXISTS. The reachability walk used to count ANY mention of a module
+    stem as employment. `_code_only` strips docstrings and comments for exactly
+    that reason, and its own note explains why ordinary strings are kept: a
+    scheduler root invokes work as subprocess.run(["python3", "x.py"]), so
+    dropping every string would blind the walk. True — but keeping every string
+    let a module be "employed" by appearing in a plain data table:
+
+      • wake_agent.py's AGENT_REGISTRY lists ~50 scripts by filename. A wake is
+        on-demand and nothing schedules it; being wakeable is not employment.
+      • hr_agent.py's _GOVERNANCE_CHAIN is a frozenset of the officers whose work
+        HR has never reviewed. The list exists to say "nobody audits these" — and
+        naming them there was what told this audit they were employed. A list of
+        the unwatched, read as proof of watching.
+      • strategic_roadmap.py describes agents in prose fields; apex_system_cit_
+        agent.py tables their log paths for a health check.
+
+    On 2026-08-21 that made 25 agents look scheduled while running on no crontab,
+    no launchd job, no systemd timer, no catch_up entry and no pipeline step —
+    on either host. Among them: position_risk_monitor (the circuit breaker),
+    deputy_monitor (stop-loss enforcement, and the owner internal_audit_agent
+    records for the severity_below_the_escalation_floor failure class), and
+    cit_watchdog. The baseline ratchet stood at 3.
+
+    This is the third variant of one bug, and the two above it are already
+    written into this function's caller: being named in a test is not employment
+    (2026-07-30), being named in a docstring is not employment (2026-07-31),
+    being named in a string literal is not employment (today).
+    """
+    edges, unresolved = set(), False
+    try:
+        tree = ast.parse(txt)
+    except SyntaxError:
+        # Unparseable: claim nothing, and say so — the caller stays conservative.
+        return set(), True
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                edges.add(a.name.split(".")[0])
+        elif isinstance(node, ast.ImportFrom):
+            if node.module:
+                edges.add(node.module.split(".")[0])
+        elif isinstance(node, ast.Call):
+            f = node.func
+            fname = (f.attr if isinstance(f, ast.Attribute)
+                     else f.id if isinstance(f, ast.Name) else "")
+            if fname not in _INVOKERS:
+                continue
+            hit, dynamic = False, False
+            for arg in list(node.args) + [k.value for k in node.keywords if k.value]:
+                for sub in ast.walk(arg):
+                    if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
+                        for s in stems:
+                            if s in sub.value:
+                                edges.add(s)
+                                hit = True
+                    elif isinstance(sub, (ast.Name, ast.Attribute,
+                                          ast.Subscript, ast.JoinedStr)):
+                        dynamic = True
+            # sys.executable is a Name and appears in almost every subprocess
+            # call here, so "contains a non-constant" alone would mark nearly
+            # every dispatcher unresolved and preserve the blindness. A call is
+            # only unreadable when it resolves to NO literal module at all.
+            if dynamic and not hit:
+                unresolved = True
+    return edges, unresolved
+
+
 # The firm's documented escalation entry points: call one and your item lands in
 # a queue a board, pod or supervisor actually drains (see CLAUDE.md's
 # producer -> queue -> consumer section). {owner_module: (function, ...)}.
@@ -525,8 +611,23 @@ def check_orphan_agents(sources: dict):
     # via a scheduled caller, and the audit promptly reported it "no longer an
     # orphan" and asked for its removal from the baseline. It is still scheduled
     # nowhere. Being named in a docstring is not employment either.
+    #
+    # And the traversal reads INVOCATIONS, not mentions. See _invocation_edges:
+    # a module stem sitting in a registry table, a governance list or a roadmap
+    # string is data, and counting it as employment hid 25 unscheduled agents
+    # behind a baseline that read 3. Where a module dispatches to a target this
+    # cannot resolve statically, `unresolved` is True and that module alone
+    # reverts to the loose text rule — an unreadable dispatcher must not be able
+    # to orphan its own children.
     prod = {n for n in sources if not n.startswith("test_")}
     code = {n: _code_only(t) for n, t in sources.items()}
+    stems = {n[:-3] for n in prod}
+    edges, loose = {}, set()
+    for n in prod:
+        e, unresolved = _invocation_edges(code.get(n, ""), stems)
+        edges[n] = e
+        if unresolved:
+            loose.add(n)
     reachable, frontier = set(roots), set(roots)
     while frontier:
         nxt = set()
@@ -536,7 +637,9 @@ def check_orphan_agents(sources: dict):
                 if name in reachable:
                     continue
                 stem = name[:-3]
-                if re.search(rf"\b{re.escape(stem)}\b", txt):
+                if stem in edges.get(cur, ()):
+                    nxt.add(name)
+                elif cur in loose and re.search(rf"\b{re.escape(stem)}\b", txt):
                     nxt.add(name)
         reachable |= nxt
         frontier = nxt

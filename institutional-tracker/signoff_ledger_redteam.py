@@ -15,7 +15,7 @@
 #   python3 signoff_ledger_redteam.py --json     # machine-readable findings
 # =============================================================================
 from __future__ import annotations
-import os, sys, json, tempfile, importlib
+import os, sys, json, tempfile, importlib, ast, inspect, textwrap
 
 RESET = "\033[0m"; RED = "\033[91m"; GRN = "\033[92m"; YEL = "\033[93m"; DIM = "\033[2m"
 
@@ -389,7 +389,30 @@ def attack_r5_production():
 
 
 def _fresh_sentinel():
-    """A Problem Lifecycle Sentinel bound to a private temp store."""
+    """A Problem Lifecycle Sentinel bound to a private temp store.
+
+    Rebinding the five path globals is not a complete sandbox. `run()` also
+    consults writer_verdict(), and on any host that is not the designated
+    lifecycle writer it drops to escalate=False — which does not merely skip
+    escalation, it skips `_save(HISTORY_PATH, ...)`. Every run then starts from
+    an empty history, so nothing can ever be seen twice and LOOPING / STALE /
+    SILENT_DROP are unreachable BY CONSTRUCTION.
+
+    Measured 2026-08-21: on the Mac this round reported RT-44 as a CRITICAL
+    bypass of the loop detector and then died in A3 on a FileNotFoundError,
+    taking A4-A6 with it. The loop detector was fine — the VM, which IS the
+    writer, had 4 LOOPING and 86 STALE in its live history at that moment. The
+    round was reporting a fact about the host it ran on, dressed as a fact
+    about the code. A CRITICAL that is permanently red for a known-wrong reason
+    is worse than no attack at all: it trains the reader to skip the line, and
+    a genuine regression would land in a colour nobody looks at.
+
+    test_pipeline_smoke.py's sentinel fixture has patched writer_verdict since
+    2026-08-19 for the same reason, with the opposite symptom — there the
+    unsandboxed guard made the tests pass VACUOUSLY. Same root cause, and the
+    fix never propagated to this file. The writer guard keeps its own attack
+    below (A7) so stubbing it here costs no coverage.
+    """
     import problem_lifecycle_sentinel as S
     importlib.reload(S)
     from pathlib import Path
@@ -399,6 +422,7 @@ def _fresh_sentinel():
     S.CHAIRMAN_PATH  = Path(d) / "chair.json"
     S.HISTORY_PATH   = Path(d) / "history.json"
     S.LOOPS_PATH     = Path(d) / "loops.json"
+    S.writer_verdict = lambda: (True, "red-team sandbox")
     return S
 
 
@@ -465,6 +489,24 @@ def attack_r6_loops():
     _check("R6 silent-drop", "problem vanishes and is assumed fixed", "HIGH",
            True, S2.signature(g, "impl") not in rep2["silent_drop"],
            "a drop with no resolution must be surfaced to the Chairman")
+
+    # A7 — the writer guard _fresh_sentinel() stubs out, attacked on its own so
+    # the stub costs no coverage. A second host keeping a second opinion of one
+    # firm-wide problem is the private-diary failure inside governance itself.
+    S3 = _fresh_sentinel()
+    S3.writer_verdict = lambda: (False, "not the designated host")
+    S3.IMPL_QUEUE_PATH.write_text(json.dumps(
+        [{"id": "w1", "title": "off-host write", "dedup_key": "offhost",
+          "status": "queued"}]))
+    rep3 = S3.run()
+    _check("R6 writer-guard", "a non-writer host advances lifecycle history", "CRITICAL",
+           True, S3.HISTORY_PATH.exists(),
+           "only the designated host may persist lifecycle state")
+    # ...and having refused to write, it must not then present its own blindness
+    # as a clean bill of health. Structurally-empty is not measured-empty.
+    _check("R6 writer-honesty", "unmeasured host reports zero findings as a pass", "HIGH",
+           True, rep3.get("evaluated", True),
+           "a run that persisted nothing must report evaluated=False")
 
 
 # ── R7: state-machine, identity and budget attacks (round 2, 2026-07-30) ────
@@ -604,17 +646,65 @@ def attack_r7_lifecycle():
            "a veto must move the stored status off CLEARED, not just block the gate")
 
 
+def _declared_attacks(fn) -> int:
+    """How many _check() calls the round's SOURCE contains.
+
+    The denominator. Without it a round that dies on its second attack is
+    indistinguishable from a round that ran all of them: the per-round
+    try/except below records one ERROR line, and the attacks after the raise
+    leave no trace at all. On 2026-08-21 attack_r6_loops raised in A3 and A4-A6
+    — the loop-break set, idempotency and silent-drop attacks — silently did not
+    run. The report said "attacks run: 56" and meant "56 findings", which is not
+    the same number and was never the same number.
+
+    Counted from the AST rather than kept by hand, so it cannot drift from the
+    code, and rather than grepped because this file's own prose says `_check`
+    in half a dozen comments. A `_check` inside a loop yields more findings than
+    it has call sites, so this is a FLOOR: only a shortfall is a finding.
+    """
+    try:
+        src = inspect.getsource(fn)
+    except Exception:                              # pragma: no cover - defensive
+        return 0
+    tree = ast.parse(textwrap.dedent(src))
+    return sum(1 for n in ast.walk(tree)
+               if isinstance(n, ast.Call)
+               and isinstance(n.func, ast.Name) and n.func.id == "_check")
+
+
+# One definition of the round list. Both run() and _report() read it, so the
+# denominator in the header can never be computed over a different set of rounds
+# than the one that was executed.
+_ROUNDS = (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
+           attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
+           attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation,
+           attack_r5_production, attack_r6_loops, attack_r7_lifecycle)
+
+
 def run():
-    for fn in (attack_g1, attack_g2, attack_g3, attack_g4, attack_g5, attack_g6, attack_rep,
-               attack_r2_identity, attack_r2_payload, attack_r2_reputation_farm,
-               attack_r2_homoglyph, attack_r3_migration, attack_r4_escalation,
-               attack_r5_production, attack_r6_loops, attack_r7_lifecycle):
+    for fn in _ROUNDS:
+        before = len(findings)
         try:
             fn()
+            produced = len(findings) - before
         except Exception as e:
+            # Counted BEFORE the ERROR row is appended: the row is a record of
+            # the crash, not an attack that reported a verdict.
+            produced = len(findings) - before
             findings.append(dict(id="RT-ERR", guardrail=fn.__name__, attack="harness error",
                                  severity="HIGH", expected="-", actual="-",
                                  verdict="ERROR", detail=repr(e)))
+        declared = _declared_attacks(fn)
+        if produced < declared:
+            # An attack that did not run is not an attack that passed. Named
+            # with its own shortfall so the number is in the report, not
+            # inferred from a total nobody cross-checks.
+            findings.append(dict(
+                id="RT-GAP", guardrail=fn.__name__, attack="attacks did not run",
+                severity="HIGH", expected="-", actual="-", verdict="ERROR",
+                detail=f"{declared - produced} of {declared} attack(s) in this "
+                       f"round never executed — the round aborted early, so "
+                       f"their guardrails are UNTESTED, not held"))
     return findings
 
 
@@ -625,7 +715,15 @@ def _report():
     print("=" * 72)
     print("  APEX CAPITAL — SIGN-OFF LEDGER RED TEAM REPORT")
     print("=" * 72)
-    print(f"  attacks run: {len(findings)}   holds: {len(findings)-len(bypasses)}   "
+    # "attacks run" used to be len(findings), which counts verdicts, not
+    # attempts — so a round that aborted still contributed to a total that read
+    # as coverage. Declared is the AST floor across every round; reported is
+    # what actually came back.
+    declared = sum(_declared_attacks(f) for f in _ROUNDS)
+    reported = len([f for f in findings if f["id"].startswith("RT-")
+                    and f["verdict"] not in ("ERROR",)])
+    print(f"  attacks declared: {declared}   reported: {reported}   "
+          f"holds: {len(findings)-len(bypasses)}   "
           f"{RED}findings: {len(bypasses)}{RESET}\n")
     for f in findings:
         c = RED if f["verdict"] in ("BYPASSED", "FALSE_BLOCK", "ERROR") else GRN
