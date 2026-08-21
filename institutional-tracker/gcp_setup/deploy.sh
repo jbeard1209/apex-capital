@@ -103,11 +103,21 @@ echo "[1/2] Syncing project files..."
 # parameter_derivations.json + parameter_audit_baseline.json are safe for a
 # different reason, and it is worth stating so nobody generalises from the
 # agent_registry disaster above. Both are pure functions of the source tree:
-# parameter_audit reads CODE, never runtime state, so given the same checkout
-# both hosts compute byte-identical numbers and a one-way rsync cannot destroy
-# anything one host learned and the other did not. They must travel with the
-# code because the alternative is what signoff_ledger's deploy budget became —
-# a limit described as firm-wide that was quietly enforced per-host.
+# parameter_audit reads CODE, never runtime state, so a one-way rsync cannot
+# destroy anything one host learned and the other did not. They must travel with
+# the code because the alternative is what signoff_ledger's deploy budget became
+# — a limit described as firm-wide that was quietly enforced per-host.
+#
+# This comment first said the two hosts therefore "compute byte-identical
+# numbers". Measured on 2026-08-21 immediately after deploying d7b5d9b, that was
+# false in the totals: Mac 324 modules / 441 constants, VM 320 / 438. Every
+# audited number agreed exactly (77 consequential, 53 reachable, 3 documented,
+# 50 undocumented, ratchet FLAT) — the gap was four untracked host-local files
+# this script correctly refuses to ship, already parked in `dormant`. The claim
+# was true where it mattered and wrong as written, which is the exact failure
+# parameter_audit exists to catch, so: same checkout AND same working tree gives
+# identical numbers, and the census now prints `of which host-local` so the
+# difference explains itself instead of needing this paragraph.
 #
 # data/.host_id is excluded FIRST, ahead of the includes, so it survives anyone
 # later broadening the allowlist. It is this host's stable trading identity; if

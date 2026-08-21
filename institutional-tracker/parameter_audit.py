@@ -54,10 +54,24 @@ DATA = HERE / "data"
 REGISTRY_PATH = DATA / "parameter_derivations.json"
 BASELINE_PATH = DATA / "parameter_audit_baseline.json"
 REPORT_PATH = DATA / "parameter_audit_report.json"
+# The only thing this module is allowed to write besides its own two artefacts,
+# and the reason it may: a scheduled job whose report nobody reads is the firm's
+# oldest bug class wearing a cron entry. The ratchet can say REGRESSED at 03:00
+# on a Tuesday, and without a consumer that verdict is a line in a logfile.
+# Writing a queue row is not editing a parameter — the separation this module is
+# pinned to is "derive and present, never change" — but the AST guard in
+# test_pipeline_smoke.py now also proves all three targets are .json under data/,
+# so the allowlist cannot be widened later into something that holds code.
+CHAIRMAN_PATH = DATA / "chairman_action_required.json"
 
 # Directories that are not the firm's own decision-making code.
+# `oracle_setup` is the provisioning code for the third host, whose instance was
+# TERMINATED 2026-07-27. It is gitignored, so it exists on the Mac and not on the
+# VM; scanning it charged the audit two dormant "parameters" belonging to a
+# machine that no longer exists, and made the two hosts print different totals
+# for a reason that had nothing to do with drift.
 SKIP_DIRS = {"__pycache__", ".git", "venv", "node_modules", "gcp_setup",
-             "scripts", "archive", "logs", "data"}
+             "scripts", "archive", "logs", "data", "oracle_setup"}
 
 # A constant is a PARAMETER candidate only if it is a bare number. Strings,
 # paths, lists of names and booleans are configuration, not thresholds.
@@ -310,11 +324,42 @@ def _is_measured(rec: dict) -> bool:
     return isinstance(m.get("n"), (int, float)) and m["n"] > 0
 
 
+def host_local_modules(files: list, root: Optional[Path] = None) -> Optional[list]:
+    """Scanned modules that git does not track, i.e. that exist on THIS host only.
+
+    Measured because the alternative was an assertion. The deploy comment for
+    this module's registry claimed both hosts "compute byte-identical numbers";
+    run on both on 2026-08-21 the Mac said 324 modules / 441 constants and the
+    VM said 320 / 438. The audited numbers agreed exactly — the divergence was
+    four untracked files that deploy.sh correctly refuses to ship, and which the
+    reachability pass had already parked in `dormant`. Nothing was wrong, but
+    nobody could have known that from the two printouts, so the census now
+    carries the explanation instead of a future reader re-deriving it.
+
+    Returns None, not [], when git cannot answer: the VM is not a checkout
+    (deploy.sh rsyncs with --exclude=.git/), so `git ls-files` there fails, and
+    an empty list would read as "nothing is host-local" — the confident wrong
+    answer rather than the honest absent one.
+    """
+    root = root or HERE
+    try:
+        import subprocess
+        out = subprocess.run(["git", "-C", str(root), "ls-files", "*.py"],
+                             capture_output=True, text=True, timeout=30)
+        if out.returncode != 0:
+            return None
+    except Exception:
+        return None
+    tracked = {Path(line).name for line in out.stdout.split() if line}
+    return sorted(p.name for p in files if p.name not in tracked)
+
+
 def run(root: Optional[Path] = None) -> dict:
     """Census every parameter and report the undocumented consequential ones."""
     reg = load_registry()
     files = python_files(root)
     live = reachable_modules(files, root)
+    host_local = host_local_modules(files, root)
     n_const = n_cmp = n_gate = 0
     consequential, undocumented, documented, drifted = [], [], [], []
     dormant, asserted = [], []
@@ -366,6 +411,8 @@ def run(root: Optional[Path] = None) -> dict:
         "ts": _now(),
         "modules_examined": len(files),
         "modules_reachable": len(live & {p.stem for p in files}),
+        "modules_host_local": host_local,
+        "n_modules_host_local": (None if host_local is None else len(host_local)),
         "n_constants": n_const,
         "n_compared": n_cmp,
         "n_gating_a_branch": n_gate,
@@ -420,11 +467,85 @@ def ratchet(report: dict) -> dict:
     return {"baseline": prev, "status": "FLAT", "delta": 0}
 
 
+def escalate(rep: dict) -> bool:
+    """Queue ONE Chairman row when the census gets worse. Never raises.
+
+    Fires on exactly two conditions, both of which mean a human has to look:
+
+      REGRESSED — a new consequential dial appeared with no derivation. The
+        ratchet deliberately does NOT rewrite the baseline in this case, so the
+        condition persists across runs; the dedupe key is the day, so it is one
+        row per day until someone prices the dial, not one row every two hours.
+
+      n_drifted > 0 — a registered derivation no longer describes the live
+        value. This is worse than an undocumented dial: it reads as due
+        diligence. It escalates even when the ratchet is FLAT, because the
+        undocumented COUNT is unchanged by a derivation quietly going stale.
+
+    Everything else — FLAT, IMPROVED, a pile of dormant dials — is a report, not
+    an interruption. The Chairman queue is at three figures; a control that
+    files a row on every healthy run is how a queue stops being read.
+    """
+    rat = rep.get("ratchet") or {}
+    if rat.get("status") != "REGRESSED" and not rep.get("n_drifted"):
+        return False
+    try:
+        rows = json.loads(CHAIRMAN_PATH.read_text()) if CHAIRMAN_PATH.exists() else []
+        if not isinstance(rows, list):
+            return False
+        day = rep["ts"][:10]
+        rid = "parameter-audit-%s-%s" % (rat.get("status", "DRIFT").lower(), day)
+        if any(isinstance(r, dict) and r.get("id") == rid for r in rows):
+            return False
+        lines = []
+        if rat.get("status") == "REGRESSED":
+            lines.append(
+                "REGRESSED: %d consequential parameter(s) gained no derivation "
+                "since the baseline of %s. A dial that gates an order, an email "
+                "or a verdict is now set to a number nobody can defend."
+                % (rat.get("delta", 0), rat.get("baseline")))
+            for e in rep.get("undocumented", [])[:6]:
+                lines.append("    %-46s = %s" % (e["key"][:46], e["value"]))
+        if rep.get("n_drifted"):
+            lines.append(
+                "STALE DERIVATION: %d registered value(s) no longer match the "
+                "live code. This is worse than an undocumented dial — it reads "
+                "as due diligence and is not." % rep["n_drifted"])
+            for d in rep.get("drifted", [])[:6]:
+                lines.append("    %-40s live=%s registered=%s"
+                             % (d["key"][:40], d["value"], d["registered_value"]))
+        lines += [
+            "",
+            "Nothing has been changed. parameter_audit never edits a parameter "
+            "(AST-pinned) — it derives and presents, and the choice stays with "
+            "the Chairman. Options: (1) price the dial and add a `measured` "
+            "block to data/parameter_derivations.json; (2) delete the dial if "
+            "the branch it gates is dead; (3) accept it explicitly, which still "
+            "requires a measurement, because a rationale is not a derivation.",
+        ]
+        rows.append({
+            "id": rid,
+            "severity": "HIGH" if rep.get("n_drifted") else "MEDIUM",
+            "description": "\n".join(lines),
+            "source": "parameter_audit",
+            "ts": rep["ts"],
+            "status": "awaiting_chairman",
+            "times_seen": 1,
+            "evidence": REPORT_PATH.name,
+        })
+        DATA.mkdir(exist_ok=True)
+        CHAIRMAN_PATH.write_text(json.dumps(rows, indent=2))
+        return True
+    except Exception:                                 # pragma: no cover - defensive
+        return False
+
+
 def main(argv=None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
     rep = run()
     rat = ratchet(rep)
     rep["ratchet"] = rat
+    rep["escalated"] = escalate(rep)
     try:
         REPORT_PATH.write_text(json.dumps(rep, indent=2, default=str))
     except Exception:                             # pragma: no cover - defensive
@@ -435,6 +556,14 @@ def main(argv=None) -> int:
     print("=" * 74)
     print("  modules examined            : %d  (reachable from a scheduler: %d)"
           % (rep["modules_examined"], rep["modules_reachable"]))
+    # Printed so the two hosts' totals never have to be explained by hand: the
+    # Mac and the VM legitimately scan different file counts, and this is why.
+    if rep["n_modules_host_local"] is None:
+        print("    ...of which host-local    : unknown (not a git checkout)")
+    elif rep["n_modules_host_local"]:
+        print("    ...of which host-local    : %d  (%s)"
+              % (rep["n_modules_host_local"],
+                 ", ".join(rep["modules_host_local"][:4])))
     print("  module-level numeric consts : %d" % rep["n_constants"])
     print("    ...compared against sth   : %d" % rep["n_compared"])
     print("    ...gating an if-branch    : %d" % rep["n_gating_a_branch"])
@@ -454,6 +583,8 @@ def main(argv=None) -> int:
                   % (d["key"][:52], d["value"], d["registered_value"]))
     print("  ratchet: %s (baseline %s, delta %+d)"
           % (rat["status"], rat["baseline"], rat["delta"]))
+    if rep["escalated"]:
+        print("  -> queued for the Chairman (%s)" % CHAIRMAN_PATH.name)
     if "-v" in argv or "--verbose" in argv:
         print("\n  undocumented consequential parameters:")
         for e in rep["undocumented"]:

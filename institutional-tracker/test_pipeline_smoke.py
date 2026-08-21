@@ -6262,6 +6262,62 @@ class TestSweepTaxonomyIsClosed(unittest.TestCase):
     a finding kind next year and stops here, the finding never reaches anyone.
     """
 
+    def test_the_sandbox_must_not_manufacture_the_failure_it_reports(self):
+        """POISON PILL. An agent that HANDLES a denied side effect is healthy.
+
+        deputy_monitor exits 0 in production. Under the probe the sandbox denies
+        it the network and subprocess.Popen; it catches both, tallies 12 errors
+        and returns 1 — and the sweep filed AGENT_REPORT_FAILS against it. The
+        verdict measured the instrument, not the agent, and it routes to HR.
+
+        The fixture below is that agent in miniature: it is denied a write, it
+        swallows the refusal exactly as a careful agent would, and exits 1.
+        """
+        import agent_sweep as S
+        d = Path(tempfile.mkdtemp(prefix="sweep_sandbox_"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        (d / "polite_agent.py").write_text(
+            "import sys\n"
+            "if __name__ == '__main__':\n"
+            "    errs = 0\n"
+            "    try:\n"
+            "        open('scratch.json', 'w').write('x')\n"
+            "    except Exception:\n"
+            "        errs += 1\n"
+            "    sys.exit(1 if errs else 0)\n")
+        got = S._run_probe("polite_agent", "report", syspath=str(d))
+        self.assertEqual("SANDBOX_EXIT", got["outcome"],
+                         "a denied write that the agent handled must not read as "
+                         "a broken agent: %r" % (got,))
+        self.assertIn("refusal", got["detail"])
+
+    def test_a_genuinely_broken_agent_still_fails(self):
+        """The other half — without this, the fix above is just a mute button."""
+        import agent_sweep as S
+        d = Path(tempfile.mkdtemp(prefix="sweep_broken_"))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        (d / "broken_agent.py").write_text(
+            "import sys\n"
+            "if __name__ == '__main__':\n"
+            "    sys.exit(1)\n")
+        got = S._run_probe("broken_agent", "report", syspath=str(d))
+        self.assertEqual("EXIT", got["outcome"],
+                         "no sandbox refusal occurred, so a non-zero exit is the "
+                         "agent's own: %r" % (got,))
+
+    def test_the_inconclusive_verdict_is_visible_not_swallowed(self):
+        """'Cannot tell' that reaches no counter is indistinguishable from OK."""
+        import agent_sweep as S
+        src = Path(__file__).parent / "agent_sweep.py"
+        tree = ast.parse(src.read_text())
+        names = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name)}
+        self.assertIn("inconclusive", names)
+        sig = [n for n in ast.walk(tree)
+               if isinstance(n, ast.FunctionDef) and n.name == "_probe_all"][0]
+        self.assertIn("inconclusive", [a.arg for a in sig.args.args],
+                      "_probe_all must hand the count back to collect(), or the "
+                      "deferred verdict dies inside the function that made it")
+
     def test_kinds_and_routes_are_a_bijection(self):
         import sweep_taxonomy as tax
         self.assertEqual(set(tax.KINDS), set(tax.ROUTES),
@@ -10675,6 +10731,18 @@ class TestTheSuiteDoesNotWriteLiveState(unittest.TestCase):
             script = next((a for a in argv if a.endswith(".py")), None)
             if script is None:
                 continue        # not launching a firm module
+            # A .py somewhere in argv is not the same as LAUNCHING a .py.
+            # `git add tracked_thing.py` names a Python file and runs none, and
+            # this guard filed against it — the same shape as agent_sweep's
+            # sandbox reporting deputy_monitor broken because the harness denied
+            # it. The exemption is a set of one on purpose, and it holds only
+            # while nothing in argv mentions python, so `["git", "-c", ...,
+            # "python3 x.py"]` is still caught. Widen it only for a tool that
+            # cannot execute a script, and say why here.
+            NON_LAUNCHERS = {"git"}
+            if (argv and argv[0] in NON_LAUNCHERS
+                    and not any("python" in a for a in argv)):
+                continue
             if not (self.SANDBOX_FLAGS & set(argv)):
                 offenders.append(f"line {node.lineno}: {script} {argv}")
         self.assertEqual([], offenders,
@@ -17722,8 +17790,14 @@ class TestAReasonIsNotADerivation(unittest.TestCase):
         text = src.read_text()
         tree = ast.parse(text)
 
-        # (a) every write must target one of this module's own two artefacts.
-        allowed = ("BASELINE_PATH", "REPORT_PATH")
+        # (a) every write must target one of this module's own named artefacts.
+        #
+        # CHAIRMAN_PATH was added when the module got a cron entry, because a
+        # scheduled report with no consumer is this firm's oldest bug class.
+        # Queuing a decision is not editing a parameter — but an allowlist that
+        # grows once can grow again, so (a2) below now proves what the names
+        # actually point at rather than trusting the name.
+        allowed = ("BASELINE_PATH", "REPORT_PATH", "CHAIRMAN_PATH")
         for n in ast.walk(tree):
             if not isinstance(n, ast.Call):
                 continue
@@ -17734,6 +17808,23 @@ class TestAReasonIsNotADerivation(unittest.TestCase):
             self.assertTrue(any(a in seg for a in allowed),
                             "parameter_audit writes somewhere it must not: %s"
                             % seg[:120])
+
+        # (a2) and every one of those names must resolve to a .json file inside
+        # data/. This is the assertion that makes the allowlist safe to extend:
+        # no matter what gets added later, a write target that is source code,
+        # or that escapes data/, fails here. Resolved from the live module, not
+        # parsed from the text, so a clever expression cannot dodge it.
+        # Reloaded first: sibling tests in this class repoint these constants at
+        # a sandbox, and reading them mid-suite would assert the fixture's paths
+        # rather than the shipped ones.
+        import importlib, parameter_audit as PA
+        importlib.reload(PA)
+        for nm in allowed:
+            p = Path(getattr(PA, nm))
+            self.assertEqual(".json", p.suffix,
+                             "%s is a write target and must be data, not code" % nm)
+            self.assertEqual("data", p.parent.name,
+                             "%s must live under data/" % nm)
 
         # (b) it must not import the live config at all — you cannot edit what
         # you never hold. Asserted on the AST, NOT on the text: this module's
@@ -17760,6 +17851,106 @@ class TestAReasonIsNotADerivation(unittest.TestCase):
                 continue
             self.assertTrue(P._is_measured(rec),
                             "registry entry %s cites no measurement" % k)
+
+    def test_a_regression_reaches_a_human_and_a_healthy_run_does_not(self):
+        """The verdict needs an owner, and the queue needs protecting from it.
+
+        A cron job that prints REGRESSED at 03:00 and files nothing has told
+        nobody. A cron job that files a row every run has told nobody either,
+        just more expensively — the Chairman queue is at three figures.
+        """
+        d = self._tmp("escalate")
+        P = self._P(d)
+        P.CHAIRMAN_PATH = d / "chairman.json"
+
+        healthy = {"ts": "2026-08-21T00:00:00+00:00", "n_drifted": 0,
+                   "drifted": [], "undocumented": [],
+                   "ratchet": {"status": "FLAT", "baseline": 5, "delta": 0}}
+        self.assertFalse(P.escalate(healthy), "a FLAT run must not file a row")
+        self.assertFalse(P.CHAIRMAN_PATH.exists())
+
+        bad = dict(healthy, ratchet={"status": "REGRESSED", "baseline": 5,
+                                     "delta": 2},
+                   undocumented=[{"key": "a.py::X", "value": 9}])
+        self.assertTrue(P.escalate(bad), "REGRESSED must reach the Chairman")
+        rows = json.loads(P.CHAIRMAN_PATH.read_text())
+        self.assertEqual(1, len(rows))
+        self.assertEqual("parameter_audit", rows[0]["source"])
+        self.assertIn("a.py::X", rows[0]["description"])
+
+        # and the every-two-hours cron must not become 12 rows a day.
+        self.assertFalse(P.escalate(bad), "same day, same condition -> one row")
+        self.assertEqual(1, len(json.loads(P.CHAIRMAN_PATH.read_text())))
+
+    def test_a_derivation_going_stale_escalates_even_when_the_count_is_flat(self):
+        """POISON PILL for the ratchet: drift does not move the ratcheted count.
+
+        A registered value silently ceasing to describe the live code leaves
+        n_undocumented untouched — the dial still HAS a derivation, it is just a
+        wrong one. Gating escalation on the ratchet alone would make the worst
+        case the quiet one.
+        """
+        d = self._tmp("drift_escalates")
+        P = self._P(d)
+        P.CHAIRMAN_PATH = d / "chairman.json"
+        rep = {"ts": "2026-08-21T00:00:00+00:00", "n_drifted": 1,
+               "drifted": [{"key": "risk.py::CAP", "value": 40,
+                            "registered_value": 20}],
+               "undocumented": [],
+               "ratchet": {"status": "FLAT", "baseline": 5, "delta": 0}}
+        self.assertTrue(P.escalate(rep))
+        rows = json.loads(P.CHAIRMAN_PATH.read_text())
+        self.assertEqual("HIGH", rows[0]["severity"],
+                         "a stale derivation reads as due diligence and is not")
+        self.assertIn("risk.py::CAP", rows[0]["description"])
+
+    def test_a_host_that_cannot_answer_says_unknown_not_none_found(self):
+        """POISON PILL: outside a git checkout the census must not claim zero.
+
+        The VM is not a checkout — deploy.sh rsyncs with --exclude=.git/ — so
+        `git ls-files` fails there. An empty list would read as "no host-local
+        files", the confident wrong answer; None reads as "cannot tell", which
+        is what is actually known. Same rule as reachable_modules failing open.
+        """
+        d = self._tmp("nogit")
+        P = self._P(d)
+        (d / "a.py").write_text("X = 5\nif n > X:\n    status = 'bad'\n")
+        files = P.python_files(d)
+        self.assertTrue(files, "fixture must produce at least one module")
+        self.assertIsNone(P.host_local_modules(files, d),
+                          "no .git present, so the honest answer is unknown, "
+                          "not an empty list")
+
+    def test_a_file_git_does_not_track_is_named_as_host_local(self):
+        """And inside a checkout it must actually find the untracked file."""
+        d = self._tmp("withgit")
+        P = self._P(d)
+        (d / "tracked_thing.py").write_text("A = 7\n")
+        (d / "scratch_thing.py").write_text("B = 9\n")
+        subprocess.run(["git", "init", "-q"], cwd=str(d), check=True)
+        subprocess.run(["git", "add", "tracked_thing.py"], cwd=str(d), check=True)
+        got = P.host_local_modules(P.python_files(d), d)
+        self.assertIsNotNone(got)
+        self.assertIn("scratch_thing.py", got)
+        self.assertNotIn("tracked_thing.py", got)
+
+    def test_a_terminated_hosts_provisioning_code_is_not_a_firm_parameter(self):
+        """oracle_setup/ belongs to an instance TERMINATED 2026-07-27.
+
+        It is gitignored, so it lives on the Mac and not the VM; scanning it
+        charged the audit dormant 'parameters' from a machine that no longer
+        exists and made the two hosts disagree for a reason unrelated to drift.
+        """
+        import parameter_audit as P
+        self.assertIn("oracle_setup", P.SKIP_DIRS)
+        d = self._tmp("skipdead")
+        (d / "oracle_setup").mkdir()
+        (d / "oracle_setup" / "deploy.py").write_text(
+            "TIMEOUT = 45\nif t > TIMEOUT:\n    status = 'fail'\n")
+        (d / "real.py").write_text("LIMIT = 12\nif x > LIMIT:\n    status = 'no'\n")
+        names = {p.name for p in P.python_files(d)}
+        self.assertIn("real.py", names)
+        self.assertNotIn("deploy.py", names)
 
 
 if __name__ == "__main__":

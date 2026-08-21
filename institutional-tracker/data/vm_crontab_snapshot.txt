@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-20T07:43:18Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-21T14:31:59Z from local crontab on apex-capital-configuration via: crontab -l
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -359,3 +359,18 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # escalates to the Chairman, because a blind commentator emits exactly what a
 # healthy firm emits.
 0 21 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 rd_price_theory_agent.py --report >> logs/price_theory_$(date +\%Y\%m\%d).log 2>&1
+
+# ── PARAMETER AUDIT — 03:40 UTC daily ──
+# Which of the firm's numbers were derived, and which were guessed? Shrink-only
+# ratchet on the undocumented count. Runs daily rather than weekly because the
+# hazard is DEPLOYS, not the passage of time — the same correction Jack made to
+# the 48h staleness guard, where age was the wrong margin. It escalates only on
+# REGRESSED or a stale derivation, so a healthy firm files nothing.
+40 3 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 parameter_audit.py >> logs/param_audit_$(date +\%Y\%m\%d).log 2>&1
+
+# ── AGENT SWEEP — 04:10 UTC daily ──
+# The detector for agents that run nowhere. It was itself scheduled nowhere for
+# its whole life, which is the joke the firm keeps telling: it caught its own
+# absence as AGENT_UNSCHEDULED (owner BOARD) and had no way to say so on a
+# schedule. Runs after parameter_audit so the two censuses share a night.
+10 4 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 agent_sweep.py >> logs/agent_sweep_$(date +\%Y\%m\%d).log 2>&1

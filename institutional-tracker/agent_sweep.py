@@ -103,9 +103,22 @@ class SandboxViolation(Exception):
 # ===========================================================================
 # THE SANDBOX — installed only inside a --probe subprocess, never in-process.
 # ===========================================================================
+# Every refusal the sandbox issued during this probe, in order. Counted because
+# a refusal is not always raised back to the parent: a well-written agent CATCHES
+# its own errors, tallies them, and exits non-zero — which is healthy behaviour
+# that, read naively, looks identical to a broken agent. On 2026-08-21 that is
+# exactly what happened to deputy_monitor: the sandbox denied it the network and
+# subprocess.Popen, it counted 12 errors and returned 1, and the sweep reported
+# AGENT_REPORT_FAILS against an agent that exits 0 in production. A detector
+# whose verdict is an artifact of its own instrument is worse than no detector,
+# because it sends healthy agents to the board and teaches everyone to skim.
+_SANDBOX_REFUSALS: list = []
+
+
 def _install_sandbox() -> None:
     def _refuse(what):
         def blocked(*a, **k):
+            _SANDBOX_REFUSALS.append(what)
             raise SandboxViolation(what)
         return blocked
 
@@ -131,7 +144,9 @@ def _install_sandbox() -> None:
 
     def guarded_open(file, mode="r", *a, **k):
         if any(c in str(mode) for c in ("w", "a", "x", "+")):
-            raise SandboxViolation("open(%s, %r)" % (os.path.basename(str(file)), mode))
+            what = "open(%s, %r)" % (os.path.basename(str(file)), mode)
+            _SANDBOX_REFUSALS.append(what)
+            raise SandboxViolation(what)
         return real_open(file, mode, *a, **k)
 
     builtins.open = guarded_open
@@ -170,8 +185,19 @@ def _probe(stem: str, mode: str, syspath: str = None) -> dict:
     except SystemExit as e:
         code = e.code
         if code not in (0, None):
-            out["outcome"] = "EXIT"
-            out["detail"] = "exited with status %r" % (code,)
+            if _SANDBOX_REFUSALS:
+                # CANNOT TELL, and it must say so rather than guess. The agent
+                # exited non-zero after the harness denied it something real, so
+                # the exit code measures the sandbox, not the agent. Reporting
+                # EXIT here would be a fabricated finding; reporting OK would
+                # hide a genuine one. This is a third verdict, and it defers.
+                out["outcome"] = "SANDBOX_EXIT"
+                out["detail"] = ("exited %r after %d sandbox refusal(s): %s"
+                                 % (code, len(_SANDBOX_REFUSALS),
+                                    ", ".join(sorted(set(_SANDBOX_REFUSALS))[:4])))
+            else:
+                out["outcome"] = "EXIT"
+                out["detail"] = "exited with status %r" % (code,)
     except SandboxViolation as e:
         out["outcome"] = "SANDBOX"
         out["detail"] = str(e)
@@ -477,9 +503,16 @@ def collect(probe: bool = True, host: str = None, now: datetime.datetime = None,
             probe_targets[stem] = (name, stem, "--report" in sources[stem])
 
     # ── the dynamic half ───────────────────────────────────────────────────
+    inconclusive = []
     if probe and probe_targets:
-        findings.extend(_probe_all(sorted(probe_targets.values()), host))
+        findings.extend(_probe_all(sorted(probe_targets.values()), host,
+                                   inconclusive))
         stats["probed"] = len(probe_targets)
+    # Agents the probe could not judge because its own sandbox caused the exit.
+    # Carried in stats rather than findings: it is a denominator, not an
+    # accusation, and it stops "no findings" from meaning "nothing was checked".
+    stats["probe_inconclusive"] = len(inconclusive)
+    stats["probe_inconclusive_agents"] = sorted(n for n, _s, _d in inconclusive)
 
     stats["findings"] = len(findings)
     stats["by_kind"] = {}
@@ -490,14 +523,21 @@ def collect(probe: bool = True, host: str = None, now: datetime.datetime = None,
             "roster_counts": roster.get("counts", {})}
 
 
-def _probe_all(targets: list, host: str) -> list:
+def _probe_all(targets: list, host: str, inconclusive: list = None) -> list:
     from sweep_taxonomy import make_finding
     out = []
+    # Appended to, never returned in `out`: these are NOT findings. Passed in by
+    # the caller so the count reaches stats — a verdict of "cannot tell" that
+    # nobody can see is the same as no verdict at all.
+    if inconclusive is None:
+        inconclusive = []
 
     def one(t):
         name, stem, has_report = t
         imp = _run_probe(stem, "import")
-        rep = _run_probe(stem, "report") if (has_report and imp["outcome"] in ("OK", "SANDBOX")) else None
+        rep = (_run_probe(stem, "report")
+               if (has_report and imp["outcome"] in ("OK", "SANDBOX", "SANDBOX_EXIT"))
+               else None)
         return name, stem, imp, rep
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=PARALLELISM) as pool:
@@ -523,6 +563,26 @@ def _probe_all(targets: list, host: str) -> list:
                     % (stem, host, rep["outcome"], rep["detail"]),
                     [rep.get("traceback") or rep["detail"]], host=host))
             # rep SANDBOX == the agent ran far enough to write its report. Healthy.
+            #
+            # rep SANDBOX_EXIT is the same signal reached by the other route: the
+            # agent was denied a real side effect, CAUGHT the refusal itself,
+            # tallied it as an error and returned non-zero. Calling that
+            # AGENT_REPORT_FAILS accuses an agent of a failure the harness
+            # caused — deputy_monitor exits 0 in production and 1 under the
+            # probe, purely because the sandbox refuses network and Popen.
+            #
+            # The cost of folding it in is real and worth stating: an agent that
+            # is BOTH sandbox-blocked and genuinely broken now reads as healthy
+            # here. That trade is deliberate. A false accusation is the more
+            # expensive error for a detector whose findings route to HR and the
+            # board, and a genuinely broken agent still fails the import probe,
+            # AGENT_ISOLATED, or the wiring contracts. Not inventing a new
+            # finding kind is also deliberate: AGENT_* kinds are a live contract
+            # across sweep_taxonomy.py, sweep_governance.py and hr_agent.py, and
+            # a kind that only one of the three handles is this firm's oldest
+            # bug class. It is counted in stats instead, so it is visible.
+            if rep and rep["outcome"] == "SANDBOX_EXIT":
+                inconclusive.append((name, stem, rep["detail"]))
     return out
 
 
@@ -554,6 +614,10 @@ def main(argv=None) -> int:
     print("  agents on roster : %d" % s["agents_seen"])
     print("  agents probed    : %d" % s["probed"])
     print("  findings         : %d" % s["findings"])
+    if s.get("probe_inconclusive"):
+        print("  cannot tell      : %d  (%s) — exited non-zero only because the "
+              "sandbox denied them" % (s["probe_inconclusive"],
+                                       ", ".join(s["probe_inconclusive_agents"][:3])))
     if not res["findings"]:
         print("\n  ✅ Nothing found.")
     for kind, n in sorted(s["by_kind"].items(), key=lambda kv: -kv[1]):
