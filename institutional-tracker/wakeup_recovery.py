@@ -72,7 +72,19 @@ JOBS = [
     # pipeline reruns (duplicate R&D Briefing + IRM review emails, 2026-07-17/18).
     ("rd_team_leader.py",            "rd",                11, False, []),
     ("canary_agent.py",              "canary",             1, True,  []),
-    ("main.py",                      "main",               7, True,  []),
+    # log_prefix is "cron", not "main": the crontab's 4 scheduled main.py runs
+    # write to logs/cron_YYYYMMDD.log (see crontab: `>> logs/cron_$(date...)`).
+    # This entry read "main_YYYYMMDD.log" for over a month, a file only THIS
+    # script itself ever wrote (_run_job() names the log after log_prefix) —
+    # so none of the 4 real scheduled runs ever counted as freshness evidence,
+    # and every 6h cron check saw its own last recovery run age past 7h and
+    # fired again, forever. Confirmed 2026-08-22: main.py ran 6x/day (4
+    # scheduled + phantom recovery runs at 00:00 and 12:00 UTC, both outside
+    # market hours) every day since deploy, incl. one full DEFENSIVE-MODE run
+    # on stale data 8pm and 8am ET daily. Pointing this at "cron" makes the
+    # freshness check see the real crontab runs, so it only fires on a
+    # genuine gap.
+    ("main.py",                      "cron",               7, True,  []),
     ("fe_pipeline.py",               "fe_pipeline",       25, False, []),
     ("fi_pipeline.py",               "fi_pipeline",       25, False, []),
     ("board_meeting.py",             "board",             25, True,  []),
