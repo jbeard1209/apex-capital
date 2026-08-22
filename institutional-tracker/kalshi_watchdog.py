@@ -28,9 +28,16 @@ The four checks below are each the failure that would otherwise be discovered on
 
   1. COLLECTION_STALLED  — nothing recorded in >26h. Cron's longest normal gap
                            is 12h (02:10 -> 14:10), so 26h is two missed cycles.
-  2. RESOLUTION_STALLED  — `--record` still writing but `--resolve` dead: rows
-                           whose close_time has passed and that never settled.
-                           The sample would grow forever and never mature.
+  2. RESOLUTION_STALLED  — rows whose close_time has passed and that never
+                           settled, so the sample grows and never matures. The
+                           CAUSE is measured, not assumed: this check used to
+                           state flatly that "--record is running and --resolve
+                           is not", which on 2026-08-22 was false — --resolve had
+                           run 2.8h earlier and settled 31 rows, while 43 of the
+                           44 overdue rows had simply never entered its 400-row
+                           lookup window. An alarm that names a cause it never
+                           measured sends the reader to restart a healthy cron
+                           job instead of to the real defect.
   3. STRATUM_UNREACHABLE — a horizon stratum needs more settled rows than it has
                            pending, and no new inventory is arriving for it. The
                            gate cannot open from here; waiting is not a plan.
@@ -80,6 +87,14 @@ STALL_HOURS          = 26.0
 # is not running. Kalshi settles most markets within hours of close.
 OVERDUE_HOURS        = 48.0
 OVERDUE_COUNT_ALARM  = 20
+# `--resolve` runs once a day (45 11 * * *) and writes `settled_at` only when it
+# actually settles something. A RECENT settled_at therefore proves the job is
+# alive; its ABSENCE proves nothing on its own, because a run that found nothing
+# ready to settle leaves exactly the same trace as a run that never happened.
+# So this threshold is only ever used to CONFIRM liveness, never to conclude
+# death — the asymmetry is the point, and ignoring it is how the old wording got
+# to "--resolve is not running" without having looked.
+RESOLVER_ALIVE_HOURS = 30.0
 # Intake is measured over this window to decide whether a short stratum can
 # still fill from new scanning, or is structurally stuck.
 INTAKE_WINDOW_DAYS   = 7
@@ -252,6 +267,7 @@ def project(now: Optional[datetime] = None) -> dict:
         strata[name] = {"settled": 0, "pending_dates": [], "intake": 0}
 
     overdue: List[Tuple[datetime, str]] = []
+    overdue_rows: List[dict] = []
     outside = 0
 
     for r in current:
@@ -271,6 +287,7 @@ def project(now: Optional[datetime] = None) -> dict:
         strata[s]["pending_dates"].append(close)
         if close and (now - close).total_seconds() / 3600.0 > OVERDUE_HOURS:
             overdue.append((close, r.get("ticker", "?")))
+            overdue_rows.append(r)
 
     per_horizon = kc.MIN_SETTLED_PER_HORIZON
     total_settled = sum(v["settled"] for v in strata.values())
@@ -307,6 +324,27 @@ def project(now: Optional[datetime] = None) -> dict:
     unreachable = [n for n, v in report.items() if not v["reachable"]]
     binding = None if unreachable or total_eta is None else max(gate_dates or [])
 
+    # Is --resolve actually running? `settled_at` is written by resolve_settlements
+    # and by nothing else, so it is the one honest liveness signal for that job.
+    # Measured across ALL rows, not just the current rule: the resolver is
+    # rule-agnostic, and asking a rule-scoped question about a global job is the
+    # `both-sides-of-a-comparison` mistake.
+    settled_ats = sorted(t for t in (_parse_ts(r.get("settled_at")) for r in rows) if t)
+    resolver_hours = ((now - settled_ats[-1]).total_seconds() / 3600.0
+                      if settled_ats else None)
+    settled_24h = sum(1 for t in settled_ats
+                      if (now - t).total_seconds() <= 86400)
+
+    # And if it IS running, is it reaching these rows? The budget and the
+    # ordering are imported from the module that owns them, never restated here.
+    try:
+        window, n_pending = kc.resolve_candidates(rows)
+        in_window = {id(r) for r in window}
+        beyond = sum(1 for r in overdue_rows if id(r) not in in_window)
+        budget = kc.RESOLVE_MAX_LOOKUPS
+    except Exception:
+        beyond, n_pending, budget = None, None, None
+
     return {
         "measured_at":   now.isoformat(),
         "collector":     collector_role(now),
@@ -323,6 +361,12 @@ def project(now: Optional[datetime] = None) -> dict:
         "strata":        report,
         "overdue_unsettled": len(overdue),
         "oldest_overdue": min(overdue)[0].isoformat() if overdue else None,
+        "resolver_last_settled_hours": (None if resolver_hours is None
+                                        else round(resolver_hours, 2)),
+        "resolver_settled_24h": settled_24h,
+        "overdue_beyond_lookup_window": beyond,
+        "resolve_pending": n_pending,
+        "resolve_budget": budget,
         "binding_gate":  binding,
         "unreachable":   unreachable,
     }
@@ -331,6 +375,56 @@ def project(now: Optional[datetime] = None) -> dict:
 # ---------------------------------------------------------------------------
 # Checks
 # ---------------------------------------------------------------------------
+
+def _resolution_cause(proj: dict) -> str:
+    """Why are closed rows not settling? Attribute from evidence, or defer.
+
+    The previous version of this sentence asserted "--record is running and
+    --resolve is not". On 2026-08-22 that was simply false — --resolve had run
+    2.8h earlier and settled 31 rows — and the reader it misdirects goes off to
+    restart a healthy cron job while the real defect stands. `verdict-with-no-
+    consequence`: a check that cannot tell must say so and name what to look at,
+    not pick the tidier story.
+    """
+    beyond = proj.get("overdue_beyond_lookup_window")
+    pending = proj.get("resolve_pending")
+    budget = proj.get("resolve_budget")
+    hours = proj.get("resolver_last_settled_hours")
+
+    alive = (f"--resolve IS running: it settled {proj.get('resolver_settled_24h', 0)} "
+             f"row(s) in the last 24h, most recently {hours:.1f}h ago"
+             if hours is not None and hours <= RESOLVER_ALIVE_HOURS else None)
+
+    # The starvation case outranks liveness, because it explains the symptom even
+    # when the job is perfectly healthy — and it is the case a liveness-only
+    # check is structurally unable to see.
+    if beyond:
+        who = alive or "the resolver's liveness is unconfirmed"
+        extra = ""
+        if pending and budget and pending > budget:
+            extra = (f" It holds {pending} pending row(s) against a "
+                     f"{budget}-lookup budget, so {pending - budget} go "
+                     f"unexamined every run.")
+        return (f"{beyond} of those row(s) sit BEYOND the resolver's lookup "
+                f"window and have never been looked up, so this is a starved "
+                f"queue, not a dead job ({who}).{extra}")
+
+    if alive:
+        return (f"{alive}, and every overdue row IS inside its lookup window — "
+                f"so these markets are being asked about and Kalshi is not "
+                f"returning a settled result for them. Check whether the "
+                f"tickers still exist upstream.")
+
+    if hours is None:
+        return ("No row carries a settled_at, so --resolve has never completed a "
+                "settlement here. Confirm it is scheduled before assuming the "
+                "markets are at fault.")
+
+    return (f"Nothing has settled for {hours:.1f}h. That is CONSISTENT with "
+            f"--resolve not running, but does not prove it — a run that found "
+            f"nothing ready leaves the same trace. Check the crontab and the "
+            f"job's own log before concluding.")
+
 
 def evaluate(proj: dict, prev: Optional[dict]) -> List[dict]:
     """Turn the projection into findings. Each carries its own denominator."""
@@ -389,9 +483,8 @@ def evaluate(proj: dict, prev: Optional[dict]) -> List[dict]:
             "kind": "RESOLUTION_STALLED", "severity": "HIGH",
             "detail": (f"{proj['overdue_unsettled']} of {proj['n_examined']} "
                        f"row(s) closed >{OVERDUE_HOURS:.0f}h ago and never "
-                       f"settled (oldest {proj['oldest_overdue']}). --record is "
-                       f"running and --resolve is not, so the sample grows but "
-                       f"never matures."),
+                       f"settled (oldest {proj['oldest_overdue']}). "
+                       + _resolution_cause(proj)),
         })
 
     # 3. Can the gate still be reached from current inventory?

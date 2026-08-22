@@ -18768,6 +18768,220 @@ class TestTheRepoRootIsNeverPutOnThePath(unittest.TestCase):
                 "a pre-migration relic is now the live module" % (mod, origin))
 
 
+class TestTheResolverLooksUpWhatCanActuallyHaveAnAnswer(unittest.TestCase):
+    """A finite lookup budget spent in the wrong order is a silent data loss.
+
+    `resolve_settlements` had a 400-lookup budget and took `pending[:400]` in
+    LEDGER order — by when a row was recorded, which says nothing about whether
+    Kalshi has published an outcome. Measured on the VM on 2026-08-22: 2,517
+    pending rows, so 16% examined per run, and 465 rows that had CLOSED, were
+    unsettled, and had never once been looked up. Six probed live against the
+    API were all `status=finalized` with a result available. The verdict gate the
+    whole Kalshi campaign waits on was starved of outcomes that already existed
+    and cost nothing to read.
+
+    Nothing errored, nothing was empty, and every individual number the sector
+    reported was true — which is why only an invariant catches it.
+    """
+
+    def _kc(self):
+        import kalshi_calibration
+        return kalshi_calibration
+
+    def test_a_closed_row_is_never_starved_by_newer_unclosed_rows(self):
+        kc = self._kc()
+        budget = 50
+        # The shape of the real ledger: a long head of recently-recorded rows
+        # that close far in the future, and one older row that closed days ago.
+        rows = [{"ticker": "FUTURE-%d" % i, "close_time": "2026-12-%02dT00:00:00Z"
+                 % ((i % 28) + 1)} for i in range(budget * 4)]
+        rows.insert(3 * budget, {"ticker": "CLOSED-LONG-AGO",
+                                 "close_time": "2026-08-01T00:00:00Z"})
+
+        selected, n_pending = kc.resolve_candidates(rows, budget)
+
+        # Non-vacuity: the fixture has to actually overflow the budget, or this
+        # test would pass on a list that never needed prioritising at all.
+        self.assertEqual(len(selected), budget)
+        self.assertGreater(n_pending, budget,
+                           "fixture does not exceed the lookup budget, so it "
+                           "cannot demonstrate prioritisation")
+
+        tickers = [r["ticker"] for r in selected]
+        self.assertIn("CLOSED-LONG-AGO", tickers,
+                      "a row that closed weeks ago was left out of the lookup "
+                      "batch while %d rows closing in December were included — "
+                      "the queue is ordered by record time, not by whether an "
+                      "answer can exist" % len(tickers))
+        self.assertEqual(tickers[0], "CLOSED-LONG-AGO",
+                         "the oldest-closing row must be looked up first")
+
+    def test_the_queue_is_sorted_and_not_filtered_to_already_closed(self):
+        """The plausible version of this fix throws away most real settlements.
+
+        209 of the 341 rows settled so far settled BEFORE their close_time
+        (median -32.2h) because Kalshi finalises these markets early. Filtering
+        to `close_time < now` would look like a tightening and would silently
+        discard the majority of the sample.
+        """
+        kc = self._kc()
+        far = "2099-01-01T00:00:00Z"
+        rows = [{"ticker": "T%d" % i, "close_time": far} for i in range(5)]
+        selected, n_pending = kc.resolve_candidates(rows, 400)
+        self.assertEqual(n_pending, 5)
+        self.assertEqual(len(selected), 5,
+                         "rows whose close_time has not passed were dropped from "
+                         "the lookup queue; early settlement is the NORM on these "
+                         "markets, so a filter loses most of the evidence")
+
+    def test_settled_and_voided_rows_never_consume_the_budget(self):
+        kc = self._kc()
+        rows = ([{"ticker": "S%d" % i, "settled": True} for i in range(10)]
+                + [{"ticker": "V%d" % i, "voided": True} for i in range(10)]
+                + [{"ticker": "OPEN", "close_time": "2026-09-01T00:00:00Z"}])
+        selected, n_pending = kc.resolve_candidates(rows, 400)
+        self.assertEqual([r["ticker"] for r in selected], ["OPEN"])
+        self.assertEqual(n_pending, 1)
+
+    def test_a_permanently_stuck_row_cannot_monopolise_the_front_of_the_queue(self):
+        """The fix's own failure mode, pinned.
+
+        Ordering by close_time puts a ticker that is voided or delisted upstream
+        at position 0 forever, burning one lookup every run. Stuck rows never
+        leave, so the count only grows, and at a trickle it reaches the budget
+        within a year and starves the queue again — in a new shape, with every
+        individual number still true.
+        """
+        kc = self._kc()
+        stuck = {"ticker": "DELISTED", "close_time": "2026-01-01T00:00:00Z",
+                 "unresolved_looks": kc.STUCK_AFTER_LOOKS}
+        fresh = {"ticker": "RECENTLY-CLOSED", "close_time": "2026-08-20T00:00:00Z"}
+        selected, _ = kc.resolve_candidates([stuck, fresh], 400)
+
+        self.assertEqual(selected[0]["ticker"], "RECENTLY-CLOSED",
+                         "a row asked %d times since closing with no result "
+                         "still sorts ahead of a fresh closed row"
+                         % kc.STUCK_AFTER_LOOKS)
+        self.assertIn("DELISTED", [r["ticker"] for r in selected],
+                      "the stuck row was DROPPED rather than demoted — that "
+                      "biases the sample toward the outcomes we could see, "
+                      "which is the thing resolve_settlements forbids")
+
+    def test_a_row_one_look_below_the_threshold_is_not_demoted(self):
+        """Non-vacuity: the demotion must be the threshold doing work, not the
+        mere presence of the field."""
+        kc = self._kc()
+        almost = {"ticker": "OLD-BUT-OK", "close_time": "2026-01-01T00:00:00Z",
+                  "unresolved_looks": kc.STUCK_AFTER_LOOKS - 1}
+        fresh = {"ticker": "NEWER", "close_time": "2026-08-20T00:00:00Z"}
+        selected, _ = kc.resolve_candidates([fresh, almost], 400)
+        self.assertEqual(selected[0]["ticker"], "OLD-BUT-OK")
+
+    def test_looks_before_close_do_not_count_toward_stuck(self):
+        """Otherwise the demotion lands on the 30-90d horizon the gate waits on.
+
+        Before a contract closes, "not resolved" is the expected answer and
+        carries no information. Counting it would trip the threshold on day 10
+        for a row that closes in 80 days, penalising a long-dated contract for
+        being long-dated.
+        """
+        kc = self._kc()
+        now = datetime.now(timezone.utc)
+        future = (now + timedelta(days=80)).isoformat().replace("+00:00", "Z")
+        past = (now - timedelta(days=3)).isoformat().replace("+00:00", "Z")
+        self.assertFalse(kc._has_closed({"close_time": future}, now))
+        self.assertTrue(kc._has_closed({"close_time": past}, now))
+        self.assertFalse(kc._has_closed({"close_time": "not-a-date"}, now),
+                         "an unparseable close_time must not be treated as "
+                         "closed, or the row gets demoted on a date nobody read")
+        self.assertFalse(kc._has_closed({}, now))
+
+    def test_a_row_with_no_close_time_sorts_last_but_is_not_dropped(self):
+        """Unorderable is not the same as ineligible."""
+        kc = self._kc()
+        rows = [{"ticker": "NOCLOSE"},
+                {"ticker": "BADCLOSE", "close_time": "not-a-date"},
+                {"ticker": "REAL", "close_time": "2026-08-01T00:00:00Z"}]
+        selected, _ = kc.resolve_candidates(rows, 400)
+        self.assertEqual(selected[0]["ticker"], "REAL")
+        self.assertEqual(len(selected), 3,
+                         "a row with an unreadable close_time was dropped from "
+                         "the queue entirely, so it can never settle")
+
+
+class TestTheWatchdogDoesNotAssertACauseItNeverMeasured(unittest.TestCase):
+    """RESOLUTION_STALLED used to state that `--resolve` was not running.
+
+    On 2026-08-22 that sentence was false: `--resolve` had run 2.8h earlier and
+    settled 31 rows, while 43 of the 44 overdue rows had never entered its
+    lookup window. The alarm sent its reader to restart a healthy cron job. A
+    finding may report what it measured; the moment it names a cause it did not
+    check, it is worse than silence because it is actively misleading.
+    """
+
+    def _w(self):
+        import kalshi_watchdog
+        return kalshi_watchdog
+
+    BASE = {"collector": {"role": "collector", "evidence": "test"},
+            "stall_hours": 1.0, "n_examined": 2405, "newest_record": "2026-08-22T14:00Z",
+            "overdue_unsettled": 44, "oldest_overdue": "2026-08-19T14:29Z",
+            "strata": {}, "unreachable": [], "binding_gate": "2026-09-21"}
+
+    def _detail(self, **over):
+        w = self._w()
+        proj = dict(self.BASE, **over)
+        found = [f for f in w.evaluate(proj, None) if f["kind"] == "RESOLUTION_STALLED"]
+        self.assertEqual(len(found), 1, "RESOLUTION_STALLED did not fire on a "
+                                        "projection built to trip it")
+        return found[0]["detail"]
+
+    def test_it_does_not_claim_resolve_is_dead_while_resolve_is_demonstrably_alive(self):
+        detail = self._detail(resolver_last_settled_hours=2.8,
+                              resolver_settled_24h=31,
+                              overdue_beyond_lookup_window=43,
+                              resolve_pending=2517, resolve_budget=400)
+        self.assertNotIn("--resolve is not running", detail)
+        self.assertIn("starved", detail,
+                      "the real cause — a queue the resolver never reaches — is "
+                      "not named, so the reader is left with the wrong fix")
+        self.assertIn("2517", detail.replace(",", ""))
+
+    def test_a_quiet_resolver_is_reported_as_consistent_with_not_proof_of_death(self):
+        """Absence of settled_at is not evidence the job is dead.
+
+        A run that found nothing ready to settle leaves exactly the same trace
+        as a run that never happened, so this branch must defer rather than
+        conclude — otherwise the fix is the same wrong fix in the other
+        direction.
+        """
+        detail = self._detail(resolver_last_settled_hours=200.0,
+                              resolver_settled_24h=0,
+                              overdue_beyond_lookup_window=0)
+        self.assertIn("CONSISTENT with", detail)
+        self.assertIn("does not prove it", detail)
+
+    def test_an_alive_resolver_reaching_every_row_points_upstream(self):
+        detail = self._detail(resolver_last_settled_hours=2.0,
+                              resolver_settled_24h=12,
+                              overdue_beyond_lookup_window=0)
+        self.assertIn("inside its lookup window", detail)
+        self.assertNotIn("starved", detail)
+
+    def test_the_watchdog_imports_the_budget_rather_than_restating_it(self):
+        """A supervisor carrying its own copy of the rule it supervises goes
+        stale the day the rule moves, while its numbers stay plausible."""
+        import ast
+        w = self._w()
+        src = Path(w.__file__).read_text()
+        literals = [n.value for n in ast.walk(ast.parse(src))
+                    if isinstance(n, ast.Constant) and n.value == 400]
+        self.assertEqual(literals, [],
+                         "kalshi_watchdog hardcodes the literal 400; the lookup "
+                         "budget must come from kalshi_calibration."
+                         "RESOLVE_MAX_LOOKUPS")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

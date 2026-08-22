@@ -263,7 +263,106 @@ def record_from_scan(scan=None):
 
 # ---------------------------------------------------------------- resolve --
 
-def resolve_settlements(max_lookups=400):
+# How many market lookups one --resolve run may spend. Exported as a constant so
+# `kalshi_watchdog` can IMPORT the budget rather than restate it: a supervisor
+# carrying its own copy of the number it supervises is `sample-outlived-its-rule`
+# with extra steps.
+RESOLVE_MAX_LOOKUPS = 400
+
+# How many times the API may answer "this closed market is still not resolved"
+# before the row stops competing for a place at the front of the queue.
+#
+# This exists to stop the close_time ordering below from re-creating, in a new
+# shape, the very starvation it fixes. A ticker that is voided or delisted
+# upstream never settles, so with a pure close_time sort it holds position 0
+# FOREVER and burns one lookup every run. Stuck rows never leave, so the count
+# only grows; at even one a day it reaches the 400 budget inside a year and the
+# queue starves again — silently, and with every individual number still true.
+#
+# Ten is chosen against the observed data, not by feel: --resolve runs once a
+# day and the settle lag on rows that did settle is p75 +14.8h, max +34.8h. A
+# closed market still unresolved after ten daily looks is outside anything this
+# sample has ever seen.
+STUCK_AFTER_LOOKS = 10
+
+
+def _resolve_priority(row, now=None):
+    """Sort key for the lookup queue: soonest close first, unknown close last.
+
+    A row can only settle after its market resolves, so `close_time` is the only
+    field that carries information about whether an answer exists YET. Rows with
+    no readable close_time sort last rather than being dropped — unorderable is
+    not the same as ineligible.
+
+    Rows that have been asked `STUCK_AFTER_LOOKS` times since closing and still
+    have no result sort into a second bucket BEHIND everything else. They are
+    demoted, never removed: dropping them would bias the sample toward the
+    outcomes we happened to be able to see, which is exactly what
+    `resolve_settlements`' own docstring forbids. They still get looked up on any
+    run with budget to spare, which is nearly every run once the queue is healthy.
+    """
+    stuck = 1 if int(row.get("unresolved_looks") or 0) >= STUCK_AFTER_LOOKS else 0
+    raw = row.get("close_time")
+    if isinstance(raw, str):
+        try:
+            d = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            if d.tzinfo is None:
+                d = d.replace(tzinfo=timezone.utc)
+            return (stuck, 0, d)
+        except ValueError:
+            pass
+    return (stuck, 1, datetime.max.replace(tzinfo=timezone.utc))
+
+
+def _has_closed(row, now):
+    """Has this contract's close_time passed? Unknown close_time reads False.
+
+    False is the safe answer for an unreadable date here: it means the row is
+    never counted toward STUCK_AFTER_LOOKS and so can never be demoted on the
+    strength of a date nobody could parse.
+    """
+    raw = row.get("close_time")
+    if not isinstance(raw, str):
+        return False
+    try:
+        d = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if d.tzinfo is None:
+        d = d.replace(tzinfo=timezone.utc)
+    return d < now
+
+
+def resolve_candidates(rows, max_lookups=RESOLVE_MAX_LOOKUPS):
+    """The unsettled rows worth spending this run's lookups on, best first.
+
+    Pure and network-free so the ORDERING can be tested without an API. The
+    ordering is the whole point of this function, and it used to be absent.
+
+    This was `[r for r in rows if unsettled][:max_lookups]` — the first 400 in
+    LEDGER order, i.e. ordered by when a row happened to be recorded, a key with
+    no bearing on whether Kalshi has published an outcome. With 2,517 pending
+    rows against a 400 budget that examined 16% of the ledger per run, and on
+    2026-08-22 it had stranded 465 rows that had closed, were unsettled, and had
+    never once been looked up. Six of them, probed against the live API that same
+    hour, were ALL `status=finalized` with a result sitting there free to read.
+    The verdict gate the whole Kalshi campaign waits on (200 settled, 40 per
+    horizon) was being starved of observations that already existed.
+
+    SORTED, NOT FILTERED. The obvious-looking version of this fix is to keep only
+    rows whose close_time has passed, and it would have been wrong: 209 of the
+    341 rows settled so far settled BEFORE their close_time (median -32.2h),
+    because Kalshi finalises most of these markets early. A `close_time < now`
+    filter would therefore have discarded the majority of real settlements while
+    looking like an optimisation. Sorting keeps every row eligible and only
+    guarantees that nothing already answerable waits behind something that
+    cannot possibly have an answer.
+    """
+    pending = [r for r in rows if not r.get("settled") and not r.get("voided")]
+    return sorted(pending, key=_resolve_priority)[:max_lookups], len(pending)
+
+
+def resolve_settlements(max_lookups=RESOLVE_MAX_LOOKUPS):
     """Fill in what actually happened. Only touches rows still unsettled.
 
     A market that cannot be looked up stays unsettled forever rather than being
@@ -276,8 +375,8 @@ def resolve_settlements(max_lookups=400):
     # observation is not worth an API call — but they must stay in the list
     # that gets written back.
     rows = _all_rows()
-    pending = [r for r in rows
-               if not r.get("settled") and not r.get("voided")][:max_lookups]
+    pending, n_pending = resolve_candidates(rows, max_lookups)
+    now = datetime.now(timezone.utc)
     resolved = failed = 0
 
     for r in pending:
@@ -291,13 +390,34 @@ def resolve_settlements(max_lookups=400):
                 r["outcome"] = 1 if result == "yes" else 0
                 r["settled_at"] = _now()
                 resolved += 1
+            elif _has_closed(r, now):
+                # Counted ONLY after the contract has closed. Before close,
+                # "not resolved" is the expected answer and carries no
+                # information, so counting it would penalise every long-dated
+                # contract for being long-dated: a row closing in 80 days would
+                # trip STUCK_AFTER_LOOKS on day 10 while behaving perfectly
+                # normally, and the demotion would land on exactly the 30-90d
+                # horizon that the verdict gate is currently waiting on.
+                r["unresolved_looks"] = int(r.get("unresolved_looks") or 0) + 1
+                r["last_lookup_at"] = _now()
         except Exception:
+            # A network failure says nothing about the market, so it must not
+            # count toward the stuck threshold — that would demote healthy rows
+            # for the API's mistakes.
             failed += 1
 
     _save_ledger(rows)
+    # The backlog is reported, not just the successes. When `n_pending` exceeds
+    # the budget this run could not have seen every answerable row, and that is
+    # the fact a reader needs in order to tell "nothing settled because nothing
+    # has resolved" from "nothing settled because we never looked" — the two
+    # states this function was previously unable to distinguish in its own log.
+    unexamined = max(0, n_pending - len(pending))
     return resolved, (f"{resolved} settled, {failed} lookup failure(s), "
                       f"{sum(1 for r in rows if not r.get('settled') and not r.get('voided'))} "
-                      f"still open")
+                      f"still open"
+                      + (f" ({unexamined} beyond this run's {max_lookups}-lookup "
+                         f"budget, unexamined)" if unexamined else ""))
 
 
 # ------------------------------------------------------------ measurement --
