@@ -340,3 +340,16 @@ A consumer reads a generated artifact as if it described now. The artifact carri
   - `hr_agent.py::_newest_module_mtime`
   - `hr_agent.py::_roster_is_stale`
   - `test_pipeline_smoke.py::TestHRSeesTheWholeFirm`
+
+## `a_control_that_exists_and_never_runs`
+
+A detector is written, correct, and on no scheduler. Every map that asks whether it EXISTS reports coverage; nothing asks whether it FIRES.
+
+- **Proved real by:** international_analyst.py tracked ^KS11 and had five wired consumers, sat unscheduled for the firm's entire history, and the July 2026 Korean crash passed unseen by the one agent built to see it. This census then repeated the shape at one remove: it resolved detectors by AST only, so fix_erases_its_detector read COVERED while its sole detector was a test class that no scheduler on either host runs.
+- **Owner:** Internal Audit (this module)
+- **Writeup:** memory `orphan_agents_blindness`
+- **Detectors:**
+  - `internal_audit_agent.py::_detector_liveness`
+  - `wiring_audit.py::scheduler_reachable`
+  - `wiring_audit.py::check_orphan_agents`
+  - `test_pipeline_smoke.py::TestInternalAudit`

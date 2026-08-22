@@ -27,6 +27,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 BASE_DIR = Path(__file__).parent
 DATA_DIR = BASE_DIR / "data"
@@ -532,6 +533,62 @@ def _writes_only_non_json(write_ctx, txt, out_re) -> bool:
     return True
 
 
+_CRON_SNAPSHOT = BASE_DIR / "data/vm_crontab_snapshot.txt"
+
+
+def scheduler_reachable(sources: dict, code: Optional[dict] = None) -> Optional[set]:
+    """Modules reachable from a real scheduler root, or None if that is unknowable.
+
+    Extracted from check_orphan_agents on 2026-08-22 so there is exactly ONE
+    implementation of "does this actually run". internal_audit_agent's census
+    needs the same answer about the detectors it names, and the alternative was a
+    second copy of this walk — which is the `both-sides-of-a-comparison` bug in
+    its purest form: two hand-written traversals that agree today, diverge on the
+    first fix applied to one of them, and disagree with no error. The rules below
+    were each paid for by a real false verdict (see check_orphan_agents' notes);
+    a second copy would not inherit any of them.
+
+    None means CANNOT TELL, not "nothing is scheduled". With no crontab snapshot
+    the walk knows only main.py, so every cron-only module would look orphaned —
+    callers must fail closed and judge nobody rather than accuse the whole firm.
+    """
+    if not _CRON_SNAPSHOT.exists():
+        return None
+    cron_txt = _CRON_SNAPSHOT.read_text()
+    if code is None:
+        code = {n: _code_only(t) for n, t in sources.items()}
+    # Test files are NOT scheduler roots even when cron runs them: a test
+    # importing an agent does not mean the agent does its job in production.
+    # (It also stops a test that merely *names* a module from making that
+    # module look reachable — which is how this check first fooled itself.)
+    roots = {"main.py"} | {n for n in sources
+                           if n in cron_txt and not n.startswith("test_")}
+    prod = {n for n in sources if not n.startswith("test_")}
+    stems = {n[:-3] for n in prod}
+    edges, loose = {}, set()
+    for n in prod:
+        e, unresolved = _invocation_edges(code.get(n, ""), stems)
+        edges[n] = e
+        if unresolved:
+            loose.add(n)
+    reachable, frontier = set(roots), set(roots)
+    while frontier:
+        nxt = set()
+        for cur in frontier:
+            txt = code.get(cur, "")
+            for name in prod:
+                if name in reachable:
+                    continue
+                stem = name[:-3]
+                if stem in edges.get(cur, ()):
+                    nxt.add(name)
+                elif cur in loose and re.search(rf"\b{re.escape(stem)}\b", txt):
+                    nxt.add(name)
+        reachable |= nxt
+        frontier = nxt
+    return reachable
+
+
 def check_orphan_agents(sources: dict):
     """An AGENT that produces a report nobody ever runs — the orphan-agent variant
     of the producer/consumer bug class.
@@ -550,7 +607,8 @@ def check_orphan_agents(sources: dict):
     any scheduler root, is an agent that never comes to work.
     """
     found_orphans = set()
-    roots = {"main.py"}
+    code = {n: _code_only(t) for n, t in sources.items()}
+    reachable = scheduler_reachable(sources, code)
     # Scheduler ground truth = the VM's LIVE crontab, mirrored into
     # data/vm_crontab_snapshot.txt by scripts/refresh_crontab_snapshot.sh.
     #
@@ -576,22 +634,17 @@ def check_orphan_agents(sources: dict):
     # with no snapshot the reachability walk knows only main.py, so EVERY cron-only
     # agent would be branded an orphan and the ratchet would fire on the whole
     # firm. Report that as a hard problem and judge nobody.
-    snap = BASE_DIR / "data/vm_crontab_snapshot.txt"
-    if not snap.exists():
+    if reachable is None:
         problems.append(
             "[orphan-agent] data/vm_crontab_snapshot.txt is missing — the schedule "
             "ground truth is unreadable, so no agent can be judged scheduled or "
             "orphaned. Run scripts/refresh_crontab_snapshot.sh")
         return
-    cron_txt = snap.read_text()
-    for name in sources:
-        # Test files are NOT scheduler roots even when cron runs them: a test
-        # importing an agent does not mean the agent does its job in production.
-        # (It also stops a test that merely *names* a module from making that
-        # module look reachable — which is how this check first fooled itself.)
-        if name in cron_txt and not name.startswith("test_"):
-            roots.add(name)
 
+    # The walk itself now lives in scheduler_reachable() so the census in
+    # internal_audit_agent asks the identical question of the detectors it names.
+    # The rules it enforces, and what each one cost, are below.
+    #
     # Fixpoint over "module A mentions module B's stem" (import or subprocess call).
     #
     # Test files are excluded from the traversal ENTIRELY, not just from the root
@@ -619,31 +672,6 @@ def check_orphan_agents(sources: dict):
     # cannot resolve statically, `unresolved` is True and that module alone
     # reverts to the loose text rule — an unreadable dispatcher must not be able
     # to orphan its own children.
-    prod = {n for n in sources if not n.startswith("test_")}
-    code = {n: _code_only(t) for n, t in sources.items()}
-    stems = {n[:-3] for n in prod}
-    edges, loose = {}, set()
-    for n in prod:
-        e, unresolved = _invocation_edges(code.get(n, ""), stems)
-        edges[n] = e
-        if unresolved:
-            loose.add(n)
-    reachable, frontier = set(roots), set(roots)
-    while frontier:
-        nxt = set()
-        for cur in frontier:
-            txt = code.get(cur, "")
-            for name in prod:
-                if name in reachable:
-                    continue
-                stem = name[:-3]
-                if stem in edges.get(cur, ()):
-                    nxt.add(name)
-                elif cur in loose and re.search(rf"\b{re.escape(stem)}\b", txt):
-                    nxt.add(name)
-        reachable |= nxt
-        frontier = nxt
-
     # Which modules declare a data/*.json output, and who reads each output?
     # Tolerate a directory prefix: both os.path.join(DATA_DIR, "x.json") and the
     # equally common "data/x.json" must match, or the check silently misses half

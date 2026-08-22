@@ -102,8 +102,9 @@ UNPROVEN = "UNPROVEN"            # no pill exists for this control
 
 # --- census verdicts ---------------------------------------------------------
 COVERED = "COVERED"
-UNCOVERED = "UNCOVERED"
-BROKEN = "BROKEN"
+UNCOVERED = "UNCOVERED"      # no detector named at all
+UNSCHEDULED = "UNSCHEDULED"  # every named detector exists and none of them runs
+BROKEN = "BROKEN"            # every named detector has been deleted
 
 
 # =============================================================================
@@ -416,19 +417,38 @@ class FailureClass:
 
     `detectors` are `file.py::symbol` references, resolved by AST — no import, so
     listing a heavyweight module or the test suite here costs nothing and has no
-    side effects. AST resolution answers "does this control still exist in the
-    codebase", which is the question the census is for; whether it also still
-    RUNS is the falsifiability harness's job and `wiring_audit`'s.
+    side effects.
+
+    Existence and liveness are two questions and this census asks both.
+    `_symbol_exists` answers "is the control still in the codebase"; until
+    2026-08-22 that was the whole verdict, and the docstring here said whether it
+    also RUNS was `wiring_audit`'s job. That delegation was the bug: wiring_audit
+    does answer it, for modules, in a report nothing cross-referenced against
+    this one — so a detector on no scheduler read COVERED here and orphaned
+    there, and the two reports were never put side by side. `_detector_liveness`
+    now asks wiring_audit directly, and one class turned out to be covered
+    entirely on paper.
     """
 
     def __init__(self, cid: str, what: str, proved_by: str,
-                 detectors: List[str], owner: str, memory: str = ""):
+                 detectors: List[str], owner: str, memory: str = "",
+                 push_time_ok: str = ""):
         self.id = cid
         self.what = what
         self.proved_by = proved_by
         self.detectors = detectors
         self.owner = owner
         self.memory = memory
+        #: Why a detector that fires only at push time is ADEQUATE for this class.
+        #: Set it only where the detector's subject is CODE: such a test can only
+        #: change verdict when the code changes, and the push gate fires on every
+        #: code change, so a scheduler would re-run it against an unchanged tree
+        #: and learn nothing. It is NOT adequate where the detector reads live
+        #: state — data, the broker, the other host — because that verdict moves
+        #: with no commit to trigger it, and the class would go unwatched for
+        #: however long nobody pushes. Non-empty is an acceptance on the record,
+        #: pinned by TestInternalAudit so it cannot be used as a mute button.
+        self.push_time_ok = push_time_ok
 
 
 CONTROL_CENSUS: List[FailureClass] = [
@@ -590,7 +610,18 @@ CONTROL_CENSUS: List[FailureClass] = [
         "wrongful-retirement check inspected.",
         ["test_pipeline_smoke.py::TestWrongfulRetirement"],
         "CIT — NO RUNTIME DETECTOR, tests only",
-        "fix_that_erased_its_detector"),
+        "fix_that_erased_its_detector",
+        push_time_ok=(
+            "TestWrongfulRetirement's subject is chief_of_staff_agent's retirement "
+            "guard — stubbed calls and the structure of Stage 4. It reads no live "
+            "state, so its verdict can only move when that code moves, and the push "
+            "gate fires on exactly that. A scheduler would re-run it hourly against "
+            "an unchanged tree. Reviewed 2026-08-22 when the census first learned to "
+            "tell a dormant detector from a live one and reported this class "
+            "UNSCHEDULED. NOTE the standing gap this does not close: a fix that "
+            "erases its detector at RUNTIME — a field stops being written, a record "
+            "stops appearing — is invisible to a code test, and nothing watches for "
+            "that. The seven vacated sector agents are due for review 2026-09-01."),),
 
     FailureClass(
         "control_output_becomes_its_own_input",
@@ -906,6 +937,23 @@ CONTROL_CENSUS: List[FailureClass] = [
          "test_pipeline_smoke.py::TestHRSeesTheWholeFirm"],
         "HR / Agent Roster",
         "presence-is-not-currency"),
+
+    FailureClass(
+        "a_control_that_exists_and_never_runs",
+        "A detector is written, correct, and on no scheduler. Every map that "
+        "asks whether it EXISTS reports coverage; nothing asks whether it FIRES.",
+        "international_analyst.py tracked ^KS11 and had five wired consumers, "
+        "sat unscheduled for the firm's entire history, and the July 2026 Korean "
+        "crash passed unseen by the one agent built to see it. This census then "
+        "repeated the shape at one remove: it resolved detectors by AST only, so "
+        "fix_erases_its_detector read COVERED while its sole detector was a test "
+        "class that no scheduler on either host runs.",
+        ["internal_audit_agent.py::_detector_liveness",
+         "wiring_audit.py::scheduler_reachable",
+         "wiring_audit.py::check_orphan_agents",
+         "test_pipeline_smoke.py::TestInternalAudit"],
+        "Internal Audit (this module)",
+        "orphan_agents_blindness"),
 ]
 
 
@@ -939,11 +987,165 @@ def _symbol_exists(ref: str) -> Optional[bool]:
     return False
 
 
+#: Per-detector liveness, as distinct from existence.
+RUNS = "runs"                 # reachable from a scheduler root, and registered
+PUSH_ONLY = "push-only"       # only the pre-push hook fires it — no scheduler does
+UNSCHEDULED_D = "unscheduled"  # exists, on no host's scheduler
+UNREGISTERED = "unregistered"  # module runs, but this symbol is in no registry
+UNKNOWN_RUN = "unknown"       # the schedule itself is unreadable — judge nobody
+
+
+def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
+    """For each `file.py::symbol`: does anything actually RUN it? {ref: (status, why)}
+
+    WHY THIS EXISTS. `_symbol_exists` answers "is this control still in the
+    codebase", and until 2026-08-22 that was the whole census. But the firm's
+    most expensive bug class is a control that exists and never fires —
+    international_analyst.py had five wired consumers and sat unscheduled for the
+    firm's entire history, so the July 2026 Korean crash passed unseen by exactly
+    the agent built to see it. A census row naming that agent would have read
+    COVERED throughout. A coverage map that cannot tell a working detector from a
+    dormant one is the orphan-agent bug wearing an audit row, and it is worse
+    than no map because it is consulted.
+
+    Three ways a named detector can exist and still never run, one per branch,
+    each with a real escape behind it:
+      • the FILE is on no scheduler          (orphan-agent: the 25 of 2026-08-21)
+      • the SYMBOL is in no registry         (inert include: a law defined but
+        absent from LAWS, a check absent from run_checks — the same shape as the
+        `--include` line for an untracked file that deploys nothing)
+      • the file is the TEST SUITE, which no scheduler on either host runs; it
+        fires when a human happens to push. That is real protection — it blocks
+        the bad commit — but it is not surveillance, and 30 of this census's
+        detector references point at it. Naming the difference is the point.
+
+    Reachability comes from wiring_audit.scheduler_reachable, deliberately: a
+    second traversal here would agree today and diverge on the first fix applied
+    to only one of them (memory `both-sides-of-a-comparison`).
+
+    UNKNOWN_RUN is not a failure. With no crontab snapshot the schedule is
+    unreadable, and a control that cannot read its input must defer visibly
+    rather than accuse — the harness must never manufacture its own finding
+    (memory `the-instrument-measured-itself`).
+    """
+    out: Dict[str, tuple] = {}
+    try:
+        import wiring_audit as wa
+        sources = wa._py_sources()
+        reachable = wa.scheduler_reachable(sources)
+    except Exception as e:                                  # noqa: BLE001
+        return {r: (UNKNOWN_RUN, f"could not compute reachability: {e}") for r in refs}
+
+    if reachable is None:
+        # Fail closed for EVERY branch, including the test-suite one below. An
+        # unreadable schedule means we cannot say the suite is off cron either,
+        # and half-deferring would answer one population's question with the
+        # other's evidence.
+        return {r: (UNKNOWN_RUN,
+                    "the crontab snapshot is missing — the schedule is unreadable, "
+                    "so no detector can be judged scheduled or dormant") for r in refs}
+
+    # Same file wa.scheduler_reachable just used, read through wa so the two
+    # halves of this verdict can never point at different snapshots.
+    try:
+        cron_txt = wa._CRON_SNAPSHOT.read_text()
+    except OSError:
+        cron_txt = ""
+
+    # Does the shipped pre-push hook actually invoke the suite? .git/hooks is not
+    # cloned, so the INSTALLED hook is a property of one machine; the hook the
+    # repo ships is the firm's intent and is the honest thing to measure.
+    hook = BASE_DIR / "scripts/git-hooks/pre-push"
+    try:
+        hook_txt = hook.read_text()
+    except OSError:
+        hook_txt = ""
+
+    registries: Dict[str, set] = {}
+
+    def _registered(fname: str, symbol: str) -> Optional[bool]:
+        """Is this symbol in its module's dispatch registry? None if not applicable."""
+        if fname == "coherence_laws.py" and symbol.startswith("law_"):
+            if "laws" not in registries:
+                try:
+                    import coherence_laws as cl
+                    registries["laws"] = {fn.__name__ for fn, _ in cl.LAWS}
+                except Exception:                            # noqa: BLE001
+                    return None
+            return symbol in registries["laws"]
+        if fname == "wiring_audit.py" and symbol.startswith("check_"):
+            if "checks" not in registries:
+                try:
+                    tree = ast.parse((BASE_DIR / "wiring_audit.py").read_text())
+                    rc = next(n for n in ast.walk(tree)
+                              if isinstance(n, ast.FunctionDef) and n.name == "run_checks")
+                    registries["checks"] = {n.func.id for n in ast.walk(rc)
+                                            if isinstance(n, ast.Call)
+                                            and isinstance(n.func, ast.Name)}
+                except Exception:                            # noqa: BLE001
+                    return None
+            return symbol in registries["checks"]
+        return None
+
+    for ref in refs:
+        try:
+            fname, symbol = ref.split("::", 1)
+        except ValueError:
+            out[ref] = (UNKNOWN_RUN, "not a file.py::symbol reference")
+            continue
+
+        if fname.startswith("test_"):
+            if fname in cron_txt:
+                out[ref] = (RUNS, "the suite is on the cron manifest")
+            elif fname in hook_txt:
+                out[ref] = (PUSH_ONLY,
+                            f"{fname} is on no scheduler; it fires only when someone "
+                            f"pushes (scripts/git-hooks/pre-push)")
+            else:
+                out[ref] = (UNSCHEDULED_D,
+                            f"{fname} is on no scheduler AND not in the shipped "
+                            f"pre-push hook — nothing runs it at all")
+            continue
+
+        if fname not in reachable:
+            out[ref] = (UNSCHEDULED_D,
+                        f"{fname} is not reachable from main.py or the cron manifest "
+                        f"— it is scheduled NOWHERE")
+            continue
+        reg = _registered(fname, symbol)
+        if reg is False:
+            out[ref] = (UNREGISTERED,
+                        f"{fname} runs, but {symbol} is in no dispatch registry, so "
+                        f"the module never calls it")
+            continue
+        out[ref] = (RUNS, f"{fname} is reachable from a scheduler root")
+    return out
+
+
 def audit_census() -> List[dict]:
-    """Resolve every named detector. COVERED / UNCOVERED / BROKEN per class."""
+    """Resolve every named detector: does it EXIST, and does it RUN?
+
+    COVERED / UNSCHEDULED / UNCOVERED / BROKEN per class. UNSCHEDULED sits
+    between COVERED and UNCOVERED on purpose: the class has a detector, the
+    detector is correct, and nothing fires it on a schedule. Collapsing that into
+    either neighbour loses the only fact that distinguishes it.
+    """
     out = []
+    live = _detector_liveness([d for fc in CONTROL_CENSUS for d in fc.detectors])
     for fc in CONTROL_CENSUS:
         missing = [d for d in fc.detectors if _symbol_exists(d) is not True]
+        present = [d for d in fc.detectors if d not in missing]
+        # Two different facts, kept apart. A detector that fires only at push
+        # time is weaker surveillance but real protection — it blocks the bad
+        # commit. A detector nothing runs at all is not protection of any kind.
+        # Folding them together would put the `!!` mark on 22 of 27 rows, and a
+        # mark that fires on everything grades nothing.
+        push_only = [d for d in present if live.get(d, (UNKNOWN_RUN,))[0] == PUSH_ONLY]
+        dormant = [d for d in present if live.get(d, (UNKNOWN_RUN,))[0]
+                   in (UNSCHEDULED_D, UNREGISTERED)]
+        live_now = [d for d in present if d not in push_only and d not in dormant]
+        if fc.push_time_ok and push_only:
+            live_now = live_now + push_only
         if not fc.detectors:
             verdict, detail = UNCOVERED, ("no detector named — this failure class has "
                                           "happened and nothing watches for it")
@@ -952,15 +1154,27 @@ def audit_census() -> List[dict]:
                 f"every named detector is gone: {', '.join(missing)}. The census "
                 f"outlived the code, which is the one way a coverage map does more "
                 f"harm than none")
-        elif missing:
-            verdict, detail = COVERED, (
-                f"{len(fc.detectors) - len(missing)} of {len(fc.detectors)} detectors "
-                f"present; MISSING: {', '.join(missing)}")
+        elif not live_now:
+            verdict, detail = UNSCHEDULED, (
+                "every surviving detector exists and nothing on a schedule runs it: "
+                + "; ".join(f"{d} — {live[d][1]}" for d in dormant + push_only))
         else:
-            verdict, detail = COVERED, f"{len(fc.detectors)} detector(s) present"
+            bits = [f"{len(live_now)} of {len(fc.detectors)} detector(s) run on a schedule"]
+            if missing:
+                bits.append("MISSING: " + ", ".join(missing))
+            if dormant:
+                bits.append("present and never fired: " + ", ".join(
+                    f"{d} ({live[d][0]})" for d in dormant))
+            if push_only:
+                bits.append(f"{len(push_only)} fire only at push time"
+                            + (f" — accepted: {fc.push_time_ok}" if fc.push_time_ok
+                               else ""))
+            verdict, detail = COVERED, "; ".join(bits)
         out.append({"class": fc.id, "verdict": verdict, "detail": detail,
                     "owner": fc.owner, "what": fc.what, "memory": fc.memory,
-                    "detectors": list(fc.detectors), "missing": missing})
+                    "detectors": list(fc.detectors), "missing": missing,
+                    "dormant": dormant, "push_only": push_only,
+                    "runs": {d: live.get(d, (UNKNOWN_RUN, ""))[0] for d in fc.detectors}})
     return out
 
 
@@ -982,6 +1196,14 @@ def run_audit() -> dict:
                      if f["verdict"] in (UNPROVEN, INCONCLUSIVE)],
         "uncovered": [c["class"] for c in census
                       if c["verdict"] in (UNCOVERED, BROKEN)],
+        # Kept OUT of "uncovered" on purpose. That key feeds wiring_audit's
+        # ratchet and the exit code; folding a new, differently-caused verdict
+        # into an existing count would change what a number already in use means
+        # (memory `an-aggregate-is-not-a-finding`). A dormant detector is its own
+        # finding with its own owner and its own fix.
+        "unscheduled": [c["class"] for c in census if c["verdict"] == UNSCHEDULED],
+        "dormant_detectors": sorted({d for c in census for d in c.get("dormant", [])}),
+        "push_only_detectors": sorted({d for c in census for d in c.get("push_only", [])}),
         "empty_success": [d["control"] for d in denom
                           if d["verdict"] == "EMPTY_SUCCESS"],
     }
@@ -1090,6 +1312,15 @@ def escalate(report: dict) -> int:
                 "detail": c["detail"],
                 "proposed_fix": "Restore the detector or update CONTROL_CENSUS. A census "
                                 "that names deleted code reports coverage it does not have."})
+        elif c["verdict"] == UNSCHEDULED:
+            proposals.append({
+                "source": "internal_audit", "severity": "HIGH", "category": "INTEGRATION",
+                "title": f"Failure class '{c['class']}' has detectors, and none of them runs",
+                "detail": f"{c['detail']} Owner: {c['owner']}. The control is correct and "
+                          f"dormant, which reads on every report as coverage.",
+                "proposed_fix": "Put a detector on a scheduler (cron manifest or main.py), "
+                                "or record in CONTROL_CENSUS that this class is watched "
+                                "only at push time and accepted as such."})
 
     for d in report["denominators"]:
         if d["verdict"] in ("EMPTY_SUCCESS", "NO_DENOMINATOR"):
@@ -1172,15 +1403,28 @@ def _print(report: dict) -> None:
 
     print("\nCENSUS — failure classes we have suffered, and who watches them")
     for c in report["census"]:
-        mark = "OK " if c["verdict"] == COVERED and not c["missing"] else "!! "
-        print(f"  {mark}{c['verdict']:10} {c['class']:32} {c['owner']}")
-        if c["missing"] or c["verdict"] != COVERED:
+        clean = (c["verdict"] == COVERED and not c["missing"]
+                 and not c.get("dormant"))
+        print(f"  {'OK ' if clean else '!! '}{c['verdict']:12} {c['class']:32} {c['owner']}")
+        if not clean:
             print(f"       {c['detail'][:150]}")
 
     print("-" * 74)
     print(f"  {len(report['blind'])} blind, {len(report['unproven'])} unproven, "
           f"{len(report['uncovered'])} uncovered class(es), "
+          f"{len(report.get('unscheduled', []))} unscheduled class(es), "
           f"{len(report['empty_success'])} empty success(es)")
+    dormant = report.get("dormant_detectors", [])
+    if dormant:
+        # Named, not just counted: the point of this line is that somebody can
+        # act on it, and "3 dormant detectors" is a number nobody can close.
+        print(f"  {len(dormant)} named detector(s) that nothing runs at all:")
+        for d in dormant:
+            print(f"       - {d}")
+    push = report.get("push_only_detectors", [])
+    if push:
+        print(f"  {len(push)} more fire only when somebody pushes (the suite is on "
+              f"no scheduler)")
 
 
 def main() -> int:

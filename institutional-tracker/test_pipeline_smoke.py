@@ -11568,6 +11568,161 @@ class TestInternalAudit(unittest.TestCase):
                          "CONTROLS.md has drifted from CONTROL_CENSUS — regenerate it "
                          "with: python3 internal_audit_agent.py --write-md")
 
+    # -- the census: does the detector RUN, not just exist? ------------------
+
+    def _an_unscheduled_module(self):
+        """A real module in this repo that no scheduler reaches, and a real symbol
+        in it. Derived, never named: hardcoding today's orphan would silence this
+        pill the day that module gets scheduled."""
+        import wiring_audit as wa
+        srcs = wa._py_sources()
+        reachable = wa.scheduler_reachable(srcs)
+        self.assertIsNotNone(reachable, "no crontab snapshot — cannot build the pill")
+        for name in sorted(srcs):
+            if name.startswith("test_") or name in reachable:
+                continue
+            for node in ast.walk(ast.parse(srcs[name])):
+                if isinstance(node, ast.FunctionDef):
+                    return f"{name}::{node.name}"
+        self.skipTest("every module is scheduled — nothing to build the pill from")
+
+    def test_a_detector_nothing_runs_does_not_read_covered(self):
+        """POISON PILL for the census's liveness half.
+
+        A control that exists and never fires is the firm's most expensive bug
+        class — international_analyst.py had five wired consumers, sat on no
+        scheduler for the firm's entire history, and the July 2026 Korean crash
+        passed unseen by the one agent built to see it. Until 2026-08-22 this
+        census resolved detectors by AST only, so a row naming that agent would
+        have read COVERED the whole time. The row must not be able to claim
+        coverage from a module nothing runs.
+        """
+        ia = self._mod()
+        ref = self._an_unscheduled_module()
+        real = list(ia.CONTROL_CENSUS)
+        try:
+            ia.CONTROL_CENSUS.append(ia.FailureClass(
+                "zz_dormant", "something that has hurt us", "an incident",
+                [ref], "nobody"))
+            row = {c["class"]: c for c in ia.audit_census()}["zz_dormant"]
+        finally:
+            ia.CONTROL_CENSUS[:] = real
+        self.assertEqual(ia.UNSCHEDULED, row["verdict"],
+                         f"{ref} exists and is on no scheduler, and the census "
+                         f"reported {row['verdict']}")
+        # The discriminating half: it must be UNSCHEDULED for the right reason —
+        # the symbol is really there, so this is not just BROKEN wearing a new
+        # name. A pill that passes for the wrong reason certifies nothing.
+        self.assertEqual([], row["missing"])
+        self.assertIn(ref, row["dormant"])
+
+    def test_an_unreadable_schedule_accuses_nobody(self):
+        """The other direction, and the more dangerous one.
+
+        These findings route to CIT and the board, so a false accusation costs
+        more than a miss (memory `the-instrument-measured-itself`). With no
+        crontab snapshot the schedule is unknowable — every module would look
+        unscheduled and the audit would file against the entire firm. It must
+        defer, visibly, and downgrade nothing.
+        """
+        ia = self._mod()
+        import wiring_audit as wa
+        real_snap = wa._CRON_SNAPSHOT
+        try:
+            wa._CRON_SNAPSHOT = Path(tempfile.gettempdir()) / "zz_no_such_crontab.txt"
+            refs = [d for fc in ia.CONTROL_CENSUS for d in fc.detectors]
+            live = ia._detector_liveness(refs)
+            self.assertTrue(refs, "census names no detectors at all")
+            self.assertEqual({ia.UNKNOWN_RUN}, {v[0] for v in live.values()},
+                             "an unreadable schedule produced a verdict about "
+                             "whether detectors run")
+            census = ia.audit_census()
+            self.assertEqual([], [c["class"] for c in census
+                                  if c["verdict"] == ia.UNSCHEDULED],
+                             "a class was called UNSCHEDULED on evidence that did "
+                             "not exist")
+            self.assertEqual([], [c["class"] for c in census if c["dormant"]])
+        finally:
+            wa._CRON_SNAPSHOT = real_snap
+
+    def test_a_law_that_is_defined_but_unregistered_never_runs(self):
+        """The same blindness one level down: the FILE runs and the SYMBOL is in
+        no dispatch table, so nothing calls it. This is the `inert_include`
+        shape — a deploy allowlist naming an untracked file ships nothing, a law
+        absent from LAWS runs never, and both read as coverage from outside."""
+        ia = self._mod()
+        import coherence_laws as cl
+        real = list(cl.LAWS)
+        victim = cl.LAWS[0][0].__name__
+        try:
+            cl.LAWS[:] = [(fn, s) for fn, s in cl.LAWS if fn.__name__ != victim]
+            live = ia._detector_liveness([f"coherence_laws.py::{victim}"])
+            got = live[f"coherence_laws.py::{victim}"]
+        finally:
+            cl.LAWS[:] = real
+        self.assertEqual(ia.UNREGISTERED, got[0],
+                         f"{victim} is defined but in no registry, and the census "
+                         f"reported {got[0]}")
+        # And back in the registry it reads live again — otherwise this test
+        # would also pass against a check that simply always says UNREGISTERED.
+        again = ia._detector_liveness([f"coherence_laws.py::{victim}"])
+        self.assertEqual(ia.RUNS, again[f"coherence_laws.py::{victim}"][0])
+
+    #: Failure classes where a detector that fires only at push time is accepted
+    #: as adequate. Pinned EXACTLY, not as a floor: `push_time_ok` silences the
+    #: UNSCHEDULED verdict, so it is one edit away from being a mute button for
+    #: the finding this whole check exists to raise. Growing this set has to be a
+    #: deliberate, reviewed act in two files rather than a quiet field on one.
+    PUSH_TIME_ACCEPTED = {"fix_erases_its_detector"}
+
+    def test_push_time_coverage_is_accepted_only_where_it_was_reviewed(self):
+        ia = self._mod()
+        claimed = {fc.id for fc in ia.CONTROL_CENSUS if fc.push_time_ok}
+        self.assertEqual(
+            self.PUSH_TIME_ACCEPTED, claimed,
+            "the set of classes accepting push-time-only coverage changed. Added: "
+            f"{sorted(claimed - self.PUSH_TIME_ACCEPTED)}; removed: "
+            f"{sorted(self.PUSH_TIME_ACCEPTED - claimed)}. A class may only claim "
+            "this when its detector's subject is CODE — a detector that reads live "
+            "state goes unwatched for as long as nobody pushes.")
+
+    def test_an_accepted_class_still_says_why_and_still_shows_its_detector(self):
+        """Accepted is not invisible. The reason has to reach the report, or this
+        is a silence with extra steps."""
+        ia = self._mod()
+        rows = {c["class"]: c for c in ia.audit_census()}
+        for cid in self.PUSH_TIME_ACCEPTED:
+            row = rows[cid]
+            fc = next(f for f in ia.CONTROL_CENSUS if f.id == cid)
+            self.assertGreater(len(fc.push_time_ok), 80,
+                               f"{cid} claims push-time coverage with no real reason")
+            self.assertIn("push time", row["detail"],
+                          f"{cid} reads as ordinary coverage — the report never says "
+                          f"its detector only fires when somebody pushes")
+            self.assertTrue(row["push_only"],
+                            f"{cid} lost track of which detectors are push-only")
+
+    def test_reachability_has_exactly_one_implementation(self):
+        """Both halves of "does it run" must come from the same walk.
+
+        `check_orphan_agents` and this census ask the identical question, and the
+        rules in that walk were each paid for by a real false verdict (a test
+        naming a module, a docstring naming a module, a registry table naming a
+        module — three separate times a mention was read as employment). A second
+        traversal would inherit none of them, agree today, and diverge on the
+        first fix applied to only one side.
+        """
+        src = ast.parse((Path(__file__).parent / "wiring_audit.py").read_text())
+        fn = next(n for n in ast.walk(src) if isinstance(n, ast.FunctionDef)
+                  and n.name == "check_orphan_agents")
+        self.assertIn("scheduler_reachable",
+                      {n.func.id for n in ast.walk(fn) if isinstance(n, ast.Call)
+                       and isinstance(n.func, ast.Name)},
+                      "check_orphan_agents no longer calls scheduler_reachable")
+        self.assertEqual([], [n for n in ast.walk(fn) if isinstance(n, ast.While)],
+                         "check_orphan_agents has grown its own fixpoint loop again "
+                         "— there must be one reachability walk, not two")
+
     # -- escalation + wiring ------------------------------------------------
 
     def test_a_blind_control_reaches_the_chairman_once_and_is_retired(self):
