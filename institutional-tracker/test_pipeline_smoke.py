@@ -18982,6 +18982,116 @@ class TestTheWatchdogDoesNotAssertACauseItNeverMeasured(unittest.TestCase):
                          "RESOLVE_MAX_LOOKUPS")
 
 
+class TestThePremiseVerdictSpeaksOnlyForTheHorizonsItSampled(unittest.TestCase):
+    """A verdict must not be wider than the sample that produced it.
+
+    2026-08-22: draining the resolver backlog took the current-rule settled
+    sample from 63 to 929 and `is_premise_alive` flipped ALIVE -> DEAD. The
+    finding was real. But 923 of the 929 rows were 1-7d contracts, and the
+    verdict was phrased as a judgement on a rule that trades 1-90d, whose 7-30d
+    and 30-90d bands held 1 and 5 observations.
+
+    `is_edge_proven` refuses a verdict in exactly that situation and explains
+    why in a comment: settlements arrive shortest-horizon-first, so a sample
+    that clears a size threshold on short-dated rows is "perfectly real and
+    completely inapplicable" to long ones. The argument belongs to the sample,
+    not to the reader, and it had been applied to only one of the two gates.
+    """
+
+    def _rows(self, n, days, price=0.99, hit_rate=0.5, rule=None):
+        import kalshi_calibration as kcal
+        rule = rule or kcal.SELECTION_RULE
+        hits = int(round(n * hit_rate))
+        return [{"settled": True, "outcome": 1 if i < hits else 0,
+                 "market_price": price, "days_to_close": days,
+                 "selection_rule": rule} for i in range(n)]
+
+    def test_a_dead_verdict_from_one_band_names_the_bands_it_did_not_test(self):
+        import kalshi_calibration as kcal
+        rows = self._rows(400, days=3.0, price=0.99, hit_rate=0.90)
+        verdict, why, detail = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.DEAD, why)
+        self.assertIn("SCOPE:", why)
+        self.assertIn("7-30d", why)
+        self.assertIn("30-90d", why)
+        self.assertTrue(detail["horizon_scoped"])
+
+    def test_a_sample_spread_across_every_band_carries_no_caveat(self):
+        """Non-vacuity guard: the caveat must be able to switch OFF.
+
+        A test that only ever asserts its presence would pass just as happily
+        against a version that pasted the sentence onto every verdict.
+        """
+        import kalshi_calibration as kcal
+        rows = (self._rows(150, days=3.0, price=0.99, hit_rate=0.90) +
+                self._rows(60, days=15.0, price=0.99, hit_rate=0.90) +
+                self._rows(60, days=45.0, price=0.99, hit_rate=0.90))
+        verdict, why, detail = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.DEAD, why)
+        self.assertNotIn("SCOPE:", why)
+        self.assertFalse(detail["horizon_scoped"])
+        for band in ("1-7d", "7-30d", "30-90d"):
+            self.assertGreaterEqual(detail["horizon_coverage"][band],
+                                    kcal.MIN_SETTLED_PER_HORIZON)
+
+    def test_an_alive_verdict_is_scoped_too(self):
+        """ALIVE authorises nothing, but it is the flag that says "build the
+        estimator" — and an estimator built on 1-7d evidence would be sized
+        against 90-day contracts."""
+        import kalshi_calibration as kcal
+        rows = self._rows(400, days=3.0, price=0.90, hit_rate=0.90)
+        verdict, why, _ = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.ALIVE, why)
+        self.assertIn("SCOPE:", why)
+
+    def test_the_caveat_reports_open_rows_so_a_reader_knows_evidence_is_coming(self):
+        """DEAD's documented consequence is closing the sector, which ends the
+        collection that fills the untested bands. The reader has to be able to
+        see that the gap is closing rather than permanent."""
+        import kalshi_calibration as kcal
+        rows = self._rows(400, days=3.0, price=0.99, hit_rate=0.90)
+        rows += [{"settled": False, "market_price": 0.97, "days_to_close": 45.0,
+                  "selection_rule": kcal.SELECTION_RULE} for _ in range(37)]
+        _, why, _ = kcal.is_premise_alive(rows)
+        self.assertIn("30-90d: 0 settled / 37 still open", why)
+
+    def test_a_voided_row_is_not_counted_as_evidence_still_coming(self):
+        import kalshi_calibration as kcal
+        rows = self._rows(400, days=3.0, price=0.99, hit_rate=0.90)
+        rows += [{"settled": False, "voided": True, "market_price": 0.97,
+                  "days_to_close": 45.0, "selection_rule": kcal.SELECTION_RULE}
+                 for _ in range(37)]
+        _, why, _ = kcal.is_premise_alive(rows)
+        self.assertIn("30-90d: 0 settled / 0 still open", why)
+
+    def test_the_scope_never_downgrades_a_real_refutation(self):
+        """The caveat explains a DEAD; it must never convert one into
+        CANNOT_TELL. Softening a refusal because the sample is uneven is how a
+        gate stops being a gate."""
+        import kalshi_calibration as kcal
+        rows = self._rows(400, days=3.0, price=0.99, hit_rate=0.50)
+        verdict, why, _ = kcal.is_premise_alive(rows)
+        self.assertEqual(verdict, kcal.DEAD, why)
+        self.assertNotEqual(verdict, kcal.UNDECIDED)
+
+    def test_both_gates_use_the_same_per_horizon_threshold(self):
+        """AST: the scope helper and is_edge_proven must read one constant.
+
+        Two gates reasoning about horizon coverage against two different numbers
+        would let the premise call a band 'tested' that the edge gate calls
+        thin, and the disagreement would be invisible in both reports.
+        """
+        import ast
+        import kalshi_calibration as kcal
+        tree = ast.parse(Path(kcal.__file__).read_text())
+        for name in ("_horizon_scope", "is_edge_proven"):
+            fn = next(n for n in ast.walk(tree)
+                      if isinstance(n, ast.FunctionDef) and n.name == name)
+            names = {n.id for n in ast.walk(fn) if isinstance(n, ast.Name)}
+            self.assertIn("MIN_SETTLED_PER_HORIZON", names,
+                          f"{name} does not read MIN_SETTLED_PER_HORIZON")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

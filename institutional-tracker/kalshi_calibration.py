@@ -630,6 +630,66 @@ def split_by_regime(rows=None):
             [r for r in rows if not _is_current_regime(r)])
 
 
+def _horizon_scope(settled, current):
+    """(coverage, caveat) — which horizons a premise verdict actually speaks for.
+
+    `is_edge_proven` already refuses a verdict when the settled sample is not
+    spread across the bands the rule trades, and states why twenty lines above:
+    settlements arrive shortest-horizon-first, so underwriting a 60-day position
+    with 3-day evidence is using one horizon's numbers for another's. That
+    argument is about the SAMPLE, not about which function is reading it — but it
+    had only ever been applied to one of the two gates.
+
+    `is_premise_alive` was the other one. On 2026-08-22, once the resolver
+    backlog drained, it returned DEAD on n=929 rows of which 923 sat in the 1-7d
+    band, and phrased it as a verdict on a rule that trades 1-90d. Both numbers
+    were true and the sentence around them was about something wider than the
+    evidence (`sample-outlived-its-rule`, from the reporting side).
+
+    The verdict is NOT softened here, and deliberately so. The short-dated
+    refutation is real, and turning a genuine DEAD into CANNOT_TELL because the
+    sample is uneven would be loosening a refusal to make a nicer-looking
+    answer. What the caveat does is stop the reader acting on it further than it
+    reaches: ALIVE authorises nothing, but DEAD's documented consequence is
+    closing the sector, and closing the sector ends the collection that fills
+    the untested bands. So the scope is stated where the verdict is read.
+    """
+    strata = horizon_strata(settled)
+    covered = {k: v["n"] for k, v in strata.items()}
+    thin = [k for k, _, _ in HORIZON_STRATA
+            if covered.get(k, 0) < MIN_SETTLED_PER_HORIZON]
+    if not thin:
+        return covered, ""
+
+    # Open rows are counted from the whole current cohort, not the settled
+    # sample, because the question a reader has here is "is more evidence
+    # coming or is this all there will ever be?" — and only the unsettled rows
+    # can answer it.
+    pending = {k: 0 for k, _, _ in HORIZON_STRATA}
+    for r in current:
+        if r.get("settled") or r.get("voided"):
+            continue
+        d = r.get("days_to_close")
+        if d is None:
+            continue
+        for k, lo, hi in HORIZON_STRATA:
+            if lo <= float(d) < hi:
+                pending[k] += 1
+                break
+
+    carried = max(covered, key=lambda k: covered.get(k, 0)) if covered else "?"
+    share = (100.0 * covered.get(carried, 0) / len(settled)) if settled else 0.0
+    parts = ", ".join(f"{k}: {covered.get(k, 0)} settled / {pending[k]} still open"
+                      for k in thin)
+    return covered, (
+        f" SCOPE: {share:.1f}% of this sample ({covered.get(carried, 0)} of "
+        f"{len(settled)}) sits in the {carried} band, and the rule this judges "
+        f"trades 1-90d. The bands it does not test — {parts} — are not covered "
+        f"by the number above, and settlements arrive shortest-horizon-first, so "
+        f"that gap closes on its own. Read this as a verdict on {carried}, not "
+        f"on the rule.")
+
+
 def is_premise_alive(rows=None):
     """(verdict, reason, detail). The question that comes BEFORE is_edge_proven.
 
@@ -767,9 +827,16 @@ def is_premise_alive(rows=None):
     spreads = [float(r["spread"]) for r in settled if r.get("spread") is not None]
     mean_spread = sum(spreads) / len(spreads) if spreads else None
 
+    # Which horizons this sample actually speaks for. Attached to every terminal
+    # verdict below, including ALIVE: an unscoped ALIVE invites someone to build
+    # an estimator on evidence that covers a fraction of the rule's range.
+    coverage, scope = _horizon_scope(settled, current)
+
     detail.update({"mean_quote": round(mean_quote, 4),
                    "realised": round(realised, 4),
                    "ci_low": round(ci_low, 4), "ci_high": round(ci_high, 4),
+                   "horizon_coverage": coverage,
+                   "horizon_scoped": bool(scope),
                    "mean_spread": round(mean_spread, 4) if mean_spread else None})
 
     if mean_quote > ci_high:
@@ -781,7 +848,7 @@ def is_premise_alive(rows=None):
             f"{realised:.1%} of the time (95% CI {ci_low:.1%}-{ci_high:.1%}). "
             f"The quote is not above the interval by a little; it is outside it "
             f"entirely, so these numbers are not probabilities and there is "
-            f"nothing for an estimator to beat.{book}"), detail
+            f"nothing for an estimator to beat.{book}{scope}"), detail
 
     if mean_quote < ci_low:
         return DEAD, (
@@ -789,12 +856,13 @@ def is_premise_alive(rows=None):
             f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}). Systematically "
             f"cheap in this band is still a broken price, not free money; the "
             f"reason a 97c contract settles 100% of the time is that nobody "
-            f"will sell it to you."), detail
+            f"will sell it to you.{scope}"), detail
 
     return ALIVE, (f"ALIVE on n={n} — quoted {mean_quote:.1%}, settled "
                    f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}); the "
                    f"quote is inside its own interval. This clears the PRIOR "
-                   f"question only. is_edge_proven still gates every dollar."), detail
+                   f"question only. is_edge_proven still gates every "
+                   f"dollar.{scope}"), detail
 
 
 VERDICT_STATE = DATA_DIR / "kalshi_verdict_notified.json"
