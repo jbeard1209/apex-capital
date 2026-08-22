@@ -53,6 +53,7 @@ import logging
 import numpy as np
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -82,6 +83,13 @@ SHAP_PATH  = DATA_DIR / "shap_summary.json"
 
 MIN_SAMPLES         = 100
 PROMO_DELTA         = 0.003
+# A model at or below 0.50 is not "weak", it is uninformative or anti-predictive.
+# No comparison against an incumbent can make promoting one correct: if the
+# incumbent is also below 0.50, the right move is to keep neither. Five straight
+# nights promoted 0.5264 / 0.5264 / 0.4788 / 0.4090 / 0.4958 into data/model.pkl
+# on the always-on host, three of them worse than a coin flip, because the only
+# gate was relative. See the promotion block below for how that happened.
+ABSOLUTE_AUC_FLOOR  = 0.50
 SHAP_PRUNE_SAMPLES  = 500    # only prune features when this many training samples available
 SHAP_PRUNE_FLOOR    = 0.0005 # drop features with mean |SHAP| below 0.05% of max_shap
 
@@ -90,6 +98,88 @@ ALL_FEATURE_COLS = FEATURE_COLS + MACRO_FEATURE_COLS + RD_MARKET_COLS
 # Macro features to add to the meta-learner (indices within ALL_FEATURE_COLS)
 # These give the stacker access to the regime context at inference time.
 META_REGIME_COLS = ["vix_level", "vix_regime", "market_regime", "spy_momentum_20d"]
+
+
+def _promotion_block(
+    cand_auc: Optional[float], prod_auc: Optional[float], force: bool = False,
+) -> str:
+    """Why this candidate must NOT reach production, or "" if it may.
+
+    Pulled out of train() so it can be tested without a training run — the old
+    gate was a single inline `if` inside 400 lines of model fitting, which is
+    why nobody ever wrote a test that would have caught it reading 0.0.
+
+    Three refusals, each sufficient on its own, in the order that makes the
+    message most useful. --force overrides all of them: that is a human asking
+    for this model by name, and the caller logs it as such.
+    """
+    if force:
+        return ""
+    if cand_auc is None:
+        return "v5 produced no walk-forward AUC — cannot judge it"
+    if cand_auc <= ABSOLUTE_AUC_FLOOR:
+        return (f"v5 walk-forward AUC {cand_auc:.4f} is at or below the "
+                f"{ABSOLUTE_AUC_FLOOR:.2f} floor — uninformative or anti-predictive")
+    if prod_auc is None:
+        return "incumbent AUC unreadable — refusing to promote against an unknown"
+    if cand_auc < prod_auc + PROMO_DELTA:
+        return (f"not better by the {PROMO_DELTA:+.3f} margin "
+                f"(v5 {cand_auc:.4f} vs prod {prod_auc:.4f})")
+    return ""
+
+
+def _incumbent_auc() -> Optional[float]:
+    """The production model's walk-forward AUC, or None if that is unknowable.
+
+    This used to read `prod_bundle.get("ensemble_auc_val", 0.0)` straight out of
+    the model.pkl PICKLE. Two things were wrong with that, and together they
+    disarmed the promotion gate completely:
+
+      1. Wrong source. The firm's single source of truth for a model's quality is
+         data/model_meta.json via model_metrics.get_model_metrics() — CLAUDE.md
+         says so explicitly. Whether the AUC also happens to be inside the pickle
+         depends on WHICH trainer last wrote model.pkl: v5 embeds
+         `ensemble_auc_val`, v1/v3 do not. So the gate's answer depended on the
+         provenance of the incumbent rather than on the incumbent.
+      2. Wrong default. The missing-key fallback was 0.0, and 0.0 is not a
+         neutral value here — it is the value that makes `ens_auc >= prod_auc +
+         PROMO_DELTA` true for every candidate. A degraded read was silently
+         converted into a decision to promote. The VM logged "current production
+         AUC = 0.0000" on five consecutive nights and promoted every time.
+
+    So: read the source of truth, and return None when it cannot be read. None
+    means CANNOT TELL and the caller must refuse to promote, because promoting
+    on an unknown incumbent is promoting blind.
+
+    Like-for-like: this returns the embargoed walk-forward number, and the caller
+    compares it against v5's OWN walk-forward (`wf_cv_mean_auc`), never against
+    the single-split `ensemble_auc_val`. Comparing a fresh model's optimistic
+    holdout against an incumbent's honest walk-forward is two correct halves
+    making one meaningless comparison, and it biases every decision toward
+    replacing production.
+    """
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from model_metrics import get_model_metrics
+        m = get_model_metrics()
+    except Exception as exc:
+        logger.warning("  ml_model_v5: incumbent AUC unreadable (%s)", exc)
+        return None
+    if not m.get("trained"):
+        # No model in production at all. That is knowable and it is not None:
+        # there is nothing to beat, so any candidate clearing the absolute floor
+        # is an improvement over having no model.
+        logger.info("  ml_model_v5: no production model — floor is the only gate")
+        return 0.0
+    auc = m.get("auc")
+    if auc is None:
+        logger.warning(
+            "  ml_model_v5: production model is trained but reports no "
+            "walk-forward AUC (%s) — cannot compare", m.get("auc_label"),
+        )
+        return None
+    logger.info("  ml_model_v5: current production walk-forward AUC = %.4f", auc)
+    return float(auc)
 
 
 # =============================================================================
@@ -305,15 +395,8 @@ def train(force: bool = False, optuna_trials: int = OPTUNA_TRIALS,
     )
 
     # ── Check current production AUC ─────────────────────────────────────────
-    prod_auc = 0.0
-    if not force and MODEL_PATH.exists():
-        try:
-            with open(MODEL_PATH, "rb") as fh:
-                prod_bundle = pickle.load(fh)
-            prod_auc = float(prod_bundle.get("ensemble_auc_val", 0.0))
-            logger.info("  ml_model_v5: current production AUC = %.4f", prod_auc)
-        except Exception:
-            pass
+    # Optional[float]: None means "cannot tell", NOT "zero". See _incumbent_auc.
+    prod_auc = _incumbent_auc() if not force else None
 
     # ── R&D signals ──────────────────────────────────────────────────────────
     try:
@@ -571,8 +654,19 @@ def train(force: bool = False, optuna_trials: int = OPTUNA_TRIALS,
     logger.info("  ml_model_v5: saved → %s", V5_PATH)
 
     # ── Promote to production if better ──────────────────────────────────────
+    # Three gates, in order, and each one can refuse alone:
+    #   1. the absolute floor — nothing at or below coin-flip reaches production,
+    #      whatever the incumbent scores;
+    #   2. a readable incumbent — an unknown incumbent means we refuse, because
+    #      the old default of 0.0 turned "I could not read it" into "promote";
+    #   3. the relative margin, walk-forward against walk-forward.
+    # --force still overrides all three: that is a human asking for this model
+    # by name, and it is logged as such.
+    cand_auc = results.get("wf_cv_mean_auc")
     promoted = False
-    if force or ens_auc >= prod_auc + PROMO_DELTA:
+    block    = _promotion_block(cand_auc, prod_auc, force)
+
+    if not block:
         import shutil
         if MODEL_PATH.exists():
             shutil.copy(MODEL_PATH, PREV_PATH)
@@ -580,20 +674,24 @@ def train(force: bool = False, optuna_trials: int = OPTUNA_TRIALS,
         shutil.copy(V5_META, META_PATH)
         promoted = True
         logger.info(
-            "  ml_model_v5: PROMOTED (v5 AUC %.4f > prod %.4f)", ens_auc, prod_auc,
+            "  ml_model_v5: PROMOTED (v5 wf-AUC %s vs prod %s)%s",
+            f"{cand_auc:.4f}" if cand_auc is not None else "n/a",
+            f"{prod_auc:.4f}" if prod_auc is not None else "n/a",
+            "  [--force]" if force else "",
         )
     else:
-        logger.info(
-            "  ml_model_v5: not promoted (delta %+.4f)", ens_auc - prod_auc,
-        )
+        logger.info("  ml_model_v5: NOT promoted — %s", block)
 
     return {
         **meta_v5,
-        "status":    "TRAINED",
-        "promoted":  promoted,
-        "prod_auc":  prod_auc,
-        "v5_auc":    ens_auc,
-        "auc_delta": round(ens_auc - prod_auc, 4),
+        "status":       "TRAINED",
+        "promoted":     promoted,
+        "block_reason": block,
+        "prod_auc":     prod_auc,
+        "v5_auc":       ens_auc,
+        "v5_wf_auc":    cand_auc,
+        "auc_delta": (round(cand_auc - prod_auc, 4)
+                      if cand_auc is not None and prod_auc is not None else None),
     }
 
 

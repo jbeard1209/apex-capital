@@ -66,7 +66,20 @@ from datetime import datetime, date, timedelta
 from pathlib import Path
 from typing import Optional
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# .parent, NOT .parent.parent. This line was copied from
+# predictive_model/feature_engineer.py, where the file sits one level deeper and
+# .parent.parent correctly names institutional-tracker/. Here it named the REPO
+# ROOT — and the repo root still holds two pre-migration relics from 2026-03-21,
+# `main.py` and `config.py`, which shadow the live 106KB main.py and 12KB
+# config.py the moment the root is sys.path[0]. Importing this module therefore
+# silently rewired every LATER `import main` / `import config` in the process to
+# a five-month-old file. In the smoke suite that surfaced as nine ImportErrors
+# ("cannot import name 'ORG' from 'config'") in tests that had nothing to do
+# with features; in a production process that imported this first, it would have
+# been the wrong ALPACA keys and the wrong risk limits, with no error at all.
+# The only path this module actually needs is its own directory, for the
+# `predictive_model.*` imports directly below.
+sys.path.insert(0, str(Path(__file__).parent))
 
 from predictive_model.edgar_historical_scraper import get_db
 from predictive_model.data_collector import _ensure_collector_tables

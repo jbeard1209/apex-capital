@@ -6,9 +6,13 @@ Reads data/ml_shortterm_experiment_queue.json.
 For each queued experiment:
   - Trains a LightGBM variant on outcome_20d
   - 6-fold walk-forward cross-validation
-  - Compares to current production AUC of 0.6100
-  - Promotes if walk-forward mean AUC > 0.55
-  - Saves promoted model to data/model.pkl
+  - Compares to the CURRENT production walk-forward AUC, read from
+    model_metrics.get_model_metrics() -- never a hardcoded number
+  - Accepts a candidate only if it clears an absolute floor AND beats
+    production by a margin; an unreadable incumbent means refuse
+  - Saves an accepted candidate to data/model_shortterm_candidate.pkl.
+    It does NOT write data/model.pkl: promoting a candidate to production
+    is a separate, gated act, and this runner is not the gate.
 Results -> data/ml_shortterm_experiment_results.json.
 Uses feature_engineer.build_feature_matrix().
 Handles empty queue gracefully.
@@ -34,10 +38,40 @@ LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 QUEUE_FILE   = DATA_DIR / "ml_shortterm_experiment_queue.json"
 RESULTS_FILE = DATA_DIR / "ml_shortterm_experiment_results.json"
-MODEL_PATH   = DATA_DIR / "model.pkl"
+# NOT data/model.pkl. This used to `pickle.dump(final_model, open(model.pkl,"wb"))`
+# — dropping a bare LightGBM estimator on top of the live production BUNDLE, so
+# every consumer doing `bundle["lgb"]` or `bundle.get("feature_cols")` would have
+# hit an estimator instead of a dict, and model_meta.json would have gone on
+# describing the model that used to be there. An experiment runner produces
+# candidates; promoting one to production is a separate, gated act.
+CANDIDATE_PATH = DATA_DIR / "model_shortterm_candidate.pkl"
 
-PRODUCTION_AUC      = 0.6100
-PROMOTION_THRESHOLD = 0.55
+# The bar a candidate must clear. This was `PROMOTION_THRESHOLD = 0.55` compared
+# against nothing, while a second constant `PRODUCTION_AUC = 0.6100` sat beside
+# it, was written into every result row, and took no part in any decision — a
+# number that looks like a benchmark and functions as decoration. The incumbent
+# now comes from the single source of truth and is actually used.
+PROMOTION_MARGIN = 0.003   # matches ml_model_v5.PROMO_DELTA
+ABSOLUTE_FLOOR   = 0.55    # never accept a candidate at or below this, whatever
+                           # production scores — see ml_model_v5.ABSOLUTE_AUC_FLOOR
+
+
+def _production_auc():
+    """Incumbent walk-forward AUC, or None when that cannot be read.
+
+    None means CANNOT TELL and the caller must refuse. The old code's implicit
+    answer was a hardcoded 0.6100 that was never consulted; the failure mode one
+    edit away from that is a hardcoded number that IS consulted and is stale.
+    """
+    try:
+        from model_metrics import get_model_metrics
+        m = get_model_metrics()
+    except Exception as exc:
+        logger.warning("  production AUC unreadable (%s)", exc)
+        return None
+    if not m.get("trained"):
+        return 0.0            # nothing in production; the floor is the only bar
+    return m.get("auc")       # already None when the model reports no AUC
 
 logging.basicConfig(
     level=logging.INFO,
@@ -175,31 +209,46 @@ def run() -> None:
 
         try:
             aucs     = _walk_forward_cv(X, y, n_splits=6)
-            mean_auc = float(np.mean(aucs)) if aucs else 0.0
-            promoted = mean_auc > PROMOTION_THRESHOLD
+            mean_auc = float(np.mean(aucs)) if aucs else None
+            prod_auc = _production_auc()
+
+            if mean_auc is None:
+                accepted, why = False, "no folds produced an AUC"
+            elif mean_auc <= ABSOLUTE_FLOOR:
+                accepted, why = False, f"{mean_auc:.4f} <= floor {ABSOLUTE_FLOOR}"
+            elif prod_auc is None:
+                accepted, why = False, "production AUC unreadable — refusing to judge"
+            elif mean_auc < prod_auc + PROMOTION_MARGIN:
+                accepted, why = False, (f"{mean_auc:.4f} does not beat production "
+                                        f"{prod_auc:.4f} by {PROMOTION_MARGIN:+.3f}")
+            else:
+                accepted, why = True, (f"{mean_auc:.4f} beats production "
+                                       f"{prod_auc:.4f} by >= {PROMOTION_MARGIN:+.3f}")
 
             result = {
                 "id":            exp_id,
                 "title":         exp_title,
                 "run_at":        now_str,
                 "fold_aucs":     [round(a, 4) for a in aucs],
-                "mean_auc":      round(mean_auc, 4),
-                "production_auc": PRODUCTION_AUC,
-                "promoted":      promoted,
-                "promotion_threshold": PROMOTION_THRESHOLD,
+                "mean_auc":      round(mean_auc, 4) if mean_auc is not None else None,
+                "production_auc": prod_auc,
+                "candidate_accepted": accepted,
+                "decision_reason":    why,
+                "promotion_margin":   PROMOTION_MARGIN,
+                "absolute_floor":     ABSOLUTE_FLOOR,
                 "n_folds":       len(aucs),
             }
 
-            if promoted:
-                logger.info(f"  PROMOTED: mean AUC {mean_auc:.4f} > {PROMOTION_THRESHOLD}")
+            if accepted:
+                logger.info(f"  CANDIDATE ACCEPTED: {why}")
                 final_model = _train_final(X, y)
                 DATA_DIR.mkdir(parents=True, exist_ok=True)
-                with open(MODEL_PATH, "wb") as f:
+                with open(CANDIDATE_PATH, "wb") as f:
                     pickle.dump(final_model, f)
-                result["model_saved"] = str(MODEL_PATH)
+                result["candidate_saved"] = str(CANDIDATE_PATH)
                 newly_promoted += 1
             else:
-                logger.info(f"  Not promoted: mean AUC {mean_auc:.4f} <= {PROMOTION_THRESHOLD}")
+                logger.info(f"  Not accepted: {why}")
 
             existing_results.append(result)
 
@@ -209,7 +258,7 @@ def run() -> None:
                     entry["status"]       = "completed"
                     entry["completed_at"] = now_str
                     entry["mean_auc"]     = round(mean_auc, 4)
-                    entry["promoted"]     = promoted
+                    entry["accepted"]     = accepted
 
         except Exception as e:
             logger.error(f"  Experiment {exp_id} failed: {e}")
@@ -218,7 +267,7 @@ def run() -> None:
                 "title":  exp_title,
                 "run_at": now_str,
                 "error":  str(e),
-                "promoted": False,
+                "candidate_accepted": False,
             })
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)

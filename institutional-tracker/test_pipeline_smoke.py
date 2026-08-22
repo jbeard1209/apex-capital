@@ -2183,7 +2183,7 @@ class TestWiringContracts(unittest.TestCase):
             "reader.py":      'a = load("data/known_ghost_out.json")\n'
                               'b = load("data/new_ghost_out.json")\n',
         }
-        real = wiring_audit._BASELINE_PATH
+        real = wiring_audit._baseline_path
         tmp = None
         try:
             def _baseline(entries):
@@ -2191,7 +2191,11 @@ class TestWiringContracts(unittest.TestCase):
                 with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
                     json.dump({"known_orphans": entries}, fh)
                     tmp = fh.name
-                wiring_audit._BASELINE_PATH = pathlib.Path(tmp)
+                # _baseline_path is a call-time accessor, not a frozen constant:
+                # the module derives every path from BASE_DIR on each call so a
+                # test can re-root it. Patch the accessor, not a stale attribute.
+                wiring_audit._baseline_path = (
+                    lambda _p=pathlib.Path(tmp): _p)
 
             # (a) known_ghost is baselined -> note; new_ghost is not -> hard failure.
             _baseline(["known_ghost.py"])
@@ -2215,7 +2219,7 @@ class TestWiringContracts(unittest.TestCase):
                 "a baseline entry that is no longer an orphan must hard-fail so the "
                 "ratchet cannot silently loosen")
         finally:
-            wiring_audit._BASELINE_PATH = real
+            wiring_audit._baseline_path = real
 
     def test_every_logic_rule_has_a_handler(self):
         """Every rule the Logic Team can emit must resolve to an implementation handler.
@@ -11627,9 +11631,12 @@ class TestInternalAudit(unittest.TestCase):
         """
         ia = self._mod()
         import wiring_audit as wa
-        real_snap = wa._CRON_SNAPSHOT
+        real_snap = wa._cron_snapshot
         try:
-            wa._CRON_SNAPSHOT = Path(tempfile.gettempdir()) / "zz_no_such_crontab.txt"
+            # An accessor, not a constant — wiring_audit derives every path from
+            # BASE_DIR on each call so a test can re-root it (see _data_dir).
+            wa._cron_snapshot = (
+                lambda: Path(tempfile.gettempdir()) / "zz_no_such_crontab.txt")
             refs = [d for fc in ia.CONTROL_CENSUS for d in fc.detectors]
             live = ia._detector_liveness(refs)
             self.assertTrue(refs, "census names no detectors at all")
@@ -11643,7 +11650,7 @@ class TestInternalAudit(unittest.TestCase):
                              "not exist")
             self.assertEqual([], [c["class"] for c in census if c["dormant"]])
         finally:
-            wa._CRON_SNAPSHOT = real_snap
+            wa._cron_snapshot = real_snap
 
     def test_a_law_that_is_defined_but_unregistered_never_runs(self):
         """The same blindness one level down: the FILE runs and the SYMBOL is in
@@ -12058,6 +12065,29 @@ class TestOneDigestADay(unittest.TestCase):
         self.assertIn("email_buffer.py", scripts,
                       "the digest lost its catch-up path; a missed 22:00 cron is "
                       "now a day with no digest and no alert about the absence")
+
+    def test_main_py_freshness_check_reads_the_file_the_crontab_writes(self):
+        """2026-08-22: this entry read "main_YYYYMMDD.log", a file only
+        wakeup_recovery itself ever wrote. The real 4x/day crontab appends to
+        "cron_YYYYMMDD.log" (see gcp_setup/vm_bootstrap.sh), so none of those
+        runs ever counted as freshness evidence -- every 6h check saw its own
+        last recovery run aging past the 7h limit and fired again, forever.
+        main.py ran 6x/day (2 phantom, both outside market hours) for weeks.
+        The fix is one field; guard it so the two never drift apart again."""
+        import wakeup_recovery
+        main_entries = [j for j in wakeup_recovery.JOBS if j[0] == "main.py"]
+        self.assertEqual(len(main_entries), 1, "expected exactly one main.py entry")
+        log_prefix = main_entries[0][1]
+
+        bootstrap = (Path(__file__).parent / "gcp_setup" / "vm_bootstrap.sh").read_text()
+        cron_lines = [l for l in bootstrap.splitlines() if "main.py" in l and ">>" in l]
+        self.assertTrue(cron_lines, "no main.py cron line found in vm_bootstrap.sh")
+        prefixes = set(re.findall(r"logs/(\w+)_\\?\$\(date", "\n".join(cron_lines)))
+        self.assertEqual(
+            prefixes, {log_prefix},
+            f"wakeup_recovery checks logs/{log_prefix}_*.log for main.py's "
+            f"freshness, but the crontab writes to logs/{prefixes}_*.log -- "
+            f"the scheduled runs will never register as fresh")
 
 
 class TestBoardIssueLedger(unittest.TestCase):
@@ -18379,6 +18409,363 @@ class TestAReasonIsNotADerivation(unittest.TestCase):
         names = {p.name for p in P.python_files(d)}
         self.assertIn("real.py", names)
         self.assertNotIn("deploy.py", names)
+
+
+class TestAPromotionGateThatNeverBlockedAnything(unittest.TestCase):
+    """The v5 promotion gate compared production against a number it never had.
+
+    `ml_model_v5.train()` decided whether a freshly-trained model should replace
+    data/model.pkl with:
+
+        prod_auc = float(prod_bundle.get("ensemble_auc_val", 0.0))
+        ...
+        if force or ens_auc >= prod_auc + PROMO_DELTA:
+
+    reading the incumbent's score out of the model PICKLE. Whether that key is
+    in the pickle depends on which trainer last wrote it — v5 embeds it, v1 and
+    v3 do not — so the gate's answer depended on the incumbent's provenance
+    rather than on the incumbent. When the key was absent the fallback was 0.0,
+    and 0.0 makes `>= prod_auc + 0.003` true for every candidate that has ever
+    existed. The gate did not "sometimes fail open"; on the always-on host it
+    was open every night it ran, and the log says so in its own words:
+    "current production AUC = 0.0000", five nights out of five.
+
+    Promoted on those five nights, by single-split val AUC: 0.5264, 0.5264,
+    0.4788, 0.4090, 0.4958. Three of the five are below a coin flip.
+
+    Same species as `fallback-that-means-act` (the constant a degraded read
+    substitutes IS a decision) and `unknown-verb-approved-nothing` (66 days of
+    orders approved by an initialiser). The gate is now a pure function so it
+    can be interrogated without a 20-minute training run — the reason no test
+    ever caught this is that the check lived as one inline `if` in the middle of
+    400 lines of model fitting.
+    """
+
+    def setUp(self):
+        from predictive_model import ml_model_v5 as v5
+        self.v5 = v5
+
+    def test_an_unreadable_incumbent_refuses_to_promote(self):
+        """THE POISON PILL. None must mean refuse, never 'compare against zero'."""
+        block = self.v5._promotion_block(cand_auc=0.62, prod_auc=None)
+        self.assertTrue(
+            block,
+            "a candidate was cleared for production while the incumbent's AUC "
+            "was unreadable — this is the exact bug, restored",
+        )
+        self.assertIn("unreadable", block.lower())
+        # and the discriminating half: the SAME candidate against a real, weak
+        # incumbent must be allowed. Otherwise this test would also pass against
+        # a gate that simply refuses everything.
+        self.assertEqual("", self.v5._promotion_block(cand_auc=0.62, prod_auc=0.55))
+
+    def test_zero_is_not_a_neutral_incumbent(self):
+        """0.0 is the value that admits everything; it must never be a default.
+
+        Guarding the literal, not just the behaviour: if a future edit restores
+        `.get(..., 0.0)` the gate silently reopens and every other test here
+        still passes, because 0.0 is a perfectly valid float to compare against.
+        """
+        import inspect
+        src = inspect.getsource(self.v5._incumbent_auc)
+        tree = ast.parse(src.strip())
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            fn = node.func
+            if isinstance(fn, ast.Attribute) and fn.attr == "get" and len(node.args) > 1:
+                default = node.args[1]
+                self.assertFalse(
+                    isinstance(default, ast.Constant)
+                    and isinstance(default.value, (int, float))
+                    and not isinstance(default.value, bool),
+                    "_incumbent_auc substitutes a number for a failed read; the "
+                    "only safe substitute is None",
+                )
+
+    def test_the_incumbent_is_read_from_the_source_of_truth(self):
+        """CLAUDE.md: get_model_metrics() is the only place an AUC comes from."""
+        import inspect
+        src = inspect.getsource(self.v5._incumbent_auc)
+        called = {
+            n.func.id for n in ast.walk(ast.parse(src.strip()))
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+        }
+        self.assertIn(
+            "get_model_metrics", called,
+            "the incumbent's AUC must come from model_metrics, not from whatever "
+            "happens to be inside the pickle",
+        )
+
+    def test_nothing_at_or_below_a_coin_flip_reaches_production(self):
+        """An absolute floor, because a relative gate cannot express this.
+
+        If the incumbent is itself 0.45, then 0.48 "beats production" and a
+        relative-only gate promotes an anti-predictive model with a clean
+        conscience. The right answer there is to keep neither.
+        """
+        self.assertTrue(self.v5._promotion_block(cand_auc=0.48, prod_auc=0.45))
+        self.assertTrue(self.v5._promotion_block(cand_auc=0.50, prod_auc=0.10))
+        self.assertEqual("", self.v5._promotion_block(cand_auc=0.60, prod_auc=0.45))
+
+    def test_the_two_sides_of_the_comparison_are_the_same_metric(self):
+        """Walk-forward against walk-forward, never holdout against walk-forward.
+
+        v5 computes both: `ensemble_auc_val` (one 80/20 split, optimistic) and
+        `wf_cv_mean_auc` (embargoed walk-forward). model_metrics headlines the
+        walk-forward. Feeding the candidate's holdout into a comparison against
+        the incumbent's walk-forward is two correct halves making one meaningless
+        comparison, and it is biased in one direction — toward replacing
+        production every single night.
+        """
+        import inspect
+        src = inspect.getsource(self.v5.train)
+        assigns = [n for n in ast.walk(ast.parse(src.strip()))
+                   if isinstance(n, ast.Assign)
+                   and any(isinstance(t, ast.Name) and t.id == "cand_auc"
+                           for t in n.targets)]
+        self.assertEqual(1, len(assigns), "cand_auc should be assigned exactly once")
+        keys = {n.value for n in ast.walk(assigns[0].value)
+                if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+        self.assertIn(
+            "wf_cv_mean_auc", keys,
+            "the promoted-or-not decision must be made on the embargoed "
+            "walk-forward number, not on the single-split holdout",
+        )
+        self.assertNotIn("ensemble_auc_val", keys)
+
+    def test_force_is_the_only_override_and_it_is_explicit(self):
+        self.assertEqual("", self.v5._promotion_block(None, None, force=True))
+        self.assertEqual("", self.v5._promotion_block(0.10, 0.90, force=True))
+
+
+class TestOnlyASanctionedTrainerWritesTheProductionModel(unittest.TestCase):
+    """data/model.pkl is a live artifact; the set of things that may write it is small.
+
+    Found while removing the dead ml_chain_r*.py experiment chain. Those files
+    were dormant — on no scheduler, imported by nothing — but two of them
+    (`ml_chain_r6.py`, `ml_chain_r7.py`) ended their promote() with:
+
+        pickle.dump(d, open(PROD, 'wb'))          # data/model_v2.pkl
+        shutil.copy(PROD, BASE / 'data' / 'model.pkl')
+
+    so `python3 ml_chain_r7.py` — one command, no flag, no confirmation — would
+    have replaced the live production model with a July-3-shaped bundle. That
+    bundle has no `lt_model` or `lt_scaler`, so the long-term model the pipeline
+    reads would have silently vanished, and none of the chain files write
+    model_meta.json, so model_metrics.get_model_metrics() would have gone on
+    reporting the AUC of a model that no longer existed on disk. The gate
+    deciding all this was a hardcoded `PROD_VAL_AUC = 0.6068` — one val split,
+    against an honest walk-forward std of ±0.073.
+
+    "Dormant" is not a safety property. It describes the scheduler, not the file.
+    """
+
+    SANCTIONED = {
+        # The trainers. Each writes model_meta.json in the same breath, so the
+        # artifact and the firm's description of it move together.
+        "predictive_model/ml_model.py",
+        "predictive_model/ml_model_v2.py",
+        "predictive_model/ml_model_v3.py",
+        "predictive_model/ml_model_v4.py",
+        "predictive_model/ml_model_v5.py",
+    }
+
+    # Calls that can put bytes on disk. Over-inclusive on purpose: `copy(A, B)`
+    # is counted whichever end names the target, because resolving argument
+    # position through shutil/pickle/Path aliases is exactly the kind of
+    # cleverness that makes a control quietly stop matching. An over-inclusive
+    # sweep costs one allowlist entry; an under-inclusive one costs a silent
+    # false GREEN, which is what this whole class exists to prevent.
+    _MUTATORS = {"copy", "copyfile", "copy2", "move", "dump", "open",
+                 "write_bytes", "replace", "rename", "save"}
+
+    def _writers_of(self, target: str):
+        """Every module containing a filesystem-mutating call naming `target`.
+
+        The literal never appears in the call itself — the trainers write
+        `shutil.copy(V5_PATH, MODEL_PATH)`, where MODEL_PATH is a module-level
+        `DATA_DIR / "model.pkl"`. A sweep that only looked for the string
+        constant inside the call found nothing at all, which is precisely the
+        failure this class's non-vacuity assertion is there to catch. So resolve
+        the names first, then look for either the name or the literal.
+        """
+        root = Path(__file__).parent
+        writers, examined = set(), 0
+        for path in sorted(root.rglob("*.py")):
+            if any(part in ("__pycache__", "backups", ".git", "venv", "node_modules")
+                   for part in path.parts):
+                continue
+            rel = str(path.relative_to(root))
+            examined += 1
+            try:
+                tree = ast.parse(path.read_text())
+            except (SyntaxError, UnicodeDecodeError):
+                continue
+
+            def _names_the_target(node):
+                return any(isinstance(s, ast.Constant) and isinstance(s.value, str)
+                           and s.value.rstrip("/").endswith(target)
+                           for s in ast.walk(node))
+
+            aliases = {t.id for n in ast.walk(tree) if isinstance(n, ast.Assign)
+                       for t in n.targets
+                       if isinstance(t, ast.Name) and _names_the_target(n.value)}
+
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+                fn = node.func
+                name = (fn.attr if isinstance(fn, ast.Attribute)
+                        else fn.id if isinstance(fn, ast.Name) else "")
+                if name not in self._MUTATORS:
+                    continue
+                # `open(path, "rb")` is a read. This is the one argument-position
+                # inference worth making: without it the sweep flags every module
+                # that merely LOADS the production model, and a control that
+                # cries wolf on readers gets its allowlist padded until it stops
+                # meaning anything.
+                if name == "open":
+                    modes = [a.value for a in node.args[1:]
+                             if isinstance(a, ast.Constant) and isinstance(a.value, str)]
+                    if modes and all("r" in m and "+" not in m for m in modes):
+                        continue
+                hits = _names_the_target(node) or any(
+                    isinstance(s, ast.Name) and s.id in aliases
+                    for s in ast.walk(node))
+                if hits:
+                    writers.add(rel)
+        return writers, examined
+
+    def test_no_unsanctioned_module_writes_model_pkl(self):
+        writers, examined = self._writers_of("model.pkl")
+        self.assertGreater(examined, 100, "the sweep examined almost nothing")
+        # Non-vacuous: this only means something if it can actually see a writer.
+        self.assertTrue(
+            writers & self.SANCTIONED,
+            "the sweep found no sanctioned writer either — it is matching "
+            "nothing, so its silence about unsanctioned writers proves nothing",
+        )
+        rogue = writers - self.SANCTIONED
+        self.assertEqual(
+            set(), rogue,
+            "these modules write the live production model without being one of "
+            "the sanctioned trainers: %s. If one of them is legitimate, add it "
+            "to SANCTIONED here AND make it write model_meta.json in the same "
+            "operation — an artifact that moves without its metadata makes "
+            "get_model_metrics() describe a model that is no longer on disk."
+            % sorted(rogue),
+        )
+
+
+class TestTheRepoRootIsNeverPutOnThePath(unittest.TestCase):
+    """No module in this tree may prepend the repo root to sys.path.
+
+    `institutional-tracker/feature_engineer.py` did:
+
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+    copied verbatim from `predictive_model/feature_engineer.py`, where the file
+    is one level deeper and `.parent.parent` correctly names this directory. At
+    the top level the same expression names the REPO ROOT, and the repo root
+    still carries two pre-migration relics from 2026-03-21 — `main.py` (13KB
+    against the live 106KB) and `config.py` (6KB against the live 12KB). Once
+    the root is sys.path[0] they win every subsequent `import main` /
+    `import config` in that process.
+
+    Nothing raised. The suite reported nine ERRORs in TestStateRoundTrip and
+    TestSignalSourceHelpers — classes with no connection to feature engineering
+    — saying "cannot import name 'ORG' from 'config'", which is what a March
+    main.py asking a July config.py for a symbol it no longer exports looks
+    like. That is the benign version. The malign version is a production
+    process that happens to import feature_engineer before config and then
+    trades on five-month-old ALPACA credentials and five-month-old risk limits
+    with no error at all, on whichever host imports in that order — which makes
+    it a `host_divergence_is_a_bug_class` failure waiting for an ordering
+    change rather than a test-only annoyance.
+
+    Two halves, because either alone is weak:
+      1. static — no top-level module may name the parent of this directory;
+      2. live — with the shadowing modules enumerated from disk, importing the
+         real feature_engineer in a fresh interpreter must still resolve every
+         one of them inside institutional-tracker/.
+    Half 2 is what actually protects the firm; half 1 is what tells you which
+    line to fix when half 2 goes red.
+    """
+
+    ROOT = Path(__file__).resolve().parent
+
+    def test_no_top_level_module_prepends_the_parent_directory(self):
+        import ast as _ast
+
+        offenders, examined, path_calls = [], 0, 0
+        for py in sorted(self.ROOT.glob("*.py")):      # top level ONLY: one level
+            examined += 1                              # deeper .parent.parent is right
+            try:
+                tree = _ast.parse(py.read_text())
+            except Exception:
+                continue
+            for node in _ast.walk(tree):
+                if not isinstance(node, _ast.Call):
+                    continue
+                fn = node.func
+                if not (isinstance(fn, _ast.Attribute)
+                        and fn.attr in ("insert", "append")
+                        and isinstance(fn.value, _ast.Attribute)
+                        and fn.value.attr == "path"
+                        and isinstance(fn.value.value, _ast.Name)
+                        and fn.value.value.id == "sys"):
+                    continue
+                path_calls += 1
+                arg = _ast.dump(_ast.Module(body=[_ast.Expr(node)], type_ignores=[]))
+                # `Path(__file__).parent.parent` shows up as two chained
+                # attribute accesses named 'parent'; one is this directory and
+                # is fine, two is the repo root and is not.
+                if arg.count("attr='parent'") >= 2:
+                    offenders.append(f"{py.name}:{node.lineno}")
+
+        self.assertGreater(examined, 100,
+                           "the sweep examined almost nothing — it is not looking "
+                           "at this tree")
+        self.assertGreater(path_calls, 0,
+                           "the sweep matched no sys.path call anywhere, so finding "
+                           "no offender proves nothing about the codebase")
+        self.assertEqual(
+            [], offenders,
+            "these top-level modules put the REPO ROOT on sys.path, where "
+            "pre-migration main.py/config.py shadow the live ones: %s. Use "
+            "Path(__file__).parent — this directory is already what the "
+            "predictive_model.* imports need." % offenders)
+
+    def test_importing_feature_engineer_does_not_reroute_later_imports(self):
+        shadowed = sorted(
+            {p.stem for p in self.ROOT.parent.glob("*.py")}
+            & {p.stem for p in self.ROOT.glob("*.py")}
+        )
+        if not shadowed:
+            self.skipTest("no repo-root module shares a name with this tree — "
+                          "nothing can be shadowed on this host (the VM gets an "
+                          "rsync of institutional-tracker/ only)")
+
+        probe = (
+            "import importlib.util, json, sys\n"
+            "sys.path.insert(0, %r)\n"
+            "import feature_engineer\n"
+            "print(json.dumps({m: (importlib.util.find_spec(m).origin or '')\n"
+            "                  for m in %r}))\n" % (str(self.ROOT), shadowed)
+        )
+        r = subprocess.run([sys.executable, "-c", probe],
+                           capture_output=True, text=True, timeout=180)
+        self.assertEqual(0, r.returncode,
+                         "the probe could not import feature_engineer: %s"
+                         % r.stderr[-800:])
+        where = json.loads(r.stdout.strip().splitlines()[-1])
+        for mod, origin in sorted(where.items()):
+            self.assertTrue(
+                origin.startswith(str(self.ROOT) + os.sep),
+                "after importing feature_engineer, `import %s` resolves to %s — "
+                "the repo root is ahead of institutional-tracker on sys.path and "
+                "a pre-migration relic is now the live module" % (mod, origin))
 
 
 if __name__ == "__main__":

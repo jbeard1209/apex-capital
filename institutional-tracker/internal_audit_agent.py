@@ -1048,7 +1048,7 @@ def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
     # Same file wa.scheduler_reachable just used, read through wa so the two
     # halves of this verdict can never point at different snapshots.
     try:
-        cron_txt = wa._CRON_SNAPSHOT.read_text()
+        cron_txt = wa._cron_snapshot().read_text()
     except OSError:
         cron_txt = ""
 

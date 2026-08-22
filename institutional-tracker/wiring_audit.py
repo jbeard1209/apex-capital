@@ -30,7 +30,21 @@ from pathlib import Path
 from typing import Optional
 
 BASE_DIR = Path(__file__).parent
-DATA_DIR = BASE_DIR / "data"
+
+
+def _data_dir() -> Path:
+    """data/ resolved from BASE_DIR *now*, never at import.
+
+    This was `DATA_DIR = BASE_DIR / "data"`, and that is a frozen container: the
+    smoke tests aim this module at a sandbox by rebinding `wiring_audit.BASE_DIR`,
+    and a path derived at import time does not move with it. The sweep then read
+    the sandbox's sources and the REAL firm's data/ in the same pass — half the
+    answer about one repo, half about another, with no error anywhere. Same shape
+    as `_cron_snapshot` and `_baseline_path` below, and as memory
+    `frozen-container-of-derived-paths`; a module that supports being re-rooted
+    has to derive every path from the root on each call.
+    """
+    return BASE_DIR / "data"
 
 # The canonical way this codebase recognises a data/*.json reference and a write
 # site, hoisted to module level 2026-08-01 so agent_sweep.py can IMPORT them
@@ -122,7 +136,7 @@ def check_orphan_queues(sources: dict):
     patterns = ["*_pending.json", "*_queue.json", "*_log.json", "*pending*.json", "*queue*.json"]
     seen = set()
     for pat in patterns:
-        for fp in DATA_DIR.glob(pat):
+        for fp in _data_dir().glob(pat):
             if fp.name in seen:
                 continue
             seen.add(fp.name)
@@ -161,7 +175,7 @@ def check_glob_consumers_have_producers(sources: dict):
                 re.search(r'open\([^)]*"w"|json\.dump|\.write_text|_save', wtxt)
                 for wtxt in sources.values())
             # Or any matching file already on disk
-            on_disk = bool(list(DATA_DIR.glob(f"{stem}*.json")))
+            on_disk = bool(list(_data_dir().glob(f"{stem}*.json")))
             if not produced and not on_disk:
                 problems.append(
                     f"[blind-read] {name} globs '{stem}*.json' but NO code produces it "
@@ -533,7 +547,9 @@ def _writes_only_non_json(write_ctx, txt, out_re) -> bool:
     return True
 
 
-_CRON_SNAPSHOT = BASE_DIR / "data/vm_crontab_snapshot.txt"
+def _cron_snapshot() -> Path:
+    """The live-crontab snapshot, resolved from BASE_DIR at call time. See _data_dir."""
+    return BASE_DIR / "data" / "vm_crontab_snapshot.txt"
 
 
 def scheduler_reachable(sources: dict, code: Optional[dict] = None) -> Optional[set]:
@@ -552,9 +568,10 @@ def scheduler_reachable(sources: dict, code: Optional[dict] = None) -> Optional[
     the walk knows only main.py, so every cron-only module would look orphaned —
     callers must fail closed and judge nobody rather than accuse the whole firm.
     """
-    if not _CRON_SNAPSHOT.exists():
+    snapshot = _cron_snapshot()
+    if not snapshot.exists():
         return None
-    cron_txt = _CRON_SNAPSHOT.read_text()
+    cron_txt = snapshot.read_text()
     if code is None:
         code = {n: _code_only(t) for n, t in sources.items()}
     # Test files are NOT scheduler roots even when cron runs them: a test
@@ -745,7 +762,7 @@ def check_orphan_agents(sources: dict):
                        if n != name and not n.startswith("test_") and out in t]
             if not readers:
                 continue
-            exists = (DATA_DIR / out).exists()
+            exists = (_data_dir() / out).exists()
             msg = (
                 f"[orphan-agent] {name} writes {out} (read by {len(readers)} module(s): "
                 f"{', '.join(sorted(readers)[:3])}) but is NOT reachable from main.py or "
@@ -770,11 +787,13 @@ def check_orphan_agents(sources: dict):
     stale = _orphan_baseline() - found_orphans
     for name in sorted(stale):
         problems.append(
-            f"[orphan-agent] {name} is in {_BASELINE_PATH.name} but is no longer an orphan — "
+            f"[orphan-agent] {name} is in {_baseline_path().name} but is no longer an orphan — "
             f"remove it from the baseline so the ratchet cannot loosen")
 
 
-_BASELINE_PATH = BASE_DIR / "data" / "orphan_agents_baseline.json"
+def _baseline_path() -> Path:
+    """The orphan baseline, resolved from BASE_DIR at call time. See _data_dir."""
+    return BASE_DIR / "data" / "orphan_agents_baseline.json"
 
 
 def _orphan_baseline() -> set:
@@ -782,7 +801,7 @@ def _orphan_baseline() -> set:
     them. New entries must never be added to silence a finding — that is the exact
     'flagged but never solved' loop the firm has been burned by."""
     try:
-        d = json.loads(_BASELINE_PATH.read_text())
+        d = json.loads(_baseline_path().read_text())
         return set(d.get("known_orphans", []))
     except Exception:
         return set()
