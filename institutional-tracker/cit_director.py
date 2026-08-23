@@ -729,12 +729,36 @@ class CITPipelineMonitor:
         "data/agent_sweep_report.json":      180,
     }
 
+    def _clear_condition(self, title: str, why: str) -> None:
+        """Retire issues this monitor filed for a condition that no longer holds.
+
+        A detector that can open an issue but never close one turns a transient
+        fact into a permanent record. This monitor filed 220 "Severely stale
+        output" issues and closed none; 56 of them still asserted that
+        data/canary_state.json was stale while the file was three hours old.
+
+        The signature is derived from the same title string the finding above
+        writes — never hand-copied — so the opener and the closer cannot drift
+        apart the way a restated constant does.
+        """
+        try:
+            from issue_tracker import resolve_by_signature, condition_signature
+            resolve_by_signature(
+                reporter=self.name,
+                signature=condition_signature(title),
+                resolution=why,
+                resolved_by=self.name,
+            )
+        except Exception as e:                       # noqa: BLE001 — never fatal
+            logger.debug(f"  [{self.name}] Condition-clear error (non-fatal): {e}")
+
     def analyze(self) -> list[dict]:
         findings = []
 
         # ── 1. Stale output files ────────────────────────────────────────────
         for path_str, max_age in self.EXPECTED_FILES.items():
             path = BASE_DIR / path_str
+            missing_title = f"Missing output file: {path_str}"
             if not path.exists():
                 if path_str != "data/cit_pending_proposals.json":  # new — ok if missing
                     findings.append({
@@ -742,26 +766,33 @@ class CITPipelineMonitor:
                         "category":     "BUG_FIX",
                         "severity":     "MEDIUM",
                         "confidence":   75,
-                        "title":        f"Missing output file: {path_str}",
+                        "title":        missing_title,
                         "description":  f"Expected output file {path_str} does not exist. The agent that produces this may not have run yet, or its path has changed.",
                         "evidence":     f"{path_str} does not exist on disk",
                         "proposed_fix": "Run the pipeline once to generate the file, or verify the output path in the agent.",
                         "auto_implementable": False,
                     })
                 continue
+            self._clear_condition(missing_title, f"{path_str} exists again")
+
             age = _file_age_hours(path)
+            stale_title = f"Severely stale output: {path_str} ({age or 0:.0f}h old)"
             if age is not None and age > max_age * 1.5:
                 findings.append({
                     "agent":        self.name,
                     "category":     "BUG_FIX",
                     "severity":     "HIGH" if max_age <= 26 else "MEDIUM",
                     "confidence":   85,
-                    "title":        f"Severely stale output: {path_str} ({age:.0f}h old)",
+                    "title":        stale_title,
                     "description":  f"{path_str} is {age:.0f}h old against a {max_age}h threshold. This is 50% beyond tolerance — the producing agent likely missed multiple cycles.",
                     "evidence":     f"File age: {age:.0f}h. Threshold: {max_age}h.",
                     "proposed_fix": "Check cron logs for this agent. Verify it is scheduled and running without silent failures.",
                     "auto_implementable": False,
                 })
+            elif age is not None:
+                self._clear_condition(
+                    stale_title,
+                    f"{path_str} is {age:.0f}h old, within the {max_age}h threshold")
 
         # ── 2. Recent log errors ─────────────────────────────────────────────
         error_count = 0

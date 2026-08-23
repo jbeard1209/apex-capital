@@ -46,6 +46,12 @@ logger = logging.getLogger("board_meeting")
 
 MEETING_LOG = "data/board_meeting_report.json"
 
+# "known_infrastructure" is the legacy name for what is now "needs_owner".
+# Live queue files still carry it, so both must render and count as one class —
+# dropping the old string would make every historical row read as "Needs You"
+# and silently change the queue's shape.
+_NEEDS_OWNER = ("needs_owner", "known_infrastructure")
+
 
 # =============================================================================
 # ML INTELLIGENCE LOADER
@@ -1358,25 +1364,40 @@ def _route_approved_cit_proposals(approved: list) -> None:
             })
 
         # ── Classify ──────────────────────────────────────────────────────
-        # "Stale file" findings are an infrastructure/uptime problem —
-        # they resolve automatically once the Oracle server runs 24/7.
-        # Add them to the action queue with that explanation so the
-        # Chairman understands what's happening.
+        # "Stale file" findings name an agent that has stopped producing. They
+        # do NOT resolve on their own — see the branch below for why the
+        # previous "resolves once Oracle is 24/7" reading was wrong on both
+        # halves.
         is_stale_file = "stale output" in title.lower() or "stale" in title.lower()
         is_error_count = "error lines" in title.lower()
 
         if is_stale_file:
-            # Root cause: pipeline not running when Mac is off.
-            # Resolution: Oracle 24/7 server (pending) + catch_up.py (active).
+            # Both premises this branch used to state were dead, and each was
+            # load-bearing:
+            #   "Mac off → pipeline skipped" — the GCP VM is always-on and runs
+            #     main.py 6x/day, so the Mac's power state has not governed
+            #     pipeline freshness for months.
+            #   "AUTOMATIC once Oracle 24/7 server is live" — the Oracle host
+            #     was TERMINATED 2026-07-27. A resolution conditioned on an
+            #     event that can never happen is a promise the queue keeps
+            #     forever.
+            # Filed as known_infrastructure/self-resolving, these rows read as
+            # "no action needed", which is exactly why they accumulated instead
+            # of being worked. A stale output file means the agent that writes
+            # it is not running, or is failing without saying so, on whichever
+            # host owns it — that is a real assignment, not weather.
             needs_chairman.append({
                 "id":           prop.get("id", ""),
                 "title":        title,
                 "dedup_key":    short,
                 "category":     cat,
-                "root_cause":   "Mac off → pipeline skipped → data files not refreshed",
-                "resolution":   "AUTOMATIC once Oracle 24/7 server is live. "
-                                "catch_up.py now runs on Mac wake to partially mitigate.",
-                "status":       "known_infrastructure",
+                "root_cause":   "The agent that writes this file is not running, "
+                                "or is failing silently, on its owning host",
+                "resolution":   "NOT automatic. Check the owning host's crontab "
+                                "for the producing agent and read its log for a "
+                                "silent failure (deploy_stamp + md5 to confirm "
+                                "the VM is running current code).",
+                "status":       "needs_owner",
                 "times_approved": count + 1,
                 "queued_at":    now_iso,
             })
@@ -1512,8 +1533,8 @@ def _route_approved_cit_proposals(approved: list) -> None:
         try:
             action_rows = "".join(
                 f"<tr>"
-                f"<td style='padding:5px 8px;color:{'#3fb950' if a.get('status')=='fixed' else '#f0883e' if a.get('status')=='known_infrastructure' else '#58a6ff'};'>"
-                f"{'✅ Fixed' if a.get('status')=='fixed' else '⚙ Infrastructure' if a.get('status')=='known_infrastructure' else '👤 Needs You'}</td>"
+                f"<td style='padding:5px 8px;color:{'#3fb950' if a.get('status')=='fixed' else '#f0883e' if a.get('status') in _NEEDS_OWNER else '#58a6ff'};'>"
+                f"{'✅ Fixed' if a.get('status')=='fixed' else '⚙ Needs Owner' if a.get('status') in _NEEDS_OWNER else '👤 Needs You'}</td>"
                 f"<td style='padding:5px 8px;'>{a['title'][:65]}</td>"
                 f"<td style='padding:5px 8px;color:#8b949e;font-size:12px;'>{a.get('root_cause', a.get('description',''))[:60]}</td>"
                 f"</tr>"
@@ -1531,7 +1552,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
     <tbody>{action_rows}</tbody>
   </table>
   <p style="color:#484f58;font-size:11px;margin-top:12px;">
-    ✅ Fixed = already resolved in code · ⚙ Infrastructure = resolves with Oracle server ·
+    ✅ Fixed = already resolved in code · ⚙ Needs Owner = a producing agent stopped, assign it ·
     👤 Needs You = requires Chairman review
   </p>
 </div>"""
@@ -1543,7 +1564,7 @@ def _route_approved_cit_proposals(approved: list) -> None:
                 key_metrics = {
                     "Total Approved": len(needs_chairman),
                     "Fixed":          sum(1 for a in needs_chairman if a.get("status") == "fixed"),
-                    "Infrastructure": sum(1 for a in needs_chairman if a.get("status") == "known_infrastructure"),
+                    "Infrastructure": sum(1 for a in needs_chairman if a.get("status") in _NEEDS_OWNER),
                     "Needs You":      sum(1 for a in needs_chairman if a.get("status") == "awaiting_chairman"),
                 },
             )

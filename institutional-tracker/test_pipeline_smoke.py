@@ -19398,6 +19398,290 @@ class TestBufferedIsNotDelivered(unittest.TestCase):
         self.assertTrue(callable(getattr(eb, "delivery_state", None)))
 
 
+
+class TestIssueIdentityIsNotTheMeasurement(unittest.TestCase):
+    """A detector writes what it measures into the title; identity must not move with it.
+
+    Live tracker, 2026-08-23: 4423 rows, 2139 distinct conditions, `resolved_at`
+    set on exactly zero of them. One unfixed condition
+    (data/capital_efficiency_report.json being stale) had produced 29 separate
+    issues, because the dedupe compared titles exactly and the title carried
+    "(49h old)", "(75h old)", "(96h old)" ... — the key moved every time the
+    measurement moved, so it could never repeat.
+    """
+
+    def setUp(self):
+        import issue_tracker as it
+        self.it = it
+        self.td = tempfile.mkdtemp()
+        self.tracker = os.path.join(self.td, "issues.json")
+        self.archive = os.path.join(self.td, "archive.json")
+        self.p = patch.multiple(it, TRACKER_PATH=self.tracker, ARCHIVE_PATH=self.archive)
+        self.p.start()
+
+    def tearDown(self):
+        self.p.stop()
+        shutil.rmtree(self.td, ignore_errors=True)
+
+    def _log(self, title, reporter="CITPipelineMonitor", severity="HIGH"):
+        return self.it.log_issue(reporter, title, "d", severity, "PIPELINE")
+
+    def _rows(self):
+        return json.load(open(self.tracker))
+
+    # ── identity ─────────────────────────────────────────────────────────────
+    def test_the_same_condition_at_two_ages_is_one_issue(self):
+        a = self._log("Severely stale output: data/x.json (49h old)")
+        b = self._log("Severely stale output: data/x.json (75h old)")
+        self.assertEqual(a, b, "a growing age minted a second issue for one condition")
+        self.assertEqual(len(self._rows()), 1)
+
+    def test_the_normaliser_collapses_the_series_that_actually_shipped(self):
+        """Poison pill: the real titles from the live tracker must fold to one.
+
+        These are verbatim from data/issue_tracker.json — ISS-0666, ISS-1020,
+        ISS-1059, ISS-1096, ISS-1105. If a future edit to _MEASUREMENT_PATTERNS
+        stops collapsing them, this test fails rather than the tracker quietly
+        resuming its ~190 rows/day.
+        """
+        shipped = [
+            "Severely stale output: data/capital_efficiency_report.json (49h old)",
+            "Severely stale output: data/capital_efficiency_report.json (75h old)",
+            "Severely stale output: data/capital_efficiency_report.json (96h old)",
+            "Severely stale output: data/capital_efficiency_report.json (99h old)",
+            "Severely stale output: data/capital_efficiency_report.json (162h old)",
+        ]
+        sigs = {self.it.condition_signature(t) for t in shipped}
+        self.assertEqual(len(sigs), 1, f"shipped series did not collapse: {sigs}")
+        ids = {self._log(t) for t in shipped}
+        self.assertEqual(len(ids), 1, "5 shipped re-reports became >1 issue")
+
+    def test_two_different_source_lines_stay_two_issues(self):
+        """Poison pill against over-normalising: :693 and :701 are different bugs."""
+        a = self._log("print() in production code: agent_roster.py:693")
+        b = self._log("print() in production code: agent_roster.py:701")
+        self.assertNotEqual(a, b, "distinct source lines were merged into one issue")
+
+    def test_two_different_files_stay_two_issues(self):
+        a = self._log("Severely stale output: data/a.json (49h old)")
+        b = self._log("Severely stale output: data/b.json (49h old)")
+        self.assertNotEqual(a, b, "distinct files were merged into one issue")
+
+    def test_a_different_reporter_gets_its_own_issue(self):
+        a = self._log("Severely stale output: data/x.json (49h old)", reporter="CIT")
+        b = self._log("Severely stale output: data/x.json (49h old)", reporter="HR Agent")
+        self.assertNotEqual(a, b)
+
+    # ── the two clocks ───────────────────────────────────────────────────────
+    def test_re_observation_does_not_reset_the_staleness_clock(self):
+        """The trap inside the fix.
+
+        get_stale_issues() measures from updated_at. If re-observing a condition
+        bumped it, anything seen 6x/day could never age past 48h and the
+        escalation path would go silent for exactly the problems that recur most.
+        Freshness-of-observation and age-of-unfixed-problem are different clocks.
+        """
+        self._log("Severely stale output: data/x.json (49h old)")
+        rows = self._rows()
+        old = (datetime.now() - timedelta(hours=200)).isoformat()
+        rows[0]["created_at"] = rows[0]["updated_at"] = old
+        json.dump(rows, open(self.tracker, "w"))
+
+        self._log("Severely stale output: data/x.json (206h old)")
+
+        self.assertEqual(self._rows()[0]["updated_at"], old,
+                         "re-observation reset updated_at — the issue can never go stale")
+        self.assertEqual(len(self.it.get_stale_issues(hours=48)), 1,
+                         "a long-unfixed condition dropped out of get_stale_issues")
+
+    def test_re_observation_records_that_it_happened_again(self):
+        self._log("Severely stale output: data/x.json (49h old)")
+        self._log("Severely stale output: data/x.json (55h old)")
+        self._log("Severely stale output: data/x.json (61h old)")
+        row = self._rows()[0]
+        self.assertEqual(row["occurrences"], 3)
+        self.assertIn("61h old", row["latest_title"],
+                      "the newest measurement is not visible on the surviving row")
+        self.assertIn("49h old", row["title"],
+                      "the identifying title was overwritten by a later measurement")
+
+    # ── dedupe scope ─────────────────────────────────────────────────────────
+    def test_a_stale_row_still_dedupes(self):
+        """94 of 94 duplicate groups in the live tracker were born this way.
+
+        Dedupe matched only OPEN/ASSIGNED/IN_PROGRESS, so the moment a row aged
+        into STALE it became invisible and the same condition was re-filed.
+        """
+        a = self._log("Severely stale output: data/x.json (49h old)")
+        self.it.update_issue(a, "STALE")
+        b = self._log("Severely stale output: data/x.json (75h old)")
+        self.assertEqual(a, b, "a STALE row did not dedupe — the condition was re-filed")
+
+    def test_an_escalated_row_still_dedupes(self):
+        a = self._log("Severely stale output: data/x.json (49h old)")
+        self.it.update_issue(a, "ESCALATED")
+        self.assertEqual(a, self._log("Severely stale output: data/x.json (75h old)"))
+
+    def test_a_resolved_row_does_not_dedupe(self):
+        """Recurrence after a fix must be visible, not swallowed as a duplicate."""
+        a = self._log("Severely stale output: data/x.json (49h old)")
+        self.it.resolve_issue(a, "producer rescheduled", "me")
+        b = self._log("Severely stale output: data/x.json (49h old)")
+        self.assertNotEqual(a, b, "a condition that came back was hidden behind the closed row")
+
+    # ── closing ──────────────────────────────────────────────────────────────
+    def test_a_cleared_condition_closes_its_issues(self):
+        for age in (49, 75, 96):
+            self._log(f"Severely stale output: data/x.json ({age}h old)")
+        sig = self.it.condition_signature("Severely stale output: data/x.json (0h old)")
+        closed = self.it.resolve_by_signature("CITPipelineMonitor", sig, "fresh again")
+        self.assertEqual(len(closed), 1)
+        row = self._rows()[0]
+        self.assertTrue(row["resolved_at"], "resolved_at still unset after closing")
+        self.assertEqual(self.it.get_stats()["resolved_count"], 1)
+
+    def test_closing_one_reporters_condition_leaves_another_alone(self):
+        self._log("Severely stale output: data/x.json (49h old)", reporter="CIT")
+        self._log("Severely stale output: data/x.json (49h old)", reporter="HR Agent")
+        sig = self.it.condition_signature("Severely stale output: data/x.json (1h old)")
+        self.it.resolve_by_signature("CIT", sig, "fresh")
+        self.assertEqual(self.it.get_stats()["unresolved_count"], 1)
+
+    def test_lowercase_hygiene_statuses_count_as_finished(self):
+        """tracker_hygiene.py writes 'resolved' / 'closed_stale_unverified'.
+
+        An `== "RESOLVED"` comparison read every hygiene-closed row as still
+        unresolved — the closer and the counter disagreed about the same row.
+        """
+        a = self._log("Severely stale output: data/x.json (49h old)")
+        rows = self._rows()
+        rows[0]["status"] = "closed_stale_unverified"
+        json.dump(rows, open(self.tracker, "w"))
+        self.assertEqual(self.it.get_stats()["resolved_count"], 1)
+        self.assertEqual(self.it.get_stats()["unresolved_count"], 0)
+        b = self._log("Severely stale output: data/x.json (49h old)")
+        self.assertNotEqual(a, b, "a hygiene-closed row still swallowed a new occurrence")
+
+    # ── compaction ───────────────────────────────────────────────────────────
+    def _seed_dupes(self):
+        rows = []
+        base = datetime.now() - timedelta(days=10)
+        for i, age in enumerate((49, 75, 96, 162)):
+            rows.append({
+                "issue_id": f"ISS-{i+1:04d}", "reporter": "CITPipelineMonitor",
+                "title": f"Severely stale output: data/x.json ({age}h old)",
+                "description": "d", "severity": "MEDIUM" if i else "HIGH",
+                "category": "PIPELINE", "status": "ASSIGNED", "assigned_to": None,
+                "created_at": (base + timedelta(hours=i)).isoformat(),
+                "updated_at": (base + timedelta(hours=i)).isoformat(),
+                "resolved_at": None, "resolution": None, "auto_fix_hint": None,
+                "escalation_count": i + 1,
+            })
+        json.dump(rows, open(self.tracker, "w"))
+        return rows
+
+    def test_compaction_folds_re_reports_and_keeps_the_oldest_row(self):
+        seeded = self._seed_dupes()
+        r = self.it.compact()
+        self.assertEqual(r["rows_after"], 1)
+        row = self._rows()[0]
+        self.assertEqual(row["issue_id"], seeded[0]["issue_id"],
+                         "compaction kept a newer row — the staleness clock was reset")
+        self.assertEqual(row["occurrences"], 4)
+        self.assertEqual(row["severity"], "HIGH", "highest severity ever seen was lost")
+        self.assertEqual(row["escalation_count"], 4,
+                         "escalation_count should carry the max, not the sum")
+        self.assertEqual(row["folded_escalations"], 10)
+
+    def test_compaction_archives_every_row_it_removes(self):
+        self._seed_dupes()
+        before = {r["issue_id"] for r in self._rows()}
+        self.it.compact()
+        after = {r["issue_id"] for r in self._rows()}
+        archived = {r["issue_id"] for r in json.load(open(self.archive))}
+        self.assertEqual(before - after, archived,
+                         "rows disappeared without an archive record")
+        for r in json.load(open(self.archive)):
+            self.assertTrue(r.get("folded_into"), "archived row has no pointer to its survivor")
+
+    def test_compaction_is_idempotent(self):
+        self._seed_dupes()
+        self.it.compact()
+        snapshot = json.dumps(self._rows(), sort_keys=True)
+        second = self.it.compact()
+        self.assertEqual(second["folded"], 0)
+        self.assertEqual(json.dumps(self._rows(), sort_keys=True), snapshot)
+
+    def test_compaction_never_reuses_an_archived_id(self):
+        self._seed_dupes()
+        self.it.compact()
+        archived = {r["issue_id"] for r in json.load(open(self.archive))}
+        new = self._log("A brand new and different condition")
+        self.assertNotIn(new, archived,
+                         "a new issue was minted with an id that already names an archived one")
+
+    def test_compaction_does_not_touch_finished_rows(self):
+        rows = self._seed_dupes()
+        rows[1]["status"] = "RESOLVED"
+        rows[1]["resolved_at"] = datetime.now().isoformat()
+        json.dump(rows, open(self.tracker, "w"))
+        self.it.compact()
+        ids = {r["issue_id"] for r in self._rows()}
+        self.assertIn(rows[1]["issue_id"], ids, "compaction folded an already-resolved row")
+
+    def test_a_report_with_no_duplicates_writes_nothing(self):
+        self._log("Only condition here")
+        r = self.it.compact(dry_run=True)
+        self.assertEqual(r["folded"], 0)
+
+
+class TestTheDetectorClosesWhatItOpens(unittest.TestCase):
+    """CITPipelineMonitor filed 220 stale-output issues and closed none."""
+
+    def test_the_monitor_derives_the_close_signature_it_does_not_restate_it(self):
+        """AST: _clear_condition must be called with the same title the finding uses.
+
+        A hand-written normalised string ("severely stale output: ... (<age>)")
+        would be a second copy of the identity rule, free to drift from
+        condition_signature() — the hand-kept-table bug that produced the
+        phantom pipeline-restored emails. Grep would match my own comments here,
+        so this walks the tree.
+        """
+        tree = ast.parse(open("cit_director.py").read())
+        clear = next((n for n in ast.walk(tree)
+                      if isinstance(n, ast.FunctionDef) and n.name == "_clear_condition"), None)
+        self.assertIsNotNone(clear, "_clear_condition was removed from cit_director.py")
+
+        sig_kw = [kw for call in ast.walk(clear)
+                  if isinstance(call, ast.Call)
+                  for kw in call.keywords if kw.arg == "signature"]
+        self.assertTrue(sig_kw, "_clear_condition never passes a signature=")
+        for kw in sig_kw:
+            self.assertIsInstance(
+                kw.value, ast.Call,
+                "signature= is a literal — it restates the normalisation rule "
+                "instead of deriving it from condition_signature()")
+            self.assertEqual(
+                getattr(kw.value.func, "id", getattr(kw.value.func, "attr", None)),
+                "condition_signature")
+
+    def test_every_stale_output_finding_has_a_matching_clear_path(self):
+        """Both branches of the freshness test must act: alarm, or retire the alarm."""
+        tree = ast.parse(open("cit_director.py").read())
+        fn = None
+        for cls in ast.walk(tree):
+            if isinstance(cls, ast.ClassDef) and cls.name == "CITPipelineMonitor":
+                fn = next((n for n in cls.body
+                           if isinstance(n, ast.FunctionDef) and n.name == "analyze"), None)
+        self.assertIsNotNone(fn, "CITPipelineMonitor.analyze not found")
+        calls = [n for n in ast.walk(fn) if isinstance(n, ast.Call)
+                 and getattr(n.func, "attr", None) == "_clear_condition"]
+        self.assertGreaterEqual(
+            len(calls), 2,
+            "analyze() opens issues for both 'missing' and 'stale' but closes fewer "
+            "kinds than it opens — a detector that cannot retire its own claim "
+            "turns a transient fact into a permanent record")
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

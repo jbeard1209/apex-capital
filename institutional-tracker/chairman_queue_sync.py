@@ -122,8 +122,17 @@ CLOSED_STATUSES = PLS.RESOLVED_STATUSES | PLS.WONT_FIX_STATUSES
 # Status lattice. Merging may only move an item UP these ladders, never down.
 # "known_infrastructure" outranks "awaiting_chairman" because it is a triage
 # outcome — someone looked and decided it wasn't a decision to make.
+#
+# "needs_owner" outranks "known_infrastructure" because it is the CORRECTION of
+# a triage that was wrong: stale-file findings were parked as self-resolving on
+# the premise that the Oracle 24/7 host would fix them, and that host was
+# terminated 2026-07-27. Ranking the correction below the mistake would let the
+# mistake win every merge and the rows would stay parked forever. Note that
+# _collapse() does rank.get(status, 0) — an unregistered status silently sorts
+# LAST-advanced and loses every merge, so a new status that is not listed here
+# is a status that does nothing.
 ACTION_RANK = {"open": 0, "awaiting_chairman": 1, "known_infrastructure": 2,
-               "resolved": 3}
+               "needs_owner": 3, "resolved": 4}
 QUEUE_RANK = {"awaiting_chairman": 0, "escalated_to_board": 1, "decided": 2,
               "resolved": 3}
 
