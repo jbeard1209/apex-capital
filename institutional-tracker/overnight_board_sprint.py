@@ -40,6 +40,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+import atomic_json as aj
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -166,8 +168,19 @@ def cleanup_backlog() -> dict:
             routed += 1
         p["status"] = "routed_to_implementer"
 
-    IMPL_QUEUE_PATH.write_text(json.dumps(impl_queue, indent=2, default=str))
-    APPROVED_PATH.write_text(json.dumps(approved, indent=2, default=str))
+    # `Path.write_text` truncates in place exactly like `open(p, "w")`, so a
+    # reader arriving mid-write got an empty or half-written queue. board_meeting
+    # appends to cit_approved_proposals.json under an atomic_json lock; a lock
+    # only some writers take is not a lock.
+    #
+    # What this buys and what it does not: aj.write is atomic, so no reader ever
+    # sees a torn file. It does NOT close the read-modify-write window above —
+    # `approved` was read at the top of this function and a peer appending in
+    # between would still be overwritten. Left as-is because this module is
+    # scheduled nowhere (wiring_audit: orphan, pending board triage); if it is
+    # ever put on a schedule, the whole span needs aj.update.
+    aj.write(IMPL_QUEUE_PATH, impl_queue)
+    aj.write(APPROVED_PATH, approved)
 
     # Fix backlog items — reset all 'open' items older than 30 days to 'stale'
     from datetime import timedelta

@@ -33,6 +33,8 @@ import subprocess
 import sys
 from datetime import datetime, timedelta
 
+import atomic_json as aj
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 logging.basicConfig(
@@ -242,33 +244,38 @@ def _upsert_chairman_row(rid: str, severity: str, description: str) -> bool:
 
     Returns False rather than raising: a monitor that dies while reporting on
     other monitors is worse than one that logs a miss.
+
+    ONE lock spans the read and the write. This was two unlocked halves on the
+    file 23 producers share — deputy_board._queue_fix appends to it from the
+    same main.py run — so an upsert could read 137 rows, and write 138 over a
+    peer's 138, losing the peer's row silently. A monitor that drops the alarms
+    of the thing it monitors is worse than either failure alone.
     """
     try:
-        with open(CHAIRMAN_PATH) as fh:
-            rows = json.load(fh)
-        if not isinstance(rows, list):
-            return False
-    except (ValueError, OSError):
-        return False
-    row = {"id": rid, "severity": severity, "source": "deputy_monitor",
-           "ts": datetime.now().isoformat(), "description": description}
-    for i, existing in enumerate(rows):
-        if isinstance(existing, dict) and existing.get("id") == rid:
-            if existing.get("resolved_at"):
-                # Closed, and the condition is back. Re-open on the same id so
-                # the row keeps its history instead of forking a near-duplicate.
-                row["reopened_at"] = row["ts"]
-                existing = {k: v for k, v in existing.items()
-                            if k not in ("resolved_at", "resolution", "status")}
-            rows[i] = {**existing, **row}
-            break
-    else:
-        rows.append(row)
-    try:
-        with open(CHAIRMAN_PATH, "w") as fh:
-            json.dump(rows, fh, indent=2)
+        with aj.locked(CHAIRMAN_PATH):
+            rows = aj.read(CHAIRMAN_PATH, default=None, strict=True, expect=list)
+            if rows is None:
+                # Genuinely absent. This sweep reports ON the queue; it does not
+                # create it, so there is nothing to upsert into.
+                return False
+            row = {"id": rid, "severity": severity, "source": "deputy_monitor",
+                   "ts": datetime.now().isoformat(), "description": description}
+            for i, existing in enumerate(rows):
+                if isinstance(existing, dict) and existing.get("id") == rid:
+                    if existing.get("resolved_at"):
+                        # Closed, and the condition is back. Re-open on the same
+                        # id so the row keeps its history instead of forking a
+                        # near-duplicate.
+                        row["reopened_at"] = row["ts"]
+                        existing = {k: v for k, v in existing.items()
+                                    if k not in ("resolved_at", "resolution", "status")}
+                    rows[i] = {**existing, **row}
+                    break
+            else:
+                rows.append(row)
+            aj.write(CHAIRMAN_PATH, rows)
         return True
-    except OSError:
+    except (aj.Unreadable, ValueError, OSError):
         return False
 
 

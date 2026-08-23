@@ -37,6 +37,8 @@ import sys
 from datetime import datetime
 from typing import Optional
 
+import atomic_json as aj
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -1156,6 +1158,9 @@ def _parse_action_id(action_id: str) -> tuple:
 # =============================================================================
 
 BOARD_CLARIFY_PATH = "data/cit_clarification_requests.json"
+# Both of these are written by deputy_board.py as well as here, which is why
+# every write to them goes through atomic_json.update rather than open(…,"w").
+APPROVED_PROPOSALS_PATH = "data/cit_approved_proposals.json"
 
 _BOARD_PRECISE_RE = re.compile(
     r'(\w+\.py:\d+'
@@ -1260,11 +1265,12 @@ def _board_clarify_check(proposals: list) -> tuple:
         to_vote.append(prop)
 
     if new_reqs:
-        existing.extend(new_reqs)
         try:
-            os.makedirs("data", exist_ok=True)
-            with open(BOARD_CLARIFY_PATH, "w") as _f:
-                json.dump(existing, _f, indent=2, default=str)
+            # Re-read under the lock rather than extending the copy loaded
+            # above: deputy_board.py appends to this same file, and the list in
+            # hand may already be stale by the time we get here.
+            with aj.update(BOARD_CLARIFY_PATH, default=[], expect=list) as _cur:
+                _cur.extend(new_reqs)
             logger.info(f"  [Board Clarify] {len(new_reqs)} clarification request(s) written → CIT Director")
         except Exception as _e:
             logger.warning(f"  [Board Clarify] Could not write clarification requests: {_e}")
@@ -1487,20 +1493,13 @@ def _route_approved_cit_proposals(approved: list) -> None:
         logger.info(f"  [CIT Router] {len(vision_approved)} VISION proposal(s) written to notable_changes.json")
 
     # ── Persist approved proposals history ───────────────────────────────
-    existing_approved_list: list = []
-    try:
-        if os.path.exists("data/cit_approved_proposals.json"):
-            with open("data/cit_approved_proposals.json") as _f:
-                existing_approved_list = json.load(_f)
-            if not isinstance(existing_approved_list, list):
-                existing_approved_list = []
-    except Exception:
-        pass
-    for p in approved:
-        p["approved_at"] = datetime.now().isoformat()
-        existing_approved_list.append(p)
-    with open("data/cit_approved_proposals.json", "w") as _f:
-        json.dump(existing_approved_list, _f, indent=2, default=str)
+    # deputy_board._mark_approved appends to this file as well. Read-modify-
+    # write under one lock, so a deputy approval landing in the same minute is
+    # not overwritten by the board's copy of the list.
+    with aj.update(APPROVED_PROPOSALS_PATH, default=[], expect=list) as _appr:
+        for p in approved:
+            p["approved_at"] = datetime.now().isoformat()
+            _appr.append(p)
 
     logger.info(f"  [CIT Router] {len(newly_actioned)} approved proposal(s) routed.")
     logger.info(f"  [CIT Router] {len(needs_chairman)} added to chairman_action_required.json")

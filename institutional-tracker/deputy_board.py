@@ -45,6 +45,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
+import atomic_json as aj
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -189,40 +191,37 @@ def _request_clarification_batch(proposal: dict, questions: list):
     'questions' is a list of (deputy_name, question_text) tuples.
     Also increments clarification_rounds on the proposal in cit_pending.json.
     """
-    existing = _load_json(CLARIFY_PATH) or []
-    if not isinstance(existing, list):
-        existing = []
-
     now_iso = datetime.now().isoformat()
     batch_round = proposal.get("clarification_rounds", 0) + 1
 
-    for deputy_name, question in questions:
-        existing.append({
-            "id":               "CLR-" + uuid.uuid4().hex[:6].upper(),
-            "ts":               now_iso,
-            "proposal_id":      proposal.get("id", "?"),
-            "proposal_title":   proposal.get("title", "")[:80],
-            "requesting_deputy": deputy_name,
-            "source":           "deputy_board",
-            "round":            batch_round,
-            "question":         question,
-            "status":           "PENDING",
-        })
-
-    os.makedirs("data", exist_ok=True)
-    with open(CLARIFY_PATH, "w") as f:
-        json.dump(existing, f, indent=2, default=str)
+    # board_meeting.py writes this same file. Unlocked, both sides read the
+    # list, appended their own questions, and wrote back — so whichever
+    # finished second silently erased the other's. `update` holds one lock
+    # across the read and the write.
+    with aj.update(CLARIFY_PATH, default=[], expect=list) as existing:
+        for deputy_name, question in questions:
+            existing.append({
+                "id":               "CLR-" + uuid.uuid4().hex[:6].upper(),
+                "ts":               now_iso,
+                "proposal_id":      proposal.get("id", "?"),
+                "proposal_title":   proposal.get("title", "")[:80],
+                "requesting_deputy": deputy_name,
+                "source":           "deputy_board",
+                "round":            batch_round,
+                "question":         question,
+                "status":           "PENDING",
+            })
 
     # Increment round counter on the proposal so escalation counts by batch, not question
+    # Under the same lock _mark_approved takes: a lock only one of three writers
+    # respects is not a lock. This one reads the pending list while a peer run is
+    # halfway through removing an approved proposal from it.
     try:
-        pending = _load_json(PENDING_PATH) or []
-        if isinstance(pending, list):
+        with aj.update(PENDING_PATH, default=[], expect=list) as pending:
             for p in pending:
                 if p.get("id") == proposal.get("id"):
                     p["clarification_rounds"] = batch_round
                     break
-            with open(PENDING_PATH, "w") as f:
-                json.dump(pending, f, indent=2, default=str)
     except Exception:
         pass
 
@@ -609,27 +608,22 @@ def _queue_fix(proposal: dict, vote_result: dict):
     now_iso = datetime.now().isoformat()
 
     # ── 1. cos_meeting_requests (legacy / future automation) ─────────────
-    existing = _load_json(CMR_PATH) or []
-    if not isinstance(existing, list):
-        existing = []
     urgency_map = {"CRITICAL": "EMERGENCY", "HIGH": "HIGH", "MEDIUM": "NORMAL", "LOW": "NORMAL"}
-    existing.append({
-        "id":          "CMR-" + uuid.uuid4().hex[:6].upper(),
-        "ts":          now_iso,
-        "from_agent":  "Deputy Board",
-        "summary": (
-            f"DEPUTY BOARD APPROVED [{vote_result['classification']}] "
-            f"[{proposal.get('severity','?')}] {proposal.get('title','?')} | "
-            f"Fix: {proposal.get('proposed_fix','?')[:200]}"
-        ),
-        "urgency":     urgency_map.get(proposal.get("severity", "MEDIUM"), "NORMAL"),
-        "status":      "PENDING",
-        "proposal_id": proposal.get("id", ""),
-        "evidence":    proposal.get("evidence", ""),
-    })
-    os.makedirs("data", exist_ok=True)
-    with open(CMR_PATH, "w") as f:
-        json.dump(existing, f, indent=2, default=str)
+    with aj.update(CMR_PATH, default=[], expect=list) as existing:
+        existing.append({
+            "id":          "CMR-" + uuid.uuid4().hex[:6].upper(),
+            "ts":          now_iso,
+            "from_agent":  "Deputy Board",
+            "summary": (
+                f"DEPUTY BOARD APPROVED [{vote_result['classification']}] "
+                f"[{proposal.get('severity','?')}] {proposal.get('title','?')} | "
+                f"Fix: {proposal.get('proposed_fix','?')[:200]}"
+            ),
+            "urgency":     urgency_map.get(proposal.get("severity", "MEDIUM"), "NORMAL"),
+            "status":      "PENDING",
+            "proposal_id": proposal.get("id", ""),
+            "evidence":    proposal.get("evidence", ""),
+        })
 
     # ── 2. chairman_action_required — picked up at every check-in ────────
     # Dedup on a normalized key, not the raw title: chronic findings (CRO
@@ -639,50 +633,56 @@ def _queue_fix(proposal: dict, vote_result: dict):
     # unresolved issue. Prefer the upstream dedup_key (stable finding rule)
     # when the proposal carries one; otherwise fall back to a digit-collapsed
     # title so two renders of the same finding still compare equal.
-    action_queue = _load_json(CHAIRMAN_ACTION_FILE) or []
-    if not isinstance(action_queue, list):
-        action_queue = []
+    #
+    # The dedup read and the append are under ONE lock. Unlocked, this was a
+    # read-modify-write on the queue 23 producers share: deputy_monitor upserts
+    # its own row into the same file, and both of them ran from main.py. Two
+    # writers each read 137 rows, each appended one, each wrote 138 — and one
+    # approved fix never reached the Chairman, with no error anywhere.
     title = str(proposal.get("title", ""))[:80]
     dedup_key = proposal.get("dedup_key") or _re.sub(r"\d+", "#", title)
-    existing_keys = {a.get("dedup_key") or _re.sub(r"\d+", "#", str(a.get("title", ""))[:80])
-                      for a in action_queue}
-    if dedup_key not in existing_keys:
-        action_queue.append({
-            "id":             proposal.get("id", ""),
-            "title":          title,
-            "dedup_key":      dedup_key,
-            "category":       proposal.get("category", ""),
-            "description":    proposal.get("description", ""),
-            "proposed_fix":   proposal.get("proposed_fix", ""),
-            "evidence":       proposal.get("evidence", ""),
-            "confidence":     proposal.get("confidence", 0),
-            "severity":       proposal.get("severity", ""),
-            "approved_by":    f"Deputy Board ({vote_result['classification']})",
-            "status":         "awaiting_chairman",
-            "times_approved": 1,
-            "queued_at":      now_iso,
-        })
-        with open(CHAIRMAN_ACTION_FILE, "w") as f:
-            json.dump(action_queue, f, indent=2, default=str)
+    with aj.update(CHAIRMAN_ACTION_FILE, default=[], expect=list) as action_queue:
+        existing_keys = {a.get("dedup_key") or _re.sub(r"\d+", "#", str(a.get("title", ""))[:80])
+                          for a in action_queue if isinstance(a, dict)}
+        if dedup_key not in existing_keys:
+            action_queue.append({
+                "id":             proposal.get("id", ""),
+                "title":          title,
+                "dedup_key":      dedup_key,
+                "category":       proposal.get("category", ""),
+                "description":    proposal.get("description", ""),
+                "proposed_fix":   proposal.get("proposed_fix", ""),
+                "evidence":       proposal.get("evidence", ""),
+                "confidence":     proposal.get("confidence", 0),
+                "severity":       proposal.get("severity", ""),
+                "approved_by":    f"Deputy Board ({vote_result['classification']})",
+                "status":         "awaiting_chairman",
+                "times_approved": 1,
+                "queued_at":      now_iso,
+            })
 
 
 def _mark_approved(proposal: dict):
-    """Move proposal from pending to approved list."""
-    pending  = _load_json(PENDING_PATH)
-    approved = _load_json(APPROVED_PATH)
-    if not isinstance(pending, list): pending = []
-    if not isinstance(approved, list): approved = []
+    """Move proposal from pending to approved list.
 
+    Two files, two locks, and the approved list is written FIRST. The move is
+    not atomic across both — nothing here can make it so — so the order picks
+    which way it fails: writing `approved` first means a crash in between
+    leaves the proposal in both lists (visible, deduped on id) rather than in
+    neither, which is how a board-approved change disappears.
+
+    board_meeting.py writes APPROVED_PATH too, hence the lock.
+    """
     pid = proposal.get("id", "")
-    pending  = [p for p in pending if p.get("id") != pid]
     proposal["approved_by"] = "Deputy Board"
     proposal["approved_at"] = datetime.now().isoformat()
-    approved.append(proposal)
 
-    with open(PENDING_PATH, "w") as f:
-        json.dump(pending, f, indent=2, default=str)
-    with open(APPROVED_PATH, "w") as f:
-        json.dump(approved, f, indent=2, default=str)
+    with aj.update(APPROVED_PATH, default=[], expect=list) as approved:
+        if not any(p.get("id") == pid for p in approved if isinstance(p, dict)):
+            approved.append(proposal)
+
+    with aj.update(PENDING_PATH, default=[], expect=list) as pending:
+        pending[:] = [p for p in pending if p.get("id") != pid]
 
 
 # =============================================================================
@@ -853,14 +853,11 @@ def run_deputy_board(dry_run: bool = False) -> dict:
             prop["status"] = "ESCALATED_TO_CHAIRMAN"
             prop.pop("needs_revote", None)
             # Write status back to pending so CIT Director sees it
-            _pending_all = _load_json(PENDING_PATH) or []
-            if isinstance(_pending_all, list):
+            with aj.update(PENDING_PATH, default=[], expect=list) as _pending_all:
                 for _p in _pending_all:
                     if _p.get("id") == prop.get("id"):
                         _p["status"] = "ESCALATED_TO_CHAIRMAN"
                         break
-                with open(PENDING_PATH, "w") as _f:
-                    json.dump(_pending_all, _f, indent=2, default=str)
             results.append({
                 "proposal_id": prop.get("id"), "title": prop.get("title"),
                 "passed": False, "classification": "ESCALATED",

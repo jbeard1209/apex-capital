@@ -33,6 +33,8 @@ import json
 import logging
 import os
 
+import atomic_json as aj
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_PATH = "data/chairman_action_required.json"
@@ -131,6 +133,16 @@ def resolve(dedup_keys, source, path=DEFAULT_PATH, note=None):
     if not wanted:
         return []
 
+    # Same lock as submit(), for the same reason: this is a read-modify-write
+    # on a queue with 23 producers, and closing an item while a peer is adding
+    # one would drop whichever of the two wrote first.
+    with aj.locked(path):
+        return _close_locked(wanted, source, path, note)
+
+
+def _close_locked(wanted, source, path, note):
+    from datetime import datetime
+
     existing = _load(path)
     now = datetime.now().isoformat()
 
@@ -152,13 +164,7 @@ def resolve(dedup_keys, source, path=DEFAULT_PATH, note=None):
     if not closed:
         return []
 
-    parent = os.path.dirname(path)
-    if parent:
-        os.makedirs(parent, exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(existing, f, indent=2, default=str)
-    os.replace(tmp, path)
+    aj.write(path, existing)
 
     logger.info("  Chairman queue: %d %s entr(ies) CLOSED (condition cleared): %s",
                 len(closed), source,
@@ -174,6 +180,15 @@ def submit(new_entries, source, path=DEFAULT_PATH,
     formed dicts (severity/description/status/...); `source` is stamped on and
     is what scopes both the dedup and the cap.
     """
+    # THE LOCK SPANS THE READ AND THE WRITE. Without it, two of the 23 modules
+    # that submit here both read N entries, both append their own, and both
+    # write — and one agent's Chairman items are gone with no error anywhere.
+    # Four cron jobs start at 21:00 on the VM, so this is a race that runs.
+    with aj.locked(path):
+        return _submit_locked(new_entries, source, path, max_entries)
+
+
+def _submit_locked(new_entries, source, path, max_entries):
     existing = _load(path)
 
     open_keys = {
@@ -226,13 +241,12 @@ def submit(new_entries, source, path=DEFAULT_PATH,
 
     _uniquify_ids(combined)
 
-    parent = os.path.dirname(path)
-    if parent:
-        os.makedirs(parent, exist_ok=True)
-    tmp = path + ".tmp"
-    with open(tmp, "w") as f:
-        json.dump(combined, f, indent=2, default=str)
-    os.replace(tmp, path)   # atomic: a crash mid-write can't truncate the queue
+    # `path + ".tmp"` was a FIXED name shared by every concurrent writer, so a
+    # peer's open() emptied this writer's temp file mid-dump and the rename
+    # then swapped the torn result in atomically. The old comment here was
+    # half right: os.replace does protect against a crash, and protects
+    # against nothing at all when the bytes were already wrong.
+    aj.write(path, combined)
 
     logger.info("  Chairman queue: +%d new, %d suppressed as already-open, "
                 "%d entries total.", len(added), suppressed, len(combined))

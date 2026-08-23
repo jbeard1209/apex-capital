@@ -14,11 +14,15 @@
 
 import os
 import json
+import fcntl
 import smtplib
 import logging
+import tempfile
+from contextlib import contextmanager
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from functools import wraps
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -26,6 +30,9 @@ logger = logging.getLogger(__name__)
 from config import EMAIL_SENDER, EMAIL_RECIPIENT, GMAIL_APP_PASSWORD as GMAIL_PASSWORD
 
 BUFFER_PATH     = "data/email_buffer.json"
+
+# Bounds how long `flush_digest` may hold the buffer lock on a dead network.
+SMTP_TIMEOUT_S  = 60
 
 # ── Urgent keywords — emails containing these bypass the buffer ───────────────
 URGENT_PATTERNS = [
@@ -92,13 +99,24 @@ def _digest_already_sent_today() -> bool:
         return False
 
 
-def _stamp_digest_sent(count: int) -> None:
+def _stamp_digest_sent(count: int, subjects: Optional[list] = None) -> None:
+    """Record the receipt for the digest that just went out.
+
+    `subjects` is a MANIFEST, not decoration. Without it the receipt says only
+    "a digest was sent at T with N reports", and `delivery_state` could answer
+    the question "did MY message arrive?" no better than `sent_at >= queued_at`
+    — which returns "delivered" for a message that was destroyed at 14:00 and
+    never appeared in the 22:00 mail. A receipt that proves a digest happened
+    is not a receipt that proves this message was in it
+    ([[both-sides-of-a-comparison]]).
+    """
     try:
-        os.makedirs(os.path.dirname(DIGEST_STAMP_PATH), exist_ok=True)
+        os.makedirs(os.path.dirname(DIGEST_STAMP_PATH) or ".", exist_ok=True)
         with open(DIGEST_STAMP_PATH, "w") as f:
             json.dump({"date": datetime.now().strftime("%Y-%m-%d"),
                        "sent_at": datetime.now().isoformat(),
-                       "reports": count}, f, indent=2)
+                       "reports": count,
+                       "subjects": sorted(set(subjects or []))}, f, indent=2)
     except OSError as e:
         logger.warning(f"  [EmailBuffer] could not write digest stamp: {e}")
 
@@ -208,25 +226,140 @@ def _is_urgent(subject: str, sender_name: str = "") -> bool:
     return any(p.lower() in combined for p in URGENT_PATTERNS)
 
 
-def _load_buffer() -> list:
-    """Load the current email buffer."""
+class BufferUnreadable(Exception):
+    """The buffer file exists but could not be parsed.
+
+    Raised only on the mutating paths. A reader may degrade to "nothing
+    queued"; a writer may not, because the next thing a writer does is save,
+    and saving over an unreadable file destroys whatever was in it.
+    """
+
+
+def _buffer_dir() -> str:
+    # NOT the literal "data": BUFFER_PATH is patched to a tmpdir in tests, and
+    # os.makedirs("data") would then create a stray directory in the cwd while
+    # the real write went somewhere else entirely.
+    return os.path.dirname(BUFFER_PATH) or "."
+
+
+@contextmanager
+def _exclusive():
+    """Hold ONE exclusive lock for an entire read-modify-write of the buffer.
+
+    Locking the load and the save separately grants no mutual exclusion at
+    all: two producers can both read a 40-entry queue, both append their own
+    entry, and both write 41 — and one of the two messages is gone. The lock
+    has to span the read AND the write or it is decoration.
+
+    The lock lives in a SEPARATE file. It cannot live in the buffer itself,
+    because the buffer is replaced by rename and the lock would follow the
+    inode that just got unlinked.
+    """
+    os.makedirs(_buffer_dir(), exist_ok=True)
+    f = open(BUFFER_PATH + ".lock", "a+")
+    try:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        yield
+    finally:
+        try:
+            fcntl.flock(f, fcntl.LOCK_UN)
+        finally:
+            f.close()
+
+
+def _locked(fn):
+    """Serialise a whole load-mutate-save against every other writer.
+
+    ⚠ NEVER call one `@_locked` function from inside another. flock is held
+    per open file description, so the inner `_exclusive()` opens a second
+    descriptor on the same file and blocks forever waiting for the outer one
+    to release. A deadlocked `flush_digest` is total email silence to Jack —
+    the single worst failure this module has — so it is pinned by
+    `test_no_locked_function_calls_another` rather than left to memory.
+    """
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        with _exclusive():
+            return fn(*args, **kwargs)
+    return wrapper
+
+
+def _load_buffer(strict: bool = False) -> list:
+    """Load the current email buffer.
+
+    `strict` separates the two things a bare `except: return []` conflates —
+    "nothing is queued" and "I could not read the queue". They must not share
+    an answer, because the caller's next move after the second one is to write.
+    """
     if not os.path.exists(BUFFER_PATH):
-        return []
+        return []                     # genuinely empty — safe to build on
     try:
         with open(BUFFER_PATH) as f:
             data = json.load(f)
-        return data if isinstance(data, list) else []
-    except Exception:
+        if not isinstance(data, list):
+            raise ValueError(f"buffer is {type(data).__name__}, expected list")
+        return data
+    except Exception as e:            # noqa: BLE001
+        if strict:
+            raise BufferUnreadable(f"{BUFFER_PATH}: {e}") from e
+        logger.warning(f"  [EmailBuffer] could not read buffer: {e}")
+        return []
+
+
+def _load_buffer_for_write() -> list:
+    """Load on a mutating path, never silently substituting [] for a bad read.
+
+    The old `_load_buffer` returned [] on any exception, and the caller then
+    appended one entry and saved — turning an unreadable file into a queue of
+    exactly one message and erasing the day's alerts with no error anywhere.
+    Unparseable bytes are moved aside as evidence instead of being written over.
+    """
+    try:
+        return _load_buffer(strict=True)
+    except BufferUnreadable as e:
+        quarantine = f"{BUFFER_PATH}.corrupt-{datetime.now():%Y%m%dT%H%M%S}"
+        try:
+            os.replace(BUFFER_PATH, quarantine)
+            logger.error(f"  [EmailBuffer] UNREADABLE buffer quarantined to "
+                         f"{quarantine} — starting a new queue. {e}")
+        except OSError as move_err:
+            logger.error(f"  [EmailBuffer] UNREADABLE buffer and it could not be "
+                         f"moved aside ({move_err}) — REFUSING to write. {e}")
+            raise
         return []
 
 
 def _save_buffer(buffer: list):
-    """Save the email buffer."""
-    os.makedirs("data", exist_ok=True)
-    with open(BUFFER_PATH, "w") as f:
-        json.dump(buffer, f, indent=2, default=str)
+    """Write the buffer atomically. The live file is never truncated in place.
+
+    `open(BUFFER_PATH, "w")` destroys the queue at open(), before a single byte
+    of the replacement is written, so any reader arriving in that window sees an
+    empty or half-written file. Measured on a 400-entry queue: 68 of 300
+    concurrent reads came back empty, and 200 concurrent enqueues left 7
+    survivors. mkstemp gives each writer a private name and os.replace swaps it
+    in atomically — a reader sees the whole old queue or the whole new one.
+    """
+    os.makedirs(_buffer_dir(), exist_ok=True)
+    tmp = None
+    try:
+        fd, tmp = tempfile.mkstemp(dir=_buffer_dir(), prefix=".email_buffer.",
+                                   suffix=".tmp")
+        with os.fdopen(fd, "w") as f:
+            json.dump(buffer, f, indent=2, default=str)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, BUFFER_PATH)
+    except Exception as e:            # noqa: BLE001
+        logger.error(f"  [EmailBuffer] could not save buffer: {e}")
+        if tmp and os.path.exists(tmp):
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+        raise
 
 
+@_locked
 def buffer_email(subject: str, html_body: str, sender_name: str = "",
                  key_metrics: Optional[dict] = None) -> bool:
     """
@@ -238,7 +371,7 @@ def buffer_email(subject: str, html_body: str, sender_name: str = "",
         logger.info(f"  [EmailBuffer] URGENT — sending immediately: {subject[:60]}")
         return False  # caller should send via _send_raw
 
-    buffer = _load_buffer()
+    buffer = _load_buffer_for_write()
     buffer.append({
         "subject":     subject,
         "sender_name": sender_name,
@@ -308,18 +441,44 @@ def delivery_state(buffered_at, subject: str = "") -> tuple:
         when = when.replace(tzinfo=None)
         sent_at = sent_at.replace(tzinfo=None)
 
-    if sent_at >= when:
-        return "delivered", f"digest sent {stamp.get('sent_at')} " \
-                            f"({stamp.get('reports')} reports)"
-    return "lost", (f"queued {buffered_at} but the newest digest receipt is "
-                    f"{stamp.get('sent_at')} — it left the buffer without "
-                    f"being sent")
+    if sent_at < when:
+        return "lost", (f"queued {buffered_at} but the newest digest receipt is "
+                        f"{stamp.get('sent_at')} — it left the buffer without "
+                        f"being sent")
+
+    # The digest that could have carried it has been sent. Two different
+    # questions remain, and the clock answers neither: was THIS subject in it?
+    manifest = stamp.get("subjects")
+    if subject and isinstance(manifest, list):
+        if subject in manifest:
+            return "delivered", (f"digest sent {stamp.get('sent_at')} and the "
+                                 f"receipt names this subject")
+        return "lost", (f"digest sent {stamp.get('sent_at')} with "
+                        f"{stamp.get('reports')} report(s), and this subject is "
+                        f"not among them — it was dropped between the enqueue "
+                        f"and the send")
+
+    # A receipt from before the manifest existed, or a caller with no subject to
+    # match. Fall back to the clock and SAY SO, rather than reporting a
+    # membership check that did not happen: this cannot see a message destroyed
+    # in the buffer, and the caller deserves to know which of the two answers
+    # it is holding.
+    return "delivered", (f"digest sent {stamp.get('sent_at')} "
+                         f"({stamp.get('reports')} reports) — inferred from the "
+                         f"send time, no subject manifest to confirm it")
 
 
+@_locked
 def flush_digest(force: bool = False) -> bool:
     """
     Compile all buffered emails into one daily digest and send it.
     Called at 7 PM EDT by cron. Pass force=True to send even if buffer is empty.
+
+    THE LOCK SPANS THE SMTP SEND, deliberately. The alternative — claim the
+    batch, release, then send — loses the whole batch if the process dies
+    between the claim and the send, which is a strictly worse failure than a
+    producer waiting a few seconds. Nothing in this function may enqueue an
+    email while it holds the lock; see `_locked`.
 
     Deduplication: if the same subject appears multiple times (e.g. because an
     agent ran hourly and buffered a report each run), only the MOST RECENT entry
@@ -331,7 +490,8 @@ def flush_digest(force: bool = False) -> bool:
     — so force is a human saying "send it anyway", which is exactly when the
     guards should get out of the way.
     """
-    buffer = _load_buffer()
+    buffer = _load_buffer_for_write()
+    buffered_in = len(buffer)
 
     if not buffer and not force:
         logger.info("  [EmailBuffer] No buffered emails — digest skipped.")
@@ -360,7 +520,10 @@ def flush_digest(force: bool = False) -> bool:
             seen_subjects.add(subj)
             deduped.append(item)
     buffer = list(reversed(deduped))  # restore chronological order
-    dupes_removed = len(_load_buffer()) - len(buffer)
+    # Measured against what was READ, not against a second read of the file.
+    # Re-reading asked the disk a question this function had already answered,
+    # and would report a negative count the moment a producer wrote in between.
+    dupes_removed = buffered_in - len(buffer)
     if dupes_removed > 0:
         logger.info(f"  [EmailBuffer] Removed {dupes_removed} duplicate report(s) before digest")
 
@@ -470,7 +633,11 @@ def flush_digest(force: bool = False) -> bool:
             import mail_guard; mail_guard.allow_direct(True)  # THE one daily email
         except Exception:
             pass
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        # An explicit timeout, because this call is made holding the buffer
+        # lock: without one, smtplib inherits the socket default (often none)
+        # and a hung SMTP connection would block every agent trying to enqueue
+        # an alert, for as long as the network stayed silent.
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=SMTP_TIMEOUT_S) as server:
             server.login(EMAIL_SENDER, GMAIL_PASSWORD)
             server.send_message(msg)
         try:
@@ -485,7 +652,7 @@ def flush_digest(force: bool = False) -> bool:
         # late. Stamping after would leave the window the other way round: a
         # cleared buffer with no stamp, so the next caller this evening sends a
         # second, empty-ish digest. That is the failure being fixed here.
-        _stamp_digest_sent(count)
+        _stamp_digest_sent(count, [i.get("subject", "") for i in buffer])
         _save_buffer([])
         return True
 

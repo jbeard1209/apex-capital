@@ -19963,6 +19963,555 @@ class TestNoWriterTruncatesBeforeItLocks(unittest.TestCase):
             + ", ".join(offenders))
 
 
+class TestTheAlertQueueSurvivesConcurrentProducers(unittest.TestCase):
+    """data/email_buffer.json is the ONLY channel that reaches Jack.
+
+    `_save_buffer` did `open(BUFFER_PATH, "w")` with no lock and no atomic
+    rename, and `buffer_email` was an unlocked load-append-save on top of it.
+    Measured before the fix: 200 concurrent enqueues left 7 survivors, and 68
+    of 300 reads on a 400-entry queue came back empty — whereupon the next
+    producer saved that empty list and the day's alerts were gone.
+
+    A lost alert here is worse than a lost issue-tracker row: the tracker keeps
+    the finding and merely delays it, while this drops the only copy of a
+    message on its way to a human.
+    """
+
+    def setUp(self):
+        import email_buffer as eb
+        self.eb = eb
+        self.td = tempfile.mkdtemp()
+        self.buf = os.path.join(self.td, "email_buffer.json")
+        self.stamp = os.path.join(self.td, ".digest_last_sent")
+        self.p = patch.multiple(eb, BUFFER_PATH=self.buf,
+                                DIGEST_STAMP_PATH=self.stamp)
+        self.p.start()
+        self.addCleanup(self.p.stop)
+        self.addCleanup(shutil.rmtree, self.td, True)
+
+    def test_concurrent_producers_do_not_drop_each_others_messages(self):
+        def worker(t):
+            for i in range(12):
+                self.eb.buffer_email(subject=f"m-{t}-{i}", html_body="x",
+                                     sender_name="probe")
+        threads = [threading.Thread(target=worker, args=(t,)) for t in range(4)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+        subjects = [e["subject"] for e in self.eb._load_buffer()]
+        self.assertEqual(len(subjects), 48,
+                         f"48 producers enqueued, {len(subjects)} survived")
+        self.assertEqual(len(set(subjects)), 48, "duplicate subjects written")
+
+    def test_a_reader_never_sees_a_half_written_queue(self):
+        rows = [{"subject": f"s{i}", "html_body": "y"} for i in range(300)]
+        self.eb._save_buffer(rows)
+        empties, stop = [], threading.Event()
+
+        def churn():
+            while not stop.is_set():
+                self.eb._save_buffer(rows)
+
+        w = threading.Thread(target=churn)
+        w.start()
+        try:
+            for _ in range(200):
+                if len(self.eb._load_buffer()) != 300:
+                    empties.append(1)
+        finally:
+            stop.set()
+            w.join()
+        self.assertEqual(empties, [], f"{len(empties)}/200 reads saw a torn queue")
+
+    def test_an_unreadable_queue_is_moved_aside_not_overwritten(self):
+        with open(self.buf, "w") as f:
+            f.write("{not json at all")
+        self.eb.buffer_email(subject="new", html_body="x")
+        saved = [p for p in os.listdir(self.td) if ".corrupt-" in p]
+        self.assertTrue(saved, "unreadable queue was overwritten, not quarantined")
+        with open(os.path.join(self.td, saved[0])) as f:
+            self.assertIn("not json", f.read())
+
+    def test_a_queue_that_is_not_a_list_is_not_silently_accepted(self):
+        with open(self.buf, "w") as f:
+            json.dump({"subject": "a dict, not a queue"}, f)
+        with self.assertRaises(self.eb.BufferUnreadable):
+            self.eb._load_buffer(strict=True)
+
+    def test_an_absent_queue_is_legitimately_empty(self):
+        self.assertFalse(os.path.exists(self.buf))
+        self.assertEqual(self.eb._load_buffer(strict=True), [])
+
+    # ── the receipt ──────────────────────────────────────────────────────────
+
+    def test_the_receipt_names_the_subjects_it_sent(self):
+        self.eb._stamp_digest_sent(2, ["alpha", "beta"])
+        with open(self.stamp) as f:
+            stamp = json.load(f)
+        self.assertEqual(stamp["subjects"], ["alpha", "beta"])
+
+    def test_a_message_in_the_manifest_reads_delivered(self):
+        self.eb._stamp_digest_sent(1, ["Kalshi verdict: premise DEAD"])
+        state, why = self.eb.delivery_state(
+            "2020-01-01T00:00:00", "Kalshi verdict: premise DEAD")
+        self.assertEqual(state, "delivered", why)
+
+    def test_a_message_dropped_before_the_send_reads_lost_not_delivered(self):
+        """The clock alone said 'delivered' for a message that was destroyed.
+
+        This is the whole reason the manifest exists: a receipt proving that
+        SOME digest went out after the enqueue is not a receipt proving THIS
+        message was in it.
+        """
+        self.eb._stamp_digest_sent(3, ["other-a", "other-b", "other-c"])
+        state, why = self.eb.delivery_state("2020-01-01T00:00:00", "vanished")
+        self.assertEqual(state, "lost", why)
+        self.assertIn("not among them", why)
+
+    def test_a_queued_message_reads_pending_even_with_a_later_receipt(self):
+        self.eb._save_buffer([{"subject": "waiting", "html_body": "x"}])
+        self.eb._stamp_digest_sent(1, ["something else"])
+        state, _ = self.eb.delivery_state("2020-01-01T00:00:00", "waiting")
+        self.assertEqual(state, "pending")
+
+    def test_a_receipt_older_than_the_enqueue_still_reads_lost(self):
+        self.eb._stamp_digest_sent(1, ["anything"])
+        state, _ = self.eb.delivery_state("2099-01-01T00:00:00", "anything")
+        self.assertEqual(state, "lost")
+
+    def test_a_legacy_receipt_without_a_manifest_admits_it_is_inferring(self):
+        """Upgrading must not mail Jack a backlog he already read.
+
+        A receipt written before the manifest existed cannot answer membership,
+        so it falls back to the clock — but it has to SAY it fell back, or the
+        caller is holding a weaker answer than it thinks it is.
+        """
+        with open(self.stamp, "w") as f:
+            json.dump({"date": "2026-08-23", "sent_at": "2026-08-23T22:00:00",
+                       "reports": 15}, f)
+        state, why = self.eb.delivery_state("2026-08-23T11:45:00", "anything")
+        self.assertEqual(state, "delivered")
+        self.assertIn("no subject manifest", why)
+
+    # ── the deadlock that would silence the firm ─────────────────────────────
+
+    def test_no_locked_function_calls_another(self):
+        """flock is per open file description, so nesting them self-deadlocks.
+
+        A deadlocked `flush_digest` is total email silence to Jack — the worst
+        failure this module has — and it would present as "the digest just
+        stopped arriving", with no error anywhere.
+        """
+        import email_buffer as eb
+        tree = ast.parse(Path(eb.__file__).read_text())
+        locked = {n.name for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef)
+                  and any(getattr(d, "id", None) == "_locked" for d in n.decorator_list)}
+        self.assertTrue(locked, "no @_locked functions found — did they get renamed?")
+        offenders = []
+        for n in ast.walk(tree):
+            if not (isinstance(n, ast.FunctionDef) and n.name in locked):
+                continue
+            for c in ast.walk(n):
+                if isinstance(c, ast.Call) and getattr(c.func, "id", None) in locked:
+                    offenders.append(f"{n.name} -> {c.func.id}")
+        self.assertEqual(offenders, [], f"nested lock acquisition: {offenders}")
+
+    def test_the_digest_does_not_enqueue_an_email_while_holding_the_lock(self):
+        """Anything flush_digest imports must not route back into buffer_email.
+
+        `mail_guard.send_email` DOES call buffer_email — flush_digest avoids it
+        by using smtplib directly under `allow_direct`. If a future edit sends
+        a status mail through the normal path from inside this function, the
+        digest deadlocks and Jack hears nothing at all.
+        """
+        import email_buffer as eb
+        tree = ast.parse(Path(eb.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "flush_digest")
+        called = {getattr(c.func, "id", None) or getattr(c.func, "attr", None)
+                  for c in ast.walk(fn) if isinstance(c, ast.Call)}
+        for forbidden in ("buffer_email", "send_email"):
+            self.assertNotIn(forbidden, called,
+                             f"flush_digest calls {forbidden} while holding the "
+                             f"buffer lock — this deadlocks the digest")
+
+    def test_the_buffer_is_never_truncated_in_place(self):
+        import email_buffer as eb
+        src = ast.parse(Path(eb.__file__).read_text())
+        fn = next(n for n in ast.walk(src)
+                  if isinstance(n, ast.FunctionDef) and n.name == "_save_buffer")
+        names = {getattr(c.func, "id", None) or getattr(c.func, "attr", None)
+                 for c in ast.walk(fn) if isinstance(c, ast.Call)}
+        self.assertIn("mkstemp", names, "_save_buffer must write to a private temp")
+        self.assertIn("replace", names, "_save_buffer must swap in atomically")
+        self.assertNotIn("open", names, "_save_buffer must not open the live path")
+
+
+class TestAtomicJsonIsActuallyAtomic(unittest.TestCase):
+    """The helper the whole firm now routes shared-file writes through.
+
+    Every assertion here corresponds to a way the hand-rolled version failed in
+    production, so a regression in `atomic_json` is a regression in six modules
+    at once.
+    """
+
+    def setUp(self):
+        import tempfile as _tf
+        self._dir = _tf.mkdtemp(prefix="aj-test-")
+        self.path = os.path.join(self._dir, "queue.json")
+
+    def tearDown(self):
+        import shutil
+        shutil.rmtree(self._dir, ignore_errors=True)
+
+    # ── the loss the lock exists to stop ─────────────────────────────────
+    def test_concurrent_appenders_do_not_overwrite_each_other(self):
+        """200 appends from 8 threads → 200 rows. Unlocked this loses ~95%."""
+        import atomic_json as aj
+        import threading
+
+        aj.write(self.path, [])
+
+        def append(worker):
+            for i in range(25):
+                with aj.update(self.path, default=[], expect=list) as rows:
+                    rows.append({"w": worker, "i": i})
+
+        threads = [threading.Thread(target=append, args=(w,)) for w in range(8)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        rows = aj.read(self.path, default=None, expect=list)
+        self.assertEqual(len(rows), 200,
+                         f"lost {200 - len(rows)} of 200 concurrent appends")
+        self.assertEqual(len({(r["w"], r["i"]) for r in rows}), 200,
+                         "rows were duplicated rather than merged")
+
+    def test_a_reader_never_observes_a_half_written_file(self):
+        """No reader sees [] or a truncated body while a writer is mid-dump."""
+        import atomic_json as aj
+        import threading
+
+        big = [{"n": n, "pad": "x" * 200} for n in range(400)]
+        aj.write(self.path, big)
+
+        empties, stop = [], threading.Event()
+
+        def reader():
+            while not stop.is_set():
+                got = aj.read(self.path, default=None, expect=list)
+                if not got or len(got) != 400:
+                    empties.append(got)
+
+        def writer():
+            for _ in range(60):
+                aj.write(self.path, big)
+
+        r = threading.Thread(target=reader)
+        r.start()
+        w = threading.Thread(target=writer)
+        w.start()
+        w.join()
+        stop.set()
+        r.join()
+
+        self.assertEqual(empties, [],
+                         f"{len(empties)} read(s) saw a torn or empty file")
+
+    # ── a degraded read must not look like a legitimate empty ────────────
+    def test_absent_and_unreadable_do_not_share_an_answer(self):
+        import atomic_json as aj
+
+        # absent → the default, because building on nothing is correct
+        self.assertEqual(aj.read(self.path, default=[], strict=True), [])
+
+        # present but garbage → NOT the default. The caller's next move after a
+        # read on the mutating path is a write.
+        with open(self.path, "w") as f:
+            f.write("{not json")
+        with self.assertRaises(aj.Unreadable):
+            aj.read(self.path, default=[], strict=True)
+
+    def test_a_file_of_the_wrong_shape_is_unreadable_not_empty(self):
+        import atomic_json as aj
+        aj.write(self.path, {"a": 1})
+        with self.assertRaises(aj.Unreadable):
+            aj.read(self.path, default=[], strict=True, expect=list)
+
+    def test_unreadable_bytes_are_quarantined_never_overwritten(self):
+        import atomic_json as aj
+        import glob
+
+        with open(self.path, "w") as f:
+            f.write("{truncated mid-dump")
+
+        got = aj.read_for_write(self.path, default=[], expect=list)
+        self.assertEqual(got, [])
+
+        saved = glob.glob(self.path + ".corrupt-*")
+        self.assertEqual(len(saved), 1,
+                         "the unparseable bytes must be archived, not deleted")
+        with open(saved[0]) as f:
+            self.assertEqual(f.read(), "{truncated mid-dump")
+
+    # ── failures are reported, not swallowed ─────────────────────────────
+    def test_a_failed_write_raises_and_leaves_no_debris(self):
+        """A caller that could not persist must not go on believing it did."""
+        import atomic_json as aj
+
+        aj.write(self.path, [{"keep": "me"}])
+        circular = {}
+        circular["self"] = circular          # json.dump raises on this
+
+        with self.assertRaises(ValueError):
+            aj.write(self.path, circular)
+
+        self.assertEqual(aj.read(self.path, default=None),
+                         [{"keep": "me"}],
+                         "a failed write must not damage the live file")
+        leftovers = [n for n in os.listdir(self._dir) if n.endswith(".tmp")]
+        self.assertEqual(leftovers, [], f"temp files left behind: {leftovers}")
+
+    def test_a_raising_body_does_not_write(self):
+        import atomic_json as aj
+        aj.write(self.path, [1, 2, 3])
+        with self.assertRaises(RuntimeError):
+            with aj.update(self.path, default=[], expect=list) as rows:
+                rows.append(4)
+                raise RuntimeError("the caller changed its mind")
+        self.assertEqual(aj.read(self.path, default=None), [1, 2, 3])
+
+    # ── the two structural properties, checked in the source ─────────────
+    def test_the_temp_name_is_private_to_this_writer(self):
+        """`path + '.tmp'` is a name every concurrent writer shares."""
+        import atomic_json as aj
+        fn = next(n for n in ast.walk(ast.parse(Path(aj.__file__).read_text()))
+                  if isinstance(n, ast.FunctionDef) and n.name == "write")
+        calls = {getattr(c.func, "id", None) or getattr(c.func, "attr", None)
+                 for c in ast.walk(fn) if isinstance(c, ast.Call)}
+        self.assertIn("mkstemp", calls)
+        self.assertIn("fsync", calls)
+        self.assertIn("replace", calls)
+        for node in ast.walk(fn):
+            if isinstance(node, ast.Constant) and node.value == ".tmp":
+                parent_is_concat = any(
+                    isinstance(b, ast.BinOp) and isinstance(b.op, ast.Add)
+                    and node in ast.walk(b) for b in ast.walk(fn))
+                self.assertFalse(parent_is_concat,
+                                 "'.tmp' must be a mkstemp suffix, never "
+                                 "concatenated onto the live path")
+
+    def test_the_lock_lives_beside_the_file_not_inside_it(self):
+        """write() renames over the path, so a lock held on it follows a dead
+        inode and the next writer locks a different file entirely."""
+        import atomic_json as aj
+        fn = next(n for n in ast.walk(ast.parse(Path(aj.__file__).read_text()))
+                  if isinstance(n, ast.FunctionDef) and n.name == "locked")
+        suffixes = [n.value for n in ast.walk(fn)
+                    if isinstance(n, ast.Constant) and n.value == ".lock"]
+        self.assertTrue(suffixes, "locked() must use a sidecar <path>.lock")
+
+        import glob
+        with aj.locked(self.path):
+            pass
+        self.assertTrue(glob.glob(self.path + ".lock"))
+
+
+class TestNoSharedJsonFileIsWrittenUnsafely(unittest.TestCase):
+    """The invariant the whole atomic_json exercise bought.
+
+    Measured the wrong way first: counting modules that *mention* a filename and
+    dump json *somewhere* reported 50 shared files, top hit 15 writers. Tying the
+    filename to the actual write site gives 3. A 17x overstatement — so this test
+    resolves the write site, and a fix that only looked right against the loose
+    count would not pass it.
+    """
+
+    #: A path here is written raw by more than one module. The correct size of
+    #: this list is zero: route the writes through `atomic_json.update()` (or a
+    #: single-source-of-truth module like chairman_queue) rather than adding an
+    #: entry.
+    ALLOWED_MULTI_WRITER = frozenset()
+
+    @staticmethod
+    def _write_sites(root):
+        """(raw, guarded, idioms) — every truncating write, by resolved filename.
+
+        FOUR idioms, because the first version of this sweep only understood
+        `with open(p, "w")` and so could not see:
+          * 21 modules using a bare `open(p, "w")` outside a with-statement,
+          * `Path.write_text(json.dumps(...))`, which truncates identically,
+          * module-local `_save_json(path, data)` helpers, where the filename is
+            at the CALL site and the truncation is inside the helper.
+        Each blind spot is a place a second writer could hide while the sweep
+        reported zero (memory `auditor_ground_truth`).
+        """
+        import re as _re
+        from collections import defaultdict, Counter
+        NAME = _re.compile(r"([A-Za-z0-9_.\-]+\.json)")
+
+        def names_in(node, consts):
+            out = []
+            for n in ast.walk(node):
+                if isinstance(n, ast.Constant) and isinstance(n.value, str):
+                    out += NAME.findall(n.value)
+                elif isinstance(n, ast.Name) and n.id in consts:
+                    out += NAME.findall(consts[n.id])
+                elif isinstance(n, ast.Attribute):
+                    out += NAME.findall(consts.get(n.attr, ""))
+            return out
+
+        def raw_target(n):
+            """The path expression a truncating write targets, or None."""
+            if not isinstance(n, ast.Call):
+                return None
+            if getattr(n.func, "id", None) == "open" and len(n.args) > 1:
+                mode = getattr(n.args[1], "value", "")
+                if isinstance(mode, str) and mode.startswith("w"):
+                    return n.args[0]
+            if getattr(n.func, "attr", None) == "write_text":
+                return getattr(n.func, "value", None)
+            return None
+
+        raw, guarded = defaultdict(set), defaultdict(set)
+        idioms = Counter()
+        for f in sorted(Path(root).rglob("*.py")):
+            s = str(f)
+            if "__pycache__" in s or "/venv" in s or f.name.startswith("_"):
+                continue
+            if f.name in ("test_pipeline_smoke.py", "wiring_audit.py"):
+                continue
+            try:
+                tree = ast.parse(f.read_text())
+            except (SyntaxError, UnicodeDecodeError, OSError):
+                continue
+            consts = {}
+            for n in tree.body:
+                if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Constant)
+                        and isinstance(n.value.value, str)):
+                    for t in n.targets:
+                        if isinstance(t, ast.Name):
+                            consts[t.id] = n.value.value
+
+            in_with = {id(i.context_expr) for w in ast.walk(tree)
+                       if isinstance(w, ast.With) for i in w.items}
+
+            # Helpers that truncate whatever path they are handed.
+            helpers = set()
+            for fn in ast.walk(tree):
+                if not (isinstance(fn, ast.FunctionDef) and fn.args.args):
+                    continue
+                first = fn.args.args[0].arg
+                for n in ast.walk(fn):
+                    t = raw_target(n)
+                    if isinstance(t, ast.Name) and t.id == first:
+                        helpers.add(fn.name)
+
+            for n in ast.walk(tree):
+                t = raw_target(n)
+                if t is not None:
+                    idioms["write_text" if getattr(n.func, "attr", None) == "write_text"
+                           else ("with_open" if id(n) in in_with else "bare_open")] += 1
+                    for p in set(names_in(t, consts)):
+                        raw[p].add(f.name)
+                elif (isinstance(n, ast.Call)
+                      and getattr(n.func, "id", None) in helpers and n.args):
+                    idioms["helper"] += 1
+                    for p in set(names_in(n.args[0], consts)):
+                        raw[p].add(f.name)
+                elif (isinstance(n, ast.Call)
+                      and getattr(getattr(n.func, "value", None), "id", None)
+                      in ("aj", "atomic_json")
+                      and getattr(n.func, "attr", None) in ("update", "write", "locked")
+                      and n.args):
+                    for p in set(names_in(n.args[0], consts)):
+                        guarded[p].add(f.name)
+        return raw, guarded, idioms
+
+    def test_no_json_path_has_two_raw_writers(self):
+        raw, _, _ = self._write_sites(Path(__file__).resolve().parent)
+        shared = {p: mods for p, mods in raw.items()
+                  if len(mods) > 1 and p not in self.ALLOWED_MULTI_WRITER}
+        self.assertEqual(
+            {}, shared,
+            "these JSON files are written by more than one module with an "
+            "unlocked, non-atomic truncating write — the shape that lost 193 of "
+            "200 concurrent messages from the email buffer:\n" +
+            "\n".join(f"  {p}: {', '.join(sorted(m))}"
+                      for p, m in sorted(shared.items())))
+
+    def test_no_guarded_path_is_also_written_raw(self):
+        """A lock only some writers take is not a lock.
+
+        This is the failure the plain multi-writer count cannot see: one module
+        does the careful locked read-modify-write, another truncates the same
+        file underneath it, and every count in the sweep reads 1.
+        """
+        raw, guarded, _ = self._write_sites(Path(__file__).resolve().parent)
+        mixed = {p: (sorted(guarded[p]), sorted(raw[p]))
+                 for p in guarded if raw.get(p)}
+        self.assertEqual(
+            {}, mixed,
+            "these paths are guarded by atomic_json in one module and truncated "
+            "raw in another — the lock protects nothing:\n" +
+            "\n".join(f"  {p}: guarded by {g}, raw in {r}"
+                      for p, (g, r) in sorted(mixed.items())))
+
+    def test_the_sweep_can_still_see_every_write_idiom(self):
+        """A guard that silently stops resolving write sites passes forever."""
+        raw, guarded, idioms = self._write_sites(Path(__file__).resolve().parent)
+        self.assertGreater(
+            len(raw), 40,
+            f"the AST sweep resolved only {len(raw)} write sites — it has gone "
+            f"blind, so its zero-shared-writers verdict means nothing")
+        self.assertTrue(guarded, "the sweep no longer recognises atomic_json")
+        for idiom in ("with_open", "bare_open", "write_text"):
+            self.assertGreater(
+                idioms[idiom], 0,
+                f"the sweep resolved zero `{idiom}` writes. Either the firm has "
+                f"none left (delete this assertion) or the matcher for it broke "
+                f"— and a second writer using it would now be invisible. "
+                f"Counts: {dict(idioms)}")
+
+    def test_no_locked_region_nests_another(self):
+        """flock is per open file description, so a nested update self-deadlocks."""
+        import atomic_json as aj
+        root = Path(__file__).resolve().parent
+        offenders = []
+
+        def is_aj_ctx(node):
+            return (isinstance(node, ast.Call)
+                    and getattr(node.func, "attr", None) in ("update", "locked")
+                    and getattr(getattr(node.func, "value", None), "id", None)
+                    in ("aj", "atomic_json"))
+
+        for f in sorted(root.rglob("*.py")):
+            if "__pycache__" in str(f) or f.name == "test_pipeline_smoke.py":
+                continue
+            try:
+                tree = ast.parse(f.read_text())
+            except (SyntaxError, UnicodeDecodeError, OSError):
+                continue
+            for outer in ast.walk(tree):
+                if not (isinstance(outer, ast.With)
+                        and any(is_aj_ctx(i.context_expr) for i in outer.items)):
+                    continue
+                for stmt in outer.body:
+                    for inner in ast.walk(stmt):
+                        if isinstance(inner, ast.With) and any(
+                                is_aj_ctx(i.context_expr) for i in inner.items):
+                            offenders.append(f"{f.name}:{inner.lineno}")
+        self.assertEqual([], offenders,
+                         f"nested atomic_json context(s) — each one blocks "
+                         f"forever on the lock its own caller holds: {offenders}")
+        self.assertIn("NOT REENTRANT", Path(aj.__file__).read_text(),
+                      "the non-reentrancy must stay documented at the source")
+
+
 class TestHygieneRefusesAnOverBroadMatcher(unittest.TestCase):
     """Closing is the expensive direction, so R1's blunt matcher gets a cap.
 
