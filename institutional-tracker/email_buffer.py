@@ -251,6 +251,71 @@ def buffer_email(subject: str, html_body: str, sender_name: str = "",
     return True  # successfully buffered
 
 
+def delivery_state(buffered_at, subject: str = "") -> tuple:
+    """(state, why) for something handed to buffer_email — did it ARRIVE?
+
+    'delivered' | 'pending' | 'lost' | 'unknown'
+
+    buffer_email() returning True means ENQUEUED, not sent. Every caller that
+    stamps "I notified Jack" on that return is asserting a delivery it has no
+    evidence for: if the digest then fails, dedupes, or the buffer is dropped,
+    the caller's own state file says the message went out and it stays quiet.
+    `kalshi_calibration.email_verdict` did exactly that — the verdict is
+    buffered at 11:45 UTC and delivered by the 22:00 digest ten hours later,
+    and the state file was stamped at 11:45. One failed digest would have
+    silenced the sector for VERDICT_HEARTBEAT_DAYS with the state file
+    insisting Jack had been told.
+
+    This answers it from the two records that actually know, so no caller has
+    to guess:
+      * the buffer itself — still queued means pending, not lost;
+      * data/.digest_last_sent, whose `sent_at` is written ONLY after the SMTP
+        send returns (see flush_digest), so it is a receipt, not an intent.
+
+    'unknown' is for a caller with no recorded enqueue time (state written
+    before this existed). It is deliberately NOT 'lost': upgrading the code
+    must not mail Jack a backlog of verdicts he already read.
+    """
+    if not buffered_at:
+        return "unknown", "no enqueue time recorded"
+    try:
+        when = datetime.fromisoformat(str(buffered_at).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return "unknown", f"unparseable enqueue time {buffered_at!r}"
+
+    if subject:
+        for e in _load_buffer():
+            if e.get("subject") == subject:
+                return "pending", "still queued for the next digest"
+
+    try:
+        with open(DIGEST_STAMP_PATH) as f:
+            stamp = json.load(f)
+        sent_at = datetime.fromisoformat(str(stamp.get("sent_at")))
+    except (OSError, ValueError, TypeError, AttributeError):
+        # No receipt on this host is NOT evidence of loss, and resolving it to
+        # 'lost' would make every caller re-send on every run of any host that
+        # has never flushed a digest — the Mac, for one. It also cannot hide a
+        # real loss: flush_digest stamps BEFORE it clears the buffer, so a
+        # message that vanished from the buffer with no stamp anywhere is a
+        # failed stamp write, not an undelivered email. Absence of evidence
+        # gets its own answer ([[verdict-with-no-consequence]]).
+        return "unknown", "no digest receipt on this host — cannot tell"
+
+    # Compare like with like: the buffer writes naive local time, the stamp
+    # writes naive local time, but a caller may hand us an aware timestamp.
+    if (when.tzinfo is None) != (sent_at.tzinfo is None):
+        when = when.replace(tzinfo=None)
+        sent_at = sent_at.replace(tzinfo=None)
+
+    if sent_at >= when:
+        return "delivered", f"digest sent {stamp.get('sent_at')} " \
+                            f"({stamp.get('reports')} reports)"
+    return "lost", (f"queued {buffered_at} but the newest digest receipt is "
+                    f"{stamp.get('sent_at')} — it left the buffer without "
+                    f"being sent")
+
+
 def flush_digest(force: bool = False) -> bool:
     """
     Compile all buffered emails into one daily digest and send it.

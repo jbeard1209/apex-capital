@@ -894,8 +894,11 @@ def email_verdict(rows=None, force=False):
         prior_text = VERDICT_STATE.read_text()
         st = json.loads(prior_text)
         prior, last_at = st.get("signature"), st.get("at")
+        prior_subject = st.get("subject", "")
+        prior_buffered = st.get("buffered_at")
     except (OSError, ValueError, AttributeError):
         prior_text, prior, last_at = None, None, None
+        prior_subject, prior_buffered = "", None
 
     stale = True
     if last_at:
@@ -905,11 +908,35 @@ def email_verdict(rows=None, force=False):
         except (TypeError, ValueError):
             stale = True
 
+    subject = (f"Kalshi verdict: premise {premise}, edge "
+               f"{'PROVEN' if proven else 'not proven'} "
+               f"(n={detail.get('settled', 0)} settled)")
+
     if not force and signature == prior and not stale:
-        return False, f"unchanged ({signature}) and last sent {last_at}"
+        # "I buffered it" is not "Jack read it". The verdict is enqueued at
+        # 11:45 UTC and carried by the 22:00 digest ten hours later; stamping
+        # this file at enqueue time asserted a delivery nothing had confirmed,
+        # so one failed digest would have silenced the sector for a week while
+        # the state file said it had reported. Ask the receipt instead.
+        try:
+            from email_buffer import delivery_state
+            state, why_delivery = delivery_state(prior_buffered, prior_subject)
+        except Exception:                        # noqa: BLE001
+            state, why_delivery = "unknown", "delivery state unavailable"
+        if state != "lost":
+            return False, (f"unchanged ({signature}), last queued {last_at} "
+                           f"[{state}: {why_delivery}]")
+        logger.warning(f"kalshi verdict was never delivered ({why_delivery}) "
+                       f"— re-queueing rather than staying silent")
 
     try:
-        VERDICT_STATE.write_text(json.dumps({"signature": signature, "at": _now()}))
+        VERDICT_STATE.write_text(json.dumps({
+            "signature": signature, "at": _now(),
+            # What was enqueued, and when — the two facts delivery_state needs
+            # to tell "still in tonight's digest" from "dropped on the floor".
+            "subject": subject, "buffered_at": datetime.now().isoformat(),
+            "delivery": "buffered",
+        }))
     except OSError:
         pass
 
@@ -952,9 +979,6 @@ def email_verdict(rows=None, force=False):
         f"data/.kalshi_armed exists, and only the Chairman creates that file. "
         f"This email is a measurement, not a recommendation.</p>")
 
-    subject = (f"Kalshi verdict: premise {premise}, edge "
-               f"{'PROVEN' if proven else 'not proven'} "
-               f"(n={detail.get('settled', 0)} settled)")
     try:
         from email_buffer import buffer_email
         # False means "urgent — I did not buffer it, you send it". This caller
@@ -982,7 +1006,9 @@ def email_verdict(rows=None, force=False):
             logger.error("kalshi verdict classified URGENT — not buffered and "
                          "this caller cannot transmit. NOT SENT.")
             return False, "classified urgent; no direct sender here"
-        return True, f"sent ({signature})"
+        # "queued", not "sent": buffer_email enqueues. Saying sent here is how
+        # a log line comes to assert a delivery nobody witnessed.
+        return True, f"queued for the daily digest ({signature})"
     except Exception as e:                       # noqa: BLE001
         logger.warning(f"kalshi verdict email failed: {e}")
         return False, f"buffer failed: {e}"

@@ -19252,6 +19252,152 @@ class TestRecoveryDerivesItsScheduleFromTheCrontab(unittest.TestCase):
                          "failure, or the last bad report outlives the bug")
 
 
+class TestBufferedIsNotDelivered(unittest.TestCase):
+    """Enqueueing is not delivery, and a state file must not say it is.
+
+    2026-08-23: Jack said he wasn't sure he'd received the Kalshi email. He
+    hadn't — it was entry 11 of 21 in data/email_buffer.json, correctly
+    classified non-urgent and waiting for the 22:00 UTC digest. Nothing was
+    broken. But `email_verdict` stamps data/kalshi_verdict_notified.json at
+    11:45, the moment `buffer_email` returns True, ten hours before the digest
+    carries it — and its log line said "sent".
+
+    So a single failed digest would have produced: no email, a state file
+    asserting Jack had been told, and silence for VERDICT_HEARTBEAT_DAYS. The
+    firm's oldest failure shape — an absence of output read as an absence of a
+    problem — with a receipt on it.
+
+    `email_buffer.delivery_state` answers from the two records that know: the
+    buffer (still queued = pending) and .digest_last_sent, whose `sent_at` is
+    written only after SMTP returns.
+    """
+
+    def _env(self, td, buffer_rows=None, stamp=None):
+        import email_buffer as eb
+        data = Path(td) / "data"
+        data.mkdir(parents=True, exist_ok=True)
+        (data / "email_buffer.json").write_text(json.dumps(buffer_rows or []))
+        if stamp is not None:
+            (data / ".digest_last_sent").write_text(json.dumps(stamp))
+        return patch.multiple(eb,
+                              BUFFER_PATH=str(data / "email_buffer.json"),
+                              DIGEST_STAMP_PATH=str(data / ".digest_last_sent"))
+
+    def test_a_digest_sent_before_the_enqueue_is_not_delivery(self):
+        """The bug, stated directly: an older receipt proves nothing."""
+        import email_buffer as eb
+        queued = datetime.now()
+        stamp = {"date": "x", "sent_at": (queued - timedelta(hours=3)).isoformat(),
+                 "reports": 9}
+        with tempfile.TemporaryDirectory() as td:
+            with self._env(td, [], stamp):
+                state, why = eb.delivery_state(queued.isoformat(), "V")
+        self.assertEqual(state, "lost", why)
+
+    def test_a_digest_sent_after_the_enqueue_is_delivery(self):
+        import email_buffer as eb
+        queued = datetime.now() - timedelta(hours=10)
+        stamp = {"date": "x", "sent_at": datetime.now().isoformat(), "reports": 21}
+        with tempfile.TemporaryDirectory() as td:
+            with self._env(td, [], stamp):
+                state, why = eb.delivery_state(queued.isoformat(), "V")
+        self.assertEqual(state, "delivered", why)
+
+    def test_a_message_still_in_the_buffer_is_pending_not_lost(self):
+        """Today's normal case. Calling it lost would double-send every day."""
+        import email_buffer as eb
+        queued = datetime.now()
+        stamp = {"date": "x", "sent_at": (queued - timedelta(hours=3)).isoformat(),
+                 "reports": 9}
+        rows = [{"subject": "Kalshi verdict: premise DEAD",
+                 "buffered_at": queued.isoformat()}]
+        with tempfile.TemporaryDirectory() as td:
+            with self._env(td, rows, stamp):
+                state, why = eb.delivery_state(queued.isoformat(),
+                                               "Kalshi verdict: premise DEAD")
+        self.assertEqual(state, "pending", why)
+
+    def test_no_digest_receipt_at_all_is_unknown_not_lost(self):
+        """Absence of evidence is not evidence of loss.
+
+        Calling this 'lost' made every caller re-send on every run of any host
+        that has never flushed a digest — the Mac has no .digest_last_sent at
+        all — and it broke the pre-existing heartbeat test, correctly. It also
+        cannot mask a real loss: flush_digest stamps BEFORE clearing the
+        buffer, so gone-from-the-buffer with no stamp anywhere is a failed
+        stamp write, not an undelivered email.
+        """
+        import email_buffer as eb
+        with tempfile.TemporaryDirectory() as td:
+            with self._env(td, [], None):
+                state, why = eb.delivery_state(datetime.now().isoformat(), "V")
+        self.assertEqual(state, "unknown", why)
+
+    def test_only_a_receipt_older_than_the_enqueue_means_lost(self):
+        """'lost' requires positive evidence: a digest ran and skipped it."""
+        import email_buffer as eb
+        queued = datetime.now()
+        with tempfile.TemporaryDirectory() as td:
+            with self._env(td, [], {"date": "x", "reports": 3,
+                                    "sent_at": (queued - timedelta(minutes=1)).isoformat()}):
+                self.assertEqual(eb.delivery_state(queued.isoformat(), "V")[0],
+                                 "lost")
+            with self._env(td, [], {"date": "x", "reports": 3,
+                                    "sent_at": (queued + timedelta(minutes=1)).isoformat()}):
+                self.assertEqual(eb.delivery_state(queued.isoformat(), "V")[0],
+                                 "delivered")
+
+    def test_no_recorded_enqueue_time_is_unknown_not_lost(self):
+        """Upgrade safety: old state files must not mail Jack a backlog."""
+        import email_buffer as eb
+        self.assertEqual(eb.delivery_state(None)[0], "unknown")
+        self.assertEqual(eb.delivery_state("")[0], "unknown")
+        self.assertEqual(eb.delivery_state("not-a-date")[0], "unknown")
+
+    def test_an_aware_timestamp_does_not_crash_against_a_naive_receipt(self):
+        """The verdict writes UTC-aware; the buffer writes naive local."""
+        import email_buffer as eb
+        stamp = {"date": "x", "sent_at": datetime.now().isoformat(), "reports": 1}
+        aware = (datetime.now(timezone.utc) - timedelta(hours=10)).isoformat()
+        with tempfile.TemporaryDirectory() as td:
+            with self._env(td, [], stamp):
+                state, why = eb.delivery_state(aware, "V")
+        self.assertIn(state, ("delivered", "lost"), why)   # must not raise
+
+    def test_the_verdict_state_records_what_it_enqueued(self):
+        """Without subject + buffered_at, delivery_state cannot be asked."""
+        import kalshi_calibration as kcal
+        src = Path(kcal.__file__).read_text()
+        block = src.split("def email_verdict", 1)[1].split("\n    curve =", 1)[0]
+        for field in ('"subject"', '"buffered_at"'):
+            self.assertIn(field, block,
+                          f"email_verdict must persist {field} for the "
+                          f"delivery check to have anything to check")
+
+    def test_a_lost_verdict_is_requeued_rather_than_deduped(self):
+        """The payoff: an undelivered verdict must not dedupe itself away."""
+        import kalshi_calibration as kcal
+        src = Path(kcal.__file__).read_text()
+        block = src.split("def email_verdict", 1)[1].split("\n    curve =", 1)[0]
+        self.assertIn("delivery_state", block,
+                      "the dedupe branch must consult the delivery receipt")
+        self.assertIn('"lost"', block,
+                      "a lost verdict must fall through to a re-queue")
+
+    def test_the_return_string_does_not_claim_it_was_sent(self):
+        """buffer_email enqueues. A caller saying 'sent' is how a log lies."""
+        import kalshi_calibration as kcal
+        src = Path(kcal.__file__).read_text()
+        block = src.split("def email_verdict", 1)[1].split("\ndef ", 1)[0]
+        self.assertNotIn('return True, f"sent (', block,
+                         "say queued, not sent — nothing here witnessed a send")
+
+    def test_delivery_state_is_reachable_from_the_module_that_owns_the_receipt(self):
+        """It lives with the buffer, so any caller can ask without guessing."""
+        import email_buffer as eb
+        self.assertTrue(callable(getattr(eb, "delivery_state", None)))
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
