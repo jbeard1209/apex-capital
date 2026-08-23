@@ -1349,10 +1349,20 @@ def _route_approved_cit_proposals(approved: list) -> None:
         # ── Detect persistent issues ──────────────────────────────────────
         # Verified-closed policy: titles matched by the resolution registry are
         # FIXED — do not resurrect them as "unresolved after N approvals".
+        # This read was relative-path'd AND the file had never existed, so
+        # `_fixed` was pinned to False and the gate had never once fired: a
+        # proposal that WAS fixed still came back as "unresolved after N
+        # approvals". Registry entries now carry an exact `signature` as well as
+        # the legacy substring `match`, and both are checked.
         try:
-            import json as _rj
-            _reg = _rj.load(open("data/resolution_registry.json"))
-            _fixed = any(r.get("match","").lower() in title.lower() and r.get("match") for r in _reg)
+            from issue_tracker import load_resolution_registry, condition_signature
+            _reg   = load_resolution_registry()
+            _psig  = condition_signature(title)
+            _fixed = any(
+                (r.get("signature") and str(r["signature"]).strip().lower() == _psig)
+                or (r.get("match") and str(r["match"]).lower() in title.lower())
+                for r in _reg
+            )
         except Exception:
             _fixed = False
         if count >= 2 and not _fixed:   # approved 3+ times (this is the 3rd+)

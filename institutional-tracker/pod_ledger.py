@@ -15,8 +15,9 @@ money it does not have. The Manager Agent checks this before every order.
 """
 
 import json
-import fcntl
 import logging
+import os
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -47,18 +48,20 @@ def _load() -> dict:
 
 
 def _save(data: dict) -> None:
-    """Write pod_allocations.json atomically using a temp file + rename.
-    Uses fcntl.flock to prevent concurrent writes.
-    """
-    tmp_path = _ALLOCATIONS_PATH.with_suffix(".json.tmp")
-    with open(tmp_path, "w") as fh:
-        fcntl.flock(fh, fcntl.LOCK_EX)
-        try:
-            json.dump(data, fh, indent=2)
-            fh.flush()
-        finally:
-            fcntl.flock(fh, fcntl.LOCK_UN)
-    tmp_path.replace(_ALLOCATIONS_PATH)
+    """Write pod_allocations.json atomically using a temp file + rename."""
+    # A FIXED ".json.tmp" path is shared by every concurrent writer, and
+    # open(tmp, "w") truncates BEFORE flock() is acquired — so a second writer
+    # empties the first writer's temp file mid-dump, and the first writer then
+    # renames the torn result over the live file. The lock cannot help: the
+    # damage is done at open(). mkstemp gives each writer its own name, which
+    # makes the lock unnecessary — os.replace is already atomic.
+    fd, tmp = tempfile.mkstemp(dir=str(Path(_ALLOCATIONS_PATH).parent),
+                               prefix=".pod_ledger.", suffix=".tmp")
+    with os.fdopen(fd, "w") as fh:
+        json.dump(data, fh, indent=2)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, _ALLOCATIONS_PATH)
 
 
 def _now_iso() -> str:

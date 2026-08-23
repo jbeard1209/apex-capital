@@ -53,6 +53,13 @@ institutional-tracker/data/backups/
 institutional-tracker/data/.*.lock
 institutional-tracker/data/.*_running
 institutional-tracker/data/.catch_up_running
+# issue_tracker's atomic-write scaffolding. The lock file is <tracker>.lock
+# (no leading dot), so the `data/.*.lock` rule above does not cover it, and
+# `*.corrupt-*` is a quarantined tracker — evidence, kept on the host that
+# produced it, never committed or rsynced to the other host.
+institutional-tracker/data/*.json.lock
+institutional-tracker/data/*.corrupt-*
+institutional-tracker/data/.*.tmp
 
 # This host's stable identity (order_ledger._host_tag). Per-host BY DEFINITION —
 # committing or rsyncing it would give every host the same tag, every order the

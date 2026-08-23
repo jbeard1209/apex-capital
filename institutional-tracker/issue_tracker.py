@@ -20,6 +20,9 @@ import json
 import logging
 import os
 import re
+import tempfile
+from contextlib import contextmanager
+from functools import wraps
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -114,38 +117,141 @@ def condition_signature(title: str) -> str:
 # FILE I/O WITH LOCKING
 # =============================================================================
 
-def _load() -> list:
-    """Load all issues from disk. Returns list."""
+class TrackerUnreadable(Exception):
+    """The tracker file exists but could not be parsed.
+
+    Raised only on the mutating paths. A reader may degrade to "no issues"; a
+    writer may not, because the next thing a writer does is save.
+    """
+
+
+def _dirname() -> str:
+    # NOT the literal "data": TRACKER_PATH is patched to a tmpdir in tests, and
+    # os.makedirs("data") would then create a stray directory in the cwd while
+    # the real write went somewhere else entirely.
+    return os.path.dirname(TRACKER_PATH) or "."
+
+
+@contextmanager
+def _exclusive():
+    """Hold ONE exclusive lock for an entire read-modify-write.
+
+    Every mutation here is load → mutate → save, and the old code locked the
+    load and the save separately. A lock that does not span the modify grants
+    no mutual exclusion at all: two agents both read 2000 rows, both append
+    their own row, and the second save silently discards the first agent's.
+    main.py runs 6x/day alongside cit_watchdog, tracker_hygiene and pod_health,
+    so this raced constantly.
+
+    The lock lives in its own file. It cannot live in the tracker itself,
+    because acquiring it would mean opening the tracker — and the write path
+    opens it with "w", which truncates.
+    """
+    os.makedirs(_dirname(), exist_ok=True)
+    f = open(TRACKER_PATH + ".lock", "a+")
+    try:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        yield
+    finally:
+        try:
+            fcntl.flock(f, fcntl.LOCK_UN)
+        finally:
+            f.close()
+
+
+def _locked(fn):
+    """Serialise a whole load-mutate-save against every other writer.
+
+    Applied as a decorator rather than by indenting six function bodies, so the
+    change is one line per call site and nothing else moves. flock is per open
+    file description, so a decorated function calling another decorated
+    function WOULD self-deadlock — there are none today, and a smoke test pins
+    that (test_no_locked_function_calls_another).
+    """
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        with _exclusive():
+            return fn(*args, **kwargs)
+    return wrapper
+
+
+def _load(strict: bool = False) -> list:
+    """Load all issues from disk.
+
+    `strict=True` on the mutating paths. The old version returned [] for BOTH
+    "there are no issues" and "I could not read the file", and the caller could
+    not tell the difference — it appended one row to that [] and saved, which
+    erased the tracker. Row counts in git are not monotonic (2414 → 1303 →
+    2266 → 3886) and no row older than 2026-08-06 survives, which is what that
+    looks like from the outside. The trigger was the write path below, which
+    truncated the file BEFORE taking its exclusive lock: a concurrent reader
+    got an empty or half-written file, json.load raised, and the except handler
+    turned a failed read into a confident "the tracker is empty". Measured on a
+    2000-row file: 14 of 300 concurrent reads came back empty.
+    """
     if not os.path.exists(TRACKER_PATH):
-        return []
+        return []                     # genuinely empty — safe to build on
     try:
         with open(TRACKER_PATH, "r") as f:
-            fcntl.flock(f, fcntl.LOCK_SH)
-            try:
-                # Lock must be released in finally so json.load exceptions never leave it held.
-                data = json.load(f)
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
-        return data if isinstance(data, list) else []
+            data = json.load(f)
+        if not isinstance(data, list):
+            raise ValueError(f"tracker is {type(data).__name__}, expected list")
+        return data
     except Exception as e:
+        if strict:
+            raise TrackerUnreadable(f"{TRACKER_PATH}: {e}") from e
         logger.warning(f"[IssueTracker] Load error: {e}")
         return []
 
 
-def _save(issues: list) -> bool:
-    """Save issues list to disk with exclusive lock."""
-    os.makedirs("data", exist_ok=True)
+def _load_for_write() -> list:
+    """Load on a mutating path, never silently substituting [] for a bad read.
+
+    If the file is present but unparseable the bytes are moved aside with a
+    timestamp instead of being overwritten by the save that follows. Losing the
+    tracker is the outcome this whole change exists to prevent, and a file
+    nobody can parse is still evidence. Archive, never delete.
+    """
     try:
-        with open(TRACKER_PATH, "w") as f:
-            fcntl.flock(f, fcntl.LOCK_EX)
-            try:
-                # Lock must be released in finally so json.dump exceptions never leave it held.
-                json.dump(issues, f, indent=2, default=str)
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)
+        return _load(strict=True)
+    except TrackerUnreadable as e:
+        quarantine = f"{TRACKER_PATH}.corrupt-{datetime.now():%Y%m%dT%H%M%S}"
+        try:
+            os.replace(TRACKER_PATH, quarantine)
+            logger.error(f"[IssueTracker] UNREADABLE tracker quarantined to "
+                         f"{quarantine} — starting a new file. {e}")
+        except Exception as move_err:                  # noqa: BLE001
+            logger.error(f"[IssueTracker] UNREADABLE tracker and it could not be "
+                         f"moved aside ({move_err}) — REFUSING to write. {e}")
+            raise
+        return []
+
+
+def _save(issues: list) -> bool:
+    """Write the tracker atomically. The live file is never truncated in place.
+
+    os.replace() is atomic within a filesystem, so a reader either sees the
+    whole old file or the whole new one — never the empty window that the
+    previous open(path, "w") opened up on every single save.
+    """
+    os.makedirs(_dirname(), exist_ok=True)
+    tmp = None
+    try:
+        fd, tmp = tempfile.mkstemp(dir=_dirname(), prefix=".issue_tracker.",
+                                   suffix=".tmp")
+        with os.fdopen(fd, "w") as f:
+            json.dump(issues, f, indent=2, default=str)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, TRACKER_PATH)
         return True
     except Exception as e:
         logger.warning(f"[IssueTracker] Save error: {e}")
+        if tmp and os.path.exists(tmp):
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
         return False
 
 
@@ -187,6 +293,7 @@ def _next_id(issues: list) -> str:
 # PUBLIC API
 # =============================================================================
 
+@_locked
 def log_issue(
     reporter: str,
     title: str,
@@ -211,7 +318,7 @@ def log_issue(
     if category not in VALID_CATEGORIES:
         category = "PIPELINE"
 
-    issues = _load()
+    issues = _load_for_write()
     sig = signature or condition_signature(title)
     now = datetime.now().isoformat()
 
@@ -272,6 +379,7 @@ def log_issue(
     return issue_id
 
 
+@_locked
 def update_issue(
     issue_id: str,
     status: str,
@@ -288,7 +396,7 @@ def update_issue(
         logger.warning(f"[IssueTracker] Invalid status '{status}' for {issue_id}")
         return False
 
-    issues = _load()
+    issues = _load_for_write()
     for issue in issues:
         if issue.get("issue_id") == issue_id:
             issue["status"]     = status
@@ -348,9 +456,92 @@ def get_issue(issue_id: str) -> dict:
     return {}
 
 
+REGISTRY_PATH = "data/resolution_registry.json"
+
+# How many entries the registry keeps. It is a rolling record of recent fixes,
+# not an archive — the archive of closed issues is issue_tracker_archive.json.
+REGISTRY_MAX = 500
+
+
+def _registry_path() -> str:
+    """Anchored to this file, NOT to cwd like TRACKER_PATH.
+
+    The reader, tracker_hygiene.py, resolves the registry as
+    `Path(__file__).parent / "data"`. A cwd-relative writer and a
+    __file__-relative reader agree only while every caller happens to run from
+    institutional-tracker/ — the moment one doesn't, the writer writes a file
+    the reader will never see, and the rule silently reports zero again. Anchor
+    the new file the way its reader already does.
+    (os.path.join discards the prefix when REGISTRY_PATH is absolute, so tests
+    can patch the constant with a tmpdir path.)
+    """
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), REGISTRY_PATH)
+
+
+def load_resolution_registry() -> list:
+    """Read data/resolution_registry.json. Returns [] when it does not exist."""
+    try:
+        with open(_registry_path()) as f:
+            data = json.load(f)
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def record_resolution(note: str, by: str, signature: str = None,
+                      match: str = None) -> bool:
+    """Record that a fix happened, so other consumers can stop re-raising it.
+
+    The registry had TWO readers — tracker_hygiene.py's R1 auto-close rule and
+    board_meeting.py's "don't resurrect an already-fixed proposal" gate — and
+    zero writers. data/resolution_registry.json had never existed on either
+    host, so `_load(..., [])` handed R1 an empty list every run and it reported
+    "0 verified-closed" forever, which is indistinguishable from having nothing
+    to do. board_meeting's `_fixed` was likewise pinned to False, so an issue
+    that HAD been fixed still got flagged "unresolved after N approvals" and
+    went back to the Chairman — a live contributor to the queue this whole
+    cluster is about.
+
+    Two kinds of entry, and the difference matters:
+      signature — exact match against condition_signature(title). Precise. This
+                  is what the automatic closers below write.
+      match     — a case-insensitive substring of the title. Blunt, for
+                  hand-written entries; a careless one like "stale" would match
+                  hundreds of unrelated rows, so R1 caps its blast radius
+                  rather than trusting it.
+
+    Returns True if a new entry was written, False if it was already present.
+    """
+    if not signature and not match:
+        return False
+    reg = load_resolution_registry()
+    for r in reg:
+        if (signature and r.get("signature") == signature) or \
+           (match and r.get("match") == match):
+            return False
+    reg.append({
+        "signature": signature,
+        "match":     match,
+        "note":      str(note)[:300],
+        "by":        by,
+        "date":      datetime.now().isoformat(),
+    })
+    # Newest-last, so trimming from the front drops the oldest fixes — those are
+    # the ones whose matching issues have already been closed by earlier runs.
+    reg = reg[-REGISTRY_MAX:]
+    try:
+        with open(_registry_path(), "w") as f:
+            json.dump(reg, f, indent=2)
+        return True
+    except Exception as e:                            # noqa: BLE001
+        logger.warning(f"[IssueTracker] Could not write resolution registry: {e}")
+        return False
+
+
+@_locked
 def resolve_issue(issue_id: str, resolution: str, resolved_by: str) -> bool:
     """Mark issue as resolved with explanation."""
-    issues = _load()
+    issues = _load_for_write()
     for issue in issues:
         if issue.get("issue_id") == issue_id:
             issue["status"]      = "RESOLVED"
@@ -359,12 +550,17 @@ def resolve_issue(issue_id: str, resolution: str, resolved_by: str) -> bool:
             issue["resolved_at"] = datetime.now().isoformat()
             issue["updated_at"]  = datetime.now().isoformat()
             _save(issues)
+            record_resolution(
+                note=resolution, by=resolved_by,
+                signature=issue.get("signature") or condition_signature(issue.get("title", "")),
+            )
             logger.info(f"[IssueTracker] Resolved {issue_id} by {resolved_by}: {resolution[:80]}")
             return True
     logger.warning(f"[IssueTracker] Cannot resolve — issue not found: {issue_id}")
     return False
 
 
+@_locked
 def resolve_by_signature(
     reporter: str,
     signature: str,
@@ -386,7 +582,7 @@ def resolve_by_signature(
 
     Returns the list of issue_ids closed (empty when nothing matched).
     """
-    issues = _load()
+    issues = _load_for_write()
     now = datetime.now().isoformat()
     closed = []
     for issue in issues:
@@ -404,11 +600,13 @@ def resolve_by_signature(
 
     if closed:
         _save(issues)
+        record_resolution(note=resolution, by=resolved_by, signature=signature)
         logger.info(f"[IssueTracker] Condition cleared — resolved {len(closed)} "
                     f"issue(s) for {reporter}: {signature[:60]}")
     return closed
 
 
+@_locked
 def increment_escalation(issue_id: str) -> int:
     """Increment escalation_count for an issue. Returns new count.
 
@@ -422,7 +620,7 @@ def increment_escalation(issue_id: str) -> int:
     Escalation is not progress; it is evidence of the absence of progress.
     `last_escalated_at` records that it happened without claiming it was work.
     """
-    issues = _load()
+    issues = _load_for_write()
     for issue in issues:
         if issue.get("issue_id") == issue_id:
             issue["escalation_count"] = issue.get("escalation_count", 0) + 1
@@ -435,6 +633,7 @@ def increment_escalation(issue_id: str) -> int:
 _SEVERITY_RANK = {"LOW": 0, "MEDIUM": 1, "HIGH": 2, "CRITICAL": 3}
 
 
+@_locked
 def compact(dry_run: bool = False) -> dict:
     """Fold historical re-reports of one condition into a single issue.
 
@@ -456,7 +655,7 @@ def compact(dry_run: bool = False) -> dict:
     Must be run on each host separately: the two hosts' data/ directories are
     fully independent (see CLAUDE.md).
     """
-    issues = _load()
+    issues = _load(strict=True)
     groups = {}
     for issue in issues:
         if not is_unresolved(issue):

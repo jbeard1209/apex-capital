@@ -16,6 +16,7 @@ ETF universe: XLK, XLE, XLF, XLU, XLP, XLV, XLI, GLD, TLT, QQQ, XLY, XLB
 import json
 import fcntl
 import logging
+import tempfile
 import math
 import os
 import sys
@@ -434,15 +435,19 @@ def _build_regime_summary(bridge: dict, hist: dict, spy_1d_return: Optional[floa
 # ---------------------------------------------------------------------------
 
 def _write_brief(brief: dict) -> None:
-    tmp = BRIEF_PATH.with_suffix(".json.tmp")
-    with open(tmp, "w") as fh:
-        fcntl.flock(fh, fcntl.LOCK_EX)
-        try:
-            json.dump(brief, fh, indent=2)
-            fh.flush()
-        finally:
-            fcntl.flock(fh, fcntl.LOCK_UN)
-    tmp.replace(BRIEF_PATH)
+    # A FIXED ".json.tmp" path is shared by every concurrent writer, and
+    # open(tmp, "w") truncates BEFORE flock() is acquired — so a second writer
+    # empties the first writer's temp file mid-dump, and the first writer then
+    # renames the torn result over the live file. The lock cannot help: the
+    # damage is done at open(). mkstemp gives each writer its own name, which
+    # makes the lock unnecessary — os.replace is already atomic.
+    fd, tmp = tempfile.mkstemp(dir=str(Path(BRIEF_PATH).parent),
+                               prefix=".etf_research_agent.", suffix=".tmp")
+    with os.fdopen(fd, "w") as fh:
+        json.dump(brief, fh, indent=2)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, BRIEF_PATH)
     log.info("ETF research brief written to %s", BRIEF_PATH)
 
 

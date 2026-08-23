@@ -24,6 +24,7 @@ import re
 import sqlite3
 import subprocess
 import tempfile
+import threading
 import shutil
 import unittest
 from datetime import date, datetime, timedelta, timezone
@@ -19414,9 +19415,14 @@ class TestIssueIdentityIsNotTheMeasurement(unittest.TestCase):
         import issue_tracker as it
         self.it = it
         self.td = tempfile.mkdtemp()
-        self.tracker = os.path.join(self.td, "issues.json")
-        self.archive = os.path.join(self.td, "archive.json")
-        self.p = patch.multiple(it, TRACKER_PATH=self.tracker, ARCHIVE_PATH=self.archive)
+        self.tracker  = os.path.join(self.td, "issues.json")
+        self.archive  = os.path.join(self.td, "archive.json")
+        # REGISTRY_PATH must be redirected too. resolve_issue() and
+        # resolve_by_signature() append to it, so leaving it unpatched would
+        # have these tests write into the firm's live data/ directory.
+        self.registry = os.path.join(self.td, "registry.json")
+        self.p = patch.multiple(it, TRACKER_PATH=self.tracker, ARCHIVE_PATH=self.archive,
+                                REGISTRY_PATH=self.registry)
         self.p.start()
 
     def tearDown(self):
@@ -19681,6 +19687,359 @@ class TestTheDetectorClosesWhatItOpens(unittest.TestCase):
             "analyze() opens issues for both 'missing' and 'stale' but closes fewer "
             "kinds than it opens — a detector that cannot retire its own claim "
             "turns a transient fact into a permanent record")
+
+
+class TestResolutionRegistryHasAProducer(unittest.TestCase):
+    """data/resolution_registry.json had two readers and zero writers.
+
+    tracker_hygiene.py's R1 auto-close rule and board_meeting.py's
+    "don't resurrect an already-fixed proposal" gate both read it; nothing had
+    ever written it, and the file did not exist on either host. R1 therefore
+    printed "0 verified-closed" every day for ~6 weeks — indistinguishable from
+    a rule with nothing to do — and board_meeting's `_fixed` was pinned False.
+    """
+
+    def setUp(self):
+        import issue_tracker as it
+        self.it = it
+        self.td = tempfile.mkdtemp()
+        self.tracker  = os.path.join(self.td, "issues.json")
+        self.archive  = os.path.join(self.td, "archive.json")
+        self.registry = os.path.join(self.td, "registry.json")
+        self.p = patch.multiple(it, TRACKER_PATH=self.tracker, ARCHIVE_PATH=self.archive,
+                                REGISTRY_PATH=self.registry)
+        self.p.start()
+
+    def tearDown(self):
+        self.p.stop()
+        shutil.rmtree(self.td, ignore_errors=True)
+
+    def test_the_registry_module_names_a_writer(self):
+        """AST: at least one function in issue_tracker.py writes REGISTRY_PATH.
+
+        Grep would match the postmortem comments above, so resolve the call.
+        """
+        tree = ast.parse(Path(__file__).with_name("issue_tracker.py").read_text())
+        fns = {n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)}
+        self.assertIn("record_resolution", fns,
+                      "the registry has readers but no producer function")
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "record_resolution")
+        opens = [n for n in ast.walk(fn) if isinstance(n, ast.Call)
+                 and getattr(n.func, "id", None) == "open"
+                 and len(n.args) > 1]
+        self.assertTrue(opens, "record_resolution() never opens the registry for writing")
+
+    def test_resolving_an_issue_records_a_matcher(self):
+        iid = self.it.log_issue("CIT", "data/x.json is 40h old", "d", "HIGH", "PIPELINE")
+        self.assertFalse(self.it.load_resolution_registry())
+        self.it.resolve_issue(iid, "producer rescheduled", "me")
+        reg = self.it.load_resolution_registry()
+        self.assertEqual(len(reg), 1)
+        self.assertEqual(reg[0]["signature"], self.it.condition_signature("data/x.json is 40h old"))
+        self.assertEqual(reg[0]["by"], "me")
+
+    def test_the_recorded_signature_is_age_independent(self):
+        """The matcher must survive the number moving, or it closes nothing later."""
+        iid = self.it.log_issue("CIT", "data/x.json is 40h old", "d", "HIGH", "PIPELINE")
+        self.it.resolve_issue(iid, "fixed", "me")
+        sig = self.it.load_resolution_registry()[0]["signature"]
+        self.assertEqual(sig, self.it.condition_signature("data/x.json is 900h old"))
+
+    def test_the_same_fix_is_not_recorded_twice(self):
+        a = self.it.log_issue("CIT", "data/x.json is 40h old", "d", "HIGH", "PIPELINE")
+        self.it.resolve_issue(a, "fixed", "me")
+        b = self.it.log_issue("OTHER", "data/x.json is 41h old", "d", "HIGH", "PIPELINE")
+        self.it.resolve_issue(b, "fixed again", "me")
+        self.assertEqual(len(self.it.load_resolution_registry()), 1)
+
+    def test_an_entry_with_neither_key_is_refused(self):
+        self.assertFalse(self.it.record_resolution(note="n", by="me"))
+        self.assertEqual(self.it.load_resolution_registry(), [])
+
+    def test_the_registry_is_capped(self):
+        for n in range(self.it.REGISTRY_MAX + 20):
+            self.it.record_resolution(note="n", by="me", signature=f"sig-{n}")
+        reg = self.it.load_resolution_registry()
+        self.assertEqual(len(reg), self.it.REGISTRY_MAX)
+        # Oldest dropped, newest kept — a cap that trimmed the tail would keep
+        # the fixes whose issues are already closed and drop the fresh ones.
+        self.assertEqual(reg[-1]["signature"], f"sig-{self.it.REGISTRY_MAX + 19}")
+
+    def test_a_missing_registry_reads_as_empty_not_an_error(self):
+        self.assertEqual(self.it.load_resolution_registry(), [])
+
+
+class TestTheTrackerSurvivesConcurrentWriters(unittest.TestCase):
+    """Row counts in git are not monotonic: 2414 -> 1303 -> 2266 -> 3886.
+
+    Three compounding defects, all in ~30 lines of file I/O:
+      * _save() opened the live file with "w", which TRUNCATES at open — before
+        flock() was called. The exclusive lock could not protect content that
+        was already gone.
+      * _load() therefore met an empty or half-written file, json.load raised,
+        and the except handler returned [] — a failed read wearing the costume
+        of a legitimately empty tracker. Measured on a 2000-row file: 14 of 300
+        concurrent reads came back empty.
+      * the caller then appended one issue to that [] and saved it. Two
+        thousand rows, gone, with no error anywhere.
+      * and the lock never spanned load->mutate->save anyway, so even a clean
+        read lost the other writer's row.
+    No issue in the live tracker predates 2026-08-06.
+    """
+
+    def setUp(self):
+        import issue_tracker as it
+        self.it = it
+        self.td = tempfile.mkdtemp()
+        self.tracker  = os.path.join(self.td, "issues.json")
+        self.p = patch.multiple(it, TRACKER_PATH=self.tracker,
+                                ARCHIVE_PATH=os.path.join(self.td, "archive.json"),
+                                REGISTRY_PATH=os.path.join(self.td, "registry.json"))
+        self.p.start()
+
+    def tearDown(self):
+        self.p.stop()
+        shutil.rmtree(self.td, ignore_errors=True)
+
+    def test_a_reader_never_sees_a_half_written_file(self):
+        """os.replace is atomic, so there is no window where the file is empty."""
+        seed = [{"issue_id": f"ISS-{n}", "status": "OPEN", "title": f"t{n}"}
+                for n in range(500)]
+        self.it._save(seed)
+        empties = []
+
+        def churn():
+            for _ in range(60):
+                self.it._save(seed)
+
+        t = threading.Thread(target=churn)
+        t.start()
+        for _ in range(200):
+            if len(self.it._load()) == 0:
+                empties.append(1)
+        t.join()
+        self.assertEqual(empties, [],
+                         "a concurrent read saw an empty tracker; the next write "
+                         "would have persisted that emptiness")
+
+    def test_concurrent_writers_do_not_drop_each_others_rows(self):
+        """The real race: two agents log a different issue at the same moment."""
+        errors = []
+
+        def log(n):
+            try:
+                for i in range(12):
+                    self.it.log_issue(f"agent{n}", f"finding {n}-{i}", "d", "LOW", "PIPELINE")
+            except Exception as e:                        # noqa: BLE001
+                errors.append(e)
+
+        threads = [threading.Thread(target=log, args=(n,)) for n in range(4)]
+        for t in threads: t.start()
+        for t in threads: t.join()
+        self.assertEqual(errors, [])
+        rows = json.load(open(self.tracker))
+        self.assertEqual(len(rows), 48,
+                         f"4 writers x 12 distinct findings should be 48 rows, got {len(rows)}")
+        self.assertEqual(len({r["issue_id"] for r in rows}), 48,
+                         "issue_ids collided — _next_id read a stale file")
+
+    def test_an_unreadable_tracker_is_moved_aside_not_overwritten(self):
+        Path(self.tracker).write_text("{ this is not json")
+        iid = self.it.log_issue("CIT", "something", "d", "HIGH", "PIPELINE")
+        self.assertTrue(iid)
+        corrupt = list(Path(self.td).glob("issues.json.corrupt-*"))
+        self.assertEqual(len(corrupt), 1, "the unparseable bytes were destroyed")
+        self.assertEqual(corrupt[0].read_text(), "{ this is not json")
+
+    def test_compaction_refuses_an_unreadable_tracker(self):
+        """Starting compaction from [] would write an empty tracker and archive nothing."""
+        Path(self.tracker).write_text("{ this is not json")
+        with self.assertRaises(self.it.TrackerUnreadable):
+            self.it.compact(dry_run=True)
+
+    def test_a_tracker_that_is_not_a_list_is_not_silently_replaced(self):
+        Path(self.tracker).write_text('{"issues": []}')
+        with self.assertRaises(self.it.TrackerUnreadable):
+            self.it._load(strict=True)
+
+    def test_an_absent_tracker_is_legitimately_empty(self):
+        """"No file" and "unreadable file" must not take the same branch."""
+        self.assertEqual(self.it._load(strict=True), [])
+
+    def test_no_locked_function_calls_another(self):
+        """flock is per file description, so nesting @_locked would self-deadlock."""
+        tree = ast.parse(Path(__file__).with_name("issue_tracker.py").read_text())
+        locked = {n.name for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)
+                  and any(getattr(d, "id", None) == "_locked" for d in n.decorator_list)}
+        self.assertTrue(locked, "no function carries @_locked — the lock was dropped")
+        for n in ast.walk(tree):
+            if isinstance(n, ast.FunctionDef) and n.name in locked:
+                called = {c.func.id for c in ast.walk(n)
+                          if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)}
+                self.assertFalse(
+                    called & locked,
+                    f"{n.name}() calls {called & locked} — both take the same "
+                    f"exclusive flock and the process would hang forever")
+
+    def test_every_mutating_path_is_locked(self):
+        """AST: any function that both loads and saves must hold the lock.
+
+        A new writer added without @_locked reintroduces the lost update, and
+        it would look completely fine in review.
+        """
+        tree = ast.parse(Path(__file__).with_name("issue_tracker.py").read_text())
+        unlocked = []
+        for n in ast.walk(tree):
+            if not isinstance(n, ast.FunctionDef) or n.name.startswith("_"):
+                continue
+            names = {c.func.id for c in ast.walk(n)
+                     if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)}
+            if "_save" in names and names & {"_load", "_load_for_write"}:
+                if not any(getattr(d, "id", None) == "_locked" for d in n.decorator_list):
+                    unlocked.append(n.name)
+        self.assertEqual(unlocked, [],
+                         f"read-modify-write without @_locked: {unlocked}")
+
+    def test_no_writer_truncates_the_live_file(self):
+        """AST: open(TRACKER_PATH, "w") is the defect itself — it must not come back."""
+        tree = ast.parse(Path(__file__).with_name("issue_tracker.py").read_text())
+        for c in ast.walk(tree):
+            if isinstance(c, ast.Call) and getattr(c.func, "id", None) == "open" \
+                    and len(c.args) > 1:
+                target = getattr(c.args[0], "id", None)
+                mode = getattr(c.args[1], "value", None)
+                self.assertFalse(
+                    target == "TRACKER_PATH" and isinstance(mode, str) and "w" in mode,
+                    f"line {c.lineno}: open(TRACKER_PATH, {mode!r}) truncates before "
+                    f"any lock can be taken — write to a temp file and os.replace")
+
+
+class TestNoWriterTruncatesBeforeItLocks(unittest.TestCase):
+    """Repo-wide: `open(p, "w")` destroys the file's contents at open().
+
+    A flock taken on the next line is decoration — the bytes are already gone,
+    and any concurrent reader gets an empty or half-written file. Six sites
+    shipped this: issue_tracker._save (which lost the tracker outright) plus
+    five agents that shared one FIXED ".json.tmp" path between all writers, so
+    a second writer could empty the first's temp file mid-dump and the first
+    would then rename the torn result over the live file.
+
+    The correct shape is mkstemp (a private name per writer) + os.replace,
+    which is atomic and needs no lock at all.
+    """
+
+    def test_no_module_locks_a_handle_it_already_truncated(self):
+        offenders = []
+        for f in sorted(Path(__file__).parent.rglob("*.py")):
+            if "__pycache__" in str(f) or f.name == Path(__file__).name:
+                continue
+            try:
+                tree = ast.parse(f.read_text())
+            except SyntaxError:
+                continue
+            for w in ast.walk(tree):
+                if not isinstance(w, ast.With):
+                    continue
+                for item in w.items:
+                    c = item.context_expr
+                    if not (isinstance(c, ast.Call)
+                            and getattr(c.func, "id", None) == "open"
+                            and len(c.args) > 1):
+                        continue
+                    mode = getattr(c.args[1], "value", "")
+                    if not (isinstance(mode, str) and "w" in mode):
+                        continue
+                    var = getattr(item.optional_vars, "id", None)
+                    if var and any(isinstance(n, ast.Call)
+                                   and getattr(n.func, "attr", None) == "flock"
+                                   and n.args
+                                   and getattr(n.args[0], "id", None) == var
+                                   for n in ast.walk(w)):
+                        offenders.append(f"{f.name}:{w.lineno}")
+        self.assertEqual(
+            offenders, [],
+            "these lock a handle whose open() already truncated the file: "
+            + ", ".join(offenders))
+
+
+class TestHygieneRefusesAnOverBroadMatcher(unittest.TestCase):
+    """Closing is the expensive direction, so R1's blunt matcher gets a cap.
+
+    A hand-written `{"match": "stale"}` would have closed several hundred
+    unrelated live rows in a single run, and a wrongly-closed issue vanishes
+    with nobody left to look for it.
+    """
+
+    def setUp(self):
+        import tracker_hygiene as th
+        self.th = th
+        self.td = tempfile.mkdtemp()
+        os.makedirs(os.path.join(self.td, "data"))
+        self.p = patch.object(th, "DATA", Path(self.td) / "data")
+        self.p.start()
+
+    def tearDown(self):
+        self.p.stop()
+        shutil.rmtree(self.td, ignore_errors=True)
+
+    def _write(self, issues, registry):
+        d = Path(self.td) / "data"
+        (d / "issue_tracker.json").write_text(json.dumps(issues))
+        (d / "resolution_registry.json").write_text(json.dumps(registry))
+
+    def _rows(self):
+        return json.loads((Path(self.td) / "data" / "issue_tracker.json").read_text())
+
+    def test_an_exact_signature_closes_only_its_own_condition(self):
+        import issue_tracker as it
+        rows = [{"issue_id": f"ISS-{n}", "status": "OPEN",
+                 "title": f"data/a.json is {n}h old",
+                 "signature": it.condition_signature("data/a.json is 1h old")}
+                for n in range(3)]
+        rows.append({"issue_id": "ISS-9", "status": "OPEN", "title": "data/b.json is 5h old",
+                     "signature": it.condition_signature("data/b.json is 5h old")})
+        self._write(rows, [{"signature": it.condition_signature("data/a.json is 7h old"),
+                            "note": "producer rescheduled", "date": "2026-08-23"}])
+        res = self.th.run()
+        self.assertEqual(res["flipped"], 3)
+        self.assertEqual([r["status"] for r in self._rows()],
+                         ["resolved", "resolved", "resolved", "OPEN"])
+
+    def test_a_matcher_wider_than_the_cap_closes_nothing(self):
+        rows = [{"issue_id": f"ISS-{n}", "status": "OPEN",
+                 "title": f"agent_{n} produced stale output"}
+                for n in range(self.th.R1_MAX_PER_MATCHER + 5)]
+        self._write(rows, [{"match": "stale", "note": "fixed the scheduler",
+                            "date": "2026-08-23"}])
+        res = self.th.run()
+        self.assertEqual(res["flipped"], 0)
+        self.assertIn("stale", res["over_broad"])
+        self.assertTrue(all(r["status"] == "OPEN" for r in self._rows()))
+
+    def test_a_narrow_matcher_still_works(self):
+        rows = [{"issue_id": "ISS-1", "status": "OPEN", "title": "canary_agent produced stale output"},
+                {"issue_id": "ISS-2", "status": "OPEN", "title": "hr_agent produced stale output"}]
+        self._write(rows, [{"match": "canary_agent", "note": "rescheduled", "date": "2026-08-23"}])
+        res = self.th.run()
+        self.assertEqual(res["flipped"], 1)
+        self.assertEqual([r["status"] for r in self._rows()], ["resolved", "OPEN"])
+
+    def test_the_report_distinguishes_an_empty_registry_from_a_quiet_one(self):
+        """'0 verified-closed' must not read the same with and without input."""
+        self._write([{"issue_id": "ISS-1", "status": "OPEN", "title": "x"}], [])
+        self.assertEqual(self.th.run()["registry_size"], 0)
+        self._write([{"issue_id": "ISS-1", "status": "OPEN", "title": "x"}],
+                    [{"match": "nomatch", "note": "n", "date": "d"}])
+        self.assertEqual(self.th.run()["registry_size"], 1)
+
+    def test_a_registry_close_stamps_resolved_at(self):
+        """Without it, get_stale_issues and the archiver cannot tell it is finished."""
+        self._write([{"issue_id": "ISS-1", "status": "OPEN", "title": "canary is broken"}],
+                    [{"match": "canary", "note": "n", "date": "d"}])
+        self.th.run()
+        self.assertTrue(self._rows()[0].get("resolved_at"))
+
 
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly

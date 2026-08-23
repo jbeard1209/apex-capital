@@ -19,6 +19,7 @@ Bear mode triggers when:
 import json
 import fcntl
 import logging
+import tempfile
 import os
 import sys
 from datetime import datetime, timezone
@@ -149,15 +150,19 @@ def _is_bear_mode(regime: dict) -> bool:
 # ---------------------------------------------------------------------------
 
 def _write_signals(signals: dict) -> None:
-    tmp = SIGNALS_PATH.with_suffix(".json.tmp")
-    with open(tmp, "w") as fh:
-        fcntl.flock(fh, fcntl.LOCK_EX)
-        try:
-            json.dump(signals, fh, indent=2)
-            fh.flush()
-        finally:
-            fcntl.flock(fh, fcntl.LOCK_UN)
-    tmp.replace(SIGNALS_PATH)
+    # A FIXED ".json.tmp" path is shared by every concurrent writer, and
+    # open(tmp, "w") truncates BEFORE flock() is acquired — so a second writer
+    # empties the first writer's temp file mid-dump, and the first writer then
+    # renames the torn result over the live file. The lock cannot help: the
+    # damage is done at open(). mkstemp gives each writer its own name, which
+    # makes the lock unnecessary — os.replace is already atomic.
+    fd, tmp = tempfile.mkstemp(dir=str(Path(SIGNALS_PATH).parent),
+                               prefix=".pod_macro_agent.", suffix=".tmp")
+    with os.fdopen(fd, "w") as fh:
+        json.dump(signals, fh, indent=2)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, SIGNALS_PATH)
 
 
 def run() -> dict:

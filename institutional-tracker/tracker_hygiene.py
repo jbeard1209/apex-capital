@@ -31,22 +31,61 @@ def _load(p, d):
     # happened to list first. A cap with no ordering is a silent sampling rule.
 R2_MAX_PER_RUN = 25
 
+# A hand-written substring matcher is a blunt instrument: `{"match": "stale"}`
+# would close several hundred unrelated rows in one run, and closing is the
+# expensive direction — a wrongly-closed issue vanishes with nobody looking for
+# it again. So a substring matcher that would hit more than this many issues is
+# treated as a mistake, reported, and not applied. Signature matchers are exact
+# by construction and are not capped.
+R1_MAX_PER_MATCHER = 40
+
 
 def run():
     tracker = _load("issue_tracker.json", None)
     if tracker is None:
         print("tracker unreadable"); return {"flipped":0,"stale_closed":0}
     items = tracker if isinstance(tracker, list) else tracker.get("issues", [])
+    # Until 2026-08-23 this file had two readers and no writer, and had never
+    # existed on either host — so R1 matched against [] every run and printed
+    # "0 verified-closed", which reads exactly like "nothing needed closing".
+    # issue_tracker.record_resolution() is the producer now. Reporting the
+    # registry's SIZE is the part that makes the difference visible: a rule
+    # whose input is empty must not look like a rule that found nothing.
     registry = _load("resolution_registry.json", [])
+    # A hand-edited registry that ends up as a dict would iterate as bare
+    # strings and blow up on r.get(); a bad file must degrade to "no matchers",
+    # never take the hygiene run down with it.
+    registry = [r for r in registry if isinstance(r, dict)] if isinstance(registry, list) else []
     now = datetime.now(); flipped = stale = 0
     r2_candidates = []
+
+    # Pre-count substring matchers so an over-broad one is refused BEFORE it
+    # closes anything, not after it has closed the first 40 rows it met.
+    def _sig_of(issue):
+        return str(issue.get("signature") or "").strip().lower()
+    unresolved = [i for i in items if isinstance(i, dict)
+                  and i.get("status") not in ("resolved","closed","closed_stale_unverified")]
+    over_broad = set()
+    for r in registry:
+        m = str(r.get("match") or "").strip().lower()
+        if not m:
+            continue
+        if sum(1 for i in unresolved if m in str(i.get("title","")).lower()) > R1_MAX_PER_MATCHER:
+            over_broad.add(m)
+
     for i in items:
         if not isinstance(i, dict) or i.get("status") in ("resolved","closed","closed_stale_unverified"):
             continue
         title = str(i.get("title",""))
-        hit = next((r for r in registry if r.get("match","").lower() in title.lower() and r.get("match")), None)
+        sig = _sig_of(i)
+        hit = next((r for r in registry
+                    if (r.get("signature") and str(r["signature"]).strip().lower() == sig and sig)
+                    or (r.get("match")
+                        and str(r["match"]).strip().lower() not in over_broad
+                        and str(r["match"]).lower() in title.lower())), None)
         if hit:
             i["status"]="resolved"; i["resolution_note"]=f"verified-closed via registry: {hit.get('note','')} ({hit.get('date','')})"
+            i["resolved_at"]=now.isoformat()
             flipped += 1; continue
         # R2 read `board_approvals` / `approvals`. issue_tracker.log_issue() has
         # never written either field — present on 0 of 4423 live rows — so `appr`
@@ -75,10 +114,14 @@ def run():
     (DATA/"issue_tracker.json").write_text(json.dumps(out, indent=2, default=str))
     # Always report the deferred count. Printing only what was closed would make
     # "25 closed" look identical whether 25 or 1025 qualified.
-    print(f"hygiene: {flipped} verified-closed, {stale} stale-loop closed"
-          + (f", {r2_deferred} deferred to later runs" if r2_deferred else ""))
+    print(f"hygiene: {flipped} verified-closed (registry has {len(registry)} matcher(s))"
+          f", {stale} stale-loop closed"
+          + (f", {r2_deferred} deferred to later runs" if r2_deferred else "")
+          + (f"; REFUSED {len(over_broad)} over-broad matcher(s): "
+             f"{sorted(over_broad)[:3]}" if over_broad else ""))
     return {"flipped":flipped,"stale_closed":stale,"deferred":r2_deferred,
-            "r2_candidates":len(r2_candidates)}
+            "r2_candidates":len(r2_candidates),
+            "registry_size":len(registry),"over_broad":sorted(over_broad)}
 
 if __name__ == "__main__":
     run()
