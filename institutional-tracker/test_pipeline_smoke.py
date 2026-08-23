@@ -19092,6 +19092,166 @@ class TestThePremiseVerdictSpeaksOnlyForTheHorizonsItSampled(unittest.TestCase):
                           f"{name} does not read MIN_SETTLED_PER_HORIZON")
 
 
+class TestRecoveryDerivesItsScheduleFromTheCrontab(unittest.TestCase):
+    """wakeup_recovery must not restate, by hand, facts the crontab holds.
+
+    2026-08-23: Jack reported a "pipeline was down" email over a weekend when
+    nothing was down. `wakeup_recovery.JOBS` carried a hand-kept copy of two
+    facts production already states — which days each job runs, and which log
+    proves it ran — and both had drifted:
+
+      * fe_pipeline / fi_pipeline / overnight_ml_runner declared log prefixes
+        ("fe_pipeline", "fi_pipeline", "ml_runner_daily") that no scheduled job
+        writes. `_run_job()` names its log after the declared prefix, so each
+        was reading a file only wakeup_recovery itself had ever written: the
+        real cron run was invisible, the self-written log aged out, recovery
+        fired, wrote the log, and repeated forever. fe_pipeline ran EVERY day
+        (12:12, 18:02, 00:14, 06:08, 12:08) against a real cron of 15:04 Mon-Fri.
+        This is the identical defect fixed for main.py in 8e4f97b, which
+        repaired one row of a five-row table and left three siblings standing.
+      * `weekday_only` was False for three weekday-only jobs and True for
+        canary_agent, which the crontab runs all weekend. Wrong in both
+        directions, and structurally unable to express overnight_ml_runner's
+        real `2-6` (Tue-Sat) at all.
+
+    The repair is a derivation, not better constants. These tests pin the
+    derivation, and — because a check that cannot fail is not a check — pin
+    that the detector still fires on the exact values that shipped.
+    """
+
+    def _sched(self):
+        import wakeup_recovery as w
+        sched, source = w._crontab_schedule()
+        if source == "unavailable" or not sched:
+            self.skipTest("no crontab snapshot on this host")
+        return w, sched
+
+    def test_a_weekday_only_job_is_not_recovered_on_a_weekend(self):
+        w, sched = self._sched()
+        dow, _p, _wp, _n = w._resolve_job("fe_pipeline.py", "fe", "1-5", sched)
+        self.assertEqual(sorted(dow), [0, 1, 2, 3, 4],
+                         "fe_pipeline's crontab is `0 15 * * 1-5`")
+        for weekend in (5, 6):
+            self.assertNotIn(weekend, dow,
+                             "recovery would 'restore' a job that was never due")
+
+    def test_a_declared_prefix_no_scheduled_job_writes_is_reported(self):
+        """The self-referential log loop, caught by its own name."""
+        w, sched = self._sched()
+        _d, _p, _wp, notes = w._resolve_job(
+            "fe_pipeline.py", "fe_pipeline", "1-5", sched)
+        self.assertTrue(any("log prefix" in n for n in notes),
+                        "a prefix nothing schedules must be reported, not used")
+
+    def test_a_tuesday_to_saturday_schedule_is_representable(self):
+        """The old bool had no correct value for `2-6`; the literal does."""
+        w, sched = self._sched()
+        dow, _p, _wp, notes = w._resolve_job(
+            "overnight_ml_runner.py", "ml_overnight", "2-6", sched)
+        self.assertEqual(sorted(dow), [1, 2, 3, 4, 5], "Tue-Sat")
+        self.assertEqual(notes, [], f"declared 2-6 should agree: {notes}")
+
+    def test_the_declared_table_agrees_with_the_crontab_today(self):
+        """Zero drift now. This test is what makes a future edit noisy."""
+        w, sched = self._sched()
+        drift = []
+        for script, prefix, _h, declared_dow, _a in w.JOBS:
+            _d, _p, _wp, notes = w._resolve_job(script, prefix,
+                                                declared_dow, sched)
+            drift.extend(notes)
+        self.assertEqual(drift, [], "JOBS disagrees with the live crontab:\n" +
+                         "\n".join(drift))
+
+    def test_the_drift_detector_catches_the_values_it_shipped_with(self):
+        """Non-vacuity. Feed the pre-fix table back in; every row must alarm.
+
+        Without this, `test_the_declared_table_agrees_with_the_crontab_today`
+        would also pass against a `_resolve_job` that returned no notes at all.
+        """
+        w, sched = self._sched()
+        shipped = [("fe_pipeline.py", "fe_pipeline", "*"),
+                   ("fi_pipeline.py", "fi_pipeline", "*"),
+                   ("overnight_ml_runner.py", "ml_runner_daily", "*"),
+                   ("canary_agent.py", "canary", "1-5"),
+                   ("morning_briefing.py", "briefing", "*")]
+        for script, prefix, declared_dow in shipped:
+            _d, _p, _wp, notes = w._resolve_job(script, prefix,
+                                                declared_dow, sched)
+            self.assertTrue(notes, f"{script}: shipped defect not detected")
+
+    def test_an_unparseable_dow_widens_to_every_day_rather_than_skipping(self):
+        """The degraded path must fail toward the cheap error.
+
+        Skipping a scheduled job loses an agent; running an unscheduled one
+        wastes a run. Those costs are not symmetric, so an unreadable schedule
+        resolves to "assume it runs" — and says so in the log.
+        """
+        import wakeup_recovery as w
+        self.assertIsNone(w._expand_dow("bogus"))
+        self.assertIsNone(w._expand_dow(""))
+        dow, _p, _wp, notes = w._resolve_job(
+            "never_scheduled_xyz.py", "xyz", "bogus", {})
+        self.assertEqual(sorted(dow), [0, 1, 2, 3, 4, 5, 6])
+        self.assertTrue(any("absent from the crontab" in n for n in notes))
+
+    def test_cron_sunday_is_both_zero_and_seven(self):
+        import wakeup_recovery as w
+        self.assertEqual(w._expand_dow("0"), {6})
+        self.assertEqual(w._expand_dow("7"), {6})
+        self.assertEqual(sorted(w._expand_dow("0,6")), [5, 6])   # Sat + Sun
+        self.assertEqual(sorted(w._expand_dow("MON-FRI")), [0, 1, 2, 3, 4])
+        self.assertEqual(sorted(w._expand_dow("1-5/2")), [0, 2, 4])
+
+    def test_a_dom_restricted_line_does_not_narrow_the_weekday(self):
+        """Cron ORs day-of-month with day-of-week; we cannot narrow from DOW."""
+        import wakeup_recovery as w
+        sched, _src = w._crontab_schedule()
+        entry = sched.get("pregenerate_lessons.py")   # `0 2 13-21 6 *`
+        if not entry:
+            self.skipTest("that crontab line is not present on this host")
+        self.assertEqual(sorted(entry["dow"]), [0, 1, 2, 3, 4, 5, 6])
+
+    def test_freshness_counts_the_real_cron_log_not_only_recoverys_own(self):
+        """The core repair: any log the job may write is evidence it ran."""
+        import wakeup_recovery as w
+        with tempfile.TemporaryDirectory() as td:
+            logs = Path(td)
+            today = datetime.now().strftime("%Y%m%d")
+            (logs / f"fe_{today}.log").write_text("real cron run")
+            with patch.object(w, "LOGS_DIR", logs):
+                self.assertIsNone(w._log_age_hours("fe_pipeline"),
+                                  "recovery's private prefix has no log")
+                age = w._freshest_log_age({"fe_pipeline", "fe"})
+                self.assertIsNotNone(age, "the real cron log must count")
+                self.assertLess(age, 1.0)
+
+    def test_no_code_path_decides_the_day_from_a_hardcoded_weekday(self):
+        """AST, not grep: this file's own postmortem comments say `weekday`."""
+        import wakeup_recovery as w
+        tree = ast.parse(Path(w.__file__).read_text())
+        fns = {n.name for n in ast.walk(tree)
+               if isinstance(n, ast.FunctionDef)}
+        self.assertNotIn("_is_weekday", fns,
+                         "_is_weekday cannot express 2-6 and must stay deleted")
+        for cmp_node in [n for n in ast.walk(tree) if isinstance(n, ast.Compare)]:
+            left = cmp_node.left
+            if (isinstance(left, ast.Call)
+                    and isinstance(left.func, ast.Attribute)
+                    and left.func.attr == "weekday"):
+                self.fail("a hardcoded `.weekday() < N` decides the schedule "
+                          "again; derive it from the crontab instead")
+
+    def test_the_drift_report_is_rewritten_even_when_clean(self):
+        """A stale finding left on disk reads as a current one."""
+        import wakeup_recovery as w
+        src = Path(w.__file__).read_text()
+        body = src.split("def run_recovery", 1)[1]
+        call = body.split("_record_drift(", 1)[0].rsplit("\n", 1)[-1]
+        self.assertNotIn("if drift", call,
+                         "_record_drift must run on every pass, not only on "
+                         "failure, or the last bad report outlives the bug")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
