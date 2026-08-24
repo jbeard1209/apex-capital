@@ -18303,6 +18303,95 @@ class TestAPodBudgetIsNotMoney(unittest.TestCase):
                          "still reading the retired key: %s" % offenders)
 
 
+class TestGroundTruthCanExpire(unittest.TestCase):
+    """firm_value.json carried an `as_of` and the forecaster never read it.
+
+    2026-08-24: the VM's copy was stamped 2026-08-19 and read $98,964.92
+    against a live account of ~$100,720 — three sessions and $1,755 (1.77%)
+    behind. That is 59% of the 1-week equity band the forecaster grades the
+    firm against, and it enters as a one-directional bias, not as noise.
+    strategy_council.py reads the same figure to SET goals and to GRADE them,
+    so a stale number moves the target and the score the same way.
+
+    Its sole writer, reconciliation_check.py, is on no host's scheduler, so
+    this is a permanent state rather than a transient miss.
+    """
+
+    def _snap(self, fv, now=None):
+        """_firm_snapshot() against a temp data/ carrying `fv` (or no file)."""
+        import json as _j
+        import shutil
+        import tempfile
+        import performance_forecaster as pf
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, d, True)
+        (d / "data").mkdir()
+        real = pf.DATA
+        pf.DATA = d / "data"
+        self.addCleanup(setattr, pf, "DATA", real)
+        if fv is not None:
+            (pf.DATA / "firm_value.json").write_text(_j.dumps(fv))
+        return pf._firm_snapshot()
+
+    STAMP = "2026-08-19T20:58:13.282331"
+    VM = {"equity": 98964.92, "cash": 13262.05, "as_of": STAMP}
+
+    def test_a_weekend_does_not_age_a_snapshot(self):
+        """Wall-clock hours are the wrong unit for a weekday-only producer: an
+        hours budget loose enough to survive Monday is far too loose on
+        Wednesday (memory: `staleness thresholds priced in wall-clock hours vs
+        weekday-only producers`)."""
+        import performance_forecaster as pf
+        wed = datetime.fromisoformat(self.STAMP)
+        for when, want in (("2026-08-20T09:00", 1),   # Thu
+                           ("2026-08-21T09:00", 2),   # Fri
+                           ("2026-08-22T09:00", 2),   # Sat — no session
+                           ("2026-08-23T09:00", 2),   # Sun — no session
+                           ("2026-08-24T09:00", 3)):  # Mon
+            self.assertEqual(want, pf._sessions_since(
+                wed, datetime.fromisoformat(when)), "at %s" % when)
+
+    def test_the_stale_vm_snapshot_is_refused(self):
+        s = self._snap(self.VM)
+        self.assertIsNone(s["equity"],
+                          "a 3-session-old equity was reported as current")
+        self.assertIn("STALE", s["equity_source"])
+        self.assertIn("reconciliation_check", s["equity_source"],
+                      "name the writer that has to be run")
+
+    def test_a_fresh_snapshot_still_grounds_the_forecast(self):
+        """The guard must not be permanently on — that would disable the
+        grounding it exists to protect."""
+        fresh = dict(self.VM, as_of=datetime.now().isoformat())
+        s = self._snap(fresh)
+        self.assertEqual(98964.92, s["equity"])
+        self.assertNotIn("STALE", s["equity_source"])
+
+    def test_no_stamp_is_not_a_pass(self):
+        """A file whose age cannot be established has not been shown to be
+        fresh. Presence is not currency (memory: `presence-is-not-currency`)."""
+        s = self._snap({"equity": 98964.92})
+        self.assertIsNone(s["equity"])
+        self.assertIn("as_of", s["equity_source"])
+
+    def test_never_written_and_expired_are_different_sentences(self):
+        """Both used to read UNAVAILABLE. The remedies differ: one host has
+        never run the writer, the other ran it once and stopped."""
+        missing = self._snap(None)["equity_source"]
+        expired = self._snap(self.VM)["equity_source"]
+        self.assertIn("never", missing)
+        self.assertNotIn("STALE", missing)
+        self.assertNotEqual(missing, expired)
+
+    def test_a_refused_equity_takes_its_derived_ratios_with_it(self):
+        """A percentage of an absent denominator is absent, not 0.0 — and a
+        forecast that silently drops to zero deployment reads as a flat book
+        rather than as a broken input (memory: `nan-is-not-none`)."""
+        s = self._snap(self.VM)
+        self.assertIsNone(s["deployed_pct"])
+        self.assertIsNone(s["return_vs_budget_pct"])
+
+
 class TestAttributionSitsAtTheChokePoint(unittest.TestCase):
     """`record_trade` was called by 2 modules while 15 reached the broker.
 

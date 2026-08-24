@@ -39,6 +39,39 @@ CHAIRMAN = DATA / "chairman_action_required.json"
 
 HORIZONS = [("1w", 7), ("1m", 30), ("1y", 365)]
 
+#: How many completed market sessions a firm_value.json snapshot may be behind
+#: before its equity stops describing this firm.
+#:
+#: Derived, not picked. On 2026-08-24 the VM's snapshot was stamped 08-19 and
+#: read $98,964.92 against a live account of ~$100,720 — 3 sessions, 1.77%, so
+#: roughly 0.6%/session of drift in this book. `return_vs_budget_pct` is a
+#: single-digit number, so each stale session is a ~0.6pp error on it; two is
+#: the most that can be absorbed before the forecast is arguing about a
+#: different firm. It cannot be tightened to one: the sole writer runs at most
+#: once a day, so demanding the current session would flag every morning.
+MAX_STALE_SESSIONS = 2
+
+
+def _sessions_since(then, now=None) -> int:
+    """Completed weekday sessions strictly between `then` and `now`.
+
+    Wall-clock hours are the wrong unit for a producer that only runs on
+    trading days: a Friday-evening write is one session old on Monday morning
+    and three calendar days old, and an hours budget must then be loose enough
+    to cover the weekend — which makes it far too loose midweek (memory:
+    `staleness thresholds priced in wall-clock hours vs weekday-only
+    producers`). Holidays are not modelled; they only ever make this count
+    high, i.e. err toward calling a number stale, which is the safe direction.
+    """
+    now = now or datetime.now()
+    if then.tzinfo is not None and now.tzinfo is None:
+        then = then.replace(tzinfo=None)
+    d0, d1 = then.date(), now.date()
+    if d1 <= d0:
+        return 0
+    return sum(1 for i in range((d1 - d0).days)
+               if (d0 + timedelta(days=i + 1)).weekday() < 5)
+
 
 def _load(p, d):
     try:
@@ -69,14 +102,48 @@ def _firm_snapshot() -> dict:
     # no broker counterpart, and forecast against a firm that was ~$5.7k larger
     # than the one that exists. `firm_value.json` is written by
     # reconciliation_check straight from the account. (2026-08-19)
+    #
+    # The snapshot carries an `as_of` and this function used to ignore it, so a
+    # file written once and never again read as ground truth forever. On
+    # 2026-08-24 the VM's copy was stamped 2026-08-19 — three sessions and
+    # $1,755 (1.77%) behind the account it claimed to be. That is 59% of the
+    # 1-week equity band the forecaster then graded the firm against, entered
+    # not as noise but as a one-directional bias, and strategy_council.py uses
+    # the same figure to SET goals and to GRADE them.
+    #
+    # This is not a transient miss. `reconciliation_check.py` is the sole
+    # writer of this file and is on no host's scheduler, so once stale it stays
+    # stale until someone runs it by hand. `equity_source` therefore has to say
+    # which of the three states it is in — a value, never written, or written
+    # and expired — because the remedy differs and "UNAVAILABLE" hid two of them
+    # behind one word.
     _fv = _load(DATA / "firm_value.json", {})
-    equity = _fv.get("equity")
+    equity, stale_note = _fv.get("equity"), None
     try:
         equity = float(equity)
         if equity != equity or equity <= 0:
             equity = None
     except (TypeError, ValueError):
         equity = None
+    if equity is not None:
+        raw = _fv.get("as_of")
+        try:
+            asof = datetime.fromisoformat(str(raw))
+        except (TypeError, ValueError):
+            asof = None
+        if asof is None:
+            equity, stale_note = None, (
+                "written without an `as_of` stamp, so its age cannot be checked")
+        else:
+            n = _sessions_since(asof)
+            if n > MAX_STALE_SESSIONS:
+                # No number beats a wrong number. Returning the stale figure with
+                # a warning attached means every downstream consumer has to
+                # remember to read the warning (memory: `nan-is-not-none`).
+                equity, stale_note = None, (
+                    f"stamped {str(raw)[:16]}, {n} completed session(s) ago "
+                    f"(budget {MAX_STALE_SESSIONS}) — run reconciliation_check.py "
+                    f"on THIS host; it is the sole writer and is scheduled nowhere")
     # recent output (picks produced per pod, most recent files)
     def _n(f, *keys):
         d = _load(DATA / f, [])
@@ -95,8 +162,12 @@ def _firm_snapshot() -> dict:
     except Exception:
         model = {}
     return {"equity": round(equity, 2) if equity is not None else None,
-            "equity_source": ("data/firm_value.json (broker account)" if equity is not None
-                              else "UNAVAILABLE — reconciliation_check has not written it"),
+            "equity_source": ("data/firm_value.json (broker account, as of "
+                              f"{str(_fv.get('as_of'))[:16]})" if equity is not None
+                              else f"STALE — data/firm_value.json {stale_note}"
+                              if stale_note
+                              else "UNAVAILABLE — reconciliation_check has never "
+                                   "written data/firm_value.json on this host"),
             "budget": round(budget, 2),
             "deployed": round(deployed, 2),
             "deployed_pct": (round(deployed / equity, 3)
