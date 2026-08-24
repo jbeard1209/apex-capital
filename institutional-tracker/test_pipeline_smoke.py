@@ -14111,6 +14111,261 @@ class TestOneShotReviewCannotDieIntoALog(unittest.TestCase):
                         "from 'the interpreter fell over'")
 
 
+class TestBothArmsShareOneWindow(unittest.TestCase):
+    """The trial's two arms must measure the same thing over the same period.
+
+    The scoreboard that reached the Chairman on 2026-08-19 said "trial +0.69%
+    (n=18) vs incumbents +0.34% (n=3)". Three separate defects were folded into
+    that one line, and each of them flattered the trial arm:
+
+      • Percent-since-avg-entry is a DIFFERENT window per position. Incumbent
+        entries predate the trial; trial entries are inside it.
+      • Only open positions counted. 17 of the 34 cap-admitted names had already
+        closed, so the trial arm silently dropped half its own cohort — the very
+        decay it declared fatal in the control arm.
+      • SH was held before the trial and is not on the incumbent list, so its
+        +$4,830 was booked to the raised cap. That was 54% of the trial arm's
+        entire P&L, from a position the cap never admitted.
+
+    The manifest could not have caught the third one: the manifest was the thing
+    that was wrong. Conservation could — end_qty minus what the fills moved IS
+    the starting quantity, and it said the book held 16 names, not 15.
+    """
+    BASE = Path(__file__).parent
+
+    @staticmethod
+    def _fill(sym, side, qty, price, day):
+        import types as _t
+        from datetime import datetime as dt, timezone
+        return _t.SimpleNamespace(
+            symbol=sym, side=side, filled_qty=str(qty), filled_avg_price=str(price),
+            status="OrderStatus.FILLED",
+            filled_at=dt(2026, 7, 27, 14, 0, tzinfo=timezone.utc)
+            + timedelta(days=day))
+
+    @staticmethod
+    def _window(trial_pnl=900.0, trial_cap=10000.0,
+                inc_pnl=-100.0, inc_cap=10000.0, pre=None):
+        arm = lambda n, p, c: {          # noqa: E731 — local shorthand
+            "n": n, "n_closed": 0, "pnl": p, "capital": c,
+            "return_pct": (round(p / c * 100, 2) if c >= 1000 else None),
+            "tickers": ["X"] * n}
+        return {"usable": True, "why": None, "n_fills": 10, "window_days": 28.0,
+                "residual": -1.0, "residual_pct": 0.01,
+                "equity_start": 100000.0, "equity_now": 100800.0,
+                "trial": arm(20, trial_pnl, trial_cap),
+                "incumbent": arm(15, inc_pnl, inc_cap),
+                "pre_held": pre or arm(0, 0.0, 0.0)}
+
+    def test_a_name_held_before_the_trial_is_in_neither_arm(self):
+        """SH, +$4,830, booked to a cap change that happened after it was bought."""
+        import pick_gate_trial_review as P
+        w = {"error": None, "n_fills": 4,
+             "pnl": {"SH": 4830.0, "FCX": 880.0, "XLE": -300.0},
+             "start_qty": {"SH": 146.0, "XLE": -161.0},     # derived, not declared
+             "capital": {"SH": 4890.0, "FCX": 5900.0, "XLE": 9200.0},
+             "closed": {"SH": True, "FCX": False, "XLE": True},
+             "residual": -160.0, "residual_pct": 0.16,
+             "equity_start": 97926.0, "equity_now": 100726.0}
+        arms = P._classify_arms(w, {"XLE"})            # manifest lists only XLE
+        self.assertEqual(["SH"], arms["pre_held"]["tickers"],
+                         "a position held before the trial was assigned to an arm")
+        self.assertEqual(["FCX"], arms["trial"]["tickers"],
+                         "the trial arm absorbed a pre-existing position")
+        self.assertEqual(["XLE"], arms["incumbent"]["tickers"])
+        self.assertAlmostEqual(880.0, arms["trial"]["pnl"], places=2,
+                               msg="SH's P&L is still inside the trial arm")
+
+    def test_the_start_book_is_derived_not_read_from_the_manifest(self):
+        """AST: start quantities must come from conservation, not from the file.
+
+        Grep cannot ask this — the module's docstrings say `incumbent_snapshot`
+        while explaining why it must not be trusted for this. The rule is
+        structural: _window_pnl takes only `started`, so it has no manifest to
+        read, and start_qty is computed from end_qty and the fills.
+        """
+        tree = ast.parse((self.BASE / "pick_gate_trial_review.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "_window_pnl")
+        args = [a.arg for a in fn.args.args]
+        self.assertEqual(["started"], args,
+                         "_window_pnl takes more than the window — it can reach "
+                         "the manifest whose incumbent list was the defect")
+        body = ast.unparse(fn)
+        self.assertIn("end_qty[t] - dq[t]", body,
+                      "start quantities are no longer derived by conservation")
+        for banned in ("incumbent_snapshot", "MANIFEST", "_load_manifest"):
+            self.assertNotIn(banned, body,
+                             "_window_pnl consults %s; the manifest is the thing "
+                             "conservation exists to check" % banned)
+
+    def test_a_failed_reconciliation_refuses_to_report_numbers(self):
+        """Arithmetic nobody checked is not a measurement.
+
+        With SH's start position seeded at zero the residual was 5.8% of equity.
+        The gate is 1.0%, so that bug could not have reached a verdict.
+        """
+        import pick_gate_trial_review as P
+        self.assertLess(P.RECON_TOLERANCE_PCT, 5.8,
+                        "the tolerance no longer catches the bug it was sized for")
+        broken = dict(self._window())
+        broken.update(usable=False, why="reconciliation failed: residual 5.80%")
+        v, why = P._verdict({"window": broken, "n_trial_picks": 18,
+                             "trial_avg_return_pct": 0.68,
+                             "incumbent_avg_return_pct": 0.34, "n_incumbents": 2,
+                             "incumbents_at_start": ["A"] * 15,
+                             "spy_return_since_start_pct": 3.8})
+        self.assertEqual("UNMEASURABLE", v,
+                         "an unreconciled window still produced a verdict")
+        self.assertIn("reconciliation failed", why,
+                      "the reader is not told why the good measurement is absent")
+
+    def test_the_window_measurement_outranks_a_decayed_arm(self):
+        """A 2-name survivors arm must not veto a 15-name full-cohort one."""
+        import pick_gate_trial_review as P
+        o = {"window": self._window(), "n_trial_picks": 18,
+             "trial_avg_return_pct": 0.68, "incumbent_avg_return_pct": 0.34,
+             "n_incumbents": 2, "incumbents_at_start": ["A"] * 15,
+             "spy_return_since_start_pct": 3.8}
+        v, why = P._verdict(o)
+        self.assertEqual("EXTEND", v,
+                         "the decayed-arm guard fired even though the "
+                         "non-decaying measurement was available")
+        # ...and with no usable window it must still refuse, or the guard that
+        # closed this trial on 2026-08-19 has been deleted rather than scoped.
+        self.assertEqual("UNMEASURABLE", P._verdict(dict(o, window=None))[0])
+
+    def test_every_window_verdict_states_what_it_cannot_identify(self):
+        """Clean arithmetic is not a randomised experiment.
+
+        Assignment was not random: names joined the trial arm by being bought
+        during the window and the control arm by predating it. Fixing the
+        accounting removed the reasons the number was WRONG, not the reasons it
+        is not causal, and a verdict that reads as causal invites a cap change
+        the evidence does not support.
+        """
+        import pick_gate_trial_review as P
+        seen = set()
+        for tp, ip in ((900.0, -100.0), (-900.0, 100.0), (10.0, 5.0)):
+            v, why = P._verdict_from_window(
+                self._window(trial_pnl=tp, inc_pnl=ip))
+            seen.add(v)
+            self.assertIn("Identification caveat", why,
+                          "verdict %s reads as causal" % v)
+            self.assertIn("not the cap's marginal effect", why)
+        self.assertEqual({"EXTEND", "REVERT", "HOLD"}, seen,
+                         "the three ordinary verdicts are no longer reachable")
+
+    def test_an_arm_with_no_capital_has_no_return(self):
+        """0.0% is a claim. Absent is the truth (memory: nan-is-not-none)."""
+        import pick_gate_trial_review as P
+        w = {"error": None, "n_fills": 1, "pnl": {"A": 5.0}, "start_qty": {},
+             "capital": {"A": 0.0}, "closed": {"A": True}, "residual": 0.0,
+             "residual_pct": 0.0, "equity_start": 1.0, "equity_now": 1.0}
+        arms = P._classify_arms(w, set())
+        self.assertIsNone(arms["trial"]["return_pct"])
+        v, why = P._verdict_from_window(arms)
+        self.assertEqual("INCONCLUSIVE", v)
+        self.assertIn("denominator", why)
+
+    def test_covering_a_short_releases_capital_it_does_not_commit_it(self):
+        """The denominator bug that halved the control arm's return.
+
+        Covering a short is a BUY. "Start value plus everything bought" charged
+        six covered incumbent shorts twice and put $199k of basis under a book
+        that opened at $88k. Average capital at risk cannot do that: exposure
+        goes to zero at the cover, so the integral stops accumulating.
+        """
+        import pick_gate_trial_review as P
+        from datetime import datetime as dt, timezone
+        t0 = dt(2026, 7, 27, tzinfo=timezone.utc)
+        t1 = t0 + timedelta(days=28)
+        # short 100 @ $100 held from the open, covered at the halfway mark
+        cover = self._fill("S1", "OrderSide.BUY", 100, 100.0, 14)
+        cap = P._capital_at_risk([cover], {"S1": -100.0}, {"S1": -10000.0},
+                                 {"S1": 0.0}, ["S1"], t0, t1)
+        # Derived, not hardcoded: the fixture fills at 14:00, so the short is
+        # live for 14d14h of the 28d window, and $5,000 would be the wrong
+        # answer to assert against for the right-looking reason.
+        held = (cover.filled_at - t0).total_seconds() / (t1 - t0).total_seconds()
+        self.assertAlmostEqual(10000.0 * held, cap["S1"], delta=1.0,
+                               msg="covering the short charged capital instead "
+                                   "of releasing it (got $%.0f, want $%.0f)"
+                                   % (cap["S1"], 10000.0 * held))
+        self.assertLess(cap["S1"], 10000.0,
+                        "a half-window short costs a full window of capital")
+
+    def test_a_round_trip_costs_less_than_holding_all_window(self):
+        """Turnover is not conviction; the arm that churned must not be charged
+        as if it had held. Same dollar size, one held, one flipped in a day."""
+        import pick_gate_trial_review as P
+        from datetime import datetime as dt, timezone
+        t0 = dt(2026, 7, 27, tzinfo=timezone.utc)
+        t1 = t0 + timedelta(days=28)
+        fills = [self._fill("HOLD", "OrderSide.BUY", 100, 100.0, 0),
+                 self._fill("FLIP", "OrderSide.BUY", 100, 100.0, 0),
+                 self._fill("FLIP", "OrderSide.SELL", 100, 101.0, 1)]
+        cap = P._capital_at_risk(fills, {}, {}, {"HOLD": 10000.0, "FLIP": 0.0},
+                                 ["HOLD", "FLIP"], t0, t1)
+        self.assertGreater(cap["HOLD"], 9000.0)
+        self.assertLess(cap["FLIP"], cap["HOLD"] / 10,
+                        "a one-day round trip is charged like a month-long hold "
+                        "(flip $%.0f vs hold $%.0f)" % (cap["FLIP"], cap["HOLD"]))
+
+    def _broker(self, equity_start, equity_now):
+        """A stub book: buy 100 X at $10, now marked $1,100. Nothing held at the
+        window's open, so no price history is needed and the only free variable
+        is the equity pair the residual is measured against."""
+        import types as _t
+        client = MagicMock()
+        client.get_orders.return_value = [
+            self._fill("X", "OrderSide.BUY", 100, 10.0, 1)]
+        client.get_all_positions.return_value = [
+            _t.SimpleNamespace(symbol="X", qty="100", market_value="1100")]
+        client.get_account.return_value = _t.SimpleNamespace(equity=str(equity_now))
+        client.get_portfolio_history.return_value = _t.SimpleNamespace(
+            equity=[equity_start, equity_now], timestamp=[0, 1])
+        return MagicMock(AlpacaTrader=MagicMock(
+            return_value=_t.SimpleNamespace(client=client)))
+
+    def test_the_reconciliation_gate_fires_on_a_real_residual(self):
+        """Exercise the gate itself, not a dict with usable=False already set.
+
+        Per-ticker P&L here is +$100 (bought $1,000, marked $1,100). If equity
+        moved +$10,000 over the same window, $9,900 of it is unexplained — some
+        position's start or end value is missing, which is exactly the shape of
+        the SH bug. The numbers must be refused, not reported.
+        """
+        import pick_gate_trial_review as P
+        with patch.dict(sys.modules, {"alpaca_trader": self._broker(90000.0, 100000.0)}):
+            w = P._window_pnl("2026-07-27")
+        self.assertTrue(w["error"], "a 11%-of-equity residual reached a verdict")
+        self.assertIn("reconciliation failed", w["error"])
+        self.assertFalse(P._classify_arms(w, set())["usable"])
+
+        # And the gate must not be permanently on, or it would have disabled the
+        # measurement it exists to protect: same book, an equity move the
+        # per-ticker sum explains.
+        with patch.dict(sys.modules, {"alpaca_trader": self._broker(90000.0, 90100.0)}):
+            ok = P._window_pnl("2026-07-27")
+        self.assertIsNone(ok["error"], "a reconciling book was refused: %s"
+                          % ok["error"])
+        self.assertAlmostEqual(100.0, ok["pnl"]["X"], places=2)
+
+    def test_a_broker_that_cannot_be_reached_reports_absence_not_zero(self):
+        """Fail closed. A degraded read that returns plausible numbers is a
+        decision to act on data we do not have (memory: fallback-that-means-act).
+        """
+        import pick_gate_trial_review as P
+        boom = MagicMock(side_effect=RuntimeError("no credentials"))
+        with patch.dict(sys.modules, {"alpaca_trader": MagicMock(AlpacaTrader=boom)}):
+            w = P._window_pnl("2026-07-27")
+        self.assertTrue(w["error"], "a broker outage produced a clean result")
+        self.assertEqual({}, w["pnl"])
+        self.assertIsNone(w["residual"])
+        self.assertFalse(P._classify_arms(w, set())["usable"])
+
+
 class TestQueueCompactionCannotForgeADrop(unittest.TestCase):
     """Compacting the decision queue must not manufacture SILENT_DROPs.
 
