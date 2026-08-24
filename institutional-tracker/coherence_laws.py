@@ -97,6 +97,23 @@ class LawResult:
         # `internal_audit_agent` reads this field and downgrades any HOLDS that
         # cannot say how much it looked at, which is why HOLDS paths must set
         # it and CANNOT_TELL paths need not.
+        #
+        # A VIOLATED NEEDS IT FOR THE OPPOSITE REASON, and until 2026-08-24 not
+        # one of the ten laws set it there. A missing denominator on a pass is a
+        # false all-clear; on a failure it is an untriageable finding. "4 ladders
+        # quote an impossible nested pair" is a rounding error at 4/2405 and a
+        # broken parser at 4/4, and those want opposite responses — ignore it, or
+        # stop trusting the law. escalate_violations() files every violation into
+        # a queue that already holds 134 items whose soonest board escalation is
+        # overdue; the numerator alone cannot sort them, so the denominator IS
+        # the triage. The auditor only ever inspected HOLDS, so the gap was in
+        # the one direction the auditor was not looking.
+        #
+        # It is NOT a rate for every law. `runs_match_schedule` compares two
+        # counts (observed vs intended) rather than sampling a population, so its
+        # denominator is the heartbeat history it read, not `intended` — writing
+        # "7 of 6" to satisfy a checker would be inventing a number, which is the
+        # failure this field exists to prevent.
         self.n_examined = n_examined
 
     def to_dict(self) -> dict:
@@ -563,7 +580,7 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
         name, VIOLATED,
         f"{len(bad)} of {checked} testable ladder(s) quote a nested pair that no "
         f"set of probabilities can produce{tail}",
-        src, bad,
+        src, bad, n_examined=checked,
     )
 
 
@@ -621,7 +638,8 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
                          f"bid that is absent or crossed — `two_sided()` passed a "
                          f"quote with no live counterparty ({provenance})", src,
                          [{"ticker": r.get("ticker"), "bid": r.get("yes_bid"),
-                           "ask": r.get("market_price")} for r in one_sided[:20]])
+                           "ask": r.get("market_price")} for r in one_sided[:20]],
+                         n_examined=len(with_bid))
     return LawResult(name, HOLDS,
                      f"{len(with_bid)} of {len(rows)} cleared row(s) carry a live "
                      f"two-sided book; {len(rows) - len(with_bid)} predate the "
@@ -761,7 +779,7 @@ def law_surfaced_rungs_clear_their_ladder(
             f"{len(self_contradicting)} contradict the scanner's own stored "
             f"verdict, out of {len(surfaced)} surfaced ({provenance}; "
             f"{ladder_note}). Owner: Kalshi sector.",
-            src, bad[:20])
+            src, bad[:20], n_examined=len(surfaced))
 
     if impossible is None:
         return LawResult(
@@ -854,7 +872,8 @@ def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
                          f"this host ({_this_host()}) is the designated pipeline writer "
                          f"and its crontab schedules main.py ZERO times. The pipeline is "
                          f"not scheduled anywhere.", src,
-                         [{"host": _this_host(), "intended": 0}])
+                         [{"host": _this_host(), "intended": 0}],
+                         n_examined=1)
 
     hb_path = DATA_DIR / "pipeline_heartbeat.json"
     if not hb_path.exists():
@@ -887,12 +906,14 @@ def law_runs_match_schedule(now: Optional[datetime] = None) -> LawResult:
                          f"main.py started {observed} time(s) today; the schedule asks "
                          f"for {intended}. An overrun is never legitimate — something is "
                          f"launching the pipeline outside the schedule.", src,
-                         [{"observed": observed, "intended": intended}])
+                         [{"observed": observed, "intended": intended}],
+                         n_examined=len(starts))
     if observed < intended and now.hour >= 23:
         return LawResult(name, VIOLATED,
                          f"main.py started {observed} time(s) today against {intended} "
                          f"scheduled, and the day is over.", src,
-                         [{"observed": observed, "intended": intended}])
+                         [{"observed": observed, "intended": intended}],
+                         n_examined=len(starts))
     # Denominator is the heartbeat history, not today's count: `observed == 0`
     # is a legitimate result on a quiet host, but a heartbeat that has never
     # recorded a single start means this law is agreeing with a file nobody
@@ -1106,7 +1127,8 @@ def law_deployed_set_matches_repo(runner: Optional[Callable] = None,
         return LawResult(name, VIOLATED,
                          f"{len(absent)} tracked file(s) absent from {REMOTE_ALIAS}, "
                          f"{len(differs)} differ, {len(vm_only)} file(s) run there that "
-                         f"are in no commit. The host is not running the repo.", src, ev)
+                         f"are in no commit. The host is not running the repo.", src, ev,
+                         n_examined=len(local))
     return LawResult(name, HOLDS,
                      f"{len(local)} tracked .py identical on {REMOTE_ALIAS}, "
                      f"no uncommitted files there", src, n_examined=len(local))
@@ -1248,7 +1270,8 @@ def law_shipped_config_matches_repo(runner: Optional[Callable] = None,
                          f"{len(inert)} allowlist entr(ies) name an untracked file so "
                          f"the include is inert, {len(absent)} chosen file(s) absent "
                          f"from {REMOTE_ALIAS}, {len(differs)} differ. The host is not "
-                         f"running the configuration the firm decided on.", src, ev)
+                         f"running the configuration the firm decided on.", src, ev,
+                         n_examined=len(local))
     return LawResult(name, HOLDS,
                      f"{len(local)} allowlisted data/ file(s) tracked and identical "
                      f"on {REMOTE_ALIAS}", src, n_examined=len(local))
@@ -1367,7 +1390,8 @@ def law_emitted_verbs_are_handled(agent_dir: Optional[Path] = None) -> LawResult
                          f"{len(unhandled)} verb(s) emitted that the manager cannot "
                          f"name: {', '.join(sorted(unhandled))}. An unrecognised verb "
                          f"is not rejected, it is unheard.", src,
-                         [{"verb": v, "emitted_by": f} for v, f in sorted(unhandled.items())])
+                         [{"verb": v, "emitted_by": f} for v, f in sorted(unhandled.items())],
+                         n_examined=len(emitted))
     return LawResult(name, HOLDS,
                      f"{len(emitted)} verb(s) emitted ({', '.join(sorted(emitted))}), "
                      f"all handled", src, n_examined=len(emitted))
@@ -1449,7 +1473,13 @@ def law_positions_conserve(broker_positions: Optional[dict] = None,
                          f"entry, {len(phantom)} ledger entr(ies) with no position. Every "
                          f"stop-loss and holding-period rule reads the ledger.", src,
                          [{"held_not_ledgered": s} for s in unledgered[:10]]
-                         + [{"ledgered_not_held": s} for s in phantom[:10]])
+                         + [{"ledgered_not_held": s} for s in phantom[:10]],
+                         # The UNION, not len(held) as the HOLDS path uses. When
+                         # the law holds the two sets are equal so either works;
+                         # when it fails, a phantom is a symbol the broker does
+                         # not hold, and counting it against `held` alone can
+                         # report more failures than things examined.
+                         n_examined=len(held | ledger))
     return LawResult(name, HOLDS,
                      f"{len(held)} broker position(s), same {len(ledger)} in the ledger",
                      src, n_examined=len(held))
@@ -1558,7 +1588,8 @@ def law_broker_host_census(orders: Optional[list] = None,
                          f"are in no registry row: {', '.join(strangers)}. An unlisted "
                          f"writer sizes against the same capital and cannot be seen by "
                          f"anything that reads the doc.", src,
-                         [{"host": h, "last_order": seen[h].isoformat()} for h in strangers])
+                         [{"host": h, "last_order": seen[h].isoformat()} for h in strangers],
+                         n_examined=len(seen))
     return LawResult(name, HOLDS,
                      "; ".join(f"{h} last traded {seen[h].date()}" for h in sorted(seen)),
                      src, n_examined=len(seen))
@@ -1666,7 +1697,8 @@ def law_broker_orders_are_ledgered(orders: Optional[list] = None,
                          f"broker but were never recorded by order_ledger. An order that "
                          f"skipped record() skipped the risk gate and the single-writer "
                          f"guard in the same breath — there is a path to the broker that "
-                         f"does not go through the choke point.", src, missing[:10])
+                         f"does not go through the choke point.", src, missing[:10],
+                         n_examined=mine)
 
     if mine == 0:
         return LawResult(name, CANNOT_TELL,
@@ -1785,6 +1817,7 @@ def escalate_violations(results: List[LawResult]) -> int:
             r = violated.pop(rid)
             row["description"] = f"COHERENCE LAW VIOLATED — {r.name}: {r.detail}"
             row["last_seen"] = _dt.now().isoformat()
+            row["n_examined"] = r.n_examined
             if row.pop("resolved_at", None):
                 # It closed and violated again. Clearing the closure matters:
                 # left behind, `status: resolved` would keep an active violation
@@ -1826,6 +1859,16 @@ def escalate_violations(results: List[LawResult]) -> int:
             "description": (f"COHERENCE LAW VIOLATED — {r.name}: {r.detail} "
                             f"(A: {r.sources[0]} | B: {r.sources[1]})"),
             "source": "coherence_laws",
+            # THE DENOMINATOR TRAVELS WITH THE FINDING. Severity is deliberately
+            # NOT computed from it: every coherence violation stays HIGH. A near-
+            # total failure rate usually means the law's own parser broke rather
+            # than the world (memory `the-instrument-measured-itself`), so
+            # auto-promoting it to CRITICAL would route an engineering bug to the
+            # Chairman as an emergency; and auto-demoting a small rate would drop
+            # findings below the floor that only CRITICAL clears (memory
+            # `severity-below-the-escalation-floor`). The scale is reported so a
+            # reader can sort; it does not move the row by itself.
+            "n_examined": r.n_examined,
             "ts": _dt.now().isoformat(),
             "last_seen": _dt.now().isoformat(),
         })

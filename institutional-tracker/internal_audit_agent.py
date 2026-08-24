@@ -389,10 +389,26 @@ def prove_can_fail() -> List[dict]:
 # =============================================================================
 
 def audit_denominators(results: Optional[list] = None) -> List[dict]:
-    """Flag every HOLDS that cannot say how many things it examined.
+    """Flag every verdict that cannot say how many things it examined.
 
     `results` may be LawResult objects or the dicts from coherence_report.json,
     so this works both inline in the pipeline and against a report on disk.
+
+    THIS RULE USED TO INSPECT ONLY `HOLDS`, and so was blind in the one
+    direction that reaches the Chairman. A pass with no denominator is a false
+    all-clear; a FAILURE with no denominator is a finding nobody can rank. "4
+    ladders quote an impossible nested pair" is noise at 4-of-2405 and a broken
+    parser at 4-of-4 — opposite responses, and the numerator cannot tell them
+    apart. Every violation escalates at HIGH into a queue holding 134 items, so
+    the denominator is the only thing that sorts them. All ten laws omitted it
+    on their VIOLATED path until 2026-08-24, and this rule could not see that
+    because it skipped every row that was not a pass — a control blind to
+    exactly the class of defect it exists to catch (memory
+    `third-line-of-defence`: critics only see their input).
+
+    CANNOT_TELL is still exempt. It reports an absent source, so there is no
+    population to count and demanding one would only teach laws to invent a
+    number.
     """
     if results is None:
         if not REPORT_COHERENCE.exists():
@@ -409,21 +425,69 @@ def audit_denominators(results: Optional[list] = None) -> List[dict]:
     for r in results:
         get = r.get if isinstance(r, dict) else (lambda k, _r=r: getattr(_r, k, None))
         name = get("law") or get("name")
-        if get("verdict") != "HOLDS":
-            continue
+        verdict = get("verdict")
         n = get("n_examined")
-        if n is None:
-            findings.append({
-                "control": name, "verdict": "NO_DENOMINATOR",
-                "detail": "reports HOLDS without saying how many things it looked "
-                          "at — the verdict cannot be told from a pass on nothing"})
-        elif n == 0:
-            findings.append({
-                "control": name, "verdict": "EMPTY_SUCCESS",
-                "detail": "HOLDS on ZERO examined items. This is the shape of every "
-                          "false all-clear this firm has had: nothing was checkable, "
-                          "and 'nothing failed' was recorded instead"})
+
+        if verdict == "HOLDS":
+            if n is None:
+                findings.append({
+                    "control": name, "verdict": "NO_DENOMINATOR",
+                    "detail": "reports HOLDS without saying how many things it looked "
+                              "at — the verdict cannot be told from a pass on nothing"})
+            elif n == 0:
+                findings.append({
+                    "control": name, "verdict": "EMPTY_SUCCESS",
+                    "detail": "HOLDS on ZERO examined items. This is the shape of every "
+                              "false all-clear this firm has had: nothing was checkable, "
+                              "and 'nothing failed' was recorded instead"})
+
+        elif verdict == "VIOLATED":
+            if n is None:
+                findings.append({
+                    "control": name, "verdict": "UNTRIAGEABLE_FINDING",
+                    "detail": "reports VIOLATED without saying how many things it "
+                              "looked at. This row escalates to the Chairman at HIGH "
+                              "like every other; with no denominator the queue cannot "
+                              "tell a rounding error from a broken parser, so it is "
+                              "ranked by the numerator alone"})
+            elif n == 0:
+                findings.append({
+                    "control": name, "verdict": "FAILURE_ON_NOTHING",
+                    "detail": "VIOLATED on ZERO examined items — the law reported a "
+                              "failure it cannot attribute to anything it looked at. "
+                              "Suspect the law before the world"})
     return findings
+
+
+# The fix for a pass with no denominator is NOT the fix for a failure with no
+# denominator, so they cannot share a proposal body. Routing used to be an
+# explicit two-string tuple at the call site; the two verdicts added 2026-08-24
+# were produced by audit_denominators and matched nothing, which is this repo's
+# signature bug — a producer emitting an identifier no consumer handles. This
+# map lives beside the producer so the two are read together, and
+# `TestWiringContracts` fails if audit_denominators can emit a verdict that is
+# not a key here.
+_DENOM_PROPOSAL = {
+    "EMPTY_SUCCESS": (
+        "reports success on nothing",
+        "Set n_examined on the HOLDS path, and return CANNOT_TELL rather "
+        "than HOLDS when there was nothing to examine."),
+    "NO_DENOMINATOR": (
+        "reports success on nothing",
+        "Set n_examined on the HOLDS path, and return CANNOT_TELL rather "
+        "than HOLDS when there was nothing to examine."),
+    "UNTRIAGEABLE_FINDING": (
+        "escalates a failure nobody can rank",
+        "Pass n_examined on the VIOLATED path, using the same population "
+        "the HOLDS path counts. Do NOT invent a rate where the law compares "
+        "two counts rather than sampling a population — report the set it "
+        "actually read."),
+    "FAILURE_ON_NOTHING": (
+        "reports a failure it examined nothing to find",
+        "A law that violates on zero examined items is describing its own "
+        "parser, not the world. Return CANNOT_TELL naming the source it "
+        "could not read."),
+}
 
 
 REPORT_COHERENCE = DATA_DIR / "coherence_report.json"
@@ -1248,6 +1312,13 @@ def run_audit() -> dict:
         "push_only_detectors": sorted({d for c in census for d in c.get("push_only", [])}),
         "empty_success": [d["control"] for d in denom
                           if d["verdict"] == "EMPTY_SUCCESS"],
+        # A SEPARATE COUNT, for the reason the comment above already gives: this
+        # verdict has a different cause (a failure nobody can rank, not a pass on
+        # nothing) and a different fix, so folding it into `empty_success` would
+        # silently redefine a number already used by the ratchet.
+        "untriageable": [d["control"] for d in denom
+                         if d["verdict"] in ("UNTRIAGEABLE_FINDING",
+                                             "FAILURE_ON_NOTHING")],
     }
     try:
         DATA_DIR.mkdir(exist_ok=True)
@@ -1365,14 +1436,14 @@ def escalate(report: dict) -> int:
                                 "only at push time and accepted as such."})
 
     for d in report["denominators"]:
-        if d["verdict"] in ("EMPTY_SUCCESS", "NO_DENOMINATOR"):
+        spec = _DENOM_PROPOSAL.get(d["verdict"])
+        if spec:
+            what, fix = spec
             proposals.append({
                 "source": "internal_audit", "severity": "MEDIUM", "category": "LOGIC_ERROR",
-                "title": f"Control '{d['control']}' reports success on nothing "
-                         f"({d['verdict']})",
+                "title": f"Control '{d['control']}' {what} ({d['verdict']})",
                 "detail": d["detail"],
-                "proposed_fix": "Set n_examined on the HOLDS path, and return CANNOT_TELL "
-                                "rather than HOLDS when there was nothing to examine."})
+                "proposed_fix": fix})
 
     if proposals:
         try:

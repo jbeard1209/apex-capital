@@ -12273,6 +12273,102 @@ class TestInternalAudit(unittest.TestCase):
                          f"line(s) {offenders} — that verdict cannot be told apart "
                          f"from a pass on an empty set")
 
+    def test_every_law_reports_a_denominator_on_its_violated_path(self):
+        """The mirror of the test above, and the direction that was unguarded.
+
+        All ten laws omitted n_examined on VIOLATED until 2026-08-24, and
+        audit_denominators skipped every non-HOLDS row, so nothing could see it.
+        A pass with no denominator is a false all-clear; a FAILURE with no
+        denominator is a finding nobody can rank — "4 impossible ladders" is
+        noise at 4-of-2405 and a broken parser at 4-of-4, and escalate_violations
+        files both at HIGH into the same queue.
+        """
+        import coherence_laws as cl
+        src = ast.parse(Path(cl.__file__).read_text())
+        offenders = []
+        for node in ast.walk(src):
+            if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id == "LawResult"):
+                continue
+            if len(node.args) < 2:
+                continue
+            verdict = node.args[1]
+            if not (isinstance(verdict, ast.Name) and verdict.id == "VIOLATED"):
+                continue
+            if not any(k.arg == "n_examined" for k in node.keywords):
+                offenders.append(node.lineno)
+        self.assertEqual([], offenders,
+                         f"VIOLATED returned without n_examined at coherence_laws.py "
+                         f"line(s) {offenders} — the Chairman's queue ranks it by the "
+                         f"numerator alone")
+
+    def test_a_violation_that_cannot_say_how_much_it_looked_at_is_flagged(self):
+        ia = self._mod()
+        out = ia.audit_denominators([
+            {"law": "zz_mute", "verdict": "VIOLATED"},
+            {"law": "zz_sized", "verdict": "VIOLATED", "n_examined": 2405},
+        ])
+        by = {f["control"]: f["verdict"] for f in out}
+        self.assertEqual("UNTRIAGEABLE_FINDING", by.get("zz_mute"))
+        self.assertNotIn("zz_sized", by,
+                         "a violation that states its denominator is triageable")
+
+    def test_a_violation_on_zero_items_suspects_the_law_first(self):
+        """VIOLATED with n_examined=0 is the law describing its own parser."""
+        ia = self._mod()
+        out = ia.audit_denominators(
+            [{"law": "zz_void", "verdict": "VIOLATED", "n_examined": 0}])
+        self.assertEqual([("zz_void", "FAILURE_ON_NOTHING")],
+                         [(f["control"], f["verdict"]) for f in out])
+
+    def test_the_violated_denominator_reaches_the_chairman_queue(self):
+        """n_examined must survive escalate_violations, not stop at LawResult.
+
+        The field exists to rank a finding, and ranking happens in the queue. A
+        denominator that is set on the object and dropped on the way out is the
+        same as never setting it (memory `guardrail-on-one-path`).
+        """
+        import coherence_laws as cl
+        r = cl.LawResult("zz_law", cl.VIOLATED, "4 of 2405 ladders",
+                         ("A", "B"), [{"x": 1}], n_examined=2405)
+        with tempfile.TemporaryDirectory() as td:
+            q = Path(td) / "q.json"
+            q.write_text("[]")
+            real = cl.CHAIRMAN_QUEUE
+            try:
+                cl.CHAIRMAN_QUEUE = q
+                cl.escalate_violations([r])
+                rows = json.loads(q.read_text())
+            finally:
+                cl.CHAIRMAN_QUEUE = real
+        self.assertEqual(1, len(rows))
+        self.assertEqual(2405, rows[0].get("n_examined"),
+                         "the denominator was dropped between the law and the queue")
+
+    def test_every_denominator_verdict_has_a_proposal_body(self):
+        """WIRING CONTRACT: audit_denominators emits, _DENOM_PROPOSAL consumes.
+
+        Routing was a hardcoded two-string tuple, so the verdicts added
+        2026-08-24 were produced and silently matched nothing. The verdict
+        strings are read out of audit_denominators by AST rather than listed
+        here, because a list here would have to be edited by the same person who
+        forgot to edit the tuple.
+        """
+        ia = self._mod()
+        fn = next(n for n in ast.walk(ast.parse(Path(ia.__file__).read_text()))
+                  if isinstance(n, ast.FunctionDef) and n.name == "audit_denominators")
+        emitted = {kv.value
+                   for d in ast.walk(fn) if isinstance(d, ast.Dict)
+                   for k, kv in zip(d.keys, d.values)
+                   if isinstance(k, ast.Constant) and k.value == "verdict"
+                   and isinstance(kv, ast.Constant) and isinstance(kv.value, str)}
+        emitted.discard("CANNOT_TELL")     # the no-report-on-this-host row
+        self.assertTrue(emitted, "found no verdict literals — the AST shape changed")
+        unrouted = sorted(emitted - set(ia._DENOM_PROPOSAL))
+        self.assertEqual([], unrouted,
+                         f"audit_denominators emits {unrouted} which reaches no "
+                         f"proposal body — produced, then dropped")
+
     # -- the census ---------------------------------------------------------
 
     def test_every_named_detector_still_exists(self):
