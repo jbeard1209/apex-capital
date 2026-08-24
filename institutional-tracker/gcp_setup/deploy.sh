@@ -119,6 +119,18 @@ echo "[1/2] Syncing project files..."
 # identical numbers, and the census now prints `of which host-local` so the
 # difference explains itself instead of needing this paragraph.
 #
+# mac_launchd_snapshot.txt travels for the same reason vm_crontab_snapshot.txt
+# does, and the direction is not a mistake. The firm runs TWO schedulers: cron on
+# the VM, launchd on the Mac. Each host can only capture its own, and only this
+# rsync crosses between them — so the Mac captures launchd and ships it, exactly
+# as the Mac SSHes the VM for its crontab and ships that. Without the include,
+# the same wiring_audit.py on md5-identical code sees a schedule on the Mac and
+# half a schedule on the VM: the fix reaches the repo and never reaches
+# production, one file after gcp_setup/ itself did (memory
+# `fix-that-cannot-reach-production`). rsync is one-way and the VM never writes
+# this file, so there is nothing on the far side to destroy — the agent_registry
+# hazard above does not apply.
+#
 # data/.host_id is excluded FIRST, ahead of the includes, so it survives anyone
 # later broadening the allowlist. It is this host's stable trading identity; if
 # the Mac's copy reached the VM, both hosts would stamp orders `mac` and the
@@ -182,6 +194,7 @@ rsync -avz --progress \
     --include="data/" \
     --include="data/orphan_agents_baseline.json" \
     --include="data/vm_crontab_snapshot.txt" \
+    --include="data/mac_launchd_snapshot.txt" \
     --include="data/agent_roster_manifest.json" \
     --include="data/pick_gate_trial.json" \
     --include="data/parameter_derivations.json" \

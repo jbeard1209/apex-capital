@@ -1130,12 +1130,23 @@ def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
                     "the crontab snapshot is missing — the schedule is unreadable, "
                     "so no detector can be judged scheduled or dormant") for r in refs}
 
-    # Same file wa.scheduler_reachable just used, read through wa so the two
-    # halves of this verdict can never point at different snapshots.
-    try:
-        cron_txt = wa._cron_snapshot().read_text()
-    except OSError:
-        cron_txt = ""
+    # The same files wa.scheduler_reachable just used, read through wa so the
+    # two halves of this verdict can never point at different snapshots.
+    #
+    # BOTH schedulers, not one. That sentence was true when written and became
+    # false the moment scheduler_reachable started seeding roots from the Mac's
+    # launchd snapshot as well: `reachable` would have been computed from two
+    # documents and the test-suite branch below judged against one. A verdict
+    # whose two halves read different ground truth is the failure this comment
+    # exists to prevent — and it is how a suite scheduled only on the Mac would
+    # be reported as running nowhere (memory `both-sides-of-a-comparison`).
+    sched_txt = ""
+    for _snap in (wa._cron_snapshot, wa._launchd_snapshot):
+        try:
+            sched_txt += _snap().read_text() + "\n"
+        except OSError:
+            continue
+    cron_txt = sched_txt
 
     # Does the shipped pre-push hook actually invoke the suite? .git/hooks is not
     # cloned, so the INSTALLED hook is a property of one machine; the hook the
@@ -1193,7 +1204,7 @@ def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
 
         if fname.startswith("test_"):
             if fname in cron_txt:
-                out[ref] = (RUNS, "the suite is on the cron manifest")
+                out[ref] = (RUNS, "the suite is on a scheduler manifest")
             elif fname in hook_txt:
                 out[ref] = (PUSH_ONLY,
                             f"{fname} is on no scheduler; it fires only when someone "
@@ -1215,8 +1226,8 @@ def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
 
         if fname not in reachable:
             out[ref] = (UNSCHEDULED_D,
-                        f"{fname} is not reachable from main.py or the cron manifest "
-                        f"— it is scheduled NOWHERE")
+                        f"{fname} is not reachable from main.py, the VM crontab or the "
+                        f"Mac launchd manifest — it is scheduled NOWHERE")
             continue
         reg = _registered(fname, symbol)
         if reg is False:
@@ -1431,7 +1442,7 @@ def escalate(report: dict) -> int:
                 "title": f"Failure class '{c['class']}' has detectors, and none of them runs",
                 "detail": f"{c['detail']} Owner: {c['owner']}. The control is correct and "
                           f"dormant, which reads on every report as coverage.",
-                "proposed_fix": "Put a detector on a scheduler (cron manifest or main.py), "
+                "proposed_fix": "Put a detector on a scheduler (VM crontab, Mac launchd or main.py), "
                                 "or record in CONTROL_CENSUS that this class is watched "
                                 "only at push time and accepted as such."})
 

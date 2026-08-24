@@ -2480,6 +2480,227 @@ class TestWiringContracts(unittest.TestCase):
                 "_apply_code_changes duplicated the ELEVATED block on repeat runs")
 
 
+class TestTheFirmHasTwoSchedulers(unittest.TestCase):
+    """Schedule ground truth must cover BOTH schedulers, not one host's half.
+
+    The orphan walk seeded its roots from `data/vm_crontab_snapshot.txt` alone
+    while the Mac had been running `catch_up.py` (1200s) and
+    `vm_state_monitor.py` (900s) through launchd for weeks — jobs that appear in
+    no crontab anywhere. Measured 2026-08-24 the blast radius was ZERO modules
+    (both are already reachable from the VM's cron roots), which is why this is
+    a latent hole and not an escape: it costs nothing until someone schedules
+    something on the Mac that runs nowhere else, and on that day the audit says
+    "scheduled NOWHERE" about a job firing every fifteen minutes.
+
+    These pin the shape of the fix rather than today's zero, because today's
+    zero is the thing that will change.
+    """
+
+    CRON = "0 * * * * cd /x && python3 scheduled_agent.py\n"
+    LAUNCHD = "launchd com.apexcapital.macjob StartInterval=900 mac_only_agent.py\n"
+
+    def _sources(self):
+        """A firm where one producer is scheduled by cron and one only by launchd."""
+        return {
+            "main.py": "x = 1\n",
+            "scheduled_agent.py": (
+                'import json\n'
+                'OUT = "data/cron_report.json"\n'
+                'json.dump({}, open(OUT, "w"))\n'
+            ),
+            "mac_only_agent.py": (
+                'import json\n'
+                'OUT = "data/mac_report.json"\n'
+                'json.dump({}, open(OUT, "w"))\n'
+            ),
+            "consumer.py": ('open("data/cron_report.json")\n'
+                            'open("data/mac_report.json")\n'),
+        }
+
+    def test_a_launchd_only_module_is_employed(self):
+        """A job that runs every 15 minutes is not an orphan.
+
+        The whole failure: reachability was measured against a document that
+        described half the firm's schedule, and the walk cannot know the half it
+        was never shown (memory `auditor_ground_truth`).
+        """
+        import wiring_audit as wa
+        srcs = self._sources()
+
+        before = wa.scheduler_reachable(srcs, cron_text=self.CRON, launchd_text="")
+        self.assertNotIn("mac_only_agent.py", before,
+                         "test is not posing the bug — the module must be "
+                         "unreachable when only the crontab is consulted")
+
+        after = wa.scheduler_reachable(srcs, cron_text=self.CRON,
+                                       launchd_text=self.LAUNCHD)
+        self.assertIn("mac_only_agent.py", after,
+                      "a module named in the launchd snapshot is scheduled and "
+                      "must be reachable")
+        self.assertIn("scheduled_agent.py", after,
+                      "adding the second scheduler must not cost the first one "
+                      "its roots")
+
+    def test_a_missing_mac_snapshot_is_a_note_not_a_stop(self):
+        """The two absences are NOT symmetric and must not share a response.
+
+        Without the crontab the walk knows only main.py and would brand the
+        whole firm orphaned — that has to stop the audit dead. Without the Mac's
+        launchd list it can at worst over-accuse the handful of jobs that live
+        only there. Wedging the entire audit over that is the wrong size of
+        answer; going silent about it is the wrong kind.
+        """
+        import wiring_audit as wa
+        real_cron, real_ld = wa._cron_snapshot, wa._launchd_snapshot
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                cron = Path(td) / "vm_crontab_snapshot.txt"
+                cron.write_text(self.CRON)
+                gone = Path(td) / "mac_launchd_snapshot.txt"   # never created
+                wa._cron_snapshot = lambda _p=cron: _p
+                wa._launchd_snapshot = lambda _p=gone: _p
+
+                reachable = wa.scheduler_reachable(self._sources())
+                self.assertIsNotNone(
+                    reachable,
+                    "a missing launchd snapshot must NOT wedge the walk — that "
+                    "is the crontab's response, and the crontab's absence is a "
+                    "far larger blindness")
+                self.assertIn("scheduled_agent.py", reachable,
+                              "the crontab still anchors the walk")
+
+                wa.problems, wa.notes = [], []
+                wa.check_orphan_agents(self._sources())
+                self.assertFalse(
+                    any("mac_launchd_snapshot" in p for p in wa.problems),
+                    f"missing Mac schedule must not hard-fail; got {wa.problems}")
+                self.assertTrue(
+                    any("mac_launchd_snapshot" in n for n in wa.notes),
+                    "a blindness the audit KNOWS it has must be said out loud, "
+                    f"not degraded silently; got {wa.notes}")
+        finally:
+            wa._cron_snapshot, wa._launchd_snapshot = real_cron, real_ld
+            wa.problems, wa.notes = [], []
+
+    def test_a_posed_schedule_does_not_inherit_the_running_host(self):
+        """Injecting `cron_text` poses the WHOLE schedule, launchd included.
+
+        Otherwise a test written specifically to stop reading host state would
+        quietly union in whichever launchd jobs the Mac happens to hold, and
+        would pass or fail depending on the machine it ran on — host divergence,
+        reintroduced by the fix for a ground-truth gap.
+        """
+        import wiring_audit as wa
+        real_ld = wa._launchd_snapshot
+        try:
+            # Point the accessor at a snapshot that WOULD employ the module.
+            with tempfile.TemporaryDirectory() as td:
+                live = Path(td) / "mac_launchd_snapshot.txt"
+                live.write_text(self.LAUNCHD)
+                wa._launchd_snapshot = lambda _p=live: _p
+
+                posed = wa.scheduler_reachable(self._sources(), cron_text=self.CRON)
+                self.assertNotIn(
+                    "mac_only_agent.py", posed,
+                    "a posed cron_text must not pull in the host's real launchd "
+                    "snapshot — the test is then measuring the machine")
+        finally:
+            wa._launchd_snapshot = real_ld
+
+    def test_cadence_does_not_inherit_a_watchers_heartbeat(self):
+        """Employment may count a launchd job; cadence may not.
+
+        `vm_state_monitor.py` fires every 900s and reaches modules because it
+        WATCHES them. Letting that become their cadence is the substitution that
+        reported the pipeline's real 65.5h weekend gap as 0.5h. So
+        `effective_gaps` passes `launchd_text=""` explicitly — pinned by AST,
+        because the argument is the entire behaviour and a text search would
+        match the comment that explains it.
+        """
+        import ast, inspect
+        import wiring_audit as wa
+
+        fn = next(n for n in ast.parse(inspect.getsource(wa)).body
+                  if isinstance(n, ast.FunctionDef) and n.name == "effective_gaps")
+        calls = [c for c in ast.walk(fn) if isinstance(c, ast.Call)
+                 and getattr(c.func, "id", None) == "scheduler_reachable"]
+        self.assertTrue(calls, "effective_gaps no longer calls scheduler_reachable")
+        for c in calls:
+            kw = {k.arg: k.value for k in c.keywords}
+            self.assertIn("launchd_text", kw,
+                          "effective_gaps must state its launchd stance, not "
+                          "inherit whatever the default happens to be")
+            self.assertEqual(
+                "", getattr(kw["launchd_text"], "value", "SENTINEL"),
+                "a cadence inherited from a monitor is not a cadence")
+
+    def test_the_refresher_writes_both_snapshots(self):
+        """One script, two mirrors — or the new one is a document nothing updates.
+
+        `vm_crontab_snapshot.txt` had a live refresher for a month before it was
+        written, and until then the audit measured production against a stale
+        template. A second snapshot with no writer repeats that exactly, one
+        file later.
+        """
+        import re
+        import wiring_audit as wa
+        script = (Path(__file__).parent / "scripts"
+                  / "refresh_crontab_snapshot.sh").read_text()
+
+        # Compare the path the WRITER assigns against the path the READER
+        # resolves, not a filename anywhere in the text. The first version of
+        # this asserted `"mac_launchd_snapshot.txt" in script` and survived a
+        # mutant that pointed the writer at a different file — because the
+        # script's own echo line still contained the name. A grep that its own
+        # commentary can satisfy proves nothing (CLAUDE.md: AST/contract, never
+        # text, where a grep would match a postmortem comment).
+        for var, reader, what in (("SNAPSHOT", wa._cron_snapshot, "VM crontab"),
+                                  ("MAC_SNAPSHOT", wa._launchd_snapshot, "Mac launchd")):
+            m = re.search(rf'^{var}="\$BASE_DIR/(.+)"$', script, re.M)
+            self.assertIsNotNone(m, f"the refresher no longer assigns {var}")
+            self.assertEqual(
+                str(Path(m.group(1))), f"data/{reader().name}",
+                f"the {what} snapshot is written to one path and read from "
+                f"another — a producer/consumer mismatch in the schedule "
+                f"ground truth itself")
+
+        self.assertIn("launchctl", script,
+                      "the Mac snapshot must be captured from launchd, not "
+                      "hand-maintained — a hand-maintained schedule document is "
+                      "what this whole check replaced")
+
+        # It must not be able to blank the Mac's schedule from the VM, where
+        # there is no launchd to read and deploy.sh rsyncs data/ across.
+        body = script.split("Fail-closed", 1)[-1]
+        self.assertIn("left as-is", body,
+                      "on a host with no launchd the existing snapshot must be "
+                      "left untouched, not overwritten with an empty capture")
+
+    def test_every_schedule_snapshot_can_reach_the_vm(self):
+        """Ground truth that stops at the repo is ground truth the VM never sees.
+
+        `data/` is excluded wholesale from deploy.sh's rsync and re-included by
+        an allowlist, so a new snapshot is tracked in git, correct on the Mac,
+        and simply absent in production — where the same md5-identical
+        wiring_audit.py then reports a schedule it cannot read. That is not
+        hypothetical: signoff_mode.json was git-tracked and missing from the VM
+        for weeks for exactly this reason, and gcp_setup/ itself was excluded so
+        the VM's own rebuild script could not be fixed by the fix.
+
+        Written against the ACCESSORS rather than two filenames, so the next
+        snapshot added to the walk is covered the day it is added.
+        """
+        import wiring_audit as wa
+        deploy = (Path(__file__).parent / "gcp_setup" / "deploy.sh").read_text()
+        for reader, what in ((wa._cron_snapshot, "VM crontab"),
+                             (wa._launchd_snapshot, "Mac launchd")):
+            self.assertIn(
+                f'--include="data/{reader().name}"', deploy,
+                f"the {what} snapshot is not in deploy.sh's data/ allowlist, so "
+                f"the VM runs the orphan walk against a schedule it cannot see "
+                f"and reports violations the Mac never will")
+
+
 class TestSignoffLedger(unittest.TestCase):
     """The accountable sign-off ledger gates autonomous fixes. These guard the
     guardrails: a regression that quietly disables one of them would let a change

@@ -23,11 +23,36 @@
 # -------------
 # Either host, auto-detected:
 #   * ON the VM      — `crontab -l` IS the live truth, no SSH needed. This is
-#                      the scheduled path; the Mac's crontab is intentionally
-#                      empty (dev machine only, no agents on cron).
+#                      the scheduled path.
 #   * ON the Mac     — SSHes the VM. gcp_setup/deploy.sh calls this before
 #                      rsync so the copy it pushes is never staler than the
 #                      copy already on the VM.
+#
+# TWO schedulers, not one
+# -----------------------
+# This header used to say the Mac's crontab is "intentionally empty (dev
+# machine only, no agents on cron)". That is true of CRON and false of the
+# MAC: the Mac schedules through launchd, and has done since the catch-up and
+# vm-state jobs moved there — catch_up.py every 1200s and vm_state_monitor.py
+# every 900s, neither of which appears in any crontab anywhere.
+#
+# So the schedule ground truth was one host's half of the firm, and every
+# consumer named at the top treated it as the whole. Measured 2026-08-24, the
+# blast radius is ZERO modules: both launchd targets are already reachable from
+# the VM's cron roots, so no agent is currently mis-accused. That is the reason
+# to fix it now rather than a reason not to — the hole costs nothing until
+# someone schedules something on the Mac that runs nowhere else, and on that
+# day it produces a confident "scheduled NOWHERE" about a job running every
+# fifteen minutes (memory: `auditor_ground_truth`).
+#
+# The Mac capture is deliberately NOT fatal when it is unavailable, unlike the
+# crontab. The two failures are not symmetric: with no crontab the walk knows
+# only main.py and would brand the entire firm orphaned, whereas missing
+# launchd roots can only ever cause a false ACCUSATION of a handful of jobs.
+# A note is the proportionate response; wedging the whole audit is not. On the
+# VM there is no launchd to read, so the existing Mac snapshot is left exactly
+# as it is — writing an empty one there would erase the Mac's schedule from
+# the VM's copy on every deploy.
 #
 # Fail-closed
 # -----------
@@ -90,3 +115,48 @@ fi
 } > "$SNAPSHOT"
 
 echo "refresh_crontab_snapshot: $job_lines job line(s) mirrored -> data/vm_crontab_snapshot.txt"
+
+# ── the Mac's other scheduler ────────────────────────────────────────────────
+# launchd, not cron. Best-effort by design (see header): a failure here leaves
+# the existing snapshot untouched and does not fail the script, because a
+# missing Mac schedule can only over-accuse a couple of jobs while a missing
+# crontab would condemn the firm.
+MAC_SNAPSHOT="$BASE_DIR/data/mac_launchd_snapshot.txt"
+
+if command -v launchctl >/dev/null 2>&1 && [ -d "$HOME/Library/LaunchAgents" ]; then
+    mtmp="$(mktemp)"
+    {
+        echo "# MAC SCHEDULE — the firm's SECOND scheduler. launchd, not cron."
+        echo "# Captured $(date -u +%Y-%m-%dT%H:%M:%SZ) on $(hostname)"
+        echo "# DO NOT hand-edit — it is a mirror, not a control surface."
+        echo "# Refresh with: bash scripts/refresh_crontab_snapshot.sh"
+        echo ""
+        for plist in "$HOME"/Library/LaunchAgents/com.apexcapital.*.plist; do
+            [ -e "$plist" ] || continue
+            label="$(basename "$plist" .plist)"
+            # The script BASENAME is what wiring_audit matches module names
+            # against; the interval is what a cadence check would need. Reduce
+            # to the basename with sed rather than `basename`/`xargs`: this
+            # repo's own path contains spaces ("Claude investment strategy"),
+            # and xargs would split it into three nonexistent arguments.
+            args="$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments' "$plist" 2>/dev/null \
+                    | sed -e 's#^[[:space:]]*##' -e 's#[[:space:]]*$##' -e 's#^.*/##' \
+                    | grep -E '^[A-Za-z_][A-Za-z0-9_]*\.py$' | tr '\n' ' ')"
+            iv="$(/usr/libexec/PlistBuddy -c 'Print :StartInterval' "$plist" 2>/dev/null)"
+            echo "launchd ${label} StartInterval=${iv:-none} ${args}"
+        done
+    } > "$mtmp" 2>/dev/null
+
+    if grep -qE '^launchd ' "$mtmp"; then
+        mv "$mtmp" "$MAC_SNAPSHOT"
+        echo "refresh_crontab_snapshot: $(grep -cE '^launchd ' "$MAC_SNAPSHOT") launchd job(s)" \
+             "mirrored -> data/mac_launchd_snapshot.txt"
+    else
+        rm -f "$mtmp"
+        echo "refresh_crontab_snapshot: no com.apexcapital.* launchd jobs found —" \
+             "existing Mac snapshot left untouched." >&2
+    fi
+else
+    echo "refresh_crontab_snapshot: no launchd on this host (expected on the VM) —" \
+         "Mac schedule snapshot left as-is." >&2
+fi

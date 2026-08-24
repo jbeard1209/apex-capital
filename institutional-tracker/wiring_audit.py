@@ -553,9 +553,29 @@ def _cron_snapshot() -> Path:
     return BASE_DIR / "data" / "vm_crontab_snapshot.txt"
 
 
+def _launchd_snapshot() -> Path:
+    """The Mac's launchd schedule — the firm's OTHER scheduler.
+
+    Same script writes both (scripts/refresh_crontab_snapshot.sh). The firm runs
+    on two hosts with two DIFFERENT schedulers, and this walk's ground truth was
+    one host's half: `catch_up.py` (every 1200s) and `vm_state_monitor.py`
+    (every 900s) are launchd jobs on the Mac and appear in no crontab anywhere.
+
+    Measured 2026-08-24 the blast radius is ZERO — both are already reachable
+    from the VM's cron roots, so nobody is currently mis-accused. That is the
+    argument for closing it now, not for leaving it: the hole is free until
+    someone schedules something on the Mac that runs nowhere else, and on that
+    day the audit says "scheduled NOWHERE" about a job firing every fifteen
+    minutes (memory `auditor_ground_truth` — an auditor is only as honest as the
+    document it measures against).
+    """
+    return BASE_DIR / "data" / "mac_launchd_snapshot.txt"
+
+
 def scheduler_reachable(sources: dict, code: Optional[dict] = None,
                         by_root: bool = False, strict: bool = False,
-                        cron_text: Optional[str] = None):
+                        cron_text: Optional[str] = None,
+                        launchd_text: Optional[str] = None):
     """Modules reachable from a real scheduler root, or None if that is unknowable.
 
     `strict=True` drops the loose-name fallback below and follows only RESOLVED
@@ -599,18 +619,35 @@ def scheduler_reachable(sources: dict, code: Optional[dict] = None,
     None means CANNOT TELL, not "nothing is scheduled". With no crontab snapshot
     the walk knows only main.py, so every cron-only module would look orphaned —
     callers must fail closed and judge nobody rather than accuse the whole firm.
+
+    A missing LAUNCHD snapshot is deliberately NOT that. The two absences are
+    not symmetric and must not get the same response: without the crontab this
+    walk knows only main.py and would condemn the entire firm, whereas without
+    the Mac's launchd list it can at worst over-accuse the two jobs that live
+    only there. Wedging the whole audit is not a proportionate answer to that,
+    so a missing launchd snapshot degrades to an empty schedule and the caller
+    emits a note. See `_launchd_snapshot`.
     """
     # `cron_text` is injectable so a test can pose a schedule instead of
     # inheriting whichever crontab the running host happens to hold. A test
     # that reads host state answers a question about the host, not about the
     # code — that is host divergence #8, and it was found in production, not
     # by the two-zone push gate.
+    #
+    # `launchd_text` follows the same rule and is only read from disk when
+    # `cron_text` was NOT posed: a test that supplies a schedule is supplying
+    # the WHOLE schedule, and silently unioning in the running Mac's real
+    # launchd jobs would put host state back inside a test that was written
+    # specifically to keep it out.
     if cron_text is None:
         snapshot = _cron_snapshot()
         if not snapshot.exists():
             return None
         cron_text = snapshot.read_text()
-    cron_txt = cron_text
+        if launchd_text is None:
+            lsnap = _launchd_snapshot()
+            launchd_text = lsnap.read_text() if lsnap.exists() else ""
+    cron_txt = cron_text + "\n" + (launchd_text or "")
     if code is None:
         code = {n: _code_only(t) for n, t in sources.items()}
     # Test files are NOT scheduler roots even when cron runs them: a test
@@ -669,9 +706,14 @@ def check_orphan_agents(sources: dict):
     market crash despite owning exactly the right agent for it.
 
     Detection: build the reachability closure over the import graph starting from
-    the real scheduler roots (main.py + the cron manifest). Any module that writes
-    a data/*.json output which other modules READ, but that is NOT reachable from
-    any scheduler root, is an agent that never comes to work.
+    the real scheduler roots — main.py, the VM's cron manifest, AND the Mac's
+    launchd manifest. Any module that writes a data/*.json output which other
+    modules READ, but that is NOT reachable from any scheduler root, is an agent
+    that never comes to work.
+
+    "The real scheduler roots" said "the cron manifest" alone until 2026-08-24,
+    when the firm had already been running two schedulers for weeks — see
+    `_launchd_snapshot`.
     """
     found_orphans = set()
     code = {n: _code_only(t) for n, t in sources.items()}
@@ -707,6 +749,20 @@ def check_orphan_agents(sources: dict):
             "ground truth is unreadable, so no agent can be judged scheduled or "
             "orphaned. Run scripts/refresh_crontab_snapshot.sh")
         return
+
+    # The firm has TWO schedulers and this walk used to know one. A missing Mac
+    # snapshot is a note, not a stop: it can only over-accuse the handful of jobs
+    # that live nowhere else, where a missing crontab condemns everybody. Said
+    # out loud rather than degraded silently, because the whole point of the
+    # crontab branch above is that quietly answering a question you could not
+    # see the answer to is this firm's most expensive habit.
+    if not _launchd_snapshot().exists():
+        notes.append(
+            "[orphan-agent] data/mac_launchd_snapshot.txt is missing — the Mac's "
+            "launchd jobs are invisible to this walk, so any module scheduled "
+            "ONLY there would be reported as an orphan. Not fatal (the VM's "
+            "crontab still anchors the walk). Run scripts/refresh_crontab_snapshot.sh "
+            "on the Mac.")
 
     # The walk itself now lives in scheduler_reachable() so the census in
     # internal_audit_agent asks the identical question of the detectors it names.
@@ -789,7 +845,8 @@ def check_orphan_agents(sources: dict):
         esc = _escalation_path(name, code[name])
         if esc:
             msg = (f"[orphan-agent] {name} escalates via {esc} but is NOT reachable "
-                   f"from main.py or the cron manifest — it is scheduled NOWHERE, so "
+                   f"from main.py, the VM crontab or the Mac launchd manifest — it is "
+                   f"scheduled NOWHERE, so "
                    f"nothing it would escalate ever reaches the board")
             (notes if name in _orphan_baseline() else problems).append(
                 msg + (" [known — pending board triage]" if name in _orphan_baseline() else ""))
@@ -815,8 +872,9 @@ def check_orphan_agents(sources: dict):
             exists = (_data_dir() / out).exists()
             msg = (
                 f"[orphan-agent] {name} writes {out} (read by {len(readers)} module(s): "
-                f"{', '.join(sorted(readers)[:3])}) but is NOT reachable from main.py or "
-                f"the cron manifest — it is scheduled NOWHERE"
+                f"{', '.join(sorted(readers)[:3])}) but is NOT reachable from "
+                f"main.py, the VM crontab or the Mac launchd manifest — it is "
+                f"scheduled NOWHERE"
                 + ("" if exists else f", and {out} has NEVER been produced")
             )
             # RATCHET: the 11 orphans this check found on day one are pre-existing
@@ -1015,8 +1073,17 @@ def effective_gaps(sources: dict, code: Optional[dict] = None,
         def gap_of(script):
             return se.max_legit_gap_h(script, cron_text=cron_txt)
 
+    # launchd roots are deliberately EXCLUDED here, and only here. This function
+    # answers "how often", and `gap_of` can only price a crontab line — a launchd
+    # root would come back with no parsable entry and be dropped anyway. Worse if
+    # it ever were priced: `vm_state_monitor.py` fires every 900s and, like
+    # `canary_agent.py` before it, reaches modules only because it WATCHES them.
+    # Letting a watcher's heartbeat become the watched module's cadence is the
+    # exact substitution that reported the pipeline's real 65.5h weekend gap as
+    # 0.5h (see scheduler_reachable's `strict` note). Employment and cadence are
+    # different questions, and only the first one may count a launchd job.
     by_root = scheduler_reachable(sources, code, by_root=True, strict=True,
-                                  cron_text=cron_text)
+                                  cron_text=cron_text, launchd_text="")
     if by_root is None:
         return None
     out = {}
