@@ -9540,6 +9540,136 @@ class TestCoherenceLaws(unittest.TestCase):
         finally:
             subprocess.run = real
 
+    # A test may call a law without pinning every source ONLY if the host's own
+    # answer is the thing under test. Each entry carries WHY, because the
+    # question is never "does this pass" but "would it still pass on the other
+    # host, for the same reason". Adding a name has to fail the guard first,
+    # which puts a human in front of that question exactly once.
+    HOST_READING_LAW_TESTS = {
+        "test_off_the_writer_the_law_defers_and_names_the_owner":
+            "the point IS this host's writer identity — pinning it would test "
+            "nothing",
+        "test_the_live_agent_pool_emits_only_verbs_the_manager_handles":
+            "reads the real agent directory on purpose; it is deployed code, "
+            "identical on both hosts by md5",
+        # These three read INFRASTRUCTURE.md, which lives at the repo root on
+        # the Mac and inside institutional-tracker/ on the VM. `_documented_
+        # hosts` already tries BASE_DIR.parent then BASE_DIR for exactly that
+        # reason, and deploy.sh ships the file (verified 2026-08-24: same 10016
+        # bytes on both). If either of those stops being true this becomes a
+        # real divergence, so it is listed rather than exempted silently.
+        "test_a_stranger_from_before_the_stamping_cutover_is_not_judged":
+            "documented-host list resolves on both hosts (two-candidate lookup)",
+        "test_an_undocumented_host_trading_the_account_is_a_violation":
+            "documented-host list resolves on both hosts (two-candidate lookup)",
+        "test_no_orders_cannot_report_a_clean_census":
+            "documented-host list resolves on both hosts (two-candidate lookup)",
+    }
+
+    def test_no_law_test_lets_a_source_come_from_the_host(self):
+        """Divergence #8, caught on the Mac instead of eleven minutes into the VM.
+
+        A law takes its sources as parameters so a test can drive both sides. A
+        test that omits one gets whatever this host's `data/` happens to hold —
+        and then asserts about the host, not the law. Both times it has bitten,
+        the Mac was green and only the VM disagreed, which costs a deploy and a
+        full VM suite to discover:
+          - `test_the_verdict_email_repeats_on_a_heartbeat_not_only_on_change`
+            stubbed `buffer_email` but not `delivery_state` (2026-08-24);
+          - `test_without_source_b_the_law_can_fail_but_cannot_pass` passed
+            `impossible=None`, which means "derive it from this host" and on the
+            VM derived four real impossible ladders (2026-08-24, same day).
+
+        The rule: supply every source parameter, or stub the module state the
+        law would read. Stubbing is recognised structurally — an assignment to a
+        `cl.<attr>`, or one of this class's `_with_*` / `_fake_*` / `_scan_*`
+        helpers — because that is how every hermetic test here already does it.
+        """
+        import ast
+        import inspect
+        import textwrap
+        cl = self._law_sources()
+        src = inspect.getsource(type(self))
+        cls = ast.parse(textwrap.dedent(src)).body[0]
+        # ORDERED, not a set. Positional arguments are matched by position, and
+        # `list(some_set)[:n]` picks names in hash order — which Python
+        # randomises per process. The guard therefore credited whichever
+        # parameter it felt like: `law_deployed_set_matches_repo(boom, ...)`
+        # passed on one run and reported `runner` unpinned on the next. A
+        # flaky guard is worse than no guard, because the green runs teach you
+        # to disbelieve the red ones.
+        law_params = {n: tuple(inspect.signature(f).parameters)
+                      for n, f in vars(cl).items() if n.startswith("law_")}
+        self.assertGreater(len(law_params), 5, "found no laws to check against")
+
+        offenders = self._unpinned_law_calls(cls, law_params)
+        self.assertEqual([], offenders,
+                         "these call a law without pinning every source and "
+                         "without stubbing — they assert about this host")
+
+        # PROVE THE GUARD CAN FAIL, on the exact shape that got past it. The
+        # first version counted any keyword as "given", so `impossible=None` —
+        # which means "not supplied, go read this host" and is precisely the bug
+        # of 2026-08-24 — read as fully pinned. A guard written from the memory
+        # of a bug, that the bug itself would walk through.
+        pill = ast.parse(textwrap.dedent("""
+            class _Pill:
+                def test_zzpill(self):
+                    cl.law_surfaced_rungs_clear_their_ladder(
+                        surfaced=[], impossible=None)
+        """)).body[0]
+        self.assertEqual(
+            ["test_zzpill -> law_surfaced_rungs_clear_their_ladder "
+             "(unpinned: ['impossible'])"],
+            self._unpinned_law_calls(pill, law_params),
+            "an explicit None is a source left to the host, and must be caught")
+
+        # An exemption for a test that no longer exists is a hole held open for
+        # nobody: rename the test and the name silently stops protecting
+        # anything, while the entry still reads like a considered decision.
+        # (This block spent its first day AFTER the `return` in
+        # _unpinned_law_calls, where it could never run — the exemption list
+        # was unpoliced by the very assertion written to police it.)
+        names = {m.name for m in cls.body if isinstance(m, ast.FunctionDef)}
+        self.assertEqual(set(), set(self.HOST_READING_LAW_TESTS) - names,
+                         "exemption(s) naming a test that is gone")
+
+    def _unpinned_law_calls(self, cls_node, law_params):
+        """Law calls in this class's tests that leave a source to the host."""
+        import ast
+        offenders = []
+        for meth in cls_node.body:
+            if not isinstance(meth, ast.FunctionDef) or \
+                    not meth.name.startswith("test_") or \
+                    meth.name in self.HOST_READING_LAW_TESTS or \
+                    meth.name == "test_no_law_test_lets_a_source_come_from_the_host":
+                continue
+            stubs = any(isinstance(n, ast.Attribute) and isinstance(n.ctx, ast.Store)
+                        for n in ast.walk(meth)) or \
+                any(isinstance(n, ast.Attribute) and
+                    n.attr.startswith(("_with_", "_fake_", "_scan_", "_stale_"))
+                    for n in ast.walk(meth)) or "setattr" in ast.dump(meth)
+            for call in ast.walk(meth):
+                if not isinstance(call, ast.Call):
+                    continue
+                fname = getattr(call.func, "attr", None) or \
+                    getattr(call.func, "id", None)
+                params = law_params.get(fname or "")
+                if params is None:
+                    continue
+                # An explicit None is NOT a supplied source. Every law here
+                # spells "derive this yourself from my module state" as a None
+                # default, so passing one back is the same as omitting it.
+                given = {k.arg for k in call.keywords
+                         if k.arg and not (isinstance(k.value, ast.Constant)
+                                           and k.value.value is None)} | \
+                    set(list(params)[:len(call.args)])
+                missing = set(params) - given
+                if missing and not stubs:
+                    offenders.append(f"{meth.name} -> {fname} "
+                                     f"(unpinned: {sorted(missing)})")
+        return sorted(offenders)
+
     # ---- the gate and the ladder law must keep agreeing ---------------------
 
     def _surfaced(self, coherence="HOLDS", event="EV-1"):
@@ -9629,14 +9759,24 @@ class TestCoherenceLaws(unittest.TestCase):
         self.assertIn("1 impossible ladder(s)", r.detail)
 
     def test_without_source_b_the_law_can_fail_but_cannot_pass(self):
-        """The asymmetry. Half a comparison can convict; it cannot acquit."""
+        """The asymmetry. Half a comparison can convict; it cannot acquit.
+
+        `impossible=None` is NOT how you pose an unavailable source B — it means
+        "not supplied, go derive it", and the law then reads this host's Kalshi
+        corpus. Written that way first, this test passed on the Mac (stale scan,
+        the law defers, source B genuinely absent) and failed on the VM (fresh
+        scan, 4 real impossible ladders, so source B WAS available and the law
+        correctly held). Divergence #8 twice in two days, both times inside a
+        test written to catch host-dependence. Source B is stubbed here so the
+        assertion is about the law, not about which host ran it.
+        """
         cl = self._law_sources()
-        clean = cl.law_surfaced_rungs_clear_their_ladder(
-            surfaced=self._surfaced(), impossible=None)
+        self._with_ladder_verdict(cl, cl.CANNOT_TELL)
+        clean = cl.law_surfaced_rungs_clear_their_ladder(surfaced=self._surfaced())
         self.assertEqual(cl.CANNOT_TELL, clean.verdict,
                          "passed on one source agreeing with itself")
         dirty = cl.law_surfaced_rungs_clear_their_ladder(
-            surfaced=self._surfaced(coherence="VIOLATED"), impossible=None)
+            surfaced=self._surfaced(coherence="VIOLATED"))
         self.assertEqual(cl.VIOLATED, dirty.verdict,
                          "a self-contradicting row needs no second source")
 
@@ -11584,6 +11724,196 @@ class TestEntryDateLedger(unittest.TestCase):
         self.assertNotIn(0, seeds,
                          "hold_days is still seeded to 0, so a position the ledger "
                          "cannot date reads as one opened today and never ages")
+
+
+class TestReaderCadence(unittest.TestCase):
+    """`wiring_audit.check_reader_keeps_up_with_writer` — is the checker itself
+    reading its evidence, or sampling it?
+
+    Every fixture here poses its own crontab. Reading the host's snapshot would
+    make these tests report on the machine rather than on the code, which is
+    host divergence #8 — found in production, invisible to the two-zone gate.
+    """
+
+    #: zzfast 1.0h, zzmid 12.0h, zzslow 72.0h (weekday-only: the weekend is in it).
+    CRON = ("0 * * * * cd ~/it && /usr/bin/python3 zzfast.py\n"
+            "30 2,14 * * * cd ~/it && /usr/bin/python3 zzmid.py\n"
+            "0 3 * * 1-5 cd ~/it && /usr/bin/python3 zzslow.py\n")
+
+    def setUp(self):
+        import wiring_audit
+        self.wa = wiring_audit
+
+    def _notes(self, sources, cron=None):
+        wa = self.wa
+        keep = wa.problems, wa.notes
+        wa.problems, wa.notes = [], []
+        try:
+            wa.check_reader_keeps_up_with_writer(
+                sources, cron_text=self.CRON if cron is None else cron)
+            return " ".join(wa.notes)
+        finally:
+            wa.problems, wa.notes = keep
+
+    def _gaps(self, sources):
+        return self.wa.effective_gaps(sources, cron_text=self.CRON)
+
+    def test_a_monitor_that_only_names_a_module_does_not_lend_it_a_cadence(self):
+        """The bug this check shipped with, and the one that hid its own finding.
+
+        `canary_agent.py` runs every 30 minutes and names practically every
+        module in the firm because it health-checks them. Under the loose
+        name rule that made it a caller of `main.py`, so the pipeline's real
+        worst gap of 65.5h was reported as 0.5h and every cadence finding
+        downstream evaporated — the check said the firm was fast on the
+        strength of the thing that was only WATCHING it.
+        """
+        sources = {
+            # loose: the dispatch target is a variable, so the edge resolver
+            # cannot say who is called and falls back to the text rule.
+            "zzfast.py": ('import subprocess\n'
+                          'WATCHED = ["zzslow"]\n'
+                          'subprocess.run(["python3", script])\n'),
+            "zzslow.py": 'OUT = "data/zzbook.json"\n',
+        }
+        loose = self.wa.scheduler_reachable(
+            sources, by_root=True, cron_text=self.CRON)
+        self.assertIn(
+            "zzslow.py", loose["zzfast.py"],
+            "fixture no longer reproduces the bug: zzfast must reach zzslow "
+            "under the LOOSE rule, or the strict assertion below proves nothing")
+        strict = self.wa.scheduler_reachable(
+            sources, by_root=True, strict=True, cron_text=self.CRON)
+        self.assertNotIn(
+            "zzslow.py", strict["zzfast.py"],
+            "a module that merely appears in a monitor's text was treated as "
+            "invoked by it")
+        self.assertEqual(
+            (72.0, 72.0), self._gaps(sources)["zzslow.py"],
+            "zzslow runs weekday-only (72h worst gap) and inherited the "
+            "hourly monitor's cadence instead")
+
+    def test_a_reader_slower_on_every_path_is_reported_as_unrecoverable(self):
+        sources = {
+            "zzfast.py": 'OUT = "data/zzbook.json"\njson.dump(d, open(OUT, "w"))\n',
+            "zzslow.py": 'r = json.load(open("data/zzbook.json"))\n',
+        }
+        note = self._notes(sources)
+        self.assertIn("cannot be recovered", note, note)
+        self.assertIn("at worst every 72.0h", note, note)
+        self.assertNotIn(
+            "may share a scheduler path", note,
+            "the writer runs only hourly and the reader only weekday-mornings; "
+            "there is no shared path and the finding must not be hedged")
+
+    def test_a_gap_that_only_some_paths_have_is_not_stated_as_certain(self):
+        """The writer is reached by a fast root AND by the reader's own root.
+
+        `internal_audit_agent.py` reads `coherence_report.json` and
+        `coherence_laws.py` writes it — but `main.py` calls both, in ONE
+        process, where the reader sees exactly what the writer just wrote.
+        Comparing the reader's fastest path against the writer's FASTEST
+        called that certain loss. It is not loss at all on that path.
+        """
+        sources = {
+            "zzmid.py": 'import zzwriter\nzzwriter.go()\n',
+            "zzslow.py": ('import zzwriter\nzzwriter.go()\n'
+                          'r = json.load(open("data/zzbook.json"))\n'),
+            "zzwriter.py": ('OUT = "data/zzbook.json"\n'
+                            'json.dump(d, open(OUT, "w"))\n'),
+        }
+        self.assertEqual((12.0, 72.0), self._gaps(sources)["zzwriter.py"],
+                         "the writer is reached by both roots and must carry "
+                         "the whole range, not one end of it")
+        note = self._notes(sources)
+        self.assertIn("may share a scheduler path", note, note)
+        self.assertIn("nothing is missed", note, note)
+
+    def test_an_accumulating_file_is_lateness_and_never_called_loss(self):
+        sources = {
+            "zzfast.py": ('OUT = "data/zzbook.json"\n'
+                          'old = json.load(open(OUT))\n'
+                          'json.dump(old + [d], open(OUT, "w"))\n'),
+            "zzslow.py": 'r = json.load(open("data/zzbook.json"))\n',
+        }
+        note = self._notes(sources)
+        self.assertIn("lateness, not loss", note, note)
+        self.assertNotIn("cannot be recovered", note, note)
+
+    def test_no_knowable_pair_defers_instead_of_reporting_a_clean_sweep(self):
+        """`gaps` can be non-None and empty, which is not the same as a pass.
+
+        A crontab that parses to no usable entry leaves every module without a
+        cadence, every reader skipped, and the check printing OK over a
+        denominator of zero — the exact shape the coherence laws forbid.
+        """
+        sources = {
+            "zzfast.py": 'OUT = "data/zzbook.json"\njson.dump(d, open(OUT, "w"))\n',
+            "zzslow.py": 'r = json.load(open("data/zzbook.json"))\n',
+        }
+        note = self._notes(sources, cron="# nothing is scheduled here\n")
+        self.assertIn("CANNOT TELL", note, note)
+        self.assertNotIn("OK —", note, note)
+
+    def test_a_writer_that_uses_open_w_is_not_mistaken_for_a_reader(self):
+        """`open(OUT, "w")` is how most of this codebase writes a file.
+
+        A bare `open\\s*\\(` in the read pattern matched it, so a writer that
+        replaces its output wholesale was read as load-append-store and the
+        report downgraded destroyed generations to "lateness, not loss". The
+        error sat on the reassuring side: it can only hide a real loss, never
+        invent one.
+        """
+        replaces = self.wa._replaces_its_output
+        for mode in ('"w"', "'w'", '"a"', '"w", encoding="utf-8"'):
+            self.assertIs(
+                True,
+                replaces(f'OUT = "data/zzbook.json"\n'
+                         f'json.dump(d, open(OUT, {mode}))\n', "data/zzbook.json"),
+                f"open(OUT, {mode}) is a write and was counted as a read")
+        self.assertIs(
+            False,
+            replaces('OUT = "data/zzbook.json"\n'
+                     'old = json.load(open(OUT))\n'
+                     'json.dump(old + [d], open(OUT, "w"))\n', "data/zzbook.json"),
+            "a genuine load-append-store must still read as accumulating")
+
+    def test_a_loss_finding_never_claims_zero_generations_were_lost(self):
+        """Reader 72h, writer 65.5h — floor(72/65.5) - 1 is 0.
+
+        The line then read "up to 0 generation(s) are overwritten ... and
+        cannot be recovered": a loss finding asserting nothing was lost. Two
+        writes do fit in that window (t=0 and t=65.5), so the bound is ceil.
+        """
+        sources = {
+            "zzfast.py": 'OUT = "data/zzbook.json"\njson.dump(d, open(OUT, "w"))\n',
+            "zzslow.py": 'r = json.load(open("data/zzbook.json"))\n',
+        }
+        wa = self.wa
+        keep = wa.problems, wa.notes
+        wa.problems, wa.notes = [], []
+        try:
+            wa.check_reader_keeps_up_with_writer(
+                sources, cron_text=self.CRON,
+                gap_of={"zzfast.py": 65.5, "zzslow.py": 72.0}.get)
+            note = " ".join(wa.notes)
+        finally:
+            wa.problems, wa.notes = keep
+        self.assertIn("cannot be recovered", note, note)
+        self.assertIn("up to 1 generation", note, note)
+        self.assertNotIn("up to 0 generation", note, note)
+
+    def test_the_check_is_wired_into_the_audit(self):
+        src = Path(self.wa.__file__).read_text()
+        run_checks = next(
+            n for n in ast.walk(ast.parse(src))
+            if isinstance(n, ast.FunctionDef) and n.name == "run_checks")
+        called = {n.func.id for n in ast.walk(run_checks)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+        self.assertIn(
+            "check_reader_keeps_up_with_writer", called,
+            "the cadence check exists but run_checks never calls it — an "
+            "unrun detector is an absent one")
 
 
 class TestInternalAudit(unittest.TestCase):

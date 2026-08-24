@@ -23,6 +23,7 @@ import argparse
 import ast
 import glob
 import json
+import math
 import re
 import sys
 from datetime import datetime
@@ -552,8 +553,39 @@ def _cron_snapshot() -> Path:
     return BASE_DIR / "data" / "vm_crontab_snapshot.txt"
 
 
-def scheduler_reachable(sources: dict, code: Optional[dict] = None) -> Optional[set]:
+def scheduler_reachable(sources: dict, code: Optional[dict] = None,
+                        by_root: bool = False, strict: bool = False,
+                        cron_text: Optional[str] = None):
     """Modules reachable from a real scheduler root, or None if that is unknowable.
+
+    `strict=True` drops the loose-name fallback below and follows only RESOLVED
+    invocation edges. Not a stylistic preference — the same over-approximation
+    is safe for one question and reckless for the other, and both callers live
+    in this file:
+
+      * "does this module run AT ALL?" (check_orphan_agents). Over-reaching
+        means fewer orphan accusations. The error lands on not-accusing, which
+        is where an error belongs when the penalty is calling a working agent
+        dead.
+      * "how OFTEN does it run?" (effective_gaps). Over-reaching means every
+        module inherits the cadence of the fastest thing that merely mentions
+        it, and the answer comes back reassuring. `canary_agent.py` runs every
+        30 minutes and names practically every module in the firm because it
+        health-checks them — under the loose rule it "reached" `main.py`
+        itself, so the pipeline's real worst gap of 65.5h was reported as
+        0.5h. A gap check that inherits a monitor's heartbeat says the firm is
+        fast on the strength of the thing that was only WATCHING it, and the
+        weekend blind window it was written to find disappears.
+
+    So the loose rule stays where a false pass is the cheap error and is
+    refused where a false pass is the expensive one.
+
+    `by_root=True` returns `{root: reachable_set}` instead of the flat union.
+    Same walk, second view — deliberately NOT a second function. The cadence
+    check below needs to know WHICH root reaches a module (a detector inherits
+    the schedule of whatever runs it), and computing that with its own traversal
+    would put two copies of these rules in one file, which is the failure this
+    docstring already warns about one paragraph down.
 
     Extracted from check_orphan_agents on 2026-08-22 so there is exactly ONE
     implementation of "does this actually run". internal_audit_agent's census
@@ -568,10 +600,17 @@ def scheduler_reachable(sources: dict, code: Optional[dict] = None) -> Optional[
     the walk knows only main.py, so every cron-only module would look orphaned —
     callers must fail closed and judge nobody rather than accuse the whole firm.
     """
-    snapshot = _cron_snapshot()
-    if not snapshot.exists():
-        return None
-    cron_txt = snapshot.read_text()
+    # `cron_text` is injectable so a test can pose a schedule instead of
+    # inheriting whichever crontab the running host happens to hold. A test
+    # that reads host state answers a question about the host, not about the
+    # code — that is host divergence #8, and it was found in production, not
+    # by the two-zone push gate.
+    if cron_text is None:
+        snapshot = _cron_snapshot()
+        if not snapshot.exists():
+            return None
+        cron_text = snapshot.read_text()
+    cron_txt = cron_text
     if code is None:
         code = {n: _code_only(t) for n, t in sources.items()}
     # Test files are NOT scheduler roots even when cron runs them: a test
@@ -588,22 +627,33 @@ def scheduler_reachable(sources: dict, code: Optional[dict] = None) -> Optional[
         edges[n] = e
         if unresolved:
             loose.add(n)
-    reachable, frontier = set(roots), set(roots)
-    while frontier:
-        nxt = set()
-        for cur in frontier:
-            txt = code.get(cur, "")
-            for name in prod:
-                if name in reachable:
-                    continue
-                stem = name[:-3]
-                if stem in edges.get(cur, ()):
-                    nxt.add(name)
-                elif cur in loose and re.search(rf"\b{re.escape(stem)}\b", txt):
-                    nxt.add(name)
-        reachable |= nxt
-        frontier = nxt
-    return reachable
+    # Successors, resolved ONCE. by_root=True walks from every root, and the
+    # loose-name regex used to be re-run per root per frontier node — the same
+    # ~200x200 sweep sixty times over, which took wiring_audit from seconds to
+    # minutes. The answer does not depend on the root, so it is computed here.
+    succ = {}
+    for cur in prod | roots:
+        txt = code.get(cur, "")
+        e = edges.get(cur, ())
+        s = {n for n in prod if n[:-3] in e}
+        if cur in loose and not strict:
+            s |= {n for n in prod
+                  if re.search(rf"\b{re.escape(n[:-3])}\b", txt)}
+        succ[cur] = s
+
+    def _walk(seed):
+        reachable, frontier = set(seed), set(seed)
+        while frontier:
+            nxt = set()
+            for cur in frontier:
+                nxt |= succ.get(cur, set()) - reachable
+            reachable |= nxt
+            frontier = nxt
+        return reachable
+
+    if by_root:
+        return {r: _walk({r}) for r in roots}
+    return _walk(roots)
 
 
 def check_orphan_agents(sources: dict):
@@ -924,6 +974,284 @@ def check_internal_audit():
                      f"censused; report {age_h:.1f}h old")
 
 
+def effective_gaps(sources: dict, code: Optional[dict] = None,
+                   gap_of=None, cron_text: Optional[str] = None) -> Optional[dict]:
+    """{module: (best_h, worst_h)} hours between runs, or None if unknowable.
+
+    A module that is on no crontab line of its own is not therefore slow — it
+    runs at the cadence of whatever reaches it. `coherence_laws.py` has zero
+    cron entries and runs because `main.py` calls it.
+
+    Why a RANGE and not the best cadence. Reachability is resolved per module,
+    but a root does not necessarily invoke all of a module. `kalshi_scanner.py`
+    imports `coherence_laws` every 12h to call exactly one law
+    (`law_nested_probabilities_are_monotone`); the law that reads
+    `kalshi_scan_log.json` runs only from `run_all()`, which only `main.py`
+    reaches, at 65.5h. Collapsing that to the 12h minimum reports the module as
+    keeping up with a file that one of its own laws provably cannot see — it
+    would have suppressed the single finding this pair of functions exists to
+    make. Callers get both ends and must decide which one their question can
+    afford to be wrong about; see check_reader_keeps_up_with_writer, which
+    spends the reassuring direction and not the alarming one.
+
+    Roots are walked with `strict=True`: a cadence inherited from a module that
+    merely NAMES this one is not a cadence (see scheduler_reachable).
+
+    `gap_of` and `cron_text` are injectable so a test can pose a schedule
+    instead of measuring the host it happens to run on.
+    """
+    if gap_of is None:
+        try:
+            import schedule_expectations as se
+        except Exception:
+            return None
+        if cron_text is None:
+            snap = _cron_snapshot()
+            if not snap.exists():
+                return None
+            cron_text = snap.read_text()
+        cron_txt = cron_text
+
+        def gap_of(script):
+            return se.max_legit_gap_h(script, cron_text=cron_txt)
+
+    by_root = scheduler_reachable(sources, code, by_root=True, strict=True,
+                                  cron_text=cron_text)
+    if by_root is None:
+        return None
+    out = {}
+    for root, members in by_root.items():
+        g = gap_of(root)
+        if g is None:
+            continue                  # named in cron but no parsable entry
+        for m in members:
+            lo, hi = out.get(m, (g, g))
+            out[m] = (min(lo, g), max(hi, g))
+    return out
+
+
+#: What a READ looks like. The `open(` arm carries a negative lookahead because
+#: `open(OUT, "w")` is the single most common way to write a file in this
+#: codebase, and a bare `open\s*\(` counted it as a read — so a writer that
+#: replaces its output wholesale was classified as load-append-store, and the
+#: report downgraded destroyed generations to "lateness, not loss". The error
+#: sat on the reassuring side, which is where it does damage: it can only ever
+#: hide a real loss, never invent one.
+_READ_CALL = (r"(?:json\.load|\.read_text|\.read_bytes|_load|read_json"
+              r"|open\s*\((?![^)\n]*[\"'][wax]))")
+
+
+def _replaces_its_output(code_txt: str, out: str) -> Optional[bool]:
+    """True if the writer replaces `out` wholesale, False if it accumulates, None
+    if this cannot be told from the source.
+
+    Three states on purpose. A writer that loads its own file before rewriting
+    it is doing load-append-store, so a slow reader is merely late and still
+    sees every row. A writer that only writes is replacing, and whatever it
+    replaced is gone. Those two want opposite words in the report.
+
+    The third state is the one worth defending. Almost every path here is bound
+    to a module constant (`SCAN_LOG = DATA_DIR / "kalshi_scan_log.json"`) and
+    then read through that name, so a search for the literal next to a read
+    finds nothing and would classify the whole firm as destructive — a
+    confident answer produced by not looking properly. So: resolve the constant
+    first, and when no constant binds the literal AND the literal never appears
+    beside a read, say None. `presence-is-not-currency`: the absence of evidence
+    that it reads is not evidence that it doesn't.
+    """
+    if re.search(_READ_CALL + r"[^\n]*" + re.escape(out), code_txt) or \
+       re.search(re.escape(out) + r"[^\n]*" + _READ_CALL, code_txt):
+        return False
+    consts = set(re.findall(r"^(\w+)\s*=[^\n]*" + re.escape(out),
+                            code_txt, re.M))
+    if not consts:
+        return None                      # nothing names it; cannot follow it
+    for c in consts:
+        if re.search(_READ_CALL + r"[^\n]*\b" + re.escape(c) + r"\b", code_txt) or \
+           re.search(r"\b" + re.escape(c) + r"\b[^\n]*" + _READ_CALL, code_txt):
+            return False
+    return True
+
+
+def _file_is_replaced(code: dict, writers, out: str) -> Optional[bool]:
+    """Is `out` replaced wholesale, or accumulated? A property of the FILE.
+
+    Asking one writer was wrong and produced eight confident false lines on the
+    first run. `board_issue_ledger.py` binds `CHAIRMAN_PATH` for reference and
+    writes through `chairman_queue.py`, the documented single source of truth
+    for that file — which loads it before every write. Judged on
+    board_issue_ledger's own source alone, the firm's main accumulating queue
+    read as destructive and buried the one real finding.
+
+    So: if ANY module that writes this file reads it first, the file
+    accumulates. Unanimous None (nobody's source settles it) stays None.
+    """
+    verdicts = [_replaces_its_output(code.get(w, ""), out) for w in writers]
+    if any(v is False for v in verdicts):
+        return False
+    if all(v is None for v in verdicts):
+        return None
+    return True
+
+
+def _cadence_phrase(best: float, worst: float) -> str:
+    """How often, said so the range is attributed to the side that has one."""
+    if best == worst:
+        return f"at worst every {worst:.1f}h"
+    return (f"every {best:.1f}h if invoked on its fastest scheduler path and "
+            f"{worst:.1f}h on its slowest")
+
+
+def check_reader_keeps_up_with_writer(sources: dict, code: Optional[dict] = None,
+                                      gap_of=None,
+                                      cron_text: Optional[str] = None):
+    """A reader slower than its writer is SAMPLING its evidence, not observing it.
+
+    Not a latency complaint. `kalshi_scanner.py` rewrites
+    `data/kalshi_scan_log.json` whole, four times a day — worst gap 12h. The
+    only thing that checks that book for structural coherence is
+    `coherence_laws.py`, which is on no crontab line and runs inside `main.py`,
+    scheduled `* * 1-5` — worst gap **65.5h**, because the weekend is in it.
+
+    Friday evening to Monday morning the scanner publishes about ten reports
+    and each one overwrites the last. Nine of them are never read by any law,
+    and cannot be: by the time a checker runs, the evidence has been replaced.
+    That is not a delayed check, it is a permanently unobservable window, and
+    every HOLDS reported on Monday is a verdict about one scan in ten while
+    reading exactly like a verdict about the weekend.
+
+    The overwrite test is what separates the two cases, and it is deliberately
+    conservative: a writer that also READS its own output is accumulating
+    (load, append, rewrite), so a slow reader there is merely late and sees the
+    backlog. A writer that only writes is replacing, and the generations in
+    between are destroyed. Only the destructive case is called a loss.
+
+    Reported as notes rather than violations. Every instance here is a
+    scheduling decision on a host whose crontab is the Chairman's to change —
+    failing the push gate over it would block work on a machine that cannot fix
+    it. What this buys is that the window has a NUMBER and a name attached,
+    instead of being a thing nobody had measured.
+    """
+    code = code or {n: _code_only(t) for n, t in sources.items()}
+    gaps = effective_gaps(sources, code, gap_of, cron_text)
+    if gaps is None:
+        notes.append("[reader-cadence] CANNOT TELL — no crontab snapshot, so no "
+                     "module's cadence is knowable here; judged nobody")
+        return
+
+    out_re = re.compile(r'["\']([\w./-]+\.json)["\']')
+    write_re = re.compile(r"\b(?:write_text|json\.dump|atomic_write|_save)\b")
+    writer_stems = {n[:-3] for n, t in sources.items()
+                    if not n.startswith("test_") and write_re.search(t)}
+
+    # Writers per output, and the fastest cadence any of them refreshes it at.
+    writers_of = {}
+    for name, txt in sources.items():
+        if name.startswith("test_") or not write_re.search(txt):
+            continue
+        for out in _declared_outputs(txt, out_re,
+                                     writer_stems=writer_stems - {name[:-3]}):
+            writers_of.setdefault(out, set()).add(name)
+
+    findings, examined = [], 0
+    for out, writers in writers_of.items():
+        w_range = [gaps[w] for w in writers if w in gaps]
+        if not w_range:
+            continue                      # unscheduled: check_orphan_agents' job
+        w_gap = min(lo for lo, _ in w_range)   # changes at least this often
+        w_worst = max(hi for _, hi in w_range)
+        destructive = _file_is_replaced(code, writers, out)
+        slowest = None
+        for reader, rtxt in code.items():
+            if reader in writers or reader.startswith("test_") or out not in rtxt:
+                continue
+            if reader not in gaps:
+                continue                  # unscheduled reader: a different bug
+            r_best, r_worst = gaps[reader]
+            examined += 1
+            # Spend the range on the ALARMING side: r_worst raises the finding,
+            # r_best only decides whether it is certain. A module reached by a
+            # fast root and a slow one may do its reading on either path, and
+            # taking the fast end would let one incidental import vouch for a
+            # function that root never calls.
+            if r_worst > w_gap and (slowest is None or r_worst > slowest[1]):
+                # Certain only if the reader's FASTEST path is still slower
+                # than the writer's SLOWEST. Comparing against the writer's
+                # fastest instead called it certain whenever a gap was merely
+                # possible — and the pair that exposed it,
+                # internal_audit_agent reading coherence_report.json, are both
+                # called by main.py inside ONE process, where the reader sees
+                # exactly what the writer wrote a moment earlier and no gap
+                # exists at all.
+                slowest = (reader, r_worst, r_best, r_best > w_worst)
+        if slowest is None:
+            continue
+        # ONE finding per file, named for its slowest reader. Reporting every
+        # slow reader separately buried kalshi_scan_log under eight near-
+        # identical lines about one shared queue — the finding was there and
+        # unreadable, which is the same as absent.
+        reader, r_gap, r_best, certain = slowest
+        rank = {True: 2, None: 1, False: 0}[destructive]
+        findings.append(dict(
+            rank=rank, certain=certain, ratio=r_gap / w_gap, out=out,
+            writer=sorted(writers)[0], reader=reader, destructive=destructive,
+            w_best=w_gap, w_worst=w_worst, r_best=r_best, r_worst=r_gap,
+            # ceil, not floor. A 72h reader against a 65.5h writer floors to
+            # 1 generation seen and 0 missed, and the line then read "up to 0
+            # generation(s) are overwritten ... and cannot be recovered" — a
+            # loss finding asserting nothing was lost. Two writes DO fit in
+            # that window (t=0 and t=65.5), so one is missed. This is an upper
+            # bound and the sentence says "up to".
+            missed=math.ceil(r_gap / w_gap) - 1))
+
+    if not examined:
+        # A pass on zero pairs is not a pass. `gaps` can be non-None and still
+        # empty — a crontab that parses to no usable entry leaves every module
+        # cadence-less, every reader skipped, and the check printing OK on a
+        # denominator of nothing. Same rule the coherence laws are held to.
+        notes.append("[reader-cadence] CANNOT TELL — no reader/writer pair had a "
+                     "knowable cadence on both sides; judged nobody")
+        return
+    if not findings:
+        notes.append(f"[reader-cadence] OK — every scheduled reader keeps up with "
+                     f"its writer ({examined} reader->file pair(s) examined)")
+        return
+    lost = sum(1 for f in findings if f["destructive"] is True and f["certain"])
+    notes.append(f"[reader-cadence] {len(findings)} file(s) have a reader slower "
+                 f"than the file changes, {lost} of them destructively and on "
+                 f"every path ({examined} reader->file pair(s) examined)")
+    for f in sorted(findings, key=lambda f: (f["rank"], f["certain"],
+                                             f["ratio"]), reverse=True)[:8]:
+        out, r, w = f["out"], f["reader"], f["writer"]
+        missed = f["missed"]
+        # Say which SIDE the range is on. A reader reached by a fast root and a
+        # slow one may do its reading on either path; so may a writer. Phrasing
+        # every uncertain finding as the reader's doubt printed
+        # "every 65.5h on its fastest path and 65.5h on its slowest" — a reader
+        # with no range at all, carrying the writer's uncertainty under the
+        # reader's name.
+        rd = _cadence_phrase(f["r_best"], f["r_worst"])
+        wr = _cadence_phrase(f["w_best"], f["w_worst"])
+        maybe = "" if f["certain"] else (
+            f"; {r} and {w} may share a scheduler path, on which the read "
+            f"happens in the same run as the write and nothing is missed")
+        if f["destructive"] is True:
+            notes.append(
+                f"[reader-cadence] {r} reads {out} {rd}, but {w} REPLACES it "
+                f"{wr} — up to {missed} generation(s) are overwritten before "
+                f"{r} ever sees them, and cannot be recovered{maybe}")
+        elif f["destructive"] is None:
+            notes.append(
+                f"[reader-cadence] {r} reads {out} {rd} vs {w}'s {wr} — whether "
+                f"{out} is replaced or accumulated could not be told from its "
+                f"writers' source, so up to {missed} generation(s) MAY be "
+                f"unrecoverable{maybe}")
+        else:
+            notes.append(
+                f"[reader-cadence] {r} reads {out} {rd} vs {w}'s {wr} — {out} "
+                f"accumulates, so this is lateness, not loss")
+
+
 #: A temp file older than this is not a write in flight, it is a corpse.
 _TEMP_ORPHAN_MIN_AGE_H = 1.0
 
@@ -939,16 +1267,28 @@ def check_interrupted_writes(data_dir=None):
     agent_meeting._save (agent_status registry), all dated 2026-08-01 between
     15:34 and 20:04.
 
+    The VM held **42**, dated 2026-05-28 through 2026-08-01, most of them zero
+    bytes — a mkstemp that never got as far as its first write. The detector
+    had been reporting all 42 there since it shipped; it was the count that was
+    wrong everywhere else, because `data/` does not sync between hosts and the
+    archive below had only ever been run on the Mac. So the sentence "the count
+    is a signal now, not a permanently-lit lamp" was true of the dev laptop and
+    false of the machine that trades around the clock. Cleaning host A does not
+    clean host B, and a per-host number quoted firm-wide is the
+    `private-diary-of-a-shared-fact` bug with the diary on the quieter host.
+
     Reported as a note, not a violation: the corpses are harmless in
     themselves, and blocking a push on litter would teach people to bypass the
     gate. What it buys is a running count — if it climbs, something is killing
     the pipeline mid-write and that IS worth a look.
 
     `data_dir` is injectable so the suite can hand this a directory holding a
-    *known* corpse and prove the check still fires. The six real ones were
-    archived to data/.interrupted-writes/ on 2026-08-23, so the live count is
-    now 0 — and a detector whose only evidence has been swept up is exactly
-    the kind that quietly stops working.
+    *known* corpse and prove the check still fires. Both hosts' corpses were
+    MOVED to `data/.interrupted-writes/` (Mac 2026-08-23, VM 2026-08-24), never
+    deleted — they are the only production evidence that writes here get
+    interrupted, and a detector whose evidence has been swept up is exactly the
+    kind that quietly stops working. Live count is now 0 on both, so the next
+    one to appear means something.
     """
     import time as _time
 
@@ -993,6 +1333,7 @@ def run_checks() -> dict:
     check_glob_consumers_have_producers(sources)
     check_orphan_queues(sources)
     check_orphan_agents(sources)
+    check_reader_keeps_up_with_writer(sources)
     check_coherence_layer()
     check_internal_audit()
     check_interrupted_writes()
