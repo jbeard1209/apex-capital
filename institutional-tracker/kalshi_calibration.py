@@ -877,11 +877,50 @@ def is_premise_alive(rows=None):
     # an estimator on evidence that covers a fraction of the rule's range.
     coverage, scope = _horizon_scope(settled, current)
 
+    # ---- C. where in the band the damage is --------------------------------
+    # One mean quote against one interval is a true sentence that hides which
+    # prices are broken, and the three buckets do not fail alike. Measured
+    # 2026-08-24 on n=1258: 0.90-0.95 quoted 92.0% / settled 89.0% (CI high
+    # 91.4%) — outside; 0.95-0.98 quoted 96.0% / settled 94.9% (CI 92.4-96.7%)
+    # — INSIDE, i.e. fairly priced; 0.98-1.00 quoted 98.6% / settled 95.0%
+    # (CI high 96.9%) — outside by 1.7 points, the worst bucket on the board.
+    #
+    # The aggregate ("2.5 points rich") invites precisely the wrong response:
+    # move up the band to be safer. Up the band is where it is worst, because
+    # above 95c the quote stops carrying information (0.95-0.98 and 0.98-1.00
+    # both settle ~95%) while the price keeps climbing. That is a fact about
+    # the marginal cent, and no mean can express it — [[an-aggregate-is-not-a-
+    # finding]]. Attached to ALIVE as well as to both DEADs: an ALIVE aggregate
+    # sitting on top of one broken bucket is the case where somebody goes and
+    # builds an estimator for the bucket that cannot be beaten.
+    bad, fair = [], []
+    for c in reliability_curve(settled):
+        if not c["n"] or c["mean_forecast"] is None or c["ci_high"] is None:
+            continue
+        (bad if c["mean_forecast"] > c["ci_high"] or
+             (c["ci_low"] is not None and c["mean_forecast"] < c["ci_low"])
+         else fair).append(
+            f"{c['bucket']} (n={c['n']}, quoted {c['mean_forecast']:.1%}, "
+            f"settled {c['observed']:.1%})")
+    if bad:
+        buckets = (f" BY BUCKET, the mean hides which prices are broken — "
+                   f"outside its own interval: {'; '.join(bad)}."
+                   + (f" Inside it: {'; '.join(fair)}." if fair else
+                      " No bucket in this sample is fairly priced."))
+    elif fair:
+        buckets = (f" BY BUCKET, every bucket sits inside its own interval: "
+                   f"{'; '.join(fair)} — so the aggregate is not concealing a "
+                   f"broken price at one end of the band.")
+    else:
+        buckets = (" BY BUCKET: no bucket carried enough settled rows to test, "
+                   "so the aggregate above is unaudited at the price level.")
+
     detail.update({"mean_quote": round(mean_quote, 4),
                    "realised": round(realised, 4),
                    "ci_low": round(ci_low, 4), "ci_high": round(ci_high, 4),
                    "horizon_coverage": coverage,
                    "horizon_scoped": bool(scope),
+                   "buckets_outside_ci": len(bad), "buckets_inside_ci": len(fair),
                    "mean_spread": round(mean_spread, 4) if mean_spread else None})
 
     if mean_quote > ci_high:
@@ -893,7 +932,7 @@ def is_premise_alive(rows=None):
             f"{realised:.1%} of the time (95% CI {ci_low:.1%}-{ci_high:.1%}). "
             f"The quote is not above the interval by a little; it is outside it "
             f"entirely, so these numbers are not probabilities and there is "
-            f"nothing for an estimator to beat.{book}{scope}"), detail
+            f"nothing for an estimator to beat.{book}{buckets}{scope}"), detail
 
     if mean_quote < ci_low:
         return DEAD, (
@@ -901,13 +940,13 @@ def is_premise_alive(rows=None):
             f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}). Systematically "
             f"cheap in this band is still a broken price, not free money; the "
             f"reason a 97c contract settles 100% of the time is that nobody "
-            f"will sell it to you.{scope}"), detail
+            f"will sell it to you.{buckets}{scope}"), detail
 
     return ALIVE, (f"ALIVE on n={n} — quoted {mean_quote:.1%}, settled "
                    f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}); the "
                    f"quote is inside its own interval. This clears the PRIOR "
                    f"question only. is_edge_proven still gates every "
-                   f"dollar.{scope}"), detail
+                   f"dollar.{buckets}{scope}"), detail
 
 
 VERDICT_STATE = DATA_DIR / "kalshi_verdict_notified.json"

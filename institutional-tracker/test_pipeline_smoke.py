@@ -8486,6 +8486,59 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         for rows in (self._rows(300), self._rows(300, settled=False)):
             self.assertIs(False, self.cal.is_edge_proven(rows)[0])
 
+    # ------------------------------------------- where the damage actually is --
+
+    def _priced(self, n, price, hits, days=3.0):
+        """Settled current-regime rows at one quote, `hits` of them YES."""
+        return [{"selection_rule": self.cal.SELECTION_RULE, "settled": True,
+                 "outcome": 1 if i < hits else 0, "market_price": price,
+                 "p_hat": None, "days_to_close": days, "spread": 0.02}
+                for i in range(n)]
+
+    def test_an_alive_aggregate_still_names_a_broken_bucket(self):
+        """THE case this breakdown exists for, and the only one a mean cannot
+        survive. 300 rows quoted 91% settling 96% (cheap) and 100 quoted 99%
+        settling 88% (rich) average out: the aggregate quote lands inside its
+        own interval and the verdict reads ALIVE — which is the word that sends
+        somebody off to build an estimator. Both ends are badly mispriced and
+        the mean is the one number that cannot say so."""
+        rows = self._priced(300, 0.91, 288) + self._priced(100, 0.99, 88)
+        verdict, why, detail = self.cal.is_premise_alive(rows)
+        self.assertEqual("ALIVE", verdict, "fixture no longer isolates the case")
+        self.assertIn("0.98-1.00", why)
+        self.assertIn("0.90-0.95", why)
+        self.assertEqual(2, detail["buckets_outside_ci"])
+
+    def test_a_dead_verdict_says_which_prices_are_broken(self):
+        """Production shape, 2026-08-24: the aggregate reads 2.5 points rich,
+        which invites moving UP the band to be safer. Up the band is where it is
+        worst — 0.98-1.00 quoted 98.6% and settled 95.0%."""
+        rows = self._priced(300, 0.99, 264) + self._priced(200, 0.96, 192)
+        verdict, why, detail = self.cal.is_premise_alive(rows)
+        self.assertEqual(self.cal.DEAD, verdict)
+        self.assertIn("0.98-1.00", why)
+        self.assertGreaterEqual(detail["buckets_outside_ci"], 1)
+
+    def test_a_fairly_priced_band_is_stated_not_left_silent(self):
+        """An absent warning and a checked-and-clean result must not look alike
+        — [[presence-is-not-currency]]. When every bucket sits inside its
+        interval the verdict must SAY so, so a reader can tell the breakdown ran."""
+        rows = self._priced(400, 0.96, 384)
+        _, why, detail = self.cal.is_premise_alive(rows)
+        self.assertIn("every bucket sits inside its own interval", why)
+        self.assertEqual(0, detail["buckets_outside_ci"])
+        self.assertEqual(1, detail["buckets_inside_ci"])
+
+    def test_untestable_buckets_are_not_reported_as_fairly_priced(self):
+        """A bucket with no settled rows is unaudited, not clean. Reporting
+        those two the same way is how a pass on a zero denominator gets read as
+        a pass."""
+        rows = self._priced(400, 0.96, 384)
+        _, why, detail = self.cal.is_premise_alive(rows)
+        self.assertNotIn("0.90-0.95", why,
+                         "an empty bucket must not appear in either list")
+        self.assertEqual(1, detail["buckets_inside_ci"] + detail["buckets_outside_ci"])
+
 
 class TestFixedIncomeHasOnePath(unittest.TestCase):
     """Decision #79: fi_pipeline is the FI path; research_team does not duplicate it.
