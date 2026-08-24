@@ -7743,9 +7743,14 @@ class TestKalshiSector(unittest.TestCase):
     # ---------------------------------------------------------- parsing --
 
     def test_zero_is_not_a_price(self):
-        """The measured trap: 94.4% of open markets quote '0.0000' on an empty
-        book. Zero is a valid float, it passes `is not None`, and it reads as a
-        free contract. It must come back as None, not 0.0."""
+        """The measured trap: markets with an empty book quote '0.0000'. Zero is
+        a valid float, it passes `is not None`, and it reads as a free contract.
+        It must come back as None, not 0.0.
+
+        The share of markets doing this fell from 94.4% to 5.1% on 2026-08-17,
+        not because the exchange changed but because the scanner stopped walking
+        the shard feed (`kc.iter_markets`). The trap is unchanged: 4,924 genuine
+        markets still quote it live, and one is enough."""
         import kalshi_client as kc
         for raw in ("0.0000", 0.0, "1.0000", 1.0):
             with self.subTest(raw=raw):
@@ -8371,6 +8376,115 @@ class TestKalshiSampleIsWorthSomething(unittest.TestCase):
                                       "to scan(); two defaults for one quantity "
                                       "means the one you read is not the one "
                                       "that runs")
+
+
+class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
+    """`is_edge_proven` must not answer "keep collecting" to a permanent blocker.
+
+    Found 2026-08-24 on the VM: 3,157 current-regime rows, 1,258 of them settled,
+    and **not one carrying a `p_hat`** — because no calibrated estimator is
+    installed and the scanner writes `"rationale": "no calibrated estimator
+    installed"` on every row. The check for that sat at the BOTTOM of the
+    function, behind the sample-size and stratification gates, so it had never
+    once executed. The sector had been reporting "NOT YET, keep collecting" for
+    weeks about a condition no settlement can discharge.
+
+    Both evidentiary refusals mean *wait*, and waiting is free and eventually
+    works. The structural one means *go build something*. Refusals must be
+    ordered by what the answer tells you to DO — not by what is cheapest to test.
+
+    Every fixture here is synthetic. The ledger is host-local and unsynced
+    ([[host_divergence_is_a_bug_class]] #8), so a test that read it would be
+    asking which host it ran on.
+    """
+
+    def setUp(self):
+        import kalshi_calibration as cal
+        self.cal = cal
+
+    def _rows(self, n, p_hat=None, days=3.0, settled=True, regime=True):
+        return [{"selection_rule": (self.cal.SELECTION_RULE if regime
+                                    else "retired-rule"),
+                 "settled": settled,
+                 "outcome": (i % 2) if settled else None,
+                 "p_hat": p_hat, "market_price": 0.96,
+                 "days_to_close": days} for i in range(n)]
+
+    def test_no_estimator_anywhere_is_reported_as_blocked_not_as_not_yet(self):
+        """The defect itself. A sample with no estimate must not be described in
+        language that implies more of it would help."""
+        ok, why = self.cal.is_edge_proven(self._rows(300))
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertNotIn("NOT YET", why,
+                         "a permanent blocker must not borrow the wording of a "
+                         "temporary one")
+
+    def test_the_blocked_verdict_says_more_data_will_not_help(self):
+        """A refusal that does not say what would discharge it gets read as
+        'wait' by default — [[verdict-with-no-consequence]]."""
+        _, why = self.cal.is_edge_proven(self._rows(300))
+        self.assertIn("cannot change this verdict", why)
+        self.assertIn("Owner:", why, "a blocker with no owner is a wish")
+
+    def test_the_structural_blocker_outranks_a_thin_sample(self):
+        """The ordering bug, pinned. 60 rows is BOTH too few AND estimate-free;
+        the answer must be the one that does not resolve itself with time."""
+        ok, why = self.cal.is_edge_proven(self._rows(60))
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+
+    def test_the_structural_blocker_outranks_a_lopsided_sample(self):
+        """And it outranks stratification, which is the gate that was actually
+        firing in production — 1,230 of 1,258 settled rows in the 1-7d band."""
+        rows = self._rows(300, days=3.0)          # all one horizon stratum
+        ok, why = self.cal.is_edge_proven(rows)
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertNotIn("not spread across the horizons", why)
+
+    def test_one_estimate_makes_the_question_evidentiary_again(self):
+        """The blocker is 'no estimator exists', not 'not enough estimates'. A
+        single `p_hat` proves one exists, and the sample gates must resume — if
+        this fired on a partly-estimated ledger it would mask the real
+        sample-size answer forever."""
+        rows = self._rows(60) + self._rows(1, p_hat=0.97)
+        ok, why = self.cal.is_edge_proven(rows)
+        self.assertFalse(ok)
+        self.assertNotIn("BLOCKED", why)
+        self.assertIn("NOT YET", why)
+
+    def test_an_empty_ledger_is_not_called_blocked(self):
+        """A pass — or a refusal — on a zero denominator is not a finding.
+        Absence of estimates among no rows proves nothing about the estimator."""
+        for n in (0, 10):
+            with self.subTest(n=n):
+                _, why = self.cal.is_edge_proven(self._rows(n))
+                self.assertNotIn("BLOCKED", why,
+                                 f"claimed a structural blocker from {n} row(s)")
+
+    def test_retired_rule_rows_cannot_supply_the_denominator(self):
+        """Same scoping as every other check here. 300 rows of a rule the
+        scanner no longer applies must not be evidence that today's rule has no
+        estimator — that would be [[sample-outlived-its-rule]] inverted."""
+        _, why = self.cal.is_edge_proven(self._rows(300, regime=False))
+        self.assertNotIn("BLOCKED", why)
+
+    def test_pending_rows_count_toward_the_estimator_question(self):
+        """Whether an estimator EXISTS is answerable from unsettled rows too —
+        they carry a `p_hat` slot the moment they are recorded. Requiring
+        settlement first would re-create the delay this fix removes."""
+        rows = self._rows(300, settled=False)
+        ok, why = self.cal.is_edge_proven(rows)
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertIn("0 of 300", why)
+
+    def test_the_gate_still_refuses_when_blocked(self):
+        """The verdict text changed; the answer did not. This must never become
+        a route to sizing a position."""
+        for rows in (self._rows(300), self._rows(300, settled=False)):
+            self.assertIs(False, self.cal.is_edge_proven(rows)[0])
 
 
 class TestFixedIncomeHasOnePath(unittest.TestCase):

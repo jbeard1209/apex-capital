@@ -30,16 +30,27 @@ There is a second family that needs no opinion at all:
                that is 3 points optimistic loses money on every single trade
                while looking exactly like one that works.
 
-WHAT THE FIRST MEASUREMENT SAID (2026-08-14, 12,000 open markets)
-------------------------------------------------------------------
-94.4% of open markets have no order book at all. The entire 90-99c band across
-the whole exchange held **one** market with a nonzero ask size, and it had zero
-volume. The premise — that near-certainties are lying around to be picked up —
-is not visible in the data at this hour. It may well be an artefact of a
-Thursday afternoon in August, and evening sports markets are exactly the case
-the Chairman described, which is precisely why Phase 1 is a collector: the
-first thing to establish is whether the opportunity exists at all, not how to
-size it.
+WHAT THE FIRST MEASUREMENT SAID, AND WHY IT WAS WRONG ABOUT THE EXCHANGE
+------------------------------------------------------------------------
+2026-08-14, 12,000 markets off the flat `/markets` feed: 94.4% had no order
+book at all, and the entire 90-99c band across "the whole exchange" held **one**
+market with a nonzero ask size, at zero volume. Read as a fact about Kalshi,
+that says the premise is dead.
+
+It was a fact about the FEED. `/markets` serves multivariate parlay shards
+first and there are enough of them to swallow any bounded walk — 59,989 of
+60,000 on 2026-08-17 — and shards have no book by construction. The scan was
+accurate about the population it measured, and that population was not the
+exchange (`kc.iter_markets`).
+
+Through `/events?with_nested_markets=true`, shards excluded, live 2026-08-24:
+**95,973 genuine markets, 91,049 with a real ask (94.9%), 44,676 two-sided
+(46.6%), 4,999 priced mutex fields, 8 through the band gates.** Not one gate
+was loosened to get there.
+
+Phase 1 stays a collector regardless. What changed is that "does the
+opportunity exist at all?" now has a population it can honestly be asked of;
+before, the answer was an artefact of which endpoint we walked.
 
 Usage:
     python3 kalshi_scanner.py --report          # scan, print, log, size nothing

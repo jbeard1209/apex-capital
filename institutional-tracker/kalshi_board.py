@@ -15,9 +15,13 @@ can be talked round is not a veto.
       somebody has to actually read them. Vetoes on absent or hedged rules.
 
   LIQUIDITY OFFICER    — owns "the price was not real".
-      94.4% of open Kalshi markets have no book (measured 2026-08-14). A quoted
-      price with nothing resting behind it is not a price. Vetoes on thin legs
-      and on any lock whose second leg could move while the first fills.
+      A quoted price with nothing resting behind it is not a price. Vetoes on
+      thin legs and on any lock whose second leg could move while the first
+      fills. This seat's brief cited "94.4% of open markets have no book" until
+      2026-08-24; that rate belonged to the shard-dominated `/markets` feed, and
+      on the genuine population 94.9% DO have an ask. The seat is not thereby
+      retired — 53.4% of genuine markets are one-sided, which is the rate that
+      decides whether a lock's second leg can actually be filled.
 
   CALIBRATION OFFICER  — owns "our estimate was wrong".
       Holds the quarantine on DISAGREEMENT candidates until

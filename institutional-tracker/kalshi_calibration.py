@@ -510,10 +510,16 @@ def horizon_strata(rows):
 def is_edge_proven(rows=None):
     """(bool, reason). The gate `kalshi_scanner.size_position` consults.
 
-    Returns False for "not yet" AND for "no", with different reasons, because
-    those call for different actions — keep collecting versus shut it down —
-    and collapsing them into one boolean is how a project runs forever on
-    "we just need more data".
+    Returns False for "not yet", for "no", AND for "blocked", with different
+    reasons, because those call for three different actions — keep collecting,
+    shut it down, or go build the missing piece — and collapsing them into one
+    boolean is how a project runs forever on "we just need more data".
+
+    The third one was added 2026-08-24 after the first two proved insufficient
+    in exactly the way this docstring warned about: both evidentiary blockers
+    discharge with time, so whichever one fires reads as "wait", and the
+    permanent blocker was checked last and never reached. Order the refusals by
+    what the answer tells you to DO, not by what is cheapest to test.
 
     Scoped to the CURRENT selection rule, same as `is_premise_alive`. A gate
     that counted the retired `tradeable()` rows toward its sample would clear
@@ -521,11 +527,50 @@ def is_edge_proven(rows=None):
     applies — reaching a verdict sooner by measuring the wrong thing.
     """
     rows = rows if rows is not None else _load_ledger()
-    settled = [r for r in rows
-               if _is_current_regime(r)
-               and r.get("settled") and r.get("outcome") in (0, 1)]
+    regime = [r for r in rows if _is_current_regime(r)]
+    settled = [r for r in regime
+               if r.get("settled") and r.get("outcome") in (0, 1)]
 
     n = len(settled)
+
+    # A STRUCTURAL BLOCKER OUTRANKS AN EVIDENTIARY ONE, however cheap the
+    # evidentiary one is to check.
+    #
+    # This test used to sit at the BOTTOM of the function, behind the sample-size
+    # and stratification gates, and was therefore unreachable: those two return
+    # first and will keep returning first until 2026-09-21. So for weeks the
+    # sector answered "NOT YET, keep collecting" when the true answer — already
+    # knowable, from row one — was that **no estimator exists**, and not one of
+    # 3,157 current-regime rows carries a `p_hat` (measured 2026-08-24, on the
+    # VM, where the ledger lives). Every row records its own reason:
+    # `"rationale": "no calibrated estimator installed"`.
+    #
+    # The difference is not cosmetic, it is the difference between two actions.
+    # "NOT YET" says wait — and waiting is free and eventually works. "No
+    # estimator" says build something, and no quantity of settlements will ever
+    # discharge it. Ordering the cheap-but-temporary blocker ahead of the
+    # permanent one is precisely how, in this module's own words, "a project
+    # runs forever on 'we just need more data'". The gate distinguished NOT YET
+    # from NO and still could not distinguish *waiting* from *stuck*.
+    #
+    # Fires only on a real denominator, and only when the whole regime sample is
+    # empty of estimates — one `p_hat` anywhere means an estimator exists and
+    # the question is genuinely evidentiary again, so the checks below resume.
+    with_est = sum(1 for r in regime if r.get("p_hat") is not None)
+    if len(regime) >= 50 and with_est == 0:
+        return False, (
+            f"BLOCKED, NOT WAITING — 0 of {len(regime)} current-regime rows "
+            f"carry an estimate of our own ({n} of them settled). The sector "
+            f"records the market's price and the probability we would have to "
+            f"be right about; it has never recorded a probability WE produced, "
+            f"because no calibrated estimator is installed "
+            f"(kalshi_scanner.find_disagreement_candidates takes one and is "
+            f"always called without it). Collecting more settlements cannot "
+            f"change this verdict — the missing input is a component, not an "
+            f"observation. Owner: the Chairman, as a build-or-drop decision. "
+            f"Note that the arithmetic locks are unaffected: they need no "
+            f"estimator, and this gate does not hold them.")
+
     if n < MIN_SETTLED_FOR_VERDICT:
         return False, (f"NOT YET — {n}/{MIN_SETTLED_FOR_VERDICT} settled "
                        f"observations. Separating 96% from 99% is a 3-point "

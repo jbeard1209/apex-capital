@@ -26,8 +26,12 @@ THE ZERO TRAP (this one is the expensive one)
 infinite-return arbitrage on every illiquid market on the exchange.
 
 **A price with no size behind it is not a price, it is the absence of one.**
-Measured 2026-08-14 across 12,000 open markets: **94.4% (11,331) had no real
-book.** A scanner without this filter finds eleven thousand fake free lunches.
+Measured 2026-08-14 across 12,000 markets from the flat `/markets` feed:
+**94.4% (11,331) had no real book** — but that feed serves parlay shards first,
+so the finding was about shards, not the exchange (see `iter_markets`, and the
+corrected rates in `tradeable`). On the genuine population the filter passes
+94.9%. The filter is no less necessary: the markets it rejects still quote
+`0.0000`, and there are still 4,924 of them.
 This is the same bug class as memory `nan-is-not-none`, wearing a new costume:
 the sentinel is `0.0` instead of `NaN`, and it is *more* dangerous because it
 survives arithmetic instead of poisoning it.
@@ -185,8 +189,24 @@ def breakeven_probability(price, maker=False, contracts=1):
 def tradeable(market):
     """(yes_ask, yes_size) if this market has a real, buyable YES book, else None.
 
-    THE filter. 94.4% of open markets fail it. Callers that skip it are not
-    scanning an exchange, they are scanning a list of empty order books.
+    THE filter. Callers that skip it are not scanning an exchange, they are
+    scanning a list of empty order books.
+
+    THE PASS RATE INVERTED WHEN THE FEED CHANGED, AND BOTH NUMBERS ARE TRUE.
+    This docstring said "94.4% of open markets fail it" from 2026-08-14 until
+    2026-08-24. That was measured through the flat `/markets` walk, which
+    returns parlay shards first (see `iter_markets`): the population was ~94%
+    inventory, and inventory has no book, so the filter was mostly measuring the
+    shard fraction. Through `/events` with shards excluded, live 2026-08-24,
+    **91,049 of 95,973 genuine markets PASS** — 94.9%.
+
+    Leaving the old figure here was the live hazard, not the untidiness: the
+    next reader to check the docstring against a live scan sees 94.9% pass where
+    the comment promises 94.4% fail, concludes the filter is inverted, and
+    loosens the one gate that must not be loosened. A rate is a fact about a
+    POPULATION. Quote the population or do not quote the rate.
+
+    The rate that still bites is `two_sided()`'s: 44,676 of 95,973 (46.6%).
     """
     ask = parse_price(market.get("yes_ask_dollars", market.get("yes_ask")))
     size = parse_size(market.get("yes_ask_size_fp"))
