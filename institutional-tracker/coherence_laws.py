@@ -60,7 +60,7 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, Iterable, List, Optional, Tuple
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
@@ -627,6 +627,154 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
                      f"two-sided book; {len(rows) - len(with_bid)} predate the "
                      f"field ({provenance})", src,
                      n_examined=len(with_bid))
+
+
+# =============================================================================
+# LAW — a surfaced rung clears its own ladder
+# =============================================================================
+
+@sources("the scanner's stored per-candidate coherence verdict",
+         "the impossible-ladder set re-derived here from raw rungs")
+def law_surfaced_rungs_clear_their_ladder(
+        surfaced: Optional[List[dict]] = None,
+        impossible: Optional[Iterable[str]] = None) -> LawResult:
+    """Nothing the scanner surfaced sits in a ladder the monotone law calls impossible.
+
+    SOURCE A: `coherence`, stamped on each surfaced row by `kalshi_scanner`'s own
+    gate at scan time — the second line's decision, in its own words.
+    SOURCE B: the impossible-ladder set, re-derived here by
+    `law_nested_probabilities_are_monotone` from the raw rungs.
+
+    Two checkers of one invariant, and **nothing was making them agree.** They do
+    today, and the agreement is not luck: on 2026-08-24 the ladder law found four
+    ladders quoting a provable arbitrage, and the one row the scanner dropped all
+    day was a rung of `KXWNBAREB-26AUG24GSMIN` — priced 0.92, 13.2% annualized,
+    exactly the kind of row the near-certainty band is built to want. Verified by
+    hand: 0 of the 4 impossible ladders had a rung surfaced, and 0 of the 498
+    uncheckable rows leaked into the surfaced set.
+
+    A hand-verification that isn't a test decays, and this pair decays in a
+    particularly quiet way: weaken the scanner's gate and the ladder law keeps
+    reporting VIOLATED into the void — a true alarm, correctly raised, about
+    ladders nobody is trading, while rungs of those same ladders sail through the
+    gate. Each control stays individually honest and the pair stops meaning
+    anything. That is `both-sides-of-a-comparison` with the halves in different
+    modules.
+
+    Two faults, and they carry different denominators on purpose:
+      1. a surfaced row whose event is in the impossible set — the gate and the
+         law disagree, which is the reason this law exists;
+      2. a surfaced row whose own stored verdict is not HOLDS — the scan log
+         contradicting itself, which needs no second source at all.
+
+    Fault 2 is why a quiet day still means something. On a day the ladder law
+    finds nothing impossible, fault 1 has a denominator of zero and proves
+    nothing about the gate; fault 2's denominator is every surfaced row, so the
+    law is never a pass over an empty set. The detail says how many impossible
+    ladders were available to test against, so a HOLDS can be read for how much
+    it is worth rather than taken at face value.
+
+    Asymmetry that matters: when source B cannot be built, a PASS is not
+    available — half a two-source comparison is not a comparison — but a fault-2
+    FINDING still is. A finding from half a comparison is a finding; only the
+    all-clear needs both halves.
+
+    The over-refusal direction is deliberately not a fault. The scanner dropping
+    a row the ladder law thinks is fine is the gate being stricter than the law,
+    and alarming on that would pressure the gate to loosen toward this law —
+    the same circularity `_kalshi_cleared_rows` refuses. It is counted and
+    reported, never alarmed on.
+
+    WHAT THIS ADDS over `test_the_scanner_and_the_law_share_one_definition_of_
+    incoherent`, which already pins that `drop_incoherent` calls `_ladder_fault`
+    rather than carrying its own copy of the arithmetic. That test closes the
+    rule-drift route, and closing it is what makes the remaining two routes the
+    interesting ones:
+      - APPLICATION. Sharing the rule does not mean honoring it. The stamp and
+        the routing are different steps (`kalshi_scanner` decides on
+        `coherence != HOLDS` well after `_ladder_fault` returns), and a row can
+        carry a correct VIOLATED and still be routed to `disagreement`. Fault 2
+        reads the shipped scan log, so it sees the decision that was actually
+        made, not the one the rule implies.
+      - CORPUS. The two sides do not see the same rungs. The scanner judges the
+        ladder it had in hand mid-scan; this law reads `kalshi_ladders.json`,
+        the complete ladder including out-of-band rungs. Identical arithmetic
+        over different inputs is exactly how two honest checkers reach opposite
+        answers about one event, and fault 1 is the only thing looking at that
+        gap.
+    A unit test on a two-row fixture cannot reach either. Both need production
+    rows and a denominator.
+    """
+    name = "surfaced_rungs_clear_their_ladder"
+    src = law_surfaced_rungs_clear_their_ladder.sources
+    provenance = "rows supplied by caller"
+    if surfaced is None:
+        surfaced, provenance = _kalshi_cleared_rows()
+        if surfaced is None:
+            return LawResult(name, CANNOT_TELL, _own(provenance), src)
+    if not isinstance(surfaced, list):
+        return LawResult(name, CANNOT_TELL, "surfaced rows are not a list", src)
+
+    # SOURCE B. Only a VIOLATED ladder law yields an impossible set; any other
+    # verdict means the set could not be BUILT, which is not the same as it
+    # being empty, and the two must not collapse into each other here.
+    ladder_note = "supplied by caller"
+    if impossible is None:
+        ladder = law_nested_probabilities_are_monotone()
+        if ladder.verdict == VIOLATED:
+            impossible = {e.get("event_ticker") for e in ladder.evidence
+                          if isinstance(e, dict) and e.get("event_ticker")}
+            ladder_note = (f"{len(impossible)} impossible ladder(s) to test "
+                           f"against")
+        elif ladder.verdict == HOLDS:
+            impossible = set()
+            ladder_note = ("the ladder law found nothing impossible today, so "
+                           "the cross-check had a denominator of zero")
+        else:
+            impossible = None
+            ladder_note = (f"the ladder law could not run "
+                           f"({ladder.detail[:90]}), so the cross-check did "
+                           f"not happen at all")
+    impossible = set(impossible) if impossible is not None else None
+
+    leaked, self_contradicting = [], []
+    for row in surfaced:
+        if not isinstance(row, dict):
+            continue
+        ev = row.get("event_ticker")
+        if impossible and ev in impossible:
+            leaked.append({"ticker": row.get("ticker"), "event_ticker": ev,
+                           "stored_coherence": row.get("coherence"),
+                           "fault": "surfaced from a ladder the monotone law "
+                                    "says no probabilities can produce"})
+        if row.get("coherence") != HOLDS:
+            self_contradicting.append(
+                {"ticker": row.get("ticker"), "event_ticker": ev,
+                 "stored_coherence": row.get("coherence"),
+                 "fault": "surfaced despite the scanner's own verdict"})
+
+    bad = leaked + self_contradicting
+    if bad:
+        return LawResult(
+            name, VIOLATED,
+            f"{len(leaked)} surfaced row(s) sit in an impossible ladder and "
+            f"{len(self_contradicting)} contradict the scanner's own stored "
+            f"verdict, out of {len(surfaced)} surfaced ({provenance}; "
+            f"{ladder_note}). Owner: Kalshi sector.",
+            src, bad[:20])
+
+    if impossible is None:
+        return LawResult(
+            name, CANNOT_TELL,
+            f"all {len(surfaced)} surfaced row(s) carry their own HOLDS, but "
+            f"{ladder_note} — one source agreeing with itself is not two "
+            f"sources agreeing ({provenance}). Owner: Kalshi sector.", src)
+
+    return LawResult(
+        name, HOLDS,
+        f"{len(surfaced)} surfaced row(s) all carry HOLDS and none sits in an "
+        f"impossible ladder ({ladder_note}; {provenance})",
+        src, n_examined=len(surfaced))
 
 
 # =============================================================================
@@ -1546,6 +1694,8 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "nested outcomes of one event must be priced monotonically"),
     (law_quoted_prices_have_two_sides,
      "a recorded quote must have had a live bid against it"),
+    (law_surfaced_rungs_clear_their_ladder,
+     "no candidate the scanner surfaced sits in a ladder the monotone law rejects"),
     (law_runs_match_schedule,
      "pipeline starts observed == pipeline starts scheduled"),
     (law_deployed_set_matches_repo,

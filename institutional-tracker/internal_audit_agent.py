@@ -256,6 +256,24 @@ def _pill_quoted_prices_have_two_sides(law):
     return law(rows=[{"ticker": "ZZPILL", "market_price": 0.97, "yes_bid": 0}])
 
 
+def _pill_surfaced_rungs_clear_their_ladder(law):
+    """A row the gate stamped HOLDS, in a ladder the monotone law rejects.
+
+    Aimed at the CROSS-SOURCE fault, not the cheap one. This law also fails when
+    a surfaced row's own `coherence` isn't HOLDS, and a pill built that way would
+    pass while proving only that the law can read one field of one file — the
+    half that needs no second source, and so the half that cannot go blind in the
+    way this law was written to catch. The row here is stamped `HOLDS` on purpose:
+    source A says fine, source B says impossible, and only the comparison fails.
+    That branch is the one worth proving, and it is proven with a real conflict.
+
+    The other fault is pinned in `test_pipeline_smoke.py::TestCoherenceLaws`.
+    """
+    return law(surfaced=[{"ticker": "ZZPILL-A", "event_ticker": "ZZPILL-EVENT",
+                          "coherence": "HOLDS"}],
+               impossible={"ZZPILL-EVENT"})
+
+
 def _pill_runs_match_schedule(law):
     """A day with more pipeline starts than the schedule asks for — catch_up.
 
@@ -307,6 +325,9 @@ POISON_PILLS: Dict[str, Pill] = {
     "quoted_prices_have_two_sides": Pill(
         _pill_quoted_prices_have_two_sides,
         "an ask recorded with no bid against it"),
+    "surfaced_rungs_clear_their_ladder": Pill(
+        _pill_surfaced_rungs_clear_their_ladder,
+        "a candidate surfaced from a ladder the monotone law calls impossible"),
     "runs_match_schedule": Pill(
         _pill_runs_match_schedule,
         "more pipeline starts observed than the schedule asks for",

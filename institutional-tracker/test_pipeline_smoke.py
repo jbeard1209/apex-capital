@@ -9540,6 +9540,127 @@ class TestCoherenceLaws(unittest.TestCase):
         finally:
             subprocess.run = real
 
+    # ---- the gate and the ladder law must keep agreeing ---------------------
+
+    def _surfaced(self, coherence="HOLDS", event="EV-1"):
+        return [{"ticker": "EV-1-RUNG", "event_ticker": event,
+                 "coherence": coherence}]
+
+    def test_a_surfaced_rung_from_an_impossible_ladder_is_a_finding(self):
+        """The gate said HOLDS; the ladder law says no probabilities fit.
+
+        This is the pair going out of agreement while each half stays
+        individually honest — the failure the law exists for.
+        """
+        cl = self._law_sources()
+        r = cl.law_surfaced_rungs_clear_their_ladder(
+            surfaced=self._surfaced(), impossible={"EV-1"})
+        self.assertEqual(cl.VIOLATED, r.verdict)
+        self.assertIn("impossible ladder", r.detail)
+        self.assertEqual("EV-1-RUNG", r.evidence[0]["ticker"])
+
+    def test_a_row_contradicting_the_scanners_own_verdict_is_a_finding(self):
+        """The fault the poison pill deliberately does NOT cover.
+
+        `_pill_surfaced_rungs_clear_their_ladder` aims at the cross-source
+        branch, so this one has to be pinned here or the law ships with a
+        failure path nothing exercises.
+        """
+        cl = self._law_sources()
+        r = cl.law_surfaced_rungs_clear_their_ladder(
+            surfaced=self._surfaced(coherence="VIOLATED"), impossible=set())
+        self.assertEqual(cl.VIOLATED, r.verdict)
+        self.assertIn("contradict the scanner's own stored verdict", r.detail)
+
+    def test_a_clean_surfaced_set_holds_and_says_how_many(self):
+        cl = self._law_sources()
+        r = cl.law_surfaced_rungs_clear_their_ladder(
+            surfaced=self._surfaced() * 3, impossible={"EV-OTHER"})
+        self.assertEqual(cl.HOLDS, r.verdict)
+        self.assertEqual(3, r.n_examined)
+
+    def _with_ladder_verdict(self, cl, verdict, evidence=None):
+        """Substitute source B's verdict, restoring it afterwards."""
+        real = cl.law_nested_probabilities_are_monotone
+        res = cl.LawResult("nested_probabilities_are_monotone", verdict,
+                           "stubbed", ("a", "b"), evidence or [])
+        cl.law_nested_probabilities_are_monotone = lambda *a, **k: res
+        self.addCleanup(
+            lambda: setattr(cl, "law_nested_probabilities_are_monotone", real))
+
+    def test_an_empty_impossible_set_is_reported_not_hidden(self):
+        """A HOLDS whose cross-check had nothing to test against says so.
+
+        Otherwise a quiet day at the exchange reads exactly like a working
+        gate, and the reader cannot tell which one they got.
+        """
+        cl = self._law_sources()
+        self._with_ladder_verdict(cl, cl.HOLDS)
+        r = cl.law_surfaced_rungs_clear_their_ladder(surfaced=self._surfaced())
+        self.assertEqual(cl.HOLDS, r.verdict)
+        self.assertIn("denominator of zero", r.detail)
+
+    def test_a_ladder_law_that_could_not_run_is_not_an_empty_set(self):
+        """CANNOT_TELL from source B must not collapse into 'nothing impossible'.
+
+        The two are one `if` apart and mean opposite things: one is a quiet
+        exchange, the other is a source that has stopped reporting. Collapsing
+        them turns a dead source into a clean bill of health, which is
+        `fallback-that-means-act` with a set literal instead of a constant.
+        """
+        cl = self._law_sources()
+        self._with_ladder_verdict(cl, cl.CANNOT_TELL)
+        r = cl.law_surfaced_rungs_clear_their_ladder(surfaced=self._surfaced())
+        self.assertEqual(cl.CANNOT_TELL, r.verdict)
+        self.assertIn("did not happen at all", r.detail)
+
+    def test_source_b_violations_reach_the_cross_check(self):
+        """The wiring: an impossible ladder found by source B must be USED.
+
+        Every other test here hands `impossible` in through the parameter, which
+        proves the arithmetic and nothing about whether the law is connected to
+        the ladder law production actually runs.
+        """
+        cl = self._law_sources()
+        self._with_ladder_verdict(cl, cl.VIOLATED,
+                                  [{"event_ticker": "EV-1"}])
+        r = cl.law_surfaced_rungs_clear_their_ladder(surfaced=self._surfaced())
+        self.assertEqual(cl.VIOLATED, r.verdict)
+        self.assertIn("1 impossible ladder(s)", r.detail)
+
+    def test_without_source_b_the_law_can_fail_but_cannot_pass(self):
+        """The asymmetry. Half a comparison can convict; it cannot acquit."""
+        cl = self._law_sources()
+        clean = cl.law_surfaced_rungs_clear_their_ladder(
+            surfaced=self._surfaced(), impossible=None)
+        self.assertEqual(cl.CANNOT_TELL, clean.verdict,
+                         "passed on one source agreeing with itself")
+        dirty = cl.law_surfaced_rungs_clear_their_ladder(
+            surfaced=self._surfaced(coherence="VIOLATED"), impossible=None)
+        self.assertEqual(cl.VIOLATED, dirty.verdict,
+                         "a self-contradicting row needs no second source")
+
+    def test_the_law_never_reads_the_rows_the_scanner_dropped(self):
+        """The gate being stricter than the law must never become a finding.
+
+        Judging the dropped rows would guarantee VIOLATED on exactly the rows
+        the firm correctly refused — a permanent red light — and, worse, it
+        would put pressure on the gate to loosen toward this law. AST, not grep:
+        `_kalshi_cleared_rows`' own docstring names the key while explaining why
+        it must not be read, so a text search matches the refusal itself.
+        """
+        import ast
+        cl = self._law_sources()
+        tree = ast.parse(Path(cl.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "law_surfaced_rungs_clear_their_ladder")
+        strings = {n.value for n in ast.walk(fn)
+                   if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+        self.assertNotIn("dropped_incoherent", strings)
+        self.assertNotIn("dropped_incoherent",
+                         {getattr(n, "attr", None) for n in ast.walk(fn)})
+
     # ---- the shipped-config law and the ratchet under it -------------------
 
     # The set the firm has decided must reach the trading host. This is a
