@@ -349,6 +349,37 @@ def _ladders(rows: List[dict]) -> dict:
 KALSHI_SCAN_MAX_AGE_HOURS = 36
 
 
+def _own(provenance: str) -> str:
+    """Append the sector owner, unless the provenance already named a better one.
+
+    `_kalshi_scan_report` now attributes staleness to a specific host, and
+    blindly appending ". Owner: Kalshi sector." after it produced details
+    ending "Owner: Kalshi sector cron. Owner: Kalshi sector." — two owners,
+    neither actionable. The more specific one wins.
+    """
+    return provenance if "Owner:" in provenance else f"{provenance}. Owner: Kalshi sector."
+
+
+def _host_schedules(script: str) -> Optional[bool]:
+    """Does THIS host's live crontab run `script`? None if unreadable.
+
+    Same discipline as `_scheduled_pipeline_runs_today`: read the scheduler,
+    not a doc, and keep "cannot read" distinct from "reads fine, asks for
+    nothing" — they have opposite consequences (memory `fallback-that-means-act`).
+    Comment lines are stripped, because the Kalshi block's own header names
+    `kalshi_scanner.py` several times in prose.
+    """
+    import subprocess
+    try:
+        out = subprocess.run(["crontab", "-l"], capture_output=True,
+                             text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return any(script in line.split("#", 1)[0] for line in out.stdout.splitlines())
+
+
 def _kalshi_scan_report(filename, key):
     """(rows, provenance) from a Kalshi scanner artifact, or (None, why).
 
@@ -378,9 +409,27 @@ def _kalshi_scan_report(filename, key):
     except (TypeError, ValueError):
         return None, f"{filename} carries no readable `scanned_at` — its age is unknown"
     if age_h > KALSHI_SCAN_MAX_AGE_HOURS:
+        # WHOSE staleness is this? The scanner runs on one host's crontab and
+        # there is no state sync between hosts (CLAUDE.md), so on any other
+        # host this file is stale BY CONSTRUCTION and always will be. Reporting
+        # that as a finding gives the Mac two laws that can never clear, and an
+        # alarm permanently in one state carries no information — while the
+        # genuine case (the owner's cron died) produces the identical text
+        # (memory `both-sides-of-a-comparison`). Defer instead, and name who
+        # owns the answer, the way positions_conserve already does.
+        runs_here = _host_schedules("kalshi_scanner.py")
+        if runs_here is False:
+            return None, (f"this host ({_this_host()}) does not schedule "
+                          f"kalshi_scanner.py, so its copy of {filename} is stale "
+                          f"by construction — there is no state sync between "
+                          f"hosts. Owner: the host whose crontab runs the Kalshi "
+                          f"scanner")
+        owner = ("this host's Kalshi cron" if runs_here
+                 else "unknown — `crontab -l` failed here, so the scan is stale "
+                      "but nobody can be named for it")
         return None, (f"last scan is {age_h:.0f}h old (limit "
                       f"{KALSHI_SCAN_MAX_AGE_HOURS}h) — these quotes are history, "
-                      f"not evidence about the book now. Owner: Kalshi sector cron")
+                      f"not evidence about the book now. Owner: {owner}")
     return report.get(key) or [], report, age_h
 
 
@@ -462,7 +511,7 @@ def law_nested_probabilities_are_monotone(rows: Optional[List[dict]] = None) -> 
         rows, provenance = _kalshi_ladder_rows()
         if rows is None:
             return LawResult(name, CANNOT_TELL,
-                             f"{provenance}. Owner: Kalshi sector.", src)
+                             _own(provenance), src)
     if not isinstance(rows, list):
         return LawResult(name, CANNOT_TELL, "ladder rows are not a list", src)
 
@@ -549,7 +598,7 @@ def law_quoted_prices_have_two_sides(rows: Optional[List[dict]] = None) -> LawRe
         rows, provenance = _kalshi_cleared_rows()
         if rows is None:
             return LawResult(name, CANNOT_TELL,
-                             f"{provenance}. Owner: Kalshi sector.", src)
+                             _own(provenance), src)
     if not rows:
         return LawResult(name, CANNOT_TELL,
                          f"the scanner cleared no rows ({provenance}) — nothing "

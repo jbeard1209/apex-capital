@@ -9445,6 +9445,101 @@ class TestCoherenceLaws(unittest.TestCase):
         import coherence_laws as cl
         return cl
 
+    # ---- a stale scan on a host that never scans is not a finding -----------
+
+    def _stale_scan(self, tmpdir, name="kalshi_scan_log.json"):
+        """Write a scan artifact old enough to trip the freshness gate."""
+        cl = self._law_sources()
+        old = (datetime.now(timezone.utc)
+               - timedelta(hours=cl.KALSHI_SCAN_MAX_AGE_HOURS + 10)).isoformat()
+        p = Path(tmpdir) / name
+        p.write_text(json.dumps({"scanned_at": old, "disagreement": []}))
+        return p
+
+    def _scan_report_with(self, tmpdir, schedules, name="kalshi_scan_log.json"):
+        cl = self._law_sources()
+        real_dir, real_sched = cl.DATA_DIR, cl._host_schedules
+        try:
+            cl.DATA_DIR = Path(tmpdir)
+            cl._host_schedules = lambda script: schedules
+            return cl._kalshi_scan_report(name, "disagreement")
+        finally:
+            cl.DATA_DIR, cl._host_schedules = real_dir, real_sched
+
+    def test_a_stale_scan_defers_when_this_host_does_not_run_the_scanner(self):
+        """There is no state sync between hosts, so on the Mac this file is
+        stale by construction and always will be. Reporting that as a finding
+        gives one host two laws that can never clear, and an alarm permanently
+        in one state carries no information — while the real case (the owner's
+        cron died) produces the identical text.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            self._stale_scan(d)
+            rows, why = self._scan_report_with(d, schedules=False)
+        self.assertIsNone(rows)
+        self.assertIn("stale by construction", why)
+        self.assertIn("Owner:", why)
+        self.assertNotIn("these quotes are history", why,
+                         "deferring must not also assert the finding")
+
+    def test_a_stale_scan_is_a_real_finding_on_the_host_that_runs_the_scanner(self):
+        """The deferral must not swallow the case it exists to distinguish."""
+        with tempfile.TemporaryDirectory() as d:
+            self._stale_scan(d)
+            rows, why = self._scan_report_with(d, schedules=True)
+        self.assertIsNone(rows)
+        self.assertIn("these quotes are history", why)
+        self.assertIn("this host's Kalshi cron", why)
+
+    def test_an_unreadable_crontab_names_nobody_rather_than_guessing(self):
+        """`crontab -l` failing is a degraded read, not a fact about ownership.
+
+        It must not resolve to the same answer as either real branch — naming
+        the wrong owner sends the next session to repair working code.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            self._stale_scan(d)
+            rows, why = self._scan_report_with(d, schedules=None)
+        self.assertIsNone(rows)
+        self.assertIn("these quotes are history", why)
+        self.assertIn("nobody can be named", why)
+
+    def test_a_deferred_detail_carries_exactly_one_owner(self):
+        """Two owners in one sentence is no owner.
+
+        The law bodies used to append ". Owner: Kalshi sector." unconditionally,
+        so a provenance that already attributed the staleness came out reading
+        "Owner: Kalshi sector cron. Owner: Kalshi sector."
+        """
+        cl = self._law_sources()
+        with tempfile.TemporaryDirectory() as d:
+            self._stale_scan(d)
+            _, why = self._scan_report_with(d, schedules=False)
+        self.assertEqual(1, cl._own(why).count("Owner:"))
+        self.assertEqual(1, cl._own("no readable rows").count("Owner:"))
+
+    def test_host_schedules_ignores_commented_out_lines(self):
+        """The Kalshi crontab block names kalshi_scanner.py in its own header.
+
+        A substring match over raw lines would report that this host schedules
+        the scanner purely because a comment mentions it — the same trap as
+        grepping a postmortem for the pattern it postmortems.
+        """
+        cl = self._law_sources()
+        import subprocess
+
+        class _Out:
+            returncode = 0
+            stdout = ("# kalshi_scanner.py runs four times a day\n"
+                      "#10 2 * * * cd /x && python3 kalshi_scanner.py --report\n")
+
+        real = subprocess.run
+        try:
+            subprocess.run = lambda *a, **k: _Out()
+            self.assertFalse(cl._host_schedules("kalshi_scanner.py"))
+        finally:
+            subprocess.run = real
+
     # ---- the shipped-config law and the ratchet under it -------------------
 
     # The set the firm has decided must reach the trading host. This is a
