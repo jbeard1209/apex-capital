@@ -17312,6 +17312,257 @@ class TestPodLedgerAttributionHasNamedCauses(unittest.TestCase):
                         "silent failure reads exactly like a clean pass")
 
 
+class TestTheWorstFlagSurvivesTheSlice(unittest.TestCase):
+    """A `[:N]` with no ordering is a silent sampling rule.
+
+    Three readers take a prefix of reconciliation_check's flag list — the Fable 5
+    diagnosis (flags[:4]), the firm-channel summary (flags[:3]) and
+    morning_briefing's top_flags (recon_flags[:3]). The list was in APPEND order,
+    which is source order, and the three CRITICAL checks are appended 7th, 9th and
+    10th. Every prefix shorter than seven was therefore filled by the
+    LEDGER_ATTRIBUTION trio and GUARDRAIL_DRIFT before a CRITICAL could appear.
+
+    The sharpest form: the diagnosis is GATED on `n_critical or n_high`, then shown
+    four flags that could not contain the CRITICAL which opened the gate. The
+    trigger and the evidence disagreed, and the model was asked whether capital was
+    at risk while looking at the wrong rows.
+    """
+
+    def _rc(self):
+        import reconciliation_check
+        return reconciliation_check
+
+    def _worst_case_flags(self):
+        """Source order, as _flag() appends them. See the AST test below."""
+        return [{"severity": s, "check": c, "detail": ""} for s, c in [
+            ("HIGH", "LEDGER_ATTRIBUTION"), ("MEDIUM", "LEDGER_ATTRIBUTION"),
+            ("MEDIUM", "LEDGER_ATTRIBUTION_UNAVAILABLE"), ("HIGH", "GUARDRAIL_DRIFT"),
+            ("HIGH", "CASH_FLOOR"), ("HIGH", "MAX_POSITIONS"),
+            ("CRITICAL", "STOP_LOSS_BREACH"), ("MEDIUM", "POSITION_SIZE_BREACH"),
+            ("CRITICAL", "CRO_CRITICAL_BUY_VIOLATION"),
+            ("CRITICAL", "BOARD_DECISION_NOT_EXECUTED"), ("MEDIUM", "PNL_DRIFT")]]
+
+    def test_a_critical_past_index_four_still_reaches_the_reader(self):
+        rc = self._rc()
+        flags = self._worst_case_flags()
+        criticals = {f["check"] for f in flags if f["severity"] == "CRITICAL"}
+        self.assertEqual(len(criticals), 3, "worst case should carry 3 CRITICALs")
+        self.assertFalse(criticals & {f["check"] for f in flags[:4]},
+                         "premise of this test is gone: append order no longer "
+                         "buries the CRITICALs, so re-derive it before deleting")
+        flags.sort(key=lambda f: rc._SEV_RANK.get(f["severity"], 3))
+        for n in (3, 4):
+            shown = {f["check"] for f in flags[:n]}
+            self.assertTrue(criticals <= shown,
+                            f"flags[:{n}] still omits "
+                            f"{sorted(criticals - shown)} — the reader is being "
+                            f"shown a sample that cannot contain the worst finding")
+
+    def test_the_producer_sorts_so_no_consumer_has_to(self):
+        """AST: the sort lives in run_reconciliation, BEFORE the report is built.
+        A consumer-side sort is one copy per reader of a rule they can each get
+        wrong, and morning_briefing already had it wrong."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        fn = next(f for f in ast.walk(tree)
+                  if isinstance(f, ast.FunctionDef) and f.name == "run_reconciliation")
+        sorts = [n for n in ast.walk(fn)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "sort" and getattr(n.func.value, "id", "") == "flags"]
+        self.assertTrue(sorts, "run_reconciliation never sorts `flags`, so every "
+                               "downstream [:N] is an unordered sample")
+        self.assertLess(sorts[0].lineno,
+                        min(n.lineno for n in ast.walk(fn)
+                            if isinstance(n, ast.Subscript)
+                            and getattr(n.value, "id", "") == "flags"),
+                        "flags is sliced before it is sorted")
+
+    def test_severity_rank_covers_every_severity_the_module_emits(self):
+        """WIRING CONTRACT. A severity absent from _SEV_RANK sorts to the end via
+        the .get default, which would quietly bury a new top-severity band."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        emitted = {c.args[1].value for c in ast.walk(tree)
+                   if isinstance(c, ast.Call) and getattr(c.func, "id", "") == "_flag"
+                   and len(c.args) > 1 and isinstance(c.args[1], ast.Constant)}
+        self.assertTrue(emitted, "AST found no _flag call sites — probe is broken")
+        self.assertFalse(emitted - set(self._rc()._SEV_RANK),
+                         f"severities emitted but unranked: "
+                         f"{sorted(emitted - set(self._rc()._SEV_RANK))}")
+
+    def test_every_sample_announces_its_own_omission(self):
+        """A reader handed 4 of 11 flags with no note reasons as if it saw 11.
+
+        Counted per consumer, not once for the module: two places take a
+        `shown = flags[:N]` and each has its own reader (the Fable 5 diagnosis,
+        the firm channel). A single omission notice somewhere in the function
+        satisfies "at least one" while the other consumer still lies silently —
+        which is exactly what a laxer version of this test let through."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        fn = next(f for f in ast.walk(ast.parse(src))
+                  if isinstance(f, ast.FunctionDef) and f.name == "run_reconciliation")
+        samples = [n for n in ast.walk(fn) if isinstance(n, ast.Assign)
+                   and any(getattr(t, "id", "") == "shown" for t in n.targets)
+                   and isinstance(n.value, ast.Subscript)]
+        self.assertTrue(samples, "no `shown = flags[:N]` found — probe is broken")
+        notices = [n for n in ast.walk(fn) if isinstance(n, ast.Compare)
+                   and "len(flags)" in ast.unparse(n) and "len(shown)" in ast.unparse(n)]
+        self.assertGreaterEqual(
+            len(notices), len(samples),
+            f"{len(samples)} consumer(s) are shown a prefix of the flag list but "
+            f"only {len(notices)} say how many flags were withheld — a reader "
+            f"cannot tell a 4-flag run from the first 4 of 11")
+
+
+class TestAPassMustSayWhatItCovered(unittest.TestCase):
+    """A check that could not run is UNKNOWN, and un-run is not passed.
+
+    The firm-channel all-clear read "All 7 reconciliation checks passed." There
+    were never seven — the progress labels alone ran [0/7] to [7/7], which is
+    eight, plus an unnumbered ledger check. And four of the nine sit inside
+    section-level `except Exception` handlers that log and continue, so a CRO
+    bulletin that failed to parse produced the same NORMAL-priority all-clear as
+    a CRO bulletin that was clean.
+
+    Same rule the coherence laws now carry on both their HOLDS and VIOLATED
+    paths: a verdict has to say how many things it looked at.
+    """
+
+    def _emitted_strings(self):
+        """Every string literal the module can actually EMIT — docstrings
+        excluded, and comments are absent from the AST by construction.
+
+        This has to be AST-based. A grep for the old hardcoded counts matches
+        the postmortem comment that documents them: my own note explaining that
+        the labels "run [0/7] through [7/7]" contains the exact substring the
+        naive test forbids, so the test fails on its own explanation and the
+        only way to make it pass is to delete the explanation."""
+        tree = ast.parse((Path(__file__).parent / "reconciliation_check.py").read_text())
+        docstrings = set()
+        for n in ast.walk(tree):
+            if isinstance(n, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef,
+                              ast.ClassDef)) and n.body:
+                first = n.body[0]
+                if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                        and isinstance(first.value.value, str)):
+                    docstrings.add(id(first.value))
+        return [n.value for n in ast.walk(tree)
+                if isinstance(n, ast.Constant) and isinstance(n.value, str)
+                and id(n) not in docstrings]
+
+    def test_no_hardcoded_check_count_survives(self):
+        import reconciliation_check as rc
+        bad = [s for s in self._emitted_strings()
+               if re.search(r"All \d+ reconciliation check", s)]
+        self.assertFalse(bad, f"hardcoded coverage claim still emitted: {bad}")
+        wrong = [(s, d) for s in self._emitted_strings()
+                 for _, d in re.findall(r"\[(\d+)/(\d+)\]", s)
+                 if int(d) != len(rc._CHECKS)]
+        self.assertFalse(wrong, f"progress labels disagree with _CHECKS "
+                                f"({len(rc._CHECKS)}): {wrong}")
+
+    def test_the_count_comes_from_the_checklist(self):
+        import reconciliation_check as rc
+        self.assertEqual(len(rc._CHECKS), len(set(rc._CHECKS)), "duplicate check name")
+        tree = ast.parse((Path(__file__).parent / "reconciliation_check.py").read_text())
+        loads = [n for n in ast.walk(tree) if isinstance(n, ast.Name)
+                 and n.id == "_CHECKS" and isinstance(n.ctx, ast.Load)]
+        self.assertGreaterEqual(len(loads), 1,
+                                "_CHECKS is defined and never read — the counts "
+                                "reported to Jack are still literals")
+        labels = [d for s in self._emitted_strings()
+                  for _, d in re.findall(r"\[(\d+)/(\d+)\]", s)]
+        self.assertTrue(labels, "no progress labels found — probe is broken")
+        self.assertEqual({int(d) for d in labels}, {len(rc._CHECKS)})
+
+    def test_a_skipped_check_downgrades_the_all_clear(self):
+        """AST: the NORMAL priority on the clean post must be conditional on
+        `skipped`. A parse failure that posts NORMAL is a green light."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        posts = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and getattr(n.func, "id", "") == "post"]
+        normals = [p for p in posts
+                   if any(k.arg == "priority" and "NORMAL" in ast.unparse(k.value)
+                          for k in p.keywords)]
+        self.assertTrue(normals, "no NORMAL-priority post found — probe is broken")
+        for p in normals:
+            kw = next(k for k in p.keywords if k.arg == "priority")
+            self.assertIsInstance(kw.value, ast.IfExp,
+                                  "the clean post is unconditionally NORMAL — a "
+                                  "check that could not run is riding along as a pass")
+            self.assertIn("skipped", ast.unparse(kw.value))
+
+    def test_every_swallowing_handler_records_a_skip(self):
+        """AST: each section-level `except` that only logs must append to
+        `skipped`, or its check silently counts as passed."""
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        fn = next(f for f in ast.walk(tree)
+                  if isinstance(f, ast.FunctionDef) and f.name == "run_reconciliation")
+        unrecorded = []
+        for node in ast.walk(fn):
+            if not isinstance(node, ast.Try):
+                continue
+            for h in node.handlers:
+                body = ast.unparse(h)
+                # only the section handlers that log a "check error" and continue
+                if "check error" not in body and "Could not reconcile" not in body:
+                    continue
+                if "skipped.append" not in body:
+                    unrecorded.append(h.lineno)
+        self.assertFalse(unrecorded,
+                         f"handlers at lines {unrecorded} swallow a whole check "
+                         f"without recording it as skipped")
+
+    def test_the_report_carries_its_own_coverage(self):
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        for field in ('"checks_total"', '"checks_skipped"'):
+            self.assertIn(field, src,
+                          f"{field} missing — status CLEAN with a swallowed check "
+                          f"is the same JSON as a genuinely clean run")
+
+
+class TestNaNIsNotAPassingStopLoss(unittest.TestCase):
+    """float('nan') survives float(), passes every `is not None` guard, and then
+    loses every comparison. `nan <= -7.0` is False, so a position the broker could
+    not price sailed through the most severe check in the file with no flag and —
+    because nothing raised — not even a debug line."""
+
+    def test_nan_loses_the_breach_comparison(self):
+        """The premise, stated as arithmetic so it cannot rot."""
+        nan = float("nan")
+        self.assertIsNotNone(nan)
+        self.assertFalse(nan <= -7.0)
+        self.assertFalse(nan > 0.077)
+
+    def test_the_loop_rejects_nan_before_the_comparisons(self):
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        tree = ast.parse(src)
+        fn = next(f for f in ast.walk(tree)
+                  if isinstance(f, ast.FunctionDef) and f.name == "run_reconciliation")
+        guarded = any(isinstance(n, ast.Compare)
+                      and ast.unparse(n).replace(" ", "") in
+                      ("pnl_pct!=pnl_pct", "weight!=weight")
+                      for n in ast.walk(fn))
+        self.assertTrue(guarded,
+                        "no self-inequality NaN guard on pnl_pct/weight — an "
+                        "unpriced position reads as compliant")
+
+    def test_an_unevaluated_position_is_flagged_not_silent(self):
+        src = (Path(__file__).parent / "reconciliation_check.py").read_text()
+        self.assertIn("STOP_LOSS_UNEVALUABLE", src,
+                      "positions that could not be read are dropped silently, so "
+                      "'no stop-loss breach' has no denominator")
+        tree = ast.parse(src)
+        sev = {c.args[1].value for c in ast.walk(tree)
+               if isinstance(c, ast.Call) and getattr(c.func, "id", "") == "_flag"
+               and len(c.args) > 2 and isinstance(c.args[2], ast.Constant)
+               and c.args[2].value == "STOP_LOSS_UNEVALUABLE"}
+        self.assertEqual(sev, {"HIGH"},
+                         "an unevaluable stop-loss must escalate, not inform")
+
+
 class TestAPodBudgetIsNotMoney(unittest.TestCase):
     """`cash_balance` was a category error and `total_value` added it to prices.
 

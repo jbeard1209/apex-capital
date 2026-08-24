@@ -2,17 +2,26 @@
 """
 APEX CAPITAL — RECONCILIATION ENGINE
 =====================================
-Runs every 30 minutes. Compares what agents promised against Alpaca ground
-truth. Does not trust any agent output — goes straight to the source.
+Compares what agents promised against Alpaca ground truth. Does not trust any
+agent output — goes straight to the source.
 
-Checks:
-  1. Cash floor  — cash must stay ≥ 20% of portfolio
-  2. Position count — must not exceed 15
-  3. Stop-loss compliance — no position held below -7%
-  4. Position size compliance — no single position > 7% of portfolio
-  5. CRO CRITICAL buy compliance — no buys on PRESERVE CAPITAL days
-  6. Unexecuted IMMEDIATE board decisions — flagged if > 2h old
-  7. P&L drift — what pipeline recorded vs Alpaca actual
+The canonical list of checks is `_CHECKS` below, not this docstring. It used to
+be enumerated here as seven items, the firm-channel all-clear hardcoded "All 7
+reconciliation checks passed", and neither number was ever recomputed as checks
+were added — so both were wrong by two.
+
+SCHEDULING (2026-08-24). This file's header said "Runs every 30 minutes" for the
+firm's entire history and it has never been true: `run_reconciliation()` is
+called from exactly one place, the `__main__` block at the bottom, and this
+module appears in NO scheduler on either host — not the VM's 68-job crontab, not
+the Mac's two launchd agents. It looked employed to wiring_audit only because
+risk_gate.py imports `_mirror_check` from it, and reachability over the import
+graph cannot tell "someone imports a helper from this file" from "this file's
+work gets done". data/firm_value.json — whose sole writer is this module and
+which performance_forecaster reads as the firm's equity — was five days stale
+when that was found. Scheduling it is a Chairman decision; see the Chairman
+queue. Until then, treat every finding below as a check that CAN fire, not one
+that DOES.
 
 Any flag goes to firm channel. CRITICAL flags email Jack immediately.
 """
@@ -99,6 +108,30 @@ def _mirror_check():
     return effective, drift
 
 
+# The checks this module actually performs, in the order it performs them.
+#
+# It exists because the firm-channel all-clear used to read "All 7 reconciliation
+# checks passed." There were never 7: the progress labels alone run [0/7] through
+# [7/7], which is eight, and the pod-ledger attribution check ahead of them is
+# unnumbered, which makes nine. A hardcoded count is a claim about coverage that
+# nothing recomputes, so it was wrong the day a check was added and stayed wrong.
+#
+# Worse than the arithmetic: that sentence counted a check that COULD NOT RUN as
+# a check that passed. Four of the nine sit inside `except Exception` handlers
+# that log a warning and continue, so a CRO bulletin that fails to parse and a
+# CRO bulletin that is clean produced the identical NORMAL-priority "all passed"
+# post. This is the same rule the coherence laws now carry: a pass has to say how
+# many things it looked at, and a pass on something you could not examine is not
+# a pass.
+_CHECKS = ("LEDGER_ATTRIBUTION", "GUARDRAIL_MIRROR", "CASH_FLOOR", "MAX_POSITIONS",
+           "STOP_LOSS", "POSITION_SIZE", "CRO_BUY_FREEZE", "BOARD_EXECUTION",
+           "PNL_DRIFT")
+
+# Severity order for the prefix-slicing consumers below. Ranked once, here,
+# because three separate readers take a `[:N]` of the flag list.
+_SEV_RANK = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2}
+
+
 def _flag(flags: list, severity: str, check: str, detail: str):
     logger.warning(f"  [{severity}] {check}: {detail}")
     flags.append({"severity": severity, "check": check, "detail": detail, "ts": datetime.now().isoformat()})
@@ -116,6 +149,9 @@ def _load_json(path: str) -> dict:
 
 def run_reconciliation() -> dict:
     flags: list[dict] = []
+    # Checks that raised and were swallowed by a section-level handler. An entry
+    # here means "unknown", never "clean" — see _CHECKS.
+    skipped: list = []
     now = datetime.now()
 
     logger.info("=" * 60)
@@ -218,6 +254,7 @@ def run_reconciliation() -> dict:
         # silently is indistinguishable from one that passes, so say so loudly
         # and make the silence itself a flag.
         logger.warning(f"  Could not reconcile the pod ledger: {_fve}")
+        skipped.append("LEDGER_ATTRIBUTION")
         _flag(flags, "MEDIUM", "LEDGER_ATTRIBUTION_UNAVAILABLE",
               f"The pod-ledger reconciliation did not run ({_fve}). No claim is "
               f"being made about attribution coverage this cycle — treat the "
@@ -229,14 +266,14 @@ def run_reconciliation() -> dict:
     max_pos     = bounds["MAX_OPEN_POSITIONS"]
     stop_pct    = bounds["STOP_LOSS_PCT"]
     max_size    = bounds["MAX_POSITION_SIZE_PCT"]
-    logger.info("\n  [0/7] Guardrail mirror...")
+    logger.info("\n  [2/9] Guardrail mirror...")
     for name, local, theirs, detail in drift:
         _flag(flags, "HIGH", "GUARDRAIL_DRIFT", f"{name}: {detail}")
     if not drift:
         logger.info("    ✓ all %d guardrails match config.py" % len(_MIRRORED))
 
     # ── CHECK 1: Cash floor ────────────────────────────────────────────────
-    logger.info("  [1/7] Cash floor...")
+    logger.info("  [3/9] Cash floor...")
     if cash_pct < cash_floor:
         # This used to end "A buy bypassed the cash floor guardrail." That was
         # true and is not any more: the floor lived only in
@@ -254,7 +291,7 @@ def run_reconciliation() -> dict:
         logger.info(f"    ✓ Cash {cash_pct*100:.1f}% ≥ {cash_floor*100:.0f}% floor")
 
     # ── CHECK 2: Position count ────────────────────────────────────────────
-    logger.info("  [2/7] Position count...")
+    logger.info("  [4/9] Position count...")
     if n_positions > max_pos:
         _flag(flags, "HIGH", "MAX_POSITIONS",
               f"{n_positions} positions open — exceeds {max_pos} maximum.")
@@ -262,9 +299,10 @@ def run_reconciliation() -> dict:
         logger.info(f"    ✓ {n_positions}/{max_pos} positions")
 
     # ── CHECK 3 & 4: Per-position compliance ──────────────────────────────
-    logger.info("  [3/7] Stop-loss compliance...")
-    logger.info("  [4/7] Position size compliance...")
+    logger.info("  [5/9] Stop-loss compliance...")
+    logger.info("  [6/9] Position size compliance...")
     if positions is not None and not positions.empty:
+        evaluated, unevaluable = 0, []
         for _, pos in positions.iterrows():
             ticker  = pos.get("ticker", "?")
             try:
@@ -273,6 +311,19 @@ def run_reconciliation() -> dict:
                 pnl_pct = float(pos["unrealized_pct"])
                 mv      = float(pos.get("market_value", 0))
                 weight  = mv / portfolio_value
+
+                # NaN IS NOT MISSING. float("nan") survives float(), passes every
+                # `is not None` guard, and then LOSES every comparison: `nan <=
+                # -7.0` is False and `nan > 0.077` is False, so a position the
+                # broker could not price sails through both breach tests with no
+                # flag and — because nothing raised — not even the debug line in
+                # the handler below. The most severe check in this file would
+                # have reported clean on a position it never evaluated (memory
+                # `nan-is-not-none`). Raise so the position lands in
+                # `unevaluable` and is counted against the denominator.
+                if pnl_pct != pnl_pct or weight != weight:
+                    raise ValueError("unrealized_pct or market_value is NaN — "
+                                     "the broker did not price this position")
 
                 if pnl_pct <= -(stop_pct * 100):
                     _flag(flags, "CRITICAL", "STOP_LOSS_BREACH",
@@ -284,13 +335,30 @@ def run_reconciliation() -> dict:
                     _flag(flags, "MEDIUM", "POSITION_SIZE_BREACH",
                           f"{ticker} is {weight*100:.1f}% of portfolio (${mv:,.0f}) — "
                           f"exceeds {max_size*100:.0f}% limit.")
+                evaluated += 1
             except Exception as _pe:
+                unevaluable.append(f"{ticker} ({_pe})")
                 logger.debug(f"    Position parse error for {ticker}: {_pe}")
+
+        # THE DENOMINATOR. "No stop-loss breach" across 19 positions and across
+        # the 3 it could actually read are the same sentence and opposite facts,
+        # and this loop used to emit the first while meaning the second. The
+        # silence of a CRITICAL check only means something if you know what it
+        # covered.
+        if unevaluable:
+            _flag(flags, "HIGH", "STOP_LOSS_UNEVALUABLE",
+                  f"Stop-loss and position-size were evaluated on {evaluated} of "
+                  f"{len(positions)} open position(s); {len(unevaluable)} could not "
+                  f"be read ({', '.join(unevaluable[:5])}). The absence of a "
+                  f"STOP_LOSS_BREACH flag says nothing about those positions.")
+        else:
+            logger.info(f"    ✓ {evaluated}/{len(positions)} positions evaluated — "
+                        f"no stop-loss or size breach")
     else:
         logger.info("    ✓ No open positions")
 
     # ── CHECK 5: CRO CRITICAL buy compliance ──────────────────────────────
-    logger.info("  [5/7] CRO CRITICAL buy compliance...")
+    logger.info("  [7/9] CRO CRITICAL buy compliance...")
     try:
         rb = _load_json("data/risk_bulletin.json")
         risk_level = rb.get("risk_level", "")
@@ -326,9 +394,10 @@ def run_reconciliation() -> dict:
             logger.info(f"    ✓ CRO risk level is {risk_level or 'UNKNOWN'} — no buy freeze active")
     except Exception as e:
         logger.warning(f"    CRO compliance check error: {e}")
+        skipped.append("CRO_BUY_FREEZE")
 
     # ── CHECK 6: Unexecuted IMMEDIATE board decisions ──────────────────────
-    logger.info("  [6/7] IMMEDIATE board decision execution...")
+    logger.info("  [8/9] IMMEDIATE board decision execution...")
     try:
         # Check both regular and emergency board reports
         for board_path in ["data/board_meeting_active.json", "data/emergency_board_report.json"]:
@@ -400,9 +469,10 @@ def run_reconciliation() -> dict:
 
     except Exception as e:
         logger.warning(f"    Board decision check error: {e}")
+        skipped.append("BOARD_EXECUTION")
 
     # ── CHECK 7: P&L drift ─────────────────────────────────────────────────
-    logger.info("  [7/7] P&L drift (pipeline vs Alpaca)...")
+    logger.info("  [9/9] P&L drift (pipeline vs Alpaca)...")
     try:
         state = _load_json("data/state.json")
         starting_capital = 100000.0  # from config — hardcoded for independence
@@ -431,8 +501,30 @@ def run_reconciliation() -> dict:
             logger.info("    ✓ No performance ledger yet — P&L drift check skipped")
     except Exception as e:
         logger.warning(f"    P&L drift check error: {e}")
+        skipped.append("PNL_DRIFT")
 
     # ── Write report ──────────────────────────────────────────────────────
+    # SORT BEFORE ANYTHING SLICES A PREFIX OFF THIS LIST. Three readers do:
+    # the Fable 5 diagnosis below (flags[:4]), the firm-channel summary
+    # (flags[:3]) and morning_briefing.py's `top_flags` (recon_flags[:3]).
+    # Until 2026-08-24 the list was in APPEND order, which is source order, and
+    # the three CRITICAL checks are appended 7th, 9th and 10th — STOP_LOSS_
+    # BREACH, CRO_CRITICAL_BUY_VIOLATION and BOARD_DECISION_NOT_EXECUTED. The
+    # first four slots are always the LEDGER_ATTRIBUTION trio and GUARDRAIL_
+    # DRIFT, so no prefix of any length below 7 could contain a CRITICAL.
+    #
+    # The diagnosis is *gated* on `n_critical or n_high` and was then handed
+    # four flags that could not contain the CRITICAL which opened the gate:
+    # the trigger and the evidence disagreed, and the model was asked "is
+    # capital at risk?" about the wrong rows. A `[:N]` with no ordering is a
+    # silent sampling rule (memory `budget-spent-in-the-wrong-order`) — so
+    # sort, don't filter, and do it once at the producer so every consumer
+    # inherits it rather than each re-deriving a rule it may get wrong.
+    #
+    # Stable sort on severity alone: within a band the append order IS source
+    # order, which is the order the checks ran, and that is worth keeping.
+    flags.sort(key=lambda f: _SEV_RANK.get(f["severity"], 3))
+
     n_critical = sum(1 for f in flags if f["severity"] == "CRITICAL")
     n_high     = sum(1 for f in flags if f["severity"] == "HIGH")
     n_medium   = sum(1 for f in flags if f["severity"] == "MEDIUM")
@@ -448,7 +540,12 @@ def run_reconciliation() -> dict:
         "n_high":          n_high,
         "n_medium":        n_medium,
         "flags":           flags,
-        "status":          "CLEAN" if not flags else ("CRITICAL" if n_critical else "WARNING"),
+        # Coverage travels with the verdict. A reader that sees status CLEAN and
+        # checks_skipped ["CRO_BUY_FREEZE"] knows the clean is partial; without
+        # these two fields the two cases are the same JSON.
+        "checks_total":    len(_CHECKS),
+        "checks_skipped":  list(skipped),
+        "status":          ("CLEAN" if not flags else ("CRITICAL" if n_critical else "WARNING")),
     }
 
     # ── Fable 5 discrepancy diagnosis — gated to CRITICAL/HIGH flags ──────
@@ -456,9 +553,16 @@ def run_reconciliation() -> dict:
         try:
             from apex_llm import reason as _r, is_available
             if is_available("reconciliation"):
+                shown = flags[:4]          # now severity-ordered, see the sort above
                 flag_txt = "; ".join(
                     f"[{f['severity']}] {f['check']}: {f['detail'][:70]}"
-                    for f in flags[:4])
+                    for f in shown)
+                # Say what was left out. A model handed 4 of 11 flags with no
+                # note reasons as though it had seen all 11, and answers "is
+                # capital at risk?" from a sample it does not know is a sample.
+                if len(flags) > len(shown):
+                    flag_txt += (f" (+{len(flags) - len(shown)} lower-severity "
+                                 f"flag(s) not shown; full list in {REPORT_PATH})")
                 raw = _r(
                     "You diagnose data-reconciliation failures in a trading system.",
                     f"Portfolio ${portfolio_value:,.0f}, {n_positions} positions.\n"
@@ -480,18 +584,26 @@ def run_reconciliation() -> dict:
     try:
         from firm_channel import post
         if flags:
+            shown = flags[:3]              # severity-ordered, so this is the worst 3
             summary = (
                 f"RECONCILIATION: {len(flags)} flag(s) — "
-                + ", ".join(f['check'] for f in flags[:3])
-                + ("..." if len(flags) > 3 else "")
+                + ", ".join(f['check'] for f in shown)
+                + (f" (+{len(flags) - len(shown)} more)" if len(flags) > len(shown) else "")
             )
             priority = "URGENT" if n_critical else "HIGH"
             post("Reconciliation Engine", "PIPELINE_ALERT", summary, priority=priority)
         else:
+            # A check that could not run is UNKNOWN, not clean. Posting it as
+            # part of an all-clear at NORMAL priority is how a parse failure in
+            # the CRO buy-freeze check becomes a green light.
+            ran = len(_CHECKS) - len(skipped)
             post("Reconciliation Engine", "PIPELINE_ALERT",
-                 f"All 7 reconciliation checks passed. Portfolio ${portfolio_value:,.0f} | "
+                 f"Reconciliation: {ran} of {len(_CHECKS)} checks ran and passed"
+                 + (f"; {len(skipped)} could NOT run ({', '.join(skipped)}) — "
+                    f"those are unknown, not clean" if skipped else "")
+                 + f". Portfolio ${portfolio_value:,.0f} | "
                  f"Cash {cash_pct*100:.1f}% | {n_positions} positions.",
-                 priority="NORMAL")
+                 priority="HIGH" if skipped else "NORMAL")
     except Exception as e:
         logger.warning(f"  Firm channel post failed: {e}")
 
