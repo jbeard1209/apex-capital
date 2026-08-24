@@ -722,7 +722,7 @@ def check_single_writer(issues: list, skipped: dict):
         logger.info("    last seen: " + (", ".join(
             f"{h}={t.isoformat()[:16]}" for h, t in
             sorted(last_seen.items(), key=lambda kv: kv[1], reverse=True)) or "(none)"))
-        _emit(*sw.writer_silence_verdict(last_seen))
+        _emit(*sw.writer_silence_verdict(last_seen, orders=orders))
 
 
 def check_peer_host_liveness(issues: list, skipped: dict):

@@ -94,7 +94,11 @@ def _writer_status():
 
         orders = sw.fetch_broker_orders()
         last_seen = sw.hosts_last_seen(orders)
-        return sw.writer_silence_verdict(last_seen)
+        # `orders` is passed so the verdict can see whether the corroborating
+        # order was an exit. A sell clears a gate that stops every buy, so on
+        # its own it proves the market was open, not that the writer could have
+        # opened anything.
+        return sw.writer_silence_verdict(last_seen, orders=orders)
     except Exception as e:
         # Cannot tell != fine. Say so and let the caller escalate.
         return "UNKNOWN", f"could not read the broker: {type(e).__name__}: {e}"

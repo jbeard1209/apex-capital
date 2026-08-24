@@ -7782,6 +7782,16 @@ class TestDesignatedWriterSilence(unittest.TestCase):
     and returned CRITICAL about the fork, never reaching the liveness question.
     """
 
+    #: A buy would be allowed right now, so silence has no innocent explanation.
+    #: Every absent-writer assertion must state this counterfactual explicitly:
+    #: left to evaluate itself, it reads the LIVE account, and the verdict then
+    #: depends on how much cash the firm happens to be holding when the suite
+    #: runs (memory: `host_divergence_is_a_bug_class`).
+    OPEN = (False, "ALLOW_WITHIN_LIMITS", "within limits")
+    #: and the 2026-08-24 shape: present writer, every buy refused
+    WALLED = (True, "BLOCK_CASH_FLOOR",
+              "cash is already $16,558 (16.4%) against a 20% floor")
+
     def _seen(self, **kw):
         """{host: datetime} from {host: hours_ago}."""
         from datetime import timezone
@@ -7803,16 +7813,132 @@ class TestDesignatedWriterSilence(unittest.TestCase):
         self.assertEqual(sw.divergence_verdict(tally)[0], "CRITICAL",
                          "the count check reports the fork, not the death")
         sev, msg = sw.writer_silence_verdict(sw.hosts_last_seen(orders),
-                                             expected="apexcapitalc")
+                                             expected="apexcapitalc",
+                                             shared_block=self.OPEN)
         self.assertEqual(sev, "CRITICAL", "the recency check must catch it")
         self.assertIn("apexcapitalc", msg)
 
     def test_another_host_trading_after_the_writer_proves_the_market_was_open(self):
         import single_writer as sw
         sev, msg = sw.writer_silence_verdict(
-            self._seen(apexcapitalc=201, mac=2), expected="apexcapitalc")
+            self._seen(apexcapitalc=201, mac=2), expected="apexcapitalc",
+            shared_block=self.OPEN)
         self.assertEqual(sev, "CRITICAL")
         self.assertIn("REDUCE", msg, "the message must say what the firm can still do")
+
+    # ── the market being open is not the writer being able to trade ──────────
+
+    def test_a_wall_every_host_hits_is_not_an_absent_writer(self):
+        """2026-08-24: CRITICAL "the writer is absent, REDUCE exposure" — about a
+        VM that had run main.py six times that day and had every buy refused,
+        21 BLOCK_MAX_POSITIONS and 3 BLOCK_CASH_FLOOR.
+
+        A blocked order never reaches the broker, so from the broker alone
+        "gone" and "walled in" are the same picture. The constraint that walls
+        it in, though, is priced off the broker's own positions and cash — the
+        one medium both hosts share — so it can be evaluated from either.
+        """
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=131, mac=5), expected="apexcapitalc",
+            shared_block=self.WALLED)
+        self.assertEqual(sev, "HIGH", "a firm-wide wall is not a dead host")
+        self.assertIn("BLOCK_CASH_FLOOR", msg, "name the constraint that fired")
+        self.assertNotIn("only REDUCE", msg,
+                         "prescribes the remedy for a host that was never down")
+        self.assertIn("does not PROVE", msg,
+                      "walled-in and absent can both be true; say so")
+
+    def test_an_unverifiable_probe_does_not_clear_the_writer(self):
+        """Cannot tell != fine, and it also != absent. Keep the alarm, name the
+        gap, and point at the evidence that would settle it."""
+        import single_writer as sw
+        sev, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=131, mac=5), expected="apexcapitalc",
+            shared_block=(None, "UNVERIFIED", "broker snapshot unavailable"))
+        self.assertEqual(sev, "CRITICAL", "an unreadable probe must not downgrade")
+        self.assertIn("NOT ruled out", msg)
+        self.assertIn("risk_gate_log", msg, "name the evidence that would decide it")
+
+    def test_a_degraded_probe_returns_cannot_tell_not_not_blocked(self):
+        """`blocked` must be None, never False, when the broker is unreadable.
+        False is the answer that sends the Chairman to restart a live machine
+        (memory: `fallback-that-means-act`)."""
+        import single_writer as sw
+        with patch("risk_gate.snapshot", return_value=None):
+            blocked, verdict, reason = sw.shared_constraint_verdict()
+        self.assertIsNone(blocked, "a degraded read resolved to a verdict")
+        self.assertIn("cannot tell", reason.lower())
+
+    def test_the_probe_symbol_is_never_scored_as_an_exit(self):
+        """Exits are never gated, so a probe the gate reads as risk-reducing
+        would return ALLOW_EXIT every time and the check would be a tautology
+        that can only ever say "not blocked"."""
+        import single_writer as sw
+        seen = {}
+
+        def _capture(symbol, side, qty, price=None, snap=None, now=None):
+            seen["symbol"], seen["side"] = symbol, side
+            return (False, "BLOCK_MAX_POSITIONS", "20 positions open")
+
+        snap = {"positions": {"ZZZZ_PROBE": {"qty": 5}}, "cash": 1.0,
+                "portfolio_value": 100.0}
+        with patch("risk_gate.check", side_effect=_capture):
+            blocked, verdict, _ = sw.shared_constraint_verdict(snap=snap)
+        self.assertTrue(blocked)
+        self.assertEqual("buy", seen["side"], "only a BUY is subject to the gate")
+        self.assertNotIn(seen["symbol"], snap["positions"],
+                         "probed a symbol the account holds — the gate would "
+                         "call that an exit and wave it through")
+
+    def test_the_probe_places_nothing_and_logs_nothing(self):
+        """A read-only question about the gate must not write to the ledger it
+        is reasoning about, nor reach an order-submitting call."""
+        import ast
+        import inspect
+        import single_writer as sw
+        tree = ast.parse(inspect.getsource(sw.shared_constraint_verdict))
+        called = {n.func.attr for n in ast.walk(tree)
+                  if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)}
+        for forbidden in ("log", "submit_buy", "submit_sell", "submit_order"):
+            self.assertNotIn(forbidden, called,
+                             f"the probe calls {forbidden}()")
+
+    def test_a_corroborating_sell_is_not_evidence_a_buy_would_have_landed(self):
+        """The Mac's HASI SELL is what "proved" the VM should have traded. It
+        cleared a wall that stops every buy (memory: `both-sides-of-a-comparison`)."""
+        import single_writer as sw
+        now = datetime.now(timezone.utc)
+        orders = [{"client_order_id": "apex-mac-main-bbbbbbbbbbbb", "side": "sell",
+                   "submitted_at": (now - timedelta(hours=5)).isoformat()}]
+        _, msg = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=131, mac=5), expected="apexcapitalc",
+            shared_block=self.WALLED, orders=orders)
+        self.assertIn("SELL", msg)
+        self.assertIn("exits are never gated", msg)
+
+        buys = [dict(orders[0], side="buy")]
+        _, msg2 = sw.writer_silence_verdict(
+            self._seen(apexcapitalc=131, mac=5), expected="apexcapitalc",
+            shared_block=self.WALLED, orders=buys)
+        self.assertNotIn("exits are never gated", msg2,
+                         "a corroborating BUY does prove a buy could land")
+
+    def test_the_side_and_the_timestamp_come_from_the_same_order(self):
+        """`hosts_last_seen` drops orders no host can be attributed to, so the
+        corroborating TIMESTAMP is always a stamped peer's. If the side is read
+        off any order in the list, the two halves describe different orders and
+        the sentence they build is about nothing (memory:
+        `both-sides-of-a-comparison`). Unattributable orders are exactly what
+        the Oracle third host looked like from here."""
+        import single_writer as sw
+        now = datetime.now(timezone.utc)
+        orders = [{"client_order_id": "apex-mac-main-bbbbbbbbbbbb", "side": "buy",
+                   "submitted_at": (now - timedelta(hours=6)).isoformat()},
+                  {"client_order_id": "foreign-thing-nobody-stamped", "side": "sell",
+                   "submitted_at": (now - timedelta(hours=1)).isoformat()}]
+        self.assertEqual("buy", sw._newest_other_side(orders, "apexcapitalc"),
+                         "an unstamped order supplied the corroborating side")
 
     def test_uncorroborated_silence_downgrades_instead_of_guessing(self):
         """Nobody traded after the writer — that may be a closed market."""
@@ -7868,6 +7994,24 @@ class TestDesignatedWriterSilence(unittest.TestCase):
                       "the silence check must run alongside the count check")
         self.assertIn("hosts_last_seen", body)
 
+    def test_every_caller_hands_over_the_orders_it_already_has(self):
+        """The exit-vs-buy corroboration only works if the raw orders reach the
+        verdict. Both production callers already hold them; a caller that drops
+        them silently gets the weaker message and nobody would notice."""
+        import ast
+        import inspect
+        from pathlib import Path
+        here = Path(__file__).resolve().parent
+        for mod in ("cit_pipeline_integrity_agent.py", "vm_state_monitor.py"):
+            tree = ast.parse((here / mod).read_text())
+            calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
+                     and isinstance(n.func, ast.Attribute)
+                     and n.func.attr == "writer_silence_verdict"]
+            self.assertTrue(calls, f"{mod} no longer calls the silence check")
+            for c in calls:
+                self.assertIn("orders", {k.arg for k in c.keywords},
+                              f"{mod} calls writer_silence_verdict without orders=")
+
     def test_neither_verdict_can_return_early_past_the_other(self):
         """They must be separate calls, not branches of one function."""
         import single_writer as sw
@@ -7880,7 +8024,8 @@ class TestDesignatedWriterSilence(unittest.TestCase):
                           ("CRITICAL", "PASS"))
         self.assertEqual(
             sw.writer_silence_verdict(self._seen(apexcapitalc=201, mac=2),
-                                      expected="apexcapitalc")[0], "CRITICAL")
+                                      expected="apexcapitalc",
+                                      shared_block=self.OPEN)[0], "CRITICAL")
 
 
 class TestVMStateMonitor(unittest.TestCase):

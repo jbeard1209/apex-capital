@@ -344,8 +344,79 @@ def divergence_verdict(tally, expected=None) -> tuple:
 DEFAULT_WRITER_GRACE_HOURS = 26.0
 
 
+def shared_constraint_verdict(snap=None) -> tuple:
+    """(blocked, verdict, reason) — would ANY host's next NEW buy be refused?
+
+    The one piece of evidence that separates "the writer is gone" from "the
+    writer is running and every buy it wanted is being refused". From the
+    broker alone those two look identical, because a blocked order never
+    reaches the broker to be seen.
+
+    It works across hosts without any state sync because the gate's inputs are
+    the BROKER's own position count and cash — the single medium both hosts
+    share. A cash-floor or position-cap block is therefore a firm-wide
+    condition, not a host-local one: if this host cannot open a position right
+    now, neither could the VM, whatever else is true of it.
+
+    Returns blocked=None when the broker cannot be read. A degraded read must
+    not resolve to "not blocked", because that is the answer that sends the
+    Chairman to restart a machine that was never down (memory
+    `fallback-that-means-act`).
+
+    Places nothing. `risk_gate.check()` is a pure predicate; `risk_gate.log()`
+    is a separate call and is deliberately not made here, so probing cannot
+    pollute the ledger it is reasoning about.
+    """
+    try:
+        import risk_gate
+
+        if snap is None:
+            snap = risk_gate.snapshot()
+        if snap is None:
+            return (None, "UNVERIFIED",
+                    "broker snapshot unavailable — cannot tell whether a new "
+                    "position could be opened right now")
+        held = {s for s, v in snap["positions"].items() if v["qty"] != 0}
+        # A symbol nobody holds: `is_risk_reducing` must not classify the probe
+        # as an exit, or every probe returns ALLOW_EXIT and the check is a
+        # tautology that always says "not blocked".
+        probe = "ZZZZ_PROBE"
+        while probe in held:
+            probe += "Z"
+        allowed, verdict, reason = risk_gate.check(probe, "buy", 1, price=1.0,
+                                                   snap=snap)
+        return (not allowed, verdict, reason)
+    except Exception as e:
+        return (None, "UNVERIFIED",
+                f"could not evaluate the shared constraint: {type(e).__name__}: {e}")
+
+
+def _newest_other_side(orders, expected):
+    """Side ('buy'/'sell'/None) of the most recent order from a host that is
+    not `expected`. Used only to keep the corroboration honest, below."""
+    best_ts, best_side = None, None
+    from order_ledger import parse_stamp
+    for o in orders or []:
+        get = o.get if isinstance(o, dict) else (lambda k, d=None: getattr(o, k, d))
+        raw = get("submitted_at") or get("created_at")
+        st = parse_stamp(get("client_order_id"))
+        if not raw or not st or st["host"] in (expected, "UNSTAMPED"):
+            continue
+        try:
+            ts = raw if isinstance(raw, datetime) else datetime.fromisoformat(
+                str(raw).replace("Z", "+00:00"))
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=timezone.utc)
+        except Exception:
+            continue
+        if best_ts is None or ts > best_ts:
+            best_ts, best_side = ts, str(get("side") or "").lower() or None
+    return best_side
+
+
 def writer_silence_verdict(last_seen, expected=None, now=None,
-                           grace_hours=DEFAULT_WRITER_GRACE_HOURS) -> tuple:
+                           grace_hours=DEFAULT_WRITER_GRACE_HOURS,
+                           shared_block=None, orders=None) -> tuple:
     """(severity, message) — has the designated writer stopped writing?
 
     Deliberately a SEPARATE function from divergence_verdict(), which returns on
@@ -356,11 +427,27 @@ def writer_silence_verdict(last_seen, expected=None, now=None,
     tally. Both checks must run; neither may mask the other.
 
     Corroboration beats the calendar. If another host placed an order well after
-    the writer's last one, the market was demonstrably open and the writer was
-    demonstrably absent — no holiday table required, and no way for a long
-    weekend to fake it. Without a second host to corroborate, an absolute bound
-    is all that is left, so the verdict downgrades to HIGH and says why rather
-    than claiming a confidence it has not earned.
+    the writer's last one, the market was demonstrably open — no holiday table
+    required, and no way for a long weekend to fake it. Without a second host to
+    corroborate, an absolute bound is all that is left, so the verdict downgrades
+    to HIGH and says why rather than claiming a confidence it has not earned.
+
+    But "the market was open" is NOT "the writer should have traded", and until
+    2026-08-24 this function silently equated them. On that date it reported
+    CRITICAL — "the writer is absent, the firm can only REDUCE exposure" — about
+    a VM that had run main.py six times that day. The VM was present and every
+    buy it attempted was refused: 21 BLOCK_MAX_POSITIONS and 3 BLOCK_CASH_FLOOR.
+    The corroborating order that "proved" the writer should have traded was the
+    Mac's HASI SELL, and this firm's gate never blocks exits. So the evidence
+    and the claim were different quantities: a sell gets through a wall that
+    stops every buy (memory `both-sides-of-a-comparison`).
+
+    `shared_block` closes it. A blocked order never reaches the broker, so the
+    broker cannot see the difference between a writer that is gone and a writer
+    whose every buy is refused — but the constraint that refuses them is
+    evaluated against the broker's own position count and cash, which both hosts
+    share. See `shared_constraint_verdict()`. Pass None to have it evaluated
+    here; pass a (blocked, verdict, reason) triple to inject one.
     """
     now = now or datetime.now(timezone.utc)
     expected = expected if expected is not None else designated_host()
@@ -389,13 +476,43 @@ def writer_silence_verdict(last_seen, expected=None, now=None,
     if newest_other is not None and newest_other > writer_last:
         lag_h = (newest_other - writer_last).total_seconds() / 3600.0
         if lag_h > grace_hours:
-            return ("CRITICAL",
-                    f"the designated writer '{expected}' has been silent "
+            if shared_block is None:
+                shared_block = shared_constraint_verdict()
+            blocked, bverdict, breason = shared_block
+            stem = (f"the designated writer '{expected}' has been silent "
                     f"{silence_h:.0f}h (last order {writer_last.isoformat()[:16]}), "
-                    f"but {sorted(others)} kept trading for {lag_h:.0f}h after that — "
-                    f"the market was open and the writer was not there. The firm can "
-                    f"only REDUCE exposure until this host returns or another is "
-                    f"designated in APEX_TRADING_HOST.")
+                    f"but {sorted(others)} kept trading for {lag_h:.0f}h after that")
+            side = _newest_other_side(orders, expected) if orders else None
+            corrob = (f" That host's most recent order was a {side.upper()}, and "
+                      f"exits are never gated — so it proves the market was open, "
+                      f"not that a new position could have been opened."
+                      if side == "sell" else "")
+
+            if blocked is True:
+                return ("HIGH",
+                        f"{stem}. NOT an absent-writer finding: a new buy from ANY "
+                        f"host would be refused right now — {bverdict}: {breason}. "
+                        f"The constraint is evaluated against the broker's own "
+                        f"positions and cash, which every host shares, so this "
+                        f"explains the silence without the writer being down."
+                        f"{corrob} It does not PROVE the writer is up — both can be "
+                        f"true at once. Resolve the constraint first; if orders do "
+                        f"not resume once it clears, then verify the host.")
+            if blocked is None:
+                return ("CRITICAL",
+                        f"{stem} — the market was open and the writer placed nothing."
+                        f"{corrob} The shared-constraint probe could not run "
+                        f"({breason}), so 'present but every buy refused' was NOT "
+                        f"ruled out. Check the writer's own risk_gate_log before "
+                        f"concluding the host is down. The firm can only REDUCE "
+                        f"exposure until this is resolved or another host is "
+                        f"designated in APEX_TRADING_HOST.")
+            return ("CRITICAL",
+                    f"{stem} — the market was open, a new buy WOULD be allowed "
+                    f"right now ({bverdict}), and the writer placed nothing. The "
+                    f"host that is supposed to open this firm's positions is not "
+                    f"doing so. The firm can only REDUCE exposure until this host "
+                    f"returns or another is designated in APEX_TRADING_HOST.")
 
     if silence_h > grace_hours:
         return ("HIGH",
