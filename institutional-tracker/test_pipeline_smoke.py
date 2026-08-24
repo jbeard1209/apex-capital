@@ -10661,10 +10661,21 @@ class TestCoherenceLaws(unittest.TestCase):
         real_state, real_buf = kcal.VERDICT_STATE, None
         import email_buffer
         real_buf = email_buffer.buffer_email
+        real_ds = email_buffer.delivery_state
         with tempfile.TemporaryDirectory() as d:
             try:
                 kcal.VERDICT_STATE = Path(d) / "v.json"
                 email_buffer.buffer_email = lambda **kw: sent.append(kw) or True
+                # Stub the receipt too. Without this the suppression path reads
+                # the HOST's real data/.digest_last_sent, so the test asks a
+                # question about change-vs-heartbeat and gets answered by
+                # whatever that host's digest last did. It passed on the Mac
+                # (no receipt at all -> "unknown") and failed on the VM (a real
+                # receipt older than the stubbed enqueue -> "lost" -> re-send).
+                # The two-zone push gate cannot catch that: the divergence is
+                # host STATE, not the clock. delivery_state has its own
+                # hermetic coverage in TestDeliveryStateAsksTheReceipt.
+                email_buffer.delivery_state = lambda *a, **k: ("delivered", "stub")
                 first, _ = kcal.email_verdict(rows)
                 second, why = kcal.email_verdict(rows)
                 # backdate past the heartbeat window
@@ -10675,11 +10686,43 @@ class TestCoherenceLaws(unittest.TestCase):
                 third, _ = kcal.email_verdict(rows)
             finally:
                 kcal.VERDICT_STATE, email_buffer.buffer_email = real_state, real_buf
+                email_buffer.delivery_state = real_ds
         self.assertTrue(first)
         self.assertFalse(second, "mailed an unchanged verdict inside the window")
         self.assertTrue(third, "the heartbeat never fires — silence looks like health")
         self.assertEqual(len(sent), 2)
         self.assertIn("DEAD", sent[0]["subject"])
+
+    def test_an_unchanged_verdict_is_resent_when_the_receipt_says_lost(self):
+        """Suppression is conditional on delivery, and that must be tested.
+
+        The test above stubs delivery_state to 'delivered' so it can measure
+        the change/heartbeat rule alone. That stub would also hide a
+        suppression path that ignored the receipt entirely — the exact bug the
+        receipt was added to fix — so pin the other branch here.
+        """
+        import kalshi_calibration as kcal
+        import email_buffer
+        rows = [{"settled": True, "outcome": 0, "market_price": 0.97,
+                 "selection_rule": kcal.SELECTION_RULE}] * 210
+        sent = []
+        real_state = kcal.VERDICT_STATE
+        real_buf, real_ds = email_buffer.buffer_email, email_buffer.delivery_state
+        with tempfile.TemporaryDirectory() as d:
+            try:
+                kcal.VERDICT_STATE = Path(d) / "v.json"
+                email_buffer.buffer_email = lambda **kw: sent.append(kw) or True
+                email_buffer.delivery_state = lambda *a, **k: ("lost", "stub")
+                first, _ = kcal.email_verdict(rows)
+                second, why = kcal.email_verdict(rows)
+            finally:
+                kcal.VERDICT_STATE = real_state
+                email_buffer.buffer_email = real_buf
+                email_buffer.delivery_state = real_ds
+        self.assertTrue(first)
+        self.assertTrue(second, "an unchanged verdict that never arrived stayed "
+                                "silent — the state file would insist Jack was told")
+        self.assertEqual(len(sent), 2)
 
     # -- notification: the finding has to cross the host boundary -------------
 
@@ -20236,6 +20279,14 @@ class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
         to "nothing runs it". Same shape as `fix_that_erased_its_detector`.
         """
         import internal_audit_agent as iaa
+        if not (self._root() / "scripts/git-hooks/pre-push").exists():
+            # The VM is rsynced from institutional-tracker/, so the repo root
+            # is not there at all. Asserting here would fail on the VM for a
+            # reason that has nothing to do with the audit — and the two-zone
+            # push gate runs this suite on both (memory
+            # `host_divergence_is_a_bug_class`). The missing-hook branch is
+            # covered by the next test, which does not depend on the host.
+            self.skipTest("no repo root on this host (rsynced, not cloned)")
         live = iaa._detector_liveness(["test_pipeline_smoke.py::TestWrongfulRetirement"])
         status, why = live["test_pipeline_smoke.py::TestWrongfulRetirement"]
         self.assertEqual(
@@ -20260,6 +20311,11 @@ class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
                 status, why = iaa._detector_liveness([ref])[ref]
             finally:
                 iaa.BASE_DIR = saved
+        if "crontab snapshot" in why:
+            # The whole function short-circuits when the schedule is unreadable,
+            # so we never reached the branch under test. Passing on that would
+            # be answering this question with the other branch's evidence.
+            self.skipTest("no crontab snapshot on this host")
         self.assertEqual(iaa.UNKNOWN_RUN, status, why)
         self.assertIn("cannot be determined", why)
 
