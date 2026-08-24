@@ -1055,11 +1055,23 @@ def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
     # Does the shipped pre-push hook actually invoke the suite? .git/hooks is not
     # cloned, so the INSTALLED hook is a property of one machine; the hook the
     # repo ships is the firm's intent and is the honest thing to measure.
-    hook = BASE_DIR / "scripts/git-hooks/pre-push"
-    try:
-        hook_txt = hook.read_text()
-    except OSError:
-        hook_txt = ""
+    #
+    # The hook is tracked at the REPO ROOT, not under institutional-tracker/.
+    # Until 2026-08-23 a second, stale copy sat at BASE_DIR and this line read
+    # only that one; deleting the duplicate silently flipped the suite's own
+    # verdict from PUSH_ONLY to "nothing runs it at all" — a remediation that
+    # erased the evidence its detector reads (memory `fix_that_erased_its_detector`).
+    # Look in both places, newest wins, and keep them distinguishable below.
+    hook_txt = ""
+    hook_found = False
+    for _cand in (BASE_DIR.parent / "scripts/git-hooks/pre-push",
+                  BASE_DIR / "scripts/git-hooks/pre-push"):
+        try:
+            hook_txt = _cand.read_text()
+            hook_found = True
+            break
+        except OSError:
+            continue
 
     registries: Dict[str, set] = {}
 
@@ -1101,6 +1113,15 @@ def _detector_liveness(refs: List[str]) -> Dict[str, tuple]:
                 out[ref] = (PUSH_ONLY,
                             f"{fname} is on no scheduler; it fires only when someone "
                             f"pushes (scripts/git-hooks/pre-push)")
+            elif not hook_found:
+                # "I could not find the hook" is not "the hook does not run it".
+                # The VM has no repo root — deploy.sh rsyncs institutional-tracker/
+                # only — so asserting UNSCHEDULED there would manufacture a finding
+                # out of a host difference (memory `the-instrument-measured-itself`).
+                out[ref] = (UNKNOWN_RUN,
+                            f"{fname} is on no scheduler, and the shipped pre-push "
+                            f"hook is not present on this host, so whether anything "
+                            f"runs it cannot be determined from here")
             else:
                 out[ref] = (UNSCHEDULED_D,
                             f"{fname} is on no scheduler AND not in the shipped "

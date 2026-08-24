@@ -46,9 +46,25 @@ python3 model_test_harness.py       # reproducible, no-leakage model AUC (weekly
 python3 <agent>.py --report         # most agents support --report
 ```
 
-**Install the pre-push gate** (blocks pushes that fail tests/audit; `.git/hooks` isn't cloned):
+**Install the pre-push gate** (blocks pushes that fail tests/audit; `.git/hooks` isn't cloned).
+The gate lives at **repo root**, not under `institutional-tracker/` — run this from the root,
+which is what the `git rev-parse` prefix guarantees regardless of where you are:
 ```bash
-cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+cd "$(git rev-parse --show-toplevel)" && cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+```
+Until 2026-08-23 there were **two tracked copies** of this hook and the command above sat
+under `cd institutional-tracker`, so following it resolved to the older, fail-open stub —
+the same "install command downgrades the gate" failure the hook's own header postmortems.
+The duplicate is deleted; `test_pipeline_smoke.py::TestThePrePushGateIsTheOneWeShip` pins
+that there is exactly one, and that this file names its real path.
+
+**The gate runs the suite twice** (local zone + `TZ=UTC`, ~8 min) — longer than an idle SSH
+connection to GitHub survives, so a push that PASSES the gate then dies with
+`Connection to github.com closed by remote host` and exit 141. `core.sshCommand` is set
+repo-locally to `ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=30`; that is not
+cloned, so re-run it on a fresh checkout:
+```bash
+git config core.sshCommand "ssh -o ServerAliveInterval=20 -o ServerAliveCountMax=30"
 ```
 
 ## Model metrics — single source of truth

@@ -924,6 +924,60 @@ def check_internal_audit():
                      f"censused; report {age_h:.1f}h old")
 
 
+#: A temp file older than this is not a write in flight, it is a corpse.
+_TEMP_ORPHAN_MIN_AGE_H = 1.0
+
+
+def check_interrupted_writes(data_dir=None):
+    """Count temp files left in data/ — each one is a write that never landed.
+
+    An atomic writer unlinks its temp on failure, so a leftover means the
+    process DIED between mkstemp and os.replace. That matters far beyond the
+    debris: it is direct evidence that writes here really do get interrupted,
+    which is the precondition for every truncate-in-place writer to leave a
+    reader an empty file. Six were found on the Mac on 2026-08-23, all from
+    agent_meeting._save (agent_status registry), all dated 2026-08-01 between
+    15:34 and 20:04.
+
+    Reported as a note, not a violation: the corpses are harmless in
+    themselves, and blocking a push on litter would teach people to bypass the
+    gate. What it buys is a running count — if it climbs, something is killing
+    the pipeline mid-write and that IS worth a look.
+
+    `data_dir` is injectable so the suite can hand this a directory holding a
+    *known* corpse and prove the check still fires. The six real ones were
+    archived to data/.interrupted-writes/ on 2026-08-23, so the live count is
+    now 0 — and a detector whose only evidence has been swept up is exactly
+    the kind that quietly stops working.
+    """
+    import time as _time
+
+    data = Path(data_dir) if data_dir else Path(__file__).resolve().parent / "data"
+    if not data.is_dir():
+        return
+    now = _time.time()
+    stale = []
+    for f in data.glob("*.tmp"):
+        try:
+            age_h = (now - f.stat().st_mtime) / 3600.0
+        except OSError:
+            continue
+        if age_h >= _TEMP_ORPHAN_MIN_AGE_H:
+            stale.append((f.name, age_h))
+    if not stale:
+        # A denominator, so "OK" cannot mean "the directory moved". See
+        # coherence_laws: a pass on zero examined items is not a pass.
+        notes.append(f"[interrupted-writes] OK — 0 orphaned temp files in "
+                     f"{data.name}/ ({len(list(data.glob('*.json')))} json files examined)")
+        return
+    stale.sort(key=lambda t: -t[1])
+    notes.append(
+        f"[interrupted-writes] {len(stale)} orphaned temp file(s) in {data.name}/ "
+        f"— each is a process killed between mkstemp and os.replace, i.e. a "
+        f"write that was interrupted. Oldest {stale[0][1]:.0f}h: "
+        + ", ".join(n for n, _ in stale[:4]))
+
+
 def run_checks() -> dict:
     """Run all wiring checks and return {problems, notes} without exiting.
 
@@ -941,6 +995,7 @@ def run_checks() -> dict:
     check_orphan_agents(sources)
     check_coherence_layer()
     check_internal_audit()
+    check_interrupted_writes()
     return {"problems": list(problems), "notes": list(notes)}
 
 

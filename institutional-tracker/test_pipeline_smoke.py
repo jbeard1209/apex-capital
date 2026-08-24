@@ -20149,6 +20149,180 @@ class TestTheAlertQueueSurvivesConcurrentProducers(unittest.TestCase):
         self.assertNotIn("open", names, "_save_buffer must not open the live path")
 
 
+class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
+    """One tracked copy of the gate, and CLAUDE.md must name its real path.
+
+    The hook's own header records that the hardened version once lived only in
+    .git/hooks while the tracked copy stayed a fail-open stub, so the documented
+    install command DOWNGRADED the gate. The repair left a second tracked copy
+    at institutional-tracker/scripts/git-hooks/pre-push, three weeks stale — and
+    CLAUDE.md's install block sits under `cd institutional-tracker`, so a reader
+    following it landed on the stale one. The hook's own drift self-check could
+    not see this: it compares the installed file against $ROOT/scripts/..., and
+    a second copy somewhere else is invisible to it.
+    """
+
+    @staticmethod
+    def _root():
+        return Path(__file__).resolve().parent.parent
+
+    def _tracked_hooks(self):
+        import subprocess
+        out = subprocess.run(["git", "ls-files"], cwd=str(self._root()),
+                             capture_output=True, text=True)
+        if out.returncode != 0:
+            self.skipTest("not a git checkout (the VM is rsynced, not cloned)")
+        return [p for p in out.stdout.split("\n") if p.endswith("git-hooks/pre-push")]
+
+    def test_exactly_one_tracked_copy_of_the_hook(self):
+        tracked = self._tracked_hooks()
+        self.assertEqual(
+            1, len(tracked),
+            f"{len(tracked)} tracked copies of the pre-push gate: {tracked}. "
+            f"Two copies means one of them is stale and somebody will install "
+            f"it; the hook's drift self-check only ever compares against one.")
+
+    def test_claude_md_names_the_path_that_actually_exists(self):
+        tracked = self._tracked_hooks()
+        if len(tracked) != 1:
+            self.skipTest("covered by test_exactly_one_tracked_copy_of_the_hook")
+        real = tracked[0]                     # e.g. "scripts/git-hooks/pre-push"
+        doc = (self._root() / "CLAUDE.md").read_text()
+        install = [ln for ln in doc.split("\n")
+                   if "git-hooks/pre-push" in ln and ln.lstrip().startswith(("cp ", "cd "))]
+        self.assertTrue(install, "CLAUDE.md no longer documents installing the gate")
+        for ln in install:
+            self.assertIn(
+                real, ln,
+                f"CLAUDE.md's install line points somewhere other than the one "
+                f"tracked hook ({real}):\n  {ln.strip()}")
+            self.assertIn(
+                "rev-parse --show-toplevel", ln,
+                "the install line must anchor itself to the repo root — the gate "
+                "is at the root and the surrounding block runs from "
+                "institutional-tracker/, where that relative path meant a "
+                "different, staler file:\n  " + ln.strip())
+
+    def test_the_gate_still_fails_closed_and_checks_the_production_zone(self):
+        tracked = self._tracked_hooks()
+        if len(tracked) != 1:
+            self.skipTest("covered by test_exactly_one_tracked_copy_of_the_hook")
+        body = (self._root() / tracked[0]).read_text()
+
+        # Comments STRIPPED. The hook's header narrates the old fail-open bug
+        # verbatim, so a plain `assertNotIn("|| exit 0", body)` fails on the
+        # postmortem describing the fix — the same reason every guard in this
+        # file reads structure rather than text.
+        code = "\n".join(ln for ln in body.split("\n")
+                         if not ln.lstrip().startswith("#"))
+
+        self.assertIn("TZ=UTC", code,
+                      "the gate must run the suite in the VM's zone too — green "
+                      "on the Mac is not green")
+        self.assertNotIn("|| exit 0", code,
+                         "a gate that exits 0 when confused allows every push")
+        self.assertIn("|| exit 0", body,
+                      "the header stopped explaining WHY the gate fails closed — "
+                      "if that postmortem was deleted, the next person to hit a "
+                      "confusing tree will re-add the escape hatch")
+
+    def test_the_internal_audit_can_still_find_the_hook_it_ships(self):
+        """Deleting the duplicate must not blind the liveness check to the gate.
+
+        `_detector_liveness` reads the shipped hook to decide whether a
+        test-suite detector is PUSH_ONLY or runs nowhere at all. It used to
+        resolve that path under institutional-tracker/ — the copy this change
+        deletes — so the dedup silently downgraded every suite-backed detector
+        to "nothing runs it". Same shape as `fix_that_erased_its_detector`.
+        """
+        import internal_audit_agent as iaa
+        live = iaa._detector_liveness(["test_pipeline_smoke.py::TestWrongfulRetirement"])
+        status, why = live["test_pipeline_smoke.py::TestWrongfulRetirement"]
+        self.assertEqual(
+            iaa.PUSH_ONLY, status,
+            f"the audit no longer sees the gate that runs the suite: {why}")
+
+    def test_a_missing_hook_is_unknown_not_unscheduled(self):
+        """Absent evidence must not be reported as evidence of absence.
+
+        The VM has no repo root (deploy.sh rsyncs institutional-tracker/ only),
+        so on that host the hook genuinely cannot be read. Claiming
+        UNSCHEDULED there would be the control manufacturing a finding from a
+        host difference.
+        """
+        import internal_audit_agent as iaa
+        import tempfile
+        ref = "test_pipeline_smoke.py::TestWrongfulRetirement"
+        with tempfile.TemporaryDirectory() as d:
+            saved = iaa.BASE_DIR
+            try:
+                iaa.BASE_DIR = Path(d)
+                status, why = iaa._detector_liveness([ref])[ref]
+            finally:
+                iaa.BASE_DIR = saved
+        self.assertEqual(iaa.UNKNOWN_RUN, status, why)
+        self.assertIn("cannot be determined", why)
+
+
+class TestInterruptedWriteDetectorStillFires(unittest.TestCase):
+    """A poison pill for `wiring_audit.check_interrupted_writes`.
+
+    The six real corpses it found on 2026-08-23 were archived, so its live
+    output is now the reassuring "OK — 0 orphaned temp files". That is exactly
+    the state in which a broken detector is indistinguishable from a clean
+    system (see memory `presence-is-not-currency`). So: hand it a directory
+    containing one known corpse and require it to say so.
+    """
+
+    def _run(self, dirpath):
+        import wiring_audit
+        saved = wiring_audit.notes
+        wiring_audit.notes = []
+        try:
+            wiring_audit.check_interrupted_writes(data_dir=dirpath)
+            return list(wiring_audit.notes)
+        finally:
+            wiring_audit.notes = saved
+
+    def test_a_planted_corpse_is_reported(self):
+        import os
+        import tempfile
+        import time
+        with tempfile.TemporaryDirectory() as d:
+            corpse = os.path.join(d, "tmpDEADBEEF.tmp")
+            with open(corpse, "w") as f:
+                f.write("{partial")
+            old = time.time() - 9 * 3600
+            os.utime(corpse, (old, old))
+            out = self._run(d)
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("1 orphaned temp file", out[0])
+        self.assertIn("tmpDEADBEEF.tmp", out[0])
+
+    def test_a_fresh_temp_is_not_a_corpse(self):
+        """A writer mid-`os.replace` right now is not evidence of anything."""
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            with open(os.path.join(d, "tmpLIVE.tmp"), "w") as f:
+                f.write("{}")
+            out = self._run(d)
+        self.assertEqual(len(out), 1, out)
+        self.assertIn("0 orphaned temp files", out[0])
+
+    def test_the_clean_note_still_carries_a_denominator(self):
+        """"OK" on a directory that moved is a false pass — demand the count."""
+        import json
+        import os
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            for i in range(3):
+                with open(os.path.join(d, f"f{i}.json"), "w") as f:
+                    json.dump({}, f)
+            out = self._run(d)
+        self.assertIn("3 json files examined", out[0])
+
+
 class TestAtomicJsonIsActuallyAtomic(unittest.TestCase):
     """The helper the whole firm now routes shared-file writes through.
 
