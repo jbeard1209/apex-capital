@@ -22456,6 +22456,296 @@ class TestBufferedIsNotDelivered(unittest.TestCase):
         self.assertTrue(callable(getattr(eb, "delivery_state", None)))
 
 
+class TestASubjectIsNotAnIdentity(unittest.TestCase):
+    """The digest deduped on a display string, and one of them was a COUNT.
+
+    `coherence_laws.notify_violations` already dedupes: it buffers only when
+    the set of violations CHANGES, so every mail it hands to the digest is by
+    construction news. Its subject is "Coherence: N law(s) violated on <host>".
+    A stop-loss blind to 13 broker positions, the VM running code that is not
+    the repo's, and 15 Kalshi ladders quoting numbers no probabilities can
+    produce all render as "1 law(s)".
+
+    The digest then deduped on that string and kept the newest. Two dedupe
+    layers, the second strictly coarser than the first, the coarse one deleting
+    what the fine one had certified as news — and logging it as "Removed N
+    duplicate report(s)".
+
+    Measured on the Mac's buffer, 2026-08-27, before the fix: 133 reports, 8
+    colliding subjects, 59 drops with differing bodies, and four DISTINCT
+    coherence alarms queued for destruction — `deployed_set_matches_repo`,
+    `shipped_config_matches_repo`, `nested_probabilities_are_monotone` (32
+    copies across two subjects), and the {deployed, nested} pair (26 copies).
+    The survivors would have been the config-drift ones. The VM's four-day log
+    window shows no distinct alarm destroyed there, so this is a defect caught
+    queued rather than an escape ([[report-the-outcome-not-the-scare]]).
+
+    And the receipt agreed it was fine: `delivery_state` matches the manifest
+    on subject, and the destroyed message's subject is character-for-character
+    the survivor's ([[truncate-before-lock]]).
+    """
+
+    def setUp(self):
+        import email_buffer as eb
+        self.eb = eb
+        self.tmp = tempfile.mkdtemp()
+        self._saved = (eb.BUFFER_PATH, eb.DIGEST_STAMP_PATH)
+        eb.BUFFER_PATH = os.path.join(self.tmp, "email_buffer.json")
+        eb.DIGEST_STAMP_PATH = os.path.join(self.tmp, ".digest_last_sent")
+
+    def tearDown(self):
+        self.eb.BUFFER_PATH, self.eb.DIGEST_STAMP_PATH = self._saved
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _row(self, subject, body, key="", minutes_ago=0):
+        return {"subject": subject, "html_body": body, "sender_name": "T",
+                "key_metrics": {}, "dedup_key": key,
+                "buffered_at": (datetime.now()
+                                - timedelta(minutes=minutes_ago)).isoformat()}
+
+    def _flush(self, rows):
+        """Run a real flush with SMTP stubbed; return (sent_html, stamp)."""
+        with open(self.eb.BUFFER_PATH, "w") as f:
+            json.dump(rows, f)
+        sent = {}
+
+        class _Stub:
+            def __enter__(_s): return _s
+            def __exit__(_s, *a): return False
+            def login(_s, *a): pass
+            def send_message(_s, msg): sent["msg"] = msg
+
+        with patch.object(self.eb.smtplib, "SMTP_SSL", lambda *a, **k: _Stub()):
+            ok = self.eb.flush_digest(force=True)
+        self.assertTrue(ok, "the stubbed send must succeed")
+        html = ""
+        msg = sent.get("msg")
+        if msg is not None:
+            for part in msg.walk():
+                if part.get_content_type() == "text/html":
+                    html += part.get_payload(decode=True).decode("utf-8", "replace")
+        with open(self.eb.DIGEST_STAMP_PATH) as f:
+            return html, json.load(f)
+
+    # ── the loss itself ───────────────────────────────────────────────────
+
+    def test_two_different_alarms_under_one_subject_both_survive(self):
+        """The bug, in the shape it actually had."""
+        subj = "Coherence: 1 law(s) violated on apex-capital-495523"
+        html, _ = self._flush([
+            self._row(subj, "positions_conserve: 13 broker positions unledgered",
+                      key="coherence:vm:positions_conserve", minutes_ago=120),
+            self._row(subj, "nested_probabilities_are_monotone: 15 ladders",
+                      key="coherence:vm:nested_probabilities_are_monotone"),
+        ])
+        self.assertIn("positions_conserve", html,
+                      "the stop-loss alarm was deleted as a duplicate of an "
+                      "unrelated Kalshi alarm")
+        self.assertIn("nested_probabilities_are_monotone", html)
+
+    def test_reruns_of_the_same_alarm_still_collapse_to_the_newest(self):
+        """The behaviour the dedupe exists for, and it must not regress: the
+        detail carries live counts, so the same law re-buffers all day."""
+        subj = "Coherence: 1 law(s) violated on apex-capital-495523"
+        key = "coherence:vm:nested_probabilities_are_monotone"
+        html, stamp = self._flush([
+            self._row(subj, "nested: 15 of 2056 ladders", key=key, minutes_ago=300),
+            self._row(subj, "nested: 16 of 2168 ladders", key=key, minutes_ago=60),
+            self._row(subj, "nested: 17 of 2201 ladders", key=key),
+        ])
+        self.assertEqual(1, stamp["reports"])
+        self.assertIn("17 of 2201", html, "the newest run must be the one kept")
+        self.assertNotIn("15 of 2056", html)
+
+    def test_a_producer_that_declares_nothing_keeps_todays_behaviour(self):
+        """Back-compat is load-bearing: ~40 producers pass no key, and for a
+        subject that names its report ("[CRO REPORT] ... Risk:MODERATE") six
+        regenerations a day SHOULD collapse to the freshest."""
+        html, stamp = self._flush([
+            self._row("[CRO REPORT] Risk:MODERATE", "grade B", minutes_ago=200),
+            self._row("[CRO REPORT] Risk:MODERATE", "grade A"),
+        ])
+        self.assertEqual(1, stamp["reports"])
+        self.assertIn("grade A", html)
+
+    def test_two_subjects_are_still_two_reports(self):
+        html, stamp = self._flush([self._row("A", "one"), self._row("B", "two")])
+        self.assertEqual(2, stamp["reports"])
+
+    def test_the_key_survives_the_trip_through_the_buffer_file(self):
+        """END TO END, through `buffer_email` rather than a hand-built row.
+
+        A mutation run deleted the key from what `buffer_email` persists and
+        every test above still passed, because they all wrote `dedup_key`
+        straight into the JSON. The producer declaring a key and the flush
+        reading one are two halves, and a fixture that builds the row itself
+        only ever tests the second ([[both-sides-of-a-comparison]]).
+        """
+        subj = "Coherence: 1 law(s) violated on h"
+        with open(self.eb.BUFFER_PATH, "w") as f:
+            json.dump([], f)
+        self.assertTrue(self.eb.buffer_email(
+            subject=subj, html_body="positions_conserve: 13 unledgered",
+            sender_name="Coherence Layer", dedup_key="coherence:h:positions_conserve"))
+        self.assertTrue(self.eb.buffer_email(
+            subject=subj, html_body="nested_probabilities: 15 ladders",
+            sender_name="Coherence Layer",
+            dedup_key="coherence:h:nested_probabilities_are_monotone"))
+        with open(self.eb.BUFFER_PATH) as f:
+            rows = json.load(f)
+        self.assertEqual(2, len({r.get("dedup_key") for r in rows}),
+                         "buffer_email must persist the key it was handed, or "
+                         "the flush has nothing to read")
+        html, stamp = self._flush(rows)
+        self.assertEqual(2, stamp["reports"])
+        self.assertIn("positions_conserve", html)
+        self.assertIn("nested_probabilities", html)
+
+    # ── the general guard: the NEXT coarse subject, not this one ──────────
+
+    def test_a_collapse_that_destroys_different_content_is_recorded(self):
+        """The half that survives me — as a CENSUS, not an alarm.
+
+        A drop whose body matches the survivor's is certainly a re-run. A drop
+        whose body DIFFERS is either the same report with fresher numbers or
+        two unrelated reports sharing a subject, and no rule in the transport
+        can tell those apart — "[CRO REPORT] ... Risk:MODERATE" carries its
+        state in the subject, "Coherence: 1 law(s)" carries a count. Same
+        evidence, opposite meaning.
+        """
+        with self.assertLogs("email_buffer", level="INFO") as log:
+            self._flush([self._row("Coherence: 1 law(s) violated", "law X"),
+                         self._row("Coherence: 1 law(s) violated", "law Y")])
+        blob = "\n".join(log.output)
+        self.assertIn("DIFFERENT content", blob)
+        self.assertIn("Coherence: 1 law(s) violated", blob,
+                      "the census must name the producer's subject")
+
+    def test_the_census_is_not_raised_to_a_nightly_alarm(self):
+        """Six producers whose behaviour is correct, named at WARNING every
+        night, is the noise this module exists to prevent — and it would bury
+        the one line that matters ([[severity-below-the-escalation-floor]] in
+        reverse: the floor is there to keep real findings visible)."""
+        with patch.object(self.eb.logger, "warning") as warn:
+            self._flush([self._row("[CRO REPORT] Risk:LOW", "grade B"),
+                         self._row("[CRO REPORT] Risk:LOW", "grade A")])
+        self.assertEqual([], [c for c in warn.call_args_list
+                              if "DIFFERENT" in str(c)])
+
+    def test_identical_reruns_are_not_counted_as_destroyed_content(self):
+        """Nothing was lost, so nothing may be recorded as unproven."""
+        _html, stamp = self._flush([
+            self._row("[CRO REPORT] Risk:LOW", "same body"),
+            self._row("[CRO REPORT] Risk:LOW", "same body")])
+        self.assertEqual([], stamp["lost_subjects"])
+
+    def test_a_declared_key_is_not_counted_as_undeclared(self):
+        """A producer that DID declare its identity and still collapsed two
+        different bodies is doing the right thing — that is the re-run case
+        with fresh numbers, which is exactly what a key is for. Counting it
+        would make declaring a key look no better than not declaring one."""
+        _html, stamp = self._flush([self._row("S", "count 15", key="k"),
+                                    self._row("S", "count 16", key="k")])
+        self.assertEqual([], stamp["lost_subjects"])
+
+    # ── the receipt must not certify what it deleted ──────────────────────
+
+    def test_the_receipt_records_what_the_collapse_destroyed(self):
+        _html, stamp = self._flush([
+            self._row("Coherence: 1 law(s) violated", "law X"),
+            self._row("Coherence: 1 law(s) violated", "law Y")])
+        self.assertIn("Coherence: 1 law(s) violated", stamp["subjects"])
+        self.assertIn("Coherence: 1 law(s) violated", stamp["lost_subjects"],
+                      "the receipt must record that a report under this "
+                      "subject did NOT go")
+
+    def test_delivery_state_refuses_to_call_a_collided_subject_delivered(self):
+        """The manifest test was real and its answer was still wrong: the
+        destroyed message's subject is the survivor's, so membership proved
+        nothing about WHICH copy went."""
+        subj = "Coherence: 1 law(s) violated"
+        queued = datetime.now() - timedelta(hours=2)
+        self._flush([self._row(subj, "law X", minutes_ago=200),
+                     self._row(subj, "law Y", minutes_ago=190)])
+        state, why = self.eb.delivery_state(queued.isoformat(), subj)
+        self.assertEqual("unknown", state, why)
+        self.assertIn("dedup_key", why, "the answer must name the remedy")
+
+    def test_an_uncollided_subject_is_still_delivered(self):
+        """The honest third verdict must not swallow the normal answer, or
+        every caller re-sends every day ([[verdict-with-no-consequence]])."""
+        queued = datetime.now() - timedelta(hours=2)
+        self._flush([self._row("Kalshi verdict: premise DEAD", "body",
+                               minutes_ago=200)])
+        state, why = self.eb.delivery_state(queued.isoformat(),
+                                            "Kalshi verdict: premise DEAD")
+        self.assertEqual("delivered", state, why)
+
+    def test_an_old_receipt_without_the_field_does_not_crash(self):
+        """Upgrade safety: stamps written before today have no lost_subjects."""
+        with open(self.eb.DIGEST_STAMP_PATH, "w") as f:
+            json.dump({"date": "x", "sent_at": datetime.now().isoformat(),
+                       "reports": 3, "subjects": ["V"]}, f)
+        state, _why = self.eb.delivery_state(
+            (datetime.now() - timedelta(hours=2)).isoformat(), "V")
+        self.assertEqual("delivered", state)
+
+    # ── the producer that proved it ───────────────────────────────────────
+
+    def test_the_coherence_layer_declares_its_laws_as_its_identity(self):
+        """AST, not grep: the comment I wrote next to this call names
+        `dedup_key` and every law in the story, so a text search goes green on
+        the postmortem while the call passes nothing
+        ([[unregistered-test-is-absent]])."""
+        import coherence_laws as cl
+        tree = ast.parse(Path(cl.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "notify_violations")
+        call = next(c for c in ast.walk(fn)
+                    if isinstance(c, ast.Call)
+                    and getattr(c.func, "id", "") == "buffer_email")
+        kw = {k.arg for k in call.keywords}
+        self.assertIn("dedup_key", kw,
+                      "notify_violations must tell the digest what makes two "
+                      "of its emails the same, because its subject is a count")
+
+    def test_the_key_separates_law_sets_and_not_runs(self):
+        """The identity is the law NAMES. Their detail is not: it carries live
+        counts that move every run, which is why the signature check upstream
+        buffers a fresh mail each time the same law reports a new number."""
+        import coherence_laws as cl
+        seen = {}
+
+        def _cap(**kw):
+            seen.setdefault(kw.get("dedup_key"), []).append(kw["subject"])
+            return True
+
+        def _res(name, detail):
+            r = MagicMock()
+            r.name, r.detail, r.verdict = name, detail, cl.VIOLATED
+            r.sources = ("a", "b")
+            return r
+
+        with tempfile.TemporaryDirectory() as td:
+            with patch.object(cl, "NOTIFY_STATE", Path(td) / "n.json"), \
+                 patch.dict("sys.modules", {"email_buffer": MagicMock(
+                     buffer_email=_cap)}):
+                cl.notify_violations([_res("positions_conserve", "13 unledgered")])
+                cl.notify_violations([_res("nested_probabilities_are_monotone",
+                                           "15 of 2056")])
+                cl.notify_violations([_res("nested_probabilities_are_monotone",
+                                           "16 of 2168")])
+        self.assertEqual(3, sum(len(v) for v in seen.values()),
+                         "the upstream signature check must still buffer each "
+                         "change in detail")
+        self.assertEqual(2, len(seen),
+                         "two laws must be two keys; a detail change must not "
+                         "be a third")
+        self.assertEqual(1, len({s for v in seen.values() for s in v}),
+                         "fixture assumes all three share ONE subject — that "
+                         "is the whole defect")
+
 
 class TestIssueIdentityIsNotTheMeasurement(unittest.TestCase):
     """A detector writes what it measures into the title; identity must not move with it.

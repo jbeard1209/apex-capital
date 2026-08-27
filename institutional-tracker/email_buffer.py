@@ -99,7 +99,8 @@ def _digest_already_sent_today() -> bool:
         return False
 
 
-def _stamp_digest_sent(count: int, subjects: Optional[list] = None) -> None:
+def _stamp_digest_sent(count: int, subjects: Optional[list] = None,
+                       lost_subjects: Optional[list] = None) -> None:
     """Record the receipt for the digest that just went out.
 
     `subjects` is a MANIFEST, not decoration. Without it the receipt says only
@@ -109,6 +110,15 @@ def _stamp_digest_sent(count: int, subjects: Optional[list] = None) -> None:
     never appeared in the 22:00 mail. A receipt that proves a digest happened
     is not a receipt that proves this message was in it
     ([[both-sides-of-a-comparison]]).
+
+    `lost_subjects` closes the remaining hole in that argument. A manifest
+    proves a SUBJECT was carried; it cannot prove YOUR message was, because the
+    subject that survived the collapse is character-for-character the subject
+    of every message the collapse destroyed. So for exactly the reports this
+    fix is about — a cardinality-bearing subject covering unrelated alarms —
+    the receipt confirmed delivery of the one thing it had deleted. The
+    membership test was real and its answer was still wrong
+    ([[truncate-before-lock]]: the receipt still said delivered).
     """
     try:
         os.makedirs(os.path.dirname(DIGEST_STAMP_PATH) or ".", exist_ok=True)
@@ -116,7 +126,9 @@ def _stamp_digest_sent(count: int, subjects: Optional[list] = None) -> None:
             json.dump({"date": datetime.now().strftime("%Y-%m-%d"),
                        "sent_at": datetime.now().isoformat(),
                        "reports": count,
-                       "subjects": sorted(set(subjects or []))}, f, indent=2)
+                       "subjects": sorted(set(subjects or [])),
+                       "lost_subjects": sorted(set(lost_subjects or []))},
+                      f, indent=2)
     except OSError as e:
         logger.warning(f"  [EmailBuffer] could not write digest stamp: {e}")
 
@@ -361,10 +373,36 @@ def _save_buffer(buffer: list):
 
 @_locked
 def buffer_email(subject: str, html_body: str, sender_name: str = "",
-                 key_metrics: Optional[dict] = None) -> bool:
+                 key_metrics: Optional[dict] = None,
+                 dedup_key: Optional[str] = None) -> bool:
     """
     Add an email to the daily digest buffer.
     Returns True if buffered, False if sent immediately (urgent).
+
+    `dedup_key` is the producer's answer to "which of these are the same
+    message?", and it exists because the digest's own answer — the subject
+    line — is a display string, and a display string may carry a COUNT where
+    an identity belongs.
+
+    `coherence_laws.notify_violations` is the case that proved it. It already
+    dedupes: it buffers only when the set of violations CHANGES, so every mail
+    it hands over is, by construction, news. Its subject is
+    "Coherence: N law(s) violated on <host>" — a cardinality. On 2026-08-27 the
+    Mac's buffer held four genuinely different alarms under two such subjects,
+    including `nested_probabilities_are_monotone` (buffered 32 times across two
+    subjects, on the Kalshi ladders the whole sector rests on) and
+    `deployed_set_matches_repo` (the VM running code that is not the repo's).
+    The next flush would have collapsed them to the newest per subject, logged
+    it as "Removed N duplicate report(s)", and delivered the config-drift one.
+
+    Two dedupe layers, the second strictly coarser than the first, and the
+    coarse one deleting what the fine one had certified as news.
+
+    Producers that pass nothing keep exactly today's behaviour (dedupe on
+    subject), because for a report whose subject names it — "[CRO REPORT]
+    ... Risk:MODERATE" — six regenerations in a day SHOULD collapse to the
+    freshest. The key is for the producer that knows its subject does not
+    identify it.
     """
     if _is_urgent(subject, sender_name):
         # Urgent — send immediately, don't buffer
@@ -377,6 +415,7 @@ def buffer_email(subject: str, html_body: str, sender_name: str = "",
         "sender_name": sender_name,
         "html_body":   html_body,
         "key_metrics": key_metrics or {},
+        "dedup_key":   dedup_key or "",
         "buffered_at": datetime.now().isoformat(),
     })
     _save_buffer(buffer)
@@ -450,6 +489,18 @@ def delivery_state(buffered_at, subject: str = "") -> tuple:
     # questions remain, and the clock answers neither: was THIS subject in it?
     manifest = stamp.get("subjects")
     if subject and isinstance(manifest, list):
+        # Membership in the manifest is necessary, not sufficient. If a message
+        # under this subject was ALSO destroyed by the collapse, then one copy
+        # went and at least one did not, and this function cannot tell which
+        # one the caller is holding. Saying "delivered" there is the receipt
+        # confirming the message it deleted.
+        if subject in (stamp.get("lost_subjects") or []):
+            return "unknown", (
+                f"digest sent {stamp.get('sent_at')} carrying this subject, but "
+                f"another report with the SAME subject and different content was "
+                f"dropped in the same flush — the receipt cannot say which copy "
+                f"this was. The producer must pass dedup_key= to make its "
+                f"messages distinguishable.")
         if subject in manifest:
             return "delivered", (f"digest sent {stamp.get('sent_at')} and the "
                                  f"receipt names this subject")
@@ -480,10 +531,14 @@ def flush_digest(force: bool = False) -> bool:
     producer waiting a few seconds. Nothing in this function may enqueue an
     email while it holds the lock; see `_locked`.
 
-    Deduplication: if the same subject appears multiple times (e.g. because an
+    Deduplication: if the same IDENTITY appears multiple times (e.g. because an
     agent ran hourly and buffered a report each run), only the MOST RECENT entry
-    for that subject is included.  This prevents digest bloat when pipelines run
-    more than once per day.
+    for it is included.  This prevents digest bloat when pipelines run more than
+    once per day. The identity is the producer's `dedup_key` when it supplied
+    one, and the subject line otherwise — the subject was the only key until
+    2026-08-27, when four distinct coherence alarms were found queued under two
+    count-bearing subjects, and the log line for destroying them read "Removed
+    N duplicate report(s)".
 
     `force=True` bypasses BOTH the once-per-day stamp and the host guard. No
     scheduler passes it — every automated caller invokes this with no arguments
@@ -508,24 +563,70 @@ def flush_digest(force: bool = False) -> bool:
             _report_stranded_buffer(buffer, why)
             return True
 
-    # ── Deduplicate by subject (keep most recent) ─────────────────────────────
-    # Walk in reverse order so the last-seen subject wins (most recent run).
-    seen_subjects: set = set()
+    # ── Collapse re-runs of the same report (keep most recent) ────────────────
+    # Keyed on the PRODUCER's identity when it supplied one, and on the subject
+    # otherwise. A subject is a display string: it may name the report, and it
+    # may instead carry a count ("Coherence: 1 law(s) violated on <host>"), in
+    # which case two unrelated alarms are one key and one of them is destroyed.
+    # See buffer_email's docstring for the four that were queued for exactly
+    # that on 2026-08-27.
+    #
+    # Walk in reverse so the last-seen key wins (most recent run).
+    seen_keys: set = set()
     deduped = []
+    dropped = []
     for item in reversed(buffer):
-        subj = item.get("subject", "")
-        # Normalize: strip IRM-review prefix for matching, so an R&D briefing
-        # and its IRM review are treated as distinct reports.
-        if subj not in seen_subjects:
-            seen_subjects.add(subj)
+        key = item.get("dedup_key") or item.get("subject", "")
+        if key not in seen_keys:
+            seen_keys.add(key)
             deduped.append(item)
+        else:
+            dropped.append(item)
     buffer = list(reversed(deduped))  # restore chronological order
     # Measured against what was READ, not against a second read of the file.
     # Re-reading asked the disk a question this function had already answered,
     # and would report a negative count the moment a producer wrote in between.
     dupes_removed = buffered_in - len(buffer)
+
+    # WAS IT A DUPLICATE, OR JUST A COLLISION? The old log line asserted the
+    # first and could not tell the difference. A drop whose body matches the
+    # survivor's is certainly a re-run. A drop whose body DIFFERS is content
+    # that existed and now does not — and it is EITHER the same report with
+    # fresher numbers (fine, and what the collapse is for) OR two unrelated
+    # reports sharing a display string (the coherence loss).
+    #
+    # This function cannot tell those apart, and neither can any rule written
+    # here. "[CRO REPORT] ... Risk:MODERATE | Manager Grade: B" carries its own
+    # state in the subject, so its differing bodies are regenerations and its
+    # collapse is right; "Coherence: 1 law(s) violated" carries a count, so its
+    # differing bodies are different alarms. Same evidence, opposite meaning.
+    # Only the producer knows which it is, which is exactly why `dedup_key`
+    # exists rather than a cleverer heuristic in here.
+    #
+    # So this records the census and does NOT raise an alarm on it. A WARNING
+    # every night naming six producers whose behaviour is correct is the noise
+    # this module exists to prevent, and it would bury the one line that
+    # matters. What the census IS good for is the consequential half below: a
+    # caller asking "did MY copy go out?" about a collided subject must not be
+    # told yes.
+    kept_body = {(i.get("dedup_key") or i.get("subject", "")): i.get("html_body")
+                 for i in buffer}
+    collisions = [i for i in dropped
+                  if i.get("html_body") != kept_body.get(
+                      i.get("dedup_key") or i.get("subject", ""))]
+    undeclared = [i for i in collisions if not i.get("dedup_key")]
     if dupes_removed > 0:
-        logger.info(f"  [EmailBuffer] Removed {dupes_removed} duplicate report(s) before digest")
+        logger.info(f"  [EmailBuffer] Collapsed {dupes_removed} re-run(s) of "
+                    f"reports already in this digest")
+    if undeclared:
+        who = sorted({i.get("subject", "")[:70] for i in undeclared})
+        logger.info(
+            "  [EmailBuffer] %d of those had DIFFERENT content from the copy "
+            "that survived, under a subject-only key — re-runs with fresher "
+            "numbers, or distinct reports sharing a subject; the producer "
+            "declared no identity, so this cannot say which. Recorded in the "
+            "receipt as unproven delivery for: %s"
+            % (len(undeclared), "; ".join(who)))
 
     today = datetime.now().strftime("%A, %B %d, %Y")
     count = len(buffer)
@@ -652,7 +753,8 @@ def flush_digest(force: bool = False) -> bool:
         # late. Stamping after would leave the window the other way round: a
         # cleared buffer with no stamp, so the next caller this evening sends a
         # second, empty-ish digest. That is the failure being fixed here.
-        _stamp_digest_sent(count, [i.get("subject", "") for i in buffer])
+        _stamp_digest_sent(count, [i.get("subject", "") for i in buffer],
+                           [i.get("subject", "") for i in undeclared])
         _save_buffer([])
         return True
 

@@ -2384,6 +2384,23 @@ def notify_violations(results: List[LawResult]) -> bool:
             sender_name="Coherence Layer",
             key_metrics={"violated": len(violated), "host": host,
                          "laws": [n for n, _ in violated]},
+            # THE SUBJECT ABOVE IS A COUNT, NOT AN IDENTITY. Three unrelated
+            # alarms — a stop-loss blind to 13 broker positions, the VM running
+            # code that is not the repo's, and 15 Kalshi ladders quoting
+            # numbers no probabilities can produce — all render as
+            # "Coherence: 1 law(s) violated on <host>". The digest deduped on
+            # that string, so on any day two of them fired, one was deleted and
+            # the log called it a duplicate. Four were queued for exactly that
+            # on the Mac on 2026-08-27, `nested_probabilities_are_monotone`
+            # among them.
+            #
+            # The laws are the identity. Their DETAIL is not: it carries live
+            # counts that move every run, which is why the signature check
+            # above buffers a fresh mail each time the same law reports a new
+            # number. Keying on names collapses those to the newest — the
+            # behaviour the digest wanted — while keeping two different laws
+            # two different messages.
+            dedup_key="coherence:%s:%s" % (host, ",".join(n for n, _ in violated)),
         )
         if buffered is False:
             # Roll the dedupe record back. Recording-before-sending is right for
