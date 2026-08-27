@@ -13469,6 +13469,208 @@ class TestWorkQueuesDrain(unittest.TestCase):
         self.assertEqual(2, len(set(srcs)), "the two sources are not independent")
 
 
+class TestQueueAgeCountsOnlyWork(unittest.TestCase):
+    """A row that was done in place is not a row that is waiting.
+
+    THE ESCAPE, on the VM 2026-08-27. `law_work_queues_drain` reported VIOLATED:
+    "2 of 6 measurable work queue(s) hold rows that no scheduled module can take
+    out — worst is ml_longterm_experiment_queue.json at 95.7d, 13.7 complete
+    passes of the firm's schedule. The work in them was produced and never
+    done." Every one of the 13 long-term and 6 short-term rows carried
+    `status: "completed"`. Nineteen finished experiments reported as nineteen
+    stranded ones.
+
+    The cause is a conflation of two queue disciplines. A POP queue drains by
+    removal, so the age of what remains reads residence time directly — which is
+    what `_oldest_row_age_days` was written for, and its docstring said so
+    ("'Still present' is the whole point"). A MARK queue drains by flipping
+    `status` and the row stays put forever, so its stock never falls and "oldest
+    row still present" returns the age of the first row ever written. That age
+    grows without bound: EVERY mark queue in the firm was on a path to permanent
+    VIOLATED regardless of whether the work was being done.
+
+    Two things make it worse than noise. `stranded` is sorted by age, so a
+    genuinely stuck 20-day row sorts BELOW a completed row from May and is named
+    nowhere in the detail line (memory `budget-spent-in-the-wrong-order`). And a
+    law that fires forever on finished work gets muted, taking the real finding
+    with it — which is the failure this law's own docstring warns about for the
+    chairman-queue case.
+
+    Why the poison pill could not see it: the pill injects
+    `queues={"zzpill_queue.json": 400.0}` — a pre-computed age. It proves the
+    law's CONJUNCTION (aged out AND no scheduled reader) and never touches the
+    measurement, so the measurement had no pill at all. These tests run the real
+    function against real file bytes for exactly that reason.
+
+    The unreachability half of that VM finding was TRUE and is not lost here:
+    `ml_longterm_experiment_runner.py` and `ml_shortterm_experiment_runner.py`
+    are scheduler-reachable=False on both hosts. That is a reachability defect
+    with its own detector (`wiring_audit`'s orphan walk, which already sees both)
+    and its own open Chairman rows. Folding it into this law's verdict would be
+    one alarm for two unrelated faults (memory `an-aggregate-is-not-a-finding`).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import coherence_laws
+        cls.cl = coherence_laws
+
+    def _q(self, rows):
+        """Write `rows` to a real file and measure it the way the law does."""
+        tmp = Path(tempfile.mkdtemp()) / "zz_queue.json"
+        tmp.write_text(json.dumps(rows))
+        self.addCleanup(shutil.rmtree, tmp.parent, ignore_errors=True)
+        return self.cl._oldest_row_age_days(
+            tmp, datetime.now(timezone.utc))
+
+    @staticmethod
+    def _ago(days):
+        return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+
+    # -- the escape itself ----------------------------------------------------
+
+    def test_a_queue_of_finished_rows_measures_zero_not_its_own_age(self):
+        """The VM's two ML queues, in miniature."""
+        age = self._q([{"id": "a", "status": "completed",
+                        "queued_at": self._ago(95.7)},
+                       {"id": "b", "status": "completed",
+                        "queued_at": self._ago(80.0)}])
+        self.assertEqual(0.0, age,
+                         "every row is done, so nothing is waiting — reporting "
+                         "95.7d here is what made 19 finished experiments look "
+                         "like 19 stranded ones")
+
+    def test_the_age_is_the_oldest_WAITING_row_not_the_oldest_row(self):
+        """A mixed queue: the finished row is older and must not set the number."""
+        age = self._q([{"id": "old_done", "status": "completed",
+                        "queued_at": self._ago(400.0)},
+                       {"id": "waiting", "status": "PENDING",
+                        "queued_at": self._ago(9.0)}])
+        self.assertIsNotNone(age)
+        self.assertAlmostEqual(9.0, age, delta=0.1,
+                               msg="the completed row set the residence time — "
+                                   "a queue that is being drained normally would "
+                                   "report the age of its whole history")
+
+    # -- the direction it must fail in ---------------------------------------
+
+    def test_an_unrecognised_status_is_still_outstanding(self):
+        """Unknown is not done.
+
+        The asymmetry is the whole safety property: a verb the firm invents
+        tomorrow makes this law noisier, never blinder. Inverting it would let a
+        real backlog go silent by inventing a status nobody added to the set.
+        """
+        age = self._q([{"id": "x", "status": "marinating",
+                        "queued_at": self._ago(50.0)}])
+        self.assertIsNotNone(age, "an unknown status was read as terminal")
+        self.assertAlmostEqual(50.0, age, delta=0.1)
+
+    def test_a_row_with_no_status_at_all_is_outstanding(self):
+        """Pop queues carry no status field, and they are the original case."""
+        age = self._q([{"id": "x", "queued_at": self._ago(50.0)}])
+        self.assertIsNotNone(age, "a row with no status was read as terminal")
+        self.assertAlmostEqual(50.0, age, delta=0.1)
+
+    def test_approved_is_not_terminal(self):
+        """The sharpest one in the firm's live vocabulary.
+
+        An approved proposal is the row MOST likely to be waiting on someone to
+        act. `escalated_to_board`, `queued`, `open`, `needs_human` and `STALE`
+        are the same shape: moved, not finished.
+        """
+        for verb in ("approved", "escalated_to_board", "queued", "open",
+                     "needs_human", "STALE"):
+            with self.subTest(verb=verb):
+                self.assertTrue(
+                    self.cl._row_is_outstanding({"status": verb}),
+                    f"'{verb}' was treated as finished work")
+        for verb in ("completed", "ANSWERED", "resolved", "skipped", "rejected"):
+            with self.subTest(verb=verb):
+                self.assertFalse(
+                    self.cl._row_is_outstanding({"status": verb}),
+                    f"'{verb}' is finished and must not count as waiting work")
+
+    def test_waiting_rows_with_no_timestamp_are_unmeasurable_not_zero(self):
+        """Zero and unknown are different answers and must stay different.
+
+        0.0 means "nothing is waiting" — a real measurement that counts in the
+        denominator. None means "something is waiting and I cannot say how long"
+        — which the law must not read as a pass (memory `nan-is-not-none`).
+        """
+        self.assertIsNone(
+            self._q([{"id": "done", "status": "completed",
+                      "queued_at": self._ago(90.0)},
+                     {"id": "waiting", "status": "PENDING"}]),
+            "an untimestamped waiting row was reported as zero wait")
+
+    # -- and the law's own verdict, end to end -------------------------------
+
+    def test_a_fully_drained_queue_does_not_violate_and_still_counts(self):
+        r = self.cl.law_work_queues_drain(
+            queues={"zzpill_queue.json": 0.0},
+            schedule_text="0 8 * * 0 weekly.py\n0 9 * * * daily.py\n")
+        self.assertEqual(self.cl.HOLDS, r.verdict, r.detail)
+        self.assertEqual(1, r.n_examined,
+                         "a drained queue is evidence the law holds, not an "
+                         "absence of evidence — it belongs in the denominator")
+
+    def test_an_aged_waiting_row_with_no_drain_still_violates(self):
+        """The property the pill owns, re-pinned: the fix must not blunt it."""
+        r = self.cl.law_work_queues_drain(
+            queues={"zzpill_queue.json": 400.0},
+            schedule_text="0 8 * * 0 weekly.py\n0 9 * * * daily.py\n")
+        self.assertEqual(self.cl.VIOLATED, r.verdict, r.detail)
+
+    def test_the_poison_pill_exercises_the_measurement_not_a_constant(self):
+        """The blind spot itself, pinned so it cannot silently reopen.
+
+        The pill passed a literal `400.0` for months. It proved the law's
+        conjunction perfectly and left `_oldest_row_age_days` with no pill at
+        all — which is where the defect turned out to live. Reverting it to a
+        constant is a one-line edit that no verdict anywhere would change, so it
+        is asserted structurally.
+        """
+        import internal_audit_agent as ia
+        fn = next(n for n in ast.walk(ast.parse(Path(ia.__file__).read_text()))
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "_pill_work_queues_drain")
+        self.assertTrue(
+            any(getattr(c.func, "attr", getattr(c.func, "id", None))
+                == "_oldest_row_age_days" for c in ast.walk(fn)
+                if isinstance(c, ast.Call)),
+            "the drain pill went back to a hardcoded age — the measurement is "
+            "unpilled again, which is exactly how the 19 finished ML "
+            "experiments were reported as stranded work")
+
+    def test_the_live_ml_queues_are_not_reported_as_stranded_work(self):
+        """The regression, against whatever this host actually has.
+
+        Skips where the files are absent — `data/` is host-local and the ML
+        experiment queues live on the VM. On a host that has them this is the
+        real end-to-end check; on one that does not, the unit tests above still
+        pin the behaviour.
+        """
+        checked = 0
+        for fname in ("ml_longterm_experiment_queue.json",
+                      "ml_shortterm_experiment_queue.json"):
+            fp = self.cl.DATA_DIR / fname
+            if not fp.exists():
+                continue
+            checked += 1
+            rows = json.loads(fp.read_text())
+            waiting = [r for r in rows
+                       if isinstance(r, dict) and self.cl._row_is_outstanding(r)]
+            age = self.cl._oldest_row_age_days(fp, datetime.now(timezone.utc))
+            if not waiting:
+                self.assertEqual(
+                    0.0, age,
+                    f"{fname}: {len(rows)} rows, none of them waiting, still "
+                    f"measured as {age}d of undone work")
+        if not checked:
+            self.skipTest("no ML experiment queue on this host")
+
+
 class TestAgentsCannotExitTheOrchestrator(unittest.TestCase):
     """An agent called in-process must not be able to end the process.
 

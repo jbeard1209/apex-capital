@@ -301,12 +301,12 @@ def _pill_runs_match_schedule(law):
 
 
 def _pill_work_queues_drain(law):
-    """A queue whose oldest row has outlived 57 complete passes of the schedule.
+    """A queue whose oldest waiting row has outlived 57 passes of the schedule.
 
     A REAL injection, not a global swap: the law takes `queues` and
-    `schedule_text`, so the pill hands it a fabricated measurement and the whole
-    comparison — deadline derivation, age-vs-deadline, reader lookup — runs the
-    production code path against the production repo.
+    `schedule_text`, so the pill hands it a measurement and the whole comparison
+    — deadline derivation, age-vs-deadline, reader lookup — runs the production
+    code path against the production repo.
 
     The queue name is deliberately one no module mentions. That is not a
     shortcut round the reader graph; it is the half of the law that has to be
@@ -314,8 +314,38 @@ def _pill_work_queues_drain(law):
     scheduled drains it), so a pill that only aged a row would prove the cheap
     half and leave the conjunction untested — the same trap
     `_pill_surfaced_rungs_clear_their_ladder` was rebuilt to avoid.
+
+    THE AGE IS NOT A CONSTANT ANY MORE, and that is the point of the rewrite.
+    Until 2026-08-27 this pill passed a literal `400.0`, so it proved the
+    conjunction and never touched `_oldest_row_age_days` — the measurement had
+    no pill at all, and it went on to be wrong in production (it measured the
+    oldest row PRESENT, so a queue draining by `status: "completed"` in place
+    reported 19 finished ML experiments as 19 stranded ones). The pill now
+    writes a real file and lets the real measurement produce the number.
+
+    BE EXACT ABOUT WHICH DIRECTION THIS COVERS. A pill proves a control can
+    still fail, so it covers the BLINDNESS direction only: if the measurement
+    starts calling the PENDING row finished, the age collapses to 0.0, the law
+    returns HOLDS, and this is reported as BLIND. It does NOT cover the
+    over-alarm direction — a measurement that reverted to counting the 900d
+    `completed` row would hand the law 900.0, which still violates, and this
+    pill would stay green on the wrong number. That direction is a test's job
+    and is owned by `TestQueueAgeCountsOnlyWork`, which asserts the VALUE.
     """
-    return law(queues={"zzpill_queue.json": 400.0},
+    import coherence_laws as cl
+    now = datetime.now(timezone.utc)
+    with tempfile.TemporaryDirectory() as td:
+        fp = Path(td) / "zzpill_queue.json"
+        fp.write_text(json.dumps([
+            # finished, and far older — it must NOT be what sets the number
+            {"id": "zzpill-done", "status": "completed",
+             "queued_at": (now - timedelta(days=900)).isoformat()},
+            # the one actual piece of stranded work
+            {"id": "zzpill-waiting", "status": "PENDING",
+             "queued_at": (now - timedelta(days=400)).isoformat()},
+        ]))
+        age = cl._oldest_row_age_days(fp, now)
+    return law(queues={"zzpill_queue.json": age},
                schedule_text="0 8 * * 0 weekly.py\n0 9 * * * daily.py\n")
 
 

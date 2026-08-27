@@ -1895,16 +1895,79 @@ def _cron_field_matches(field: str, value: int, span: int) -> bool:
     return False
 
 
+# A row carrying one of these has already been dealt with. It is still in the
+# file, but it is no longer work.
+#
+# Deliberately NOT here: `approved`, `escalated_to_board`, `queued`, `open`,
+# `needs_human`, `protected`, `systemic`, `STALE`. Every one of those is a row
+# that has moved but not finished, and calling any of them terminal is how a
+# real backlog goes silent. `approved` is the sharpest: an approved proposal is
+# the one MOST likely to be waiting on someone. The asymmetry is deliberate —
+# an unrecognised status counts as outstanding, so a new verb the firm invents
+# tomorrow makes this law noisier, never blinder.
+_TERMINAL_ROW_STATUSES = frozenset({
+    "answered", "archived", "canceled", "cancelled", "closed", "complete",
+    "completed", "declined", "done", "dropped", "expired", "failed",
+    "implemented", "obsolete", "rejected", "resolved", "skipped",
+    "superseded",
+})
+
+_ROW_STATUS_KEYS = ("status", "state")
+
+
+def _row_is_outstanding(row: dict) -> bool:
+    """Is this row still work, or was it done in place and left where it lay?
+
+    Measured 2026-08-27: `status` is the ONLY status key in use across all
+    13,731 rows of the firm's in-scope queue files, so this reads `status` and
+    `state` and does not speculate further. Anything it does not recognise —
+    a missing key, a non-string, a verb not in the terminal set — is
+    OUTSTANDING. Unknown is not done.
+    """
+    for key in _ROW_STATUS_KEYS:
+        raw = row.get(key)
+        if isinstance(raw, str) and raw.strip().lower() in _TERMINAL_ROW_STATUSES:
+            return False
+    return True
+
+
 def _oldest_row_age_days(path: Path, now: datetime) -> Optional[float]:
-    """Age of the oldest row still PRESENT in a queue file, or None if unmeasurable.
+    """Age of the oldest OUTSTANDING row in a queue file, or None if unmeasurable.
 
-    "Still present" is the whole point. A queue's stock only falls if something
-    consumes it, so the age of what remains is a direct reading of residence
-    time — no static analysis, no guess about who the consumer is, no trusting a
-    module's own claim to drain what it writes.
+    Residence time is what this measures, and residence has two disciplines the
+    original version of this function conflated:
 
-    None for a file with no rows, or rows carrying no recognised timestamp.
-    Neither is "fresh", and the caller must not read it as a pass.
+      * a POP queue drains by removal — its stock falls when work is consumed,
+        so the age of what remains reads residence time directly.
+      * a MARK queue drains by flipping a field — `status: "completed"` and the
+        row stays put forever. Its stock is monotonically non-decreasing, so
+        "age of the oldest row still present" returns the age of the first row
+        ever written, which grows without bound.
+
+    THE ESCAPE. On the VM 2026-08-27 this law reported VIOLATED on
+    `ml_longterm_experiment_queue.json` and `ml_shortterm_experiment_queue.json`
+    — "95.7d, 13.7 complete passes of the firm's schedule, the work in them was
+    produced and never done." All 13 and all 6 rows respectively were
+    `status: "completed"`. Nineteen finished experiments, reported as nineteen
+    stranded ones. Worse than the noise: every mark queue in the firm is
+    guaranteed to cross ANY deadline eventually, so the law was on a path to
+    permanent, structural VIOLATED — and because `stranded` is sorted by age, a
+    genuinely stuck 20-day row would have sorted BELOW a completed row from May
+    and been named nowhere in the detail line (memory
+    `budget-spent-in-the-wrong-order`).
+
+    Note this was invisible to the poison pill by construction: the pill injects
+    `queues={...: 400.0}`, a pre-computed age, so it proves the law's
+    CONJUNCTION and never touches the measurement. `TestQueueAgeCountsOnlyWork`
+    exercises this function against real file bytes for that reason.
+
+    Returns:
+      * None — no rows, or outstanding rows carrying no recognised timestamp.
+        Neither is "fresh", and the caller must not read it as a pass.
+      * 0.0 — rows exist and every one of them is terminal. Nothing is waiting,
+        which is a real measurement of zero, not an absence of one: it counts
+        in the denominator and it is a genuine observation that this queue does
+        drain.
     """
     try:
         blob = json.loads(path.read_text())
@@ -1915,10 +1978,14 @@ def _oldest_row_age_days(path: Path, now: datetime) -> Optional[float]:
         rows = next((v for v in blob.values() if isinstance(v, list) and v), None)
     if not rows:
         return None
+    rows = [r for r in rows if isinstance(r, dict)]
+    if not rows:
+        return None
+    outstanding = [r for r in rows if _row_is_outstanding(r)]
+    if not outstanding:
+        return 0.0
     oldest = None
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
+    for row in outstanding:
         for key in _QUEUE_TS_KEYS:
             raw = row.get(key)
             if not isinstance(raw, str) or len(raw) < 10:
