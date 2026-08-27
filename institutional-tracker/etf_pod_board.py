@@ -40,6 +40,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from canary_agent import load_active_alert   # the ONE reader of canary_alert.json
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -155,21 +157,20 @@ def _load_macro_scores() -> dict:
 
 def _load_canary_signals() -> dict:
     """
-    Load canary alert signals written by the canary agent.
-    Reads data/canary_alert.json; gracefully returns {} if missing or malformed.
-    Active alerts are injected into the regime section before board deliberation.
+    Load LIVE canary alert signals — see canary_agent.load_active_alert.
+
+    This opened the file itself and the caller then read `alerts` /
+    `active_alerts` off it. The canary has never written either key: it writes
+    `triggers`. Measured 2026-08-27 across every artifact this board emits that
+    carries the field, `canary_alerts` was non-null exactly ZERO times — the
+    injection below has never once fired since it was added. It also never read
+    `active`, so had the key been right it would have injected cleared alerts.
     """
-    try:
-        with open(CANARY_ALERT, "r") as fh:
-            data = json.load(fh)
-        log.info("Canary signals loaded: %d key(s)", len(data))
-        return data
-    except FileNotFoundError:
-        log.info("canary_alert.json not found — no canary signals this session.")
-        return {}
-    except json.JSONDecodeError as exc:
-        log.warning("canary_alert.json malformed: %s — treating as empty", exc)
-        return {}
+    alert = load_active_alert(str(CANARY_ALERT))
+    if alert:
+        log.info("Canary ALERTING: %s — %s",
+                 alert.get("level"), "; ".join(alert.get("triggers", [])[:3]))
+    return alert
 
 
 def _check_market_emergency(brief: dict) -> Tuple[bool, str]:
@@ -1220,7 +1221,9 @@ def run() -> dict:
     canary_signals = _load_canary_signals()
     active_canary_alerts: List[str] = []
     if canary_signals:
-        alerts = canary_signals.get("alerts", canary_signals.get("active_alerts", []))
+        # `triggers` — the key the canary actually writes. See
+        # _load_canary_signals for what reading `alerts` here cost.
+        alerts = canary_signals.get("triggers", [])
         if isinstance(alerts, list):
             active_canary_alerts = [str(a) for a in alerts]
         elif isinstance(alerts, dict):

@@ -211,21 +211,26 @@ class DeputyCoS:
 
         # ── Check for CRITICAL canary alerts ─────────────────────────────
         try:
-            alert_path = "data/canary_alert.json"
-            if os.path.exists(alert_path):
-                with open(alert_path) as f:
-                    alert = json.load(f)
-                level = alert.get("level", "GREEN")
-                results["canary_level"] = level
-                if alert.get("active") and level == "RED":
-                    logger.warning(
-                        "  [DeputyCoS] CRITICAL canary alert detected during board meeting! "
-                        "Escalating to DeputyManager."
-                    )
-                    DeputyManager().run()
-                    results["escalated"] = True
-                else:
-                    logger.info(f"  [DeputyCoS] Canary level: {level} — no escalation needed.")
+            # Routed through the one accessor. This reader was already correct
+            # — it checked `active` — but three of its four peers were not, and
+            # the fix for that is a single definition of "alerting", not four
+            # independently-correct ones. See canary_agent.load_active_alert.
+            from canary_agent import load_active_alert
+            alert = load_active_alert("data/canary_alert.json")
+            # No live alert is GREEN, not unknown: the accessor already
+            # distinguished "not alerting" from "could not read", and it logs
+            # the unreadable case itself.
+            level = alert.get("level", "GREEN") if alert else "GREEN"
+            results["canary_level"] = level
+            if level == "RED":
+                logger.warning(
+                    "  [DeputyCoS] CRITICAL canary alert detected during board meeting! "
+                    "Escalating to DeputyManager."
+                )
+                DeputyManager().run()
+                results["escalated"] = True
+            else:
+                logger.info(f"  [DeputyCoS] Canary level: {level} — no escalation needed.")
         except Exception as e:
             logger.warning(f"  [DeputyCoS] Canary check error: {e}")
 

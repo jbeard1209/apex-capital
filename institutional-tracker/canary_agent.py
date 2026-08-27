@@ -461,6 +461,110 @@ def _llm_stress_assessment(assessment: dict) -> Optional[str]:
         return None
 
 
+# Levels that mean "the firm should be in defensive mode". YELLOW is a
+# heads-up, not a gate.
+ALERTING_LEVELS = ("RED", "ORANGE")
+
+# How long an alert may sit `active` before we say so out loud. Not an expiry —
+# see the comment at the bottom of load_active_alert().
+STALE_ACTIVE_ALERT_HOURS = 24.0
+
+
+def load_active_alert(path: Optional[str] = None) -> dict:
+    """Is the canary alerting RIGHT NOW? The one supported way to ask.
+
+    Returns the live alert record, or `{}` when the canary is not alerting.
+
+    THE ESCAPE (found 2026-08-27). `_clear_alert_file` below flips `active` to
+    False and deliberately leaves `level` where it was: the record is the
+    *history* of an episode, and `triggered_at` / `triggers` / `readings` all
+    describe the ORANGE that happened. So a cleared record reads
+    `{"active": False, "level": "ORANGE", "cleared_at": ...}` — and every field
+    in it is correct.
+
+    `main.py::_load_canary_alert` tested `level in ("RED","ORANGE")` and never
+    read `active`. Its own docstring said "active"; its code did not. An ORANGE
+    that lived fifteen minutes on 2026-08-24 (13:30:10 → 13:45:07) therefore
+    held the firm in DEFENSIVE MODE for the next three days — 1,496 "all new
+    capital deployment blocked" decisions and 2 SELL fast-tracks — while
+    `canary_state.json` read GREEN the entire time.
+
+    It was not one reader's slip. Four modules read this file and three had
+    each invented a different contract against it:
+
+      main.py            `level`, never `active`      → the three days above
+      morning_briefing   `level`, never `active`      → "🚨 emergency cascade
+                                                        active" in Jack's
+                                                        briefing for 3 days
+      morning_briefing   `alerts`, `generated_at`     → keys this module has
+                                                        never written, so
+                                                        alert_count was always
+                                                        0 and last_updated ""
+      etf_pod_board      `alerts` / `active_alerts`   → same; measured
+                                                        2026-08-27, its canary
+                                                        injection had fired
+                                                        ZERO times, ever
+      deputy_agents      `active` AND `level`         → correct
+
+    Four readers, one file, no shared definition of "alerting". So liveness is
+    decided here, once, and a reader that wants the level asks this function
+    for it. `TestCanaryAlertHasOneReader` pins that every behavioural reader
+    routes through here and that every key they take off the result is a key
+    `_write_alert_file` actually writes.
+
+    `active is True` is exact on purpose. This module writes a JSON bool and
+    nothing else, so anything truthy-but-not-True is corruption — and a record
+    corrupt enough to hold a string in `active` cannot be trusted to hold a
+    real `level` either. Corruption is logged, never silently resolved: this
+    gate both blocks buying (safe to get wrong) and force-sells (not safe to
+    get wrong), so there is no conservative constant to fall back on.
+    """
+    p = path or ALERT_PATH
+    if not os.path.exists(p):
+        return {}
+    try:
+        with open(p) as fh:
+            alert = json.load(fh)
+    except Exception as exc:
+        logger.warning("  [Canary] %s unreadable (%s) — treating as no alert", p, exc)
+        return {}
+    if not isinstance(alert, dict):
+        logger.warning("  [Canary] %s is not an object — treating as no alert", p)
+        return {}
+
+    active = alert.get("active")
+    if active is not True:
+        if active is not None and not isinstance(active, bool):
+            logger.warning(
+                "  [Canary] %s has a non-boolean `active` (%r) — treating as no "
+                "alert, but this file is corrupt and its `level` cannot be "
+                "trusted either", p, active)
+        return {}
+    if alert.get("level") not in ALERTING_LEVELS:
+        return {}
+
+    # The second way this gate can stick on: only the canary clears the file,
+    # so if the canary stops running, an active alert is never cleared and
+    # defensive mode runs forever on a stale reading. Do NOT expire it here.
+    # "The canary is down" is not "the market is fine" — inventing an all-clear
+    # is the same class of mistake as the three days this docstring opens with,
+    # pointed the other way. Say it loudly and let the freshness sweep own it.
+    ts = alert.get("triggered_at")
+    if isinstance(ts, str):
+        try:
+            age_h = (datetime.now() - datetime.fromisoformat(ts)).total_seconds() / 3600.0
+        except ValueError:
+            age_h = None
+        if age_h is not None and age_h > STALE_ACTIVE_ALERT_HOURS:
+            logger.warning(
+                "  [Canary] alert has been ACTIVE %.1fh without being cleared or "
+                "re-fired (level %s, triggered %s). Only the canary clears this "
+                "file — if it has stopped running, defensive mode is stuck on. "
+                "NOT auto-clearing: a down canary is not a GREEN market.",
+                age_h, alert.get("level"), ts)
+    return alert
+
+
 def _write_alert_file(assessment: dict):
     """Save active alert so main.py picks it up on next scheduled run."""
     alert = {

@@ -152,18 +152,22 @@ def _lookup_buy_source(state: dict, ticker: str) -> str:
 # ---------------------------------------------------------------------------
 
 def _load_canary_alert() -> dict:
-    """Check if the Canary Agent has an active RED or ORANGE alert."""
-    alert_path = Path(__file__).parent / "data" / "canary_alert.json"
-    if not alert_path.exists():
-        return {}
+    """The LIVE canary alert, or {} — see canary_agent.load_active_alert.
+
+    This used to open the file here and test `level in ("RED","ORANGE")`
+    without ever reading `active`. The docstring said "active"; the code did
+    not. A cleared alert keeps its `level` (the record is the history of the
+    episode), so an ORANGE that lasted 15 minutes on 2026-08-24 put the firm in
+    DEFENSIVE MODE for three days: 1,496 blocked buy decisions and 2 SELL
+    fast-tracks, with canary_state.json reading GREEN throughout.
+
+    Liveness is now decided in exactly one place. Do not re-open this file.
+    """
     try:
-        with open(alert_path) as f:
-            alert = json.load(f)
-        if alert.get("level") in ("RED", "ORANGE"):
-            return alert
+        from canary_agent import load_active_alert
+        return load_active_alert(str(Path(__file__).parent / "data" / "canary_alert.json"))
     except Exception:
-        pass
-    return {}
+        return {}
 
 
 def run_daily(send_email: bool = True, include_backtest: bool = False):

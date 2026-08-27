@@ -90,28 +90,35 @@ def run_morning_briefing() -> dict:
 
     # ── 1. Market context (Canary) ────────────────────────────────────────────
     logger.info("\n  [1/15] Canary — market conditions...")
-    canary       = _safe_load("data/canary_alert.json")
+    # Three separate reads of canary_alert.json were wrong here until
+    # 2026-08-27, and each was silent:
+    #   · `level` was read without `active`, so a cleared ORANGE put "🚨 Canary
+    #     ORANGE — emergency cascade active" at the top of Jack's briefing for
+    #     three days after the market had gone quiet again;
+    #   · `alerts` and `generated_at` are keys the canary has NEVER written
+    #     (it writes `triggers` and `triggered_at`), so alert_count was
+    #     permanently 0, high_alerts permanently empty, and last_updated "".
+    # Liveness now comes from the one accessor; the keys below are the ones
+    # canary_agent._write_alert_file actually writes.
+    from canary_agent import load_active_alert
+    canary       = load_active_alert("data/canary_alert.json")
     canary_state = _safe_load("data/canary_state.json")
     market_status = canary_state.get("market_status", "unknown")
     canary_level  = canary.get("level", "GREEN")
-    canary_alerts = canary.get("alerts", [])
-    high_alerts   = [a for a in canary_alerts if a.get("severity") in ("HIGH", "CRITICAL")]
+    triggers      = canary.get("triggers", []) or []
     briefing["sections"]["market"] = {
         "status":        market_status,
         "canary_level":  canary_level,
-        "alert_count":   len(canary_alerts),
-        "high_alerts":   high_alerts[:5],
-        "triggers":      canary.get("triggers", [])[:5],
-        "last_updated":  canary.get("generated_at", ""),
+        "alert_count":   len(triggers),
+        "triggers":      triggers[:5],
+        "last_updated":  canary.get("triggered_at", ""),
     }
     if canary_level in ("RED", "ORANGE"):
         briefing["alerts"].append(
             f"🚨 Canary {canary_level} — emergency cascade active: "
-            + "; ".join(canary.get("triggers", [])[:3])
+            + "; ".join(triggers[:3])
         )
-    elif high_alerts:
-        briefing["alerts"].append(f"⚠ Canary: {len(high_alerts)} high-severity alert(s) pre-market")
-    logger.info(f"    Market: {market_status} | Canary: {canary_level} | Alerts: {len(canary_alerts)}")
+    logger.info(f"    Market: {market_status} | Canary: {canary_level} | Triggers: {len(triggers)}")
 
     # ── 2. Risk environment (CRO) ─────────────────────────────────────────────
     logger.info("\n  [2/15] CRO — risk environment...")
@@ -527,7 +534,20 @@ def run_morning_briefing() -> dict:
 
     # ── Compile full agent status ──────────────────────────────────────────────
     briefing["agent_status"] = {
-        "canary":            {"fresh": _fresh(canary.get("generated_at",""), 1),      "level": canary_level},
+        # Liveness comes from canary_state.json, not canary_alert.json. This
+        # read `canary.get("generated_at")` — a key the canary has never
+        # written — so _age_hours returned its 999 sentinel and this flag was
+        # False every single day since it was added. The firm's most
+        # safety-critical agent had a liveness indicator hardwired to "stale",
+        # which means a canary that ACTUALLY died would have looked identical.
+        # canary_alert.json is the wrong source anyway: it is only written when
+        # an alert fires or clears, so on a normal day it is correctly old.
+        # canary_state["last_level_time"] is written on every run (see
+        # canary_agent, unconditional before _save_state), and the canary is a
+        # 7-day producer — */5 in market hours, */30 otherwise, weekends
+        # included — so an hour of slack is two missed runs, not a weekend.
+        "canary":            {"fresh": _fresh(canary_state.get("last_level_time",""), 1),
+                              "level": canary_level},
         "cro":               {"fresh": _fresh(risk_bulletin.get("generated_at",""), 12), "risk_level": risk_level},
         "rd_team":           {"fresh": rd_age_h < 12,                                 "picks": len(picks) if picks else 0},
         "energy_rd":         {"fresh": _fresh(energy_report.get("generated_at",""), 24)},

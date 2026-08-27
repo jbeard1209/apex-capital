@@ -13671,6 +13671,330 @@ class TestQueueAgeCountsOnlyWork(unittest.TestCase):
             self.skipTest("no ML experiment queue on this host")
 
 
+class TestCanaryAlertHasOneReader(unittest.TestCase):
+    """`canary_alert.json` is read through one accessor, and every key taken
+    off it is a key the canary actually writes.
+
+    THE ESCAPE (2026-08-27). `canary_agent._clear_alert_file` flips `active` to
+    False and leaves `level` at its last non-GREEN value, because the record is
+    the history of an episode — `triggered_at`, `triggers` and `readings` all
+    describe the ORANGE that happened, and every field in a cleared record is
+    correct. `main.py::_load_canary_alert` tested `level in ("RED","ORANGE")`
+    and never read `active`; its own docstring said "active". An ORANGE that
+    lived fifteen minutes on 2026-08-24 (13:30:10 → 13:45:07) therefore held
+    the firm in DEFENSIVE MODE for the next three days — 1,496 "all new capital
+    deployment blocked" decisions and 2 SELL fast-tracks — while
+    `canary_state.json` read GREEN the entire time.
+
+    Three of the four readers were wrong, in two distinct ways:
+      · main.py and morning_briefing read `level` without `active`;
+      · morning_briefing read `alerts` and `generated_at`, and etf_pod_board
+        read `alerts` / `active_alerts` — four key names, none of which this
+        producer has ever written. Measured on the VM the same day, the ETF
+        board's canary injection had fired ZERO times in every artifact
+        carrying the field. A wrong key is silent: `.get()` returns the
+        default and the feature simply never happens.
+
+    WHY THE EXISTING TESTS COULD NOT SEE IT. `TestEvaluateRecommendation` has
+    covered `canary_alert={"level":"ORANGE"}` → blocked since the gate was
+    written, and it passed throughout. It tests what manager_agent does with a
+    dict it is HANDED. Nothing tested what main.py hands it. A gate can be
+    perfectly tested and still be fed a lie — so the tests below sit on the
+    boundary between the file and the gate, which is where the defect lived.
+
+    Two halves, and the second is the one that lasts: the accessor's own
+    verdicts, then AST checks that no reader can drift away from it again. The
+    key contract has to be AST-based — this docstring names every wrong key, so
+    a text grep would match my own postmortem and pass.
+    """
+
+    READERS = ("main.py", "morning_briefing.py", "etf_pod_board.py",
+               "deputy_agents.py")
+
+    # Modules that only NAME the alert file in a registry / backup / inbox map.
+    # They never interpret its contents, so they cannot get the contract wrong.
+    # A module that reads a key off it does NOT belong here.
+    NAMES_IT_WITHOUT_READING_IT = {
+        "backup_data.py", "agent_inbox.py", "rd_system_performance.py",
+        "canary_agent.py",          # the producer, and the one accessor
+        "test_pipeline_smoke.py",   # this file
+    }
+
+    @classmethod
+    def setUpClass(cls):
+        cls.BASE = Path(__file__).parent
+        cls.src = {n: (cls.BASE / n).read_text()
+                   for n in cls.READERS + ("canary_agent.py",)}
+
+    # ── helpers ──────────────────────────────────────────────────────────
+    def _load(self, payload):
+        """Run the real accessor against a real file holding `payload`."""
+        import canary_agent
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        p = d / "canary_alert.json"
+        p.write_text(payload if isinstance(payload, str) else json.dumps(payload))
+        return canary_agent.load_active_alert(str(p))
+
+    @staticmethod
+    def _accessor_call(node):
+        return (isinstance(node, ast.Call) and
+                ((isinstance(node.func, ast.Name) and
+                  node.func.id == "load_active_alert") or
+                 (isinstance(node.func, ast.Attribute) and
+                  node.func.attr == "load_active_alert")))
+
+    def _produced_keys(self):
+        """Every key canary_agent actually writes into the alert record."""
+        tree = ast.parse(self.src["canary_agent.py"])
+        keys = set()
+        for fn in ast.walk(tree):
+            if not (isinstance(fn, ast.FunctionDef) and
+                    fn.name in ("_write_alert_file", "_clear_alert_file")):
+                continue
+            for n in ast.walk(fn):
+                # alert = {"active": True, "level": ..., ...}
+                if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Dict)
+                        and any(isinstance(t, ast.Name) and t.id == "alert"
+                                for t in n.targets)):
+                    for k in n.value.keys:
+                        if isinstance(k, ast.Constant) and isinstance(k.value, str):
+                            keys.add(k.value)
+                # alert["llm_assessment"] = ... / existing["cleared_at"] = ...
+                if (isinstance(n, ast.Subscript) and isinstance(n.ctx, ast.Store)
+                        and isinstance(n.value, ast.Name)
+                        and n.value.id in ("alert", "existing")
+                        and isinstance(n.slice, ast.Constant)
+                        and isinstance(n.slice.value, str)):
+                    keys.add(n.slice.value)
+        return keys
+
+    def _alert_reads(self, src):
+        """(names holding an alert record, keys read off them) for one module.
+
+        Follows one hop of indirection, because etf_pod_board wraps the
+        accessor in `_load_canary_signals()` and main.py in
+        `_load_canary_alert()` — the binding the reader actually uses is the
+        wrapper's return value, not the accessor's.
+        """
+        tree = ast.parse(src)
+        bound, producing_fns = set(), set()
+        for fn in ast.walk(tree):
+            if not isinstance(fn, ast.FunctionDef):
+                continue
+            local = set()
+            for n in ast.walk(fn):
+                if isinstance(n, ast.Assign) and self._accessor_call(n.value):
+                    local |= {t.id for t in n.targets if isinstance(t, ast.Name)}
+            for n in ast.walk(fn):
+                if isinstance(n, ast.Return) and n.value is not None:
+                    if (self._accessor_call(n.value) or
+                            (isinstance(n.value, ast.Name) and n.value.id in local)):
+                        producing_fns.add(fn.name)
+            bound |= local
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Call)
+                    and isinstance(n.value.func, ast.Name)
+                    and n.value.func.id in producing_fns):
+                bound |= {t.id for t in n.targets if isinstance(t, ast.Name)}
+        reads = set()
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr == "get"
+                    and isinstance(n.func.value, ast.Name)
+                    and n.func.value.id in bound and n.args
+                    and isinstance(n.args[0], ast.Constant)
+                    and isinstance(n.args[0].value, str)):
+                reads.add(n.args[0].value)
+            if (isinstance(n, ast.Subscript) and isinstance(n.value, ast.Name)
+                    and n.value.id in bound
+                    and isinstance(n.slice, ast.Constant)
+                    and isinstance(n.slice.value, str)):
+                reads.add(n.slice.value)
+        return bound, reads
+
+    @staticmethod
+    def _ago_iso(hours):
+        return (datetime.now() - timedelta(hours=hours)).isoformat()
+
+    # ── the verdict the firm ran on for three days ───────────────────────
+    def test_a_cleared_alert_keeps_its_level_and_must_not_gate(self):
+        """The exact record that sat on the VM from 2026-08-24 to 2026-08-27."""
+        cleared = {
+            "active": False,
+            "level": "ORANGE",
+            "triggered_at": "2026-08-24T13:30:10.145156",
+            "triggers": ["Position pressure: HASI down -6.6%"],
+            "readings": {},
+            "cleared_at": "2026-08-24T13:45:07.889598",
+        }
+        self.assertEqual(
+            {}, self._load(cleared),
+            "a CLEARED alert still reads level=ORANGE — that is by design, the "
+            "record is the history of the episode. Reading it as live is what "
+            "blocked 1,496 buy decisions over three days.")
+
+    def test_an_active_alert_is_returned_whole(self):
+        for level in ("RED", "ORANGE"):
+            with self.subTest(level=level):
+                rec = {"active": True, "level": level,
+                       "triggered_at": self._ago_iso(0.2),
+                       "triggers": ["SPY -3%"]}
+                got = self._load(rec)
+                self.assertEqual(level, got.get("level"))
+                self.assertEqual(["SPY -3%"], got.get("triggers"))
+
+    def test_a_non_alerting_level_is_not_an_alert(self):
+        """YELLOW is a heads-up. It must not put the firm in defensive mode."""
+        for level in ("YELLOW", "GREEN", "", None, "orange"):
+            with self.subTest(level=level):
+                self.assertEqual({}, self._load(
+                    {"active": True, "level": level,
+                     "triggered_at": self._ago_iso(0.2)}))
+
+    def test_active_must_be_the_boolean_true(self):
+        """This producer writes a JSON bool. Anything else is corruption, and a
+        record corrupt in `active` cannot be trusted in `level` either."""
+        for bad in ("true", "True", 1, "yes", [1], {"x": 1}):
+            with self.subTest(active=bad):
+                self.assertEqual({}, self._load(
+                    {"active": bad, "level": "RED",
+                     "triggered_at": self._ago_iso(0.2)}))
+
+    def test_an_unreadable_or_absent_file_is_not_an_alert(self):
+        import canary_agent
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        self.assertEqual({}, canary_agent.load_active_alert(str(d / "nope.json")))
+        self.assertEqual({}, self._load("{not json at all"))
+        self.assertEqual({}, self._load(["a", "list"]))
+        self.assertEqual({}, self._load("null"))
+
+    def test_a_stale_active_alert_is_still_honoured_not_silently_expired(self):
+        """The other way this gate sticks: only the canary clears the file, so
+        a canary that stops running leaves an alert active forever. Saying
+        "GREEN" because nobody has spoken in a week is the same mistake as the
+        three days above, pointed the other way — it must still gate."""
+        rec = {"active": True, "level": "RED",
+               "triggered_at": self._ago_iso(24 * 9),
+               "triggers": ["stale"]}
+        self.assertEqual("RED", self._load(rec).get("level"))
+
+    # ── the boundary the defect actually lived on ────────────────────────
+    def test_the_manager_gate_fed_from_a_cleared_file_approves(self):
+        """Compose the two real functions across the boundary that broke.
+
+        TestEvaluateRecommendation covers the gate given a dict. This covers
+        the gate given THE FILE — which is the only thing production ever has.
+        """
+        from manager_agent import evaluate_recommendation
+        cleared = {"active": False, "level": "ORANGE",
+                   "triggered_at": "2026-08-24T13:30:10",
+                   "triggers": ["Position pressure: HASI down -6.6%"],
+                   "cleared_at": "2026-08-24T13:45:07"}
+        rec = {"ticker": "NVDA", "action": "BUY_NEW", "conviction": 4,
+               "source_agent": "RDTeamLeader", "unrealized_pnl_pct": 0,
+               "hold_days": 0, "weight_pct": 0}
+        acct = {"portfolio_value": 100_000, "cash": 80_000,
+                "buying_power": 80_000, "n_positions": 3}
+        decision = evaluate_recommendation(
+            rec, acct, canary_alert=self._load(cleared))
+        self.assertEqual(
+            "APPROVED", decision["manager_decision"],
+            "a cleared canary alert must not block new capital — this is the "
+            "three-day defensive-mode escape, end to end")
+
+    # ── nobody drifts away from the accessor again ───────────────────────
+    def test_every_reader_routes_through_the_one_accessor(self):
+        """AST, not grep: this file's own docstrings name the accessor."""
+        for name in self.READERS:
+            with self.subTest(module=name):
+                tree = ast.parse(self.src[name])
+                self.assertTrue(
+                    any(self._accessor_call(n) for n in ast.walk(tree)),
+                    f"{name} reads the canary alert but never calls "
+                    f"canary_agent.load_active_alert — four readers with four "
+                    f"private contracts is exactly what broke")
+
+    def test_no_other_module_opens_the_alert_file(self):
+        offenders = []
+        for p in sorted(self.BASE.glob("*.py")):
+            if p.name in self.NAMES_IT_WITHOUT_READING_IT:
+                continue
+            src = p.read_text()
+            if "canary_alert.json" not in src:
+                continue
+            try:
+                tree = ast.parse(src)
+            except SyntaxError:
+                continue
+            if not any(self._accessor_call(n) for n in ast.walk(tree)):
+                offenders.append(p.name)
+        self.assertEqual(
+            [], offenders,
+            "these modules reach for data/canary_alert.json without going "
+            "through load_active_alert(); either route them through it or, if "
+            "they only NAME the file and never read a key off it, add them to "
+            "NAMES_IT_WITHOUT_READING_IT with that justification")
+
+    def test_every_key_a_reader_takes_is_a_key_the_canary_writes(self):
+        """The generalisation. `alerts`, `active_alerts` and `generated_at`
+        were all read and none was ever written, and nothing said a word."""
+        produced = self._produced_keys()
+        for expected in ("active", "level", "triggers", "triggered_at", "cleared_at"):
+            self.assertIn(expected, produced,
+                          "the key extractor lost track of canary_agent's "
+                          "writer — fix the extractor, not the assertion")
+        # An extractor that over-collects makes this test vacuous: every read
+        # would be "produced". These four are the exact names that were read
+        # and never written, so none of them may appear.
+        for never in ("alerts", "active_alerts", "generated_at", "severity"):
+            self.assertNotIn(never, produced,
+                             "the key extractor is over-collecting — it thinks "
+                             "canary_agent writes a key it does not, which "
+                             "makes the contract below meaningless")
+        all_reads = set()
+        for name in self.READERS:
+            with self.subTest(module=name):
+                bound, reads = self._alert_reads(self.src[name])
+                self.assertTrue(
+                    bound,
+                    f"{name}: found nothing bound to load_active_alert(), so "
+                    f"this test is reading nothing and would pass on anything")
+                all_reads |= reads
+                unknown = sorted(reads - produced)
+                self.assertEqual(
+                    [], unknown,
+                    f"{name} reads {unknown} off the canary alert record, and "
+                    f"canary_agent never writes {'it' if len(unknown) == 1 else 'them'}. "
+                    f"Written keys: {sorted(produced)}")
+        # The other vacuity hole: an extractor that finds no reads at all
+        # satisfies `reads - produced == set()` for every module on earth.
+        self.assertLessEqual(
+            {"level", "triggers"}, all_reads,
+            f"the read extractor found {sorted(all_reads)} across all four "
+            f"readers — it has stopped seeing the reads it is supposed to "
+            f"check, and this test now passes on anything")
+
+    def test_the_live_alert_file_is_not_gating_the_firm_after_being_cleared(self):
+        """Run the accessor against this host's real file. This is the check
+        that would have caught it in production rather than in a lab."""
+        import canary_agent
+        real = self.BASE / "data" / "canary_alert.json"
+        if not real.exists():
+            self.skipTest("no canary_alert.json on this host")
+        raw = json.loads(real.read_text())
+        got = canary_agent.load_active_alert(str(real))
+        if raw.get("active") is True and raw.get("level") in ("RED", "ORANGE"):
+            self.assertTrue(got, "a live alert must gate")
+        else:
+            self.assertEqual(
+                {}, got,
+                f"the live alert file is active={raw.get('active')!r} "
+                f"level={raw.get('level')!r} and the accessor still returned a "
+                f"gating record")
+
+
 class TestAgentsCannotExitTheOrchestrator(unittest.TestCase):
     """An agent called in-process must not be able to end the process.
 
