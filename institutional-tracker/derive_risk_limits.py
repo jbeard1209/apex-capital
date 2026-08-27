@@ -722,12 +722,21 @@ def run(queue: bool = True, client=None) -> dict:
         "shadow_price": shadow,
         "marginal_position": marg,
     }
-    try:
-        DATA.mkdir(exist_ok=True)
-        REPORT.write_text(json.dumps(result, indent=2))
-    except Exception as e:                                  # pragma: no cover
-        logger.warning(f"  [derive] could not write the report: {e}")
+    def _write_report() -> None:
+        try:
+            DATA.mkdir(exist_ok=True)
+            REPORT.write_text(json.dumps(result, indent=2))
+        except Exception as e:                              # pragma: no cover
+            logger.warning(f"  [derive] could not write the report: {e}")
+
+    # Written twice on purpose. This module is forbidden from editing
+    # config.py — MAX_OPEN_POSITIONS is a live risk limit and changing it is
+    # the Chairman's decision, so the ONLY consequence this agent can produce
+    # is a queued decision. Whether it queued one is therefore the single most
+    # important field here, and it was being set after the only write.
+    _write_report()
     result["queued"] = _queue_decision(result) if queue else False
+    _write_report()
     return result
 
 

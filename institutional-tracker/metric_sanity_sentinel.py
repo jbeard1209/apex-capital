@@ -219,9 +219,16 @@ def run(write: bool = True) -> dict:
         "clean": not violations,
     }
     if write:
+        # Saved twice on purpose. The first _save is crash insurance for the
+        # violations themselves; but it happened BEFORE the two filings, so the
+        # receipts — including whether any Chairman decision was filed at all —
+        # never reached the artifact a reader actually opens. Same defect as
+        # irm_review_agent.run_irm_daily and hr_agent.run_hr_review, found by
+        # the same sweep: a dict mutated after the last write meant to record it.
         _save(REPORT_PATH, report)
         report["bugs_filed"] = _file_bug_proposals(violations)
         report["decisions_filed"] = _file_chairman_decisions(decisions)
+        _save(REPORT_PATH, report)
     return report
 
 

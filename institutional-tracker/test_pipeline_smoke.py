@@ -787,6 +787,61 @@ def patch_yfinance(tc, quotes: dict):
     return quotes
 
 
+# HR's six closing audits, in the order run_hr_review runs them. Each exists to
+# close a specific past escape; see the block at the end of run_hr_review.
+HR_CLOSING_AUDITS = ("performance_ledger", "attendance", "ratchet_integrity",
+                     "retirement_coverage", "roster_coverage", "sweep_queue")
+
+
+def _hr_publishes(key: str) -> bool:
+    """Does run_hr_review actually attach `key` to the dict it reports?
+
+    Deliberately not a source grep. These six audits used to be six literal
+    `report["x"] = f()` statements each wrapped in its own try/except whose
+    handler was `logger.debug()` — so a crashed audit and a clean one produced
+    byte-identical output. Folding them into one `_run_audit(key, fn)` helper
+    (which logs at WARNING and records the failure in `report["audit_failures"]`)
+    changed no behaviour these tests care about, and broke three of them,
+    because they asserted the literal text `report["attendance"]`. A test that
+    pins the SHAPE of a fix cannot survive the next fix.
+
+    So accept either form: a direct `report[key] = ...`, or a call passing
+    `key` to a local helper whose own body assigns `report[<that helper's own
+    first parameter>] = ...`. The second form follows the parameter — it is
+    not satisfied by a helper that merely takes a string and ignores it, which
+    is the difference between dataflow and string presence.
+    """
+    import inspect, textwrap
+    import hr_agent
+    fn = ast.parse(textwrap.dedent(
+        inspect.getsource(hr_agent.run_hr_review))).body[0]
+
+    def _assigns_report(node, slice_pred):
+        return (isinstance(node, ast.Assign)
+                and any(isinstance(t, ast.Subscript)
+                        and isinstance(t.value, ast.Name) and t.value.id == "report"
+                        and slice_pred(t.slice)
+                        for t in node.targets))
+
+    for n in ast.walk(fn):                                  # report["key"] = ...
+        if _assigns_report(n, lambda s: isinstance(s, ast.Constant)
+                           and s.value == key):
+            return True
+
+    writers = set()                     # local helpers that write report[<param>]
+    for h in ast.walk(fn):
+        if not isinstance(h, ast.FunctionDef) or not h.args.args:
+            continue
+        p0 = h.args.args[0].arg
+        if any(_assigns_report(n, lambda s: isinstance(s, ast.Name) and s.id == p0)
+               for n in ast.walk(h)):
+            writers.add(h.name)
+    return any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+               and n.func.id in writers and n.args
+               and isinstance(n.args[0], ast.Constant) and n.args[0].value == key
+               for n in ast.walk(fn))
+
+
 class TestWiringContracts(unittest.TestCase):
 
     def test_the_rejected_ledger_producer_and_consumer_name_one_file(self):
@@ -1405,9 +1460,8 @@ class TestWiringContracts(unittest.TestCase):
         import hr_agent
 
         # 1. Wired: the review report must actually carry the attendance result.
-        src = inspect.getsource(hr_agent.run_hr_review)
-        self.assertIn('report["attendance"]', src,
-                      "run_hr_review must publish the attendance audit, not orphan it")
+        self.assertTrue(_hr_publishes("attendance"),
+                        "run_hr_review must publish the attendance audit, not orphan it")
 
         # 2. Fires: a module that cannot import must be reported CANNOT_START.
         #    Planted on sys.path, not in the repo, so the repo stays clean.
@@ -1506,6 +1560,51 @@ class TestWiringContracts(unittest.TestCase):
                           "the unreadable-schedule finding must clear once the "
                           "snapshot is back")
 
+    def test_every_hr_closing_audit_reaches_the_report(self):
+        """All six of them, plus the ledger that says whether they ran.
+
+        Three of these six had a wiring test; three did not, and the three that
+        did asserted a literal `report["x"]` string. All six were computed ~320
+        lines AFTER run_hr_review's only write to data/hr_report.json, so every
+        verdict was discarded twice over: not to disk, and not to either caller
+        (main.py:1727 and this module's __main__ read only firm_health_score
+        and action_required, which come from the dict literal built BEFORE that
+        write). hr_report.json carried 13 keys and none of these six.
+
+        The ordering half of that defect is pinned firm-wide by
+        TestAMutationAfterTheLastWriteIsNotRecorded; this pins the roster, so a
+        seventh audit cannot be added and quietly orphaned.
+        """
+        import inspect, textwrap
+        import hr_agent
+
+        for key in HR_CLOSING_AUDITS:
+            self.assertTrue(
+                _hr_publishes(key),
+                f"run_hr_review computes the {key} audit but never attaches it "
+                f"to the report it writes and returns")
+
+        fn = ast.parse(textwrap.dedent(
+            inspect.getsource(hr_agent.run_hr_review))).body[0]
+
+        # The failure ledger must be INITIALISED, not created on demand. It
+        # separates three states a reader would otherwise conflate:
+        #   []       the audits ran and all six passed
+        #   [...]    the audits ran and these named ones failed
+        #   absent   run_hr_review died before reaching the block
+        # Created on demand, the first and third are the same byte on disk.
+        self.assertTrue(
+            any(isinstance(n, ast.Assign)
+                and isinstance(n.value, ast.List) and not n.value.elts
+                and any(isinstance(t, ast.Subscript)
+                        and isinstance(t.value, ast.Name) and t.value.id == "report"
+                        and isinstance(t.slice, ast.Constant)
+                        and t.slice.value == "audit_failures"
+                        for t in n.targets)
+                for n in ast.walk(fn)),
+            'report["audit_failures"] must be initialised to [] before the '
+            "audits run, or an absent key cannot be told from a clean sweep")
+
     def test_ratchet_integrity_flags_uncorroborated_all_clear(self):
         """A shrink-only baseline losing entries is not itself proof of a fix.
 
@@ -1602,10 +1701,8 @@ class TestWiringContracts(unittest.TestCase):
             shutil.rmtree(sandbox, ignore_errors=True)
 
         # Wired: the review report must actually carry the result.
-        import inspect
-        src = inspect.getsource(hr_agent.run_hr_review)
-        self.assertIn('report["ratchet_integrity"]', src,
-                      "run_hr_review must publish the ratchet integrity audit")
+        self.assertTrue(_hr_publishes("ratchet_integrity"),
+                        "run_hr_review must publish the ratchet integrity audit")
 
     def test_ratchet_corroboration_will_not_accept_a_rubber_stamp(self):
         """The corroboration rule itself, unstubbed.
@@ -1781,9 +1878,8 @@ class TestWiringContracts(unittest.TestCase):
             shutil.rmtree(sandbox, ignore_errors=True)
 
         # Wired: the review report must actually carry the result.
-        src = inspect.getsource(hr_agent.run_hr_review)
-        self.assertIn('report["retirement_coverage"]', src,
-                      "run_hr_review must publish the retirement coverage audit")
+        self.assertTrue(_hr_publishes("retirement_coverage"),
+                        "run_hr_review must publish the retirement coverage audit")
 
     def test_retired_has_exactly_one_definition(self):
         """"Retired" must be one function, imported — never a second copy.
@@ -25904,6 +26000,416 @@ class TestAReviewerWithNoCallerIsNotAControl(unittest.TestCase):
             self.assertEqual([], c.args,
                              "positional args reintroduced at the site of the original "
                              "transposition")
+
+
+class TestAFailedControlCannotRenderAsACleanOne(unittest.TestCase):
+    """A control that CRASHED and a control that found NOTHING, byte-identical.
+
+    `_review_cit` raised TypeError on its first statement every day for weeks.
+    Nobody noticed, because the call site was:
+
+        cit_review = {}
+        try:
+            cit_review = _review_cit(...)
+        except Exception as e:
+            logger.debug(f"  [IRM Daily] CIT audit skipped: {e}")
+        ... f"<div>{cit_review}</div>" ...
+
+    The module configures INFO, so `debug()` emitted nothing at all. The audit
+    section of the Chairman's email rendered from the empty default and looked
+    exactly like a clean audit. An absent log line is not evidence.
+
+    The defect needs FOUR parts together, and this pins all four:
+      1. an EMPTY default ({} / [] / "" / None / 0 / False)
+      2. reassigned from a CONTROL call inside a try
+      3. whose handler is silent -- nothing reaches INFO, nothing re-raises
+      4. and the variable is READ after the try, into a report / email / artifact
+
+    Fewer parts is a different thing and is deliberately NOT flagged:
+    (1)(2)(3) without (4) is a discarded result; (2)(3)(4) with a NON-empty
+    default is `fallback-that-means-act`, which has its own guard.
+
+    Swept firm-wide when this was written: 0 instances across 3,010 functions.
+    The IRM was the only one. The three synthetic tests below exist because a
+    sweep that reports zero is worthless until it is shown able to report one
+    -- an earlier version of this sweep returned a clean zero purely because
+    it never examined the dispatch it was written for.
+    """
+
+    CONTROL = re.compile(
+        r"audit|review|verif|validat|_law|sentinel|guard|reconcil|coheren|"
+        r"invariant|census|detect|watchdog|_check|check_|assess|scan", re.I)
+    SILENT_CALLS = {"debug"}
+
+    # ── predicates ───────────────────────────────────────────────────────
+    @classmethod
+    def _handler_is_silent(cls, h):
+        """Nothing an operator can see, and no re-raise."""
+        for st in h.body:
+            if isinstance(st, (ast.Pass, ast.Continue, ast.Break, ast.Return)):
+                continue
+            if isinstance(st, ast.Raise):
+                return False
+            if isinstance(st, ast.Expr) and isinstance(st.value, ast.Call):
+                f = st.value.func
+                attr = (f.attr if isinstance(f, ast.Attribute)
+                        else f.id if isinstance(f, ast.Name) else "")
+                if attr in cls.SILENT_CALLS:
+                    continue
+                return False        # print / info / warning / error / anything
+            if isinstance(st, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+                continue            # recorded into a local: still invisible
+            return False
+        return True
+
+    @staticmethod
+    def _is_empty_default(node):
+        if isinstance(node, ast.Constant):
+            return node.value in (None, "", 0) or node.value is False
+        if isinstance(node, ast.Dict):
+            return not node.keys
+        if isinstance(node, (ast.List, ast.Set)):
+            return not node.elts
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id in ("dict", "list", "set") and not node.args):
+            return True
+        return False
+
+    @staticmethod
+    def _call_name(node):
+        if not isinstance(node, ast.Call):
+            return None
+        f = node.func
+        if isinstance(f, ast.Name):
+            return f.id
+        if isinstance(f, ast.Attribute):
+            return f.attr
+        return None
+
+    @classmethod
+    def _hits_in_tree(cls, tree):
+        """Function names exhibiting the full 4-part shape."""
+        out = []
+        for fn in ast.walk(tree):
+            if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+
+            empty_at = {}                                        # (1)
+            for n in ast.walk(fn):
+                if isinstance(n, ast.Assign) and cls._is_empty_default(n.value):
+                    for t in n.targets:
+                        if isinstance(t, ast.Name):
+                            empty_at.setdefault(t.id, n.lineno)
+                elif (isinstance(n, ast.AnnAssign) and n.value is not None
+                        and cls._is_empty_default(n.value)
+                        and isinstance(n.target, ast.Name)):
+                    empty_at.setdefault(n.target.id, n.lineno)
+
+            for node in ast.walk(fn):
+                if not isinstance(node, ast.Try):
+                    continue
+                if not any(cls._handler_is_silent(h) for h in node.handlers):
+                    continue                                     # (3)
+                for st in node.body:                             # (2)
+                    if not isinstance(st, ast.Assign):
+                        continue
+                    cn = cls._call_name(st.value)
+                    if not cn or not cls.CONTROL.search(cn):
+                        continue
+                    for t in st.targets:
+                        if not isinstance(t, ast.Name) or t.id not in empty_at:
+                            continue
+                        if empty_at[t.id] > st.lineno:
+                            continue      # default set AFTER: not this shape
+                        end = getattr(node, "end_lineno", st.lineno)
+                        read_after = any(                        # (4)
+                            isinstance(u, ast.Name) and u.id == t.id
+                            and isinstance(u.ctx, ast.Load) and u.lineno > end
+                            for u in ast.walk(fn))
+                        if read_after:
+                            out.append((fn.name, t.id, cn, st.lineno))
+        return out
+
+    # ── the firm-wide invariant ──────────────────────────────────────────
+    def test_no_control_result_is_silently_failed_and_rendered_from_empty(self):
+        root = Path(__file__).resolve().parent
+        skip = {"venv", ".venv", "site-packages", "__pycache__",
+                "node_modules", ".git"}
+        offenders, n_files = [], 0
+        for p in sorted(root.rglob("*.py")):
+            if any(part in skip for part in p.parts) or p.name.startswith("test_"):
+                continue
+            try:
+                tree = ast.parse(p.read_text())
+            except Exception:
+                continue
+            n_files += 1
+            for fnname, var, cn, ln in self._hits_in_tree(tree):
+                offenders.append("%s:%d  %s(): %s = %s(...) -- silent handler, "
+                                 "empty default, rendered downstream"
+                                 % (p.relative_to(root), ln, fnname, var, cn))
+
+        self.assertGreater(n_files, 100, "sweep found almost no modules to read")
+        self.assertEqual(
+            [], offenders,
+            "A control failure here is indistinguishable from a clean run.\n"
+            "Raise the handler to logger.warning AND record the failure on "
+            "disk (see irm_review_agent.run_irm_daily's reviewer_failures), or "
+            "let it raise. Do not leave it at debug():\n  " +
+            "\n  ".join(offenders))
+
+    # ── the sweep must be able to fail ───────────────────────────────────
+    _PRE_FIX_IRM = '''
+import logging
+logger = logging.getLogger(__name__)
+def run_daily():
+    cit_review = {}
+    try:
+        cit_review = _review_cit("x", {}, {})
+    except Exception as e:
+        logger.debug(f"skipped: {e}")
+    return f"<div>{cit_review}</div>"
+'''
+
+    _VISIBLE_HANDLER = '''
+import logging
+logger = logging.getLogger(__name__)
+def run_daily():
+    cit_review = {}
+    try:
+        cit_review = _review_cit("x", {}, {})
+    except Exception as e:
+        logger.warning(f"FAILED: {e}")
+    return f"<div>{cit_review}</div>"
+'''
+
+    _RESULT_DISCARDED = '''
+import logging
+logger = logging.getLogger(__name__)
+def run_daily():
+    cit_review = {}
+    try:
+        cit_review = _review_cit("x", {}, {})
+    except Exception as e:
+        logger.debug(f"skipped: {e}")
+    return "done"
+'''
+
+    def test_the_sweep_fires_on_the_shape_it_was_built_from(self):
+        hits = self._hits_in_tree(ast.parse(self._PRE_FIX_IRM))
+        self.assertEqual(
+            ["run_daily"], [h[0] for h in hits],
+            "The sweep no longer detects the exact pre-fix IRM call site, so "
+            "its firm-wide zero means nothing.")
+
+    def test_a_visible_handler_is_not_flagged(self):
+        self.assertEqual(
+            [], self._hits_in_tree(ast.parse(self._VISIBLE_HANDLER)),
+            "logger.warning() makes the failure visible -- flagging it would "
+            "make the invariant unsatisfiable and it would be deleted.")
+
+    def test_a_discarded_result_is_not_flagged(self):
+        self.assertEqual(
+            [], self._hits_in_tree(ast.parse(self._RESULT_DISCARDED)),
+            "Nothing reads the variable, so no reader is misled. That is a "
+            "different defect (dead result), not this one.")
+
+
+class TestAMutationAfterTheLastWriteIsNotRecorded(unittest.TestCase):
+    """A verdict attached to a dict that was already written to disk.
+
+    `irm_review_agent.run_irm_daily` persisted `irm_output` exactly once, ~80
+    lines before the CIT audit block ran, so the audit's verdict reached the
+    Chairman's email and NO reader of data/irm_daily_check.json.
+    `hr_agent.run_hr_review` was worse: SIX audits -- attendance,
+    ratchet_integrity, retirement_coverage, roster_coverage, sweep_queue,
+    performance_ledger -- were attached ~320 lines after its only write, and
+    both callers (main.py and this module's __main__) read only
+    firm_health_score and action_required, which come from the dict literal
+    BEFORE that write. Six controls, each built to close a specific past
+    escape, producing verdicts that reached nothing at all.
+
+    Four more of the same shape were found in the same sweep, all receipts:
+    metric_sanity_sentinel (bugs_filed, decisions_filed),
+    data_integrity_sentinel (chairman_filed), fundamentals_sanity (bugs_filed),
+    derive_risk_limits (queued), backup_data (pruned -- the record of which
+    backups were deleted).
+
+    The invariant: within a function, if a name is handed to something that
+    writes it, that name's CONTENTS must not change afterwards. The accepted
+    fixes are a second write, or a persist closure called on both sides of the
+    mutation. Both are recognised below.
+    """
+
+    PERSIST_FN = re.compile(
+        # dump(?!s): json.dumps(X) serialises X, it does not write it.
+        r"^_*(json_)?(dump(?!s)|save|persist|write|store|flush|commit)", re.I)
+    MUTATORS = {"update", "setdefault", "append", "extend", "pop", "clear"}
+
+    @classmethod
+    def _persisted(cls, fn):
+        """name -> [lineno...] where it is handed to something that writes.
+
+        Key "*" collects ZERO-ARG persist calls. Those are closures over the
+        thing they write (`_persist_irm_output()`), so the name never appears
+        at the call site and an argument scan sees nothing -- which is how an
+        earlier version of this check kept reporting the two call sites it had
+        already been used to fix.
+        """
+        out = {}
+        for n in ast.walk(fn):
+            if not isinstance(n, ast.Call):
+                continue
+            f = n.func
+            nm = (f.attr if isinstance(f, ast.Attribute)
+                  else f.id if isinstance(f, ast.Name) else "")
+            if not nm or not cls.PERSIST_FN.match(nm):
+                continue
+            if not n.args and not n.keywords:
+                out.setdefault("*", []).append(n.lineno)
+                continue
+            for a in list(n.args) + [k.value for k in n.keywords]:
+                for sub in ast.walk(a):
+                    if isinstance(sub, ast.Name) and isinstance(sub.ctx, ast.Load):
+                        out.setdefault(sub.id, []).append(n.lineno)
+        return out
+
+    @classmethod
+    def _mutations(cls, fn):
+        out = {}
+        for n in ast.walk(fn):
+            if isinstance(n, ast.Assign):
+                for t in n.targets:
+                    if isinstance(t, (ast.Subscript, ast.Attribute)) \
+                            and isinstance(t.value, ast.Name):
+                        out.setdefault(t.value.id, []).append(n.lineno)
+            elif isinstance(n, ast.AugAssign):
+                t = n.target
+                if isinstance(t, ast.Subscript) and isinstance(t.value, ast.Name):
+                    out.setdefault(t.value.id, []).append(n.lineno)
+            elif (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr in cls.MUTATORS
+                    and isinstance(n.func.value, ast.Name)):
+                out.setdefault(n.func.value.id, []).append(n.lineno)
+        return out
+
+    @classmethod
+    def _hits_in_tree(cls, tree):
+        out = []
+        for fn in ast.walk(tree):
+            if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            pers, muts = cls._persisted(fn), cls._mutations(fn)
+            wildcard = max(pers.get("*", [0]))
+            for name, plines in pers.items():
+                if name == "*":
+                    continue
+                last = max(plines + [wildcard])
+                after = sorted(l for l in muts.get(name, []) if l > last)
+                if after:
+                    out.append((fn.name, name, last, after))
+        return out
+
+    def test_nothing_is_mutated_after_the_last_write_that_records_it(self):
+        root = Path(__file__).resolve().parent
+        skip = {"venv", ".venv", "site-packages", "__pycache__",
+                "node_modules", ".git"}
+        offenders, n_files = [], 0
+        for p in sorted(root.rglob("*.py")):
+            if any(part in skip for part in p.parts) or p.name.startswith("test_"):
+                continue
+            try:
+                tree = ast.parse(p.read_text())
+            except Exception:
+                continue
+            n_files += 1
+            for fnname, name, last, after in self._hits_in_tree(tree):
+                offenders.append(
+                    "%s  %s(): %s written last at L%d, then mutated at L%s"
+                    % (p.relative_to(root), fnname, name, last,
+                       ", L".join(str(a) for a in after[:4])))
+
+        self.assertGreater(n_files, 100, "sweep found almost no modules to read")
+        self.assertEqual(
+            [], offenders,
+            "These changes never reach disk. Write again after the mutation, "
+            "or move the write below it:\n  " + "\n  ".join(offenders))
+
+    # ── the check must be able to fail, and must accept both fixes ───────
+    _PRE_FIX = '''
+def run():
+    report = {"a": 1}
+    with open("x.json", "w") as f:
+        json.dump(report, f)
+    report["audit"] = do_audit()
+    return report
+'''
+    _FIXED_CLOSURE = '''
+def run():
+    report = {"a": 1}
+    def _persist_report():
+        with open("x.json", "w") as f:
+            json.dump(report, f)
+    _persist_report()
+    report["audit"] = do_audit()
+    _persist_report()
+    return report
+'''
+    _FIXED_SECOND_WRITE = '''
+def run():
+    report = {"a": 1}
+    REPORT.write_text(json.dumps(report))
+    report["filed"] = file_it()
+    REPORT.write_text(json.dumps(report))
+    return report
+'''
+    _CLOSURE_THEN_MUTATE = '''
+def run():
+    report = {"a": 1}
+    def _persist_report():
+        with open("x.json", "w") as f:
+            json.dump(report, f)
+    _persist_report()
+    report["audit"] = do_audit()
+    return report
+'''
+    _DUMPS_IS_NOT_A_WRITE = '''
+def run():
+    c = {"a": 1}
+    s = "x" + json.dumps(c["nums"])
+    c["routed"] = True
+    return c
+'''
+
+    def test_it_fires_on_the_shape_it_was_built_from(self):
+        self.assertTrue(
+            self._hits_in_tree(ast.parse(self._PRE_FIX)),
+            "No longer detects the pre-fix IRM/HR call site, so the firm-wide "
+            "zero above means nothing.")
+
+    def test_a_closure_called_on_both_sides_is_accepted(self):
+        self.assertEqual([], self._hits_in_tree(ast.parse(self._FIXED_CLOSURE)))
+
+    def test_a_plain_second_write_is_accepted(self):
+        self.assertEqual([], self._hits_in_tree(ast.parse(self._FIXED_SECOND_WRITE)))
+
+    def test_the_closure_exemption_does_not_cover_a_later_mutation(self):
+        """The dangerous over-broad reading of the "*" key.
+
+        Crediting a zero-arg persist to every name must exonerate mutations
+        BEFORE that call, never after it -- otherwise one `_persist_x()`
+        anywhere in a function silences the whole function.
+        """
+        self.assertTrue(
+            self._hits_in_tree(ast.parse(self._CLOSURE_THEN_MUTATE)),
+            "A mutation after the last persist closure is still unrecorded.")
+
+    def test_serialising_is_not_writing(self):
+        self.assertEqual(
+            [], self._hits_in_tree(ast.parse(self._DUMPS_IS_NOT_A_WRITE)),
+            "json.dumps(X) builds a string; it does not persist X. Counting it "
+            "made rd_price_theory_agent._route read as defective when its real "
+            "writer persists a different name entirely.")
 
 
 if __name__ == "__main__":

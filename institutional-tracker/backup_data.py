@@ -104,6 +104,13 @@ def run_backup(quiet: bool = False) -> dict:
             logger.info(f"  🗑  Pruned old backup: {oldest.name}")
 
     manifest["pruned"] = pruned
+    # Re-write the manifest: pruning is the one DESTRUCTIVE thing this function
+    # does (shutil.rmtree above), and it happens after the manifest was written,
+    # so no backup on disk recorded which backups it deleted. The only record
+    # was a log line and the returned dict, and the caller discards both. If a
+    # backup is ever found missing, this file is where you would look.
+    with open(dest / "_manifest.json", "w") as f:
+        json.dump(manifest, f, indent=2)
     return {"status": "ok", **manifest}
 
 

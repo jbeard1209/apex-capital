@@ -213,8 +213,14 @@ def run(write: bool = True) -> dict:
         "sections": sections,
     }
     if write:
+        # Written twice on purpose — the first write is crash insurance for the
+        # sections, the second is what makes the receipt readable. Whether this
+        # sweep escalated to the Chairman is exactly the fact an auditor needs,
+        # and it was being set after the only write. See the same fix in
+        # metric_sanity_sentinel, fundamentals_sanity, hr_agent, irm_review_agent.
         REPORT_PATH.write_text(json.dumps(report, indent=2))
         report["chairman_filed"] = _file_chairman(sections)
+        REPORT_PATH.write_text(json.dumps(report, indent=2))
     return report
 
 

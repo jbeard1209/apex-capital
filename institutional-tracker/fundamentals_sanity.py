@@ -232,8 +232,13 @@ def run(write: bool = True) -> dict:
         "clean": not impossible_tickers,
     }
     if write:
+        # Written twice on purpose: the first write is crash insurance for the
+        # violations, the second records whether bug proposals were actually
+        # filed. That receipt was being set after the only write, so the
+        # artifact could never distinguish "filed 4 proposals" from "filed none".
         REPORT_PATH.write_text(json.dumps(report, indent=2))
         report["bugs_filed"] = _file_bug_proposals(viols)
+        REPORT_PATH.write_text(json.dumps(report, indent=2))
     return report
 
 

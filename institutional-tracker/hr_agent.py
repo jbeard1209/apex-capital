@@ -1952,9 +1952,26 @@ def run_hr_review(send_email: bool = False) -> dict:
         "firm_health_score":   firm_health,
     }
 
-    os.makedirs("data", exist_ok=True)
-    with open(HR_REPORT_PATH, "w") as f:
-        json.dump(report, f, indent=2, default=str)
+    # Persisted by a closure called TWICE, on purpose.
+    #
+    # This early call is the crash insurance: if anything below raises, the
+    # ratings and firm-health score are already on disk. But it used to be the
+    # ONLY write, and it happens ~320 lines before the six audits at the end of
+    # this function attach their verdicts to `report`. So attendance,
+    # ratchet_integrity, retirement_coverage, roster_coverage, sweep_queue and
+    # performance_ledger were computed and then discarded: not to disk (this
+    # write had already happened) and not to either caller (main.py:1727 and
+    # this module's __main__ both read only firm_health_score and
+    # action_required, which come from the literal above). Six controls, each
+    # built to close a specific past escape, with no output channel at all.
+    #
+    # Same defect as irm_review_agent.run_irm_daily, found by the same sweep.
+    def _persist_hr_report() -> None:
+        os.makedirs("data", exist_ok=True)
+        with open(HR_REPORT_PATH, "w") as f:
+            json.dump(report, f, indent=2, default=str)
+
+    _persist_hr_report()
     logger.info(f"\n  HR report saved → {HR_REPORT_PATH}")
 
     # ── Build and seal the IRM evaluation ────────────────────────────────
@@ -2226,57 +2243,70 @@ def run_hr_review(send_email: bool = False) -> dict:
     except Exception as _ledger_e:
         logger.debug(f"  [HR] Performance ledger update error (non-fatal): {_ledger_e}")
 
-    # Add Performance Ledger section to report
-    try:
+    # ── The six closing audits ───────────────────────────────────────────
+    # Each of these was its own try/except whose handler was `logger.debug()`
+    # — and for performance_ledger, a bare `pass`. This module configures INFO,
+    # so an audit that crashed on its first statement and an audit that ran
+    # clean produced byte-identical output: the key was simply absent, which
+    # reads as "nothing to report". An absent log line is not evidence.
+    #
+    # `audit_failures` is initialised to [] rather than created on demand, so
+    # the artifact distinguishes three states a reader would otherwise conflate:
+    #   key == []       the audits ran and all six passed
+    #   key == [...]    the audits ran and these named ones failed
+    #   key absent      run_hr_review died before reaching this block
+    report["audit_failures"] = []
+
+    def _run_audit(key: str, fn) -> None:
+        try:
+            report[key] = fn()
+        except Exception as e:
+            logger.warning(
+                f"  [HR] {key} audit FAILED (section will be absent): {e}")
+            report["audit_failures"].append({
+                "audit": key,
+                "error": f"{type(e).__name__}: {e}",
+            })
+
+    def _performance_ledger():
         from performance_ledger import get_all_agent_stats
-        report["performance_ledger"] = get_all_agent_stats()
-    except Exception:
-        pass
+        return get_all_agent_stats()
+
+    _run_audit("performance_ledger", _performance_ledger)
 
     # Attendance audit. HR historically audited its 39-name ROSTER, which is why an
     # agent that could not even import (international_analyst, for a month) was never
     # marked absent — it wasn't on the roster, so there was no one to mark absent.
     # This is a MANAGEMENT finding about wiring, never an agent rating: a module that
     # is never scheduled has done nothing wrong, so it must not touch PIP or ratings.
-    try:
-        report["attendance"] = audit_attendance()
-    except Exception as _att_e:
-        logger.debug(f"  [HR] Attendance audit error (non-fatal): {_att_e}")
+    _run_audit("attendance", audit_attendance)
 
     # Ratchet integrity: a shrink-only baseline (e.g. the orphan-agent list)
     # that suddenly loses entries needs independent corroboration, not a
     # rubber stamp from the same detector that cleared them. See
     # audit_ratchet_integrity() for the 2026-07-30 incident this closes.
-    try:
-        report["ratchet_integrity"] = audit_ratchet_integrity()
-    except Exception as _ri_e:
-        logger.debug(f"  [HR] Ratchet integrity audit error (non-fatal): {_ri_e}")
+    _run_audit("ratchet_integrity", audit_ratchet_integrity)
 
     # Retirement coverage: a retired agent's (sector, etf) lane going unfilled
     # is a coverage hole, not a headcount detail. See audit_retirement_coverage()
     # for the KOSPI precedent this generalizes.
-    try:
-        report["retirement_coverage"] = audit_retirement_coverage()
-    except Exception as _rc_e:
-        logger.debug(f"  [HR] Retirement coverage audit error (non-fatal): {_rc_e}")
+    _run_audit("retirement_coverage", audit_retirement_coverage)
 
     # Roster coverage: does this review cover every agent the firm employs? The
     # three audits above all read agent_registry.json, so all three inherit its
     # blind spot — 67 rows against a 139-agent firm. This one measures HR
     # against the canonical roster instead, and it is the only check in the
     # building that can see HR itself.
-    try:
-        report["roster_coverage"] = audit_roster_coverage()
-    except Exception as _rz_e:
-        logger.debug(f"  [HR] Roster coverage audit error (non-fatal): {_rz_e}")
+    _run_audit("roster_coverage", audit_roster_coverage)
 
     # Weekly firm sweep: HR's inbox. This is the ONLY consumer of
     # data/hr_action_queue.json — without it the sweep would be routing findings
     # into a file nobody opens, which is the exact bug class the sweep detects.
-    try:
-        report["sweep_queue"] = review_sweep_queue()
-    except Exception as _sq_e:
-        logger.debug(f"  [HR] Sweep queue review error (non-fatal): {_sq_e}")
+    _run_audit("sweep_queue", review_sweep_queue)
+
+    # The write that makes all six of the above readable. Without it they exist
+    # only in this dict, and neither caller reads them (see _persist_hr_report).
+    _persist_hr_report()
 
     return report
 
