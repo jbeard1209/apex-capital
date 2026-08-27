@@ -35,6 +35,61 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 
+def assert_every_call_is_gated(testcase, scope, is_transmit, is_gate, what):
+    """Every `is_transmit` call in `scope` is short-circuit-guarded by `is_gate`.
+
+    Written once because it has now been needed three times, and because the
+    thing it replaces looked correct for months. Two safety tests asserted
+    `min(gate_linenos) < min(transmit_linenos)` — *the earliest* gate before
+    *the earliest* transmit. Proven inadequate 2026-08-27 by adding an ungated
+    `client.submit_order(...)` retry loop after fi_executor's guarded loop: a
+    real-money transmit with no arm check, and the test still passed, because
+    the one real gate still preceded the one real transmit.
+
+    An aggregate standing in for a universal is the same defect as unioning
+    dict keys across sites ([[a-union-cannot-prove-all-n]]) and as a limit
+    enforced on one of sixteen paths to the broker ([[guardrail-on-one-path]]).
+    Both of those cost this firm real money; the min/min form is how they get
+    back in through the test suite.
+
+    The property asserted is DOMINATION, not file order: walking outward from
+    the call, some enclosing block must contain a gate placed before the
+    statement holding the call. Being lower down the file proves nothing — a
+    gate in one loop does not guard a transmit in the next one.
+    """
+    transmits = [n for n in ast.walk(scope)
+                 if isinstance(n, ast.Call) and is_transmit(n)]
+    testcase.assertTrue(transmits, f"no {what} call — the path is gone entirely")
+
+    parent = {}
+    for node in ast.walk(scope):
+        for child in ast.iter_child_nodes(node):
+            parent[child] = node
+
+    def _dominated(call):
+        node = call
+        while node in parent:
+            owner = parent[node]
+            for attr in ("body", "orelse", "finalbody"):
+                body = getattr(owner, attr, None)
+                if not isinstance(body, list):
+                    continue
+                idx = next((i for i, st in enumerate(body)
+                            if any(x is call for x in ast.walk(st))), None)
+                if idx is None:
+                    continue
+                if any(is_gate(st) for st in body[:idx]):
+                    return True
+            node = owner
+        return False
+
+    for call in transmits:
+        testcase.assertTrue(
+            _dominated(call),
+            f"the {what} at line {call.lineno} is not preceded by a guard in "
+            f"any block enclosing it — it can be reached ungated")
+
+
 # =============================================================================
 # 1. evaluate_recommendation
 # =============================================================================
@@ -9794,28 +9849,37 @@ class TestFIExecutorArmGate(unittest.TestCase):
                    and n.name == "run_fi_executor"), None)
         self.assertIsNotNone(fn, "run_fi_executor vanished")
 
-        submits = [n.lineno for n in ast.walk(fn)
+        submits = [n for n in ast.walk(fn)
                    if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                    and n.func.attr == "submit_order"]
         self.assertTrue(submits, "no submit_order call — the executor cannot "
                                  "execute even when armed")
 
-        gates = []
-        for node in ast.walk(fn):
-            if isinstance(node, ast.If) and isinstance(node.test, ast.UnaryOp) \
-                    and isinstance(node.test.op, ast.Not) \
-                    and isinstance(node.test.operand, ast.Name) \
-                    and node.test.operand.id == "armed":
-                self.assertTrue(
-                    any(isinstance(c, ast.Continue) for c in ast.walk(node)),
-                    "the unarmed branch falls through instead of skipping the "
-                    "order — shadow mode would transmit")
-                gates.append(node.lineno)
+        def _is_arm_gate(st):
+            return (isinstance(st, ast.If) and isinstance(st.test, ast.UnaryOp)
+                    and isinstance(st.test.op, ast.Not)
+                    and isinstance(st.test.operand, ast.Name)
+                    and st.test.operand.id == "armed")
 
+        gates = [n for n in ast.walk(fn) if _is_arm_gate(n)]
         self.assertTrue(gates, "no `if not armed:` guard in run_fi_executor")
-        self.assertLess(min(gates), min(submits),
-                        "the arm gate sits AFTER submit_order; unarmed runs "
-                        "would place real orders and record them as shadow")
+        for g in gates:
+            self.assertTrue(
+                any(isinstance(c, (ast.Continue, ast.Return, ast.Raise))
+                    for c in ast.walk(g)),
+                "the unarmed branch falls through instead of skipping the "
+                "order — shadow mode would transmit")
+
+        # EVERY transmit must be dominated by a gate, not merely preceded in the
+        # file by one. See assert_every_call_is_gated at the top of this file
+        # for what the previous `min(gates) < min(submits)` let through — an
+        # ungated real-money submit_order, verified 2026-08-27.
+        assert_every_call_is_gated(
+            self, fn,
+            is_transmit=lambda n: (isinstance(n.func, ast.Attribute)
+                                   and n.func.attr == "submit_order"),
+            is_gate=_is_arm_gate,
+            what="fi_executor submit_order")
 
     def test_arm_files_can_never_travel_between_hosts(self):
         """Arming must be a per-host act, because deploy ships tracked files.
@@ -18890,17 +18954,47 @@ class TestTheRiskGateSitsAtTheChokePoint(unittest.TestCase):
                     if isinstance(n, ast.FunctionDef) and n.name == "_submit_order")
 
     def test_every_order_is_checked_before_it_reaches_the_broker(self):
+        """"Every" is now actually asserted, not approximated by min-before-min.
+
+        `original(...)` IS the broker. This hook exists because the cash floor
+        and position cap lived in AlpacaTrader.submit_buy — one of sixteen
+        paths to that call — so head_agent, both hedge buys, the short opener
+        and the FI executor all reached the broker unchecked
+        ([[guardrail-on-one-path]]). The old assertion here,
+        `min(gate) < min(original)`, would have re-admitted exactly that: a
+        retry `original(...)` added in an except block sits later in the file
+        than the gate, so it passed. There are two `original(...)` calls today
+        — the two arms of one ternary — and both are genuinely dominated.
+        """
         hook = self._hook()
-        calls = [n for n in ast.walk(hook) if isinstance(n, ast.Call)]
-        gate = [c for c in calls if isinstance(c.func, ast.Attribute)
-                and c.func.attr == "check"
-                and getattr(c.func.value, "id", "") == "risk_gate"]
+        gate = [n for n in ast.walk(hook)
+                if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                and n.func.attr == "check"
+                and getattr(n.func.value, "id", "") == "risk_gate"]
         self.assertTrue(gate, "no risk_gate.check() in the submit hook")
-        original = [c for c in calls if getattr(c.func, "id", "") == "original"]
-        self.assertTrue(original)
-        self.assertLess(min(c.lineno for c in gate),
-                        min(c.lineno for c in original),
-                        "the gate runs after the order is already at the broker")
+
+        # Domination is a property of the STATEMENT that runs before the
+        # transmit's statement, so the gate call has to be located as one.
+        # Here it sits inside a `try:` (the guard is deliberately fail-open —
+        # "the guard must never be the reason an order fails to reach the
+        # broker"), so the search descends through Try and ONLY through Try:
+        # a try body always runs, an `if`/`for` body may not. Descending into
+        # conditionals would let a gate parked in an unrelated branch count as
+        # guarding this call, which is the very substitution this whole change
+        # is removing.
+        gate_nodes = {id(g) for g in gate}
+
+        def _is_gate_stmt(st):
+            if isinstance(st, ast.Try):
+                return any(_is_gate_stmt(s) for s in st.body)
+            return (not isinstance(st, (ast.If, ast.For, ast.While, ast.With))
+                    and any(id(c) in gate_nodes for c in ast.walk(st)))
+
+        assert_every_call_is_gated(
+            self, hook,
+            is_transmit=lambda n: getattr(n.func, "id", "") == "original",
+            is_gate=_is_gate_stmt,
+            what="order_ledger broker submit")
 
     def test_a_block_raises_rather_than_returning_none(self):
         """A caller that reads a blocked order as a placed one records a
@@ -23173,6 +23267,119 @@ class TestABookedExitIsNotAnExecutedOne(unittest.TestCase):
         self.assertNotEqual(a, b)
         self.assertIn("sell_log", a)
         self.assertIn("Alpaca", b)
+
+
+class TestTheEntryLedgerCarriesTheBrokerId(unittest.TestCase):
+    """The buy side of the same structural blindness — with no law behind it.
+
+    There is deliberately NO buy-side coherence law. Measured on the VM
+    2026-08-27, the entry ledger is clean: 30 of 30 verifiable buy_log rows
+    have a filled broker order, 0 unfilled, 9 predating the fetched window.
+    The only 4 terminal-unfilled buy orders on the account in 45 days (3
+    rejected, 1 expired) were all SH, which has zero buy_log rows — they never
+    entered the ledger, so there was nothing to escape. A law costs a poison
+    pill, tests, nightly runtime and a new false-alarm surface; buying one for
+    a failure class with zero observed instances is paying for the alarm
+    before the fire.
+
+    What IS worth paying for is the id, because it decides whether a future
+    check can be exact. Without it the only tie from row to order is
+    (ticker, side, ±4 days), and SH alone had 42 filled buys inside one 4-day
+    window — a regime where that heuristic identifies nothing. This class is
+    the ratchet that keeps the field from quietly disappearing again, since
+    nothing else reads it yet and an unread field is the easiest kind to drop.
+    """
+
+    def test_both_buy_sites_persist_the_order_id_the_executor_returns(self):
+        import main
+        tree = ast.parse(Path(main.__file__).read_text())
+
+        # Same enumerate-then-assert-per-site shape as the sell_log test above,
+        # and for the same reason: a union over the sites' keys passes when only
+        # ONE site has the field, which is precisely how main.py's second
+        # sell_log writer stayed invisible.
+        sites = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call)
+                 and isinstance(n.func, ast.Attribute) and n.func.attr == "append"
+                 and isinstance(n.func.value, ast.Subscript)
+                 and isinstance(n.func.value.slice, ast.Constant)
+                 and n.func.value.slice.value == "buy_log"]
+        self.assertGreaterEqual(len(sites), 2,
+                                "main.py has two buy_log writers — the 13F path "
+                                "and the manager ADD/BUY_NEW path; finding fewer "
+                                "means this AST match drifted, not that a writer "
+                                "went away")
+
+        for site in sites:
+            self.assertTrue(site.args and isinstance(site.args[0], ast.Dict),
+                            "a buy_log row must be a dict literal so it can be "
+                            "checked here")
+            row = site.args[0]
+            pairs = {k.value: v for k, v in zip(row.keys, row.values)
+                     if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+            self.assertIn("ticker", pairs, "this is an entry row")
+            self.assertIn("order_id", pairs,
+                          "every buy_log row must carry the broker id that "
+                          "execute_decision already returns, or an entry can "
+                          "only ever be tied to an order by a ±4-day ticker "
+                          "guess")
+            val = pairs["order_id"]
+            self.assertTrue(
+                isinstance(val, ast.Call) and isinstance(val.func, ast.Attribute)
+                and val.func.attr == "get"
+                and val.args and isinstance(val.args[0], ast.Constant)
+                and val.args[0].value in ("id", "order_id"),
+                "order_id must be read from the executor's returned id — "
+                "`.get(\"ticker\")` satisfies key-presence, yields a populated "
+                "string on every row, and matches nothing forever")
+
+    def test_the_executor_actually_supplies_an_id_on_the_buy_path(self):
+        """The field is only worth pinning if the source of it is real.
+
+        `execute_decision` sets `result["order_id"]` on the SELL and TRIM
+        branches; this proves the BUY branch does too. Without it, both writers
+        above would faithfully persist `""` forever and the AST test would stay
+        green — a fix that reads as applied and is not.
+
+        BEHAVIOURAL, not structural, and the first attempt here shows why. That
+        one collected every `ast.If` whose subtree contained a `submit_buy`
+        call and asserted `any(...)` of them assigned `order_id`. An `elif`
+        chain nests inside the previous `If`'s `orelse`, so the outermost
+        `if action == "SELL"` node contains the buy branch AND the sell
+        branch's own assignment — deleting the buy assignment entirely left
+        the test green. That is [[a-union-cannot-prove-all-n]] again in a
+        different costume: `any()` over N candidate blocks proves one of them
+        has the property, and I had just written that memory. A fake trader
+        answers the actual question instead of a proxy for it, and cannot be
+        fooled by how the branches happen to nest.
+        """
+        import manager_agent
+
+        class _FakeTrader:
+            def __init__(self):
+                self.calls = []
+
+            def submit_buy(self, ticker, **kw):
+                self.calls.append(ticker)
+                return {"id": "zz-fake-order-1", "qty": "3"}
+
+        trader = _FakeTrader()
+        # The pod ledger is a real on-disk budget: leaving it enabled would let
+        # this test either be rejected by a live budget or write a phantom trade
+        # into it. Disabling it isolates the branch under test.
+        with patch.object(manager_agent, "_POD_LEDGER_AVAILABLE", False):
+            res = manager_agent.execute_decision(
+                {"manager_action": "BUY_NEW", "ticker": "ZZFAKE",
+                 "conviction": 3.0, "current_price": 10.0},
+                trader, dry_run=False)
+
+        self.assertEqual(trader.calls, ["ZZFAKE"],
+                         "the buy path must still route through submit_buy")
+        self.assertTrue(res.get("executed"))
+        self.assertEqual(res.get("order_id"), "zz-fake-order-1",
+                         "execute_decision must return the broker's id on the "
+                         "BUY path — main.py's two buy_log writers read it from "
+                         "exactly here, and persist '' if it is absent")
 
 
 class TestIssueIdentityIsNotTheMeasurement(unittest.TestCase):

@@ -841,11 +841,30 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                 if result.get("executed"):
                     buys_today.append(result)
                     state["entry_dates"][ticker] = datetime.now().strftime("%Y-%m-%d")
+                    # `order_id` here is INSURANCE, not a repair. Measured on the
+                    # VM 2026-08-27, the entry ledger is clean: 30 of 30
+                    # verifiable buy_log rows have a filled broker order, 0
+                    # unfilled, 9 predating the fetched window. The 4
+                    # terminal-unfilled buy orders on this account in 45 days
+                    # (3 rejected, 1 expired) were all SH and never reached
+                    # buy_log at all. So no buy-side law is being built for a
+                    # failure class that has happened zero times.
+                    #
+                    # What the field buys is that a future check can be EXACT.
+                    # Without it the only way to tie a row to an order is
+                    # (ticker, side, ±4 days) — and SH alone had 42 filled buys
+                    # inside one 4-day window, a regime where that heuristic
+                    # cannot identify anything. trade_review_team reconstructs
+                    # completed trades from buy_log + sell_log and cit_director
+                    # derives hold time from it, so a mis-tied row is a wrong
+                    # number, not a missing one. Two lines against an id already
+                    # sitting in `result`.
                     state["buy_log"].append({
                         "date":       today_str,
                         "ticker":     ticker,
                         "conviction": conviction,
                         "source":     "13F",
+                        "order_id":   result.get("order_id", ""),
                     })
                     logger.info(f"  ✅ 13F BUY approved & executed: {ticker} ({conviction:.0f}★)")
             else:
@@ -1338,12 +1357,19 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                         # Compute Kelly multiplier for attribution (CIT-2026-204)
                         _conv = d.get("conviction", 3.0)
                         _kelly_mult = round(max(0.50, min(1.50, 0.5 + (_conv - 3.0) * 0.25)), 2)
+                        # SECOND buy_log writer (see the 13F path at ~line 862
+                        # for the measurement behind this field). Both entry
+                        # sites now persist the broker id, for the same reason
+                        # and with the same caveat: the ledger is clean today,
+                        # so this is not a fix — it is what makes a future check
+                        # exact instead of a ±4-day ticker guess.
                         state["buy_log"].append({
                             "date":                    datetime.now().strftime("%Y-%m-%d"),
                             "ticker":                  d["ticker"],
                             "conviction":              _conv,
                             "source":                  _classify_signal_source(d.get("source_agent", "")),
                             "conviction_size_multiplier": _kelly_mult,
+                            "order_id":                ex.get("order_id", ""),
                         })
 
             text_rpt = build_management_report(manager_decisions, executions, acct_snap,
