@@ -422,6 +422,33 @@ def resolve_settlements(max_lookups=RESOLVE_MAX_LOOKUPS):
 
 # ------------------------------------------------------------ measurement --
 
+def wilson(hits, n, z=1.96):
+    """(low, high) — 95% Wilson interval on hits/n. ONE definition, three callers.
+
+    `is_premise_alive` computed this inline and `edge_versus_cost` needs the
+    identical interval on the identical sample. Two arithmetically-equal copies
+    of a formula are the setup for [[both-sides-of-a-comparison]]: they agree
+    until someone tunes one of them, and then two functions publish different
+    confidence intervals about the same 1,920 rows and neither is obviously
+    wrong. Pinned by `test_the_two_intervals_are_the_same_interval`.
+
+    Wilson rather than the normal approximation for the reason `reliability_curve`
+    gives: at p near 1.0 the normal interval runs above 100% and makes an
+    obviously-broken estimator look statistically fine. This whole sector lives
+    at p near 1.0.
+
+    n == 0 returns the whole unit interval — the honest statement that the
+    sample says nothing, and the one value that cannot be mistaken for evidence.
+    """
+    if n <= 0:
+        return 0.0, 1.0
+    p = hits / n
+    denom = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / denom
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / denom
+    return max(0.0, centre - half), min(1.0, centre + half)
+
+
 def _brier(pairs):
     """Mean squared error between forecast probability and 0/1 outcome."""
     if not pairs:
@@ -558,6 +585,33 @@ def is_edge_proven(rows=None):
     # the question is genuinely evidentiary again, so the checks below resume.
     with_est = sum(1 for r in regime if r.get("p_hat") is not None)
     if len(regime) >= 50 and with_est == 0:
+        # "Go build an estimator" is an instruction with a price tag, and this
+        # is the only place the firm ever hears it. Sending it without the bar
+        # the estimator would have to clear is how a large build gets authorised
+        # against a target nobody measured — so the toll rides along on the same
+        # sentence. It is measurable today and needs no estimator, which is the
+        # entire reason it can be attached to a verdict that says one is missing.
+        try:
+            _cv, _cwhy, _cd = edge_versus_cost(rows)
+            _agg = _cd.get("aggregate")
+            bar = ("" if not _agg else
+                   f" THE BAR IT WOULD HAVE TO CLEAR: on {_agg['n']} settled "
+                   f"rows the market misprices by {_agg['edge']*100:.2f}c/"
+                   f"contract and it costs {_agg['cost']['total']*100:.2f}c to "
+                   f"take at the CHEAPEST execution that exists "
+                   f"({_agg['cost']['spread']*100:.2f}c half-spread + "
+                   f"{_agg['cost']['fee']*100:.2f}c maker fee; crossing costs "
+                   f"{_agg['cost']['taker']['total']*100:.2f}c), so a PERFECT "
+                   f"forecaster nets {_agg['net_point']*100:+.2f}c/contract at "
+                   f"the point estimate and {_agg['net_best_case']*100:+.2f}c at "
+                   f"the optimistic end of the interval. The build decision is "
+                   f"whether an estimator can find more than "
+                   f"{_agg['cost']['total']*100:.2f}c — not whether it can find "
+                   f"any edge at all. [{_cv}]")
+        except Exception:                        # noqa: BLE001
+            # A failure to price the toll must not suppress the blocker itself;
+            # the blocker is the finding, the bar is the context.
+            bar = ""
         return False, (
             f"BLOCKED, NOT WAITING — 0 of {len(regime)} current-regime rows "
             f"carry an estimate of our own ({n} of them settled). The sector "
@@ -569,7 +623,7 @@ def is_edge_proven(rows=None):
             f"change this verdict — the missing input is a component, not an "
             f"observation. Owner: the Chairman, as a build-or-drop decision. "
             f"Note that the arithmetic locks are unaffected: they need no "
-            f"estimator, and this gate does not hold them.")
+            f"estimator, and this gate does not hold them.{bar}")
 
     if n < MIN_SETTLED_FOR_VERDICT:
         return False, (f"NOT YET — {n}/{MIN_SETTLED_FOR_VERDICT} settled "
@@ -853,14 +907,13 @@ def is_premise_alive(rows=None):
 
     # ---- A. settlement ----------------------------------------------------
     n = len(settled)
-    realised = sum(int(r["outcome"]) for r in settled) / n
+    hits = sum(int(r["outcome"]) for r in settled)
+    realised = hits / n
     mean_quote = sum(float(r["market_price"]) for r in settled) / n
-
-    z = 1.96
-    denom = 1 + z * z / n
-    centre = (realised + z * z / (2 * n)) / denom
-    half = z * math.sqrt(realised * (1 - realised) / n + z * z / (4 * n * n)) / denom
-    ci_low, ci_high = max(0.0, centre - half), min(1.0, centre + half)
+    # Was computed inline here. `edge_versus_cost` needs the SAME interval on
+    # the SAME rows, and a second transcription of the algebra is a divergence
+    # waiting for someone to tune one copy — see `wilson`.
+    ci_low, ci_high = wilson(hits, n)
 
     # ---- B. the book -------------------------------------------------------
     # Independent of settlement, and it must be measured on the SAME cohort.
@@ -923,6 +976,22 @@ def is_premise_alive(rows=None):
                    "buckets_outside_ci": len(bad), "buckets_inside_ci": len(fair),
                    "mean_spread": round(mean_spread, 4) if mean_spread else None})
 
+    # ---- D. the toll -------------------------------------------------------
+    # A premise verdict decides whether the quote is a PROBABILITY. It does not
+    # decide whether the gap is worth collecting — and both of its terminal
+    # answers get read as instructions about an estimator: DEAD says do not
+    # build one, ALIVE says one is worth building. Neither is safe to act on
+    # without the number below, because a mispricing smaller than the spread you
+    # must cross is not an opportunity at any level of forecasting skill. This
+    # is attached to ALL THREE verdicts on purpose: the expensive mistake is an
+    # ALIVE that sends someone to build a forecaster for a 1.7c edge behind a
+    # 2.2c toll, and that reading is exactly the one that would never see it.
+    cost_verdict, cost_why, cost_detail = edge_versus_cost(rows)
+    detail["cost_verdict"] = cost_verdict
+    detail["cost"] = cost_detail.get("aggregate")
+    detail["cost_settled"] = cost_detail.get("settled")
+    toll = f" COST: {cost_why}"
+
     if mean_quote > ci_high:
         book = (f" Mean bid-ask spread {mean_spread:.3f} — the book bracketed a "
                 f"range the quote did not pin down." if mean_spread else "")
@@ -932,7 +1001,7 @@ def is_premise_alive(rows=None):
             f"{realised:.1%} of the time (95% CI {ci_low:.1%}-{ci_high:.1%}). "
             f"The quote is not above the interval by a little; it is outside it "
             f"entirely, so these numbers are not probabilities and there is "
-            f"nothing for an estimator to beat.{book}{buckets}{scope}"), detail
+            f"nothing for an estimator to beat.{book}{buckets}{scope}{toll}"), detail
 
     if mean_quote < ci_low:
         return DEAD, (
@@ -940,13 +1009,263 @@ def is_premise_alive(rows=None):
             f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}). Systematically "
             f"cheap in this band is still a broken price, not free money; the "
             f"reason a 97c contract settles 100% of the time is that nobody "
-            f"will sell it to you.{buckets}{scope}"), detail
+            f"will sell it to you.{buckets}{scope}{toll}"), detail
 
     return ALIVE, (f"ALIVE on n={n} — quoted {mean_quote:.1%}, settled "
                    f"{realised:.1%} (95% CI {ci_low:.1%}-{ci_high:.1%}); the "
                    f"quote is inside its own interval. This clears the PRIOR "
                    f"question only. is_edge_proven still gates every "
-                   f"dollar.{buckets}{scope}"), detail
+                   f"dollar.{buckets}{scope}{toll}"), detail
+
+
+# ---------------------------------------------------------------------------
+# THE EDGE VERSUS THE COST OF TAKING IT
+# ---------------------------------------------------------------------------
+HARVESTABLE, MARGINAL, UNHARVESTABLE = "HARVESTABLE", "MARGINAL", "UNHARVESTABLE"
+
+
+def _cost_per_contract(quote, mean_spread):
+    """What one contract costs to put on, priced in BOTH execution regimes.
+
+    RESTING AND CROSSING ARE ONE CHOICE, NOT TWO INDEPENDENT DIALS. A resting
+    order that fills pays half the spread AND the maker rate; an order that
+    crosses pays the whole spread AND the taker rate. The first draft of this
+    function charged the maker's half-spread and the taker's fee — 4× the fee
+    that goes with the spread assumption beside it — and called the result
+    "optimistic by construction". It was not optimistic, it was mixed, and a
+    mixed cost is the [[both-sides-of-a-comparison]] failure priced in dollars:
+    each half correct, the comparison meaningless. Neither row below is a mix.
+
+    The VERDICT is computed against `maker` — the cheapest execution that
+    exists on this exchange. That is deliberate. This function exists to bound a
+    NEGATIVE claim ("the edge does not clear the cost"), and a negative claim
+    proved against the cheapest possible cost is as strong as it gets. Proving
+    it against a pessimistic cost would prove nothing.
+
+    But `maker` is not free money either, and the reason is adverse selection,
+    not fees: a bid resting at the mid on a 95c contract fills when someone is
+    willing to hit it, which is disproportionately when the price is about to
+    fall. `two_sided()` exists because 94.4% of this exchange has no book at
+    all, so "we rested and got filled at the mid" is a strong assumption about
+    a thin book, not a neutral one. `taker` is carried alongside so the gap
+    between the two is visible rather than assumed away.
+
+    Both fee terms are UN-ROUNDED, unlike `kalshi_client.fee_cents`, which
+    rounds up to a whole cent PER ORDER: a 1-contract order at 95c pays 1c
+    where the rate implies 0.33c. The un-rounded rate is the large-order limit
+    — it assumes we always trade in enough size to amortise the round-up away,
+    which is again the generous reading.
+
+    Returns components, not just a total: a single number would be an aggregate
+    nobody could argue with ([[an-aggregate-is-not-a-finding]]), and which of
+    the two terms binds decides what you would even do about it — a spread-bound
+    sector is a liquidity problem, a fee-bound one is a size problem.
+    """
+    def _leg(spread_cost, rate):
+        fee = rate * quote * (1.0 - quote)
+        return {"spread": round(spread_cost, 5), "fee": round(fee, 5),
+                "total": round(spread_cost + fee, 5)}
+
+    maker = _leg(mean_spread / 2.0, kc.MAKER_FEE_RATE)
+    taker = _leg(mean_spread, kc.TAKER_FEE_RATE)
+    return {"maker": maker, "taker": taker,
+            # `total` is the maker leg. Every verdict below reads this key, so
+            # the bound is the cheap one by default and nothing has to remember
+            # to pick it.
+            "spread": maker["spread"], "fee": maker["fee"],
+            "total": maker["total"]}
+
+
+def edge_versus_cost(rows=None):
+    """(verdict, why, detail) — the question both other gates leave open.
+
+    `is_premise_alive` asks whether the quote is a probability. `is_edge_proven`
+    asks whether OUR estimate beats it. Neither asks the one that decides
+    whether the sector can pay for itself: **is the mispricing bigger than the
+    bid-ask spread you must cross to collect it?**
+
+    That gap is not academic. `is_edge_proven` returns BLOCKED with the
+    instruction to go build a calibrated estimator, and `is_premise_alive`'s
+    ALIVE branch is the same instruction by another route. Both send someone to
+    build a forecaster. Neither of them has ever compared what a PERFECT
+    forecaster could win against what the trade costs — and measured on the live
+    ledger 2026-08-26 (n=1,920 current-regime settled rows) those two numbers
+    are 1.73c and 1.92c, the second being the CHEAPEST execution that exists
+    (rest at the mid, maker rate, size enough to amortise the fee round-up;
+    crossing costs 4.01c). An estimator is a large build aimed at a target the
+    best available evidence puts BELOW the toll.
+
+    Needs no estimator of our own, which is the point: it is answerable today,
+    from rows already on file, and it stays answerable however long
+    `is_edge_proven` remains blocked.
+
+    FOUR VERDICTS, and the middle one is the honest place to be:
+      UNHARVESTABLE  the whole confidence interval on the edge sits below cost.
+                     No estimator can clear it — a close-the-sector finding.
+      MARGINAL       the POINT estimate is below cost but the interval reaches
+                     above it. Not currently paying; would need the true edge
+                     near the top of its interval AND perfect execution.
+      HARVESTABLE    the whole interval clears cost.
+      CANNOT_TELL    too few settled rows to bound the edge at all.
+
+    Reporting MARGINAL as UNHARVESTABLE would be the overclaim this module has
+    made before ([[verdict-wider-than-its-sample]]): on 2026-08-26 the aggregate
+    point estimate is -0.19c/contract and the upper end of the interval is
+    +1.02c, so "no estimator can ever pay" is NOT what the data says, however
+    much the point estimate looks like it. Note which term carries it — 1.84c of
+    the 1.92c is SPREAD, 0.08c is fee. This is a liquidity problem wearing a
+    cost problem's clothes, and the only lever that moves it is a deeper book.
+
+    Scoped to the CURRENT selection rule and partitioned by horizon, same
+    discipline as the two gates beside it — the retired `tradeable()` cohort
+    quoted 97.7% and settled 45.8%, and pooling it here would manufacture an
+    enormous edge out of a rule that no longer exists.
+    """
+    rows = rows if rows is not None else _load_ledger()
+    current = [r for r in rows if _is_current_regime(r)]
+    settled = [r for r in current
+               if r.get("settled") and r.get("outcome") in (0, 1)
+               and r.get("market_price") is not None
+               and r.get("spread") is not None]
+
+    detail = {"settled": len(settled), "regime": "two_sided",
+              "selection_rule": SELECTION_RULE, "strata": {}}
+
+    def _measure(sample):
+        n = len(sample)
+        if not n:
+            return None
+        hits = sum(int(r["outcome"]) for r in sample)
+        realised = hits / n
+        quote = sum(float(r["market_price"]) for r in sample) / n
+        spread = sum(float(r["spread"]) for r in sample) / n
+        lo, hi = wilson(hits, n)
+        # The mispricing is |quote - realised|; its interval is the quote (a
+        # constant, measured exactly) against each end of the interval on the
+        # realised rate. When that interval STRADDLES the quote the mispricing
+        # could genuinely be zero, and the low end must say zero rather than
+        # report a positive distance to the nearer bound — that distance is the
+        # smaller of two errors, not a floor on the edge.
+        ends = (abs(quote - lo), abs(quote - hi))
+        straddles = (quote - lo) * (quote - hi) <= 0
+        edge_lo = 0.0 if straddles else min(ends)
+        cost = _cost_per_contract(quote, spread)
+        return {"n": n, "quote": round(quote, 4), "realised": round(realised, 4),
+                "ci_low": round(lo, 4), "ci_high": round(hi, 4),
+                "mean_spread": round(spread, 4),
+                "edge": round(abs(quote - realised), 5),
+                "edge_low": round(edge_lo, 5), "edge_high": round(max(ends), 5),
+                "cost": cost,
+                "net_point": round(abs(quote - realised) - cost["total"], 5),
+                "net_best_case": round(max(ends) - cost["total"], 5),
+                "direction": ("market OVERPRICES yes" if quote > realised
+                              else "market UNDERPRICES yes")}
+
+    for key, lo_d, hi_d in HORIZON_STRATA:
+        band = [r for r in settled
+                if r.get("days_to_close") is not None
+                and lo_d <= float(r["days_to_close"]) < hi_d]
+        m = _measure(band)
+        if m:
+            detail["strata"][key] = m
+
+    agg = _measure(settled)
+    if agg is None or len(settled) < MIN_SETTLED_FOR_VERDICT:
+        return UNDECIDED, (
+            f"CANNOT TELL — {len(settled)}/{MIN_SETTLED_FOR_VERDICT} settled "
+            f"rows carrying BOTH an outcome and a recorded spread under the "
+            f"current rule ({SELECTION_RULE}). The edge cannot be bounded "
+            f"tightly enough to compare against a ~2c cost."), detail
+
+    detail["aggregate"] = agg
+    cost, edge = agg["cost"], agg["edge"]
+    if agg["edge_high"] <= cost["total"]:
+        verdict = UNHARVESTABLE
+        head = (f"UNHARVESTABLE — even the most favourable reading of "
+                f"{agg['n']} settled rows puts the mispricing at "
+                f"{agg['edge_high']*100:.2f}c, below the "
+                f"{cost['total']*100:.2f}c it costs to take it. No estimator "
+                f"can clear this; the missing piece is not a forecast.")
+    elif agg["edge_low"] > cost["total"]:
+        verdict = HARVESTABLE
+        head = (f"HARVESTABLE — the mispricing is at least "
+                f"{agg['edge_low']*100:.2f}c against a {cost['total']*100:.2f}c "
+                f"cost, across the whole interval on {agg['n']} settled rows.")
+    else:
+        verdict = MARGINAL
+        head = (f"MARGINAL — the market misprices by {edge*100:.2f}c/contract "
+                f"(95% CI {agg['edge_low']*100:.2f}-{agg['edge_high']*100:.2f}c) "
+                f"and it costs {cost['total']*100:.2f}c to collect by "
+                f"RESTING: {cost['maker']['spread']*100:.2f}c of half-spread "
+                f"plus {cost['maker']['fee']*100:.2f}c of maker fee. At the point "
+                f"estimate that is {agg['net_point']*100:+.2f}c/contract — a "
+                f"loss. It only pays if the true edge sits near the top of its "
+                f"interval ({agg['net_best_case']*100:+.2f}c there) AND every "
+                f"order rests instead of crossing.")
+
+    # Which of the two costs binds is the actionable half. A spread-bound sector
+    # is a liquidity problem (rest orders, or trade a deeper book); a fee-bound
+    # one is a size problem (trade bigger, or not at all).
+    binds = "the spread" if cost["spread"] > cost["fee"] else "the fee"
+    head += (f" {binds.capitalize()} is the binding cost "
+             f"({cost['spread']*100:.2f}c vs {cost['fee']*100:.2f}c).")
+
+    # Both cost terms are the BEST case. Say so on every verdict, including
+    # HARVESTABLE — especially HARVESTABLE, where an optimistic cost is what
+    # would send real money after a margin that is not there.
+    head += (f" This is priced at the CHEAPEST execution that exists: resting "
+             f"and filling at the mid, at the maker rate, in size large enough "
+             f"to amortise Kalshi's per-order fee round-up (a 1-contract order "
+             f"at 95c pays 1c, not {cost['fee']*100:.2f}c). CROSSING instead "
+             f"costs {cost['taker']['total']*100:.2f}c "
+             f"({cost['taker']['spread']*100:.2f}c full spread + "
+             f"{cost['taker']['fee']*100:.2f}c taker fee), "
+             f"{cost['taker']['total']/cost['total']:.1f}x the bound above — and "
+             f"no verdict here is computed against that. Resting is also not "
+             f"free: a bid at the mid on a near-certainty contract fills when "
+             f"someone wants to hit it, which is when the price is about to "
+             f"fall.")
+
+    thin = sorted(k for k, v in detail["strata"].items()
+                  if v["n"] < MIN_SETTLED_PER_HORIZON)
+    if thin:
+        named = ", ".join("%s (n=%d)" % (k, detail["strata"][k]["n"])
+                          for k in thin)
+        head += (f" Horizon strata too thin to speak for themselves: {named} "
+                 f"— the aggregate is carried by the band that settles fastest, "
+                 f"and this verdict does not extend to the others.")
+
+    # An aggregate that says "does not pay" can conceal a band that does, and
+    # the strata table this function feeds prints a NET column with nothing
+    # beside it. Measured 2026-08-26: 7-30d nets +1.28c/contract on n=68 (above
+    # the per-horizon bar) while the aggregate reads -0.44c, and 30-90d nets
+    # +31.54c on n=5. Both look like the answer and neither is: the first has an
+    # interval that straddles the quote, so its edge is not distinguishable from
+    # zero; the second is five rows.
+    #
+    # [[an-aggregate-is-not-a-finding]] cuts in this direction too — the mean is
+    # not automatically the conservative reading. Name the exception, and say in
+    # the same breath which of the three things it is, because a reader who
+    # sizes off that column is acting on a point estimate with no lower bound.
+    payers = sorted(k for k, v in detail["strata"].items() if v["net_point"] > 0)
+    if payers:
+        parts = []
+        for k in payers:
+            v = detail["strata"][k]
+            if v["n"] < MIN_SETTLED_PER_HORIZON:
+                note = (f"n={v['n']} is below the {MIN_SETTLED_PER_HORIZON}-row "
+                        f"bar — noise, not a band that pays")
+            elif v["edge_low"] <= 0:
+                note = ("its interval STRADDLES the quote, so that edge is not "
+                        "distinguishable from zero")
+            elif v["edge_low"] > v["cost"]["total"]:
+                note = "its whole interval clears the cost — the one to look at"
+            else:
+                note = "but only at the point estimate; the interval reaches below cost"
+            parts.append(f"{k} nets {v['net_point']*100:+.2f}c/contract "
+                         f"(n={v['n']}) — {note}")
+        head += f" NOT UNIFORM ACROSS HORIZONS: {'; '.join(parts)}."
+    return verdict, head, detail
 
 
 VERDICT_STATE = DATA_DIR / "kalshi_verdict_notified.json"
@@ -972,7 +1291,16 @@ def email_verdict(rows=None, force=False):
     rows = rows if rows is not None else _load_ledger()
     premise, why_premise, detail = is_premise_alive(rows)
     proven, why_edge = is_edge_proven(rows)
-    signature = f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}"
+    # The toll is a THIRD verdict and it moves independently of the other two:
+    # the premise can stay DEAD while the spread narrows enough to turn
+    # UNHARVESTABLE into MARGINAL, or MARGINAL into HARVESTABLE. Leaving it out
+    # of the signature would make "this sector might now pay for itself" wait up
+    # to VERDICT_HEARTBEAT_DAYS and then arrive as part of a routine heartbeat,
+    # which is the shape of every silent-failure postmortem in this repo: the
+    # news existed, nothing was watching the field it lived in.
+    cost_verdict, why_cost, cost_detail = edge_versus_cost(rows)
+    signature = (f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}"
+                 f"|{cost_verdict}")
 
     try:
         prior_text = VERDICT_STATE.read_text()
@@ -993,7 +1321,7 @@ def email_verdict(rows=None, force=False):
             stale = True
 
     subject = (f"Kalshi verdict: premise {premise}, edge "
-               f"{'PROVEN' if proven else 'not proven'} "
+               f"{'PROVEN' if proven else 'not proven'}, cost {cost_verdict} "
                f"(n={detail.get('settled', 0)} settled)")
 
     if not force and signature == prior and not stale:
@@ -1047,9 +1375,15 @@ def email_verdict(rows=None, force=False):
         coh = ("No readable scan log — the scanner may have stopped. That is "
                "itself the finding.")
 
+    # The toll gets its own paragraph rather than a line inside the premise
+    # paragraph. It answers a different question from either gate above — not
+    # "is the quote a probability" and not "is our estimate better", but "is the
+    # gap bigger than the fare" — and it is the only one of the three that is
+    # answerable today with no estimator installed.
     body = (
         f"<p><b>PREMISE: {premise}</b><br>{why_premise}</p>"
         f"<p><b>EDGE: {'PROVEN' if proven else 'NOT PROVEN'}</b><br>{why_edge}</p>"
+        f"<p><b>COST: {cost_verdict}</b><br>{why_cost}</p>"
         f"<p>{coh}</p>"
         f"<table style='border-collapse:collapse;font-family:system-ui,sans-serif;"
         f"font-size:13px'>"
@@ -1071,9 +1405,13 @@ def email_verdict(rows=None, force=False):
                                 sender_name="Kalshi Sector",
                                 key_metrics={"premise": premise,
                                              "edge_proven": proven,
+                                             "cost": cost_verdict,
                                              "settled": detail.get("settled", 0),
                                              "realised": detail.get("realised"),
-                                             "mean_quote": detail.get("mean_quote")})
+                                             "mean_quote": detail.get("mean_quote"),
+                                             "net_per_contract": (
+                                                 (cost_detail.get("aggregate") or {})
+                                                 .get("net_point"))})
         if buffered is False:
             # Nothing was transmitted, so put the dedupe record back — otherwise
             # the state file asserts a delivery that never happened and the
@@ -1153,6 +1491,23 @@ def main():
     premise, why_premise, pd = is_premise_alive(rows)
     print(f"\n  PREMISE: {premise}")
     print(f"  {why_premise}")
+
+    # The toll, before the edge gate — because the edge gate's answer is
+    # "go build an estimator" and this is the number that decides whether that
+    # build is worth starting.
+    cost_verdict, why_cost, cd = edge_versus_cost(rows)
+    print(f"\n  COST: {cost_verdict}")
+    print(f"  {why_cost}")
+    if cd.get("strata"):
+        print(f"\n    {'horizon':<10}{'n':>6}{'quote':>9}{'settled':>9}"
+              f"{'edge':>9}{'cost':>9}{'net':>9}")
+        for key, _lo, _hi in HORIZON_STRATA:
+            m = cd["strata"].get(key)
+            if not m:
+                continue
+            print(f"    {key:<10}{m['n']:>6}{m['quote']:>9.4f}"
+                  f"{m['realised']:>9.4f}{m['edge']:>9.4f}"
+                  f"{m['cost']['total']:>9.4f}{m['net_point']:>+9.4f}")
 
     ok, why = is_edge_proven(rows)
     print(f"\n  VERDICT: {'PROVEN' if ok else 'NOT PROVEN'}")

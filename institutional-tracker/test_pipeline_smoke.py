@@ -8987,6 +8987,346 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         self.assertEqual(1, detail["buckets_inside_ci"] + detail["buckets_outside_ci"])
 
 
+class TestTheEdgeMustClearTheToll(unittest.TestCase):
+    """A mispricing smaller than the spread you cross to reach it is not an edge.
+
+    `is_premise_alive` asks whether the quote is a probability. `is_edge_proven`
+    asks whether OUR estimate beats it, and answers BLOCKED: go build a
+    calibrated estimator. Neither of them, for the sector's whole life, ever
+    compared what a PERFECT forecaster could win against what the trade costs.
+
+    Measured on the live VM ledger 2026-08-26, n=1,920 current-regime settled
+    rows: the market misprices by 1.73c/contract and the CHEAPEST execution that
+    exists costs 1.92c. Both gates were sending the firm to build a forecaster
+    aimed at a target below the toll — and the answer needed no forecaster, only
+    rows already on file.
+
+    1.84c of that 1.92c is spread and 0.08c is fee, which changes what the
+    finding even is: a liquidity problem, not a fee problem, and the only lever
+    that moves it is a deeper book.
+
+    Fixtures are synthetic throughout. The ledger is host-local and unsynced
+    ([[host_divergence_is_a_bug_class]]), so a test that read it would be asking
+    which host it ran on.
+    """
+
+    def setUp(self):
+        import kalshi_calibration as cal
+        import kalshi_client as kcl
+        self.cal, self.kcl = cal, kcl
+
+    def _rows(self, n, quote, hits, spread=0.02, days=3.0):
+        """Settled current-regime rows at one quote, `hits` of them YES."""
+        return [{"selection_rule": self.cal.SELECTION_RULE, "settled": True,
+                 "outcome": 1 if i < hits else 0, "market_price": quote,
+                 "p_hat": None, "days_to_close": days, "spread": spread}
+                for i in range(n)]
+
+    # --------------------------------------------- one interval, one formula --
+
+    def test_the_two_intervals_are_the_same_interval(self):
+        """`is_premise_alive` computed Wilson inline and `edge_versus_cost` needs
+        the identical interval on the identical rows. Two arithmetically-equal
+        transcriptions of one formula agree until somebody tunes one of them,
+        and then two functions publish different confidence intervals about the
+        same 1,920 rows and neither is obviously wrong — [[both-sides-of-a-
+        comparison]]. This pins that the extraction did not change the number
+        and that only one copy survives."""
+        rows = self._rows(400, 0.96, 384)
+        _, _, pd = self.cal.is_premise_alive(rows)
+        _, _, cd = self.cal.edge_versus_cost(rows)
+        self.assertAlmostEqual(pd["ci_low"], cd["aggregate"]["ci_low"], places=4)
+        self.assertAlmostEqual(pd["ci_high"], cd["aggregate"]["ci_high"], places=4)
+        lo, hi = self.cal.wilson(384, 400)
+        self.assertAlmostEqual(pd["ci_low"], round(lo, 4), places=4)
+        self.assertAlmostEqual(pd["ci_high"], round(hi, 4), places=4)
+
+    def test_an_empty_sample_gets_the_whole_unit_interval(self):
+        """n=0 must say "this sample knows nothing", and (0,1) is the only value
+        that cannot be mistaken for evidence. A (0,0) or a ZeroDivisionError
+        would both end up read as a bound."""
+        self.assertEqual((0.0, 1.0), self.cal.wilson(0, 0))
+        self.assertEqual((0.0, 1.0), self.cal.wilson(5, 0))
+
+    # ----------------------------------------------------- the three verdicts --
+
+    def test_an_edge_below_cost_with_an_interval_above_it_is_marginal(self):
+        """THE production shape, and the one an overclaim would destroy. The
+        point estimate is a loss and the top of the interval is a gain, so
+        "no estimator can ever pay" is not what the data says — however much the
+        point estimate looks like it ([[verdict-wider-than-its-sample]])."""
+        rows = self._rows(400, 0.95, 374, spread=0.037)      # ~1.5c edge, 1.9c cost
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual(self.cal.MARGINAL, verdict, why)
+        agg = detail["aggregate"]
+        self.assertLess(agg["net_point"], 0, "fixture must lose at the point est")
+        self.assertGreater(agg["net_best_case"], 0, "fixture must win at the top")
+        self.assertIn("MARGINAL", why)
+
+    def test_an_interval_entirely_below_cost_is_unharvestable(self):
+        """The close-the-sector finding: no estimator can clear it, because the
+        most favourable reading the data supports is still below the toll. This
+        verdict must be reachable — a scale with only one usable end is not a
+        scale."""
+        rows = self._rows(4000, 0.95, 3798, spread=0.10)     # tiny edge, 5c cost
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual(self.cal.UNHARVESTABLE, verdict, why)
+        self.assertLessEqual(detail["aggregate"]["edge_high"],
+                             detail["aggregate"]["cost"]["total"])
+        self.assertIn("the missing piece is not a forecast", why)
+
+    def test_an_interval_entirely_above_cost_is_harvestable(self):
+        """And the other end. A gate that can only ever say no is not measuring
+        anything."""
+        rows = self._rows(2000, 0.95, 1500, spread=0.01)     # 20c edge, 0.6c cost
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual(self.cal.HARVESTABLE, verdict, why)
+        self.assertGreater(detail["aggregate"]["edge_low"],
+                           detail["aggregate"]["cost"]["total"])
+
+    def test_a_mean_that_clears_cost_is_not_harvestable_on_its_own(self):
+        """THE expensive direction, and the mutation-testing survivor that found
+        this gap. UNHARVESTABLE and MARGINAL overclaim into an unbuilt estimator;
+        HARVESTABLE overclaims into real money — so it is the one verdict that
+        must be proved on the LOWER bound and never on the mean.
+
+        Here the mispricing averages 1.0c against a 0.58c toll, which reads like
+        a trade, while the interval STRADDLES the quote: the edge is not
+        distinguishable from zero at all. [[verdict-wider-than-its-sample]] —
+        put the evidentiary bar on the expensive direction, not on the
+        confident-looking one."""
+        rows = self._rows(400, 0.95, 376, spread=0.01)
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        agg = detail["aggregate"]
+        self.assertGreater(agg["edge"], agg["cost"]["total"],
+                           "fixture must look profitable on the mean")
+        self.assertEqual(0.0, agg["edge_low"], "fixture must straddle the quote")
+        self.assertEqual(self.cal.MARGINAL, verdict, why)
+
+    def test_a_real_edge_whose_lower_bound_sits_under_cost_is_marginal(self):
+        """The same rule where the edge IS distinguishable from zero — 3.0c on a
+        quote that sits outside its own interval — but the near end of that
+        interval is 0.72c against a 0.98c toll. A real mispricing whose worst
+        supported reading does not pay is still not a green light."""
+        rows = self._rows(400, 0.95, 368, spread=0.018)
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        agg = detail["aggregate"]
+        self.assertGreater(agg["edge_low"], 0, "fixture must NOT straddle")
+        self.assertLess(agg["edge_low"], agg["cost"]["total"])
+        self.assertGreater(agg["edge"], agg["cost"]["total"])
+        self.assertEqual(self.cal.MARGINAL, verdict, why)
+
+    def test_a_thin_sample_refuses_rather_than_guesses(self):
+        """Under the sample floor there is no interval tight enough to compare
+        against a ~2c cost, and the refusal must name its own denominator."""
+        rows = self._rows(20, 0.95, 19)
+        verdict, why, _ = self.cal.edge_versus_cost(rows)
+        self.assertEqual(self.cal.UNDECIDED, verdict)
+        self.assertIn(f"20/{self.cal.MIN_SETTLED_FOR_VERDICT}", why)
+
+    # ------------------------------------------------ what the sample may be --
+
+    def test_a_row_with_no_recorded_spread_cannot_be_priced(self):
+        """A missing spread is not a zero spread. Defaulting it would manufacture
+        a free trade out of an unmeasured one and hand back HARVESTABLE —
+        [[fallback-that-means-act]]: the constant a degraded read substitutes IS
+        the decision."""
+        rows = self._rows(400, 0.95, 300)
+        for r in rows:
+            r.pop("spread")
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual(self.cal.UNDECIDED, verdict,
+                         "rows with no spread must not reach a verdict")
+        self.assertEqual(0, detail["settled"])
+
+    def test_rows_from_the_retired_rule_cannot_supply_the_denominator(self):
+        """The `tradeable()` cohort quoted 97.7% and settled 45.8%. Pooling it
+        here would manufacture a 50-point edge out of a rule the scanner no
+        longer applies — [[sample-outlived-its-rule]]."""
+        rows = (self._rows(400, 0.95, 374, spread=0.037)
+                + [dict(r, selection_rule="retired-rule")
+                   for r in self._rows(600, 0.977, 275)])
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual(400, detail["settled"],
+                         "the retired cohort must not be counted")
+        self.assertEqual(self.cal.MARGINAL, verdict, why)
+
+    def test_a_straddling_interval_reports_zero_edge_not_the_nearer_bound(self):
+        """When the interval contains the quote the mispricing could genuinely
+        be zero. Reporting the distance to the nearer bound would be a positive
+        lower bound on an edge that is not distinguishable from zero — a floor
+        invented by taking the smaller of two errors."""
+        rows = self._rows(400, 0.96, 384)                    # quote == realised
+        _, _, detail = self.cal.edge_versus_cost(rows)
+        agg = detail["aggregate"]
+        self.assertLessEqual(agg["ci_low"], agg["quote"])
+        self.assertGreaterEqual(agg["ci_high"], agg["quote"])
+        self.assertEqual(0.0, agg["edge_low"])
+
+    # ----------------------------------------------------- the cost itself --
+
+    def test_the_two_execution_regimes_are_never_mixed(self):
+        """Resting and crossing are ONE choice. A resting order pays half the
+        spread AND the maker rate; a crossing order pays the whole spread AND
+        the taker rate. The first draft charged the maker's half-spread with the
+        taker's fee — 4x the fee that belongs beside that spread — and called
+        the result optimistic. It was mixed, which is [[both-sides-of-a-
+        comparison]] priced in dollars: each half right, the comparison
+        meaningless."""
+        cost = self.cal._cost_per_contract(0.95, 0.04)
+        self.assertAlmostEqual(0.02, cost["maker"]["spread"], places=5)
+        self.assertAlmostEqual(0.04, cost["taker"]["spread"], places=5)
+        self.assertAlmostEqual(self.kcl.MAKER_FEE_RATE * 0.95 * 0.05,
+                               cost["maker"]["fee"], places=5)
+        self.assertAlmostEqual(self.kcl.TAKER_FEE_RATE * 0.95 * 0.05,
+                               cost["taker"]["fee"], places=5)
+        self.assertGreater(cost["taker"]["total"], cost["maker"]["total"])
+
+    def test_the_verdict_is_computed_against_the_cheapest_execution(self):
+        """This function bounds a NEGATIVE claim, so it must prove it against the
+        cheapest cost that exists — a "does not clear" proved against an
+        expensive cost proves nothing. `total` is therefore the maker leg, so no
+        caller has to remember to pick it."""
+        cost = self.cal._cost_per_contract(0.95, 0.04)
+        self.assertEqual(cost["maker"]["total"], cost["total"])
+        self.assertEqual(cost["maker"]["spread"], cost["spread"])
+        self.assertEqual(cost["maker"]["fee"], cost["fee"])
+
+    def test_the_fee_is_unrounded_not_the_per_order_ceiling(self):
+        """`kalshi_client.fee_cents` rounds UP to a whole cent per order, so a
+        1-contract order at 95c pays 1c where the rate implies far less. The
+        un-rounded rate is the large-order limit — again the generous reading,
+        and again in the direction that makes a negative finding strong."""
+        cost = self.cal._cost_per_contract(0.95, 0.04)
+        self.assertLess(cost["taker"]["fee"] * 100,
+                        self.kcl.fee_cents(0.95, 1),
+                        "the per-order ceiling must be strictly worse than the "
+                        "rate this uses, or the generosity claim is false")
+
+    def test_the_binding_cost_is_named(self):
+        """Which term binds decides what you would DO: a spread-bound sector is
+        a liquidity problem (rest, or find a deeper book), a fee-bound one is a
+        size problem. One total would be an aggregate nobody can act on."""
+        rows = self._rows(400, 0.95, 374, spread=0.037)
+        _, why, _ = self.cal.edge_versus_cost(rows)
+        self.assertIn("binding cost", why)
+        self.assertIn("The spread is the binding cost", why)
+
+    def test_the_cost_of_crossing_is_stated_beside_the_bound(self):
+        """The bound assumes every order rests and fills at the mid, in a book
+        that 94.4% of this exchange does not have. The gap between resting and
+        crossing must be visible in the sentence, not assumed away."""
+        rows = self._rows(400, 0.95, 374, spread=0.037)
+        _, why, _ = self.cal.edge_versus_cost(rows)
+        self.assertIn("CROSSING instead costs", why)
+        self.assertIn("no verdict here is computed against that", why)
+
+    # ------------------------------------------- the aggregate's blind spot --
+
+    def test_a_profitable_stratum_inside_a_losing_aggregate_is_named(self):
+        """An aggregate that says "does not pay" can conceal a band that does.
+        Production 2026-08-26: the aggregate nets -0.19c while 7-30d nets
+        +1.53c on n=68. The mean is the one number that cannot say so."""
+        rows = (self._rows(400, 0.95, 374, spread=0.037, days=3.0)
+                + self._rows(80, 0.95, 79, spread=0.02, days=14.0))
+        verdict, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual(self.cal.MARGINAL, verdict, why)
+        self.assertGreater(detail["strata"]["7-30d"]["net_point"], 0,
+                           "fixture no longer isolates the case")
+        self.assertIn("NOT UNIFORM ACROSS HORIZONS", why)
+        self.assertIn("7-30d nets", why)
+
+    def test_a_thin_stratum_is_not_reported_as_a_band_that_pays(self):
+        """30-90d nets +31.81c/contract on FIVE rows. Naming it without naming
+        the denominator is how a reader sizes off noise — a HOLDS on a tiny n is
+        not a HOLDS."""
+        rows = (self._rows(400, 0.95, 374, spread=0.037, days=3.0)
+                + self._rows(5, 0.95, 3, spread=0.02, days=45.0))
+        _, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertGreater(detail["strata"]["30-90d"]["net_point"], 0,
+                           "fixture no longer isolates the case")
+        self.assertIn(f"below the {self.cal.MIN_SETTLED_PER_HORIZON}-row bar", why)
+        self.assertIn("noise, not a band that pays", why)
+
+    def test_a_straddling_stratum_is_flagged_as_indistinguishable_from_zero(self):
+        """A stratum can clear the row bar and still have an interval that
+        contains the quote. Its positive net is a point estimate with no lower
+        bound, and the sentence must say which of the three things it is."""
+        rows = (self._rows(400, 0.95, 374, spread=0.037, days=3.0)
+                + self._rows(60, 0.95, 59, spread=0.02, days=14.0))
+        _, why, detail = self.cal.edge_versus_cost(rows)
+        st = detail["strata"]["7-30d"]
+        self.assertGreater(st["net_point"], 0)
+        self.assertEqual(0.0, st["edge_low"], "fixture must straddle")
+        self.assertIn("STRADDLES the quote", why)
+
+    # -------------------------------------------------- it reaches a reader --
+
+    def test_every_premise_verdict_carries_the_toll(self):
+        """DEAD says don't build an estimator, ALIVE says one is worth building,
+        and CANNOT_TELL says wait — all three are read as instructions about a
+        build. The expensive mistake is an ALIVE that sends someone after a 1.7c
+        edge behind a 1.9c toll, and that is the reading that would never think
+        to look."""
+        cases = {
+            self.cal.ALIVE: self._rows(400, 0.96, 384, spread=0.037),
+            self.cal.DEAD: (self._rows(300, 0.99, 264, spread=0.037)
+                            + self._rows(200, 0.96, 192, spread=0.037)),
+        }
+        for expected, rows in cases.items():
+            verdict, why, detail = self.cal.is_premise_alive(rows)
+            self.assertEqual(expected, verdict, "fixture drifted")
+            self.assertIn("COST:", why, f"{expected} lost the toll")
+            self.assertIn("cost_verdict", detail)
+
+    def test_the_blocked_edge_verdict_names_the_bar_it_would_have_to_clear(self):
+        """"Go build an estimator" is an instruction with a price tag, and this
+        is the only place the firm ever hears it. Sending it without the number
+        the estimator must beat is how a large build gets authorised against a
+        target nobody measured."""
+        rows = self._rows(400, 0.95, 374, spread=0.037)
+        ok, why = self.cal.is_edge_proven(rows)
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertIn("THE BAR IT WOULD HAVE TO CLEAR", why)
+        self.assertIn("PERFECT forecaster", why)
+        self.assertNotIn("NOT YET", why,
+                         "a permanent blocker must not borrow a temporary one's "
+                         "wording, however much text is appended to it")
+
+    def test_the_bar_never_suppresses_the_blocker(self):
+        """The blocker is the finding; the bar is context. If pricing the toll
+        raises, the verdict must still be BLOCKED — a control that goes silent
+        when its decoration breaks is worse than one without the decoration."""
+        rows = self._rows(400, 0.95, 374, spread=0.037)
+        real = self.cal.edge_versus_cost
+        try:
+            self.cal.edge_versus_cost = lambda *a, **k: 1 / 0
+            ok, why = self.cal.is_edge_proven(rows)
+        finally:
+            self.cal.edge_versus_cost = real
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED, NOT WAITING", why)
+
+    def test_a_cost_flip_alone_changes_the_email_signature(self):
+        """The toll moves independently of the other two verdicts: the premise
+        can stay put while the spread narrows enough to turn UNHARVESTABLE into
+        MARGINAL. If the signature ignored it, "this sector might now pay for
+        itself" would wait up to VERDICT_HEARTBEAT_DAYS and then arrive inside a
+        routine heartbeat."""
+        tree = ast.parse(Path(self.cal.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "email_verdict")
+        sig = [n for n in ast.walk(fn)
+               if isinstance(n, ast.Assign)
+               and any(getattr(t, "id", None) == "signature" for t in n.targets)]
+        self.assertEqual(1, len(sig), "one signature assignment expected")
+        names = {n.id for n in ast.walk(sig[0].value) if isinstance(n, ast.Name)}
+        self.assertIn("cost_verdict", names,
+                      "the cost verdict must be part of the dedupe signature or "
+                      "a flip in it cannot trigger an email")
+
+
 class TestFixedIncomeHasOnePath(unittest.TestCase):
     """Decision #79: fi_pipeline is the FI path; research_team does not duplicate it.
 
