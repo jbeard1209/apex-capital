@@ -404,6 +404,47 @@ def buffer_email(subject: str, html_body: str, sender_name: str = "",
     freshest. The key is for the producer that knows its subject does not
     identify it.
     """
+    # ── transposed-argument guard ────────────────────────────────────────────
+    # The signature is (subject, html_body, sender_name) and on 2026-08-27
+    # wakeup_recovery.py called buffer_email("wakeup_recovery", subject, body).
+    # Nothing raised: three strings went into three string parameters, one place
+    # to the left. Jack received mail with the subject "wakeup_recovery", a body
+    # consisting solely of the real subject line, and the entire recovery report
+    # — which jobs re-ran, which were already fresh — stuffed into sender_name,
+    # where the digest prints it as the agent's name. The one email whose whole
+    # job is to say what broke and whether it came back could not say it, and
+    # since sender_name also selects the IRM reviewer, a multi-line report was
+    # being used as a dispatch key.
+    #
+    # Static typing cannot see this and neither can a test of the call sites:
+    # all 18 in the firm are individually well-formed, and the 6 positional ones
+    # are correct. But the arguments are not interchangeable in SHAPE. Across
+    # every sender_name literal in the firm the longest is 19 characters
+    # ("ML Improvement Loop"), the wordiest is 3 words, and not one contains a
+    # newline — because it is an identifier. A document in that slot is a
+    # transposition, always.
+    #
+    # This logs and stamps rather than raising. A mangled email is bad; a
+    # pipeline that dies at 06:10 because its status mail was malformed is
+    # worse, and dropping the mail would destroy the very evidence of the bug.
+    _arg_order_suspect = bool(sender_name) and (
+        "\n" in sender_name or len(sender_name) > 64
+    )
+    if _arg_order_suspect:
+        logger.error(
+            "  [EmailBuffer] ARGUMENT ORDER SUSPECT — sender_name is %d chars"
+            "%s, but every legitimate sender in this firm is a short identifier"
+            " (longest: 19 chars, no newlines). This is the signature of a"
+            " positional call written as (sender, subject, body) against"
+            " (subject, html_body, sender_name). Subject was: %r",
+            len(sender_name), " and contains a newline" if "\n" in sender_name else "",
+            subject[:80],
+        )
+
+    # Deliberately AFTER the guard above: this path returns early, so a
+    # transposed call that happened to look urgent would otherwise skip the
+    # check entirely — and _is_urgent reads BOTH subject and sender_name, so it
+    # is itself being fed the wrong two strings in exactly that case.
     if _is_urgent(subject, sender_name):
         # Urgent — send immediately, don't buffer
         logger.info(f"  [EmailBuffer] URGENT — sending immediately: {subject[:60]}")
@@ -417,6 +458,7 @@ def buffer_email(subject: str, html_body: str, sender_name: str = "",
         "key_metrics": key_metrics or {},
         "dedup_key":   dedup_key or "",
         "buffered_at": datetime.now().isoformat(),
+        **({"arg_order_suspect": True} if _arg_order_suspect else {}),
     })
     _save_buffer(buffer)
     logger.info(f"  [EmailBuffer] Buffered: {subject[:60]} ({len(buffer)} in queue)")

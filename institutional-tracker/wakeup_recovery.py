@@ -31,6 +31,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import logging
 import os
@@ -450,7 +451,28 @@ def _send_recovery_email(ran: list[str], skipped: list[str], failed: list[str]) 
 
         body = "\n".join(body_lines)
         subject = f"[Auto-Recovery] Apex Capital Pipeline Restored | {date_str}"
-        buffer_email("wakeup_recovery", subject, body)
+        # Keyword args, deliberately. The signature is
+        # buffer_email(subject, html_body, sender_name) and this call used to be
+        # the firm's only positional one: buffer_email("wakeup_recovery", subject,
+        # body). Every argument landed one place to the left, so the mail Jack
+        # actually received on 2026-08-27 06:10 ET had the subject
+        # "wakeup_recovery", a body consisting of nothing but the real subject
+        # line, and the entire recovery report — which jobs were re-run, which
+        # were already fresh — stuffed into sender_name, where the digest prints
+        # it as the agent's name. The one email whose whole job is to say what
+        # broke and whether it came back was the one that could not say it.
+        # sender_name also picks the IRM reviewer, so a multi-line report was
+        # being used as a dispatch key.
+        #
+        # <pre> because body_lines is plain text: the digest interpolates
+        # html_body raw, so newlines would otherwise collapse into one line.
+        buffer_email(
+            subject=subject,
+            html_body=("<pre style='font:12px/1.5 ui-monospace,SFMono-Regular,"
+                       "Menlo,monospace;color:#e6edf3;white-space:pre-wrap;"
+                       f"margin:0;'>{html.escape(body)}</pre>"),
+            sender_name="wakeup_recovery",
+        )
         logger.info(f"[Recovery] Recovery email buffered: {subject}")
     except Exception as e:
         logger.warning(f"[Recovery] Could not send recovery email: {e}")

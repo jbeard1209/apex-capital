@@ -25525,6 +25525,387 @@ class TestAReaderTakesOnlyKeysItsProducerWrites(unittest.TestCase):
                              "the branch still fires with %r — it is not "
                              "discriminating: %s" % (change, cond))
 
+class TestAReviewerWithNoCallerIsNotAControl(unittest.TestCase):
+    """A control that cannot be reached, crashes unseen, or reports agreement
+    it never checked. Three ways the IRM's proactive audits were decorative.
+
+    THE ESCAPE (2026-08-27). Jack got an email saying the pipeline was down.
+    It wasn't — `wakeup_recovery.py` called
+    `buffer_email("wakeup_recovery", subject, body)` against the signature
+    `(subject, html_body, sender_name)`. Three strings, three string
+    parameters, every one shifted a place left. The mail arrived with the
+    subject "wakeup_recovery", a body containing only the real subject line,
+    and the whole recovery report — 1 job re-run, 10 already fresh, 0 failed —
+    stranded in `sender_name`. Nothing raised. The one email whose entire job
+    is to say whether the firm came back could not say it.
+
+    Pulling that thread found the same shape three more times in the IRM:
+
+      1. `_review_pdo` was unreachable. Reviewers are dispatched on the
+         `sender_name` of an outgoing email, and the PDO sends none — it writes
+         capital_efficiency_report.json six times a day and stops. So a
+         reviewer existed for a producer that never speaks, and
+         `creative_agent.metrics_for_pdo`, which builds its input, had zero
+         callers on either host.
+      2. `_review_cit` WAS reached — daily, from run_irm_daily — and raised
+         TypeError on its first statement (`len()` of an int; cit_director
+         writes `board_proposals` as a COUNT). The handler was `logger.debug`
+         while the module configures INFO, so it emitted nothing at all. A
+         broken control and a quiet one were indistinguishable for its whole
+         life.
+      3. The audits' verdicts were never persisted: irm_daily_check.json is
+         written ~80 lines BEFORE the audit block, so the CIT audit reached the
+         Chairman's email and no programmatic reader of the file it appeared to
+         belong to.
+
+    AST-based, never grep: this file and irm_review_agent.py both contain
+    postmortem prose naming `logger.debug`, `_review_pdo` and `buffer_email`,
+    so a text search would match the explanation and miss the code.
+    """
+
+    DISPATCH = "_dispatch_review_inner"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.here = Path(__file__).resolve().parent
+        cls.tree = ast.parse((cls.here / "irm_review_agent.py").read_text())
+        cls.fns = {n.name: n for n in ast.walk(cls.tree)
+                   if isinstance(n, ast.FunctionDef)}
+
+    # ── 1. reachability ─────────────────────────────────────────────────────
+    def _dispatch_aliases(self):
+        """reviewer -> the sender_name strings that route to it."""
+        aliases = {}
+        fn = self.fns.get(self.DISPATCH)
+        self.assertIsNotNone(fn, "the IRM dispatch function was renamed")
+        for node in ast.walk(fn):
+            if (isinstance(node, ast.If) and isinstance(node.test, ast.Compare)
+                    and node.test.ops and isinstance(node.test.ops[0], ast.In)):
+                names = [e.value for e in getattr(node.test.comparators[0], "elts", [])
+                         if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+                for stmt in node.body:
+                    for c in ast.walk(stmt):
+                        if (isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+                                and c.func.id.startswith("_review_")):
+                            aliases.setdefault(c.func.id, []).extend(names)
+        return aliases
+
+    def _direct_callers(self):
+        """Reviewers called from somewhere OTHER than the dispatch table.
+
+        Excluding the dispatch function matters: counting its own calls made
+        all ten reviewers look reachable, which is the vacuous version of this
+        test and the first answer the sweep gave.
+        """
+        out = set()
+        for name, fn in self.fns.items():
+            if name == self.DISPATCH:
+                continue
+            for n in ast.walk(fn):
+                if (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                        and n.func.id.startswith("_review_")):
+                    out.add(n.func.id)
+        return out
+
+    def _emitted_sender_names(self):
+        """Every `sender_name="..."` literal any module in the firm passes."""
+        emitted = set()
+        for p in sorted(self.here.glob("*.py")):
+            try:
+                t = ast.parse(p.read_text())
+            except Exception:
+                continue
+            for n in ast.walk(t):
+                if isinstance(n, ast.Call):
+                    for kw in n.keywords:
+                        if (kw.arg == "sender_name" and isinstance(kw.value, ast.Constant)
+                                and isinstance(kw.value.value, str)):
+                            emitted.add(kw.value.value)
+        return emitted
+
+    def test_every_specialised_reviewer_is_reachable(self):
+        reviewers = {n for n in self.fns if n.startswith("_review_")}
+        self.assertGreaterEqual(len(reviewers), 8,
+                                "reviewer sweep found almost nothing — it is not resolving")
+        aliases = self._dispatch_aliases()
+        direct  = self._direct_callers()
+        emitted = self._emitted_sender_names()
+        self.assertGreater(len(emitted), 10,
+                           "sender_name sweep found almost nothing — it is not resolving")
+
+        unreachable = []
+        for r in sorted(reviewers):
+            if r == "_review_generic":
+                continue          # the else-branch fallback; reached by definition
+            if r in direct:
+                continue          # called outright, e.g. the proactive daily audits
+            if any(a in emitted for a in aliases.get(r, [])):
+                continue          # some producer really does send under that name
+            unreachable.append("%s (aliases: %s)" % (r, ",".join(aliases.get(r, [])) or "none"))
+
+        self.assertEqual([], unreachable,
+                         "IRM reviewer(s) that nothing can ever call — a reviewer for a "
+                         "producer that never speaks is not a control, it is dead code "
+                         "that reads as coverage:\n  " + "\n  ".join(unreachable))
+
+    def test_the_reachability_sweep_can_actually_fail(self):
+        """The check above is worthless if it cannot detect a dead reviewer."""
+        emitted = self._emitted_sender_names()
+        ghost_aliases = ["nobody_sends_this_name_xyz"]
+        self.assertFalse(any(a in emitted for a in ghost_aliases),
+                         "the negative control's alias is actually emitted — pick another")
+        # And the real table must not be empty, or the loop above skips everything.
+        self.assertTrue(self._dispatch_aliases(),
+                        "no dispatch aliases resolved — the reachability test is vacuous")
+
+    # ── 2. a failed reviewer must leave a trace ─────────────────────────────
+    def _proactive_tries(self):
+        """The *innermost* try guarding each proactive `_review_*` call.
+
+        Every enclosing Try would also match — including the one wrapping the
+        whole of run_irm_daily, whose handler is a general fallback and
+        legitimately does not record per-reviewer state. Asserting against that
+        one is the over-broad version of this test; it fails on correct code,
+        which is worse than not testing at all.
+        """
+        fn = self.fns.get("run_irm_daily")
+        self.assertIsNotNone(fn, "run_irm_daily was renamed")
+
+        parent = {}
+        for node in ast.walk(fn):
+            for child in ast.iter_child_nodes(node):
+                parent[child] = node
+
+        out = {}
+        for c in ast.walk(fn):
+            if not (isinstance(c, ast.Call) and isinstance(c.func, ast.Name)
+                    and c.func.id.startswith("_review_")):
+                continue
+            # Climb to the nearest Try that has this call in its `body`, not in
+            # one of its handlers.
+            node, prev = parent.get(c), c
+            while node is not None:
+                if isinstance(node, ast.Try) and any(
+                        prev is s or prev in set(ast.walk(s)) for s in node.body):
+                    out.setdefault(id(node), (node, set()))[1].add(c.func.id)
+                    break
+                node, prev = parent.get(node), node
+        return list(out.values())
+
+    def test_a_failed_proactive_audit_is_not_swallowed_at_debug(self):
+        offenders = []
+        for node, calls in self._proactive_tries():
+            for h in node.handlers:
+                levels = {c.func.attr for c in ast.walk(h)
+                          if isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                          and isinstance(c.func.value, ast.Name) and c.func.value.id == "logger"}
+                if levels and levels <= {"debug"}:
+                    offenders.append("%s at line %d only logger.debug()s"
+                                     % (",".join(sorted(calls)), h.lineno))
+        self.assertEqual([], offenders,
+                         "a proactive reviewer's failure handler logs only at DEBUG while "
+                         "the module configures INFO, so a control that crashes every day "
+                         "produces no output whatsoever:\n  " + "\n  ".join(offenders))
+
+    def test_a_failed_proactive_audit_is_recorded_on_disk(self):
+        """An absent log line is not evidence. The failure must become a fact."""
+        tries = self._proactive_tries()
+        self.assertTrue(tries, "no proactive reviewer is wrapped in a try at all")
+        for node, calls in tries:
+            for h in node.handlers:
+                touches = any(isinstance(s, ast.Subscript) and isinstance(s.value, ast.Name)
+                              and s.value.id == "irm_output" for s in ast.walk(h))
+                self.assertTrue(
+                    touches,
+                    "the failure handler for %s logs but never writes to irm_output, so "
+                    "nothing downstream — and no future audit — can tell a broken control "
+                    "from a quiet one" % ",".join(sorted(calls)))
+
+    # ── 3. the audits must reach the artifact, not just the email ───────────
+    def test_the_audit_artifact_is_written_after_the_audits_run(self):
+        """irm_daily_check.json had exactly one write, ~80 lines too early.
+
+        Six modules read that file (board_meeting, hr_agent, fi_executor,
+        logic_team, morning_briefing, freshness_sentinel). None could see the
+        CIT audit's verdict: it did not exist yet when the file was written.
+        """
+        fn = self.fns["run_irm_daily"]
+        review_lines = [n.lineno for n in ast.walk(fn)
+                        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                        and n.func.id.startswith("_review_")]
+        self.assertTrue(review_lines, "no proactive reviewer is called at all")
+
+        # A write is either a literal open(...,'w') on the path or a call to a
+        # persist helper — resolve both rather than betting on one spelling.
+        write_lines = []
+        for n in ast.walk(fn):
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name):
+                if n.func.id == "open" and any(
+                        isinstance(a, ast.Constant) and "irm_daily_check" in str(a.value)
+                        for a in n.args):
+                    write_lines.append(n.lineno)
+                elif "persist" in n.func.id:
+                    write_lines.append(n.lineno)
+        self.assertTrue(write_lines, "run_irm_daily no longer writes irm_daily_check.json")
+        self.assertGreater(
+            max(write_lines), max(review_lines),
+            "every write of irm_daily_check.json happens BEFORE the last proactive audit, "
+            "so the audit's verdict is emailed and then dropped — invisible to every "
+            "programmatic reader of the file it appears to be part of")
+
+    def test_the_audit_section_renders_its_omissions(self):
+        """An omission is what a control says when it could NOT check.
+
+        The renderer loaded `omissions`, counted them toward "is there anything
+        to say", then never emitted them — so a review whose only output was an
+        omission produced a header and nothing under it. The severest thing a
+        reviewer can say, rendered as silence.
+        """
+        import irm_review_agent as I
+        html = I._build_cit_audit_html({"verdict": "v",
+                                        "omissions": ["UNIQUE_OMISSION_MARKER_9f2a"]})
+        self.assertIn("UNIQUE_OMISSION_MARKER_9f2a", html,
+                      "an audit's omissions are collected but never rendered")
+
+    # ── 4. a cross-check that did not happen is not agreement ───────────────
+    def test_review_pdo_does_not_report_agreement_it_never_checked(self):
+        import irm_review_agent as I
+        ctx = {"risk_assessment": {"risk_level": "MODERATE"},
+               "account": {"cash": 1000, "portfolio_value": 10000}}
+
+        blind = I._review_pdo("t", {}, ctx)          # unreadable report
+        self.assertTrue(blind["omissions"],
+                        "an unreadable PDO report produced no omission — the reviewer "
+                        "silently skipped every branch and reported nothing wrong")
+        joined = " ".join(blind["findings"] + [blind["verdict"]]).lower()
+        self.assertNotIn("aligned", joined,
+                         "the PDO reviewer reports the signals are ALIGNED when it could "
+                         "not read the signal at all — the substituted default is itself "
+                         "a verdict (`fallback-that-means-act`)")
+        self.assertNotEqual("HIGH", blind["confidence"],
+                            "HIGH confidence in a cross-check that never ran")
+
+        stale = I._review_pdo("t", {"PDO Signal": "NEAR_OPTIMAL",
+                                    "Report Age Hours": 500.0}, ctx)
+        self.assertTrue(stale["omissions"],
+                        "a 500h-old deployment signal was cross-checked against today's "
+                        "risk level with no caveat")
+
+        fresh = I._review_pdo("t", {"PDO Signal": "NEAR_OPTIMAL",
+                                    "Report Age Hours": 2.0}, ctx)
+        self.assertEqual([], fresh["omissions"],
+                         "a fresh, consistent PDO signal must NOT raise an omission — an "
+                         "alarm that is always on is an alarm nobody reads")
+        self.assertTrue(fresh["commendations"])
+
+    def test_review_cit_survives_both_artifact_shapes(self):
+        """cit_backlog/pending/sensitive are top-level LISTS on both hosts.
+
+        Three sites called .get() straight on them (AttributeError on a list),
+        and cit_evening_report writes `board_proposals` as an int, so len() blew
+        up on the first statement. Both shapes must work.
+        """
+        import irm_review_agent as I
+        ctx = {"risk_assessment": {"risk_level": "MODERATE"}, "account": {}}
+        rows = [{"title": "t%d" % i, "confidence": 90, "description": "d"}
+                for i in range(5)]
+
+        shapes = {
+            "list-shaped (production, both hosts)": {
+                "cit_evening_report.json":    {"board_proposals": 14, "backlog": 122,
+                                               "proposals": rows},
+                "cit_pending_proposals.json": rows,
+                "cit_backlog.json":           rows,
+                "cit_sensitive.json":         rows,
+            },
+            "dict-wrapped (the shape the code assumed)": {
+                "cit_evening_report.json":    {"board_proposals": rows, "backlog": rows},
+                "cit_pending_proposals.json": {"proposals": rows},
+                "cit_backlog.json":           {"items": rows},
+                "cit_sensitive.json":         {"items": rows},
+            },
+            "null confidence (207 of 500 real rows)": {
+                "cit_evening_report.json":    {"board_proposals": 1, "proposals": rows},
+                "cit_backlog.json":           [{"title": "x", "confidence": None}],
+            },
+        }
+        cwd = os.getcwd()
+        for label, artifacts in shapes.items():
+            d = tempfile.mkdtemp()
+            self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+            (Path(d) / "data").mkdir()
+            for name, doc in artifacts.items():
+                (Path(d) / "data" / name).write_text(json.dumps(doc))
+            try:
+                os.chdir(d)
+                out = I._review_cit("t", {}, ctx)
+            except Exception as e:
+                self.fail("_review_cit raised %s on %s — this is the crash that ran daily "
+                          "and was logged at DEBUG: %s" % (type(e).__name__, label, e))
+            finally:
+                os.chdir(cwd)
+            self.assertTrue(out.get("findings"),
+                            "_review_cit produced no findings on %s — it returned a "
+                            "well-formed empty verdict, which reads as 'nothing wrong'"
+                            % label)
+
+    # ── 5. the transposed-argument guard at the choke point ─────────────────
+    def test_a_document_in_the_sender_slot_is_flagged(self):
+        """The original bug, replayed. Every legitimate sender_name in this firm
+        is a short identifier; a multi-line report there is a transposition."""
+        import email_buffer as EB
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        os.makedirs(os.path.join(d, "data"))
+        old = EB.BUFFER_PATH
+        EB.BUFFER_PATH = os.path.join(d, "data", "email_buffer.json")
+        self.addCleanup(lambda: setattr(EB, "BUFFER_PATH", old))
+
+        EB.buffer_email("wakeup_recovery", "Pipeline Recovery Complete",
+                        "Re-ran: main.py\nAlready fresh: 10 jobs\nFailed: 0\n" * 3)
+        EB.buffer_email(subject="Pipeline Recovery Complete",
+                        html_body="<pre>ok</pre>", sender_name="wakeup_recovery")
+
+        rows = json.loads(Path(EB.BUFFER_PATH).read_text())
+        self.assertEqual(2, len(rows), "the guard dropped mail — it must never do that")
+        self.assertTrue(rows[0].get("arg_order_suspect"),
+                        "a 147-char multi-line sender_name was accepted without comment; "
+                        "this is exactly the call that mailed Jack a mangled all-clear")
+        self.assertFalse(rows[1].get("arg_order_suspect", False),
+                         "the guard fires on a correct call — it would cry wolf daily")
+
+    def test_the_transposition_guard_runs_before_the_urgent_early_return(self):
+        """_is_urgent returns early AND reads both swapped strings, so a guard
+        placed after it cannot see the calls most likely to be wrong."""
+        fn = [n for n in ast.walk(ast.parse((self.here / "email_buffer.py").read_text()))
+              if isinstance(n, ast.FunctionDef) and n.name == "buffer_email"][0]
+        urgent = [n.lineno for n in ast.walk(fn) if isinstance(n, ast.Call)
+                  and isinstance(n.func, ast.Name) and n.func.id == "_is_urgent"]
+        guard  = [n.lineno for n in ast.walk(fn) if isinstance(n, ast.Name)
+                  and n.id == "_arg_order_suspect"]
+        self.assertTrue(urgent, "buffer_email no longer has an urgent early-return")
+        self.assertTrue(guard, "the transposed-argument guard is gone")
+        self.assertLess(min(guard), min(urgent),
+                        "the argument-order guard sits after the urgent early-return, so "
+                        "urgent mail bypasses it entirely")
+
+    def test_wakeup_recovery_reports_through_a_named_body(self):
+        """The specific call that started this, pinned at its site."""
+        tree = ast.parse((self.here / "wakeup_recovery.py").read_text())
+        calls = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
+                 and isinstance(n.func, ast.Name) and n.func.id == "buffer_email"]
+        self.assertTrue(calls, "wakeup_recovery no longer buffers its report at all — the "
+                               "pipeline's own all-clear would go nowhere")
+        for c in calls:
+            self.assertIn("html_body", {k.arg for k in c.keywords},
+                          "wakeup_recovery's buffer_email call passes its body positionally "
+                          "again; it is the one call site in the firm that got this wrong, "
+                          "and it mailed Jack a report with no report in it")
+            self.assertEqual([], c.args,
+                             "positional args reintroduced at the site of the original "
+                             "transposition")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

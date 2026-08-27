@@ -348,6 +348,81 @@ def _review_chief_of_staff(subject: str, key_metrics: dict, ctx: dict) -> dict:
     }
 
 
+def _pdo_metrics_from_artifact() -> dict:
+    """Key metrics for `_review_pdo`, read off disk instead of out of an email.
+
+    Every specialised IRM reviewer is reached one way only: an agent sends mail,
+    `email_sender` calls `trigger_irm_review(subject, sender_name, key_metrics)`,
+    and `_dispatch_review_inner` switches on the sender name. That makes an
+    agent's *email* the sole carrier of the numbers its reviewer checks.
+
+    The PDO never sends one. `capital_efficiency_agent.run_pdo()` is called from
+    `main.py` six times a day and writes `capital_efficiency_report.json`; it has
+    no `send_daily_report` and no `buffer_email` anywhere in the file. So
+    `_review_pdo` was a reviewer for a producer that never speaks, and
+    `creative_agent.metrics_for_pdo()` — the function that would have built its
+    input — had zero callers on either host.
+
+    Reading the artifact restores the cross-check and adds no email: the caller
+    folds the result into the IRM daily message that already goes out. Key names
+    come from `metrics_for_pdo` itself rather than being re-typed here, so the
+    producer-side names and `key_metrics.get("PDO Signal")` cannot drift apart —
+    which is the entire failure mode in the wiring-contract section of CLAUDE.md.
+
+    Returns {} when the report cannot be read. Not a partial dict with a
+    plausible-looking default: `_review_pdo` tests the signal against literals,
+    so a substituted value would skip every branch and still report agreement.
+    """
+    import json as _j
+    import time as _t
+    from pathlib import Path as _P
+
+    path = _P(__file__).resolve().parent / "data" / "capital_efficiency_report.json"
+    try:
+        report = _j.loads(path.read_text())
+        if not isinstance(report, dict):
+            return {}
+    except Exception:
+        return {}
+
+    deployment = report.get("deployment") or {}
+    market     = report.get("market_conditions") or {}
+    if not isinstance(deployment, dict) or not isinstance(market, dict):
+        return {}
+
+    def _num(v, default: float = 0.0) -> float:
+        """Reject NaN as well as None — NaN passes `is not None` and fails
+        every comparison after it (memory `nan-is-not-none`)."""
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return default
+        return default if f != f else f
+
+    try:
+        from creative_agent import metrics_for_pdo
+        metrics = metrics_for_pdo(
+            str(report.get("recommendation") or "UNKNOWN"),
+            _num(deployment.get("current_pct")),
+            _num(deployment.get("target_pct")),
+            str(market.get("regime") or "unknown"),
+        )
+    except Exception:
+        return {}
+
+    # Age from file mtime, not from the embedded `generated_at` string. That
+    # field is naive ISO with no offset, and the firm's standing bug here is
+    # `datetime.now() - fromisoformat(ts[:19])`, which compares a UTC stamp
+    # against local now — uniformly -4h on the Mac, and *negative* for the first
+    # four hours after a write, which is exactly the window a freshness check
+    # exists to cover. `catch_up.py` uses st_mtime for the same reason.
+    try:
+        metrics["Report Age Hours"] = round((_t.time() - path.stat().st_mtime) / 3600.0, 1)
+    except OSError:
+        pass
+    return metrics
+
+
 def _review_pdo(subject: str, key_metrics: dict, ctx: dict) -> dict:
     findings     = []
     red_flags    = []
@@ -364,7 +439,45 @@ def _review_pdo(subject: str, key_metrics: dict, ctx: dict) -> dict:
 
     pdo_signal = key_metrics.get("PDO Signal", "—")
 
-    if pdo_signal == "DEPLOY_MORE" and risk_level in ("HIGH", "CRITICAL"):
+    # "—" is the absence of a signal, not a signal. Every branch below compares
+    # `pdo_signal` against a literal, so an unreadable report matched none of
+    # them, ran no check at all, and still returned confidence=HIGH with the
+    # finding "Signals are aligned." — a verdict of agreement produced by a
+    # cross-check that never happened. Same shape as `fallback-that-means-act`:
+    # the value substituted for a failed read is itself a decision. A control
+    # that cannot tell must say "cannot tell" (`verdict-with-no-consequence`).
+    _unavailable = pdo_signal in ("—", "", "UNKNOWN", None)
+
+    # Staleness threshold single-sourced from deputy_monitor, which is in turn
+    # re-derived from the live crontabs by
+    # test_pipeline_smoke.py::TestStalenessIsPricedInFires. Hardcoding 24h here
+    # would fire every weekend: the PDO runs from main.py on weekdays, so the
+    # real observed Fri-evening→Mon-morning gap is 65.5h.
+    try:
+        from deputy_monitor import _STALE_THRESHOLDS_H as _DM_STALE
+        _stale_h = _DM_STALE.get("data/capital_efficiency_report.json", 68)
+    except Exception:
+        _stale_h = 68
+    _age_h = key_metrics.get("Report Age Hours")
+    _is_stale = isinstance(_age_h, (int, float)) and _age_h == _age_h and _age_h > _stale_h
+
+    if _unavailable:
+        omissions.append(
+            "PDO deployment signal could not be read, so no cross-check against "
+            "IRM risk was performed. capital_efficiency_report.json is missing, "
+            "unparseable, or missing its `recommendation` field. Treat the "
+            "absence of a red flag below as 'not checked', not as 'no conflict'."
+        )
+        confidence = LOW
+    elif _is_stale:
+        omissions.append(
+            f"PDO signal ({pdo_signal}) is {_age_h:.0f}h old, past the {_stale_h}h "
+            f"staleness threshold for this report. It is being cross-checked "
+            f"against today's risk level, so the comparison may be meaningless — "
+            f"the PDO may simply not have run."
+        )
+        confidence = LOW
+    elif pdo_signal == "DEPLOY_MORE" and risk_level in ("HIGH", "CRITICAL"):
         red_flags.append(
             f"PDO recommends DEPLOY_MORE but IRM rates portfolio risk as {risk_level}. "
             f"These signals conflict. Chairman should arbitrate — IRM position: "
@@ -381,14 +494,24 @@ def _review_pdo(subject: str, key_metrics: dict, ctx: dict) -> dict:
             f"PDO recommendation ({pdo_signal}) is consistent with IRM risk level ({risk_level})."
         )
 
+    if _unavailable:
+        _outcome = "Cross-check NOT performed — PDO signal unavailable."
+    elif red_flags:
+        _outcome = "Conflict detected — see red flags."
+    elif _is_stale:
+        _outcome = f"Cross-check performed against a {_age_h:.0f}h-old signal — see omissions."
+    else:
+        _outcome = "Signals are aligned."
+
     findings.append(
-        f"PDO Signal: {pdo_signal} | Cash: {cash_pct:.0f}% | Risk: {risk_level}. "
-        f"{'Signals are aligned.' if not red_flags else 'Conflict detected — see red flags.'}"
+        f"PDO Signal: {pdo_signal} | Cash: {cash_pct:.0f}% | Risk: {risk_level}. {_outcome}"
     )
 
     return {
         "confidence":    confidence,
-        "verdict":       f"PDO signal ({pdo_signal}) cross-checked vs IRM risk ({risk_level}).",
+        "verdict":       (f"PDO signal ({pdo_signal}) cross-checked vs IRM risk ({risk_level})."
+                          if not _unavailable else
+                          f"PDO signal unavailable — no cross-check against IRM risk ({risk_level})."),
         "findings":      findings,
         "red_flags":     red_flags,
         "omissions":     omissions,
@@ -670,6 +793,52 @@ def _review_cit(subject: str, key_metrics: dict, ctx: dict) -> dict:
                 pass
         return {}
 
+    def _rows(doc, *keys) -> list:
+        """Dict rows out of a CIT artifact, whether it is wrapped or bare.
+
+        cit_pending_proposals.json, cit_backlog.json and cit_sensitive.json are
+        top-level JSON *lists* on both hosts (500 / 621 / 3 rows on the Mac,
+        500 / 583 / 148 on the VM). Three sites below called `.get()` straight
+        on them, which raises AttributeError on a list. `_review_cit` has no
+        try/except of its own, so the exception unwound to
+        `trigger_irm_review`, whose `except Exception` logged one line and
+        returned False — no review email, no alarm, nothing to notice.
+        Accept either shape instead of betting on one.
+        """
+        if isinstance(doc, list):
+            return [r for r in doc if isinstance(r, dict)]
+        if isinstance(doc, dict):
+            for k in keys:
+                v = doc.get(k)
+                if isinstance(v, list):
+                    return [r for r in v if isinstance(r, dict)]
+        return []
+
+    def _count(v, default: int = 0) -> int:
+        """A field the producer may write as a count OR as the thing counted."""
+        if isinstance(v, bool):
+            return default
+        if isinstance(v, int):
+            return v
+        if isinstance(v, (list, tuple, dict, str)):
+            return len(v)
+        return default
+
+    def _conf(row: dict) -> float:
+        """Confidence as a number, for rows where it is absent OR null.
+
+        207 of 500 backlog rows carry `confidence: None`. `.get("confidence", 0)`
+        substitutes its default only when the key is MISSING, so those rows
+        returned None and `None >= 80` raises TypeError — the same present-but-
+        empty trap as `nan-is-not-none`. Absent confidence is not high
+        confidence, so it sorts to 0.
+        """
+        v = row.get("confidence")
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return 0.0
+
     cit_morning  = _safe_load_local("data/cit_morning_report.json")
     cit_evening  = _safe_load_local("data/cit_evening_report.json")
     cit_pending  = _safe_load_local("data/cit_pending_proposals.json")
@@ -702,9 +871,15 @@ def _review_cit(subject: str, key_metrics: dict, ctx: dict) -> dict:
         )
 
     # ── 2. Proposal volume and quality ───────────────────────────────────
-    board_proposals = _cit_latest.get("board_proposals", [])
-    backlog_items   = _cit_latest.get("backlog", [])
-    total_proposals = len(board_proposals) + len(backlog_items)
+    # cit_director writes `board_proposals` and `backlog` as COUNTS (ints: 14
+    # and 122 in today's evening report) and puts the actual rows under
+    # `proposals`. This block assumed all three were lists, so `len(14)` raised
+    # TypeError on the very first statement that touched the report — which is
+    # why not one check below it has ever run.
+    proposal_rows   = _rows(_cit_latest, "proposals", "board_proposals")
+    board_count     = _count(_cit_latest.get("board_proposals"), len(proposal_rows))
+    backlog_count   = _count(_cit_latest.get("backlog"))
+    total_proposals = board_count + backlog_count
 
     if total_proposals == 0 and gen_at:
         red_flags.append(
@@ -721,19 +896,35 @@ def _review_cit(subject: str, key_metrics: dict, ctx: dict) -> dict:
     else:
         commendations.append(
             f"CIT generated {total_proposals} proposal(s) this session "
-            f"({len(board_proposals)} queued for board, {len(backlog_items)} in backlog)."
+            f"({board_count} queued for board, {backlog_count} in backlog)."
         )
 
     # ── 3. Confidence gating integrity ───────────────────────────────────
     # IRM spot-checks: high-confidence proposals should be at the board, not backlog
-    high_conf_in_backlog = [
-        p for p in (cit_backlog.get("items") or cit_backlog if isinstance(cit_backlog, list) else [])
-        if isinstance(p, dict) and p.get("confidence", 0) >= 80
-    ]
+    # High confidence belongs at the board — but the CIT deliberately parks some
+    # findings in the backlog and records WHY: `specificity_blocked` marks one
+    # too vague to action, and cit_director sets it explicitly. 172 of 500
+    # backlog rows clear the 80 bar, and 161 of them carry that reason. Flagging
+    # all 172 would put a red flag on every review forever, and an alarm that is
+    # never off is an alarm nobody reads — `an-aggregate-is-not-a-finding`. The
+    # answerable question is how many the backlog cannot account for: 11 today,
+    # including a HIGH/85 finding that the win rate is 25% over 24 closed trades.
+    #
+    # The old expression was unreachable twice over. `cit_backlog.get(...)` runs
+    # on a list (AttributeError), and Python binds `A or B if C else D` as
+    # `(A or B) if C else D`, so the isinstance guard that was meant to protect
+    # the `.get` sat on the wrong side of it and guarded nothing.
+    hi_conf_backlog   = [p for p in _rows(cit_backlog, "items", "proposals")
+                         if _conf(p) >= 80]
+    high_conf_in_backlog = [p for p in hi_conf_backlog
+                            if not p.get("specificity_blocked")]
     if high_conf_in_backlog:
+        _explained = len(hi_conf_backlog) - len(high_conf_in_backlog)
         red_flags.append(
             f"GATING ANOMALY: {len(high_conf_in_backlog)} proposal(s) with confidence ≥80% "
-            f"found in the CIT backlog — they should have been routed to the board queue. "
+            f"sit in the CIT backlog with no recorded reason — they should have been routed "
+            f"to the board queue. ({_explained} further high-confidence item(s) are in the "
+            f"backlog for a recorded reason and are not counted here.) "
             f"Titles: {[p.get('title','?') for p in high_conf_in_backlog[:3]]}."
         )
 
@@ -742,8 +933,8 @@ def _review_cit(subject: str, key_metrics: dict, ctx: dict) -> dict:
     # IRM checks that no board proposal contains IRM-adjacent keywords
     irm_keywords = {"irm", "independent risk", "sealed", "hr grades board", "evaluation chain"}
     sensitive_leaks = []
-    for p in board_proposals:
-        text = (p.get("title","") + " " + p.get("description","")).lower()
+    for p in proposal_rows:          # was `board_proposals`, which is the int 14
+        text = (str(p.get("title") or "") + " " + str(p.get("description") or "")).lower()
         if any(kw in text for kw in irm_keywords):
             sensitive_leaks.append(p.get("title","(untitled)"))
 
@@ -755,15 +946,15 @@ def _review_cit(subject: str, key_metrics: dict, ctx: dict) -> dict:
         )
         confidence = LOW
     else:
-        if cit_sensitive.get("items") or (isinstance(cit_sensitive, list) and cit_sensitive):
+        if _rows(cit_sensitive, "items", "proposals"):
             commendations.append(
                 "Sensitive findings are present in cit_sensitive.json and correctly "
                 "absent from the board queue — sensitivity filter is operating correctly."
             )
 
     # ── 5. Pending proposal staleness ────────────────────────────────────
-    pending_items = cit_pending.get("proposals", cit_pending if isinstance(cit_pending, list) else [])
-    if isinstance(pending_items, list) and len(pending_items) > 20:
+    pending_items = _rows(cit_pending, "proposals", "items")
+    if len(pending_items) > 20:
         findings.append(
             f"CIT pending proposal queue has {len(pending_items)} items awaiting a board vote. "
             f"At the current twice-weekly board cadence, items should clear within 4 days. "
@@ -1060,8 +1251,15 @@ def _build_implementation_outcomes_html(outcomes_summary: dict) -> str:
 </div>"""
 
 
-def _build_cit_audit_html(cit_review: dict) -> str:
-    """Build the CIT Audit section for the IRM daily email."""
+def _build_cit_audit_html(cit_review: dict,
+                          title: str = "CIT Independent Audit",
+                          subtitle: str = "— CIT team is not aware this review occurred") -> str:
+    """Build one proactive-audit section for the IRM daily email.
+
+    Parameterised because the PDO audit renders identically; before that, the
+    PDO had no section at all because it had no review (see
+    `_pdo_metrics_from_artifact`).
+    """
     if not cit_review:
         return ""
 
@@ -1083,18 +1281,27 @@ def _build_cit_audit_html(cit_review: dict) -> str:
     commend_rows = "".join(
         f"<li style='color:#2ecc71;margin-bottom:5px;'>{c}</li>" for c in commendations
     ) or ""
+    # Omissions were loaded and counted toward "is there anything to say" above,
+    # then never rendered — so a review whose ONLY output was an omission
+    # produced a section header and no content. It is also the severest thing a
+    # reviewer can say: an omission is what a control reports when it could not
+    # perform its check, which is precisely what must not be silent.
+    omission_rows = "".join(
+        f"<li style='color:#f0c000;margin-bottom:5px;'>{o}</li>" for o in omissions
+    ) or ""
 
     return f"""
   <div style="margin-top:20px;border-top:2px solid #1e6b5e;padding-top:14px;">
     <h3 style="color:#1abc9c;margin-bottom:6px;">
-      CIT Independent Audit
+      {title}
       <span style="font-weight:normal;font-size:12px;color:#484f58;">
-        — CIT team is not aware this review occurred
+        {subtitle}
       </span>
     </h3>
     <p style="font-size:13px;color:#8b949e;margin:0 0 10px 0;">{verdict}</p>
     {"<h4 style='color:#c0392b;margin-bottom:4px;'>Red Flags</h4><ul>" + flag_rows + "</ul>" if red_flags else ""}
     {"<h4 style='color:#c9d1d9;margin-bottom:4px;'>Findings</h4><ul>" + finding_rows + "</ul>" if finding_rows else ""}
+    {"<h4 style='color:#f0c000;margin-bottom:4px;'>Omissions / Not Checked</h4><ul>" + omission_rows + "</ul>" if omissions else ""}
     {"<h4 style='color:#2ecc71;margin-bottom:4px;'>Commendations</h4><ul>" + commend_rows + "</ul>" if commendations else ""}
   </div>"""
 
@@ -1738,12 +1945,28 @@ def run_irm_daily(send_email: bool = True) -> dict:
             f"Red flags: {len(flags)} | Risk score: {risk_score}/10"
         )
 
-        # Persist regardless of email flag
+        # Persist regardless of email flag.
+        #
+        # Called twice, on purpose. This early write is the crash insurance:
+        # everything below it — HR annex, CIT audit, PDO audit — can raise, and
+        # the outer `except` would then leave no artifact at all, which six
+        # consumers (board_meeting, hr_agent, fi_executor, logic_team,
+        # morning_briefing, freshness_sentinel at max_age_h=30, critical=True)
+        # read as "IRM never ran". But it was ALSO the only write, and it
+        # happens ~80 lines before the CIT audit block, so the audit's verdict —
+        # the one that found 11 mis-gated high-confidence proposals — reached
+        # the Chairman's email and nothing else. It was invisible to every
+        # programmatic reader of the file it appeared to be part of. The second
+        # call, after the audits, is what actually publishes them.
         import os as _os
         _os.makedirs("data", exist_ok=True)
-        with open("data/irm_daily_check.json", "w") as _f:
-            import json as _j
-            _j.dump(irm_output, _f, indent=2, default=str)
+
+        def _persist_irm_output() -> None:
+            with open("data/irm_daily_check.json", "w") as _f:
+                import json as _j
+                _j.dump(irm_output, _f, indent=2, default=str)
+
+        _persist_irm_output()
 
         # ── Anonymous tip to CRO if findings meet urgency threshold ──────
         # IRM never contacts the board directly — but when findings are
@@ -1832,9 +2055,56 @@ def run_irm_daily(send_email: bool = True) -> dict:
                     f"  [IRM Daily] CIT audit: {len(_cit_red_flags)} red flag(s) identified."
                 )
         except Exception as _cit_e:
-            logger.debug(f"  [IRM Daily] CIT audit error (non-fatal): {_cit_e}")
+            # WARNING, and recorded on disk, deliberately. This handler used to
+            # be logger.debug() while the module configures INFO, so it emitted
+            # *nothing*: _review_cit raised TypeError on its first statement
+            # every single day (len() of an int — see the notes in that
+            # function), and the only visible symptom was that the CIT Audit
+            # section of the Chairman's IRM email rendered empty. A control that
+            # is broken and a control that has nothing to report looked
+            # identical from the outside. An absent log line is not evidence, so
+            # the failure now becomes a fact in irm_daily_check.json, which is
+            # written a few lines above and is what every downstream reader and
+            # every future audit actually reads.
+            logger.warning(f"  [IRM Daily] CIT audit FAILED (section will be empty): {_cit_e}")
+            irm_output["reviewer_failures"] = irm_output.get("reviewer_failures", [])
+            irm_output["reviewer_failures"].append({
+                "reviewer": "_review_cit",
+                "error":    f"{type(_cit_e).__name__}: {_cit_e}",
+            })
 
-        cit_issue = bool(_cit_red_flags)
+        # ── Proactive PDO audit ───────────────────────────────────────────
+        # Same shape, different reason. The PDO (capital_efficiency_agent.run_pdo,
+        # called from main.py) writes capital_efficiency_report.json six times a
+        # day and sends no email whatsoever — grep it: no send_daily_report, no
+        # buffer_email. IRM's specialised reviewers are reached ONLY by
+        # dispatching on the sender_name of an outgoing email, so _review_pdo
+        # was a reviewer for a producer that never speaks: 260 lines that could
+        # not run. Reading the artifact directly costs no extra mail (this folds
+        # into the IRM daily email that already goes out) and is the same
+        # remedy already applied to the CIT above.
+        _pdo_review: dict = {}
+        _pdo_red_flags: list = []
+        try:
+            _pdo_review    = _review_pdo("IRM Daily PDO Audit", _pdo_metrics_from_artifact(), ctx)
+            _pdo_red_flags = _pdo_review.get("red_flags", [])
+            if _pdo_red_flags:
+                logger.info(
+                    f"  [IRM Daily] PDO audit: {len(_pdo_red_flags)} red flag(s) identified."
+                )
+        except Exception as _pdo_e:
+            logger.warning(f"  [IRM Daily] PDO audit FAILED: {_pdo_e}")
+            irm_output["reviewer_failures"] = irm_output.get("reviewer_failures", [])
+            irm_output["reviewer_failures"].append({
+                "reviewer": "_review_pdo",
+                "error":    f"{type(_pdo_e).__name__}: {_pdo_e}",
+            })
+
+        irm_output["cit_audit"] = _cit_review
+        irm_output["pdo_audit"] = _pdo_review
+        _persist_irm_output()
+
+        cit_issue = bool(_cit_red_flags) or bool(_pdo_red_flags)
 
         # Email if there's something meaningful to say from IRM OR HR OR CIT
         meaningful = bool(flags or findings) or hr_action_required or cit_issue
@@ -1872,6 +2142,8 @@ def run_irm_daily(send_email: bool = True) -> dict:
   {_build_hr_report_html(_hr_report)}
   {_build_hr_sealed_annex_html(_hr_sealed)}
   {_build_cit_audit_html(_cit_review)}
+  {_build_cit_audit_html(_pdo_review, "PDO Independent Audit",
+                         "— deployment signal cross-checked against IRM risk")}
   <p style="font-size:11px;color:#484f58;border-top:1px solid #21262d;padding-top:8px;margin-top:20px;">
     IRM Board — Quantitative Risk · Behavioral Finance · Macro & Portfolio Construction<br>
     HR Team — HR Performance Officer · HR Development Officer<br>
