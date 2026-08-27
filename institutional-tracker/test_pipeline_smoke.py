@@ -22887,6 +22887,294 @@ class TestAHostLabelIsNotANetworkCondition(unittest.TestCase):
                          "by a network rename")
 
 
+class TestABookedExitIsNotAnExecutedOne(unittest.TestCase):
+    """`sell_log` records the DECISION to sell; only the broker records the sale.
+
+    main.py appends the row — carrying `pnl_pct`, which cit_director turns into
+    the firm's win rate — as soon as `submit_sell` returns a dict, and it returns
+    one on ACCEPTED. Alpaca queues after-hours orders to the next open, so the
+    trade is booked hours before it happens, and if the order dies it is booked
+    for a trade that never happens at all.
+    """
+
+    # Widths the broker actually emits, measured over 500 live orders:
+    # {3: 1, 4: 7, 5: 55, 6: 436, 9: 1}. Python 3.9 parses only 3 and 6.
+    FRACTION_WIDTHS = ["182", "1823", "18234", "182340", "182340123", ""]
+
+    def _law(self, **kw):
+        import coherence_laws as cl
+        return cl.law_recorded_exits_are_executed(**kw)
+
+    def _row(self, **kw):
+        base = {"date": "2026-08-20", "ticker": "ZZT", "reason": "take_profit (9.0%)",
+                "pnl_pct": 9.0, "order_id": "oid-1"}
+        base.update(kw)
+        return base
+
+    def _order(self, **kw):
+        base = {"id": "oid-1", "symbol": "ZZT", "side": "sell", "qty": "10",
+                "filled_qty": "10", "status": "filled",
+                "created_at": "2026-08-20T14:00:00.123456Z"}
+        base.update(kw)
+        return base
+
+    # --- the failure the law exists for -----------------------------------
+    def test_a_dead_order_makes_the_booked_pnl_fiction(self):
+        r = self._law(sell_log=[self._row()],
+                      orders=[self._order(filled_qty="0", status="canceled")])
+        self.assertEqual(r.verdict, "VIOLATED")
+        self.assertEqual(r.n_examined, 1, "a VIOLATED needs its denominator")
+
+    def test_an_executed_exit_holds(self):
+        r = self._law(sell_log=[self._row()], orders=[self._order()])
+        self.assertEqual(r.verdict, "HOLDS")
+        self.assertEqual(r.n_examined, 1)
+
+    def test_a_queued_exit_inside_the_grace_is_reported_not_alarmed(self):
+        """The broker's release schedule is not a defect. Alarming nightly on it
+        would be correct and useless, and would bury the permanent case."""
+        now = datetime(2026, 8, 20, 20, 0, tzinfo=timezone.utc)
+        r = self._law(sell_log=[self._row()],
+                      orders=[self._order(filled_qty="0", status="accepted")],
+                      now=now)
+        self.assertEqual(r.verdict, "HOLDS")
+        self.assertTrue(r.evidence, "a pending exit must still be surfaced")
+        self.assertEqual(r.evidence[0]["ticker"], "ZZT")
+
+    def test_a_queue_longer_than_any_ever_observed_is_a_violation(self):
+        import coherence_laws as cl
+        now = (datetime(2026, 8, 20, 14, 0, tzinfo=timezone.utc)
+               + timedelta(hours=cl._EXIT_PENDING_GRACE_H + 1))
+        r = self._law(sell_log=[self._row()],
+                      orders=[self._order(filled_qty="0", status="accepted")],
+                      now=now)
+        self.assertEqual(r.verdict, "VIOLATED")
+
+    # --- the traps ---------------------------------------------------------
+    def test_every_fraction_width_the_broker_emits_parses(self):
+        """The regression that would have shipped: py3.9 `fromisoformat` takes a
+        3- or 6-digit fraction and nothing else, while the VM's 3.11 takes any.
+        An unreadable clock drops the order from the candidate set, and the
+        recorded exit then reads as never executed."""
+        for frac in self.FRACTION_WIDTHS:
+            stamp = "2026-08-20T14:00:00%sZ" % (("." + frac) if frac else "")
+            with self.subTest(width=len(frac)):
+                r = self._law(sell_log=[self._row()],
+                              orders=[self._order(created_at=stamp)])
+                self.assertEqual(
+                    r.verdict, "HOLDS",
+                    "a %d-digit fractional second must not turn a filled exit "
+                    "into a violation (got: %s)" % (len(frac), r.detail))
+
+    def test_an_unreadable_clock_defers_instead_of_convicting(self):
+        """If the format changes again, the honest answer is 'I cannot tell',
+        not a list of exits declared fictional."""
+        r = self._law(sell_log=[self._row()],
+                      orders=[self._order(created_at="not-a-timestamp")])
+        self.assertEqual(r.verdict, "CANNOT_TELL")
+        self.assertIn("parse", r.detail)
+
+    def test_a_row_predating_the_order_window_is_not_convicted(self):
+        """The fetch is limit=500 desc and this account has more orders than
+        that, so old rows have no order in the window. Absence of evidence is
+        not evidence of absence."""
+        r = self._law(sell_log=[self._row(date="2026-01-05", order_id="")],
+                      orders=[self._order(created_at="2026-08-20T14:00:00.123456Z")])
+        self.assertEqual(r.verdict, "HOLDS")
+        self.assertIn("predate", r.detail)
+
+    def test_a_row_inside_the_window_with_no_order_is_convicted(self):
+        """The other side of the same boundary — inside the window, a missing
+        exit order really does mean the sale never happened."""
+        r = self._law(sell_log=[self._row(ticker="ZZQ", order_id="")],
+                      orders=[self._order(created_at="2026-08-01T14:00:00.123456Z")])
+        self.assertEqual(r.verdict, "VIOLATED")
+
+    def test_the_same_day_as_the_window_edge_is_still_judged(self):
+        """Rows are dated midnight; comparing against the window's oldest
+        timestamp rather than its date would excuse every exit decided on the
+        boundary day."""
+        r = self._law(sell_log=[self._row(ticker="ZZQ", order_id="")],
+                      orders=[self._order(created_at="2026-08-20T14:00:00.123456Z")])
+        self.assertEqual(r.verdict, "VIOLATED")
+        self.assertNotIn("predate", r.detail)
+
+    def test_an_empty_sell_log_is_not_a_pass(self):
+        r = self._law(sell_log=[], orders=[self._order()])
+        self.assertEqual(r.verdict, "CANNOT_TELL")
+
+    def test_an_unreadable_broker_is_not_a_clean_book(self):
+        """Patched, not merely left as None. A reachable broker answers, and the
+        law then judges a fabricated row against 500 real orders and correctly
+        VIOLATES — so `orders=None` tests nothing and puts a live network call in
+        the commit path. Forcing the failure is the only way to reach the branch.
+        """
+        import single_writer
+        with patch.object(single_writer, "fetch_broker_orders",
+                          side_effect=OSError("connection refused")):
+            r = self._law(sell_log=[self._row()], orders=None, host="nowhere")
+        self.assertEqual(r.verdict, "CANNOT_TELL")
+        self.assertIn("unreachable", r.detail)
+
+    def test_the_order_id_beats_the_heuristic(self):
+        """An exact id match must win over a same-ticker order four days out,
+        or the fix that made rows checkable buys nothing."""
+        r = self._law(
+            sell_log=[self._row(order_id="oid-real")],
+            orders=[self._order(id="oid-real", filled_qty="0", status="canceled"),
+                    self._order(id="oid-decoy", filled_qty="10", status="filled")])
+        self.assertEqual(r.verdict, "VIOLATED")
+        self.assertEqual(r.evidence[0]["match"], "order_id")
+
+    def test_the_window_opens_at_the_oldest_order_not_the_newest(self):
+        """Every one of these tests passed with the window taken from the NEWEST
+        order — because they each supply one order, where oldest and newest are
+        the same row. With `max`, almost every sell_log row predates the "window"
+        and is excused, and the law goes permanently, invisibly silent. Two
+        orders at different dates is the only shape that can tell them apart."""
+        r = self._law(
+            sell_log=[self._row(date="2026-06-01", ticker="ZZQ", order_id="")],
+            orders=[self._order(id="old", created_at="2026-01-05T14:00:00.123456Z"),
+                    self._order(id="new", created_at="2026-08-20T14:00:00.123456Z")])
+        self.assertEqual(r.verdict, "VIOLATED",
+                         "a row inside the fetched window must be judged, not "
+                         "excused by a window measured from the wrong end")
+
+    def test_the_grace_covers_the_longest_queue_the_broker_ever_took(self):
+        """65.51h, measured on this account: an after-hours exit released after a
+        long weekend. A grace under that alarms on the broker doing its job, and
+        a law that cries wolf nightly is how the real case gets ignored."""
+        import coherence_laws as cl
+        self.assertGreaterEqual(
+            cl._EXIT_PENDING_GRACE_H, 65.51,
+            "the grace must exceed the longest legitimate queue observed here")
+        now = datetime(2026, 8, 20, 14, 0, tzinfo=timezone.utc) + timedelta(hours=65.5)
+        r = self._law(sell_log=[self._row()],
+                      orders=[self._order(filled_qty="0", status="accepted")],
+                      now=now)
+        self.assertEqual(r.verdict, "HOLDS")
+
+    def test_a_partial_fill_is_an_executed_exit(self):
+        """The question is whether the broker acted, not whether it finished. A
+        40-of-100 fill is a real sale at a real price; convicting it would put
+        routine partial fills in the Chairman's escalation queue."""
+        r = self._law(sell_log=[self._row()],
+                      orders=[self._order(qty="100", filled_qty="40",
+                                          status="partially_filled")])
+        self.assertEqual(r.verdict, "HOLDS")
+
+    def test_the_heuristic_takes_the_best_filled_candidate(self):
+        """Legacy rows carry no order_id and a ticker can have several orders in
+        a 4-day span. Picking the worst convicts an exit that really happened —
+        and the heuristic feeds an escalation queue, so it must bias toward
+        HOLDS, never toward a false alarm."""
+        r = self._law(
+            sell_log=[self._row(order_id="")],
+            orders=[self._order(id="a", filled_qty="0", status="canceled"),
+                    self._order(id="b", filled_qty="10", status="filled")])
+        self.assertEqual(r.verdict, "HOLDS")
+
+    def test_a_buy_can_never_stand_in_for_the_exit(self):
+        """Same ticker, same window, opposite direction. A re-entry is not the
+        sale, and matching one would report a booked exit as executed by the
+        order that re-opened the position."""
+        r = self._law(sell_log=[self._row(ticker="ZZQ", order_id="")],
+                      orders=[self._order(symbol="ZZQ", side="buy", id="rebuy")])
+        self.assertEqual(r.verdict, "VIOLATED")
+
+    def test_the_denominator_counts_the_rows_with_no_order_at_all(self):
+        """`n of N` where N omits the very rows being convicted reads as
+        "1 of 1 exits never executed" on a two-row book — an aggregate that
+        cannot be checked against anything (memory `an-aggregate-is-not-a-finding`)."""
+        r = self._law(
+            sell_log=[self._row(), self._row(ticker="ZZQ", order_id="")],
+            orders=[self._order()])
+        self.assertEqual(r.verdict, "VIOLATED")
+        self.assertEqual(r.n_examined, 2,
+                         "both the verifiable row and the unmatched one were "
+                         "examined; only rows predating the window are excluded")
+
+    # --- the producer and the contract -------------------------------------
+    def test_main_persists_the_order_id_it_already_had(self):
+        """AST, not grep — this file and main.py both discuss order_id.
+
+        The VALUE is checked, not just the key. `"order_id": sell.get("ticker")`
+        satisfies a key-presence assertion, produces an id-shaped string for
+        every row, and makes the law's exact-match path match nothing forever
+        while reporting `match: heuristic` — a fix that reads as applied and
+        is not.
+        """
+        import main
+        tree = ast.parse(Path(main.__file__).read_text())
+
+        # Enumerate the append SITES, then require a row literal for each. The
+        # first version of this test walked every Dict, unioned their keys, and
+        # asserted "order_id" was in the union — so main.py's SECOND sell_log
+        # writer (the manager path, which had no order_id at all) was masked by
+        # the first one, which did. A union over N things cannot tell you all N
+        # have the property. Counting the sites is what makes the coverage
+        # non-vacuous: a third writer added tomorrow fails here until it is
+        # checked too, instead of being silently skipped.
+        sites = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call)
+                 and isinstance(n.func, ast.Attribute) and n.func.attr == "append"
+                 and isinstance(n.func.value, ast.Subscript)
+                 and isinstance(n.func.value.slice, ast.Constant)
+                 and n.func.value.slice.value == "sell_log"]
+        self.assertGreaterEqual(len(sites), 2,
+                                "main.py has had two sell_log writers since the "
+                                "manager path was added; finding fewer means "
+                                "this AST match has drifted, not that a writer "
+                                "was removed")
+
+        for site in sites:
+            self.assertTrue(site.args and isinstance(site.args[0], ast.Dict),
+                            "a sell_log row must be a dict literal so it can be "
+                            "checked here")
+            row = site.args[0]
+            pairs = {k.value: v for k, v in zip(row.keys, row.values)
+                     if isinstance(k, ast.Constant) and isinstance(k.value, str)}
+            self.assertIn("pnl_pct", pairs, "this is the row that books the P&L")
+            self.assertIn("order_id", pairs,
+                          "every sell_log row must carry the order id the "
+                          "executor already returns, or a recorded exit and a "
+                          "real one are indistinguishable")
+            val = pairs["order_id"]
+            # `.get("id")` (submit_sell's raw dict) or `.get("order_id")`
+            # (execute_decision's result) — both read the broker's id from what
+            # the executor returned. What this rejects is any OTHER field:
+            # `sell.get("ticker")` satisfies key-presence, yields an id-shaped
+            # string on every row, and makes the exact-match path match nothing
+            # forever while still reporting itself as populated.
+            self.assertTrue(
+                isinstance(val, ast.Call) and isinstance(val.func, ast.Attribute)
+                and val.func.attr == "get"
+                and val.args and isinstance(val.args[0], ast.Constant)
+                and val.args[0].value in ("id", "order_id"),
+                "order_id must be read from the executor's returned id, not "
+                "from some other field that merely looks populated")
+
+    def test_the_law_is_registered_and_has_a_poison_pill(self):
+        import coherence_laws as cl, internal_audit_agent as ia
+        names = {fn.__name__ for fn, _ in cl.LAWS}
+        self.assertIn("law_recorded_exits_are_executed", names)
+        self.assertIn("recorded_exits_are_executed", ia.POISON_PILLS)
+
+    def test_the_pill_proves_the_law_can_fail(self):
+        import coherence_laws as cl, internal_audit_agent as ia
+        fn = next(f for f, _ in cl.LAWS
+                  if f.__name__ == "law_recorded_exits_are_executed")
+        self.assertEqual(ia.POISON_PILLS["recorded_exits_are_executed"].run(fn).verdict,
+                         "VIOLATED")
+
+    def test_the_two_sources_are_independent(self):
+        import coherence_laws as cl
+        a, b = cl.law_recorded_exits_are_executed.sources
+        self.assertNotEqual(a, b)
+        self.assertIn("sell_log", a)
+        self.assertIn("Alpaca", b)
+
+
 class TestIssueIdentityIsNotTheMeasurement(unittest.TestCase):
     """A detector writes what it measures into the title; identity must not move with it.
 

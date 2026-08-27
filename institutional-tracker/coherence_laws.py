@@ -2157,6 +2157,293 @@ def law_work_queues_drain(now: Optional[datetime] = None,
 
 
 # =============================================================================
+# LAW — recorded exits are executed
+# =============================================================================
+
+# Terminal, and did not fill. Deliberately NOT including `replaced` (the
+# replacement can still fill) or `done_for_day` (a day order that may be
+# re-sent): a law that escalates must be conservative about what it calls
+# permanent, because the cost of a false VIOLATED is that the next real one
+# gets ignored.
+_EXIT_DEAD_STATES = {"canceled", "cancelled", "expired", "rejected"}
+
+# Longest legitimate queue observed on this account: 65.51h, an after-hours
+# decision released after a long weekend (measured 2026-08-27 over 320 orders).
+# Past that, "still pending" stops being the broker's release schedule and
+# starts being an order nobody is going to fill.
+_EXIT_PENDING_GRACE_H = 96.0
+
+
+@sources("state.json sell_log (this firm's own record of closed trades, and the "
+         "pnl_pct that cit_director turns into the firm's win rate)",
+         "Alpaca order history (what the broker actually filled)")
+def law_recorded_exits_are_executed(sell_log: Optional[list] = None,
+                                    orders: Optional[list] = None,
+                                    host: Optional[str] = None,
+                                    now: Optional[datetime] = None) -> LawResult:
+    """Every exit the firm booked a P&L for is an exit the broker actually made.
+
+    SOURCE A: `data/state.json` -> `sell_log`, appended by `main.py` when it
+              decides to close a position. Each row carries a `pnl_pct`.
+    SOURCE B: the broker's order history — `filled_qty` on the order that was
+              supposed to do it.
+
+    WHY THIS IS NOT `positions_conserve` OR `broker_orders_are_ledgered`.
+    `positions_conserve` compares the broker to `entry_dates`, and
+    `entry_date_ledger.reconcile()` heals `entry_dates` from fill history on the
+    next pipeline run — so that law goes quiet again by design, which is correct
+    for it and useless here. This law reads `sell_log`, which is append-only and
+    never healed: a wrong row stays wrong forever. `broker_orders_are_ledgered`
+    runs the other direction (an order at the broker -> did it pass our choke
+    point). Neither can see a booked exit that never executed.
+
+    THE ESCAPE. `main.py` writes the sell_log row — with its P&L — on
+    `submit_sell` RETURNING A DICT, and `submit_sell` returns one as soon as
+    Alpaca accepts the order. `alpaca_trader.py` sets `pnl_pct` from
+    `pos["unrealized_pct"]`, the mark at DECISION time. Alpaca queues orders
+    placed outside the extended-hours window and releases them at the next open,
+    so an exit decided at 20:15 UTC is recorded as a completed trade roughly 17
+    hours before it happens — median 17.31h, max 65.51h across the 40 orders
+    this account created after the close in 45 days. Measured 2026-08-27: NTNX
+    sat in `sell_log` as `take_profit (20.6%)`, `pnl_pct +20.556`, and at the
+    broker it was `ACCEPTED, filled 0/90`. It was a winner in the firm's win
+    rate and the shares were still in the account.
+
+    THE HONEST SIZE OF IT. On that day 38 of 39 recorded exits had really
+    filled, so the live damage was 1.9 points of win rate (25.6% -> 23.7%) and
+    neither of `cit_director`'s 40%/70% proposal thresholds moved. This is worth
+    a law anyway for two reasons: nothing else in the firm can see the failure
+    at all, and the case that IS permanent — an order that goes terminal without
+    filling — books a P&L for a trade that never happened and never
+    self-corrects.
+
+    WHAT COUNTS AS THE FAILURE, narrowly:
+      · terminal and unfilled (canceled/expired/rejected) -> VIOLATED. The exit
+        will never happen; the booked P&L is fiction, permanently.
+      · pending past 96h -> VIOLATED. Longer than the worst legitimate queue
+        ever observed here, so it is stuck, not waiting.
+      · pending inside 96h -> reported in the detail, NOT violated. That is the
+        broker's release schedule doing its job, and alarming on it nightly
+        would be correct and useless.
+
+    THE WINDOW TRAP, which is the inverse of the usual one. The broker fetch is
+    `limit=500&direction=desc`, and this account has more orders than that
+    across the sell_log's span — so the oldest rows have no order in the fetched
+    window. Reading "no matching order" as "never executed" would VIOLATE on
+    every old row forever. Rows predating the window are counted as unverifiable
+    and excluded from `n_examined`, and the detail says how many, so a shrinking
+    verifiable window is visible instead of being reported as a clean pass.
+
+    MATCHING. Rows written from 2026-08-27 carry `order_id` and match exactly.
+    Legacy rows have none — main.py had `submit_sell`'s return dict, which
+    contains one, and persisted only the ticker — so those fall back to
+    (ticker, side=sell, created_at within 4 days). The fallback deliberately
+    takes the best-filled candidate, so several rows may map to one order. That
+    biases toward HOLDS, which is the right direction for a heuristic feeding an
+    escalation queue, and the fallback's share shrinks visibly as new rows
+    accumulate.
+    """
+    name = "recorded_exits_are_executed"
+    src = law_recorded_exits_are_executed.sources
+    now = now or datetime.now(timezone.utc)
+
+    # Host resolution lives INSIDE the "read it myself" branch on purpose. A
+    # caller that supplied both measurements has already answered the question
+    # this guard asks, and resolving anyway would make the poison pill depend on
+    # single_writer, on broker credentials, and on whichever machine the audit
+    # happens to run on.
+    if sell_log is None:
+        try:
+            import single_writer
+            designated = single_writer.designated_host()
+            host = host or single_writer.this_host()
+        except Exception as e:
+            return LawResult(name, CANNOT_TELL,
+                             f"cannot resolve host identity: {e}", src)
+
+        # sell_log is host-local and there is no state sync (CLAUDE.md). Off the
+        # designated writer it is a fossil, and comparing a fossil to the live
+        # broker would VIOLATE every day, correctly and uselessly.
+        if host != designated:
+            return LawResult(name, CANNOT_TELL,
+                             f"this host is '{host}'; the sell_log that matters "
+                             f"belongs to '{designated}' and there is no state sync "
+                             f"between hosts. Owner: {designated}.", src)
+
+        sp = DATA_DIR / "state.json"
+        if not sp.exists():
+            return LawResult(name, CANNOT_TELL, f"{sp} missing", src)
+        try:
+            sell_log = json.loads(sp.read_text()).get("sell_log")
+        except (ValueError, OSError) as e:
+            return LawResult(name, CANNOT_TELL,
+                             f"state.json unreadable: {e} — an unreadable ledger is "
+                             f"not an empty one", src)
+        if not isinstance(sell_log, list):
+            return LawResult(name, CANNOT_TELL,
+                             "state.json carries no `sell_log` list — the firm has "
+                             "recorded no exits to check. Owner: main.py state writer.",
+                             src)
+
+    if orders is None:
+        try:
+            import single_writer
+            orders = single_writer.fetch_broker_orders(limit=500)
+        except Exception as e:
+            return LawResult(name, CANNOT_TELL,
+                             f"cannot read the broker's order history "
+                             f"({type(e).__name__}: {e}) — refusing to call every "
+                             f"recorded exit unexecuted because the broker was "
+                             f"unreachable", src)
+    if orders is None:
+        return LawResult(name, CANNOT_TELL,
+                         "could not read the broker's order history", src)
+    if not sell_log:
+        return LawResult(name, CANNOT_TELL,
+                         "sell_log is empty — nothing recorded, so nothing to verify. "
+                         "A pass on zero rows is not a pass.", src)
+
+    def _dt(v):
+        if not v:
+            return None
+        s = str(v).replace("Z", "+00:00")
+        # NORMALISE THE FRACTIONAL SECONDS TO EXACTLY SIX DIGITS. Python 3.9's
+        # `fromisoformat` accepts a fraction of exactly 3 or 6 digits and
+        # nothing else, and Alpaca supplies whatever is left after stripping
+        # trailing zeros: across 500 live orders the widths were
+        # {3: 1, 4: 7, 5: 55, 6: 436, 9: 1}. Sixty-two of them — every 4-, 5-
+        # and 9-digit stamp — raised, and the law read that as "no exit order at
+        # the broker", reporting AFRM, KEY, SOFI and NTNX as exits that never
+        # executed when all four had real orders and only NTNX was genuine. A
+        # false VIOLATED assembled entirely out of a parser limit, caught
+        # pre-ship 2026-08-27.
+        #
+        # THIS IS A HOST-DIVERGENCE BUG (memory `host_divergence_is_a_bug_class`).
+        # The VM runs 3.11, where `fromisoformat` takes any width, so the law
+        # would have been correct on the trading host and blind on this laptop —
+        # and the push gate runs the suite twice on the Mac only, so nothing in
+        # the commit path compares the two. Pad-and-truncate rather than
+        # truncate: truncation alone fixes the one 9-digit stamp and leaves the
+        # 62 short ones broken.
+        s = re.sub(r"\.(\d+)", lambda m: "." + (m.group(1) + "000000")[:6], s, count=1)
+        try:
+            return datetime.fromisoformat(s)
+        except (ValueError, TypeError):
+            return None
+
+    sells, by_id, unreadable_ts = [], {}, 0
+    for o in orders:
+        oid = str(o.get("id") or "")
+        if oid:
+            by_id[oid] = o
+        if o.get("created_at") and _dt(o.get("created_at")) is None:
+            unreadable_ts += 1
+        if str(o.get("side") or "").lower() == "sell":
+            sells.append(o)
+
+    # An order whose clock cannot be read is missing from the candidate set by
+    # an unknown amount, and the failure is silent and one-directional: it can
+    # only ever produce "no order found", never a spurious match. So the whole
+    # heuristic path becomes untrustworthy the moment ANY timestamp fails to
+    # parse, and the honest verdict is that the comparison could not be made —
+    # not a list of exits declared fictional because of a date format.
+    if unreadable_ts:
+        return LawResult(name, CANNOT_TELL,
+                         f"{unreadable_ts} of {len(orders)} broker order(s) carry a "
+                         f"created_at this law cannot parse, so the candidate set is "
+                         f"incomplete by an unknown amount and every unmatched row "
+                         f"would convict on a format change. Owner: whoever last "
+                         f"changed the broker timestamp format.", src)
+
+    window_open = min([d for d in (_dt(o.get("created_at")) for o in orders) if d],
+                      default=None)
+
+    violations, pending, unverifiable, matched, no_order = [], [], [], 0, 0
+    for row in sell_log:
+        tkr = row.get("ticker")
+        if not tkr or not row.get("date"):
+            continue
+        try:
+            day = datetime.strptime(row["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            continue
+
+        oid = str(row.get("order_id") or "")
+        if oid and oid in by_id:
+            order, mode = by_id[oid], "order_id"
+        else:
+            mode = "heuristic"
+            cands = [o for o in sells
+                     if o.get("symbol") == tkr
+                     and _dt(o.get("created_at")) is not None
+                     and abs((_dt(o["created_at"]) - day).days) <= 4]
+            if not cands:
+                # `.date()`, not the raw datetime: a row is dated midnight, so
+                # comparing it against the window's oldest timestamp would call
+                # same-day exits unverifiable. Predating the window is "cannot
+                # verify", NOT "never executed" — the distinction this law turns
+                # on, and the one that would otherwise make it VIOLATE forever
+                # on rows nobody can check.
+                if window_open is not None and day.date() < window_open.date():
+                    unverifiable.append({"ticker": tkr, "date": row["date"],
+                                         "why": "predates the fetched order window"})
+                else:
+                    no_order += 1
+                    violations.append({"ticker": tkr, "date": row["date"],
+                                       "pnl_pct": row.get("pnl_pct"),
+                                       "reason": row.get("reason", ""), "match": mode,
+                                       "why": "no exit order at the broker at all"})
+                continue
+            order = max(cands, key=lambda o: float(o.get("filled_qty") or 0))
+
+        matched += 1
+        if float(order.get("filled_qty") or 0) > 0:
+            continue
+
+        status = str(order.get("status") or "").lower()
+        created = _dt(order.get("created_at"))
+        age_h = (now - created).total_seconds() / 3600.0 if created else None
+        entry = {"ticker": tkr, "date": row["date"], "pnl_pct": row.get("pnl_pct"),
+                 "reason": row.get("reason", ""), "order_id": str(order.get("id") or ""),
+                 "status": status, "qty": order.get("qty"), "match": mode,
+                 "age_h": round(age_h, 2) if age_h is not None else None}
+        if status in _EXIT_DEAD_STATES:
+            entry["why"] = (f"order is {status} and never filled — the booked P&L is "
+                            f"permanent fiction")
+            violations.append(entry)
+        elif age_h is not None and age_h > _EXIT_PENDING_GRACE_H:
+            entry["why"] = (f"unfilled for {age_h:.0f}h, past the "
+                            f"{_EXIT_PENDING_GRACE_H:.0f}h grace — longer than any "
+                            f"legitimate queue observed on this account")
+            violations.append(entry)
+        else:
+            pending.append(entry)
+
+    n = matched + no_order
+    tail = ""
+    if unverifiable:
+        tail += (f" {len(unverifiable)} row(s) predate the fetched order window and "
+                 f"were not judged.")
+    if pending:
+        tail += (f" {len(pending)} exit(s) queued but not yet filled "
+                 f"({', '.join(p['ticker'] for p in pending[:4])}) — inside the "
+                 f"{_EXIT_PENDING_GRACE_H:.0f}h grace, reported not alarmed.")
+
+    if violations:
+        booked = sum(1 for v in violations if (v.get("pnl_pct") or 0) > 0)
+        return LawResult(name, VIOLATED,
+                         f"{len(violations)} of {n} recorded exit(s) never executed "
+                         f"({booked} of them booked as WINNERS in the firm's win rate): "
+                         f"{', '.join(v['ticker'] for v in violations[:6])}. A P&L the "
+                         f"broker never made is still counted by cit_director.{tail}",
+                         src, violations, n_examined=n)
+
+    return LawResult(name, HOLDS,
+                     f"{n} recorded exit(s) all correspond to a broker fill.{tail}",
+                     src, pending, n_examined=n)
+
+
+# =============================================================================
 # registry + runner
 # =============================================================================
 
@@ -2184,6 +2471,8 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "every order the broker credits to this host went through the choke point"),
     (law_work_queues_drain,
      "work put into a queue must be taken out of it by something that runs"),
+    (law_recorded_exits_are_executed,
+     "every exit the firm booked a P&L for is one the broker actually made"),
 ]
 
 

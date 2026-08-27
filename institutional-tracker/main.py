@@ -546,12 +546,34 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         for sell in sells_executed:
             logger.info(f"  SOLD {sell['ticker']} — reason: {sell.get('reason','')}, "
                         f"P&L: {sell.get('pnl_pct', 0):+.1f}%")
+            # `order_id` / `qty` / `submit_status` make this row CHECKABLE against
+            # the broker. Without them a recorded exit and a real one are
+            # indistinguishable, and this row is not a record of a sale — it is a
+            # record of a DECISION to sell. `submit_sell` returns as soon as
+            # Alpaca accepts the order, and Alpaca queues anything placed outside
+            # the extended-hours window until the next open (median 17.3h, max
+            # 65.5h on this account). So the row below, including its `pnl_pct`,
+            # is written hours before the trade happens — and `pnl_pct` is the
+            # position's UNREALIZED mark at decision time (alpaca_trader.py), not
+            # the price the fill got. `cit_director` turns these into the firm's
+            # win rate. Measured 2026-08-27: NTNX was a +20.6% "winner" in that
+            # statistic while the broker had it ACCEPTED, filled 0/90.
+            #
+            # The semantics of `pnl_pct` are deliberately NOT changed here — the
+            # win rate and every historical row depend on it, so re-basing it to
+            # realized prices is the Chairman's call, not a side effect of this
+            # fix. What changes is that the discrepancy is now measurable:
+            # `coherence_laws.law_recorded_exits_are_executed` matches on
+            # `order_id` and alarms when a booked exit never filled.
             state["sell_log"].append({
                 "date":         datetime.now().strftime("%Y-%m-%d"),
                 "ticker":       sell["ticker"],
                 "reason":       sell.get("reason", ""),
                 "pnl_pct":      sell.get("pnl_pct", 0),
                 "signal_source": _lookup_buy_source(state, sell["ticker"]),
+                "order_id":     sell.get("id", ""),
+                "qty":          sell.get("qty"),
+                "submit_status": sell.get("status", ""),
             })
             if sell["ticker"] in state["entry_dates"]:
                 del state["entry_dates"][sell["ticker"]]
@@ -1250,12 +1272,40 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
                     if d["manager_action"] in ("SELL", "TRIM"):
                         _pnl_pct = d.get("unrealized_pnl_pct", 0)
                         _src     = _lookup_buy_source(state, d["ticker"])
+                        # SECOND sell_log writer. The one at ~line 568 is the
+                        # review/exit path; this is the manager's. Both book a
+                        # `pnl_pct` that cit_director turns into the firm's win
+                        # rate, and until 2026-08-27 neither recorded which
+                        # broker order was supposed to do it — so a booked exit
+                        # and a real one were indistinguishable on both paths.
+                        # `execute_decision` has always returned `order_id`
+                        # (manager_agent.py sets it from submit_sell/TRIM); it
+                        # was simply dropped on the floor here.
+                        #
+                        # Fixing only the first site would have been the
+                        # `guardrail-on-one-path` shape all over again: the law
+                        # would have matched exactly on review-path rows and
+                        # silently fallen back to the 4-day ticker heuristic on
+                        # every manager exit, which reads as working. What
+                        # caught it was strengthening the AST test to check each
+                        # row literal separately — the original unioned the keys
+                        # of all of them, so this row's missing `order_id` was
+                        # masked by the other row's present one.
+                        #
+                        # `qty` is the trimmed size on a TRIM and absent on a
+                        # full SELL (manager_agent only sets `qty_trimmed` on
+                        # the trim branch). A TRIM is a PARTIAL exit recorded as
+                        # a sell_log row, which is why the law counts any
+                        # `filled_qty > 0` as executed rather than demanding the
+                        # full position.
                         state["sell_log"].append({
                             "date":          datetime.now().strftime("%Y-%m-%d"),
                             "ticker":        d["ticker"],
                             "reason":        "manager_agent",
                             "pnl_pct":       _pnl_pct,
                             "signal_source": _src,
+                            "order_id":      ex.get("order_id", ""),
+                            "qty":           ex.get("qty_trimmed"),
                         })
                         if d["manager_action"] == "SELL":
                             # Only a full exit clears the entry date. A TRIM sells

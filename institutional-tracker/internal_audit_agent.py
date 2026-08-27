@@ -83,7 +83,7 @@ import json
 import logging
 import sys
 import tempfile
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
@@ -319,7 +319,43 @@ def _pill_work_queues_drain(law):
                schedule_text="0 8 * * 0 weekly.py\n0 9 * * * daily.py\n")
 
 
+def _pill_recorded_exits_are_executed(law):
+    """A booked winner whose exit order the broker accepted and then canceled.
+
+    A REAL injection: the law takes `sell_log` and `orders`, so the pill hands it
+    two fabricated measurements and the whole production comparison — id
+    matching, window bounding, dead-state classification, the pending grace —
+    runs unchanged. Passing `sell_log` also keeps the law off `single_writer`
+    and the broker, so this proves the comparison on any host rather than
+    returning CANNOT_TELL on whichever machine the audit lands on.
+
+    Aimed at the CROSS-SOURCE fault. Each source is individually impeccable and
+    a single-source check would pass on both: the sell_log row is a well-formed
+    take-profit with a real date, a real P&L and a real order id, and the order
+    is a well-formed, correctly-dated SELL for that same ticker that the broker
+    genuinely accepted. Nothing is wrong with either one alone. Only the
+    relation between them is wrong — accepted, then canceled, never filled —
+    and that relation is the only thing this law reads.
+
+    Dated one day back so it lands inside the fetched-window bound rather than
+    being excused as unverifiable, and `canceled` rather than merely pending so
+    it proves the PERMANENT branch. A pill that only aged a pending order would
+    prove the grace timer and leave the fiction-is-forever case untested.
+    """
+    day = datetime.now(timezone.utc) - timedelta(days=1)
+    return law(
+        sell_log=[{"date": day.strftime("%Y-%m-%d"), "ticker": "ZZPILL",
+                   "reason": "take_profit (31.4%)", "pnl_pct": 31.4,
+                   "order_id": "zzpill-order-1"}],
+        orders=[{"id": "zzpill-order-1", "symbol": "ZZPILL", "side": "sell",
+                 "qty": "100", "filled_qty": "0", "status": "canceled",
+                 "created_at": day.isoformat()}])
+
+
 POISON_PILLS: Dict[str, Pill] = {
+    "recorded_exits_are_executed": Pill(
+        _pill_recorded_exits_are_executed,
+        "a booked P&L whose exit order the broker canceled without filling"),
     "work_queues_drain": Pill(
         _pill_work_queues_drain,
         "a work queue holding rows no scheduled module can take out"),
