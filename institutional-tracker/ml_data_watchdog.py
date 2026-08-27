@@ -12,7 +12,10 @@
 #
 # Writes data/data_quality_report.json.
 # Fires an alert email on any CRITICAL check.
-# Appends WARNING-level issues to data/digest_queue.json for daily digest.
+# Sends WARNING-level issues to the daily digest via ml_digest (which routes
+# through email_buffer/mail_guard). data/digest_queue.json is now a DEAD-LETTER
+# file: a row in it means delivery failed, and coherence_laws.law_work_queues_drain
+# measures how long it has been there.
 #
 # Run:  python ml_data_watchdog.py
 # GCP:  Python 3.11 — pandas, numpy, scikit-learn, lightgbm, xgboost, sqlite3,
@@ -32,6 +35,7 @@ from typing import TypedDict
 import pandas as pd
 
 from email_sender import send_alert_email
+import ml_digest
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -44,7 +48,10 @@ DB_PATH             = DATA_DIR / "historical_13f.db"
 MACRO_CACHE_PATH    = DATA_DIR / "macro_cache.parquet"
 RD_ML_HISTORY_PATH  = DATA_DIR / "rd_ml_history.json"
 REPORT_PATH         = DATA_DIR / "data_quality_report.json"
-DIGEST_QUEUE_PATH   = DATA_DIR / "digest_queue.json"
+# digest_queue.json is ml_digest's file now — the dead-letter store behind
+# ml_digest.deliver(). This module held its own path constant while it wrote
+# the file directly; leaving the constant behind would keep this module
+# looking like a reader of a queue it no longer touches.
 
 # ---------------------------------------------------------------------------
 # Thresholds
@@ -478,30 +485,25 @@ def check_label_count_trend(conn: sqlite3.Connection) -> CheckResult:
 # Digest queue helper
 # ---------------------------------------------------------------------------
 
-def _append_to_digest_queue(entries: list[dict]) -> None:
-    """Append WARNING entries to the shared digest queue JSON file."""
-    queue: list[dict] = []
-    if DIGEST_QUEUE_PATH.exists():
-        try:
-            with open(DIGEST_QUEUE_PATH, "r", encoding="utf-8") as fh:
-                queue = json.load(fh)
-            if not isinstance(queue, list):
-                log.warning("digest_queue.json was not a list — resetting.")
-                queue = []
-        except json.JSONDecodeError:
-            log.warning("digest_queue.json is malformed — resetting.")
-            queue = []
-    queue.extend(entries)
-    with open(DIGEST_QUEUE_PATH, "w", encoding="utf-8") as fh:
-        json.dump(queue, fh, indent=2)
-    log.info("Appended %d WARNING entry/entries to digest queue (%d total).", len(entries), len(queue))
+def _send_to_digest(entries: list[dict]) -> bool:
+    """Deliver WARNING entries to the daily digest. True if they went out.
+
+    This used to append them to `data/digest_queue.json` and stop. Nothing has
+    ever read that file — its only other mentions are the two sibling monitors,
+    each appending to it the same way — so three data-quality warnings raised on
+    2026-06-12 were still sitting there 75 days later, unseen. `ml_digest` sends
+    through `email_buffer`, which is the digest this function's old docstring
+    was already claiming to feed, and dead-letters anything it cannot deliver so
+    the failure has an age instead of a silence.
+    """
+    return ml_digest.deliver(entries, source="ml_data_watchdog")
 
 
 # ---------------------------------------------------------------------------
 # Core run function
 # ---------------------------------------------------------------------------
 
-def run() -> None:
+def _run() -> int:
     log.info("=" * 70)
     log.info("ML Data Watchdog starting — %s", datetime.now(timezone.utc).isoformat())
     log.info("=" * 70)
@@ -511,14 +513,14 @@ def run() -> None:
     # ------------------------------------------------------------------
     if not DB_PATH.exists():
         log.error("ABORT: database not found at %s", DB_PATH)
-        sys.exit(0)
+        return 0
 
     try:
         conn = sqlite3.connect(str(DB_PATH))
         log.info("Connected to %s", DB_PATH)
     except Exception as exc:
         log.exception("Cannot open database: %s", exc)
-        sys.exit(1)
+        return 1
 
     # ------------------------------------------------------------------
     # Run all checks
@@ -646,13 +648,38 @@ def run() -> None:
             }
             for c in warning_checks
         ]
-        _append_to_digest_queue(digest_entries)
+        _send_to_digest(digest_entries)
 
     log.info("ML Data Watchdog complete.")
+    return 0
+
+
+def run() -> int:
+    """Run every check; return a process exit status without ever taking one.
+
+    The body lives in `_run` because this module is BOTH a standalone script and
+    an in-process member of `ml_research_team_leader.AGENT_DEFS`. It used to say
+    `sys.exit(0)` on routine skip conditions, which raises SystemExit — a
+    BaseException the leader's `except Exception` could not see. One skip there
+    terminated the whole leader process with status 0, and every agent after
+    this one silently never ran. A library function returns; only `__main__`
+    decides the exit code.
+
+    `finally`, not a trailing call: `_run` returns early on several routine
+    conditions, and the dead-letter retry must not be gated behind the happy
+    path — that is how the undelivered rows accumulated in the first place.
+    """
+    try:
+        return _run()
+    finally:
+        # Retry anything an earlier run could not deliver — see ml_digest.drain_backlog.
+        ml_digest.drain_backlog()
+
+
 
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    run()
+    sys.exit(run())

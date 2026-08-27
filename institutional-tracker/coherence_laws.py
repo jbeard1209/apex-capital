@@ -1717,6 +1717,411 @@ def law_broker_orders_are_ledgered(orders: Optional[list] = None,
 
 
 # =============================================================================
+# LAW — work queues drain
+# =============================================================================
+
+# Which data/ files are WORK QUEUES. A queue holds things that must still
+# happen; a log holds things that already did. Only the first has a drain, so
+# only the first can fail to drain, and `*_log.json` is deliberately absent from
+# this list — 12 of the firm's queue-shaped files are append-only records whose
+# stock is SUPPOSED to rise forever. Reporting them would be an always-true,
+# never-closable finding (memory `an-aggregate-is-not-a-finding`).
+#
+# The name only decides SCOPE. It never decides the verdict: `rd_pod_pending.json`
+# is in scope with 18 rows and passes because its board reads-and-rewrites it, so
+# the measured age of its oldest row is zero. The measurement does the work.
+_QUEUE_GLOBS = ("*_queue.json", "*_pending.json", "*_requests.json")
+
+# Where a row's arrival time hides. Producers here are not consistent about this
+# and never will be; a queue whose rows carry NO recognised timestamp is reported
+# as unmeasurable rather than assumed fresh — assuming fresh is how a dead queue
+# stays quiet.
+_QUEUE_TS_KEYS = ("timestamp", "ts", "queued_at", "created_at", "created",
+                  "first_seen", "submitted_at", "date", "when")
+
+# How many complete passes of the firm's ENTIRE schedule a row may survive before
+# its presence is evidence that nothing is taking it. Not a staleness threshold
+# in days — the day count is derived below from the schedule itself, so retiring
+# the last weekly job tightens this automatically instead of leaving a hardcoded
+# number pointing at a cadence that no longer exists.
+_DRAIN_SLACK_PASSES = 2.0
+
+# cron's `@` shortcuts, in days between consecutive runs — the WORST gap, not the
+# average, because that is the number the deadline is priced in (`@monthly` at 31,
+# not 30). `@reboot` maps to None on purpose: it is the one shortcut with no
+# cadence at all, and it must not be allowed to set this number.
+_AT_SHORTCUTS = {
+    "@reboot": None, "@hourly": 1.0 / 24, "@daily": 1.0, "@midnight": 1.0,
+    "@weekly": 7.0, "@monthly": 31.0, "@yearly": 366.0, "@annually": 366.0,
+}
+
+
+def _slowest_scheduled_gap_days(schedule_text: str) -> Optional[float]:
+    """The longest any scheduled job in this firm can go between two runs, in days.
+
+    This is the unit the drain deadline is priced in. The question a drain check
+    really asks is not "is this row old?" — old is meaningless without a
+    reference — but "has every job in the firm had its turn, and did none of
+    them take this row?" One pass of the slowest cadence is exactly that turn.
+
+    Day granularity on purpose. A job firing six times a day and a job firing
+    once both come back as 1.0, which understates nothing that matters here
+    because we take the MAX across jobs: only the sparse end of the schedule can
+    set this number, and at the sparse end the intra-day times are noise.
+
+    `@reboot` is skipped rather than counted as an infinite gap. A boot-triggered
+    job has no cadence at all, and letting one set this number would push the
+    deadline to infinity and silence the law — the `fallback-that-means-act`
+    shape, where the degraded reading is the permissive one.
+
+    The other `@` shortcuts DO have cadences and are priced from `_AT_SHORTCUTS`.
+    Skipping them wholesale (as this did when first written) is not neutral: a
+    firm whose slowest job is `@weekly` would derive its deadline from the next
+    slowest line instead, and 7 real days of tolerance would silently become 1.
+    An unrecognised `@token` is skipped, and that direction is deliberate — the
+    aggregate here is a MAX, so anything left out only makes the deadline
+    TIGHTER, i.e. the law alarms sooner rather than going quiet.
+    """
+    from calendar import monthrange
+    horizon = 28
+    base = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    worst = None
+    for raw in schedule_text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("@"):
+            shortcut = _AT_SHORTCUTS.get(line.split()[0].lower())
+            if shortcut:                   # @reboot maps to None: no cadence
+                worst = max(worst or 0.0, shortcut)
+            continue
+        if line.startswith("launchd "):
+            # data/mac_launchd_snapshot.txt: "launchd <label> StartInterval=900 x.py"
+            m = re.search(r"StartInterval=(\d+)", line)
+            if m and int(m.group(1)) > 0:
+                worst = max(worst or 0.0, int(m.group(1)) / 86400.0)
+            continue
+        parts = line.split()
+        if len(parts) < 5 or re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", line):
+            continue
+        _minute, _hour, dom, mon, dow = parts[:5]
+        fires = []
+        for d in range(horizon):
+            day = base + timedelta(days=d)
+            if not _cron_field_matches(mon, day.month, 12):
+                continue
+            dom_star, dow_star = dom.strip() == "*", dow.strip() == "*"
+            dom_hit = _cron_field_matches(dom, day.day, monthrange(day.year, day.month)[1])
+            dow_hit = _cron_field_matches(dow, day.weekday() + 1 if day.weekday() < 6 else 0, 7)
+            # cron's documented OR rule: with BOTH day fields restricted, either
+            # one firing is enough. Treating it as AND would report a job that
+            # runs twice a week as one that never runs, and inflate this number.
+            if dom_star and dow_star:
+                hit = True
+            elif dom_star or dow_star:
+                hit = dom_hit if dow_star else dow_hit
+            else:
+                hit = dom_hit or dow_hit
+            if hit:
+                fires.append(d)
+        if len(fires) < 2:
+            continue                       # too sparse to measure over 28 days
+        gap = max(b - a for a, b in zip(fires, fires[1:]))
+        worst = max(worst or 0.0, float(gap))
+    return worst
+
+
+def _cron_field_matches(field: str, value: int, span: int) -> bool:
+    """Does one cron field admit `value`? Handles *, a,b, x-y and */n."""
+    field = field.strip()
+    if field == "*":
+        return True
+    for part in field.split(","):
+        step = 1
+        if "/" in part:
+            part, _, s = part.partition("/")
+            step = int(s) if s.isdigit() else 1
+        if part in ("*", ""):
+            lo, hi = 0, span
+        elif "-" in part.lstrip("-"):
+            a, _, b = part.partition("-")
+            if not (a.isdigit() and b.isdigit()):
+                continue
+            lo, hi = int(a), int(b)
+        elif part.isdigit():
+            lo = hi = int(part)
+        else:
+            continue
+        if lo <= value <= hi and (value - lo) % step == 0:
+            return True
+        # cron accepts both 0 and 7 for Sunday.
+        if span == 7 and value == 0 and lo <= 7 <= hi and (7 - lo) % step == 0:
+            return True
+    return False
+
+
+def _oldest_row_age_days(path: Path, now: datetime) -> Optional[float]:
+    """Age of the oldest row still PRESENT in a queue file, or None if unmeasurable.
+
+    "Still present" is the whole point. A queue's stock only falls if something
+    consumes it, so the age of what remains is a direct reading of residence
+    time — no static analysis, no guess about who the consumer is, no trusting a
+    module's own claim to drain what it writes.
+
+    None for a file with no rows, or rows carrying no recognised timestamp.
+    Neither is "fresh", and the caller must not read it as a pass.
+    """
+    try:
+        blob = json.loads(path.read_text())
+    except (ValueError, OSError):
+        return None
+    rows = blob if isinstance(blob, list) else None
+    if rows is None and isinstance(blob, dict):
+        rows = next((v for v in blob.values() if isinstance(v, list) and v), None)
+    if not rows:
+        return None
+    oldest = None
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for key in _QUEUE_TS_KEYS:
+            raw = row.get(key)
+            if not isinstance(raw, str) or len(raw) < 10:
+                continue
+            try:
+                dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            except ValueError:
+                break
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            if oldest is None or dt < oldest:
+                oldest = dt
+            break
+    if oldest is None:
+        return None
+    return (now - oldest).total_seconds() / 86400.0
+
+
+_READER_GRAPH_CACHE: List = []
+
+
+def _reader_graph():
+    """(sources, STRICTLY scheduler-reachable set, wiring_audit) — built once a run.
+
+    Memoised because `scheduler_reachable` walks every module in the firm and
+    costs ~20s, and the drain law asks it once per over-deadline queue. A law
+    whose cost scales with the number of findings gets its findings capped by
+    whoever notices the pipeline slowing down.
+
+    `strict=True`, and that is the whole reliability of this law's second source.
+    The loose walk adds an edge wherever a scheduled module merely NAMES another
+    by bare name, and `wiring_audit`'s own docstring says to refuse it "where a
+    false pass is the expensive one". Here it is the expensive one and the
+    difference is not academic: `ml_data_watchdog.py`, `ml_drift_monitor.py`,
+    `ml_research_team_leader.py` and `ml_digest.py` are loose-reachable from all
+    66 scheduler roots and strictly reachable from NONE — the ML research chain
+    is in no crontab on either host. Under the loose walk this law certified
+    `digest_queue.json` as drained by `ml_digest.py`, a module that never runs.
+    A false all-clear from the one control built to catch false all-clears is
+    worse than no control, so the error is pushed onto the other side: an
+    unresolved-but-real invocation edge yields a false VIOLATED, which is noisy,
+    visible, and triageable in a way that silence is not.
+    """
+    if _READER_GRAPH_CACHE:
+        return _READER_GRAPH_CACHE[0]
+    try:
+        import wiring_audit as wa
+        srcs = wa._py_sources()
+        reachable = wa.scheduler_reachable(srcs, strict=True)
+    except Exception:
+        return None
+    if reachable is None:
+        return None
+    _READER_GRAPH_CACHE.append((srcs, reachable, wa))
+    return _READER_GRAPH_CACHE[0]
+
+
+def _independent_scheduled_readers(fname: str,
+                                   graph: Optional[tuple] = None) -> Optional[List[str]]:
+    """Modules that READ `fname` and are not merely writing it back.
+
+    Three filters, each earning its place:
+
+      * a module that only WRITES the file is not a reader. `digest_queue.json`
+        has three modules that load it, append, and store it — a writer's own
+        load-append-store, which the plain "does the name appear in this file"
+        test counts as consumption, and so certifies a queue with no drain at all.
+      * a module scheduled NOWHERE is not a drain, however well it reads. That is
+        `orphan_agents_blindness` — reachability is not employment — and it is
+        why this walks the scheduler rather than the import graph.
+      * `test_*` and the audit tools are excluded: this file names queue
+        filenames while explaining past bugs, and a tool must not become the
+        consumer of the thing it audits by describing it. For the same reason
+        the mention test runs against `_code_only(txt)` — the three ML monitors
+        each carry a comment saying digest_queue.json is no longer theirs, and
+        a raw text search promoted all three back to readers on the strength of
+        the sentence explaining that they are not. A postmortem comment is not
+        a data dependency.
+
+    Returns None when the reader graph cannot be built (wiring_audit missing, or
+    no schedule to walk) — the source is absent, not clean.
+
+    `graph` is a `(sources, reachable, wiring_audit)` triple, for tests only. It
+    substitutes the module TEXT, never the three filters above — those still run
+    against the real `wiring_audit` helpers, so a test that feeds a synthetic
+    writer is exercising the shipped classifier and not a stand-in for it.
+    """
+    graph = graph or _reader_graph()
+    if graph is None:
+        return None
+    srcs, reachable, wa = graph
+    out = []
+    for name, txt in srcs.items():
+        if name.startswith("test_") or fname not in txt:
+            continue
+        if name in ("wiring_audit.py", "internal_audit_agent.py", "coherence_laws.py"):
+            continue
+        if name not in reachable or fname not in wa._code_only(txt):
+            continue
+        try:
+            writes = wa._declared_outputs(txt, wa.DATA_JSON_RE)
+        except Exception:
+            writes = []
+        if fname in writes and not re.search(
+                r"\b(?:pop|remove|del\s|clear|drain|dequeue)\b", txt):
+            continue                       # writes it, never takes anything out
+        out.append(name)
+    return sorted(out)
+
+
+@sources("queue files on disk (how long work has waited)",
+         "schedule + reader graph (whether anything can take it)")
+def law_work_queues_drain(now: Optional[datetime] = None,
+                          queues: Optional[dict] = None,
+                          schedule_text: Optional[str] = None) -> LawResult:
+    """Rows enter a work queue, so rows must leave it.
+
+    SOURCE A: `data/*_queue.json` etc — the age of the oldest row STILL THERE.
+              Written by producers who have no idea whether anyone drains them.
+    SOURCE B: the scheduler manifests plus the reader graph — whether any
+              scheduled module can take a row out, and how long a full pass of
+              the firm's schedule takes.
+
+    The two never read each other, which is the point. A dead queue is perfectly
+    self-consistent: three producers append, the file grows, every write
+    succeeds, and no error is ever raised. Nothing inside source A can tell you
+    the work was never done.
+
+    THE ESCAPE THIS IS BUILT FROM. `data/digest_queue.json` held three ML data-
+    quality WARNINGs stamped 2026-06-12 — 73 days undelivered when this was
+    written. `ml_data_watchdog.py` sends CRITICAL by email and routes WARNING
+    here, and here has no consumer: its only three mentioning modules are its own
+    three writers. Two detectors had it in view and both waved it through.
+    `check_orphan_queues` skips any file with rows (`non-empty = clearly used`) —
+    but rows nobody drains ARE the failure, and emptiness is the one state that
+    proves nothing (memory `presence-is-not-currency`). The orphan-agent walk
+    counted those three writers as readers of each other's output.
+
+    VIOLATED needs BOTH halves to fail: aged past the deadline AND no independent
+    scheduled reader. Age alone is not a defect — `chairman_decision_queue.json`
+    has 170 rows and the oldest is months old because it is waiting on a human,
+    and the human IS the drain. A law that cannot tell a backlog from a severed
+    wire would fire on both and be muted for it within a week.
+    """
+    name = "work_queues_drain"
+    src = law_work_queues_drain.sources
+    now = now or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+
+    if schedule_text is None:
+        try:
+            import wiring_audit as wa
+            parts = []
+            for reader in (wa._cron_snapshot, wa._launchd_snapshot):
+                p = reader()
+                if p.exists():
+                    parts.append(p.read_text())
+            schedule_text = "\n".join(parts)
+        except Exception as e:
+            return LawResult(name, CANNOT_TELL,
+                             f"cannot read the schedule ({type(e).__name__}: {e}) — "
+                             f"with no cadence there is no deadline to price a row's "
+                             f"age against. Owner: whoever owns the snapshots.", src)
+    if not schedule_text.strip():
+        return LawResult(name, CANNOT_TELL,
+                         "no schedule snapshot on this host — a row's age means "
+                         "nothing without a pass of the firm's schedule to measure "
+                         "it against. Run scripts/refresh_crontab_snapshot.sh.", src)
+
+    gap = _slowest_scheduled_gap_days(schedule_text)
+    if not gap:
+        return LawResult(name, CANNOT_TELL,
+                         "the schedule parsed to no measurable cadence — cannot "
+                         "derive a drain deadline. Owner: coherence_laws "
+                         "_slowest_scheduled_gap_days.", src)
+    deadline = gap * _DRAIN_SLACK_PASSES
+
+    if queues is None:
+        queues = {}
+        seen = set()
+        for pat in _QUEUE_GLOBS:
+            for fp in sorted(DATA_DIR.glob(pat)):
+                if fp.name in seen:
+                    continue
+                seen.add(fp.name)
+                queues[fp.name] = _oldest_row_age_days(fp, now)
+
+    measurable = {k: v for k, v in queues.items() if v is not None}
+    if not measurable:
+        return LawResult(name, CANNOT_TELL,
+                         f"{len(queues)} queue file(s) in scope and not one carries a "
+                         f"row with a readable timestamp — residence time is "
+                         f"unmeasurable, which is not the same as zero. Owner: "
+                         f"queue producers.", src)
+
+    stranded = []
+    for fname, age in sorted(measurable.items(), key=lambda kv: -kv[1]):
+        if age <= deadline:
+            continue
+        readers = _independent_scheduled_readers(fname)
+        if readers is None:
+            return LawResult(
+                name, CANNOT_TELL,
+                f"{fname}'s oldest row is {age:.0f}d old against a {deadline:.0f}d "
+                f"deadline, but the reader graph could not be built — cannot tell a "
+                f"severed wire from a backlog. Owner: wiring_audit.", src)
+        if readers:
+            continue                       # a real consumer exists: this is a backlog
+        stranded.append({
+            "queue": fname, "oldest_row_age_days": round(age, 1),
+            "deadline_days": round(deadline, 1),
+            "passes_survived": round(age / gap, 1),
+            "independent_scheduled_readers": 0,
+            "fault": "rows are aging in a queue no scheduled module drains",
+        })
+
+    if stranded:
+        worst = stranded[0]
+        return LawResult(
+            name, VIOLATED,
+            f"{len(stranded)} of {len(measurable)} measurable work queue(s) hold rows "
+            f"that no scheduled module can take out — worst is {worst['queue']} at "
+            f"{worst['oldest_row_age_days']}d, {worst['passes_survived']} complete "
+            f"passes of the firm's schedule (deadline {deadline:.0f}d = "
+            f"{_DRAIN_SLACK_PASSES:g} x the {gap:.0f}d slowest cadence). The work in "
+            f"them was produced and never done. Owner: each queue's producer.",
+            src, stranded[:20], n_examined=len(measurable))
+
+    return LawResult(
+        name, HOLDS,
+        f"all {len(measurable)} measurable work queue(s) either drain inside the "
+        f"{deadline:.0f}d deadline or have a scheduled consumer holding a backlog "
+        f"({len(queues) - len(measurable)} more carry no readable row timestamp)",
+        src, n_examined=len(measurable))
+
+
+# =============================================================================
 # registry + runner
 # =============================================================================
 
@@ -1742,6 +2147,8 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "every host trading the account is a host the firm has written down"),
     (law_broker_orders_are_ledgered,
      "every order the broker credits to this host went through the choke point"),
+    (law_work_queues_drain,
+     "work put into a queue must be taken out of it by something that runs"),
 ]
 
 

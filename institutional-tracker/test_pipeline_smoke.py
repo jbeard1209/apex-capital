@@ -2222,6 +2222,87 @@ class TestWiringContracts(unittest.TestCase):
         finally:
             wiring_audit._baseline_path = real
 
+    def test_losing_sight_of_a_baselined_orphan_is_not_a_fix(self):
+        """"Fixed" means REACHABLE — never "this check stopped producing a finding".
+
+        The ratchet's exit condition used to be `baseline - found_orphans`, i.e.
+        *the detector no longer flags it*. That is a different question from *it
+        got scheduled*, and the gap between them has now paid out twice:
+
+          2026-07-31  apex_system_cit_agent.py — a refactor changed how the
+                      PRODUCER gate matched, the agent stopped being flagged, and
+                      the audit demanded its removal from the baseline. It had
+                      never been scheduled for a minute.
+          2026-08-26  ml_feature_drift_monitor.py — same false all-clear through
+                      the READER gate. It was only visible because it named
+                      digest_queue.json; removing the spurious co-writer edge (a
+                      real fix) deleted the last reader of its last shared output,
+                      `if not readers: continue` skipped it, and the audit again
+                      asked for the baseline entry to go.
+
+        Both times the loosening would have been justified by a genuine
+        improvement elsewhere — which is exactly why the criterion cannot be an
+        internal gate. It has to be the one fact no refactor can redefine: can a
+        scheduler start it? This pins that a baselined module which is invisible
+        to the walk but still unreachable stays a NOTE and stays in the baseline,
+        while the two real exits (scheduled, or deleted) still hard-fail.
+        """
+        import wiring_audit, pathlib, tempfile
+
+        real = wiring_audit._baseline_path
+        tmp = None
+
+        def _baseline(entries):
+            nonlocal tmp
+            with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+                json.dump({"known_orphans": entries}, fh)
+                tmp = fh.name
+            wiring_audit._baseline_path = (lambda _p=pathlib.Path(tmp): _p)
+
+        def _audit(src, baseline):
+            _baseline(baseline)
+            wiring_audit.problems, wiring_audit.notes = [], []
+            wiring_audit.check_orphan_agents(src)
+            return list(wiring_audit.problems), list(wiring_audit.notes)
+
+        try:
+            # known_ghost is unscheduled AND its one output has lost its reader,
+            # so the producer/reader walk cannot see it at all.
+            blind = {
+                "main.py":            "import scheduled_agent\n",
+                "scheduled_agent.py": 'json.dump(d, open("data/sched_out.json", "w"))\n',
+                "known_ghost.py":     'json.dump(d, open("data/known_ghost_out.json", "w"))\n',
+                "reader.py":          'b = load("data/sched_out.json")\n',
+            }
+            problems, notes = _audit(blind, ["known_ghost.py"])
+            self.assertFalse(
+                any("known_ghost.py" in p for p in problems),
+                "an agent that is still scheduled NOWHERE must never be reported as "
+                "'no longer an orphan' just because this check stopped seeing it")
+            hit = [n for n in notes if "known_ghost.py" in n]
+            self.assertTrue(hit, "it must still be reported — silence is the failure")
+            self.assertIn("STILL not reachable", hit[0],
+                          "the note must say why it is still an orphan, not merely "
+                          "that it is baselined")
+
+            # The two real exits from the baseline must still hard-fail, or the
+            # ratchet would stop tightening at all.
+            wired = dict(blind, **{"main.py": "import scheduled_agent, known_ghost\n"})
+            problems, _ = _audit(wired, ["known_ghost.py"])
+            self.assertTrue(
+                any("known_ghost.py" in p and "a scheduler now reaches it" in p
+                    for p in problems),
+                "once it IS scheduled the baseline entry must be removed")
+
+            deleted = {k: v for k, v in blind.items() if k != "known_ghost.py"}
+            problems, _ = _audit(deleted, ["known_ghost.py"])
+            self.assertTrue(
+                any("known_ghost.py" in p and "no longer exists" in p
+                    for p in problems),
+                "a baseline entry for a deleted module must be removed too")
+        finally:
+            wiring_audit._baseline_path = real
+
     def test_every_logic_rule_has_a_handler(self):
         """Every rule the Logic Team can emit must resolve to an implementation handler.
 
@@ -12447,6 +12528,546 @@ class TestReaderCadence(unittest.TestCase):
             "check_reader_keeps_up_with_writer", called,
             "the cadence check exists but run_checks never calls it — an "
             "unrun detector is an absent one")
+
+
+class TestWorkQueuesDrain(unittest.TestCase):
+    """Work put into a queue must be taken out of it by something that runs.
+
+    The escape: `data/digest_queue.json` held three ML data-quality WARNINGs
+    stamped 2026-06-12, undelivered for 75 days. Three modules wrote it, none
+    read it, and both detectors that had it in view waved it through — one
+    because the file was non-empty, the other because a writer re-reading its own
+    output looks like a reader.
+
+    These tests pin the two things that made the fix a fix rather than a tidy-up:
+    the law fires only when BOTH sources fail (so a human backlog is not an
+    alarm), and the delivery path cannot go silent again.
+    """
+
+    SCHEDULE = "0 8 * * 0 weekly.py\n0 9 * * * daily.py\n"
+
+    def setUp(self):
+        import coherence_laws as cl
+        self.cl = cl
+
+    # -- the derived deadline ------------------------------------------------
+
+    def test_the_deadline_is_derived_from_the_schedule_not_hardcoded(self):
+        """Retiring the slowest job must tighten the deadline by itself.
+
+        A hardcoded "14 days" would still say 14 days after the last weekly job
+        was retired, which is a threshold pointing at a cadence that no longer
+        exists — the shape memory `sample-outlived-its-rule` is about.
+        """
+        weekly = self.cl._slowest_scheduled_gap_days("0 8 * * 0 w.py\n0 9 * * * d.py\n")
+        daily = self.cl._slowest_scheduled_gap_days("0 9 * * * d.py\n0 3 * * * e.py\n")
+        self.assertEqual(7.0, weekly)
+        self.assertEqual(1.0, daily)
+        self.assertLess(daily, weekly,
+                        "dropping the weekly job did not tighten the deadline")
+
+    def test_a_reboot_only_job_cannot_silence_the_law(self):
+        """`@reboot` has no cadence; letting it set the gap sets it to infinity.
+
+        The `fallback-that-means-act` shape: the degraded reading must not be the
+        permissive one. The mirror case matters just as much and was the bug a
+        mutant found here — skipping EVERY `@` line, rather than only the one
+        without a cadence, silently drops `@weekly` out of the max and shrinks a
+        7-day tolerance to 1.
+        """
+        gap = self.cl._slowest_scheduled_gap_days(
+            "@reboot cd /x && python3 main.py\n0 9 * * * d.py\n")
+        self.assertEqual(1.0, gap, "an @reboot line leaked into the cadence")
+
+        gap = self.cl._slowest_scheduled_gap_days("@weekly w.py\n0 9 * * * d.py\n")
+        self.assertEqual(7.0, gap,
+                         "@weekly is a real cadence and must set the deadline")
+
+    def test_a_twice_weekly_job_is_not_read_as_never_running(self):
+        """cron ORs the two day fields when both are restricted.
+
+        Treating it as AND reports a job that fires every Monday and Thursday as
+        one that fires never, which inflates the deadline and mutes the law.
+
+        4.0, not 3.0: Mon->Thu is three days but Thu->Mon is four, and the law
+        must price the WORST wait, not the average one.
+        """
+        self.assertEqual(
+            4.0, self.cl._slowest_scheduled_gap_days("0 9 * * 1,4 x.py\n"))
+
+        # The line above has dom=`*`, so it never reaches the both-restricted
+        # branch where the OR rule actually lives — a mutant that ANDed the two
+        # fields survived it. This one restricts BOTH: "the 1st of the month, or
+        # any Monday". Under cron's rule that fires ~5x a month; under AND it
+        # fires only when the 1st IS a Monday, which inside a 28-day window is
+        # at most once, so the job drops out and the daily line sets the number.
+        both = self.cl._slowest_scheduled_gap_days("0 9 1 * 1 x.py\n0 9 * * * d.py\n")
+        self.assertGreater(both, 1.0,
+                           "with both day fields restricted the job was read as "
+                           "never running — cron ORs them, it does not AND them")
+
+    def test_an_unreadable_schedule_defers_it_does_not_pass(self):
+        r = self.cl.law_work_queues_drain(queues={"zz_queue.json": 999.0},
+                                          schedule_text="")
+        self.assertEqual(self.cl.CANNOT_TELL, r.verdict,
+                         "no schedule must defer, never certify")
+        # Two different CANNOT_TELLs live here and they route to different
+        # people: "this host has no snapshot" is fixed by running the refresh
+        # script, "the parser found no cadence in a snapshot that exists" is
+        # coherence_laws' own bug. Collapsing them sends the first to the wrong
+        # owner, so the distinction is pinned, not just the verdict.
+        self.assertIn("refresh_crontab_snapshot", r.detail,
+                      "an absent snapshot must name the command that fixes it")
+
+    # -- the conjunction that makes it usable --------------------------------
+
+    def test_an_undrained_queue_violates(self):
+        r = self.cl.law_work_queues_drain(
+            queues={"zzpill_queue.json": 400.0}, schedule_text=self.SCHEDULE)
+        self.assertEqual(self.cl.VIOLATED, r.verdict, r.detail)
+        self.assertEqual(1, r.n_examined,
+                         "a violation with no denominator cannot be triaged")
+        self.assertEqual("zzpill_queue.json", r.evidence[0]["queue"])
+
+    def test_a_backlog_behind_a_real_consumer_is_not_a_violation(self):
+        """Age alone is not the defect.
+
+        `chairman_decision_queue.json` holds months-old rows because a human has
+        not decided them, and the human IS the drain. A law that fired on that
+        would be muted within a week and take the real finding with it.
+        """
+        r = self.cl.law_work_queues_drain(
+            queues={"cos_meeting_requests.json": 400.0},
+            schedule_text=self.SCHEDULE)
+        self.assertEqual(self.cl.HOLDS, r.verdict, r.detail)
+
+    def test_a_queue_with_no_timestamps_is_unmeasurable_not_fresh(self):
+        r = self.cl.law_work_queues_drain(queues={"zz_queue.json": None},
+                                          schedule_text=self.SCHEDULE)
+        self.assertEqual(self.cl.CANNOT_TELL, r.verdict, r.detail)
+
+    def test_logs_are_out_of_scope_and_queues_are_in(self):
+        """A log records what happened; only a queue has a drain to fail.
+
+        12 of the firm's queue-shaped files are append-only logs whose stock is
+        supposed to rise forever. Reporting them would be an always-true,
+        never-closable finding (memory `an-aggregate-is-not-a-finding`).
+        """
+        globs = self.cl._QUEUE_GLOBS
+        self.assertNotIn("*_log.json", globs)
+        self.assertIn("*_queue.json", globs)
+        self.assertIn("*_pending.json", globs)
+
+    # -- what made the escape invisible --------------------------------------
+
+    def test_a_writer_re_reading_its_own_output_is_not_a_reader(self):
+        """The blindness itself. Three writers looked like three consumers."""
+        readers = self.cl._independent_scheduled_readers("digest_queue.json")
+        self.assertIsNotNone(readers, "the reader graph could not be built")
+        for w in ("ml_drift_monitor.py", "ml_feature_drift_monitor.py"):
+            self.assertNotIn(w, readers,
+                             f"{w} only writes digest_queue.json — counting it as a "
+                             f"reader is what let the queue look wired")
+
+    def test_the_reader_test_uses_the_strict_scheduler_walk(self):
+        """The loose walk made this law's second source a near-tautology.
+
+        `wiring_audit.scheduler_reachable()` adds an edge wherever a scheduled
+        module merely names another by bare name. Measured: ml_data_watchdog,
+        ml_drift_monitor, ml_research_team_leader and ml_digest are loosely
+        reachable from all 66 scheduler roots and strictly reachable from none —
+        the ML research chain is in no crontab on either host. Under the loose
+        walk this law reported HOLDS on digest_queue.json on the strength of a
+        consumer that never runs, which is the exact failure it exists to catch.
+        """
+        import wiring_audit as wa
+        src = Path(self.cl.__file__).read_text()
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef) and n.name == "_reader_graph")
+        call = next((c for c in ast.walk(fn)
+                     if isinstance(c, ast.Call)
+                     and getattr(c.func, "attr", None) == "scheduler_reachable"), None)
+        self.assertIsNotNone(call, "_reader_graph no longer asks who is scheduled")
+        self.assertTrue(
+            any(k.arg == "strict" and k.value.value is True for k in call.keywords),
+            "the drain law's reader test fell back to the loose walk — a module "
+            "that is merely NAMED by something scheduled would certify a dead "
+            "queue as drained")
+
+        # and the invariant, on live data: nothing may be reported as a drain
+        # that the strict walk cannot start.
+        strict = wa.scheduler_reachable(wa._py_sources(), strict=True)
+        got = self.cl._independent_scheduled_readers("cit_clarification_requests.json")
+        self.assertIsNotNone(got, "the reader graph could not be built")
+        for m in got:
+            self.assertIn(m, strict, f"{m} was accepted as a drain but no "
+                                     f"scheduler resolves to it")
+
+    def test_each_reader_filter_holds_on_its_own(self):
+        """The live check above passes for the wrong reason, so pin the branches.
+
+        Once the monitors stopped naming digest_queue.json in code at all, the
+        comment filter alone excluded them and the writer filter went untested —
+        a mutant that deleted it survived. These four modules separate the
+        filters: only the one that actually takes rows out is a drain.
+
+        The graph is synthetic; the classifier is not. `_declared_outputs`,
+        `_code_only` and the pop/remove test all run for real against this text.
+        """
+        import wiring_audit as wa
+        f = "zzsynthetic_queue.json"
+        srcs = {
+            # writes it, re-reads its own file to append — NOT a consumer
+            "zz_writer.py": (
+                'QUEUE = DATA_DIR / "%s"\n'
+                'def append(entry):\n'
+                '    rows = json.loads(QUEUE.read_text())\n'
+                '    rows.append(entry)\n'
+                '    with open(QUEUE, "w") as fh:\n'
+                '        json.dump(rows, fh)\n' % f),
+            # takes rows out — the real drain
+            "zz_consumer.py": (
+                'QUEUE = DATA_DIR / "%s"\n'
+                'def take():\n'
+                '    rows = json.loads(QUEUE.read_text())\n'
+                '    return rows.pop(0)\n' % f),
+            # only mentions it while explaining a past bug
+            "zz_postmortem.py": '# 2026-08: %s used to have no drain at all.\nX = 1\n' % f,
+            # a genuine reader that no scheduler ever starts
+            "zz_orphan.py": (
+                'QUEUE = DATA_DIR / "%s"\n'
+                'def take():\n'
+                '    return json.loads(QUEUE.read_text()).pop(0)\n' % f),
+        }
+        reachable = {"zz_writer.py", "zz_consumer.py", "zz_postmortem.py"}
+        got = self.cl._independent_scheduled_readers(f, graph=(srcs, reachable, wa))
+        self.assertEqual(["zz_consumer.py"], got,
+                         "exactly one of these four takes a row out of the queue")
+
+    def test_the_orphan_queue_check_no_longer_trusts_non_emptiness(self):
+        """`if size > 0: continue  # non-empty = clearly used` was the hole.
+
+        The skip stays — the other half is the drain law's question now — but the
+        delegation has to be enforced, or deleting the law silently reopens it.
+        """
+        import wiring_audit as wa
+        src = Path(wa.__file__).read_text()
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef) and n.name == "check_orphan_queues")
+        named = {c.value for c in ast.walk(fn)
+                 if isinstance(c, ast.Constant) and isinstance(c.value, str)}
+        self.assertTrue(
+            any("law_work_queues_drain" in s for s in named),
+            "check_orphan_queues skips non-empty queues but never names the "
+            "control that covers them — an unenforced delegation")
+
+        keep = (wa.problems, wa.notes)
+        real = wa._registered_laws
+        try:
+            wa.problems, wa.notes = [], []
+            wa._registered_laws = lambda: []          # the law is gone
+            wa.check_orphan_queues(wa._py_sources())
+            got = " ".join(wa.problems)
+        finally:
+            wa.problems, wa.notes = keep
+            wa._registered_laws = real
+        self.assertIn("law_work_queues_drain", got,
+                      "deleting the drain law left check_orphan_queues quiet — the "
+                      "non-empty hole reopens with nothing saying so")
+
+    def test_the_law_is_registered_and_declares_two_sources(self):
+        names = {fn.__name__ for fn, _ in self.cl.LAWS}
+        self.assertIn("law_work_queues_drain", names)
+        srcs = self.cl.law_work_queues_drain.sources
+        self.assertEqual(2, len(set(srcs)), "the two sources are not independent")
+
+
+class TestAgentsCannotExitTheOrchestrator(unittest.TestCase):
+    """An agent called in-process must not be able to end the process.
+
+    `ml_research_team_leader.run_all_agents()` imports six agents and calls
+    each `run()` in turn. Several of those modules were written as standalone
+    scripts and said `sys.exit(0)` on ROUTINE skip conditions — ml_drift_monitor
+    had eight such lines inside run(), ml_data_watchdog two. `sys.exit` raises
+    SystemExit, which derives from BaseException, so `except Exception` never
+    saw it and the first skip killed the whole process at agent 2 of 6.
+
+    The four agents after it never ran: ml_data_watchdog, ml_alpha_decay_monitor,
+    ml_alt_data_agent, ml_rd_bridge_agent. `send_daily_brief` never ran. And the
+    status code was 0 — the degraded path returned the all-clear, so nothing
+    downstream could tell (memory `fallback-that-means-act`).
+
+    Both trigger conditions are live: no `data/model_v3.pkl` on the Mac, and
+    zero labelled rows inside the 60-day window on the VM (newest is 2026-05-15).
+    """
+
+    def setUp(self):
+        import ml_research_team_leader as L
+        self.L = L
+
+    def test_a_member_that_exits_does_not_take_the_others_with_it(self):
+        L = self.L
+        ran = []
+
+        def fake_import(module_name):
+            def _run():
+                ran.append(module_name)
+                if module_name == "ml_drift_monitor":
+                    raise SystemExit(0)      # exactly what the old code did
+            return _run
+
+        real = L._import_agent_run
+        try:
+            L._import_agent_run = fake_import
+            results = L.run_all_agents()
+        finally:
+            L._import_agent_run = real
+
+        self.assertEqual([n for n, _ in L.AGENT_DEFS], ran,
+                         "an agent's sys.exit stopped the ones after it")
+        self.assertIn("ERROR", results["ml_drift_monitor"],
+                      "exiting the process was recorded as success")
+        self.assertEqual("OK", results["ml_data_watchdog"],
+                         "the agent after the exiting one must still be reported")
+
+    def test_a_keyboard_interrupt_still_stops_everything(self):
+        """The one BaseException that must NOT be contained.
+
+        Catching SystemExit and stopping there is the fix; swallowing every
+        BaseException would mean ^C moves to the next agent instead of ending
+        the run, which is worse than the bug.
+        """
+        L = self.L
+
+        def fake_import(module_name):
+            def _run():
+                if module_name == "ml_drift_monitor":
+                    raise KeyboardInterrupt
+            return _run
+
+        real = L._import_agent_run
+        try:
+            L._import_agent_run = fake_import
+            with self.assertRaises(KeyboardInterrupt):
+                L.run_all_agents()
+        finally:
+            L._import_agent_run = real
+
+    def test_a_nonzero_return_is_not_reported_as_ok(self):
+        """The agents now return their status instead of exiting on it.
+
+        If the orchestrator ignored the return value, the fix would have traded
+        a loud process kill for a silent success — the same escape one layer in.
+        """
+        L = self.L
+
+        def fake_import(module_name):
+            return lambda: 1 if module_name == "ml_data_watchdog" else None
+
+        real = L._import_agent_run
+        try:
+            L._import_agent_run = fake_import
+            results = L.run_all_agents()
+        finally:
+            L._import_agent_run = real
+        self.assertIn("ERROR", results["ml_data_watchdog"])
+        self.assertEqual("OK", results["ml_improvement_agent"])
+
+    def test_no_orchestrated_agent_exits_inside_run(self):
+        """AST, over every member of AGENT_DEFS — the rule, not the two fixes.
+
+        Grep would match the `sys.exit` in each module's `__main__` block, which
+        is legitimate: a standalone script chooses its own exit code. Only calls
+        reachable from the function the orchestrator invokes are the defect.
+        """
+        offenders = []
+        for _, module_name in self.L.AGENT_DEFS:
+            path = Path(module_name + ".py")
+            if not path.exists():
+                offenders.append(f"{module_name}: module file is missing")
+                continue
+            tree = ast.parse(path.read_text())
+            fns = {n.name: n for n in tree.body if isinstance(n, ast.FunctionDef)}
+            entry = fns.get("run")
+            self.assertIsNotNone(entry, f"{module_name} exposes no run()")
+            # follow run() into any module-level helper it calls, one hop — the
+            # fixed modules delegate to _run and the exits live in there.
+            reach = [entry]
+            for call in ast.walk(entry):
+                if isinstance(call, ast.Call) and isinstance(call.func, ast.Name):
+                    helper = fns.get(call.func.id)
+                    if helper is not None and helper is not entry:
+                        reach.append(helper)
+            for fn in reach:
+                for n in ast.walk(fn):
+                    bad = (isinstance(n, ast.Call)
+                           and getattr(n.func, "attr", None) == "exit"
+                           and getattr(getattr(n.func, "value", None), "id", None) == "sys")
+                    bad = bad or (isinstance(n, ast.Raise) and isinstance(n.exc, ast.Call)
+                                  and getattr(n.exc.func, "id", None) == "SystemExit")
+                    if bad:
+                        offenders.append(f"{module_name}:{n.lineno} in {fn.name}()")
+        self.assertEqual([], offenders,
+                         "these agents can end the leader's process from inside "
+                         "run(); return a status instead: " + ", ".join(offenders))
+
+    def test_the_dead_letter_retry_is_not_gated_behind_the_happy_path(self):
+        """`run()` returns early on routine conditions; the retry must still fire.
+
+        Leaving `drain_backlog()` as the last statement of the body put the
+        recovery path behind every one of those early returns — the backlog
+        would only ever drain on the runs that did not need draining.
+        """
+        for module_name in ("ml_data_watchdog", "ml_drift_monitor"):
+            tree = ast.parse(Path(module_name + ".py").read_text())
+            fn = next(n for n in tree.body
+                      if isinstance(n, ast.FunctionDef) and n.name == "run")
+            tries = [n for n in ast.walk(fn) if isinstance(n, ast.Try) and n.finalbody]
+            self.assertTrue(tries, f"{module_name}.run() has no finally block")
+            drained = any(
+                isinstance(c, ast.Call) and getattr(c.func, "attr", None) == "drain_backlog"
+                for t in tries for stmt in t.finalbody for c in ast.walk(stmt))
+            self.assertTrue(drained,
+                            f"{module_name}.run() does not drain the dead-letter "
+                            f"file in a finally — an early return skips the retry")
+
+
+class TestMLDigestDelivers(unittest.TestCase):
+    """The WARNING branch of the ML monitors must reach a human.
+
+    It used to reach `data/digest_queue.json` and stop. `severity-below-the-
+    escalation-floor`: CRITICAL was wired to an owner and everything under it was
+    written down instead of sent.
+    """
+
+    def setUp(self):
+        import ml_digest
+        self.md = ml_digest
+        self._real_queue = ml_digest.DIGEST_QUEUE_PATH
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        ml_digest.DIGEST_QUEUE_PATH = Path(self._tmp.name) / "digest_queue.json"
+        ml_digest.DATA_DIR = Path(self._tmp.name)
+        self.addCleanup(setattr, ml_digest, "DIGEST_QUEUE_PATH", self._real_queue)
+
+    def _entry(self, ts="2026-06-12T23:58:39.855068+00:00", subject="x"):
+        return {"source": "ml_data_watchdog", "timestamp": ts,
+                "subject": subject, "detail": {"k": "v"}}
+
+    def _with_buffer(self, ok):
+        """Swap email_buffer.buffer_email for one that reports `ok`."""
+        import email_buffer
+        sent = []
+        real = email_buffer.buffer_email
+
+        def fake(subject, html_body, sender_name="", key_metrics=None):
+            sent.append((subject, html_body))
+            return ok
+        email_buffer.buffer_email = fake
+        self.addCleanup(setattr, email_buffer, "buffer_email", real)
+        return sent
+
+    def test_a_warning_reaches_the_digest(self):
+        sent = self._with_buffer(True)
+        self.assertTrue(self.md.deliver([self._entry()]))
+        self.assertEqual(1, len(sent), "nothing was handed to the digest")
+        self.assertEqual([], json.loads(self.md.DIGEST_QUEUE_PATH.read_text()),
+                         "a delivered entry was still left in the queue")
+
+    def test_an_undelivered_warning_is_dead_lettered_not_dropped(self):
+        """Silence is the one outcome this path may not have."""
+        self._with_buffer(False)
+        self.assertFalse(self.md.deliver([self._entry()]))
+        rows = json.loads(self.md.DIGEST_QUEUE_PATH.read_text())
+        self.assertEqual(1, len(rows), "the undelivered entry vanished")
+
+    def test_the_backlog_drains_without_new_work_arriving(self):
+        """`deliver` is only reached from inside each monitor's `if WARNING:`.
+
+        Without an unconditional drain the dead-letter file would clear only when
+        another warning happened to fire — which is the stuck queue again, one
+        quiet week away.
+        """
+        self._with_buffer(False)
+        self.md.deliver([self._entry()])
+        self.assertEqual(1, len(json.loads(self.md.DIGEST_QUEUE_PATH.read_text())))
+
+        sent = self._with_buffer(True)
+        self.assertTrue(self.md.drain_backlog())
+        self.assertEqual(1, len(sent), "the backlog was never retried")
+        self.assertEqual([], json.loads(self.md.DIGEST_QUEUE_PATH.read_text()))
+
+    def test_a_dead_letter_has_a_measurable_age(self):
+        self._with_buffer(False)
+        self.md.deliver([self._entry(ts="2026-06-12T00:00:00+00:00")])
+        age = self.md.dead_letter_age_days(
+            now=datetime(2026, 6, 22, tzinfo=timezone.utc))
+        self.assertAlmostEqual(10.0, age, places=1)
+
+    def test_no_monitor_still_writes_the_queue_itself(self):
+        """The fix is only a fix if all three producers went through it.
+
+        AST, not grep: every one of these files now carries a comment explaining
+        the old append, and a text search would match the postmortem.
+        """
+        for mod in ("ml_data_watchdog.py", "ml_drift_monitor.py",
+                    "ml_feature_drift_monitor.py"):
+            tree = ast.parse((Path(__file__).parent / mod).read_text())
+            opens = [n for n in ast.walk(tree)
+                     if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                     and n.func.id == "open"
+                     and any(isinstance(a, ast.Name) and a.id == "DIGEST_QUEUE_PATH"
+                             for a in n.args)]
+            self.assertEqual(
+                [], opens,
+                f"{mod} still opens DIGEST_QUEUE_PATH directly — it must route "
+                f"through ml_digest so the entry actually gets delivered")
+
+            calls = {n.func.attr for n in ast.walk(tree)
+                     if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                     and isinstance(n.func.value, ast.Name)
+                     and n.func.value.id == "ml_digest"}
+            self.assertIn("drain_backlog", calls,
+                          f"{mod} never retries the dead-letter backlog")
+
+    def test_the_migration_archives_before_it_clears(self):
+        """A migration that can destroy what it preserves is not a migration.
+
+        `truncate-before-lock`: the archive write must complete before the queue
+        is emptied, or a crash between them loses the rows outright.
+        """
+        src = (Path(__file__).parent / "scripts" / "migrate_digest_queue.py").read_text()
+        tree = ast.parse(src)
+        main = next(n for n in ast.walk(tree)
+                    if isinstance(n, ast.FunctionDef) and n.name == "main")
+        # The TARGET of the atomic rename, not its receiver: both calls read
+        # `tmp.replace(X)`, so the receiver is "tmp" in each and says nothing
+        # about which file is committed first.
+        order = [n.args[0].id for n in ast.walk(main)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "replace" and n.args
+                 and isinstance(n.args[0], ast.Name)]
+        self.assertEqual(["ARCHIVE", "QUEUE"], order[:2],
+                         "the queue is cleared before the archive is committed")
+
+    def test_nothing_auto_expires_the_dead_letter_file(self):
+        """The file's whole value is that it drains only on delivery.
+
+        An "archive anything older than N days" rule inside ml_digest would clear
+        the evidence the drain law reads, on a timer — memory
+        `fix_that_erased_its_detector`.
+        """
+        tree = ast.parse(Path(self.md.__file__).read_text())
+        for fn in ast.walk(tree):
+            if not isinstance(fn, ast.FunctionDef):
+                continue
+            names = {n.id for n in ast.walk(fn) if isinstance(n, ast.Name)}
+            if "_save_dead_letters" not in names:
+                continue
+            self.assertNotIn(
+                "dead_letter_age_days", names,
+                f"ml_digest.{fn.name} both ages rows and rewrites the file — that "
+                f"is the shape of a timer that clears its own detector")
 
 
 class TestInternalAudit(unittest.TestCase):

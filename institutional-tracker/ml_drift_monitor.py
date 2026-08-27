@@ -27,6 +27,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 from email_sender import send_alert_email
+import ml_digest
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -40,7 +41,10 @@ MODEL_PATH        = (DATA_DIR / "model_v5.pkl" if (DATA_DIR / "model_v5.pkl").ex
                      else DATA_DIR / "model_v3.pkl")
 DB_PATH           = DATA_DIR / "historical_13f.db"
 REPORT_PATH       = DATA_DIR / "drift_report.json"
-DIGEST_QUEUE_PATH = DATA_DIR / "digest_queue.json"
+# digest_queue.json is ml_digest's file now — the dead-letter store behind
+# ml_digest.deliver(). This module held its own path constant while it wrote
+# the file directly; leaving the constant behind would keep this module
+# looking like a reader of a queue it no longer touches.
 
 # ---------------------------------------------------------------------------
 # Thresholds
@@ -193,30 +197,20 @@ def _compute_auc(y_true: pd.Series, y_pred: np.ndarray, label: str) -> float:
     return float(auc)
 
 
-def _append_to_digest_queue(entry: dict) -> None:
-    """Append a WARNING entry to the digest queue JSON file (list of dicts)."""
-    queue: list[dict] = []
-    if DIGEST_QUEUE_PATH.exists():
-        try:
-            with open(DIGEST_QUEUE_PATH, "r", encoding="utf-8") as fh:
-                queue = json.load(fh)
-            if not isinstance(queue, list):
-                log.warning("digest_queue.json was not a list — resetting.")
-                queue = []
-        except json.JSONDecodeError:
-            log.warning("digest_queue.json is malformed — resetting.")
-            queue = []
-    queue.append(entry)
-    with open(DIGEST_QUEUE_PATH, "w", encoding="utf-8") as fh:
-        json.dump(queue, fh, indent=2)
-    log.info("Appended WARNING entry to digest queue (%d total items).", len(queue))
+def _send_to_digest(entry: dict) -> bool:
+    """Deliver a WARNING-level drift finding to the daily digest.
+
+    Was an append to `data/digest_queue.json`, a file with three writers and no
+    reader — see `ml_digest` for the 75-day escape that came of it.
+    """
+    return ml_digest.deliver([entry], source="ml_drift_monitor")
 
 
 # ---------------------------------------------------------------------------
 # Core run function
 # ---------------------------------------------------------------------------
 
-def run() -> None:
+def _run() -> int:
     log.info("=" * 70)
     log.info("ML Drift Monitor starting — %s", datetime.now(timezone.utc).isoformat())
     log.info("=" * 70)
@@ -228,10 +222,10 @@ def run() -> None:
         bundle = _load_model(MODEL_PATH)
     except FileNotFoundError as exc:
         log.error("ABORT: %s", exc)
-        sys.exit(0)  # graceful — not a crash, model just isn't deployed yet
+        return 0  # graceful — not a crash, model just isn't deployed yet
     except Exception as exc:
         log.exception("Unexpected error loading model: %s", exc)
-        sys.exit(1)
+        return 1
 
     models           = bundle["models"]
     ensemble_weights = bundle["ensemble_weights"]
@@ -243,7 +237,7 @@ def run() -> None:
     # ------------------------------------------------------------------
     if not DB_PATH.exists():
         log.error("ABORT: database not found at %s", DB_PATH)
-        sys.exit(0)
+        return 0
 
     try:
         conn = sqlite3.connect(str(DB_PATH))
@@ -261,7 +255,7 @@ def run() -> None:
         conn.close()
     except Exception as exc:
         log.exception("Database query failed: %s", exc)
-        sys.exit(1)
+        return 1
 
     log.info(
         "Window sizes — recent: %d rows, historical: %d rows",
@@ -279,11 +273,11 @@ def run() -> None:
             len(recent_df),
             MIN_RECENT_SAMPLES,
         )
-        sys.exit(0)
+        return 0
 
     if len(historical_df) == 0:
         log.warning("Historical window is empty — cannot compute historical AUC. Skipping.")
-        sys.exit(0)
+        return 0
 
     # ------------------------------------------------------------------
     # 4. Build feature matrices
@@ -302,14 +296,14 @@ def run() -> None:
         preds_historical = _ensemble_predict(X_historical, models, ensemble_weights)
     except Exception as exc:
         log.exception("Ensemble prediction failed: %s", exc)
-        sys.exit(1)
+        return 1
 
     try:
         recent_auc     = _compute_auc(y_recent,     preds_recent,     "recent")
         historical_auc = _compute_auc(y_historical, preds_historical, "historical")
     except ValueError as exc:
         log.error("AUC computation failed: %s", exc)
-        sys.exit(0)
+        return 0
 
     # ------------------------------------------------------------------
     # 7. Compute drift and determine status
@@ -407,13 +401,38 @@ def run() -> None:
             "subject":   f"Model Drift WARNING: drift={drift:+.4f}",
             "detail":    report,
         }
-        _append_to_digest_queue(digest_entry)
+        _send_to_digest(digest_entry)
 
     log.info("ML Drift Monitor complete.")
+    return 0
+
+
+def run() -> int:
+    """Run every check; return a process exit status without ever taking one.
+
+    The body lives in `_run` because this module is BOTH a standalone script and
+    an in-process member of `ml_research_team_leader.AGENT_DEFS`. It used to say
+    `sys.exit(0)` on routine skip conditions, which raises SystemExit — a
+    BaseException the leader's `except Exception` could not see. One skip there
+    terminated the whole leader process with status 0, and every agent after
+    this one silently never ran. A library function returns; only `__main__`
+    decides the exit code.
+
+    `finally`, not a trailing call: `_run` returns early on several routine
+    conditions, and the dead-letter retry must not be gated behind the happy
+    path — that is how the undelivered rows accumulated in the first place.
+    """
+    try:
+        return _run()
+    finally:
+        # Retry anything an earlier run could not deliver — see ml_digest.drain_backlog.
+        ml_digest.drain_backlog()
+
+
 
 
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    run()
+    sys.exit(run())

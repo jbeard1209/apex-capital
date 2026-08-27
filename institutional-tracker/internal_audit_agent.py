@@ -300,7 +300,29 @@ def _pill_runs_match_schedule(law):
         cl.DATA_DIR, cl._scheduled_pipeline_runs_today = real_dir, real_sched
 
 
+def _pill_work_queues_drain(law):
+    """A queue whose oldest row has outlived 57 complete passes of the schedule.
+
+    A REAL injection, not a global swap: the law takes `queues` and
+    `schedule_text`, so the pill hands it a fabricated measurement and the whole
+    comparison — deadline derivation, age-vs-deadline, reader lookup — runs the
+    production code path against the production repo.
+
+    The queue name is deliberately one no module mentions. That is not a
+    shortcut round the reader graph; it is the half of the law that has to be
+    proven. This law violates only when BOTH sources fail (aged out AND nothing
+    scheduled drains it), so a pill that only aged a row would prove the cheap
+    half and leave the conjunction untested — the same trap
+    `_pill_surfaced_rungs_clear_their_ladder` was rebuilt to avoid.
+    """
+    return law(queues={"zzpill_queue.json": 400.0},
+               schedule_text="0 8 * * 0 weekly.py\n0 9 * * * daily.py\n")
+
+
 POISON_PILLS: Dict[str, Pill] = {
+    "work_queues_drain": Pill(
+        _pill_work_queues_drain,
+        "a work queue holding rows no scheduled module can take out"),
     "positions_conserve": Pill(
         _pill_positions_conserve,
         "broker holds a symbol the ledger has never heard of"),

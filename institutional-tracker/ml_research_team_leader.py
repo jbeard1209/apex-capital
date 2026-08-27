@@ -114,6 +114,27 @@ def run_all_agents() -> dict[str, str]:
     """
     Execute each agent's run() function in sequence.
     Returns {agent_name: "OK"} or {agent_name: "ERROR: <message>"}.
+
+    SystemExit is caught SEPARATELY and deliberately. These agents are imported
+    and called in-process, but several were written as standalone scripts and
+    still say `sys.exit(0)` where a library would `return` — ml_drift_monitor
+    has eight such lines inside run(), ml_data_watchdog two. `sys.exit` raises
+    SystemExit, which derives from BaseException and NOT from Exception, so the
+    handler below never saw it: the first agent to hit a routine skip condition
+    ("model isn't deployed yet", "fewer than 50 recent samples") terminated this
+    whole process. Verified: with ml_drift_monitor raising SystemExit(0) at
+    position 2 of 6, run_all_agents never returns and the four agents after it —
+    ml_data_watchdog, ml_alpha_decay_monitor, ml_alt_data_agent,
+    ml_rd_bridge_agent — never run. send_daily_brief never runs either.
+
+    The exit code was ZERO, so cron, the log sweep and every health check read
+    it as a clean success. That is the `fallback-that-means-act` shape: the
+    degraded path returns the all-clear. Both conditions above are live right
+    now (no model_v3.pkl on the Mac; zero labelled rows inside the 60-day window
+    on the VM), so this is not a hypothetical.
+
+    KeyboardInterrupt is the one BaseException that must still stop everything —
+    an operator pressing ^C is asking for the run to end, not for the next agent.
     """
     results: dict[str, str] = {}
 
@@ -121,9 +142,28 @@ def run_all_agents() -> dict[str, str]:
         logger.info(f"--- Running {agent_name} ---")
         try:
             run_fn = _import_agent_run(module_name)
-            run_fn()
+            status = run_fn()
+            # Agents converted away from sys.exit now RETURN their status, so a
+            # non-zero return is the same failure the old sys.exit(1) reported.
+            # Recording it as "OK" would trade a process kill for a silent one.
+            if isinstance(status, int) and status != 0:
+                results[agent_name] = f"ERROR: run() returned status {status}"
+                logger.error("  %s returned non-zero status %s", agent_name, status)
+                continue
             results[agent_name] = "OK"
             logger.info(f"  {agent_name} completed successfully")
+        except KeyboardInterrupt:
+            raise
+        except SystemExit as exc:
+            code = exc.code if exc.code is not None else 0
+            msg = f"ERROR: called sys.exit({code}) inside run() — treated as a stop"
+            results[agent_name] = msg
+            logger.error(
+                "  %s tried to exit the process (code %s). Contained — the "
+                "remaining %d agent(s) still run. Fix the agent to return "
+                "instead of exiting.",
+                agent_name, code,
+                len(AGENT_DEFS) - 1 - [n for n, _ in AGENT_DEFS].index(agent_name))
         except Exception as exc:
             msg = f"ERROR: {exc}"
             results[agent_name] = msg

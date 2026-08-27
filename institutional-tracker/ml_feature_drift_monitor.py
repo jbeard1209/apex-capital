@@ -33,6 +33,7 @@ import numpy as np
 import pandas as pd
 
 from email_sender import send_alert_email
+import ml_digest
 
 # ---------------------------------------------------------------------------
 # Paths & constants
@@ -43,7 +44,10 @@ LOGS_DIR  = BASE_DIR / "logs"
 
 DB_PATH           = DATA_DIR / "historical_13f.db"
 REPORT_PATH       = DATA_DIR / "feature_drift_report.json"
-DIGEST_QUEUE_PATH = DATA_DIR / "digest_queue.json"
+# digest_queue.json is ml_digest's file now — the dead-letter store behind
+# ml_digest.deliver(). This module held its own path constant while it wrote
+# the file directly; leaving the constant behind would keep this module
+# looking like a reader of a queue it no longer touches.
 
 PSI_ALERT   = 0.20   # > this → ALERT email immediately
 PSI_WARNING = 0.10   # > this → WARNING in digest
@@ -149,20 +153,13 @@ def _fetch_windows(conn: sqlite3.Connection) -> tuple[pd.DataFrame, pd.DataFrame
 # Digest queue helper
 # ---------------------------------------------------------------------------
 
-def _append_digest(entry: dict) -> None:
-    queue: list = []
-    if DIGEST_QUEUE_PATH.exists():
-        try:
-            with open(DIGEST_QUEUE_PATH, "r", encoding="utf-8") as fh:
-                queue = json.load(fh)
-            if not isinstance(queue, list):
-                queue = []
-        except json.JSONDecodeError:
-            queue = []
-    queue.append(entry)
-    with open(DIGEST_QUEUE_PATH, "w", encoding="utf-8") as fh:
-        json.dump(queue, fh, indent=2)
-    log.info("Appended WARNING to digest queue (%d items total).", len(queue))
+def _send_to_digest(entry: dict) -> bool:
+    """Deliver a WARNING-level feature-drift finding to the daily digest.
+
+    Was an append to `data/digest_queue.json`, a file with three writers and no
+    reader — see `ml_digest` for the 75-day escape that came of it.
+    """
+    return ml_digest.deliver([entry], source="ml_feature_drift_monitor")
 
 
 # ---------------------------------------------------------------------------
@@ -364,13 +361,16 @@ def run() -> None:
 
     elif overall_status == "WARNING":
         top_warning = [r for r in results if r["status"] in ("ALERT", "WARNING")][:5]
-        _append_digest({
+        _send_to_digest({
             "source":    "ml_feature_drift_monitor",
             "timestamp": report["timestamp"],
             "subject":   f"Feature drift WARNING: {len(alert_features)} ALERT, {len(warning_features)} WARNING features",
             "detail":    {"alert_features": alert_features, "warning_features": warning_features,
                           "top_features": top_warning},
         })
+
+    # Retry anything an earlier run could not deliver — see ml_digest.drain_backlog.
+    ml_digest.drain_backlog()
 
     log.info("ML Feature Drift Monitor complete.")
 

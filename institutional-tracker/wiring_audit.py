@@ -132,8 +132,49 @@ def check_proposal_categories():
         notes.append("[categories] OK — escalation categories recognized by board")
 
 
+def _registered_laws():
+    """`coherence_laws.LAWS`, or an empty list if the module will not import.
+
+    Empty on failure is safe HERE and only here: the caller treats "the law is
+    missing" as the problem, so a failed import produces the alarm rather than
+    suppressing it. `check_coherence_layer` reports the import failure itself.
+    """
+    try:
+        import coherence_laws as cl
+        return list(cl.LAWS)
+    except Exception:
+        return []
+
+
 def check_orphan_queues(sources: dict):
-    """Empty queue/log/pending files whose basename has no reader = candidate dead integration."""
+    """Empty queue/log/pending files whose basename has no reader = candidate dead integration.
+
+    EMPTINESS IS ONLY HALF THE FAILURE, and for six months this check believed it
+    was the whole one. `data/digest_queue.json` had three rows in it, so this
+    walked straight past under `non-empty = clearly used` — and those three rows
+    were ML data-quality WARNINGs that had been sitting undelivered since
+    2026-06-12, in a file whose only three mentioning modules are its own three
+    writers. Non-empty is not "used". A queue nobody drains is non-empty BECAUSE
+    nobody drains it, which is the state this check was built to find, wearing the
+    one disguise it was written to wave through (memory `presence-is-not-currency`).
+
+    The other half now belongs to `coherence_laws.law_work_queues_drain`, which
+    measures the age of the oldest row still present against a deadline derived
+    from the schedule — a direct reading of residence time rather than a guess
+    from static analysis about who the consumer is. The split is deliberate:
+    static text-matching answers "was this ever wired", and only the row ages can
+    answer "is it wired to something that runs". The delegation is ENFORCED below
+    rather than left in a comment, because a comment pointing at a law somebody
+    later deletes is exactly how the hole reopens.
+    """
+    if not any(fn.__name__ == "law_work_queues_drain"
+               for fn, _ in _registered_laws()):
+        problems.append(
+            "[orphan] this check skips every NON-EMPTY queue on the grounds that "
+            "coherence_laws.law_work_queues_drain measures whether their rows "
+            "drain — and that law is no longer registered. Nothing now checks "
+            "whether a queue with rows in it has a consumer.")
+
     patterns = ["*_pending.json", "*_queue.json", "*_log.json", "*pending*.json", "*queue*.json"]
     seen = set()
     for pat in patterns:
@@ -149,7 +190,7 @@ def check_orphan_queues(sources: dict):
             except Exception:
                 continue
             if size > 0:
-                continue  # non-empty = clearly used
+                continue  # rows present -> law_work_queues_drain's question, see above
             stem = fp.stem  # filename without .json
             refs = [name for name, txt in sources.items() if stem in txt]
             if not refs:
@@ -869,10 +910,31 @@ def check_orphan_agents(sources: dict):
                        if n != name and not n.startswith("test_") and out in t]
             if not readers:
                 continue
+            # NAMING THE FILE IS NOT READING IT. Every one of `readers` merely
+            # mentions `out`; a module that loads the file, appends a row and
+            # stores it back mentions it too, and three such modules make a
+            # queue with no drain at all look like a queue with three consumers.
+            # That is how `digest_queue.json` held undelivered warnings for 73
+            # days. The gate above still runs on mentioners, deliberately — it
+            # decides whether an ORPHAN gets reported, and tightening it would
+            # quietly shrink the orphan ratchet, which may only ever shrink for
+            # a fixed agent. So the count is CORRECTED IN THE MESSAGE instead:
+            # the triager is told how many of those mentioners only write it,
+            # which is the difference between "your output has customers" and
+            # "your output has co-authors".
+            co_writers = [n for n in readers
+                          if out in _declared_outputs(code[n], out_re)]
+            true_readers = [n for n in readers if n not in co_writers]
             exists = (_data_dir() / out).exists()
+            if true_readers:
+                who = (f"read by {len(true_readers)} module(s): "
+                       f"{', '.join(sorted(true_readers)[:3])}")
+            else:
+                who = (f"named by {len(readers)} module(s) "
+                       f"({', '.join(sorted(readers)[:3])}) but ALL of them only "
+                       f"write it — nothing consumes {out}")
             msg = (
-                f"[orphan-agent] {name} writes {out} (read by {len(readers)} module(s): "
-                f"{', '.join(sorted(readers)[:3])}) but is NOT reachable from "
+                f"[orphan-agent] {name} writes {out} ({who}) but is NOT reachable from "
                 f"main.py, the VM crontab or the Mac launchd manifest — it is "
                 f"scheduled NOWHERE"
                 + ("" if exists else f", and {out} has NEVER been produced")
@@ -892,11 +954,39 @@ def check_orphan_agents(sources: dict):
 
     # A module that got fixed must be REMOVED from the baseline, or the ratchet
     # silently loosens and a future regression would be waved through.
+    #
+    # FIXED MEANS REACHABLE — not "this check stopped producing a finding". The
+    # difference is the whole ratchet. The producer gate above carries a
+    # postmortem of the 2026-07-31 case where a refactor made apex_system_cit_agent
+    # stop matching and the audit announced it was no longer an orphan; that gate
+    # was widened, and on 2026-08-26 the SAME false all-clear arrived through the
+    # READER gate instead. ml_feature_drift_monitor.py was only ever visible here
+    # because it named digest_queue.json, and the modules "reading" that file were
+    # its two fellow writers. Removing the co-writer edge — the actual bug —
+    # deleted the last reader of its last shared output, `if not readers: continue`
+    # skipped it, and the check demanded its removal from the baseline. It had not
+    # been scheduled for a single minute (memory `fix_that_erased_its_detector`:
+    # a remediation that erases the field its own detector reads).
+    #
+    # So the criterion is the one thing no internal gate can quietly redefine:
+    # can a scheduler start it? If not, it is still an orphan and it is reported
+    # as one, from here, saying why the main path lost sight of it.
     stale = _orphan_baseline() - found_orphans
     for name in sorted(stale):
+        if name in sources and name not in reachable:
+            notes.append(
+                f"[orphan-agent] {name} is STILL not reachable from main.py, the VM "
+                f"crontab or the Mac launchd manifest — it is scheduled NOWHERE. The "
+                f"producer/reader walk above no longer surfaces it (its declared "
+                f"outputs have no readers), so it is reported from the baseline "
+                f"instead. It is NOT fixed and must NOT be removed from "
+                f"{_baseline_path().name} [known — pending board triage]")
+            continue
+        why = ("the module no longer exists" if name not in sources
+               else "a scheduler now reaches it")
         problems.append(
-            f"[orphan-agent] {name} is in {_baseline_path().name} but is no longer an orphan — "
-            f"remove it from the baseline so the ratchet cannot loosen")
+            f"[orphan-agent] {name} is in {_baseline_path().name} but is no longer an "
+            f"orphan ({why}) — remove it from the baseline so the ratchet cannot loosen")
 
 
 def _baseline_path() -> Path:
