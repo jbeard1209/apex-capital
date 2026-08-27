@@ -81,11 +81,44 @@ python3 wiring_audit.py --quiet || {
     exit 1
 }
 
+# Report the failures, not the last 15 lines.
+#
+# This used to be `tail -15 "$SMOKE_OUT"`, which was STRUCTURALLY guaranteed to
+# print the wrong 15 lines. unittest writes its progress and its tracebacks to
+# stderr as the run proceeds; the tests' own print() goes to stdout, which is
+# block-buffered when redirected to a file and therefore flushed LAST, at
+# process exit. So the end of the file is always the chattiest stdout the suite
+# produced, and the failure that blocked the push has scrolled off the top.
+#
+# On 2026-08-27 this gate correctly blocked a push and printed fifteen lines of
+# "hygiene: 1 verified-closed" and "CANNOT REVIEW: /var/folders/.../gone.json".
+# Neither names a test. The only way forward was to re-run the 8-minute suite
+# blind — and it then passed twice, so the evidence of what actually failed was
+# gone for good. A gate that blocks without saying why costs more than a gate
+# that does not block: you cannot fix what it will not name.
+#
+# The log is also KEPT on the failure path. It was deleted on exactly the path
+# where somebody needs it.
+_report_smoke_failure() {
+    local f="$1"
+    if grep -qE '^(FAIL|ERROR):' "$f"; then
+        grep -E '^(FAIL|ERROR):' "$f"
+    else
+        echo "  (no FAIL:/ERROR: header — the run died before unittest reported;"
+        echo "   see the tail below and the full log)"
+    fi
+    grep -E '^(Ran [0-9]+ test|FAILED|OK )' "$f" | tail -2
+    echo "  ── last 25 lines ──────────────────────────────────────────────"
+    tail -25 "$f"
+    echo "  ── full log: $f (kept deliberately) ───────────────────────────"
+}
+
+# PYTHONUNBUFFERED so stdout and stderr interleave in the order they happened
+# instead of the whole suite's stdout landing in one block at the end.
 SMOKE_OUT="$(mktemp)"
-python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
+PYTHONUNBUFFERED=1 python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
     echo "[pre-push] BLOCKED: smoke tests failed:"
-    tail -15 "$SMOKE_OUT"
-    rm -f "$SMOKE_OUT"
+    _report_smoke_failure "$SMOKE_OUT"
     exit 1
 }
 
@@ -95,11 +128,10 @@ python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
 # (00:00-04:00 ET) — found 2026-08-02, green locally the whole time.
 # "Green on the Mac is not green" (memory host_divergence_is_a_bug_class);
 # the gate should measure the host that actually runs the money.
-TZ=UTC python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
+TZ=UTC PYTHONUNBUFFERED=1 python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
     echo "[pre-push] BLOCKED: smoke tests pass locally but FAIL under TZ=UTC,"
     echo "[pre-push] which is the zone the GCP VM runs in. This would ship red."
-    tail -15 "$SMOKE_OUT"
-    rm -f "$SMOKE_OUT"
+    _report_smoke_failure "$SMOKE_OUT"
     exit 1
 }
 rm -f "$SMOKE_OUT"
