@@ -39,14 +39,45 @@ SUPERVISED_FILES = {
 OPS_REPORT_PATH = "data/ops_director_report.json"
 
 
-def _safe_load(path: str) -> dict:
-    try:
-        if os.path.exists(path):
-            with open(path) as f:
-                return json.load(f)
-    except Exception:
-        pass
-    return {}
+# Every status build_floor_brief can assign to an agent. The floor-status line
+# is DERIVED from this tuple, because writing the buckets out by hand is exactly
+# how ERROR came to be counted nowhere.
+FLOOR_STATUSES = ("OK", "STALE", "NO_REPORT", "ERROR")
+
+# Which statuses mean the floor is NOT reporting properly. Kept beside
+# FLOOR_STATUSES so "is it a problem" and "is it counted" cannot drift apart.
+FLOOR_PROBLEM_STATUSES = ("STALE", "NO_REPORT", "ERROR")
+
+
+def count_by_status(agent_status: dict) -> dict:
+    """Every supervised agent in exactly one bucket, plus residual and total.
+
+    `unknown` is the conservation residual and should always be 0. Reported
+    rather than asserted: a sixth status added later surfaces as a number
+    nobody can explain, instead of crashing the floor brief.
+    """
+    out = {k: 0 for k in FLOOR_STATUSES}
+    out["unknown"] = 0
+    for v in (agent_status or {}).values():
+        s = (v or {}).get("status")
+        out[s if s in out and s != "unknown" else "unknown"] += 1
+    out["total"] = len(agent_status or {})
+    return out
+
+
+def _load_report(path: str) -> dict:
+    """Read an agent's report. Raises on unreadable/corrupt JSON — deliberately.
+
+    This used to swallow every exception and return `{}`. A truncated or
+    half-written report therefore produced an empty dict, which has no
+    timestamp key, which took the `Timestamp unknown` branch and was recorded
+    as **OK**. The one condition the caller's try/except was written to catch —
+    a report it cannot read — was the one condition that could never reach it.
+    A degraded read must not substitute a value that means "fine"
+    (memory fallback-that-means-act).
+    """
+    with open(path) as f:
+        return json.load(f)
 
 
 def build_floor_brief() -> dict:
@@ -73,7 +104,7 @@ def build_floor_brief() -> dict:
             continue
 
         try:
-            data = _safe_load(filepath)
+            data = _load_report(filepath)
             # If the file contains a list (e.g. thematic_positions.json), wrap for uniform handling
             if isinstance(data, list):
                 data = {"_list_data": data, "items": len(data)}
@@ -116,12 +147,23 @@ def build_floor_brief() -> dict:
     except Exception:
         pass
 
-    n_ok    = sum(1 for v in brief["agent_status"].values() if v["status"] == "OK")
-    n_stale = sum(1 for v in brief["agent_status"].values() if v["status"] == "STALE")
-    n_miss  = sum(1 for v in brief["agent_status"].values() if v["status"] == "NO_REPORT")
-
+    # Four statuses are written above; three of them were counted. An agent
+    # whose report failed to parse got status ERROR and appeared in none of the
+    # numbers, so "Floor status: 3 OK, 3 stale, 0 missing" read as a full
+    # account of a floor it did not add up to. The board reads this line as the
+    # Operations Director's report on his own floor.
+    c = count_by_status(brief["agent_status"])
+    brief["status_counts"] = c
+    parts = [f"{c['OK']} OK", f"{c['STALE']} stale", f"{c['NO_REPORT']} missing",
+             f"{c['ERROR']} unreadable"]
+    if c["unknown"]:
+        parts.append(f"{c['unknown']} UNKNOWN-STATUS")
+        logger.warning(
+            f"  [OpsDir] {c['unknown']} agent(s) carry a status outside "
+            f"{FLOOR_STATUSES} — they are in no bucket and the floor counts "
+            "will not sum to the roster")
     brief["summary"] = (
-        f"Floor status: {n_ok} OK, {n_stale} stale, {n_miss} missing. "
+        f"Floor status: {', '.join(parts)} of {c['total']} supervised. "
         f"{len(brief['flags'])} flag(s)."
     )
 

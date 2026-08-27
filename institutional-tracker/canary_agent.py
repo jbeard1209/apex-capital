@@ -822,15 +822,13 @@ def _emergency_response_cascade(assessment: dict):
     # ── Step 4: Board Meeting — anonymous deliberation ───────────────────
     logger.info("  [Canary] Step 4/5 — Board Meeting: emergency convening...")
     try:
-        from board_meeting import run_board_meeting
+        from board_meeting import run_board_meeting, consensus_tally
         board_result = run_board_meeting(dry_run=False, send_email=True)
         consensus = board_result.get("consensus", {})
-        logger.info(
-            f"  [Canary] ✓ Board meeting complete — "
-            f"{consensus.get('unanimous_count', 0)} unanimous, "
-            f"{consensus.get('majority_count', 0)} majority, "
-            f"{consensus.get('vetoed_count', 0)} vetoed"
-        )
+        # consensus_tally names all five buckets. The three-number version this
+        # replaces was one of nine copies, and every one of them omitted SPLIT
+        # and UNVOTED — six of the board's nine actions on 2026-08-27.
+        logger.info(f"  [Canary] ✓ Board meeting complete — {consensus_tally(consensus)}")
     except Exception as e:
         logger.error(f"  [Canary] Board meeting step failed: {e}")
 

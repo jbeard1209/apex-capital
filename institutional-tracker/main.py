@@ -1808,15 +1808,10 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         _trigger_label = " + ".join(_board_trigger_sources)
         logger.info(f"\nStep 12: Automatic Board Meeting — triggered by: {_trigger_label}")
         try:
-            from board_meeting import run_board_meeting
+            from board_meeting import run_board_meeting, consensus_tally
             board_result = run_board_meeting(dry_run=False, send_email=send_email)
             _bm_consensus = board_result.get("consensus", {})
-            logger.info(
-                f"  ✅ Board meeting complete — "
-                f"{_bm_consensus.get('unanimous_count', 0)} unanimous, "
-                f"{_bm_consensus.get('majority_count', 0)} majority, "
-                f"{_bm_consensus.get('vetoed_count', 0)} vetoed"
-            )
+            logger.info(f"  ✅ Board meeting complete — {consensus_tally(_bm_consensus)}")
         except Exception as e:
             logger.warning(f"  Board meeting error: {e}")
     else:

@@ -26412,6 +26412,293 @@ def run():
             "writer persists a different name entirely.")
 
 
+class TestEveryClassificationIsCounted(unittest.TestCase):
+    """A partition that produces five buckets must not report three.
+
+    `board_meeting._synthesise_consensus` has always assigned FIVE values to
+    `classification` and returned THREE counts. Those three numbers are the
+    firm's entire summary of what its board decided: the board email headline,
+    the board log line, the board report on disk, morning_briefing, canary_agent
+    and main.py all render them, and nothing else.
+
+    On 2026-08-27 the board took NINE actions and every one of those readers
+    said "0 unanimous, 2 majority, 1 vetoed". The six it did not mention were
+    all SPLIT, and they included ADD_VAR_CIRCUIT_BREAKER and
+    REGIME_ADAPTIVE_STOP_LOSS. UNVOTED is the worse of the two, because it is
+    not a decision at all — `n_agents == 0` means no voting member cast a vote —
+    and it rendered identically to "never came up"
+    (memory a-decision-recorded-nowhere: "the board said no" and "we lost it"
+    must not be one state).
+
+    The same shape sat in `operations_director.build_floor_brief`: four
+    statuses written, three counted, so an agent whose report failed to parse
+    was in no bucket and the floor-status line did not sum to the roster.
+
+    These tests pin the general property, not the specific fix: whatever the
+    producer can emit, the tally must have a bucket for, and the residual must
+    be reported rather than absorbed.
+    """
+
+    # ── the producers, and the tuples that are supposed to enumerate them ──
+    PARTITIONS = (
+        ("board_meeting", "_synthesise_consensus", "classification",
+         "CLASSIFICATIONS"),
+        ("operations_director", "build_floor_brief", "status",
+         "FLOOR_STATUSES"),
+    )
+
+    @staticmethod
+    def _fn(mod, name):
+        import importlib, inspect, textwrap
+        m = importlib.import_module(mod)
+        return m, ast.parse(textwrap.dedent(
+            inspect.getsource(getattr(m, name)))).body[0]
+
+    @staticmethod
+    def _str_lits(node):
+        """The string constants an expression can evaluate to, one level deep.
+
+        Handles a bare constant and a ternary of constants. Anything else
+        returns empty, which makes this test blind rather than wrong — and the
+        emptiness is caught by the `assertTrue(emitted)` guard below.
+        """
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return {node.value}
+        if isinstance(node, ast.IfExp):
+            out = set()
+            for side in (node.body, node.orelse):
+                if isinstance(side, ast.Constant) and isinstance(side.value, str):
+                    out.add(side.value)
+            return out
+        return set()
+
+    @classmethod
+    def _emitted(cls, fn, var):
+        """String literals the function assigns to `var`, or to a dict key `var`.
+
+        AST, not grep: this file and both modules carry postmortem comments
+        naming every one of these literals, so a text search would find them
+        whether or not the code still produced them.
+
+        One level of local indirection is resolved, because that is how the
+        real producers are written:
+            status = "STALE" if stale else "OK"   →  {"status": status}
+        Without it the sweep sees only the literals written inline at the dict
+        and reports two live buckets as dead — which is what it did first.
+        """
+        local = {}                     # local name -> {literals}
+        for n in ast.walk(fn):
+            if isinstance(n, ast.Assign):
+                lits = cls._str_lits(n.value)
+                if lits:
+                    for t in n.targets:
+                        if isinstance(t, ast.Name):
+                            local.setdefault(t.id, set()).update(lits)
+
+        out = set(local.get(var, set()))
+        for n in ast.walk(fn):
+            if isinstance(n, ast.Dict):
+                for k, v in zip(n.keys, n.values):
+                    if not (isinstance(k, ast.Constant) and k.value == var):
+                        continue
+                    out |= cls._str_lits(v)
+                    if isinstance(v, ast.Name):
+                        out |= local.get(v.id, set())
+        return out
+
+    def test_every_emitted_label_has_a_bucket(self):
+        for mod, fnname, var, tupname in self.PARTITIONS:
+            with self.subTest(module=mod):
+                m, fn = self._fn(mod, fnname)
+                emitted = self._emitted(fn, var)
+                self.assertTrue(
+                    emitted, f"{mod}.{fnname} assigns no {var} literal — the "
+                             "test can no longer see the producer")
+                declared = set(getattr(m, tupname))
+                self.assertEqual(
+                    emitted, declared,
+                    f"{mod}.{tupname} must name exactly the {var} values "
+                    f"{fnname} can emit. Only-emitted: "
+                    f"{sorted(emitted - declared)} (produced, in no bucket). "
+                    f"Only-declared: {sorted(declared - emitted)} (a bucket "
+                    "for something nothing produces).")
+
+    def test_the_board_tally_buckets_every_action_and_reports_the_residual(self):
+        import board_meeting as bm
+        actions = [{"classification": c} for c in bm.CLASSIFICATIONS]
+        actions.append({"classification": "NOT_A_REAL_CLASS"})
+        actions.append({})                      # classification absent entirely
+        c = bm.count_by_classification({"actions": actions})
+
+        for k in bm.CLASSIFICATIONS:
+            self.assertEqual(1, c[k], f"{k} must be counted exactly once")
+        self.assertEqual(2, c["unclassified"],
+                         "an unknown class and a missing class are both residual")
+        self.assertEqual(len(actions), c["total"])
+        self.assertEqual(
+            c["total"],
+            sum(c[k] for k in bm.CLASSIFICATIONS) + c["unclassified"],
+            "buckets + residual must equal the agenda, or the headline is not "
+            "an account of the meeting")
+
+    def test_the_floor_tally_buckets_every_agent_and_reports_the_residual(self):
+        import operations_director as od
+        st = {f"a{i}": {"status": s} for i, s in enumerate(od.FLOOR_STATUSES)}
+        st["bogus"] = {"status": "NOT_A_REAL_STATUS"}
+        st["empty"] = {}
+        c = od.count_by_status(st)
+
+        for k in od.FLOOR_STATUSES:
+            self.assertEqual(1, c[k], f"{k} must be counted exactly once")
+        self.assertEqual(2, c["unknown"])
+        self.assertEqual(len(st), c["total"])
+        self.assertEqual(
+            c["total"], sum(c[k] for k in od.FLOOR_STATUSES) + c["unknown"],
+            "floor buckets + residual must equal the supervised roster")
+
+    def test_the_residual_is_reported_not_asserted(self):
+        """It must survive a sixth label, loudly.
+
+        Raising on an unknown classification would take the board meeting down
+        over a reporting defect. Silently dropping it is how this bug lived.
+        The third option — count it, name it, warn — is the only one that
+        neither hides the problem nor becomes the problem.
+        """
+        import board_meeting as bm, operations_director as od
+        try:
+            c = bm.count_by_classification(
+                {"actions": [{"classification": "SIXTH"}]})
+        except Exception as e:                              # pragma: no cover
+            self.fail(f"an unknown classification must not raise: {e!r}")
+        self.assertEqual(1, c["unclassified"])
+        self.assertEqual(1, c["total"])
+
+        c2 = od.count_by_status({"x": {"status": "FIFTH"}})
+        self.assertEqual(1, c2["unknown"])
+
+    def test_the_tally_names_every_nonzero_bucket(self):
+        import board_meeting as bm
+        text = bm.consensus_tally({"actions": [
+            {"classification": "SPLIT"}, {"classification": "UNVOTED"},
+            {"classification": "WAT"}]})
+        for want in ("1 split", "1 never voted on", "1 UNCLASSIFIED"):
+            self.assertIn(want, text,
+                          f"consensus_tally hid a non-zero bucket: {text!r}")
+        self.assertIn("3 action(s)", text)
+
+    # ── the render sites ──────────────────────────────────────────────────
+    RENDERERS = ("board_meeting", "canary_agent", "main", "morning_briefing")
+    _COUNT_KEYS = {"unanimous_count", "majority_count", "vetoed_count"}
+    _COMPLETING = {"split_count", "unvoted_count", "consensus_tally",
+                   "count_by_classification"}
+
+    def test_no_render_site_reports_three_of_the_five(self):
+        """Structural, per-function, over every module that renders the tally.
+
+        This is why the defect survived so long: the three-number line was
+        duplicated at nine call sites in six modules, so completing it meant
+        editing all nine, and nobody did. The fix is a single renderer
+        (`consensus_tally`), and this test is what stops a tenth partial copy
+        from being written — a function that reads one of the three counts must
+        also reach for the two that were missing, or go through the renderer.
+
+        Reads only, via AST: `{"unanimous_count": ...}` as a dict KEY is a
+        producer writing the field, not a reader rendering it, and is ignored.
+        """
+        import importlib, inspect, textwrap
+
+        def _read_keys(node):
+            out = set()
+            for n in ast.walk(node):
+                if isinstance(n, ast.Subscript) and isinstance(
+                        n.slice, ast.Constant) and isinstance(n.slice.value, str):
+                    out.add(n.slice.value)
+                elif (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                      and n.func.attr == "get" and n.args
+                      and isinstance(n.args[0], ast.Constant)
+                      and isinstance(n.args[0].value, str)):
+                    out.add(n.args[0].value)
+                elif isinstance(n, ast.Name):
+                    out.add(n.id)
+                elif isinstance(n, ast.Attribute):
+                    out.add(n.attr)
+            return out
+
+        offenders = []
+        for mod in self.RENDERERS:
+            src = inspect.getsource(importlib.import_module(mod))
+            tree = ast.parse(textwrap.dedent(src))
+            for fn in ast.walk(tree):
+                if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                seen = _read_keys(fn)
+                if not (seen & self._COUNT_KEYS):
+                    continue
+                if seen & self._COMPLETING:
+                    continue
+                offenders.append(f"{mod}.{fn.name} (line {fn.lineno})")
+
+        self.assertEqual(
+            [], offenders,
+            "these functions render the board tally without SPLIT/UNVOTED and "
+            "without going through consensus_tally, so they under-report the "
+            f"meeting: {offenders}")
+
+
+class TestAnUnreadableReportIsNotAHealthyOne(unittest.TestCase):
+    """The one condition the handler existed to catch could not reach it.
+
+    `operations_director.build_floor_brief` wraps its per-agent read in
+    `try/except` and records `status: "ERROR"` in the handler. But the read
+    went through a `_safe_load` that swallowed every exception and returned
+    `{}` — so a truncated or half-written report produced an empty dict, which
+    has no timestamp key, which took the `Timestamp unknown` branch and was
+    filed as **OK**. The handler was unreachable for the failure it was for.
+
+    Same shape as memory fallback-that-means-act: the constant a degraded read
+    substitutes is itself a decision, and `{}` here decided "healthy".
+    """
+
+    def test_a_corrupt_report_is_ERROR_not_OK(self):
+        import importlib, json as _json, os as _os, tempfile
+        od = importlib.import_module("operations_director")
+
+        cwd = _os.getcwd()
+        with tempfile.TemporaryDirectory() as td:
+            _os.makedirs(_os.path.join(td, "data"))
+            with open(_os.path.join(td, "data", "good.json"), "w") as f:
+                _json.dump({"generated_at": datetime.now().isoformat()}, f)
+            with open(_os.path.join(td, "data", "corrupt.json"), "w") as f:
+                f.write('{"generated_at": tru')       # half-written, as observed
+
+            agents, files = od.SUPERVISED_AGENTS, od.SUPERVISED_FILES
+            try:
+                _os.chdir(td)
+                od.SUPERVISED_AGENTS = ["Good", "Corrupt", "Absent"]
+                od.SUPERVISED_FILES = {"Good": "data/good.json",
+                                       "Corrupt": "data/corrupt.json",
+                                       "Absent": "data/nope.json"}
+                brief = od.build_floor_brief()
+            finally:
+                _os.chdir(cwd)
+                od.SUPERVISED_AGENTS, od.SUPERVISED_FILES = agents, files
+
+        got = {k: v["status"] for k, v in brief["agent_status"].items()}
+        self.assertEqual(
+            {"Good": "OK", "Corrupt": "ERROR", "Absent": "NO_REPORT"}, got,
+            "a report that cannot be parsed must not be indistinguishable from "
+            f"one that parsed cleanly: {got}")
+
+        c = brief["status_counts"]
+        self.assertEqual(1, c["ERROR"])
+        self.assertEqual(
+            c["total"], sum(c[k] for k in od.FLOOR_STATUSES) + c["unknown"],
+            "the floor-status line must sum to the supervised roster")
+        self.assertIn("1 unreadable", brief["summary"],
+                      f"ERROR must appear in the summary line: "
+                      f"{brief['summary']!r}")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

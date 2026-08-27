@@ -437,16 +437,30 @@ def run_morning_briefing() -> dict:
     consensus    = board_report.get("consensus", {})
     last_actions = board_report.get("implementation", {})
     last_decisions = consensus.get("actions", []) or []
+    # Recounted from the ACTIONS, not read from the stored counts. The counts on
+    # disk were written by whatever version of board_meeting ran last, and every
+    # version before 2026-08-27 reported three of five classifications — so a
+    # report written this morning still carries no split_count at all, and
+    # reading `.get("split_count", 0)` would render "0 split" for a meeting that
+    # was six-sevenths split. The actions each carry their own classification,
+    # so recomputing is both backward-compatible and self-checking.
+    from board_meeting import count_by_classification, consensus_tally
+    _bc = count_by_classification(consensus)
     briefing["sections"]["board"] = {
         "meeting_age_hours": round(board_age_h, 1),
-        "unanimous_count":   consensus.get("unanimous_count", 0),
-        "majority_count":    consensus.get("majority_count", 0),
-        "vetoed_count":      consensus.get("vetoed_count", 0),
+        "unanimous_count":   _bc["UNANIMOUS"],
+        "majority_count":    _bc["MAJORITY"],
+        "vetoed_count":      _bc["VETOED"],
+        # The two the board decided and reported to nobody.
+        "split_count":       _bc["SPLIT"],
+        "unvoted_count":     _bc["UNVOTED"],
+        "unclassified_count": _bc["unclassified"],
+        "action_count":      _bc["total"],
         "top_decisions":     last_decisions[:3],
         "trades_executed":   len(last_actions.get("executed", []) or []),
         "last_updated":      board_ts,
     }
-    logger.info(f"    Board: {consensus.get('unanimous_count',0)} unanimous | {consensus.get('majority_count',0)} majority | Age: {board_age_h:.1f}h")
+    logger.info(f"    Board: {consensus_tally(consensus)} | Age: {board_age_h:.1f}h")
 
     # ── 12. Manager — last cycle decisions ────────────────────────────────────
     logger.info("\n  [12/15] Manager — last cycle decisions...")

@@ -1022,6 +1022,69 @@ def _position_rd_team_leader(briefing: dict) -> dict:
 # STEP 3 — SYNTHESISE CONSENSUS
 # =============================================================================
 
+# Every value _synthesise_consensus can assign to `classification`. The tally
+# below is DERIVED from this tuple rather than written out by hand, because
+# writing it out by hand is exactly how three of the five went unreported.
+CLASSIFICATIONS = ("UNANIMOUS", "MAJORITY", "VETOED", "SPLIT", "UNVOTED")
+
+# Which classifications actually cause the action to be carried out. Kept next
+# to CLASSIFICATIONS so "does it proceed" and "is it counted" cannot drift.
+PROCEEDING_CLASSIFICATIONS = ("UNANIMOUS", "MAJORITY")
+
+
+def count_by_classification(consensus: dict) -> dict:
+    """Every action in exactly one bucket, plus the residual and the total.
+
+    _synthesise_consensus has always produced FIVE classifications and returned
+    THREE counts — unanimous_count, majority_count, vetoed_count. SPLIT and
+    UNVOTED were counted nowhere, and those three numbers are the firm's only
+    summary of what the board decided: they are read by the board email's
+    headline panel, the board log line, the board report, morning_briefing,
+    canary_agent and main.py.
+
+    On 2026-08-27 the board took NINE actions and the headline read
+    "0 unanimous, 2 majority, 1 vetoed". The six it did not mention were
+    LOWER_ESCALATION_THRESHOLD, ADD_VAR_CIRCUIT_BREAKER,
+    MAX_NEW_POSITIONS_PER_CYCLE, REGIME_ADAPTIVE_STOP_LOSS,
+    CONTINUE_AGENT_FACTORY and EARNINGS_CATALYST_GATE — all SPLIT.
+
+    UNVOTED is the more dangerous of the two, because it is not a decision at
+    all: `n_agents == 0` means no voting member cast a vote on the action. It
+    rendered identically to "never came up" (memory a-decision-recorded-nowhere:
+    "the board said no" and "we lost it" must not be one state).
+
+    `unclassified` is the conservation residual and should always be 0. It is
+    reported rather than asserted, so a sixth classification added later shows
+    up in the headline as a number nobody can explain instead of crashing the
+    board meeting.
+    """
+    actions = consensus.get("actions", []) or []
+    out = {k: 0 for k in CLASSIFICATIONS}
+    out["unclassified"] = 0
+    for a in actions:
+        k = a.get("classification")
+        out[k if k in out and k != "unclassified" else "unclassified"] += 1
+    out["total"] = len(actions)
+    return out
+
+
+def consensus_tally(consensus: dict) -> str:
+    """The one-line account of a board meeting, for every place that reports it.
+
+    A single renderer on purpose. The three-number version was duplicated
+    across nine call sites in six modules, so completing it meant editing all
+    nine — which is the same reason it stayed incomplete for as long as it did.
+    Same choke-point discipline as memory guardrail-on-one-path.
+    """
+    c = count_by_classification(consensus)
+    parts = [f"{c['UNANIMOUS']} unanimous", f"{c['MAJORITY']} majority",
+             f"{c['VETOED']} vetoed", f"{c['SPLIT']} split (no consensus)",
+             f"{c['UNVOTED']} never voted on"]
+    if c["unclassified"]:
+        parts.append(f"{c['unclassified']} UNCLASSIFIED")
+    return " · ".join(parts) + f" ({c['total']} action(s))"
+
+
 def _synthesise_consensus(positions: list[dict]) -> dict:
     """
     Aggregate voting Position Papers into a consensus Action Plan.
@@ -1033,6 +1096,7 @@ def _synthesise_consensus(positions: list[dict]) -> dict:
       MAJORITY   — 3 of 4 voting agents support
       SPLIT      — 2 of 4 support
       VETOED     — any voting agent opposes
+      UNVOTED    — nobody voted; the board never considered it
     """
     _levels = {"STRONG": 2, "SUPPORT": 1, "NEUTRAL": 0, "OPPOSE": -2}
 
@@ -1082,7 +1146,7 @@ def _synthesise_consensus(positions: list[dict]) -> dict:
             "votes":           votes,
             "classification":  classification,
             # Proceed only on UNANIMOUS or MAJORITY — SPLIT (e.g. 2/4) does not proceed
-            "proceed":         classification in ("UNANIMOUS", "MAJORITY"),
+            "proceed":         classification in PROCEEDING_CLASSIFICATIONS,
         })
 
     # Sort: proceed first, then by urgency, then score
@@ -1099,12 +1163,27 @@ def _synthesise_consensus(positions: list[dict]) -> dict:
         for d in pos.get("dissents", []):
             all_dissents.append({"agent": pos["agent"], "dissent": d})
 
+    # Counts derived from CLASSIFICATIONS, not hand-listed. The hand-listed
+    # version named three of the five for as long as this function has existed.
+    _c = count_by_classification({"actions": consensus_actions})
+    if _c["unclassified"]:
+        logger.warning(
+            f"  [Board] {_c['unclassified']} action(s) carry a classification "
+            f"outside {CLASSIFICATIONS} — they are in no bucket and the "
+            "headline counts will not sum to the agenda")
     return {
         "actions":         consensus_actions,
         "dissents":        all_dissents,
-        "unanimous_count": sum(1 for a in consensus_actions if a["classification"] == "UNANIMOUS"),
-        "majority_count":  sum(1 for a in consensus_actions if a["classification"] == "MAJORITY"),
-        "vetoed_count":    sum(1 for a in consensus_actions if a["classification"] == "VETOED"),
+        "unanimous_count": _c["UNANIMOUS"],
+        "majority_count":  _c["MAJORITY"],
+        "vetoed_count":    _c["VETOED"],
+        # The two that were computed and never reported.
+        "split_count":     _c["SPLIT"],
+        "unvoted_count":   _c["UNVOTED"],
+        # The conservation check, on the artifact rather than in a comment:
+        # unanimous+majority+vetoed+split+unvoted+unclassified == action_count.
+        "unclassified_count": _c["unclassified"],
+        "action_count":    _c["total"],
         "proceed_count":   sum(1 for a in consensus_actions if a["proceed"]),
     }
 
@@ -2231,6 +2310,17 @@ def _build_html_minutes(briefing: dict, positions: list[dict],
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Vetoed</div>
       <div style="font-size:22px;font-weight:bold;color:#f85149;">{consensus['vetoed_count']}</div>
     </div>
+    <!-- Split and Not Voted were computed and shown nowhere. On 2026-08-27 that
+         hid six of the board's nine actions from this panel, including a VaR
+         circuit breaker and a regime-adaptive stop loss. -->
+    <div>
+      <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Split — No Consensus</div>
+      <div style="font-size:22px;font-weight:bold;color:#f0c000;">{consensus.get('split_count', 0)}</div>
+    </div>
+    <div>
+      <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Never Voted On</div>
+      <div style="font-size:22px;font-weight:bold;color:#8b949e;">{consensus.get('unvoted_count', 0)}</div>
+    </div>
     <div>
       <div style="color:#8b949e;font-size:11px;text-transform:uppercase;">Trades Executed</div>
       <div style="font-size:22px;font-weight:bold;color:#f0883e;">
@@ -2658,9 +2748,7 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     # 4. Synthesise
     logger.info("\n  Step 4/6: Synthesising consensus...")
     consensus = _synthesise_consensus(positions)
-    logger.info(f"  ✓ {consensus['unanimous_count']} unanimous | "
-                f"{consensus['majority_count']} majority | "
-                f"{consensus['vetoed_count']} vetoed")
+    logger.info(f"  ✓ {consensus_tally(consensus)}")
     for act in consensus["actions"]:
         status = "✓ PROCEED" if act["proceed"] else "✗ VETOED "
         logger.info(f"    {status}  [{act.get('urgency',''):<10}]  {act['action'][:55]}")
@@ -2900,6 +2988,10 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
                 "Unanimous":  consensus["unanimous_count"],
                 "Majority":   consensus["majority_count"],
                 "Vetoed":     consensus["vetoed_count"],
+                # Split and Never Voted On were computed and shown nowhere; on
+                # 2026-08-27 that hid six of nine actions from this summary.
+                "Split (no consensus)": consensus.get("split_count", 0),
+                "Never Voted On":       consensus.get("unvoted_count", 0),
                 "Trades Executed": n_exec,
             }
             polished = polish_email(html, subject, "manager_agent", key_metrics)
@@ -3272,8 +3364,7 @@ def _build_emergency_html(briefing: dict, positions: list, consensus: dict, impl
               padding:14px 18px;margin-bottom:20px;">
     <p style="margin:0;color:#3fb950;font-size:13px;">
       <strong>Execution Summary:</strong> {n_exec} trade action(s) executed this session.
-      {consensus['unanimous_count']} unanimous · {consensus['majority_count']} majority ·
-      {consensus['vetoed_count']} vetoed
+      {consensus_tally(consensus)}
     </p>
   </div>
 
@@ -3337,12 +3428,8 @@ def run_emergency_board_meeting(tip_data: dict, dry_run: bool = False, send_emai
 
     # Synthesise consensus
     consensus = _synthesise_consensus(positions)
-    logger.info(
-        f"\n  Consensus: {consensus['unanimous_count']} unanimous | "
-        f"{consensus['majority_count']} majority | "
-        f"{consensus['vetoed_count']} vetoed | "
-        f"{consensus['proceed_count']} proceeding"
-    )
+    logger.info(f"\n  Consensus: {consensus_tally(consensus)} | "
+                f"{consensus['proceed_count']} proceeding")
     for act in consensus["actions"]:
         if act["proceed"]:
             logger.info(f"    ✓ [{act.get('urgency',''):<10}] {act['action'][:60]}")
@@ -3474,9 +3561,7 @@ def call_emergency_board_meeting(
         outcome_summary = (
             f"Emergency board session complete. Severity: {severity}. "
             f"Reason: {reason[:60]}. "
-            f"Unanimous: {consensus.get('unanimous_count', 0)}, "
-            f"Majority: {consensus.get('majority_count', 0)}, "
-            f"Vetoed: {consensus.get('vetoed_count', 0)}."
+            f"{consensus_tally(consensus)}."
         )
         _fc_post(
             "Board Meeting",
