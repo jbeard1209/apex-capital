@@ -8361,8 +8361,13 @@ class TestKalshiSector(unittest.TestCase):
         """YES+NO on one contract is exclusive by construction. The edge must
         survive TWO fees, not one."""
         import kalshi_scanner as ks
+        # `yes_bid_size_fp` added 2026-08-26 with the two-leg depth fix. Without
+        # it this fixture is rejected for having no NO leg to buy, and the test
+        # would keep passing while proving nothing about fees — see
+        # TestATwoLegLockIsSizedOnBothLegs.
         thin = [{"ticker": "A", "event_ticker": "E", "yes_ask_dollars": "0.50",
-                 "no_ask_dollars": "0.495", "yes_ask_size_fp": "500"}]
+                 "no_ask_dollars": "0.495", "yes_ask_size_fp": "500",
+                 "yes_bid_size_fp": "500"}]
         self.assertEqual(ks.find_pair_locks(thin), [],
                          "a 0.5c gross edge cannot survive two fees at the "
                          "midpoint, where fees are largest")
@@ -8520,6 +8525,192 @@ class TestKalshiSector(unittest.TestCase):
             second, _ = cal.record_from_scan(scan)
         self.assertEqual(first, 1)
         self.assertEqual(second, 0, "same ticker, same day — must not re-add")
+
+
+class TestATwoLegLockIsSizedOnBothLegs(unittest.TestCase):
+    """`find_pair_locks` sized a two-leg position on ONE leg's depth.
+
+    A pair lock buys YES at the yes_ask and NO at the no_ask. Kalshi publishes
+    no `no_ask_size`, so the NO leg's depth looked absent. It is not: it is
+    `yes_bid_size_fp`, because the NO ask book and the YES bid book are one
+    book read from two sides — `no_ask == 1 - yes_bid` held to the last digit
+    on all 32,458 live markets quoting both (2026-08-26, max deviation 0.0).
+
+    Sizing on the YES leg alone means filling 500 YES against 3 NO and calling
+    the 497 naked long contracts a lock. On 31,651 live markets quoting depth
+    both sides the two differ on 72.2%, and the unread leg is the shallower one
+    on 39.7% — median ratio 0.113, with 5,884 over-sized by more than 10x.
+
+    Latent, never fired: the same walk found 0 pair locks across 102,652
+    genuine markets. These tests exist because this is the only strategy that
+    sizes without waiting for calibration, which makes it the first one to run
+    the day the sector is armed — and because `size_position` gives its output
+    a risk-free framing ("structural lock, Nc/contract after fees") that no
+    naked leg deserves.
+    """
+
+    def _mkt(self, ask_size="500", bid_size="500", yes_ask="0.35",
+             no_ask="0.55", ticker="A"):
+        """A pair lock with a 6c edge: 90c of cost against 4c of two fees."""
+        m = {"ticker": ticker, "event_ticker": "E", "title": ticker,
+             "yes_ask_dollars": yes_ask, "no_ask_dollars": no_ask}
+        if ask_size is not None:
+            m["yes_ask_size_fp"] = ask_size
+        if bid_size is not None:
+            m["yes_bid_size_fp"] = bid_size
+        return m
+
+    def test_the_fixture_really_is_a_lock(self):
+        """Every negative test below is worthless if the base case does not
+        clear the edge floor on its own — a filter cannot be shown to bite
+        when nothing was going to pass anyway."""
+        import kalshi_scanner as ks
+        locks = ks.find_pair_locks([self._mkt()])
+        self.assertEqual(1, len(locks), "base fixture must surface a lock")
+        self.assertGreaterEqual(locks[0]["edge_cents"], ks.MIN_LOCK_EDGE_CENTS)
+
+    def test_the_no_leg_depth_comes_from_the_yes_bid_size(self):
+        import kalshi_scanner as ks
+        locks = ks.find_pair_locks([self._mkt(ask_size="500", bid_size="40")])
+        self.assertEqual(1, len(locks))
+        self.assertEqual(40, locks[0]["max_contracts"],
+                         "the NO leg has 40 contracts of room; sizing 500 "
+                         "fills 500 YES against 40 NO and leaves 460 naked")
+
+    def test_the_yes_leg_still_binds_when_it_is_the_shallower_one(self):
+        """The mirror of the bug. Reading only `yes_bid_size_fp` would be the
+        same defect wearing the other leg's clothes."""
+        import kalshi_scanner as ks
+        locks = ks.find_pair_locks([self._mkt(ask_size="30", bid_size="900")])
+        self.assertEqual(1, len(locks))
+        self.assertEqual(30, locks[0]["max_contracts"])
+
+    def test_a_shallow_no_leg_is_not_a_lock_at_the_yes_legs_size(self):
+        """The exact shape the live book serves up 5,884 times: deep YES ask,
+        near-empty NO. The old code returned it sized at 500."""
+        import kalshi_scanner as ks
+        self.assertEqual(
+            [], ks.find_pair_locks([self._mkt(ask_size="500", bid_size="3")]),
+            "3 contracts is below the leg-size floor, so there is no lock "
+            "here at any size")
+
+    def test_the_size_floor_applies_to_the_binding_leg(self):
+        import kalshi_scanner as ks
+        floor = ks.MIN_LEG_SIZE
+        self.assertEqual(
+            [], ks.find_pair_locks([self._mkt(bid_size=str(floor - 1))]),
+            "one contract under the floor on the NO leg must reject the lock")
+        ok = ks.find_pair_locks([self._mkt(bid_size=str(floor))])
+        self.assertEqual(1, len(ok))
+        self.assertEqual(floor, ok[0]["max_contracts"])
+
+    def test_a_book_with_no_resting_bid_has_no_no_leg_to_buy(self):
+        """Absence and zero are the same answer here, and both fail closed —
+        a `no_ask` quote can survive a book with nothing behind it."""
+        import kalshi_scanner as ks
+        for bid_size in ("0", "0.00", None):
+            with self.subTest(yes_bid_size_fp=bid_size):
+                self.assertEqual(
+                    [], ks.find_pair_locks([self._mkt(bid_size=bid_size)]))
+
+    def test_a_book_with_no_resting_ask_has_no_yes_leg_to_buy(self):
+        """The mirror of the test above, and it is not redundant: a mutation
+        run found that dropping `not ys` from the guard survived the whole
+        suite, because every absence fixture here was on the NO side. An
+        absent YES ask then reaches `min(None, ns)` — a TypeError inside the
+        scanner's main loop, not a rejection."""
+        import kalshi_scanner as ks
+        for ask_size in ("0", "0.00", None):
+            with self.subTest(yes_ask_size_fp=ask_size):
+                self.assertEqual(
+                    [], ks.find_pair_locks([self._mkt(ask_size=ask_size)]))
+
+    def test_both_leg_depths_travel_with_the_row(self):
+        """A lone `max_contracts` is a number no reader can check. The pair is
+        what shows WHICH leg binds, and what makes a regression to one-leg
+        sizing visible in the artifact instead of only in the diff."""
+        import kalshi_scanner as ks
+        row = ks.find_pair_locks([self._mkt(ask_size="500", bid_size="60")])[0]
+        self.assertEqual(500, row["yes_leg_size"])
+        self.assertEqual(60, row["no_leg_size"])
+        self.assertEqual(min(row["yes_leg_size"], row["no_leg_size"]),
+                         row["max_contracts"])
+
+    def test_max_contracts_never_exceeds_either_leg(self):
+        import kalshi_scanner as ks
+        for a, b in ((500, 40), (40, 500), (60, 60), (25, 26), (999, 25)):
+            with self.subTest(ask=a, bid=b):
+                row = ks.find_pair_locks(
+                    [self._mkt(ask_size=str(a), bid_size=str(b))])[0]
+                self.assertLessEqual(row["max_contracts"], a)
+                self.assertLessEqual(row["max_contracts"], b)
+
+    def test_size_position_cannot_size_past_the_binding_leg(self):
+        """End to end. A structural lock skips the calibration quarantine, so
+        `max_contracts` is the only thing standing between a shallow NO book
+        and a naked position."""
+        import kalshi_scanner as ks
+        row = ks.find_pair_locks([self._mkt(ask_size="5000", bid_size="40")])[0]
+        n, why = ks.size_position(row, 1_000_000)
+        self.assertEqual(40, n, why)
+
+    def test_the_liquidity_officer_is_told_the_thinnest_leg(self):
+        """The severity multiplier, and why this is worth fixing on a path that
+        has never fired.
+
+        `kalshi_board._liquidity_officer` reads `max_contracts` and reports it
+        back in words as "N contracts resting on the thinnest leg". For a pair
+        lock that number had the thinner leg removed before the seat ever saw
+        it, so the one control whose job is refusing thin books was handed a
+        figure that had already skipped the thin book — and quoted it as the
+        thin book. Here: 500 on the YES ask, 40 on the NO, against a seat floor
+        of 50. The true book fails; the reported one passed.
+        """
+        import kalshi_scanner as ks
+        import kalshi_board as kb
+        row = ks.find_pair_locks([self._mkt(ask_size="500", bid_size="40")])[0]
+        self.assertEqual(40, row["max_contracts"])
+        self.assertLess(40, kb.MIN_BOARD_LEG_SIZE,
+                        "fixture assumes the NO leg sits under the board floor")
+        verdict, why = kb._liquidity_officer(row)
+        self.assertEqual("NO", verdict, why)
+        self.assertIn("40", why, "the seat must name the depth it actually has")
+
+    def test_pair_locks_reads_both_size_fields(self):
+        """AST, not grep: the docstring on the function names `yes_bid_size_fp`
+        too, so a text search goes green on a postmortem comment while the code
+        still reads one leg (memory `unregistered-test-is-absent`)."""
+        import kalshi_scanner as ks
+        tree = ast.parse(Path(ks.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "find_pair_locks")
+        read = {c.value
+                for call in ast.walk(fn)
+                if isinstance(call, ast.Call)
+                and isinstance(call.func, ast.Attribute)
+                and call.func.attr == "get"
+                for c in call.args
+                if isinstance(c, ast.Constant) and isinstance(c.value, str)}
+        for field in ("yes_ask_size_fp", "yes_bid_size_fp"):
+            self.assertIn(field, read,
+                          "find_pair_locks must read %s to size its leg" % field)
+
+    def test_a_field_lock_still_sizes_on_its_shallowest_leg(self):
+        """The sibling that never had this bug. It buys YES on every leg, so
+        every leg's depth IS a `yes_ask_size_fp` and `min(...)` was already
+        right — pinned so the fix next door does not get copied onto it."""
+        import kalshi_scanner as ks
+        markets = [
+            {"ticker": "X", "event_ticker": "E", "series_ticker": "KXNBA",
+             "yes_ask_dollars": "0.40", "yes_ask_size_fp": "500"},
+            {"ticker": "Y", "event_ticker": "E", "series_ticker": "KXNBA",
+             "yes_ask_dollars": "0.40", "yes_ask_size_fp": "31"},
+        ]
+        with patch.object(ks, "EXHAUSTIVE_SERIES", frozenset({"KXNBA"})):
+            locks = ks.find_field_locks(markets, lambda e: True)
+        self.assertEqual(1, len(locks))
+        self.assertEqual(31, locks[0]["max_contracts"])
 
 
 class TestKalshiSampleIsWorthSomething(unittest.TestCase):
@@ -9325,6 +9516,98 @@ class TestTheEdgeMustClearTheToll(unittest.TestCase):
         self.assertIn("cost_verdict", names,
                       "the cost verdict must be part of the dedupe signature or "
                       "a flip in it cannot trigger an email")
+
+    # ------------------------------------------- a magnitude needs its sign --
+
+    def test_the_verdict_names_which_side_the_mispricing_is_on(self):
+        """The first version of this reported "misprices by 1.73c" and never
+        said which way. `direction` was computed and stored in the detail dict,
+        then left out of the only sentence a human reads."""
+        rows = self._rows(400, 0.95, 340)          # settles 85%, quoted 95%
+        _v, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertIn("OVERPRICES", why,
+                      "the sign must reach the sentence, not just the dict")
+        self.assertIn("SELL yes", why,
+                      "naming the side is what makes the number actionable")
+        self.assertEqual("market OVERPRICES yes",
+                         detail["aggregate"]["direction"])
+
+    def test_an_overpriced_market_says_the_firm_has_no_path_to_it(self):
+        """Why the missing sign mattered rather than merely being untidy: every
+        candidate the scanner emits is a buy of yes at the ask. An unsigned edge
+        plus this pipeline equals taking the losing side."""
+        _v, why, _d = self.cal.edge_versus_cost(self._rows(400, 0.95, 340))
+        self.assertIn("no such path", why)
+        self.assertIn("cannot currently take", why)
+
+    def test_the_side_the_scanner_can_take_is_not_flagged_as_unreachable(self):
+        """The mirror. If the market UNDERPRICED yes, buying is exactly what
+        this firm already does, and printing "we have no path" there would be a
+        false alarm that trains the reader to skip the clause."""
+        rows = self._rows(400, 0.80, 380)          # settles 95%, quoted 80%
+        _v, why, detail = self.cal.edge_versus_cost(rows)
+        self.assertEqual("market UNDERPRICES yes",
+                         detail["aggregate"]["direction"])
+        self.assertIn("BUY yes", why)
+        self.assertNotIn("no such path", why)
+
+    def test_a_straddling_stratum_gets_no_vote_on_the_sign(self):
+        """A band whose interval crosses the quote has a direction, and it is
+        the direction of noise. Letting it vote would let the aggregate borrow
+        confidence from a stratum that has none ([[verdict-wider-than-its-sample]])."""
+        real = self._rows(400, 0.95, 340, days=3.0)      # 1-7d, sign is real
+        noise = self._rows(60, 0.90, 54, days=14.0)      # 7-30d, straddles
+        _v, why, detail = self.cal.edge_versus_cost(real + noise)
+        self.assertEqual(0.0, detail["strata"]["7-30d"]["edge_low"],
+                         "fixture must actually straddle for this to test "
+                         "anything")
+        self.assertNotIn("SIGN FLIPS", why)
+        self.assertIn("separately established on 1 of 2", why,
+                      "the reader must be told the aggregate sign rests on one "
+                      "band, not on the rule")
+
+    def test_the_sign_flip_is_reported_when_two_real_strata_disagree(self):
+        """Direction is a property of a horizon, not of the sector. When two
+        bands each carry a real n and an interval clear of the quote, and they
+        point opposite ways, no single instruction fits the rule."""
+        short = self._rows(1000, 0.95, 800, days=3.0)    # 1-7d overprices
+        mid = self._rows(1000, 0.50, 900, days=14.0)     # 7-30d underprices
+        _v, why, detail = self.cal.edge_versus_cost(short + mid)
+        for band in ("1-7d", "7-30d"):
+            self.assertGreater(detail["strata"][band]["edge_low"], 0.0,
+                               "both fixtures must clear the quote to vote")
+        self.assertIn("SIGN FLIPS", why)
+        # WHICH band is on which side, not merely that both are named. A
+        # mutation run swapped the two comparisons and survived: the sentence
+        # still contained both band names, still said the sign flips, and told
+        # the reader to sell the band it should buy.
+        over_txt = why.split("overpriced at ", 1)[1].split(" and underpriced")[0]
+        under_txt = why.split("and underpriced at ", 1)[1]
+        self.assertIn("1-7d", over_txt)
+        self.assertNotIn("7-30d", over_txt)
+        self.assertIn("7-30d", under_txt)
+        self.assertNotIn("1-7d", under_txt.split(",")[0])
+
+    def test_a_thin_stratum_gets_no_vote_even_with_a_huge_apparent_edge(self):
+        """The other half of the vote gate, and the one a mutation run got
+        past. `_rows(5, 0.50, 5)` is not hypothetical — the VM's own 30-90d
+        band is n=5, quoted 94.6c, settled 60%, an apparent 34.6c edge whose
+        interval clears the quote purely because five is not a sample.
+
+        Letting it vote does not merely add a name to a list: here it is the
+        only band pointing the other way, so it manufactures a SIGN FLIPS
+        headline — a claim about the rule as a whole, sourced from five rows.
+        """
+        real = self._rows(400, 0.95, 340, days=3.0)      # 1-7d, overprices
+        thin = self._rows(5, 0.50, 5, days=45.0)         # 30-90d, n below floor
+        _v, why, detail = self.cal.edge_versus_cost(real + thin)
+        band = detail["strata"]["30-90d"]
+        self.assertLess(band["n"], self.cal.MIN_SETTLED_PER_HORIZON)
+        self.assertGreater(band["edge_low"], 0.0,
+                           "fixture must clear the quote, or the n floor is "
+                           "not the thing being tested")
+        self.assertNotIn("SIGN FLIPS", why)
+        self.assertIn("separately established on 1 of 2", why)
 
 
 class TestFixedIncomeHasOnePath(unittest.TestCase):

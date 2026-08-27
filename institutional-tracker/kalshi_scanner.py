@@ -205,13 +205,50 @@ def find_pair_locks(markets):
     one of each pays exactly $1.00. No `mutually_exclusive` lookup is needed and
     no estimate can be wrong. This is the only strategy in this file that is
     arithmetic rather than opinion.
+
+    THAT ARITHMETIC IS ONLY TRUE IF BOTH LEGS FILL, and this sized the whole
+    two-leg position on `yes_ask_size_fp` — the depth of the YES leg — without
+    ever reading the NO leg's. Kalshi publishes no `no_ask_size`, which is why
+    it looked absent. It is not: the NO ask book IS the YES bid book. Measured
+    2026-08-26 across 32,458 live markets quoting both sides, `no_ask ==
+    1 - yes_bid` held to the last digit on every one of them (max deviation
+    0.0). The NO leg's depth is `yes_bid_size_fp`, and it was sitting on the
+    same market object this function already held.
+
+    Not a rare disagreement: of 31,651 live markets quoting depth on both sides
+    the two differ on 72.2%, and the unread leg is the SHALLOWER one on 39.7%
+    (12,560) — median ratio 0.113, so the typical affected market has nine times
+    less room on the side nobody checked, and 5,884 are over-sized by more than
+    10x. Filling 500 YES against 3 NO is not a 2c lock, it is 497 naked long
+    contracts at 95c inside the one strategy this file calls arithmetic.
+
+    What made it worse than a sizing slip: `kalshi_board._liquidity_officer`
+    reads `max_contracts` and reports it back as "N contracts resting on the
+    thinnest leg". The seat whose entire job is refusing thin books was handed
+    a number with the thin leg already removed, and quoted it as the thin leg
+    (memory `guardrail-on-one-path`).
+
+    `find_field_locks` never had this bug: it buys YES on every leg, so every
+    leg's depth IS a `yes_ask_size_fp` and its `min(...)` was already right. The
+    pair is the only lock with a leg bought from the other side of the book —
+    the only one where "this leg's depth" and "the YES ask depth" differ.
+
+    NOT AN ESCAPE. This path has surfaced nothing: a full walk on 2026-08-26 —
+    102,652 genuine markets — returned 0 pair locks, so nothing was ever
+    mis-sized in production, and "it has never lost money" is not evidence about
+    it either. It is fixed now because it is the ONE strategy that sizes without
+    waiting for calibration (`requires_estimate` is False), which makes it the
+    first thing to run on the day the sector is armed.
     """
     out = []
     for m in markets:
         ya = kc.parse_price(m.get("yes_ask_dollars", m.get("yes_ask")))
         na = kc.parse_price(m.get("no_ask_dollars", m.get("no_ask")))
+        # One book read from two sides: `yes_ask_size_fp` backs the YES buy,
+        # `yes_bid_size_fp` backs the NO buy.
         ys = kc.parse_size(m.get("yes_ask_size_fp"))
-        if ya is None or na is None or not ys:
+        ns = kc.parse_size(m.get("yes_bid_size_fp"))
+        if ya is None or na is None or not ys or not ns:
             continue
 
         cost_c = (ya + na) * 100.0
@@ -219,7 +256,10 @@ def find_pair_locks(markets):
         edge_c = 100.0 - cost_c - fees_c
         if edge_c < MIN_LOCK_EDGE_CENTS:
             continue
-        if ys < MIN_LEG_SIZE:
+        # The lock is only as large as its SHALLOWER leg, and the size floor
+        # belongs on that leg rather than on whichever one is quoted first.
+        depth = min(ys, ns)
+        if depth < MIN_LEG_SIZE:
             continue
 
         out.append({
@@ -229,7 +269,12 @@ def find_pair_locks(markets):
             "yes_ask": ya, "no_ask": na,
             "cost_cents": round(cost_c, 2), "fees_cents": fees_c,
             "edge_cents": round(edge_c, 2),
-            "max_contracts": int(ys),
+            # Both depths travel with the row. A lone `max_contracts` is a number
+            # no reader can check; the pair is what shows WHICH leg binds, and
+            # what makes a regression to one-leg sizing visible in the artifact
+            # instead of only in the diff.
+            "yes_leg_size": int(ys), "no_leg_size": int(ns),
+            "max_contracts": int(depth),
             "close_time": m.get("close_time"),
             "requires_estimate": False,
         })

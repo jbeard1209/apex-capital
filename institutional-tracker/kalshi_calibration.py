@@ -1210,6 +1210,46 @@ def edge_versus_cost(rows=None):
     head += (f" {binds.capitalize()} is the binding cost "
              f"({cost['spread']*100:.2f}c vs {cost['fee']*100:.2f}c).")
 
+    # A MAGNITUDE WITH NO SIGN IS NOT ACTIONABLE. The first version of this said
+    # "the market misprices by 1.73c" and never said which way — `direction` was
+    # computed, stored in the detail dict, and left out of the only sentence a
+    # human reads. That is not cosmetic here, because every candidate this firm
+    # can produce is a BUY: `find_disagreement_candidates` prices the ask,
+    # takes its size from the ask book, and emits no side; all 4,239 ledger rows
+    # carry no `side` key at all. So a reader handed an unsigned edge and this
+    # pipeline takes the only side there is — and on the aggregate that is the
+    # losing one. [[both-sides-of-a-comparison]]: the number was right and the
+    # sentence it lived in could not be acted on.
+    overpriced = agg["quote"] > agg["realised"]
+    harvest = "SELL yes (equivalently, buy no)" if overpriced else "BUY yes"
+    head += (f" DIRECTION: {agg['direction']} — quoted "
+             f"{agg['quote']*100:.2f}c against {agg['realised']*100:.2f}c "
+             f"settled, so collecting it means {harvest}.")
+    if overpriced:
+        head += (" The scanner has no such path: every candidate it emits is a"
+                 " buy of yes at the ask. The gap above is on the side the firm"
+                 " cannot currently take, which is a build decision separate"
+                 " from — and cheaper than — the estimator one.")
+
+    # A sign is a property of a horizon, not of the sector. Only bands with a
+    # real n AND an interval that clears the quote get a vote: a straddling
+    # band's "direction" is the sign of noise, and counting it would let the
+    # aggregate borrow confidence from a stratum that has none.
+    signed = {k: v for k, v in detail["strata"].items()
+              if v["n"] >= MIN_SETTLED_PER_HORIZON and v["edge_low"] > 0}
+    over = sorted(k for k, v in signed.items() if v["quote"] > v["realised"])
+    under = sorted(k for k, v in signed.items() if v["quote"] <= v["realised"])
+    if over and under:
+        head += (f" AND THE SIGN FLIPS ACROSS HORIZONS: yes is overpriced at "
+                 f"{', '.join(over)} and underpriced at {', '.join(under)}, so "
+                 f"no one direction applies to the rule as a whole.")
+    else:
+        head += (f" That sign is separately established on {len(signed)} of "
+                 f"{len(detail['strata'])} horizon strata "
+                 f"({', '.join(sorted(signed)) or 'none'}) — elsewhere the "
+                 f"interval straddles the quote or the band is too thin, so "
+                 f"it is that band's sign, not the rule's.")
+
     # Both cost terms are the BEST case. Say so on every verdict, including
     # HARVESTABLE — especially HARVESTABLE, where an optimistic cost is what
     # would send real money after a margin that is not there.
