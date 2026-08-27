@@ -813,6 +813,41 @@ def _this_host() -> str:
         return "unknown"
 
 
+def _host_for_alarm() -> str:
+    """The label an alarm is FILED under. Must be distinct per machine, always.
+
+    `_this_host()` above answers "who am I, or do I not know", and its degraded
+    answer is the shared constant "unknown". That is the right answer for a law's
+    prose and the wrong one for a key: two hosts that both answer "unknown" file
+    their alarms under one identity, and the digest's collapse then deletes one
+    machine's alarm as a re-run of the other's — the defect fixed in
+    `email_buffer.buffer_email`. So the degraded branch falls back to something
+    machine-distinct, deliberately re-accepting the drift the persisted id exists
+    to remove. The asymmetry is the whole argument: an unstable label
+    OVER-reports (two digest rows for one alarm — visible, annoying, harmless),
+    a shared label UNDER-reports (one machine's alarm silently gone). Fail toward
+    the visible one.
+
+    This used to be `socket.gethostname().split(".")[0]`, read fresh on every
+    send, 1500 lines below the docstring that forbids exactly that. A hostname is
+    not an identity, it is a network condition: this laptop has `HostName: not
+    set`, so `kern.hostname` is whatever the network last called it and macOS
+    rewrites it on every transition — its mDNS collision counter is already at
+    173. The live 133-item digest buffer carries ONE machine's coherence alarms
+    under TWO interleaved labels: "Mac" (4, Aug 21-23) and "MacBook-Air-173" (39,
+    Aug 17-26), neither superseding the other. `order_ledger._host_tag()` fixed
+    this for order stamps in July and the fix was never carried here.
+    """
+    h = _this_host()
+    if h and h != "unknown":
+        return h
+    try:
+        import socket
+        return "unknown-" + socket.gethostname().split(".")[0]
+    except Exception:
+        return "unknown-host"
+
+
 def _designated_pipeline_host() -> Optional[str]:
     """The host that is supposed to be running main.py, or None if unknowable."""
     try:
@@ -2345,11 +2380,10 @@ def notify_violations(results: List[LawResult]) -> bool:
     if not violated:
         return False        # everything cleared: the retired queue row says so
 
-    try:
-        import socket
-        host = socket.gethostname().split(".")[0]
-    except Exception:
-        host = "unknown-host"
+    # The persisted identity, not the current network name — see _host_for_alarm.
+    # This is both the human-visible label AND the leading component of the
+    # dedup_key below, so a label that moves means identical alarms never collapse.
+    host = _host_for_alarm()
 
     rows = "".join(
         f"<tr><td style='padding:6px 10px;border-bottom:1px solid #eee'><b>{r.name}</b><br>"

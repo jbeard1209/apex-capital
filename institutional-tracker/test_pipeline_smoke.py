@@ -22747,6 +22747,146 @@ class TestASubjectIsNotAnIdentity(unittest.TestCase):
                          "is the whole defect")
 
 
+class TestAHostLabelIsNotANetworkCondition(unittest.TestCase):
+    """A hostname is a network condition; an identity is written down.
+
+    `coherence_laws.notify_violations` derived its alarm label from
+    `socket.gethostname()` — 1500 lines below `_this_host()`'s docstring
+    forbidding exactly that, and a month after `order_ledger._host_tag()` fixed
+    the same thing for order stamps. This Mac has `HostName: not set`, so
+    `kern.hostname` is whatever the network last called it; the live digest
+    buffer carried ONE machine's alarms under "Mac" (4) and "MacBook-Air-173"
+    (39), interleaved rather than one superseding the other.
+
+    That was cosmetic until the label became the leading component of the
+    dedup_key. A key that moves means identical alarms never collapse.
+    """
+
+    def test_the_alarm_label_is_the_persisted_identity(self):
+        import coherence_laws as cl
+        with patch.object(cl, "_this_host", lambda: "apexcapitalc"):
+            self.assertEqual("apexcapitalc", cl._host_for_alarm())
+
+    def test_the_label_does_not_move_when_the_hostname_does(self):
+        """The property the dedup_key depends on."""
+        import coherence_laws as cl, socket
+        with patch.object(cl, "_this_host", lambda: "mac"):
+            with patch.object(socket, "gethostname", lambda: "Mac.lan"):
+                a = cl._host_for_alarm()
+            with patch.object(socket, "gethostname",
+                              lambda: "MacBook-Air-173.local"):
+                b = cl._host_for_alarm()
+        self.assertEqual(a, b,
+                         "the machine did not change, only the network did — "
+                         "the label must not move")
+
+    def test_a_degraded_label_is_still_machine_distinct(self):
+        """"unknown" on two hosts is ONE key, and one host's alarm is deleted.
+
+        So the degraded branch must never return a constant that another machine
+        could also return. It fails toward too many keys, not toward a shared one.
+        """
+        import coherence_laws as cl, socket
+        with patch.object(cl, "_this_host", lambda: "unknown"):
+            with patch.object(socket, "gethostname", lambda: "hostA.local"):
+                a = cl._host_for_alarm()
+            with patch.object(socket, "gethostname", lambda: "hostB.local"):
+                b = cl._host_for_alarm()
+        self.assertNotEqual(a, b,
+                            "two hosts that both fail to resolve their identity "
+                            "must not share one alarm key")
+        self.assertNotEqual("unknown", a)
+        self.assertNotEqual("unknown", b)
+
+    def test_an_empty_identity_is_a_non_answer_too(self):
+        """"" is as shared between two hosts as "unknown" is.
+
+        `_this_host()` cannot return it today, but the guard against it is the
+        kind of defensive branch that gets "simplified" away later, and the
+        failure it prevents is silent: every host files under one empty key and
+        the digest deletes all but one machine's alarm.
+        """
+        import coherence_laws as cl, socket
+        with patch.object(cl, "_this_host", lambda: ""):
+            with patch.object(socket, "gethostname", lambda: "hostA.local"):
+                a = cl._host_for_alarm()
+            with patch.object(socket, "gethostname", lambda: "hostB.local"):
+                b = cl._host_for_alarm()
+        self.assertTrue(a and b, "an empty label is not a label")
+        self.assertNotEqual(a, b)
+
+    def test_a_degraded_label_says_it_is_degraded(self):
+        import coherence_laws as cl, socket
+        with patch.object(cl, "_this_host", lambda: "unknown"):
+            with patch.object(socket, "gethostname", lambda: "hostA.local"):
+                self.assertIn("unknown", cl._host_for_alarm(),
+                              "a guessed label must read as guessed")
+
+    def test_even_a_dead_socket_yields_a_label(self):
+        import coherence_laws as cl, socket
+        def _boom():
+            raise OSError("no resolver")
+        with patch.object(cl, "_this_host", lambda: "unknown"):
+            with patch.object(socket, "gethostname", _boom):
+                self.assertTrue(cl._host_for_alarm())
+
+    def test_notify_violations_does_not_read_the_hostname(self):
+        """AST, not grep — this file and that module both discuss gethostname."""
+        import coherence_laws as cl
+        tree = ast.parse(Path(cl.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "notify_violations")
+        names = {getattr(c.func, "attr", getattr(c.func, "id", ""))
+                 for c in ast.walk(fn) if isinstance(c, ast.Call)}
+        self.assertNotIn("gethostname", names,
+                         "the alarm label must come from the persisted identity, "
+                         "not from whatever the network calls this machine")
+        self.assertIn("_host_for_alarm", names)
+
+    def test_the_two_hosts_of_this_firm_get_two_keys(self):
+        """The end-to-end property: same law-set, different machine, distinct key."""
+        import coherence_laws as cl
+        keys = []
+        for ident in ("mac", "apexcapitalc"):
+            with patch.object(cl, "_this_host", lambda i=ident: i):
+                keys.append("coherence:%s:%s" % (cl._host_for_alarm(),
+                                                 "positions_conserve"))
+        self.assertEqual(2, len(set(keys)))
+
+    def test_the_signoff_record_uses_the_same_identity_as_the_order_stamp(self):
+        """One machine, one name, across the ledger that stamps orders and the
+        ledger that records who flipped the autonomy gate."""
+        import signoff_ledger as sl
+        from order_ledger import _host_tag
+        self.assertEqual(_host_tag(), sl._host())
+
+    def test_signoff_host_delegates_rather_than_deriving(self):
+        import signoff_ledger as sl
+        tree = ast.parse(Path(sl.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "_host")
+        imported = {a.name for n in ast.walk(fn)
+                    if isinstance(n, ast.ImportFrom) for a in n.names}
+        self.assertIn("_host_tag", imported,
+                      "_host must delegate to the one place that knows the "
+                      "persisted identity, not re-derive it")
+
+    def test_the_deploy_budget_never_filtered_on_host(self):
+        """Pins the claim in _host's docstring: a drifting name could not have
+        bought an extra deploy. If someone adds a host filter here, that stops
+        being true and the docstring becomes a lie."""
+        import signoff_ledger as sl
+        tree = ast.parse(Path(sl.__file__).read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "_deployed_today_records")
+        src = ast.dump(fn)
+        self.assertNotIn("deploy_host", src,
+                         "the daily deploy budget must stay host-blind — "
+                         "filtering it on a host name makes the cap evadable "
+                         "by a network rename")
+
+
 class TestIssueIdentityIsNotTheMeasurement(unittest.TestCase):
     """A detector writes what it measures into the title; identity must not move with it.
 

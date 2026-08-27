@@ -158,7 +158,28 @@ def _today() -> str:
 
 
 def _host() -> str:
-    return socket.gethostname().split(".")[0]
+    """This host's PERSISTED identity, not whatever the network calls it today.
+
+    `deploy_host` and `set_host` are the governance record of which brain shipped
+    a change and which one flipped the autonomy gate. Derived from
+    `socket.gethostname()`, that record splits one machine across two names — this
+    laptop answered to both `Mac` and `MacBook-Air-173` inside a single week (the
+    evidence is in `coherence_laws._host_for_alarm`). `order_ledger._host_tag()`
+    is the one place that knows the answer, because it is written down rather
+    than inferred (memory `two_brains_one_account`).
+
+    The deploy BUDGET is not affected and never was: `_deployed_today_records()`
+    counts every row in the local ledger and never filters on host, so a drifting
+    name could not have bought an extra deploy. This is attribution only.
+    """
+    try:
+        from order_ledger import _host_tag
+        return _host_tag()
+    except Exception:
+        # Worse than the persisted id, better than nothing, and still
+        # machine-distinct — which is the property that matters for a record
+        # whose whole job is telling two brains apart.
+        return socket.gethostname().split(".")[0]
 
 
 def _git_head() -> str | None:
