@@ -55,13 +55,31 @@ def _safe_load(path: str) -> dict:
 
 
 def _age_hours(ts_str: str) -> float:
-    """Return how many hours ago a timestamp was."""
+    """Return how many hours ago a timestamp was.
+
+    The old body was `datetime.now() - fromisoformat(ts[:19])`. The `[:19]` slice
+    throws away the offset, so a UTC-stamped artifact was compared against LOCAL
+    now: on the Mac that reported it exactly 4h younger than it is (5h in EST —
+    the error even changes with DST). 15 of the firm's ~75 artifacts carry a
+    tz-aware stamp, including fi_pipeline_report and macro_regime_state, and the
+    error runs in the dangerous direction: ages read low, so a producer dead for
+    15.9h still clears a 12h freshness gate. The VM is UTC, so this was green
+    there and wrong here — the host-divergence shape again.
+
+    Compare like with like: an aware stamp against aware now, a naive stamp
+    against local now (correct, since the naive writers all use datetime.now()).
+    """
     if not ts_str:
         return 999
-    try:
-        return (datetime.now() - datetime.fromisoformat(str(ts_str)[:19])).total_seconds() / 3600
-    except Exception:
-        return 999
+    s = str(ts_str).strip().replace("Z", "+00:00")
+    for candidate in (s, s[:19]):      # [:19] still rescues odd trailing junk
+        try:
+            dt = datetime.fromisoformat(candidate)
+        except Exception:
+            continue
+        now = datetime.now(dt.tzinfo) if dt.tzinfo else datetime.now()
+        return (now - dt).total_seconds() / 3600
+    return 999
 
 
 def _fresh(ts_str: str, ttl_hours: float) -> bool:
@@ -103,11 +121,36 @@ def run_morning_briefing() -> dict:
     from canary_agent import load_active_alert
     canary       = load_active_alert("data/canary_alert.json")
     canary_state = _safe_load("data/canary_state.json")
-    market_status = canary_state.get("market_status", "unknown")
+    # `market_status` is a key NOTHING in this firm has ever written, so this
+    # line returned "unknown" every day the panel has existed — and rendered it
+    # in hardcoded green (see the HTML below).
+    #
+    # The near-miss fix was `canary_state["regime"]`, which does exist. It is
+    # still the wrong quantity: canary_agent:421 derives it as a pure relabel of
+    # the canary ALERT LEVEL (GREEN→BULL, ORANGE→DEFENSIVE), so it is a
+    # statement about the firm's own plumbing, and printing it here would
+    # restate the Canary field on the next line under a market heading — a
+    # panel carrying zero information, which is a quieter version of the same
+    # defect. The firm does measure the market: macro_regime_model.py scores
+    # SPY vs its 200MA, 12-1 momentum, VIX, the 10-2 curve, credit spreads and
+    # breadth into data/macro_regime_state.json with a confidence.
+    #
+    # It runs 12:50 UTC Mon-Fri, so the longest LEGITIMATE gap is Friday's run
+    # read on the Tuesday after a Monday holiday (~91h) — hence 96, not 24. A
+    # 24h threshold here would report the model dead every Monday. If it really
+    # is stale we say UNKNOWN rather than falling back to the canary relabel:
+    # substituting a different quantity is how this line broke in the first place.
+    _macro       = _safe_load("data/macro_regime_state.json")
+    _macro_age_h = _age_hours(_macro.get("computed_at", ""))
+    _macro_conf  = _macro.get("confidence")
+    market_status = (_macro.get("regime", "UNKNOWN") if _macro_age_h < 96
+                     else "UNKNOWN")
     canary_level  = canary.get("level", "GREEN")
     triggers      = canary.get("triggers", []) or []
     briefing["sections"]["market"] = {
         "status":        market_status,
+        "regime_confidence": _macro_conf,
+        "regime_age_hours":  round(_macro_age_h, 1),
         "canary_level":  canary_level,
         "alert_count":   len(triggers),
         "triggers":      triggers[:5],
@@ -124,9 +167,17 @@ def run_morning_briefing() -> dict:
     logger.info("\n  [2/15] CRO — risk environment...")
     risk_bulletin = _safe_load("data/risk_bulletin.json")
     risk_level    = risk_bulletin.get("risk_level", "UNKNOWN")
-    cvar          = risk_bulletin.get("cvar_95", 0)
+    # The bulletin has never carried `cvar_95` or `pdo_signal`. CVaR is computed
+    # by risk_manager_agent and lives under var_metrics there; the bulletin's own
+    # deployment stance is `capital_guidance`. Both reads returned their defaults
+    # every day, so the CRO panel reported "CVaR 0.00%" against a real $2,064.
+    # Note the UNIT: cvar_95 is DOLLARS, not a percentage — the old log line
+    # formatted it with a % sign, which would have been wrong even if the key
+    # had resolved.
+    _rm_var       = _safe_load("data/risk_manager_report.json").get("var_metrics", {})
+    cvar          = _rm_var.get("cvar_95", 0) if isinstance(_rm_var, dict) else 0
     directives    = risk_bulletin.get("directives", [])
-    pdo_signal    = risk_bulletin.get("pdo_signal", "NEUTRAL")
+    pdo_signal    = risk_bulletin.get("capital_guidance", "NEUTRAL")
     briefing["sections"]["risk"] = {
         "risk_level":   risk_level,
         "cvar_95":      cvar,
@@ -136,7 +187,7 @@ def run_morning_briefing() -> dict:
     }
     if risk_level in ("HIGH", "CRITICAL"):
         briefing["alerts"].append(f"🔴 CRO: Risk level is {risk_level} — tightened buy thresholds active")
-    logger.info(f"    Risk: {risk_level} | CVaR: {cvar:.2f}% | PDO: {pdo_signal}")
+    logger.info(f"    Risk: {risk_level} | CVaR 95% 1d: ${cvar:,.0f} | Guidance: {pdo_signal}")
 
     # ── 3. Portfolio snapshot (Alpaca) ────────────────────────────────────────
     logger.info("\n  [3/15] Portfolio — current positions...")
@@ -210,25 +261,42 @@ def run_morning_briefing() -> dict:
     logger.info("\n  [6/15] Context agents — Historical, Geopolitical, MacroPolicy, SystemPerf...")
     hist_ctx   = _safe_load("data/rd_historical_context.json")
     geo_ctx    = _safe_load("data/rd_geopolitical_context.json")
-    macro_ctx  = _safe_load("data/risk_manager_report.json")   # MacroPolicyHistorian writes here
     sysperf    = _safe_load("data/rd_system_performance.json")
+
+    # All three of these panels rendered as an empty string, every day, because
+    # `summary` / `analysis` are keys none of these producers writes. The
+    # macro_policy panel was worse than a wrong key — it pointed at the wrong
+    # FILE. risk_manager_report.json is the Risk Manager's output (account,
+    # var_metrics, risk_assessment); the MacroPolicyHistorian's work is
+    # `policy_analysis` inside rd_geopolitical_context.json, which is where the
+    # policy analogue actually lives.
+    _hist_syn  = hist_ctx.get("synthesis", {}) or {}
+    _geo_an    = geo_ctx.get("geopolitical_analysis", {}) or {}
+    _pol_an    = geo_ctx.get("policy_analysis", {}) or {}
 
     briefing["sections"]["context"] = {
         "historical": {
-            "summary":      hist_ctx.get("summary", hist_ctx.get("analysis", ""))[:300],
+            "summary":      " — ".join(x for x in (
+                                _hist_syn.get("regime_summary", ""),
+                                _hist_syn.get("stance_rationale", "")) if x)[:300],
             "last_updated": hist_ctx.get("generated_at", ""),
             "fresh":        _fresh(hist_ctx.get("generated_at", ""), 48),
         },
         "geopolitical": {
-            "summary":      geo_ctx.get("summary", geo_ctx.get("analysis", ""))[:300],
-            "key_risks":    geo_ctx.get("key_risks", geo_ctx.get("risks", []))[:3],
+            "summary":      geo_ctx.get("team_summary", "")[:300],
+            # active_risk_events is a list of dicts; the panel wants readable
+            # lines, so take the event name rather than dumping the object.
+            "key_risks":    [e.get("event", "") if isinstance(e, dict) else str(e)
+                             for e in (_geo_an.get("active_risk_events") or [])][:3],
             "last_updated": geo_ctx.get("generated_at", ""),
             "fresh":        _fresh(geo_ctx.get("generated_at", ""), 48),
         },
         "macro_policy": {
-            "summary":      macro_ctx.get("summary", "")[:300],
-            "last_updated": macro_ctx.get("generated_at", ""),
-            "fresh":        _fresh(macro_ctx.get("generated_at", ""), 48),
+            "summary":      " — ".join(x for x in (
+                                _pol_an.get("current_policy_analogue", ""),
+                                _pol_an.get("current_analogue_lesson", "")) if x)[:300],
+            "last_updated": geo_ctx.get("generated_at", ""),
+            "fresh":        _fresh(geo_ctx.get("generated_at", ""), 48),
         },
         "system_performance": {
             "health_score": sysperf.get("health_score", sysperf.get("score", 0)),
@@ -247,13 +315,18 @@ def run_morning_briefing() -> dict:
     # ── 7. Chief of Staff ─────────────────────────────────────────────────────
     logger.info("\n  [7/15] Chief of Staff — briefing summary...")
     cos_report = _safe_load("data/chief_of_staff_report.json")
-    cos_age_h  = _age_hours(cos_report.get("generated_at", ""))
+    # chief_of_staff_agent stamps its report `timestamp`, not `generated_at`, so
+    # _age_hours("") returned its 999 sentinel and this panel reported the CoS
+    # report as ~41 days stale every single morning. The registry count lives
+    # under factory_result (risk_manager_agent:663 reads it from exactly there).
+    cos_ts     = cos_report.get("timestamp", "")
+    cos_age_h  = _age_hours(cos_ts)
     attention  = cos_report.get("attention_items", [])
     briefing["sections"]["cos"] = {
         "report_age_hours": round(cos_age_h, 1),
         "attention_items":  attention[:5],
-        "registry_size":    cos_report.get("registry_size", 0),
-        "last_updated":     cos_report.get("generated_at", ""),
+        "registry_size":    (cos_report.get("factory_result") or {}).get("registry_size", 0),
+        "last_updated":     cos_ts,
     }
     _cos_seen: set = set()
     for item in attention[:5]:
@@ -342,7 +415,9 @@ def run_morning_briefing() -> dict:
     briefing["sections"]["hr"] = {
         "firm_health_score": firm_health,
         "action_required":   action_required[:5],
-        "total_agents":      hr_report.get("total_agents_evaluated", 0),
+        # hr_agent:1942 writes `agents_reviewed` = len(agents). Reading
+        # `total_agents_evaluated` reported 0 agents for a 155-agent firm.
+        "total_agents":      hr_report.get("agents_reviewed", 0),
         "last_updated":      hr_report.get("generated_at", ""),
     }
     if action_required:
@@ -352,18 +427,24 @@ def run_morning_briefing() -> dict:
     # ── 11. Board — last meeting summary ──────────────────────────────────────
     logger.info("\n  [11/15] Board — last meeting summary...")
     board_report = _safe_load("data/board_meeting_report.json")
-    board_age_h  = _age_hours(board_report.get("generated_at", ""))
+    # board_meeting:2878 writes `timestamp`, `consensus` and `implementation` —
+    # never `generated_at`, never `decisions`, and `implementation` holds
+    # `executed` (a list), not `executed_count`. So this panel reported the last
+    # board meeting as 999h old with zero decisions, on a report written the
+    # same afternoon. The consensus counts were the only reads here that worked.
+    board_ts     = board_report.get("timestamp", "")
+    board_age_h  = _age_hours(board_ts)
     consensus    = board_report.get("consensus", {})
     last_actions = board_report.get("implementation", {})
-    last_decisions = board_report.get("decisions", [])
+    last_decisions = consensus.get("actions", []) or []
     briefing["sections"]["board"] = {
         "meeting_age_hours": round(board_age_h, 1),
         "unanimous_count":   consensus.get("unanimous_count", 0),
         "majority_count":    consensus.get("majority_count", 0),
         "vetoed_count":      consensus.get("vetoed_count", 0),
         "top_decisions":     last_decisions[:3],
-        "trades_executed":   last_actions.get("executed_count", 0),
-        "last_updated":      board_report.get("generated_at", ""),
+        "trades_executed":   len(last_actions.get("executed", []) or []),
+        "last_updated":      board_ts,
     }
     logger.info(f"    Board: {consensus.get('unanimous_count',0)} unanimous | {consensus.get('majority_count',0)} majority | Age: {board_age_h:.1f}h")
 
@@ -418,25 +499,62 @@ def run_morning_briefing() -> dict:
     # ── 14. Trade review — post-mortem ────────────────────────────────────────
     logger.info("\n  [14/15] Trade review — post-mortem findings...")
     trade_review  = _safe_load("data/trade_review_report.json")
-    trade_findings = trade_review.get("findings", trade_review.get("lessons", []))
+    # trade_review_team:558-564 writes `analytics`, `risk_insights`, `cos_summary`
+    # — none of `findings`, `lessons`, `win_rate` or `accuracy` at top level. The
+    # panel therefore showed "0 findings | Win rate: 0" against a real 23.7% over
+    # 38 trades, which is exactly the number the Chairman needs to see.
+    _tr_analytics = trade_review.get("analytics", {}) or {}
+    _tr_insights  = trade_review.get("risk_insights", {}) or {}
+    trade_findings = _tr_insights.get("notes", []) or []
+    _tr_win_rate  = _tr_analytics.get("win_rate", 0)
     briefing["sections"]["trade_review"] = {
         "finding_count": len(trade_findings),
         "top_findings":  trade_findings[:3],
-        "win_rate":      trade_review.get("win_rate", trade_review.get("accuracy", 0)),
+        "win_rate":      _tr_win_rate,
+        "total_trades":  _tr_analytics.get("total_trades", 0),
         "last_updated":  trade_review.get("generated_at", ""),
         "fresh":         _fresh(trade_review.get("generated_at",""), 168),  # weekly
     }
-    logger.info(f"    Trade review: {len(trade_findings)} findings | Win rate: {trade_review.get('win_rate', '—')}")
+    logger.info(f"    Trade review: {len(trade_findings)} findings | Win rate: {_tr_win_rate}% "
+                f"over {_tr_analytics.get('total_trades', 0)} trades")
 
     # ── 15. Capital efficiency ────────────────────────────────────────────────
     logger.info("\n  [15/15] Capital efficiency — deployment signal...")
     cap_report  = _safe_load("data/capital_efficiency_report.json")
-    deploy_signal = cap_report.get("signal", cap_report.get("pdo_signal", "NEUTRAL"))
-    deploy_pct    = cap_report.get("deployed_pct", briefing["sections"].get("portfolio", {}).get("deployed_pct", 0))
+    # capital_efficiency_agent:413-428 writes `recommendation`, `uncapped_signal`,
+    # `deployment.current_pct` and `manager_directives`. Neither `signal` nor
+    # `pdo_signal` has ever existed, so deploy_signal was the literal "NEUTRAL"
+    # on every run — which made the DEPLOY_MORE alert below unreachable: the
+    # only other way into it is deploy_pct < 50, and that came from the
+    # portfolio fallback. An alarm whose trigger value cannot occur is not an
+    # alarm. (deploy_pct itself DID resolve, via that fallback — leaving it.)
+    #
+    # This artifact has TWO writers. capital_efficiency_agent writes the routine
+    # `recommendation`; board_meeting:2834 additionally stamps `pdo_signal` +
+    # `board_override` when it issues a formal DEPLOY_MORE directive, which the
+    # Manager Agent acts on next cycle. The board's directive outranks the
+    # routine read, so check it first — this is the one case where the old
+    # `pdo_signal` read was reaching a key that really does get written.
+    if cap_report.get("board_override"):
+        deploy_signal = cap_report.get("pdo_signal", "NEUTRAL")
+    else:
+        deploy_signal = cap_report.get("recommendation", "NEUTRAL")
+    # `deployed_pct` is not a key of this artifact either; the agent's own figure
+    # is deployment.current_pct. The old line fell through to the PORTFOLIO
+    # section's number, which is a different measurement taken at a different
+    # time — so the panel could pair this agent's signal with someone else's
+    # percentage and print "DEPLOY_MORE — 83.5% deployed" off two clocks that
+    # never agreed. Signal and level now come from the same reading; the
+    # portfolio number stays only as a last resort when the agent hasn't run.
+    _cap_deploy   = cap_report.get("deployment", {}) or {}
+    deploy_pct    = _cap_deploy.get("current_pct",
+                        briefing["sections"].get("portfolio", {}).get("deployed_pct", 0))
+    _cap_directives = cap_report.get("manager_directives", []) or []
     briefing["sections"]["capital"] = {
         "signal":       deploy_signal,
         "deployed_pct": deploy_pct,
-        "directive":    cap_report.get("directive", ""),
+        "uncapped_signal": cap_report.get("uncapped_signal", ""),
+        "directive":    "; ".join(str(d) for d in _cap_directives)[:300],
         "last_updated": cap_report.get("generated_at", ""),
     }
     if deploy_signal == "DEPLOY_MORE" or (isinstance(deploy_pct, (int,float)) and deploy_pct < 50):
@@ -475,20 +593,43 @@ def run_morning_briefing() -> dict:
     logger.info("\n  [17/18] Operations Director — floor supervision summary...")
     ops_report  = _safe_load("data/ops_director_report.json")
     ops_age_h   = _age_hours(ops_report.get("generated_at", ""))
+    # This panel has NEVER worked. All ten reads below named keys
+    # operations_director.py has never written — it emits `supervised_agents`,
+    # `agent_status`, `flags` and `summary` (build_floor_brief, ~line 52) — so
+    # every field took its fallback and the Chairman's floor panel has read
+    # "UNKNOWN / 0 agents / 0 issues / no directive" every day since it shipped,
+    # against a real 6 agents and a live stale-report flag.
+    #
+    # floor_status is DERIVED, because the producer never states one: it records
+    # a per-agent status in the vocabulary OK / STALE / NO_REPORT / ERROR. Note
+    # the empty case stays UNKNOWN — an absent artifact must not render as a
+    # healthy floor, which is what `all(... == "OK")` over an empty dict does.
+    _ops_status  = ops_report.get("agent_status", {}) or {}
+    _ops_levels  = {str(v.get("status", "")).upper()
+                    for v in _ops_status.values() if isinstance(v, dict)}
+    _ops_flags   = ops_report.get("flags", []) or []
+    if not _ops_levels:
+        floor_status = "UNKNOWN"
+    elif _ops_levels & {"NO_REPORT", "ERROR"}:
+        floor_status = "DEGRADED"
+    elif "STALE" in _ops_levels:
+        floor_status = "STALE"
+    else:
+        floor_status = "OK"
     briefing["sections"]["ops_director"] = {
         "age_hours":       round(ops_age_h, 1),
-        "floor_status":    ops_report.get("floor_status", ops_report.get("status", "UNKNOWN")),
-        "agents_reviewed": ops_report.get("agents_reviewed", ops_report.get("total_agents_supervised", 0)),
-        "issues_found":    ops_report.get("issues_found", ops_report.get("total_issues", 0)),
-        "top_issues":      ops_report.get("issues", ops_report.get("agent_issues", []))[:3],
-        "directive":       ops_report.get("directive", ops_report.get("floor_directive", "")),
+        "floor_status":    floor_status,
+        "agents_reviewed": len(ops_report.get("supervised_agents", []) or []),
+        "issues_found":    len(_ops_flags),
+        "top_issues":      [str(f) for f in _ops_flags][:3],
+        "directive":       ops_report.get("summary", ""),
         "last_updated":    ops_report.get("generated_at", ""),
     }
-    if ops_report.get("issues_found", ops_report.get("total_issues", 0)) > 0:
+    if _ops_flags:
         briefing["alerts"].append(
-            f"🏢 Ops Director: {ops_report.get('issues_found', ops_report.get('total_issues', '?'))} issue(s) on the floor"
+            f"🏢 Ops Director: {len(_ops_flags)} issue(s) on the floor"
         )
-    logger.info(f"    Ops Director: {ops_report.get('floor_status', ops_report.get('status', '—'))} | "
+    logger.info(f"    Ops Director: {floor_status} | {len(_ops_flags)} flag(s) | "
                 f"Age: {ops_age_h:.1f}h")
 
     # ── 18. Firm Channel — ideas from the floor (overnight + this morning) ────
@@ -562,7 +703,7 @@ def run_morning_briefing() -> dict:
                               "pending": len(pending_list)},
         "irm":               {"fresh": irm_age_h < 30,  "score": irm_score},
         "hr":                {"fresh": bool(hr_report),  "health": firm_health},
-        "board":             {"fresh": board_age_h < 24, "last_meeting": board_report.get("generated_at","")},
+        "board":             {"fresh": board_age_h < 24, "last_meeting": board_ts},
         "manager":           {"fresh": mgr_age_h < 12,  "decisions": len(mgr_data.get("decisions",[]))},
         "review":            {"fresh": rev_age_h < 12,  "buy_recs": len(buy_recs)},
         "trade_review":      {"fresh": briefing["sections"]["trade_review"]["fresh"]},
@@ -570,7 +711,7 @@ def run_morning_briefing() -> dict:
         "reconciliation":    {"fresh": recon_age_h < 1, "status": recon_status,
                               "n_critical": recon_report.get("n_critical", 0)},
         "ops_director":      {"fresh": ops_age_h < 12,
-                              "floor_status": ops_report.get("floor_status", ops_report.get("status", "—"))},
+                              "floor_status": floor_status},
         "deputy_board":      {"fresh": _fresh(_safe_load("data/deputy_board_report.json").get("generated_at",""), 24),
                               "approved": _safe_load("data/deputy_board_report.json").get("approved_count", 0)},
     }
@@ -710,7 +851,7 @@ def run_morning_briefing() -> dict:
   </h2>
   <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
     <span style="background:#1a2a1a;padding:5px 10px;border-radius:4px;">
-      Market: <strong style="color:#3fb950;">{market_status}</strong>
+      Market: <strong style="color:{'#3fb950' if market_status in ('BULL','RECOVERY') else '#f0c000' if market_status == 'LATE_CYCLE' else '#f85149' if market_status == 'CONTRACTION' else '#8b949e'};">{market_status}</strong>
     </span>
     <span style="background:#{'2a1a1a' if canary_level in ('RED','ORANGE') else '1a1a2a'};padding:5px 10px;border-radius:4px;">
       Canary: <strong style="color:{'#f85149' if canary_level == 'RED' else '#f0883e' if canary_level == 'ORANGE' else '#f0c000' if canary_level == 'YELLOW' else '#3fb950'};">{canary_level}</strong>

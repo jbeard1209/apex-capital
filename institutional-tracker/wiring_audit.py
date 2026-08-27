@@ -1475,6 +1475,309 @@ def check_interrupted_writes(data_dir=None):
         + ", ".join(n for n, _ in stale[:4]))
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Reader / producer KEY contract
+# ─────────────────────────────────────────────────────────────────────────────
+# The checks above catch a routed item with no consumer. This catches the same
+# failure one field at a time: a reader takes a key its producer never writes,
+# `.get()` hands back the default forever, and nothing raises, logs, or leaves
+# an empty file to notice.
+#
+# THE ESCAPE (2026-08-27). `morning_briefing.py` is the Chairman's single daily
+# window into a 155-agent firm. 31 of its ~100 read sites named keys no producer
+# has ever written, so the brief had been quietly reporting:
+#     Market: unknown         canary_state has no `market_status`
+#     HR agents: 0            hr_agent writes `agents_reviewed` = 67
+#     Board meeting: 999h     board_meeting writes `timestamp`, not `generated_at`
+#     CRO CVaR: 0.00%         it is $2,064, under risk_manager's var_metrics
+#     Trade review win rate: 0     it is 23.7%, under `analytics`
+#     Ops Director: UNKNOWN / 0 agents / 0 issues / no directive
+#                             ALL TEN of that panel's reads were wrong; it had
+#                             never once displayed a true value
+# Every one of those numbers was real and present in the artifact, under another
+# name. Three were found by hand; the other 28 only turned up when the question
+# was asked mechanically, for every site at once. Hence this.
+#
+# Ground truth is the ARTIFACT, not a fixture: the file on disk IS the producer's
+# output, so this cannot be fooled by writing the check from the same wrong
+# belief that caused the bug. The cost is that it only sees artifacts this host
+# has produced — so `resolved` is reported, and the smoke test puts a floor
+# under it. A check that silently judges nothing is the failure mode this whole
+# module exists to catch.
+#
+# Deliberately NOT flagged, because each would be a false alarm that teaches
+# everyone to ignore the real ones:
+#   • a key written only under some condition  -> CONDITIONAL_KEYS, below
+#   • a fallback arm reading a DIFFERENT object -> unjudgeable, skipped
+#   • an artifact that is a LIST                -> no element stands for the schema
+
+# A key whose producer writes it only sometimes. Absence is normal, so absence
+# is not a defect — but an exemption is a place a real bug can hide, so each one
+# names the module that writes it and is VOID unless that module really does.
+# You cannot silence this check by exempting a key nobody writes.
+CONDITIONAL_KEYS = {
+    "board_override": ("board_meeting.py",
+                       "stamped into capital_efficiency_report only when the "
+                       "board issues a formal DEPLOY_MORE directive"),
+    "pdo_signal":     ("board_meeting.py",
+                       "written in the same block as board_override"),
+}
+
+
+def _const_str(n):
+    return n.value if isinstance(n, ast.Constant) and isinstance(n.value, str) else None
+
+
+def _thin_json_loaders(tree) -> set:
+    """Module-level functions that are a plain `json.load` of the path given.
+
+    Restricted to thin wrappers on purpose: a loader that reshapes what it
+    returns (`return data["items"]`) would make almost every key look absent,
+    and the check would drown in noise on its first run.
+    """
+    out = set()
+    for fn in ast.walk(tree):
+        if not isinstance(fn, ast.FunctionDef):
+            continue
+        body = list(ast.walk(fn))
+        loads = any(isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr == "load"
+                    and isinstance(n.func.value, ast.Name)
+                    and n.func.value.id == "json" for n in body)
+        if not loads:
+            continue
+        # every return must be the loaded object or an empty-ish default
+        ok = True
+        for n in body:
+            if not isinstance(n, ast.Return) or n.value is None:
+                continue
+            v = n.value
+            if isinstance(v, (ast.Name, ast.Dict, ast.List, ast.Constant)):
+                continue
+            if isinstance(v, ast.Call) and isinstance(v.func, ast.Attribute) \
+                    and v.func.attr == "load":
+                continue
+            ok = False
+            break
+        if ok:
+            out.add(fn.name)
+    return out
+
+
+def _fallback_chain(call, recv):
+    """`x.get("a", x.get("b", d))` is ONE decision with two candidate keys.
+
+    Returns (keys, judgeable). Judgeable is False when an arm reads off a
+    DIFFERENT object — `cap.get("deployed_pct", briefing["sections"]...)` —
+    because then absence from `cap` is not a defect: the other arm supplies the
+    value and this function cannot see what it holds.
+    """
+    keys, node = [], call
+    while True:
+        keys.append(_const_str(node.args[0]))
+        if len(node.args) < 2:
+            return keys, True
+        arm = node.args[1]
+        if isinstance(arm, ast.Call):
+            if (isinstance(arm.func, ast.Attribute) and arm.func.attr == "get"
+                    and isinstance(arm.func.value, ast.Name)
+                    and arm.func.value.id == recv
+                    and arm.args and _const_str(arm.args[0])):
+                node = arm
+                continue
+            return keys, False
+        if isinstance(arm, (ast.Constant, ast.Dict, ast.List, ast.Tuple, ast.Set)):
+            return keys, True      # a literal default: absence really is the default
+        return keys, False         # a name/subscript we cannot see into
+
+
+def _dig_strict(doc, subs):
+    """Walk nested keys. NEVER descends into a list.
+
+    data/cit_pending_proposals.json is a list; picking an element to stand for
+    the schema invents a shape the code never sees — those reads sit behind an
+    `isinstance(x, dict)` guard and are dead branches by construction.
+    """
+    node = doc
+    for s in subs:
+        if not isinstance(node, dict):
+            return None
+        node = node.get(s)
+    return node if isinstance(node, dict) else None
+
+
+def _module_writes_key(tree, key: str) -> bool:
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Dict):
+            if any(_const_str(k) == key for k in n.keys if k is not None):
+                return True
+        elif isinstance(n, ast.Subscript) and isinstance(n.ctx, ast.Store) \
+                and _const_str(n.slice) == key:
+            return True
+        elif isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) \
+                and n.func.attr == "setdefault" and n.args \
+                and _const_str(n.args[0]) == key:
+            return True
+    return False
+
+
+def reader_key_contract(base=None):
+    """-> (violations, n_resolved, n_unjudgeable, stale_exemptions).
+
+    A violation is a read site where EVERY candidate key is absent from the
+    artifact the variable was loaded from.
+    """
+    root = Path(base) if base else BASE_DIR
+    violations, resolved, unjudgeable = [], 0, 0
+    doc_cache, tree_cache = {}, {}
+
+    def _tree(path):
+        if path not in tree_cache:
+            try:
+                tree_cache[path] = ast.parse((root / path).read_text())
+            except Exception:
+                tree_cache[path] = None
+        return tree_cache[path]
+
+    # An exemption expires with the write that justified it. A producer that is
+    # missing or unparseable counts as NOT writing the key: "I could not check"
+    # must not read as "confirmed fine", or deleting a module would silently
+    # retire the exemption's only evidence and leave the key unchecked forever.
+    stale_exemptions = []
+    for key, (producer, _why) in CONDITIONAL_KEYS.items():
+        t = _tree(producer)
+        if t is None or not _module_writes_key(t, key):
+            stale_exemptions.append((key, producer))
+    live_exempt = {k for k in CONDITIONAL_KEYS
+                   if k not in {s[0] for s in stale_exemptions}}
+
+    for src_path in sorted(root.glob("*.py")):
+        module = src_path.name
+        if module.startswith("test_"):
+            continue
+        tree = _tree(module)
+        if tree is None:
+            continue
+        loaders = _thin_json_loaders(tree)
+        if not loaders:
+            continue
+
+        # var -> (artifact, [nested keys]) from `v = _safe_load("data/x.json")`
+        var_path, ambiguous = {}, set()
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Assign) and len(n.targets) == 1
+                    and isinstance(n.targets[0], ast.Name)
+                    and isinstance(n.value, ast.Call)
+                    and isinstance(n.value.func, ast.Name)
+                    and n.value.func.id in loaders
+                    and n.value.args and _const_str(n.value.args[0])
+                    and _const_str(n.value.args[0]).endswith(".json")):
+                name, path = n.targets[0].id, _const_str(n.value.args[0])
+                if name in var_path and var_path[name][0] != path:
+                    ambiguous.add(name)      # rebound to a second artifact
+                var_path[name] = (path, [])
+
+        # follow one hop: `c = parent.get("consensus", {})`
+        for _ in range(3):
+            for n in ast.walk(tree):
+                if not (isinstance(n, ast.Assign) and len(n.targets) == 1
+                        and isinstance(n.targets[0], ast.Name)):
+                    continue
+                c = n.value
+                if (isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                        and c.func.attr == "get"
+                        and isinstance(c.func.value, ast.Name)
+                        and c.func.value.id in var_path
+                        and c.func.value.id not in ambiguous
+                        and c.args and _const_str(c.args[0])
+                        and n.targets[0].id not in var_path):
+                    b, sub = var_path[c.func.value.id]
+                    var_path[n.targets[0].id] = (b, sub + [_const_str(c.args[0])])
+
+        # a consumed fallback arm is not a site of its own
+        inner = set()
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr == "get" and len(n.args) > 1
+                    and isinstance(n.args[1], ast.Call)):
+                inner.add(id(n.args[1]))
+
+        sites = []
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                    and n.func.attr == "get" and isinstance(n.func.value, ast.Name)
+                    and n.func.value.id in var_path and n.args
+                    and _const_str(n.args[0]) and id(n) not in inner):
+                keys, judgeable = _fallback_chain(n, n.func.value.id)
+                sites.append((n.func.value.id, tuple(keys), n.lineno, judgeable))
+            elif (isinstance(n, ast.Subscript) and isinstance(n.value, ast.Name)
+                    and n.value.id in var_path and _const_str(n.slice)
+                    and isinstance(n.ctx, ast.Load)):
+                sites.append((n.value.id, (_const_str(n.slice),), n.lineno, True))
+
+        for var, keys, lineno, judgeable in sorted(set(sites)):
+            if var in ambiguous:
+                unjudgeable += 1
+                continue
+            if not judgeable:
+                unjudgeable += 1
+                continue
+            path, subs = var_path[var]
+            if path not in doc_cache:
+                try:
+                    doc_cache[path] = json.loads((root / path).read_text())
+                except Exception:
+                    doc_cache[path] = None
+            doc = doc_cache[path]
+            if doc is None:
+                continue                       # not produced on this host
+            node = _dig_strict(doc, subs)
+            if node is None:
+                continue
+            resolved += 1
+            if any(k in node or k in live_exempt for k in keys):
+                continue
+            violations.append({
+                "module": module, "line": lineno,
+                "artifact": path + ("[" + "/".join(subs) + "]" if subs else ""),
+                "reads": list(keys), "has": sorted(node)[:10],
+            })
+    return violations, resolved, unjudgeable, stale_exemptions
+
+
+def check_reader_key_contract():
+    """Every key a reader takes off an artifact, checked against the artifact."""
+    violations, resolved, unjudgeable, stale = reader_key_contract()
+    for key, producer in stale:
+        problems.append(
+            f"[reader-keys] exemption for '{key}' is stale — {producer} no longer "
+            f"writes it, so the key is now unchecked for no reason")
+    for v in violations:
+        problems.append(
+            "[reader-keys] {module}:{line} reads {reads} off {artifact} — "
+            "no such key; it has {has}".format(
+                module=v["module"], line=v["line"],
+                reads=" | ".join(v["reads"]), artifact=v["artifact"],
+                has=", ".join(v["has"])))
+    if violations:
+        return
+    if resolved == 0:
+        # Every artifact these readers touch is gitignored, so a fresh clone has
+        # none of them and this check judges NOTHING while printing a pass. Say
+        # so out loud rather than banking a green that means "no evidence" —
+        # that is the exact shape of the HOLDS-on-zero-items the coherence layer
+        # was built to refuse. Not a violation: an unrun host is a legitimate state.
+        notes.append(
+            "[reader-keys] VACUOUS — 0 read sites resolved: no reader artifact "
+            "exists on this host yet, so nothing was checked. Run the pipeline "
+            "before treating this as a pass.")
+        return
+    notes.append(
+        f"[reader-keys] OK — {resolved} read site(s) resolved against a real "
+        f"artifact, all present ({unjudgeable} unjudgeable, "
+        f"{len(CONDITIONAL_KEYS)} declared conditional)")
+
+
 def run_checks() -> dict:
     """Run all wiring checks and return {problems, notes} without exiting.
 
@@ -1494,6 +1797,7 @@ def run_checks() -> dict:
     check_coherence_layer()
     check_internal_audit()
     check_interrupted_writes()
+    check_reader_key_contract()
     return {"problems": list(problems), "notes": list(notes)}
 
 

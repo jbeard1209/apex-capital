@@ -25285,6 +25285,246 @@ class TestHygieneRefusesAnOverBroadMatcher(unittest.TestCase):
         self.assertTrue(self._rows()[0].get("resolved_at"))
 
 
+
+class TestAReaderTakesOnlyKeysItsProducerWrites(unittest.TestCase):
+    """A key its producer never writes is `.get()`'s default, forever, in silence.
+
+    THE ESCAPE (2026-08-27). morning_briefing.py is the Chairman's one daily
+    window into a 155-agent firm, and 31 of its ~100 read sites named keys no
+    producer has ever written. The brief had been reporting Market "unknown",
+    HR 0 agents (real: 67), the board meeting 999h stale (real: written that
+    afternoon), CVaR 0.00% (real: $2,064), win rate 0 (real: 23.7%), and an
+    Operations Director panel — all ten of its reads wrong — that had never
+    once displayed a true value. Nothing threw. Nothing logged. No file was
+    empty. Every number was present in the artifact under a different name.
+
+    The same sweep then found the fifth reader to invent its own contract
+    against the canary: deputy_monitor's CRITICAL "canary stuck RED" board
+    escalation, dead two ways at once (see the test below).
+
+    These tests are AST- and artifact-based, never grep: this file and the
+    modules under test are full of postmortem comments that name the very keys
+    a text search would look for, so a grep would pass on the prose while the
+    code stayed broken.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import wiring_audit
+        cls.wa = wiring_audit
+
+    # ── the mechanism works, on every host, artifacts or not ────────────────
+    def _sandbox(self, module_src: str, artifacts: dict, producer_src: str = None):
+        d = tempfile.mkdtemp()
+        (Path(d) / "data").mkdir()
+        (Path(d) / "reader_mod.py").write_text(module_src)
+        # CONDITIONAL_KEYS names board_meeting.py; a missing producer voids the
+        # exemption, which would pollute every sandbox assertion. Supply a stub
+        # that really does write those keys unless a test is about that.
+        (Path(d) / "board_meeting.py").write_text(
+            producer_src if producer_src is not None
+            else "d = {}\nd['board_override'] = True\nd['pdo_signal'] = 'DEPLOY_MORE'\n")
+        for name, doc in artifacts.items():
+            (Path(d) / "data" / name).write_text(json.dumps(doc))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        return d
+
+    LOADER = ("import json\n"
+              "def _safe_load(p):\n"
+              "    try:\n"
+              "        with open(p) as fh:\n"
+              "            return json.load(fh)\n"
+              "    except Exception:\n"
+              "        return {}\n")
+
+    def test_it_catches_a_key_the_artifact_does_not_have(self):
+        """The floor: without this the whole check could be a no-op and pass."""
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\ny = x.get("nope", 0)\n',
+            {"a.json": {"real_key": 1}})
+        v, resolved, _unj, stale = self.wa.reader_key_contract(base=d)
+        self.assertEqual([], stale, "stub producer should keep exemptions live")
+        self.assertEqual(1, len(v), "a dead read site was not detected: %r" % (v,))
+        self.assertEqual(["nope"], v[0]["reads"])
+        self.assertEqual("data/a.json", v[0]["artifact"])
+        self.assertGreaterEqual(resolved, 1)
+
+    def test_a_key_that_is_present_is_not_flagged(self):
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\ny = x.get("real_key", 0)\n',
+            {"a.json": {"real_key": 1}})
+        v, resolved, _u, _s = self.wa.reader_key_contract(base=d)
+        self.assertEqual([], v)
+        self.assertEqual(1, resolved)
+
+    def test_a_fallback_chain_is_one_decision_not_two_sites(self):
+        """`x.get("a", x.get("b", 0))` with `b` present is NOT a defect.
+
+        Counting the inner call as its own site reported 16 phantom defects on
+        the first run of this check — enough noise to bury the 31 real ones.
+        """
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\ny = x.get("gone", x.get("real_key", 0))\n',
+            {"a.json": {"real_key": 1}})
+        v, _r, _u, _s = self.wa.reader_key_contract(base=d)
+        self.assertEqual([], v, "a satisfied fallback arm was reported: %r" % (v,))
+
+    def test_a_chain_with_every_key_absent_is_still_a_defect(self):
+        """The ops-director shape: `.get("floor_status", .get("status", "UNKNOWN"))`
+        where the artifact has neither."""
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\ny = x.get("gone", x.get("also_gone", 0))\n',
+            {"a.json": {"real_key": 1}})
+        v, _r, _u, _s = self.wa.reader_key_contract(base=d)
+        self.assertEqual(1, len(v))
+        self.assertEqual(["gone", "also_gone"], v[0]["reads"])
+
+    def test_a_fallback_arm_on_another_object_is_not_judged(self):
+        """`cap.get("deployed_pct", other["x"]["deployed_pct"])` — absence from
+        `cap` is not a defect when a different object supplies the value, and
+        this checker cannot see into that object."""
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\nother = {"k": 5}\n'
+            'y = x.get("gone", other.get("k", 0))\n',
+            {"a.json": {"real_key": 1}})
+        v, _r, unj, _s = self.wa.reader_key_contract(base=d)
+        self.assertEqual([], v, "an unjudgeable site was judged: %r" % (v,))
+        self.assertGreaterEqual(unj, 1, "it should be COUNTED as unjudgeable, not ignored")
+
+    def test_a_list_artifact_is_not_judged(self):
+        """data/cit_pending_proposals.json is a list; no element stands for the
+        schema, and those reads are dead branches behind an isinstance guard."""
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\ny = x.get("proposals", [])\n',
+            {"a.json": [{"id": 1}, {"id": 2}]})
+        v, _r, _u, _s = self.wa.reader_key_contract(base=d)
+        self.assertEqual([], v)
+
+    def test_an_absent_artifact_is_not_a_pass_or_a_failure(self):
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/never_written.json")\ny = x.get("k", 0)\n',
+            {})
+        v, resolved, _u, _s = self.wa.reader_key_contract(base=d)
+        self.assertEqual([], v)
+        self.assertEqual(0, resolved, "an unproduced artifact must not count as evidence")
+
+    # ── the exemption cannot outlive its justification ──────────────────────
+    def test_an_exemption_dies_with_the_write_that_justified_it(self):
+        """An allowlist is where a real bug hides. Each entry names the module
+        that conditionally writes the key and is VOID unless it really does —
+        so you cannot silence this check by exempting a key nobody writes."""
+        d = self._sandbox(
+            self.LOADER + 'x = _safe_load("data/a.json")\ny = x.get("board_override", 0)\n',
+            {"a.json": {"real_key": 1}},
+            producer_src="# board_meeting no longer writes it\n")
+        v, _r, _u, stale = self.wa.reader_key_contract(base=d)
+        self.assertIn(("board_override", "board_meeting.py"), stale)
+        self.assertEqual(1, len(v), "a voided exemption must re-expose the key")
+
+    def test_a_missing_producer_voids_the_exemption(self):
+        """'I could not check' must never read as 'confirmed fine'."""
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        (Path(d) / "data").mkdir()
+        (Path(d) / "reader_mod.py").write_text(self.LOADER)
+        _v, _r, _u, stale = self.wa.reader_key_contract(base=d)
+        self.assertEqual({"board_override", "pdo_signal"}, {s[0] for s in stale})
+
+    def test_every_exemption_names_a_reason(self):
+        for key, val in self.wa.CONDITIONAL_KEYS.items():
+            self.assertEqual(2, len(val), "%s: want (producer, why)" % key)
+            self.assertTrue(val[0].endswith(".py"), "%s: producer must be a module" % key)
+            self.assertGreater(len(val[1]), 30, "%s: reason too thin to review" % key)
+
+    # ── and it is actually judging this firm ────────────────────────────────
+    def test_the_firm_has_no_dead_read_sites(self):
+        v, resolved, _u, stale = self.wa.reader_key_contract()
+        self.assertEqual([], stale, "stale exemption(s): %r" % (stale,))
+        self.assertEqual([], v, "dead read site(s):\n" + "\n".join(
+            "  %s:%s reads %s off %s (has %s)"
+            % (x["module"], x["line"], " | ".join(x["reads"]), x["artifact"],
+               ", ".join(x["has"])) for x in v))
+        # Vacuity floor. EVERY artifact these readers touch is gitignored, so a
+        # fresh clone resolves zero sites and would bank a green that means "no
+        # evidence". Only demand the floor on a host that has actually run.
+        if (Path("data/canary_state.json").exists()
+                and Path("data/ops_director_report.json").exists()):
+            self.assertGreater(
+                resolved, 60,
+                "only %d site(s) resolved on a host WITH artifacts — measured 115 "
+                "here and 136 on the VM, so the resolver has broken and this "
+                "check is now judging almost nothing" % resolved)
+
+    def test_the_ops_director_panel_reads_keys_that_producer_writes(self):
+        """Pin the worst of the 31 by name: this panel was wrong in all ten fields."""
+        prod = ast.parse(Path("operations_director.py").read_text())
+        written = {k for k in ("supervised_agents", "agent_status", "flags",
+                               "summary", "generated_at")
+                   if self.wa._module_writes_key(prod, k)}
+        self.assertEqual(
+            {"supervised_agents", "agent_status", "flags", "summary", "generated_at"},
+            written, "the ops-director brief no longer writes what the panel reads")
+        brief = Path("morning_briefing.py").read_text()
+        tree = ast.parse(brief)
+        # the panel's dict, located structurally — not by matching comment prose
+        panel = None
+        for n in ast.walk(tree):
+            if (isinstance(n, ast.Assign) and isinstance(n.value, ast.Dict)
+                    and any(self.wa._const_str(k) == "floor_status" for k in n.value.keys
+                            if k is not None)):
+                panel = n.value
+        self.assertIsNotNone(panel, "the ops_director panel has moved or gone")
+        src = ast.unparse(panel)
+        for dead in ("total_agents_supervised", "agent_issues", "floor_directive",
+                     "issues_found\"", "total_issues"):
+            self.assertNotIn(dead, src,
+                             "the panel is reading %r again, a key nothing writes" % dead)
+
+    def test_the_canary_red_escalation_can_actually_fire(self):
+        """An alarm whose trigger value cannot occur is not an alarm.
+
+        deputy_monitor's CRITICAL escalation read `alert_level` and
+        `generated_at` off canary_state.json, which carries neither — so the
+        level was the literal "GREEN" and the age the empty-timestamp sentinel,
+        and `"GREEN" == "RED"` and `inf < 1` were each independently always
+        False. The firm's most severe automatic escalation, wired to nothing.
+
+        So this does not check that the keys look right. It lifts the real
+        branch condition out of the real file and evaluates it, and separately
+        confirms "RED" is a value the canary can actually emit.
+        """
+        import canary_agent
+        self.assertIn("RED", canary_agent.ALERTING_LEVELS,
+                      "RED is not a level the canary emits — the trigger cannot occur")
+
+        tree = ast.parse(Path("deputy_monitor.py").read_text())
+        fn = next((n for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef) and n.name == "_escalation_sweep"), None)
+        self.assertIsNotNone(fn, "_escalation_sweep has been renamed")
+        conds = [n.test for n in ast.walk(fn) if isinstance(n, ast.If)
+                 and "canary_level" in ast.unparse(n.test)]
+        self.assertEqual(1, len(conds), "expected exactly one canary escalation branch")
+        cond = ast.unparse(conds[0])
+
+        # it must ask the one supported accessor, not re-read the state file
+        body = ast.unparse(fn)
+        self.assertIn("load_active_alert", body,
+                      "the escalation no longer routes through the canary's accessor")
+        self.assertNotIn("canary_state.json", body,
+                         "it is reading the state file again — that records the last "
+                         "level SEEN, which stays RED long after an episode clears")
+
+        red = {"canary_level": "RED", "red_mins": 45.0, "board_answered": False}
+        self.assertTrue(eval(cond, {}, dict(red)),
+                        "a RED alert 45 min old with no board response does NOT "
+                        "trigger the escalation: %s" % cond)
+        for change in ({"canary_level": "GREEN"}, {"red_mins": 5.0},
+                       {"board_answered": True}):
+            ns = dict(red); ns.update(change)
+            self.assertFalse(eval(cond, {}, ns),
+                             "the branch still fires with %r — it is not "
+                             "discriminating: %s" % (change, cond))
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

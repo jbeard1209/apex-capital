@@ -757,15 +757,45 @@ def _escalation_sweep(actions: list, errors: list):
         logger.warning(f"    Escalation sweep (reconciliation): {e}")
 
     # Canary RED — if stuck RED for > 30 min without board response
+    #
+    # This block could never fire, twice over. It read `alert_level` and
+    # `generated_at` off canary_state.json; that file carries neither (it has
+    # `last_level` / `last_level_time`), so `canary_level` was the literal
+    # "GREEN" on every run and `canary_age` was the empty-timestamp sentinel —
+    # `"GREEN" == "RED"` and `inf < 1` are each independently always False. The
+    # firm's most severe automatic escalation, wired to nothing, since it
+    # shipped. Found 2026-08-27 by wiring_audit's reader-key contract; this was
+    # the FIFTH reader to invent its own contract against the canary (see
+    # canary_agent.load_active_alert, whose docstring postmortems the other four).
+    #
+    # "Is it RED right now" has exactly one supported answer, and it is that
+    # accessor — canary_state records the last level SEEN, which reads RED long
+    # after an episode has cleared.
+    #
+    # The old `canary_age < 1` was standing in for "this reading is current",
+    # which load_active_alert now decides properly, and it never expressed the
+    # "> 30 min" the comment promises. The response test is likewise now the
+    # real one: not "has the board met in the last half hour" but "has it met
+    # AT ALL since the canary went RED". That comparison is self-limiting —
+    # _wake_board does not dedupe, so a condition that stays true forever would
+    # convene an emergency board on every sweep; this one stops the moment the
+    # board actually sits.
     try:
-        canary = _load("data/canary_state.json")
-        canary_level = canary.get("alert_level", "GREEN")
-        canary_age   = _age_hours(canary.get("generated_at", ""))
+        from canary_agent import load_active_alert
+        alert        = load_active_alert()
+        canary_level = alert.get("level", "GREEN")
+        red_since    = alert.get("triggered_at", "")
+        red_mins     = _age_hours(red_since) * 60 if red_since else 0.0
         board_report = _load("data/board_meeting_report.json")
-        board_age    = _age_hours(board_report.get("timestamp", ""))
-        if canary_level == "RED" and canary_age < 1 and board_age > 0.5:
+        board_ts     = board_report.get("timestamp", "")
+        board_age    = _age_hours(board_ts)
+        board_answered = (board_ts != "" and red_since != ""
+                          and board_age * 60 < red_mins)
+        if canary_level == "RED" and red_mins > 30 and not board_answered:
             _wake_board(
-                f"Canary RED for {canary_age*60:.0f} min with no board response in {board_age*60:.0f} min.",
+                f"Canary RED for {red_mins:.0f} min with no board meeting since it "
+                f"triggered ({red_since or 'no timestamp'}; last board "
+                f"{board_age*60:.0f} min ago).",
                 severity="CRITICAL", caller="Deputy Monitor"
             )
             escalated += 1
