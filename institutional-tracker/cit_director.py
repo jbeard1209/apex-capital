@@ -827,22 +827,36 @@ class CITPipelineMonitor:
 
         if error_count > 5:
             # Group samples by error type to identify the dominant failure mode
-            # and generate a specific, actionable proposed_fix.
+            # and generate a specific, actionable proposed_fix. Prefer the
+            # structured "[component]" tag most log lines carry (format is
+            # "HH:MM:SS  LEVEL   [component] message" per main.py's logging
+            # config) — the old fallback grabbed the last whitespace token of
+            # a line already truncated to 120 chars, which could land mid-word
+            # (e.g. inside a dollar figure) and produce a meaningless key like
+            # "($" that then got templated into an invalid proposed_fix.
             error_types: dict[str, list[str]] = {}
             for s in error_samples:
-                m = re.search(r'ERROR\s+([A-Za-z][\w.]+(?:Error|Exception|Warning|Fail\w*)?)', s)
-                key = m.group(1) if m else s.split()[-1][:30]
+                m = re.search(r'\[(\w[\w.-]*)\]', s) or \
+                    re.search(r'ERROR\s+([A-Za-z][\w.]+(?:Error|Exception|Warning|Fail\w*)?)', s)
+                key = m.group(1) if m else "unclassified"
                 error_types.setdefault(key, []).append(s)
             top_type = max(error_types, key=lambda k: len(error_types[k]))
             top_sample = error_types[top_type][0]
-            specific_fix = (
-                f"Most frequent error type: `{top_type}` "
-                f"({len(error_types[top_type])}/{len(error_samples)} sampled). "
-                f"Locate the call site in logs/run_*.log matching "
-                f"`{top_sample[:60]}`, wrap it in `except {top_type}` "
-                f"and demote to `logger.warning()` if this is expected noise, "
-                f"or add retry logic with `time.sleep(2)` before re-raising."
-            )
+            if top_type == "unclassified":
+                specific_fix = (
+                    f"{len(error_types[top_type])}/{len(error_samples)} sampled errors "
+                    f"didn't match a recognizable component tag or exception class — "
+                    f"inspect the raw sample manually: `{top_sample[:60]}`."
+                )
+            else:
+                specific_fix = (
+                    f"Most frequent error source: `{top_type}` "
+                    f"({len(error_types[top_type])}/{len(error_samples)} sampled). "
+                    f"Locate the call site in logs/run_*.log matching "
+                    f"`{top_sample[:60]}`, fix the underlying condition or demote "
+                    f"to `logger.warning()` if this is expected noise, or add "
+                    f"retry logic with `time.sleep(2)` before re-raising."
+                )
             findings.append({
                 "agent":        self.name,
                 "category":     "BUG_FIX",
