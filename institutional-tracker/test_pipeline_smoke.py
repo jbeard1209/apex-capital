@@ -2819,6 +2819,51 @@ class TestWiringContracts(unittest.TestCase):
                 tmp_cos.read_text().count(marker), 1,
                 "_apply_code_changes duplicated the ELEVATED block on repeat runs")
 
+    def test_the_ladder_carries_the_two_fields_the_fill_rate_is_measured_from(self):
+        """New routed producer 2026-08-28: the scanner's ladder feeds fill_rate.
+
+        `kalshi_scanner` writes `kalshi_ladders.json`; `kalshi_estimator`
+        `record_quotes()` reads `available_size` and `volume` off those rungs and
+        `fill_rate()` decides on them — a level whose ask rose WITHOUT volume
+        rising cancelled, and cancelling fills nobody. Rename or drop either
+        field on the producer side and `.get()` returns None on every rung: the
+        track records nulls, every leg scores unfilled, and the arm is retired
+        by a fill rate measured off missing data. Exactly the silent-identifier
+        mismatch in CLAUDE.md, on the one number the Kalshi verdict turns on.
+
+        TWO STAGES, because there are two places to lose a field: the row
+        builder, and the `keep` whitelist that decides what is persisted. A row
+        can be built correctly and stripped on the way to disk.
+        """
+        import kalshi_scanner as KS, kalshi_estimator as KE
+        market = {"ticker": "W1", "event_ticker": "E1",
+                  "yes_ask_dollars": "0.9500", "yes_bid_dollars": "0.9000",
+                  "yes_ask_size_fp": "700000000", "volume_fp": "1200000000",
+                  "strike_type": "greater", "floor_strike": 1.5}
+        built = KS._ladder_rows_from_markets([market])
+        persisted = KS._persistable_ladder_universe(built, {"E1"})
+        self.assertEqual(1, len(persisted), "the fixture stopped surviving the "
+                         "producer, so nothing below is being checked")
+        for field in ("available_size", "volume"):
+            self.assertIsNotNone(persisted[0].get(field),
+                                 "%s is not on the persisted rung — fill_rate "
+                                 "reads None for every leg" % field)
+
+        # And the consumer really transcribes them, rather than the names merely
+        # matching somewhere. Run the actual producer output through it.
+        K, tmp = TestTheEstimatorRefusesRatherThanGuesses._sandbox()
+        K.SHADOW_BOOK.write_text(json.dumps(
+            [{"ticker": "W1", "event_ticker": "E1", "market_price": 0.95,
+              "spread": 0.05, "outcome": None,
+              "booked_at": "2026-08-28T00:00:00+00:00"}]))
+        K.record_quotes(ladder=persisted, scanned_at="2026-08-28T12:00:00+00:00")
+        obs = K.load_rows(K.QUOTE_TRACK)
+        self.assertEqual(1, len(obs))
+        self.assertEqual((700000000.0, 1200000000.0),
+                         (obs[0]["available_size"], obs[0]["volume"]),
+                         "the quote track recorded nulls for a rung that had "
+                         "both values")
+
 
 class TestTheFirmHasTwoSchedulers(unittest.TestCase):
     """Schedule ground truth must cover BOTH schedulers, not one host's half.
@@ -28078,6 +28123,13 @@ class TestTheEstimatorRefusesRatherThanGuesses(unittest.TestCase):
         K.PREDICTIONS = tmp / "kalshi_predictions.json"
         K.FIT_FILE = tmp / "fit.json"
         K.SHADOW_BOOK = tmp / "shadow.json"
+        # EVERY module-level path, not the ones a given test happens to touch.
+        # A path left pointing at the real `data/` reads live state into a unit
+        # test and, worse, WRITES to it — `record_quotes` appends. The rule that
+        # caught this is memory `the-instrument-measured-itself`: a control that
+        # can reach production is measuring something other than its input.
+        K.QUOTE_TRACK = tmp / "quote_track.json"
+        K.LADDERS = tmp / "ladders.json"
         return K, tmp
 
     @staticmethod
@@ -28345,6 +28397,321 @@ class TestTheEstimatorRefusesRatherThanGuesses(unittest.TestCase):
         self.assertGreaterEqual(K.MIN_SHADOW_EVENTS, 200)
         self.assertGreaterEqual(K.MIN_REGIME_SPAN_DAYS, 21)
         self.assertGreaterEqual(K.SHADOW_MIN_SPREAD_C, 5.0)
+        self.assertGreaterEqual(K.MIN_FILL_OBS, 50)
+        self.assertGreaterEqual(K.MIN_QUOTES_PER_LEG, 2)
+
+    def test_the_sandbox_rebinds_every_path_the_module_can_write(self):
+        """A path left unrebound points a unit test at live `data/`.
+
+        `record_quotes` and `book_shadow` WRITE. When QUOTE_TRACK and LADDERS
+        were added to the module and not to `_sandbox`, the tests below would
+        have appended to the real quote track and read the real 10MB ladder —
+        passing, while measuring production. Enumerating the paths by hand is
+        what failed; this asserts the property instead, so the next path added
+        to the module fails here rather than silently escaping the sandbox
+        (memory `unregistered-test-is-absent`, same shape one layer down).
+        """
+        import kalshi_estimator as K
+        tree = ast.parse(Path(K.__file__).read_text())
+        # Module-level `NAME = DATA / "..."`, found structurally: a grep would
+        # also match the paths named in this module's own postmortem comments.
+        declared = {
+            t.id
+            for node in tree.body if isinstance(node, ast.Assign)
+            for t in node.targets
+            if isinstance(t, ast.Name) and isinstance(node.value, ast.BinOp)
+            and isinstance(node.value.op, ast.Div)
+            and isinstance(node.value.left, ast.Name)
+            and node.value.left.id == "DATA"
+        }
+        self.assertIn("QUOTE_TRACK", declared, "the AST probe found no paths at "
+                      "all — it is matching nothing, not proving anything")
+
+        sandbox_src = ast.get_source_segment(
+            Path(__file__).read_text(),
+            next(m for c in ast.parse(Path(__file__).read_text()).body
+                 if isinstance(c, ast.ClassDef)
+                 and c.name == "TestTheEstimatorRefusesRatherThanGuesses"
+                 for m in c.body
+                 if isinstance(m, ast.FunctionDef) and m.name == "_sandbox"))
+        rebound = {n.attr for n in ast.walk(ast.parse(sandbox_src.strip()))
+                   if isinstance(n, ast.Attribute) and isinstance(n.ctx, ast.Store)}
+        self.assertEqual(set(), declared - rebound,
+                         "these module paths are not rebound by _sandbox, so a "
+                         "test using them reads or writes the live data dir")
+
+        # And the binding actually takes: assert per path, not that the set
+        # matched (`a-union-cannot-prove-all-n`).
+        K2, tmp = self._sandbox()
+        for name in sorted(declared):
+            self.assertEqual(tmp, getattr(K2, name).parent,
+                             "%s still resolves outside the sandbox" % name)
+
+    def test_break_even_is_read_off_the_side_the_fit_was_measured_on(self):
+        """The sign error that justified the live threshold, pinned.
+
+        `fit()` regresses (outcome - market_price) — the BUY side. The resting
+        sell earns its negative. The comment under `SHADOW_MIN_SPREAD_C` set the
+        BUY-side expression equal to the SELL-side cost and got 0.55c; the same
+        fit read correctly gives ~11c at the mid. An order of magnitude, and on
+        the other side of the threshold it was being used to justify.
+
+        Checked against a SECOND, independent computation: bisect the net
+        function directly rather than re-deriving the same closed form, so an
+        algebra error would have to occur identically in two places.
+        """
+        import kalshi_estimator as K
+        f = {"intercept_cents": 0.7314, "slope_cents_per_cent_spread": -0.5744,
+             "spread_support_cents": [1.0, 10.0]}
+        price = 0.947
+        fee_c = K.fee_per_contract(price, cross=False) * 100.0
+
+        def net(s, d):
+            give = s / 2.0 if d is None else d
+            return -(f["intercept_cents"]
+                     + f["slope_cents_per_cent_spread"] * s) - give - fee_c
+
+        for d in (0.0, 1.0, 2.0, None):
+            got = K.break_even_spread(f, price, improvement_cents=d)
+            self.assertTrue(got["ok"], got)
+            lo, hi = 0.0, 500.0
+            for _ in range(200):                     # bisection, not algebra
+                mid = (lo + hi) / 2.0
+                if net(mid, d) < 0:
+                    lo = mid
+                else:
+                    hi = mid
+            self.assertAlmostEqual(lo, got["spread_cents"], 4,
+                                   "break-even for improvement %r disagrees "
+                                   "with the net function it claims to solve" % (d,))
+
+        ask = K.break_even_spread(f, price, 0.0)["spread_cents"]
+        mid = K.break_even_spread(f, price, None)["spread_cents"]
+        self.assertGreater(mid, ask,
+                           "giving up half a spread cannot be CHEAPER than "
+                           "giving up nothing — the sign is inverted")
+        self.assertGreater(ask, 1.0,
+                           "break-even landed near the 0.55c the buy-side "
+                           "misreading produced")
+
+    def test_no_break_even_is_reported_as_no_break_even(self):
+        """A cost that rises as fast as the bias has no crossing point.
+
+        Returning a large positive spread instead would be read as "trade the
+        wide end", which is exactly backwards: the arm loses at EVERY spread.
+        """
+        import kalshi_estimator as K
+        f = {"intercept_cents": 0.7, "slope_cents_per_cent_spread": -0.40,
+             "spread_support_cents": [1.0, 10.0]}
+        got = K.break_even_spread(f, 0.95, improvement_cents=None)
+        self.assertFalse(got["ok"])
+        self.assertEqual("NEVER_PROFITABLE", got["reason_code"])
+        self.assertNotIn("spread_cents", got,
+                         "a refusal that still carries a number invites a "
+                         "caller to read the number")
+
+    def test_a_break_even_past_the_widest_observed_spread_is_flagged(self):
+        """Extrapolation is the finding, not a caveat to one.
+
+        On the 2026-08-28 fit the at-mid break-even is ~11c against an observed
+        support of 1-10c: under the module's own cost model the shadow arm
+        cannot be profitable anywhere it will ever actually trade.
+        """
+        import kalshi_estimator as K
+        f = {"intercept_cents": 0.7314, "slope_cents_per_cent_spread": -0.5744,
+             "spread_support_cents": [1.0, 10.0]}
+        self.assertEqual("OUTSIDE_SUPPORT",
+                         K.break_even_spread(f, 0.947, None).get("reason_code"))
+        self.assertNotIn("reason_code",
+                         K.break_even_spread(f, 0.947, 0.0),
+                         "flagged a break-even that IS inside the support")
+
+    def test_the_mid_case_reproduces_round_trip_cost(self):
+        """Two independently-sourced measurements of one quantity.
+
+        `execution_cost_cents(row, None)` and `round_trip_cost(row, cross=False)`
+        price the same order by different routes and in different units. If they
+        disagree, one of them is describing a trade the other is not — and the
+        unit gap is where this file has already had one collision.
+        """
+        import kalshi_estimator as K
+        for spread in (0.01, 0.05, 0.10):
+            row = {"market_price": 0.95, "spread": spread}
+            self.assertAlmostEqual(K.round_trip_cost(row, cross=False) * 100.0,
+                                   K.execution_cost_cents(row, None), 9,
+                                   "spread %.2f" % spread)
+
+    def test_resting_below_the_bid_is_a_cross_not_an_improvement(self):
+        """An order that could not rest must not be priced as one."""
+        import kalshi_estimator as K
+        row = {"market_price": 0.95, "spread": 0.05}
+        self.assertIsNotNone(K.execution_cost_cents(row, 0.0))
+        self.assertIsNotNone(K.execution_cost_cents(row, 5.0))
+        self.assertIsNone(K.execution_cost_cents(row, 5.1),
+                          "priced an offer below the bid at the MAKER rate")
+        self.assertIsNone(K.execution_cost_cents(row, -1.0))
+        self.assertIsNone(K.execution_cost_cents({"market_price": 0.95}, 0.0))
+        self.assertIsNone(K.execution_cost_cents({"market_price": float("nan"),
+                                                  "spread": 0.05}, 0.0))
+
+    def test_the_ladder_snapshot_is_a_dict_and_load_rows_sees_nothing_in_it(self):
+        """`kalshi_ladders.json` is {scanned_at, env, events, rungs, rows}.
+
+        `load_rows` returns [] for a dict, so reading the universe with it would
+        have produced a silent zero-observation quote track that looked exactly
+        like a book nobody quotes. Pinned on the real shape, not a list.
+        """
+        K, tmp = self._sandbox()
+        K.LADDERS.write_text(json.dumps({
+            "scanned_at": "2026-08-28T00:00:00Z", "env": "prod", "rows": [
+                {"ticker": "W1", "market_price": 0.95, "yes_bid": 0.90}]}))
+        self.assertEqual([], K.load_rows(K.LADDERS),
+                         "load_rows suddenly parses the dict shape — this test "
+                         "is why load_ladder exists; re-check the caller")
+        meta, rows = K.load_ladder()
+        self.assertEqual("2026-08-28T00:00:00Z", meta.get("scanned_at"))
+        self.assertEqual(1, len(rows))
+
+    def test_the_quote_track_is_stamped_with_the_snapshot_not_the_read(self):
+        """A stale snapshot re-read an hour later is not a new observation.
+
+        Stamping with now() would enter it as one, and a book that never moves
+        is precisely the appearance a fill rate would then be measured against.
+        """
+        K, tmp = self._sandbox()
+        K.book_shadow([self._row(ticker="W1", spread=0.10)])
+        ladder = {"scanned_at": "2026-08-28T12:00:00Z",
+                  "rows": [{"ticker": "W1", "event_ticker": "E1",
+                            "market_price": 0.95, "yes_bid": 0.85,
+                            "available_size": 500, "volume": 10}]}
+        K.LADDERS.write_text(json.dumps(ladder))
+        first = K.record_quotes()
+        self.assertEqual(1, first["observed"])
+        self.assertEqual("2026-08-28T12:00:00Z", first["ts"])
+        self.assertEqual(0, K.record_quotes()["observed"],
+                         "re-reading one snapshot added a second observation")
+        self.assertEqual("2026-08-28T12:00:00Z",
+                         K.load_rows(K.QUOTE_TRACK)[0]["ts"])
+
+    def test_an_unmeasured_fill_rate_refuses_instead_of_returning_zero(self):
+        """Zero-because-unmeasured and zero-because-never-lifted are opposite.
+
+        Returning 0.0 for both lets a caller multiply the edge by it and retire
+        an arm nobody has looked at (`fallback-that-means-act`).
+        """
+        K, tmp = self._sandbox()
+        K.book_shadow([self._row(ticker="W1", spread=0.10)])
+        got = K.fill_rate(0.0)
+        self.assertFalse(got["ok"])
+        self.assertEqual("FILL_UNMEASURED", got["reason_code"])
+        self.assertIsNone(got["rate"], "substituted a number for a measurement")
+
+    def test_a_level_that_cancelled_filled_nobody(self):
+        """The ask rising is not the same event as the ask being lifted.
+
+        Without the volume conjunction a book that merely re-quoted higher would
+        be scored as a fill, and the fill rate — the one number the verdict
+        turns on — would be measured off quote flicker.
+        """
+        K, tmp = self._sandbox()
+        K.book_shadow([self._row(ticker="W1", spread=0.10, market_price=0.95)])
+        book = K.load_rows(K.SHADOW_BOOK)
+        # AFTER the booking, derived from it rather than written as a literal:
+        # `fill_rate` drops observations that predate the leg, so a fixed date
+        # would have quietly emptied the denominator and both halves of this
+        # test would have "passed" on n=0.
+        t0 = K._parse_ts(book[0]["booked_at"])
+        ts = [(t0 + timedelta(hours=h)).isoformat() for h in (1, 7)]
+        obs = [{"ticker": "W1", "ts": ts[0], "yes_ask": 0.95, "volume": 100},
+               {"ticker": "W1", "ts": ts[1], "yes_ask": 0.97,
+                "volume": 100}]                       # level gone, nothing traded
+        cancelled = K.fill_rate(0.0, book=book, track=obs)
+        self.assertEqual(1, cancelled["n"],
+                         "the leg was never scored, so neither branch below is "
+                         "being exercised")
+        self.assertEqual(0, cancelled["filled"], cancelled)
+        lifted = [dict(obs[0]), dict(obs[1], volume=140)]
+        self.assertEqual(1, K.fill_rate(0.0, book=book, track=lifted)["filled"],
+                         "a level that cleared WITH volume was not a fill")
+
+    def test_a_leg_with_one_quote_is_excluded_not_scored_unfilled(self):
+        """A fill is an event inside an interval; one observation bounds none.
+
+        Filing unmeasured legs as failures is how a fill rate gets talked down
+        to zero by arithmetic nobody looked at.
+        """
+        K, tmp = self._sandbox()
+        K.book_shadow([self._row(ticker="W1", spread=0.10)])
+        book = K.load_rows(K.SHADOW_BOOK)
+        one = [{"ticker": "W1", "ts": "2026-08-28T12:00:00Z", "yes_ask": 0.95,
+                "volume": 100}]
+        got = K.fill_rate(0.0, book=book, track=one)
+        self.assertEqual(0, got["n"], "scored a leg that bounds no interval")
+        self.assertEqual(1, got["legs_below_min_quotes"])
+
+    def test_the_execution_curve_reports_every_mode(self):
+        """The mode is the open question, so one cell of the table is not an answer.
+
+        At the live 5c threshold the same fit and the same sample give +2.05c
+        resting at the ask and -0.45c resting at the mid. Publishing either
+        alone is a verdict about an assumption, dressed as a verdict about an
+        edge.
+        """
+        import kalshi_estimator as K
+        f = {"intercept_cents": 0.7314, "slope_cents_per_cent_spread": -0.5744,
+             "spread_support_cents": [1.0, 10.0]}
+        c = K.execution_curve(f, 0.947, spreads=[5.0])
+        modes = {m["execution"]: m for m in c["modes"]}
+        self.assertEqual({"at_ask", "improve_1c", "improve_2c", "at_mid"},
+                         set(modes))
+        self.assertGreater(modes["at_ask"]["net_cents"]["5c"], 0)
+        self.assertLess(modes["at_mid"]["net_cents"]["5c"], 0)
+        self.assertGreater(modes["at_ask"]["net_cents"]["5c"],
+                           modes["improve_1c"]["net_cents"]["5c"],
+                           "improving the price did not cost anything")
+        # Per spread, never one number across spreads: the most you can give up
+        # is a function of the spread, and a max over buckets is an aggregate
+        # nobody can act on (`an-aggregate-is-not-a-finding`).
+        self.assertEqual({"5c"}, set(c["max_affordable_improvement_cents"]))
+
+    def test_one_refusal_does_not_suppress_the_other_two_reports(self):
+        """Verdict, curve and fill rate are one answer printed together.
+
+        The verdict is a mean net in cents; that mean assumes ONE execution; and
+        whether that execution happens is the fill rate. Quoting the verdict
+        with the other two missing is how `round_trip_cost`'s at-the-mid
+        assumption came to read as a fact. Any of the three may refuse — a
+        refusal must print AS a refusal and must not take the others with it.
+        """
+        import io
+        K, tmp = self._sandbox()
+        buf = io.StringIO()
+        with patch("sys.stdout", buf):
+            self.assertEqual(0, K._cmd_shadow_report())
+        got = json.loads(buf.getvalue())
+        self.assertEqual({"verdict", "n_booked", "execution_curve", "fill_rate"},
+                         set(got), "a section vanished when it had nothing to say")
+        self.assertEqual("NO_FIT", got["execution_curve"]["reason_code"])
+        self.assertEqual({"improve_0c", "improve_1c", "improve_2c"},
+                         set(got["fill_rate"]),
+                         "the fill rate is reported at levels the curve does not "
+                         "price, so the two tables cannot be read together")
+
+        # With a fit but an empty book there is still no price to quote a fee
+        # at, and refusing beats defaulting to a constant like 0.95.
+        K.FIT_FILE.write_text(json.dumps(
+            {"intercept_cents": 0.73, "slope_cents_per_cent_spread": -0.57,
+             "spread_support_cents": [1.0, 10.0], "validated": True, "n": 999,
+             "regime": K.REGIME, "fitted_at": K._now().isoformat()}))
+        self.assertIsNotNone(K.load_fit(), "the fixture fit is not loadable, so "
+                             "the assertion below would pass on NO_FIT forever")
+        buf2 = io.StringIO()
+        with patch("sys.stdout", buf2):
+            K._cmd_shadow_report()
+        self.assertEqual("NO_BOOKED_PRICE",
+                         json.loads(buf2.getvalue())["execution_curve"]
+                         .get("reason_code"),
+                         "priced a curve for a book with no legs in it")
 
 
 class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):

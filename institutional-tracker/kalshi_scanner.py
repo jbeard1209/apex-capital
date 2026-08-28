@@ -601,6 +601,13 @@ def _ladder_rows_from_markets(markets):
             "market_price": ask, "yes_bid": kc.parse_price(m.get("yes_bid_dollars")),
             "strike_type": m.get("strike_type"),
             "floor_strike": m.get("floor_strike"), "cap_strike": m.get("cap_strike"),
+            # Depth at the ask and cumulative traded volume. Neither is used by
+            # the monotonicity law; both exist for `kalshi_estimator.fill_rate`,
+            # which needs to tell a level that CLEARED from one that was merely
+            # CANCELLED — the first fills a resting offer and the second does
+            # not, and without volume they are the same snapshot.
+            "available_size": kc.parse_size(m.get("yes_ask_size_fp")),
+            "volume": kc.parse_size(m.get("volume_fp")),
         })
     return out
 
@@ -624,8 +631,19 @@ def _persistable_ladder_universe(universe, band_events):
     # the time (see `coherence_laws._bid_of`). `title` is dropped — measured
     # 2026-08-17, keeping it cost 3.2MB per scan and bought zero extra ladders,
     # because `yes_sub_title` plus the strike fields already parse every rung.
+    #
+    # `available_size` and `volume` cost 2.03MB per scan (10.17 -> 12.20MB,
+    # +20%, measured 2026-08-28 on the 35,602-rung snapshot). Paid on EVERY
+    # rung, not only the in-band ones, even though only shadow-booked legs are
+    # ever quoted: restricting them to the band would make a field's presence
+    # depend on where the price sat, and the thing `fill_rate` measures IS the
+    # price moving. A leg that drifted out of the band would silently lose its
+    # volume series and score as unfilled — the measurement biased by the
+    # optimisation meant to shrink it. The file is overwritten per scan, so the
+    # cost is 2MB of disk, not 2MB a day.
     keep = ("ticker", "event_ticker", "market_price", "yes_bid", "strike_type",
-            "floor_strike", "cap_strike", "yes_sub_title")
+            "floor_strike", "cap_strike", "yes_sub_title",
+            "available_size", "volume")
     return [{k: r.get(k) for k in keep}
             for r in universe if r.get("event_ticker") in band_events]
 

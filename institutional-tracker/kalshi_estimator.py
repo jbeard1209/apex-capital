@@ -311,6 +311,151 @@ def round_trip_cost(row: dict, cross: bool = True) -> Optional[float]:
     return (spread if cross else spread / 2.0) + fee
 
 
+# --------------------------------------------------------------------------
+# execution — the assumption that decides the verdict
+# --------------------------------------------------------------------------
+# `round_trip_cost(cross=False)` charges `spread/2 + fee` unconditionally. Half
+# a spread is not a fee. It is the price of one particular FILL MODEL — "our
+# offer only gets hit if we improve all the way to the mid" — and on the 2,113
+# settled legs measured 2026-08-28 that single unmeasured assumption is the
+# whole verdict:
+#
+#     resting at the ask   net +2.06c/contract at a 5c spread   (t ~ +3.0)
+#     resting at the mid   net -0.44c/contract at a 5c spread   (t ~ +0.5)
+#
+# Same edge, same rule, same sample; opposite conclusions. So the cost of an
+# execution is parameterised here rather than assumed, and the missing number
+# — how often an offer at a given price actually gets lifted — is MEASURED by
+# the quote track below rather than substituted for. A constant substituted for
+# a quantity nobody measured is a decision, not a default (memory
+# `fallback-that-means-act`).
+#
+# `round_trip_cost` itself is left alone: it is the pessimistic bound, several
+# consumers and tests depend on it, and a bound that silently got cheaper would
+# be exactly the wrong kind of improvement.
+
+
+def execution_cost_cents(row: dict,
+                         improvement_cents: Optional[float] = None) -> Optional[float]:
+    """Cents/contract to REST a sell that gives up `improvement_cents` of price.
+
+    `market_price` is the ASK (`kalshi_scanner.py`: `"market_price": ask`), so
+    an offer joining at the ask gives up nothing and pays only the maker fee.
+    `improvement_cents=None` means "improve to the mid" — the spread/2 that
+    `round_trip_cost(cross=False)` charges unconditionally.
+
+    Returns CENTS. `round_trip_cost` returns dollars; this file has already had
+    one 1.83c-vs-0.0183 unit collision and the name is doing the work of
+    preventing the second.
+    """
+    px, spread = row.get("market_price"), row.get("spread")
+    fee = fee_per_contract(px, cross=False)
+    if not (_is_number(px) and _is_number(spread) and fee is not None):
+        return None
+    s = spread * 100.0
+    d = s / 2.0 if improvement_cents is None else float(improvement_cents)
+    # Below the bid is not an improvement, it is a cross, and crossing is priced
+    # by `round_trip_cost(cross=True)` at the taker rate. Refuse rather than
+    # quietly return a resting cost for an order that could not rest.
+    if not (0.0 <= d <= s):
+        return None
+    return d + fee * 100.0
+
+
+def break_even_spread(f: dict, price: float,
+                      improvement_cents: Optional[float] = None) -> dict:
+    """Spread (cents) above which a resting SELL pays, derived from the fit.
+
+    SIGN DISCIPLINE, which is where this went wrong before. `fit()` regresses
+    `(outcome - market_price)`: that is the BUY side. The resting sell earns its
+    negative. The comment that justified `SHADOW_MIN_SPREAD_C` set the BUY-side
+    expression equal to the SELL-side cost and got 0.547c; done correctly on the
+    same fit shape the answer is 10.95c at the mid — an order of magnitude, and
+    on the other side of the live threshold.
+
+        gross_sell(s) = -(a + b*s)
+        cost(s)       = d + fee          (fixed improvement d)
+                      = s/2 + fee        (improve to the mid)
+        net(s) = 0  ->  s = (a + fee + d) / (-b - m),  m = 0.5 at the mid else 0
+
+    A non-positive denominator is not a large break-even, it is NO break-even:
+    cost rises with spread at least as fast as the mispricing does, so the arm
+    loses at every spread. Say that instead of returning a big number nobody
+    reads the sign of.
+    """
+    if not isinstance(f, dict):
+        return {"ok": False, "reason_code": "NO_FIT", "why": "no fit supplied"}
+    a = f.get("intercept_cents")
+    b = f.get("slope_cents_per_cent_spread")
+    fee = fee_per_contract(price, cross=False)
+    if not (_is_number(a) and _is_number(b) and fee is not None):
+        return {"ok": False, "reason_code": "NO_FIT",
+                "why": "fit is missing intercept/slope, or price is unusable"}
+    at_mid = improvement_cents is None
+    d = 0.0 if at_mid else float(improvement_cents)
+    denom = -b - (0.5 if at_mid else 0.0)
+    if denom <= 0:
+        return {"ok": False, "reason_code": "NEVER_PROFITABLE",
+                "why": ("cost rises with spread at least as fast as the bias "
+                        "(slope %.4f, cost slope %.2f) — no break-even exists"
+                        % (b, 0.5 if at_mid else 0.0)),
+                "execution": "mid" if at_mid else "improve_%gc" % d}
+    s = (a + fee * 100.0 + d) / denom
+    lo, hi = (f.get("spread_support_cents") or [None, None])[:2]
+    in_support = bool(_is_number(lo) and _is_number(hi) and lo <= s <= hi)
+    out = {"ok": True, "spread_cents": s, "in_support": in_support,
+           "execution": "mid" if at_mid else "improve_%gc" % d,
+           "support_cents": [lo, hi], "fee_cents": fee * 100.0}
+    if not in_support:
+        # Not a footnote. A break-even above the widest spread ever observed
+        # means the arm cannot be profitable anywhere it will actually trade,
+        # and that is the finding, not a caveat to one.
+        out["reason_code"] = "OUTSIDE_SUPPORT"
+        out["why"] = ("break-even %.2fc lies outside the observed spread "
+                      "support %s — extrapolation, and unreachable in practice"
+                      % (s, [lo, hi]))
+    return out
+
+
+def execution_curve(f: dict, price: float,
+                    spreads: Optional[List[float]] = None) -> dict:
+    """Net cents/contract by execution mode — the table, never one cell of it.
+
+    The edge is reported in every mode because the mode is the open question.
+    Quoting the at-ask number alone would be the mirror of the mistake
+    `round_trip_cost` makes by quoting the at-mid one.
+    """
+    modes = [("at_ask", 0.0), ("improve_1c", 1.0), ("improve_2c", 2.0),
+             ("at_mid", None)]
+    if not isinstance(f, dict) or not _is_number(f.get("slope_cents_per_cent_spread")):
+        return {"ok": False, "reason_code": "NO_FIT"}
+    a = f["intercept_cents"]
+    b = f["slope_cents_per_cent_spread"]
+    fee_c = (fee_per_contract(price, cross=False) or 0.0) * 100.0
+    spreads = spreads if spreads is not None else [2.0, 5.0, 8.0]
+    rows = []
+    for name, d in modes:
+        be = break_even_spread(f, price, improvement_cents=d)
+        cells = {}
+        for s in spreads:
+            give = s / 2.0 if d is None else d
+            cells["%gc" % s] = (-(a + b * s)) - give - fee_c if give <= s else None
+        rows.append({"execution": name, "break_even": be, "net_cents": cells})
+    return {"ok": True, "price": price, "fee_cents": fee_c,
+            "intercept_cents": a, "slope_cents_per_cent_spread": b,
+            "spread_support_cents": f.get("spread_support_cents"),
+            "modes": rows,
+            # The number the system should be built around: at a given spread,
+            # give up more than this and the mispricing is gone. Reported PER
+            # SPREAD, not as a max across spreads — the affordable improvement
+            # rises with the spread, so a single max would quote the widest
+            # book's allowance as if it applied to the narrowest, which is the
+            # sampling-rule mistake in memory `budget-spent-in-the-wrong-order`
+            # wearing a different hat.
+            "max_affordable_improvement_cents": {
+                "%gc" % s: (-(a + b * s)) - fee_c for s in spreads}}
+
+
 def load_rows(path: Path = PREDICTIONS) -> List[dict]:
     try:
         raw = json.loads(path.read_text())
@@ -637,21 +782,35 @@ def signal(row: dict, f: Optional[dict] = None) -> Optional[dict]:
 # Validation then gates ARMING, which is a different question and Jack's call.
 SHADOW_MIN_SPREAD_C = 5.0
 
-# Why 5c and not 3c or 8c: the fitted slope is the only thing that says where
-# bias overtakes cost, and it says bias(c) = 0.603 - 0.6033*spread against a
-# resting cost of spread/2. Setting the two equal gives the break-even spread:
+# Why 5c and not 3c or 8c. The previous version of this comment derived 0.547c
+# and is WRONG in a way worth keeping visible, because the error is a sign, not
+# a slip. It read:
 #
 #     0.603 - 0.6033*s = s/2   ->   s = 0.603 / 1.1033 = 0.547c
 #
-# which is inside every bucket, so the slope alone would admit everything. It
-# does not, because the fit is a mean and the DISPERSION is what kills the
-# narrow buckets: at 2c the whole quantity being harvested is smaller than one
-# tick, so a single tick of noise on the fill flips the sign. 5c is the first
-# bucket boundary where the measured resting sell is positive (+0.21c, then
-# +2.80c) and where one tick is a fifth of the edge rather than half of it.
-# It is a measured boundary, not a derived one, and it is recorded here as such
-# so nobody later reads it as theory. It is pinned by test and reviewed when
-# the shadow book has enough settled rows to move it.
+# `fit()` regresses `(outcome - market_price)`, which is the BUY side. The arm
+# this threshold governs is a resting SELL, which earns the NEGATIVE of that.
+# The line above set a buy-side gross equal to a sell-side cost. Carried through
+# correctly, `break_even_spread()` gives 10.95c at the mid — twenty times larger,
+# outside the observed spread support, and on the OTHER side of the live 5c
+# threshold. A number that agrees with the setting it justifies is not evidence
+# that the setting is right; this one agreed by cancelling its own sign error.
+#
+# So the honest statement of where 5c comes from is measurement, not algebra.
+# The bucketed means (`round_trip_cost`) put the resting sell positive for the
+# first time at 5-10c (+0.21c) and clearly positive at >=10c (+2.80c), and every
+# narrower bucket is negative. At 2c the whole harvested quantity is smaller
+# than one tick, so a single tick of noise on the fill flips the sign; at 5c a
+# tick is a fifth of the edge.
+#
+# And the derived number is not a competing answer, it is a CONDITIONAL one:
+# 10.95c is the break-even IF you must improve to the mid to get filled. At the
+# ask it is far lower. The two are not in conflict — the gap between them IS the
+# execution question, which is why `execution_curve()` reports every mode and
+# `fill_rate()` measures the mode that actually happens. 5c stays fixed while
+# that is unsettled: the 5-6.7c band is the pre-registered discriminating
+# region, and a threshold that moves with its own results is fitting noise with
+# extra steps. Pinned by test; revisit when the shadow book settles enough rows.
 
 
 def shadow_candidates(rows: Optional[List[dict]] = None,
@@ -717,6 +876,182 @@ def book_shadow(rows: Optional[List[dict]] = None) -> dict:
         book.extend(added)
         SHADOW_BOOK.write_text(json.dumps(book, indent=2))
     return {"added": len(added), "total": len(book), "path": str(SHADOW_BOOK)}
+
+
+# --------------------------------------------------------------------------
+# the quote track — recording the number the verdict turns on
+# --------------------------------------------------------------------------
+# Measured 2026-08-28: fill rate could not be reconstructed from anything on
+# disk. 4,631 of the 4,646 tickers in `kalshi_predictions.json` appear exactly
+# ONCE, and `kalshi_ladders.json` is a single snapshot the scanner overwrites
+# on every run. So the one quantity separating "no edge" from "clear edge" had
+# never been written down anywhere, by anyone, and no amount of re-analysis of
+# the files we already have can produce it. It is not recoverable backwards. It
+# can only be recorded forwards, which is what this does.
+QUOTE_TRACK = DATA / "kalshi_quote_track.json"
+LADDERS = DATA / "kalshi_ladders.json"
+
+# A floor on REPORTING a fill rate, deliberately separate from
+# MIN_SHADOW_EVENTS (which gates a P&L verdict) and from kalshi_calibration's
+# thresholds (which gate arming). Collapsing them would let a thin fill sample
+# satisfy a verdict it cannot support. It is small because the question it
+# answers is coarse — "does an offer at the ask ever get lifted, or essentially
+# never?" — and that is far cheaper to settle than the sub-cent mean the shadow
+# book is chasing.
+MIN_FILL_OBS = 50
+
+# A leg needs TWO post-booking snapshots before it can be scored: a fill is an
+# event inside an interval, and one observation bounds no interval. Legs with
+# fewer are excluded from the denominator rather than counted as unfilled — an
+# unmeasured leg is not a failed one, and quietly filing it as one is how a
+# fill rate gets talked down to zero by arithmetic nobody looked at.
+MIN_QUOTES_PER_LEG = 2
+
+
+def load_ladder(path: Optional[Path] = None) -> Tuple[dict, List[dict]]:
+    """The universe snapshot as `(meta, rungs)`. It is a dict, not a list.
+
+    `load_rows` returns [] for a dict, so calling it here would have produced a
+    silent zero-observation quote track that looked like a book nobody quotes.
+    The meta half is returned because `scanned_at` lives there and the caller
+    needs it — fetching it with a second read is how the two halves drift.
+    """
+    path = path if path is not None else LADDERS
+    try:
+        raw = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}, []
+    if isinstance(raw, list):
+        return {}, [r for r in raw if isinstance(r, dict)]
+    if not isinstance(raw, dict):
+        return {}, []
+    rows = raw.get("rows")
+    return raw, [r for r in rows if isinstance(r, dict)] if isinstance(rows, list) else []
+
+
+def record_quotes(book: Optional[List[dict]] = None,
+                  ladder: Optional[List[dict]] = None,
+                  scanned_at: Optional[str] = None) -> dict:
+    """Append one quote observation per still-open shadow leg. Idempotent/minute.
+
+    Stamped with the snapshot's own `scanned_at`, not with now(): the timestamp
+    has to describe when the QUOTE was true, or a stale snapshot re-read an hour
+    later would enter the track as a fresh observation and manufacture the
+    appearance of a book that never moves. Same reason this runs AFTER
+    `kalshi_scanner.py` in the cron line rather than beside it.
+    """
+    book = book if book is not None else load_rows(SHADOW_BOOK)
+    open_tickers = {e.get("ticker") for e in book if e.get("outcome") is None}
+    meta: dict = {}
+    if ladder is None:
+        meta, ladder = load_ladder()
+    ts = scanned_at or meta.get("scanned_at") or _now().isoformat()
+    if not open_tickers:
+        return {"observed": 0, "open_legs": 0, "total": len(load_rows(QUOTE_TRACK)),
+                "ts": ts, "path": str(QUOTE_TRACK)}
+    track = load_rows(QUOTE_TRACK)
+    seen = {(o.get("ticker"), str(o.get("ts"))[:16]) for o in track}
+    added = 0
+    for m in ladder:
+        t = m.get("ticker")
+        if t not in open_tickers or (t, str(ts)[:16]) in seen:
+            continue
+        track.append({
+            "ticker": t,
+            "event_ticker": m.get("event_ticker"),
+            "ts": ts,
+            "yes_ask": m.get("market_price"),
+            "yes_bid": m.get("yes_bid"),
+            # Recorded so the "our own order would have added depth" bias in
+            # `fill_rate` can be CHECKED against the level we would have joined,
+            # instead of asserted to be small.
+            "available_size": m.get("available_size"),
+            # Cumulative traded volume. Without it a level that CLEARED and a
+            # level that was CANCELLED look identical, and only the first one
+            # fills anybody.
+            "volume": m.get("volume"),
+        })
+        added += 1
+    if added:
+        QUOTE_TRACK.write_text(json.dumps(track, indent=2))
+    return {"observed": added, "open_legs": len(open_tickers),
+            "total": len(track), "ts": ts, "path": str(QUOTE_TRACK)}
+
+
+def fill_rate(improvement_cents: float = 0.0,
+              book: Optional[List[dict]] = None,
+              track: Optional[List[dict]] = None) -> dict:
+    """Measured frequency that a resting sell at (ask - improvement) was lifted.
+
+    THE OBSERVABLE: within one interval between snapshots, the best ask prints
+    strictly ABOVE our price while cumulative volume rises. If the level at P
+    is gone then everything resting at or below P was consumed, and an offer of
+    ours sitting there was consumed with it; requiring volume to have risen over
+    the same interval separates that from a level that merely cancelled, which
+    fills nobody.
+
+    Three biases, named rather than estimated away, because they do not point
+    the same way and a point estimate would be the over-claim this module exists
+    to stop:
+      - our own size would ADD depth at P, so the level clears less often than
+        it does without us. OVER-states. Small while the order is small against
+        the resting size, which is why `available_size` travels with every
+        observation — so the condition can be checked, not assumed.
+      - partial consumption of the level is invisible at four snapshots a day.
+        UNDER-states, and by more the more actively the book trades.
+      - a leg with fewer than MIN_QUOTES_PER_LEG post-booking snapshots bounds
+        no interval and is excluded from the denominator, not scored zero.
+
+    Refuses below MIN_FILL_OBS. A fill rate of zero because nothing has been
+    measured and a fill rate of zero because offers never get lifted are
+    opposite findings, and returning 0.0 for both would let a caller multiply
+    the edge by it and retire the arm (memory `fallback-that-means-act`).
+    """
+    book = book if book is not None else load_rows(SHADOW_BOOK)
+    track = track if track is not None else load_rows(QUOTE_TRACK)
+    by_ticker: Dict[str, List[dict]] = {}
+    for o in track:
+        if _is_number(o.get("yes_ask")):
+            by_ticker.setdefault(o.get("ticker"), []).append(o)
+    for obs in by_ticker.values():
+        obs.sort(key=lambda o: str(o.get("ts")))
+
+    filled = unfilled = too_few = 0
+    for e in book:
+        px = e.get("market_price")
+        booked = _parse_ts(e.get("booked_at"))
+        if not _is_number(px) or booked is None:
+            continue
+        p_cents = px * 100.0 - float(improvement_cents)
+        later = [o for o in by_ticker.get(e.get("ticker"), [])
+                 if (_parse_ts(o.get("ts")) or booked) >= booked]
+        if len(later) < MIN_QUOTES_PER_LEG:
+            too_few += 1
+            continue
+        hit = False
+        for prev, cur in zip(later, later[1:]):
+            v, pv = cur.get("volume"), prev.get("volume")
+            if not (_is_number(v) and _is_number(pv) and v > pv):
+                continue
+            if cur["yes_ask"] * 100.0 > p_cents + 1e-9:
+                hit = True
+                break
+        filled += 1 if hit else 0
+        unfilled += 0 if hit else 1
+
+    n = filled + unfilled
+    out = {"improvement_cents": float(improvement_cents), "n": n,
+           "filled": filled, "legs_below_min_quotes": too_few}
+    if n < MIN_FILL_OBS:
+        out.update({"ok": False, "reason_code": "FILL_UNMEASURED", "rate": None,
+                    "why": "%d leg(s) have %d+ post-booking quotes; need %d. "
+                           "A fill rate has never been measured on this book."
+                           % (n, MIN_QUOTES_PER_LEG, MIN_FILL_OBS)})
+        return out
+    out.update({"ok": True, "rate": filled / n,
+                "bias": "over-states (our own size is not in the book); "
+                        "under-states (partial fills invisible at this cadence)"})
+    return out
 
 
 def resolve_shadow(rows: Optional[List[dict]] = None) -> dict:
@@ -847,6 +1182,55 @@ def _cmd_report() -> int:
     return 0
 
 
+def _representative_price(book: List[dict]) -> Optional[float]:
+    """Median booked price — the price the execution curve is quoted at.
+
+    The maker fee is `rate * p * (1-p)`, so a curve has to name a price to mean
+    anything. Taking the median of what the rule ACTUALLY booked, rather than a
+    constant like 0.95, keeps the fee in the report tied to the contracts the
+    arm trades. Returns None on an empty book instead of a default, because a
+    default price here would silently price a curve for a book that does not
+    exist.
+    """
+    px = sorted(e["market_price"] for e in book if _is_number(e.get("market_price")))
+    return px[len(px) // 2] if px else None
+
+
+def _cmd_shadow_report() -> int:
+    """Verdict, execution curve and fill rate — printed together, always.
+
+    These three are one answer, not three reports. The verdict is a mean net in
+    cents; that mean is computed under ONE assumed execution; and whether that
+    execution happens is the fill rate. Printing the verdict alone is how
+    `round_trip_cost`'s at-the-mid assumption came to look like a fact — it was
+    quoted for months with no fill rate beside it. Any of the three may refuse;
+    a refusal prints as a refusal and does not suppress the other two.
+    """
+    book = load_rows(SHADOW_BOOK)
+    out = {"verdict": shadow_verdict(book), "n_booked": len(book)}
+
+    f = load_fit()
+    price = _representative_price(book)
+    if f is None:
+        out["execution_curve"] = {"ok": False, "reason_code": "NO_FIT",
+                                  "why": "no usable fit on disk — run --fit"}
+    elif price is None:
+        out["execution_curve"] = {
+            "ok": False, "reason_code": "NO_BOOKED_PRICE",
+            "why": "the shadow book has no priced leg, so there is no price to "
+                   "quote a fee or a curve at"}
+    else:
+        out["execution_curve"] = execution_curve(f, price)
+        out["execution_curve"]["price_source"] = "median booked leg"
+
+    # Every improvement level the curve prices, so the two tables line up cell
+    # for cell. Reporting the fill rate at one level and the curve at four is
+    # how a reader ends up multiplying the wrong pair.
+    out["fill_rate"] = {"improve_%gc" % d: fill_rate(d) for d in (0.0, 1.0, 2.0)}
+    print(json.dumps(out, indent=2))
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Kalshi selection-bias estimator.")
     ap.add_argument("--fit", action="store_true")
@@ -862,12 +1246,18 @@ def main() -> int:
         print(json.dumps(validate(), indent=2))
         return 0
     if a.shadow:
+        # ORDER IS LOAD-BEARING. Book first so a leg opened today gets a quote
+        # observation on the same pass. Quote BEFORE resolving, so a leg that
+        # settles today still contributes its final observation instead of being
+        # closed out one snapshot short — `fill_rate` needs two observations to
+        # bound an interval, and the cheapest place to lose the second one is
+        # here.
         print(json.dumps({"booked": book_shadow(),
+                          "quotes": record_quotes(),
                           "resolved": resolve_shadow()}, indent=2))
         return 0
     if a.shadow_report:
-        print(json.dumps(shadow_verdict(), indent=2))
-        return 0
+        return _cmd_shadow_report()
     return _cmd_report()
 
 
