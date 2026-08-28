@@ -6181,10 +6181,20 @@ class TestRosterCachesInvalidateOnEdit(unittest.TestCase):
 
     The roster's caches exist because the pre-push gate ran the suite twice and
     the suite rebuilt the roster eight times, paying ~90s each for an answer
-    that had not changed. Correctness of that trade rests entirely on the key:
-    `(path, st_mtime_ns, st_size)`. A same-size edit within one filesystem
-    timestamp tick is the case that would break it, and it is exactly the case
-    the mutation harness hit once already (memory harness-ran-stale-bytecode).
+    that had not changed. Correctness of that trade rests entirely on the key.
+
+    This test USED to write the two versions back to back and trust the clock to
+    tell them apart. That made it a test of the host, not of the code: it passed
+    on the Mac (APFS, fine-grained stamps) and FAILED on the VM (2026-08-28),
+    where the kernel stamps inodes from a coarse clock and two same-length writes
+    inside one tick are byte-identical to `stat()`. The VM is the host that runs
+    the audit on cron, so the only host where it mattered was the one where it
+    broke.
+
+    It now RESTORES the original mtime with `os.utime` after the second write,
+    which makes the stat identical on every filesystem and every clock. The
+    check no longer depends on losing a race: if the key ever regresses to
+    `(path, st_mtime_ns, st_size)` this fails everywhere, deterministically.
     """
 
     def setUp(self):
@@ -6195,12 +6205,22 @@ class TestRosterCachesInvalidateOnEdit(unittest.TestCase):
         import agent_roster as ar
         f = self.sandbox / "probe_agent.py"
         f.write_text("class Alpha:\n    pass\n")
+        before = os.stat(f)
         self.assertEqual(ar._facts_of(self.sandbox, "probe_agent.py")["classes"],
                          frozenset({"Alpha"}))
         # Same byte count, different content — the trap for an mtime-only key.
         f.write_text("class Bravo:\n    pass\n")
         self.assertEqual(len("class Alpha:\n    pass\n"),
                          len("class Bravo:\n    pass\n"))
+        # Put the clock back. Not a contrivance: it is how the coarse-clock case
+        # reproduces on a host whose clock is fine, and it is the only way to
+        # assert the property rather than to sample it.
+        os.utime(f, ns=(before.st_atime_ns, before.st_mtime_ns))
+        after = os.stat(f)
+        self.assertEqual((before.st_mtime_ns, before.st_size),
+                         (after.st_mtime_ns, after.st_size),
+                         "the stat-based key must be IDENTICAL across the edit, "
+                         "or this test is not exercising the case it claims to")
         self.assertEqual(ar._facts_of(self.sandbox, "probe_agent.py")["classes"],
                          frozenset({"Bravo"}),
                          "a same-size edit was served from cache — the key is "
@@ -15356,9 +15376,16 @@ class TestTheControlLayerIsCheapEnoughToRunTwice(unittest.TestCase):
 
         The suite writes modules under this process and then audits them, so a
         cache keyed on the path alone would keep answering about the file as it
-        was. Keyed on (path, mtime_ns, size): the same path, edited to the SAME
-        byte length, must give the new answer (memory `harness-ran-stale-bytecode`,
-        where copy2 restoring an mtime made a harness score code it never ran).
+        was. The same path, edited to the SAME byte length AND with its mtime
+        put back, must give the new answer (memory `harness-ran-stale-bytecode`,
+        where copy2 restoring an mtime made a harness score code it never ran —
+        that is not a hypothetical here, it is where the restore comes from).
+
+        The `os.utime` is what makes this a test of the cache instead of a test
+        of the host clock. Without it this passed on the Mac and failed on the
+        VM, because only Linux's coarse inode stamps collided; with it, the
+        stat() output is identical everywhere and the assertion holds or fails
+        for one reason on every host.
         """
         import internal_audit_agent as IA
         import agent_roster
@@ -15367,10 +15394,17 @@ class TestTheControlLayerIsCheapEnoughToRunTwice(unittest.TestCase):
             tmp = Path(td)
             mod = tmp / "cached_probe.py"
             mod.write_text("def alpha():\n    return 1\n")
+            before = os.stat(mod)
             with patch.object(IA, "BASE_DIR", tmp):
                 self.assertTrue(IA._symbol_exists("cached_probe.py::alpha"))
                 self.assertFalse(IA._symbol_exists("cached_probe.py::bravo"))
                 mod.write_text("def bravo():\n    return 1\n")   # same size
+                os.utime(mod, ns=(before.st_atime_ns, before.st_mtime_ns))
+                after = os.stat(mod)
+                self.assertEqual((before.st_mtime_ns, before.st_size),
+                                 (after.st_mtime_ns, after.st_size),
+                                 "stat() must be identical across the edit or "
+                                 "this test is not exercising a stale key")
                 self.assertTrue(IA._symbol_exists("cached_probe.py::bravo"),
                                 "served a parse from before the edit")
                 self.assertFalse(IA._symbol_exists("cached_probe.py::alpha"))

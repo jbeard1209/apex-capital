@@ -66,6 +66,7 @@ from __future__ import annotations
 import argparse
 import ast
 import datetime
+import hashlib
 import json
 import os
 import re
@@ -162,26 +163,52 @@ def cache_clear() -> None:
     _PYFILES_CACHE.clear()
 
 
-def _content_key(base: Path, rel: str):
-    """(path, mtime_ns, size) — None if the file cannot be stat'd."""
+def _read_keyed(base: Path, rel: str):
+    """`((path, digest), text)` for one file, or `(None, None)` if unreadable.
+
+    THE KEY IS THE CONTENT, NOT ITS TIMESTAMP. This was `(path, st_mtime_ns,
+    st_size)` and it is a genuine content key on APFS and a broken one on Linux:
+    the kernel stamps inode times from a coarse clock (a jiffy, commonly 1-4ms),
+    so two writes of the SAME LENGTH inside one tick produce byte-identical
+    stat() output. The Mac never saw it — `TestRosterCachesInvalidateOnEdit` and
+    `TestTheControlLayerIsCheapEnoughToRunTwice` both passed here and both FAILED
+    on the VM (2026-08-28), which is the host that actually runs the audit on
+    cron. A stale AST inside a control is worse than a slow one: the suite writes
+    modules under the audit process and then audits them, so the window is not
+    hypothetical (memory `harness-ran-stale-bytecode`, and `host_divergence_is_a_
+    bug_class` for why green here proved nothing).
+
+    Hashing costs a read plus a digest — roughly 2ms on the 1.2MB suite against
+    790ms to parse it, i.e. ~0.3% of what the cache is saving. Paying 0.3% for
+    an invariant that actually holds is not a trade worth thinking about twice.
+    The bytes are decoded here rather than re-read by `_source_of`, so one
+    lookup is one read and the text can never disagree with the digest that
+    keys it.
+    """
     p = base / rel
     try:
-        st = p.stat()
+        data = p.read_bytes()
     except OSError:
-        return None
-    return (str(p), st.st_mtime_ns, st.st_size)
+        return None, None
+    key = (str(p), hashlib.sha1(data).hexdigest())
+    try:
+        return key, data.decode()
+    except (UnicodeDecodeError, ValueError):
+        return key, None
+
+
+def _content_key(base: Path, rel: str):
+    """Content identity for one file — None if it cannot be read."""
+    return _read_keyed(base, rel)[0]
 
 
 def _source_of(base: Path, rel: str):
     """File text, cached on content identity. None if unreadable."""
-    key = _content_key(base, rel)
+    key, text = _read_keyed(base, rel)
     if key is None:
         return None
     if key not in _SRC_CACHE:
-        try:
-            _SRC_CACHE[key] = (base / rel).read_text()
-        except Exception:
-            _SRC_CACHE[key] = None
+        _SRC_CACHE[key] = text
     return _SRC_CACHE[key]
 
 
@@ -192,11 +219,12 @@ def _ast_of(base: Path, rel: str):
     treats an unparseable file as "tells us nothing", and a cache that stored
     only successes would re-read a broken file on every pass.
     """
-    key = _content_key(base, rel)
+    key, src = _read_keyed(base, rel)
     if key is None:
         return None
+    if key not in _SRC_CACHE:
+        _SRC_CACHE[key] = src
     if key not in _AST_CACHE:
-        src = _source_of(base, rel)
         try:
             _AST_CACHE[key] = ast.parse(src) if src is not None else None
         except Exception:
