@@ -64,6 +64,8 @@ import sys
 from datetime import datetime
 from typing import Optional
 
+import agent_lifecycle
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -1762,6 +1764,14 @@ class AgentFactory:
                     f"manager approvals carry attribution again."
                 )
 
+            # Who actually got a cycle to fail, per research_team's own record.
+            # Read once for the whole pass so 67 agents do not re-open the file
+            # 67 times, and so every agent in this pass is judged against one
+            # consistent snapshot.
+            fair_cycle = {a["class_name"]: agent_lifecycle.had_a_fair_cycle(a["class_name"])
+                          for a in self.registry["agents"] if a.get("class_name")}
+            unrun_refusals: dict = {}
+
             for agent in self.registry["agents"]:
                 cn         = agent["class_name"]
                 old_status = agent.get("status", "active")
@@ -1785,7 +1795,9 @@ class AgentFactory:
                 if hits > 0:
                     # Recovery — reset everything
                     czc = 0
-                    if old_status in ("noticed", "pip", "reassigned"):
+                    # Every rung of the ladder, derived — not a hand-written
+                    # tuple that the next stage would silently fall outside of.
+                    if old_status in agent_lifecycle.COACHING_STATUSES:
                         agent["status"] = "active"
                         agent.pop("performance_notice_sent", None)
                         agent.pop("pip_issued_at", None)
@@ -1810,6 +1822,35 @@ class AgentFactory:
                         agent["exoneration_count"] += 1
                         if attribution_dead:
                             agent["last_exoneration_reason"] = "unattributed_approvals"
+                elif fair_cycle.get(cn) is not True:
+                    # No evidence this agent ran. `consecutive_zero_cycles` is a
+                    # proxy for "had a fair opportunity and wasted it", and the
+                    # proxy detaches from the real quantity every time the agent
+                    # never got constructed. Three paths did that, and all three
+                    # were live at once on 2026-08-28:
+                    #   - status noticed/pip → research_team would not load it,
+                    #     so the coaching stage removed the agent from service
+                    #     and made its own recovery condition unreachable;
+                    #   - the decision-#79 skip → 8 FI agents abstained by
+                    #     construction, into this counter, for months;
+                    #   - a crash inside the agent's own file.
+                    # 43 agents crossed Stage 1 in one pass on the VM that day —
+                    # 64% of the roster, same day, identical czc, every one of
+                    # them already carrying exoneration_count=7. A ladder that
+                    # fires on two thirds of the firm at once is measuring the
+                    # firm, not the agents.
+                    #
+                    # `is not True` is deliberate: had_a_fair_cycle returns None
+                    # when the manifest is missing or stale, and "cannot tell"
+                    # must not be chargeable either. The refusal is counted and
+                    # reported below so a frozen ladder announces itself rather
+                    # than looking like a ladder with nothing to do.
+                    czc = agent.get("consecutive_zero_cycles", 0)
+                    unrun_refusals[cn] = (
+                        "no run recorded" if fair_cycle.get(cn) is False
+                        else "no usable run manifest")
+                    if not counted_today:
+                        agent["unrun_cycles"] = agent.get("unrun_cycles", 0) + 1
                 elif counted_today:
                     # Already counted today. The thresholds are documented as
                     # "R&D cycles, each ~4 days" (Stage 4 ≈ 120 days of runway),
@@ -2009,6 +2050,11 @@ class AgentFactory:
                         "new_status": "noticed", "consecutive_zero_cycles": czc,
                         "event": "performance_notice",
                     })
+
+            if unrun_refusals:
+                logger.warning("  [AgentFactory] %s",
+                               agent_lifecycle.refusals_this_cycle(unrun_refusals))
+                self._unrun_refusals = dict(unrun_refusals)
 
         except Exception as e:
             logger.debug(f"  [AgentFactory] Performance update skipped: {e}")

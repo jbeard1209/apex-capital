@@ -107,6 +107,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+import agent_lifecycle
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -3482,8 +3484,15 @@ class CITAgentQualityAuditor:
             for agent_name, data in pl.items():
                 if not isinstance(data, dict):
                     continue
-                status   = data.get("status", "active")
-                if status not in ("active", "reassigned"):
+                # Whose performance is CIT allowed to grade? The same set the
+                # research cycle will actually run — anyone else is being judged
+                # on picks they had no opportunity to make. This read
+                # ("active", "reassigned") until 2026-08-28, so a Stage-1 agent
+                # disappeared from CIT's low-performer sweep at the same moment
+                # it disappeared from the research cycle: unmeasured and unrun,
+                # visible to nothing, marching to Stage 4.
+                status = data.get("status", agent_lifecycle.DEFAULT_STATUS)
+                if not agent_lifecycle.is_runnable(status):
                     continue
 
                 # Get performance metrics

@@ -384,7 +384,35 @@ def _pill_recorded_exits_are_executed(law):
                  "created_at": day.isoformat()}])
 
 
+def _pill_lifecycle_statuses_are_runnable(law):
+    """A ladder that assigns a status the firm has never defined.
+
+    The synthetic source is a whole miniature ladder rather than one line: it
+    assigns two statuses the firm DOES declare and one it does not, so a law
+    that merely noticed "some status exists" would pass it. Only a law that
+    compares the assigned set against the declared set fails here, which is the
+    cross-source fault this pill is aimed at — each half is impeccable alone.
+    `"sabbatical"` is a perfectly reasonable-looking lifecycle stage, spelled
+    the way the real ones are; nothing about the string itself is wrong. What
+    is wrong is that no loader will run it and no branch will retire it, so an
+    agent placed there works nowhere and appeals to nobody — the exact shape
+    `"noticed"` had for the months before 2026-08-28.
+    """
+    return law(ladder_src=(
+        'def _update_agent_performance(self):\n'
+        '    for agent in self.registry["agents"]:\n'
+        '        if a:\n'
+        '            agent["status"] = "active"\n'
+        '        elif b:\n'
+        '            agent["status"] = "retired"\n'
+        '        else:\n'
+        '            agent["status"] = "sabbatical"\n'))
+
+
 POISON_PILLS: Dict[str, Pill] = {
+    "lifecycle_statuses_are_runnable": Pill(
+        _pill_lifecycle_statuses_are_runnable,
+        "the ladder assigns a status that is neither runnable nor terminal"),
     "recorded_exits_are_executed": Pill(
         _pill_recorded_exits_are_executed,
         "a booked P&L whose exit order the broker canceled without filling"),

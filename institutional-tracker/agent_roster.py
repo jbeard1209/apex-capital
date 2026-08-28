@@ -74,6 +74,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import agent_lifecycle
+
 BASE = Path(__file__).resolve().parent
 DATA = BASE / "data"
 
@@ -635,7 +637,11 @@ def build(base: Path = BASE, host: str = "local") -> dict:
             "employment": employment,
             "superseded_by": superseded_by,
             # research_cycle is what `status` actually controls (research_team.py
-            # loads active + reassigned). It is NOT employment.
+            # loads agent_lifecycle.RUNNABLE_STATUSES). It is NOT employment.
+            # Read from the shared frozenset, never re-spelled: this line used to
+            # carry its own ("active", "reassigned") literal, which stayed
+            # accidentally correct only while research_team carried the same
+            # wrong one. Two copies of a wrong rule agree with each other.
             #
             # Except for agents research_team now declines to construct: since
             # decision #79 it skips a registry agent that declares required
@@ -643,7 +649,7 @@ def build(base: Path = BASE, host: str = "local") -> dict:
             # implies "runs in the research cycle" for those. Recorded here
             # rather than left to drift, because agent_sweep reads this field to
             # decide whether a retired agent is still executing.
-            "research_cycle": (a.get("status") in ("active", "reassigned")
+            "research_cycle": (agent_lifecycle.is_runnable(a.get("status"))
                                and name not in skipped_by_research_team),
             "registry_status": a.get("status"),
             "permanent": bool(a.get("permanent")),

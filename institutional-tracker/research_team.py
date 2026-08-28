@@ -21,8 +21,11 @@ import json
 import logging
 import os
 import sys
+from collections import Counter
 from datetime import datetime
 from typing import Optional
+
+import agent_lifecycle as lifecycle
 
 import time
 import pandas as pd
@@ -483,25 +486,43 @@ class ResearchTeamCoordinator:
                 import importlib.util
                 with open(REGISTRY_PATH) as f:
                     registry = json.load(f)
+                # RUNNABLE_STATUSES, not a literal tuple. This filter used to
+                # read ("active", "reassigned"), which silently excluded the two
+                # statuses the CoS ladder describes as coaching — so a Stage-1
+                # "this is not a termination notice" removed the agent from
+                # service, and recovery (one approved pick) became unreachable.
+                # 43 agents went over that edge on the VM in a single pass on
+                # 2026-08-28: 50 loaded at 05:00, 8 at 08:00. See
+                # agent_lifecycle.py for the full postmortem and why the fix is
+                # in a shared frozenset rather than three edited tuples.
                 active_agents = [
                     a for a in registry.get("agents", [])
-                    if a.get("status") in ("active", "reassigned")
+                    if lifecycle.is_runnable(a.get("status"))
                     # CIT/governance agents live in the registry for HR
                     # visibility but are not research agents — don't run them
                     # here (they have .analyze(), not .run(), and crash).
                     and a.get("division", "research") == "research"
                 ]
                 if active_agents:
+                    by_status = Counter(a.get("status") or lifecycle.DEFAULT_STATUS
+                                        for a in active_agents)
                     logger.info(
                         f"  Loading {len(active_agents)} CoS-spawned registry agent(s) "
-                        f"({sum(1 for a in active_agents if a.get('status')=='active')} active, "
-                        f"{sum(1 for a in active_agents if a.get('status')=='reassigned')} reassigned)..."
+                        f"({', '.join(f'{n} {s}' for s, n in sorted(by_status.items()))})..."
                     )
+                # Who actually got a cycle. The CoS ladder charges a zero-pick
+                # cycle against agents that never ran, which is how eight FI
+                # agents skipped by the #79 branch below still accrued their way
+                # to a performance notice. Evidence of a run is now recorded
+                # here, at the only place that knows.
+                ran, skipped = [], {}
                 for entry in active_agents:
+                    class_name = entry.get("class_name", "?")
                     try:
                         fpath      = entry["file"]
                         class_name = entry["class_name"]
                         if not os.path.exists(fpath):
+                            skipped[class_name] = "source file missing"
                             continue
                         spec   = importlib.util.spec_from_file_location(class_name, fpath)
                         module = importlib.util.module_from_spec(spec)
@@ -540,10 +561,14 @@ class ResearchTeamCoordinator:
                                 f"loop cannot pass; runs in "
                                 f"{_PIPELINE_RUN_AGENTS[class_name]}.py with real spreads"
                             )
+                            skipped[class_name] = (
+                                f"needs live context; runs in "
+                                f"{_PIPELINE_RUN_AGENTS[class_name]}.py")
                             continue
 
                         reg_agent  = AgentClass()
                         reg_report = reg_agent.run()
+                        ran.append(class_name)
                         agent_reports.append(reg_report)
                         for rec in reg_report["recommendations"]:
                             ticker = rec["ticker"]
@@ -560,6 +585,17 @@ class ResearchTeamCoordinator:
                         logger.warning(
                             f"  [CoS Agent {entry.get('class_name','?')}] FAILED: {e}"
                         )
+                        # A crash is not a performance failure. Charging it as
+                        # one would put an agent on the ladder for a bug in its
+                        # own file that nobody was told about.
+                        skipped[class_name] = f"raised {type(e).__name__}"
+                try:
+                    lifecycle.record_cycle(ran, skipped)
+                except Exception as e:
+                    # Never take the research cycle down over bookkeeping — but
+                    # say so, because a silent failure here restores the exact
+                    # blindness this record exists to remove.
+                    logger.warning(f"  Could not record the agent run manifest: {e}")
             except Exception as e:
                 logger.warning(f"  Could not load agent registry: {e}")
 

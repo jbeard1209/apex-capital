@@ -5950,6 +5950,28 @@ class TestPIPLifecycleNotDeadlocked(unittest.TestCase):
     The VM's registry had not been touched since 2026-05-28.
     """
 
+    # The ladder now charges a zero-pick cycle only against an agent the run
+    # manifest says actually ran (agent_lifecycle.had_a_fair_cycle). These tests
+    # measure counter MECHANICS, so they have to supply that evidence — in prod
+    # research_team.py writes it. Add a class name here if you add one below;
+    # without run evidence the counter deliberately will not move, which is
+    # what TestAZeroPickCycleRequiresACycle pins.
+    AGENTS_UNDER_TEST = ("QuietAgent", "NowAgent")
+
+    def setUp(self):
+        import tempfile
+        import agent_lifecycle
+        self._lc = agent_lifecycle
+        self._lc_dir = tempfile.mkdtemp()
+        self._lc_manifest_orig = agent_lifecycle.MANIFEST
+        agent_lifecycle.MANIFEST = Path(self._lc_dir) / "agent_run_manifest.json"
+        agent_lifecycle.record_cycle(self.AGENTS_UNDER_TEST)
+
+    def tearDown(self):
+        import shutil
+        self._lc.MANIFEST = self._lc_manifest_orig
+        shutil.rmtree(self._lc_dir, ignore_errors=True)
+
     def _log(self, tmpdir, source_agent, decisions=None):
         """A manager cycle. Default: one decision that is NOT an approved buy,
         plus an ATTRIBUTED approval so the interlock stays disengaged and the
@@ -29115,6 +29137,188 @@ class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
         finally:
             self.fs.MANIFEST.pop(rel, None)
             path.unlink(missing_ok=True)
+
+
+class TestACoachingStageIsNotARemovalFromService(unittest.TestCase):
+    """"Agent remains fully active" was false, and the ladder could not tell.
+
+    The CoS ladder's own docstring promises Stage 1 leaves the agent "fully
+    active" and that recovery is "one approved pick". research_team.py loaded
+    `status in ("active", "reassigned")`. `noticed` was in neither, so the
+    coaching stage removed the agent from the only place it could earn the pick
+    that would save it, and the counter kept climbing: 8 → 14 → 20 → 30.
+
+    Measured on the VM, 2026-08-28: 50 agents loaded at 05:00, 8 at 08:00. 43
+    crossed Stage 1 in one pass — same day, identical czc=8, every one already
+    carrying exoneration_count=7 — taking Technology, Financials, Industrials,
+    all ten First-Eagle agents and the whole FI pod off the always-on trading
+    host. The Mac sat two cycles behind the same cliff with 45 agents at czc=6.
+    """
+
+    LADDER = Path(__file__).parent / "chief_of_staff_agent.py"
+
+    def test_every_status_the_ladder_assigns_is_runnable_or_terminal(self):
+        import agent_lifecycle as L
+        import coherence_laws as C
+        assigned = C._ladder_assigned_statuses(self.LADDER.read_text())
+        self.assertIn("noticed", assigned,
+                      "the ladder must still have a Stage 1, or this test is vacuous")
+        known = set(L.RUNNABLE_STATUSES) | set(L.TERMINAL_STATUSES)
+        for status, line in sorted(assigned.items()):
+            with self.subTest(status=status):
+                self.assertIn(status, known,
+                              f"chief_of_staff_agent.py:{line} can put an agent into "
+                              f"{status!r}, which is neither runnable nor terminal")
+
+    def test_the_law_would_have_caught_the_bug_it_was_written_for(self):
+        """Point the detector at the pre-fix world; it must fail, naming both."""
+        import agent_lifecycle as L
+        import coherence_laws as C
+        with patch.object(L, "RUNNABLE_STATUSES", frozenset({"active", "reassigned"})):
+            r = C.law_lifecycle_statuses_are_runnable()
+        self.assertEqual("VIOLATED", r.verdict,
+                         "the law passes on the exact configuration that cost 42 agents")
+        self.assertIn("noticed", r.detail)
+        self.assertIn("pip", r.detail)
+
+    def test_a_coached_agent_is_still_loaded(self):
+        import agent_lifecycle as L
+        for status in ("active", "noticed", "pip", "reassigned"):
+            with self.subTest(status=status):
+                self.assertTrue(L.is_runnable(status))
+        self.assertFalse(L.is_runnable("retired"))
+        self.assertTrue(L.is_runnable(None), "a missing status normalises to active")
+
+    def test_no_consumer_respells_the_runnable_set_as_a_literal(self):
+        """Two copies of a wrong rule agree with each other.
+
+        agent_roster.py carried its own ("active", "reassigned") beside a comment
+        asserting it matched research_team — and it did, because both were wrong.
+        AST, not grep: this file and agent_lifecycle.py both quote the old tuple
+        in prose explaining the bug, and a text search would flag those.
+        """
+        import agent_lifecycle as L
+        statuses = set(L.RUNNABLE_STATUSES) | set(L.TERMINAL_STATUSES)
+        here = Path(__file__).resolve()
+        offenders = []
+        for path in sorted(Path(__file__).parent.glob("*.py")):
+            if path.resolve() in (here, Path(L.__file__).resolve()):
+                continue
+            try:
+                tree = ast.parse(path.read_text())
+            except SyntaxError:
+                continue
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Compare) or not node.ops:
+                    continue
+                if not isinstance(node.ops[0], (ast.In, ast.NotIn)):
+                    continue
+                rhs = node.comparators[0]
+                if not isinstance(rhs, (ast.Tuple, ast.List, ast.Set)):
+                    continue
+                vals = {e.value for e in rhs.elts
+                        if isinstance(e, ast.Constant) and isinstance(e.value, str)}
+                if len(vals) != len(rhs.elts) or not vals:
+                    continue
+                # A hand-written subset of the lifecycle vocabulary that is not
+                # the whole runnable set is the shape that caused this.
+                if vals < statuses and vals != set(L.TERMINAL_STATUSES):
+                    offenders.append(f"{path.name}:{node.lineno} {sorted(vals)}")
+        self.assertEqual([], offenders,
+                         "these re-spell the lifecycle vocabulary instead of importing "
+                         "agent_lifecycle.RUNNABLE_STATUSES: " + "; ".join(offenders))
+
+
+class TestAZeroPickCycleRequiresACycle(unittest.TestCase):
+    """`consecutive_zero_cycles` charged agents that were never constructed.
+
+    It is a proxy for "had a fair opportunity and wasted it". Three paths broke
+    the proxy at once: the status filter above, the decision-#79 skip (whose own
+    comment says 7 FI agents "abstained 6 times a day, into HR's zero-pick streak
+    counter" — all 8 were in the 43), and a crash inside the agent's own file.
+    The counter now needs positive evidence of a run.
+    """
+
+    def _manifest(self, **kw):
+        d = Path(tempfile.mkdtemp())
+        p = d / "agent_run_manifest.json"
+        if kw:
+            p.write_text(json.dumps(kw))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        return p
+
+    def test_an_agent_that_ran_is_chargeable(self):
+        import agent_lifecycle as L
+        today = datetime.now().strftime("%Y-%m-%d")
+        p = self._manifest(last_cycle_date=today, agents={"A": {"last_ran": today}})
+        self.assertIs(True, L.had_a_fair_cycle("A", path=p))
+
+    def test_an_agent_the_loader_skipped_is_not_chargeable(self):
+        import agent_lifecycle as L
+        today = datetime.now().strftime("%Y-%m-%d")
+        p = self._manifest(last_cycle_date=today,
+                           agents={"A": {"last_ran": today},
+                                   "FIDurationAgent": {"last_skipped": today,
+                                                       "skip_reason": "needs live context"}})
+        self.assertIs(False, L.had_a_fair_cycle("FIDurationAgent", path=p),
+                      "an agent the loader declined to construct did not get a cycle")
+
+    def test_a_missing_or_stale_manifest_says_cannot_tell_not_no(self):
+        """The distinction is load-bearing: one is a fact about the agent, the
+        other a fact about the instrument."""
+        import agent_lifecycle as L
+        self.assertIsNone(L.had_a_fair_cycle("A", path=self._manifest()))
+        old = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        p = self._manifest(last_cycle_date=old, agents={"A": {"last_ran": old}})
+        self.assertIsNone(L.had_a_fair_cycle("A", path=p),
+                          "a stale manifest must not be read as 'nobody ran'")
+
+    def test_the_ladder_consults_the_verdict_instead_of_only_recording_it(self):
+        """A maintained number nobody reads is not a guard.
+
+        AST: find what `had_a_fair_cycle` results are bound to, then require a
+        branch whose test actually reads that name. `consecutive_failures` was
+        incremented, persisted and printed for the life of an adjacent check
+        while no branch ever consulted it.
+        """
+        tree = ast.parse((Path(__file__).parent / "chief_of_staff_agent.py").read_text())
+        bound = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign) and "had_a_fair_cycle" in ast.dump(node.value):
+                for t in node.targets:
+                    bound.update(n.id for n in ast.walk(t) if isinstance(n, ast.Name))
+        self.assertTrue(bound, "nothing in the ladder calls had_a_fair_cycle")
+        read_in_a_branch = any(
+            isinstance(n, ast.If)
+            and any(x.id in bound for x in ast.walk(n.test) if isinstance(x, ast.Name))
+            for n in ast.walk(tree))
+        self.assertTrue(read_in_a_branch,
+                        "the fair-cycle verdict is computed but no branch reads it — "
+                        "the charge would happen anyway")
+
+    def test_the_refusal_is_announced_not_silent(self):
+        """A ladder that quietly stops advancing looks like one with nothing to do."""
+        import agent_lifecycle as L
+        self.assertEqual("", L.refusals_this_cycle({}))
+        line = L.refusals_this_cycle({"A": "no run recorded", "B": "no run recorded",
+                                      "C": "no usable run manifest"})
+        self.assertIn("3 agent(s)", line)
+        self.assertIn("2 no run recorded", line)
+        self.assertIn("1 no usable run manifest", line)
+
+    def test_recording_a_cycle_never_leaves_an_empty_manifest(self):
+        """`open(w)` truncates before it writes; an empty manifest reads as
+        'nobody ran', which is the one input that must never be fabricated."""
+        import agent_lifecycle as L
+        p = self._manifest()
+        L.record_cycle(["A", "B"], {"C": "crashed"}, path=p)
+        data = json.loads(p.read_text())
+        self.assertEqual(["A", "B"], data["last_cycle_ran"])
+        self.assertEqual({"C": "crashed"}, data["last_cycle_skipped"])
+        self.assertIs(True, L.had_a_fair_cycle("A", path=p))
+        self.assertIs(False, L.had_a_fair_cycle("C", path=p))
+        self.assertEqual([], list(p.parent.glob(".manifest-*")),
+                         "the temp file must be renamed, not left beside the real one")
 
 
 if __name__ == "__main__":

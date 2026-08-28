@@ -53,6 +53,7 @@ Exit code: 0 if every law HOLDS, 1 if any is VIOLATED or CANNOT_TELL (CI-friendl
 """
 
 import argparse
+import ast
 import json
 import logging
 import re
@@ -1433,6 +1434,127 @@ def law_emitted_verbs_are_handled(agent_dir: Optional[Path] = None) -> LawResult
 
 
 # =============================================================================
+# LAW — lifecycle statuses are runnable
+# =============================================================================
+
+def _subscript_key(node) -> Optional[str]:
+    """The literal key of `x[...]`, across the 3.8→3.9 ast.Index change."""
+    sl = getattr(node, "slice", None)
+    if sl is None:
+        return None
+    if sl.__class__.__name__ == "Index":            # <=3.8
+        sl = getattr(sl, "value", None)
+    if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
+        return sl.value
+    return None
+
+
+def _ladder_assigned_statuses(src: str) -> dict:
+    """Every literal status the ladder writes to an agent → the line it does it.
+
+    AST, not grep, and not negotiably so: chief_of_staff_agent.py and
+    agent_lifecycle.py now both carry paragraphs of postmortem prose naming
+    "noticed" and "pip", so a text search finds this law's own explanation of
+    the bug and reports the bug fixed. Only an assignment to `agent["status"]`
+    actually moves an agent between stages, so only that is counted.
+    """
+    out: dict = {}
+    for node in ast.walk(ast.parse(src)):
+        if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Constant):
+            continue
+        if not isinstance(node.value.value, str):
+            continue
+        for tgt in node.targets:
+            if isinstance(tgt, ast.Subscript) and _subscript_key(tgt) == "status":
+                out.setdefault(node.value.value, node.lineno)
+    return out
+
+
+@sources("statuses the CoS ladder assigns (its own AST)",
+         "statuses the firm declares runnable or terminal (agent_lifecycle)")
+def law_lifecycle_statuses_are_runnable(ladder_src: Optional[str] = None) -> LawResult:
+    """Every status the performance ladder can assign is one an agent survives.
+
+    SOURCE A: what the ladder DOES — `agent["status"] = "..."` in
+              chief_of_staff_agent.py, read from its syntax tree.
+    SOURCE B: what the firm SAYS those statuses mean — agent_lifecycle's
+              RUNNABLE_STATUSES ∪ TERMINAL_STATUSES.
+
+    Neither reads the other. That is the whole point: for months the ladder
+    assigned "noticed" and "pip" while research_team.py loaded a hand-written
+    ("active", "reassigned"), and both halves were internally consistent. Nothing
+    compared them, so a coaching stage was silently a removal from service —
+    and since recovery required an approved pick, an agent that could not run
+    could not be saved. On 2026-08-28 that took the VM's research pool from 50
+    agents to 8 in a single pass, 64% of the roster, in a firm whose Chairman's
+    standing instruction is that losing track of an agent is disastrous.
+
+    A status that is neither runnable nor terminal is a third thing nobody
+    designed: employed on paper, unable to work, unable to appeal, still
+    counting down. This law exists so the NEXT such status is caught on the
+    commit that introduces it rather than by reading a log cliff six hours late.
+    """
+    name = "lifecycle_statuses_are_runnable"
+    src_names = law_lifecycle_statuses_are_runnable.sources
+
+    try:
+        sys.path.insert(0, str(BASE_DIR))
+        import agent_lifecycle
+        declared = set(agent_lifecycle.RUNNABLE_STATUSES) | set(agent_lifecycle.TERMINAL_STATUSES)
+    except Exception as e:
+        return LawResult(name, CANNOT_TELL,
+                         f"cannot read the declared status vocabulary "
+                         f"({type(e).__name__}: {e}) — an unreadable set is not "
+                         f"an empty one", src_names)
+    if not declared:
+        return LawResult(name, CANNOT_TELL,
+                         "agent_lifecycle declares no statuses — refusing to compare "
+                         "against an empty vocabulary", src_names)
+
+    if ladder_src is None:
+        ladder = BASE_DIR / "chief_of_staff_agent.py"
+        if not ladder.exists():
+            return LawResult(name, CANNOT_TELL,
+                             f"{ladder.name} missing — cannot read what the ladder "
+                             f"assigns. Owner: whoever moved the CoS factory.",
+                             src_names)
+        ladder_src = ladder.read_text()
+
+    try:
+        assigned = _ladder_assigned_statuses(ladder_src)
+    except SyntaxError as e:
+        return LawResult(name, CANNOT_TELL,
+                         f"the ladder does not parse ({e}) — cannot tell what it "
+                         f"assigns", src_names)
+    if not assigned:
+        return LawResult(name, CANNOT_TELL,
+                         "no `agent[\"status\"] = ...` assignment found — either the "
+                         "ladder stopped setting status directly or this scan stopped "
+                         "matching how it is written. Owner: whoever last changed "
+                         "_update_agent_performance.", src_names)
+
+    orphans = {s: ln for s, ln in assigned.items() if s not in declared}
+    if orphans:
+        return LawResult(
+            name, VIOLATED,
+            f"{len(orphans)} of {len(assigned)} status(es) the ladder assigns are "
+            f"neither runnable nor terminal: "
+            f"{', '.join(f'{s!r} (line {ln})' for s, ln in sorted(orphans.items()))}. "
+            f"An agent put there is employed, unable to work, and still counting "
+            f"down toward retirement.",
+            src_names,
+            [{"status": s, "assigned_at_line": ln,
+              "runnable": sorted(agent_lifecycle.RUNNABLE_STATUSES)}
+             for s, ln in sorted(orphans.items())],
+            n_examined=len(assigned))
+
+    return LawResult(name, HOLDS,
+                     f"{len(assigned)} status(es) assignable by the ladder "
+                     f"({', '.join(sorted(assigned))}), all runnable or terminal",
+                     src_names, n_examined=len(assigned))
+
+
+# =============================================================================
 # LAW — positions conserve
 # =============================================================================
 
@@ -2530,6 +2652,8 @@ LAWS: List[Tuple[Callable[[], LawResult], str]] = [
      "every data/ file the firm chose to ship is present and identical there"),
     (law_emitted_verbs_are_handled,
      "every verb a producer emits is a verb the consumer can name"),
+    (law_lifecycle_statuses_are_runnable,
+     "every status the performance ladder assigns is one an agent survives"),
     (law_positions_conserve,
      "what the broker holds == what the ledger says we opened"),
     (law_broker_host_census,

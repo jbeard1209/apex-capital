@@ -49,6 +49,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
+import agent_lifecycle
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s  %(levelname)-8s  %(message)s",
@@ -152,9 +154,18 @@ def _rule_mass_reassignment(state: dict) -> Optional[dict]:
     if not agents:
         return None
 
+    # Measure the harm, not the label. This counted `status != "active"`, which
+    # after 2026-08-28 conflates two different things: an agent the research
+    # cycle still runs (Stage 1/2/3 are all loadable now — see agent_lifecycle)
+    # and an agent that cannot work at all. The alarm is for the second.
+    #
+    # The count is unchanged on the registries that exist today (8 active,
+    # 43 noticed, 16 inactive → 59 either way); what changes is that fixing the
+    # loader now clears this alarm, which is the correct behaviour, and adding
+    # a terminal status no longer makes retirees look like a mass demotion.
     total    = len(agents)
-    active   = [a for a in agents if a.get("status") == "active"]
-    non_active = [a for a in agents if a.get("status") not in ("active", "retired")]
+    active   = [a for a in agents if agent_lifecycle.is_runnable(a.get("status"))]
+    non_active = [a for a in agents if not agent_lifecycle.is_runnable(a.get("status"))]
     pct_non_active = len(non_active) / total if total > 0 else 0
 
     if pct_non_active < 0.5:
@@ -168,10 +179,10 @@ def _rule_mass_reassignment(state: dict) -> Optional[dict]:
     return {
         "rule":        "mass_reassignment",
         "severity":    "HIGH",
-        "title":       f"{len(non_active)}/{total} agents are NOT in active status",
+        "title":       f"{len(non_active)}/{total} agents cannot run in the research cycle",
         "observation": (
             f"{len(non_active)} out of {total} agents have status != 'active'. "
-            f"Only {len(active)} agents are actively generating research. "
+            f"Only {len(active)} agents can generate research. "
             f"Statuses: {dict(__import__('collections').Counter(a.get('status','?') for a in agents))}"
         ),
         "why_its_wrong": (
