@@ -19,6 +19,7 @@ Tests:
 import sys
 import os
 import ast
+import contextlib
 import json
 import re
 import sqlite3
@@ -27842,6 +27843,214 @@ class TestTheEstimatorRefusesRatherThanGuesses(unittest.TestCase):
         self.assertGreaterEqual(K.MIN_SHADOW_EVENTS, 200)
         self.assertGreaterEqual(K.MIN_REGIME_SPAN_DAYS, 21)
         self.assertGreaterEqual(K.SHADOW_MIN_SPREAD_C, 5.0)
+
+
+class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
+    """freshness_sentinel: host ownership, and queues judged on depth not age.
+
+    Two failures met here. Before 2026-08-28 the manifest watched 21 reports
+    and one queue, so "the drainer died" — work accepted and never done — was
+    unwatched; and because there is no state sync between hosts, the Mac was
+    measuring artifacts only the VM produces. Measured that morning the Mac
+    reported 16 stale (5 CRITICAL) of which 13 were 0.4-1.2h old on the VM at
+    the same instant.
+
+    The fix introduces its OWN failure mode, and most of what is pinned here
+    guards that rather than the original bug: an entry whose `owner` matches no
+    real host is deferred by every host and therefore watched by NOBODY, which
+    is strictly worse than the false alarms it replaced. A false alarm is
+    visible. Silence is not.
+    """
+
+    HOSTS = ("mac", "apexcapitalc")   # what single_writer.this_host() can return
+
+    def setUp(self):
+        import importlib
+        self.fs = importlib.import_module("freshness_sentinel")
+
+    # ── the deferral must never lose an artifact ──────────────────────────
+    def test_every_owner_names_a_host_that_exists(self):
+        """A typo'd owner defers everywhere and is watched by no one."""
+        import single_writer
+        bad = {rel: spec["owner"] for rel, spec in self.fs.MANIFEST.items()
+               if spec.get("owner") and spec["owner"] not in self.HOSTS}
+        self.assertEqual(bad, {},
+                         "owner values must be real host tags from "
+                         "single_writer.this_host(); these match no host and so "
+                         "would be deferred by every host: %s" % bad)
+        # And the host tags themselves must still be the ones the firm uses —
+        # if this_host() is ever renamed, the manifest silently goes dark.
+        self.assertIn(single_writer.this_host(), self.HOSTS)
+
+    def test_every_manifest_entry_is_measured_by_at_least_one_host(self):
+        """Assert per-item coverage, not a union count.
+
+        A union or a total would be satisfied by one host measuring everything
+        while another measures nothing; the property that matters is that no
+        SINGLE entry falls through both hosts (see memory
+        a-union-cannot-prove-all-n).
+        """
+        for rel, spec in self.fs.MANIFEST.items():
+            owner = spec.get("owner")
+            measurers = [h for h in self.HOSTS if not owner or owner == h]
+            self.assertTrue(measurers, "%s is measured by no host" % rel)
+
+    def test_an_unknown_host_defers_rather_than_claims_everything(self):
+        """A degraded 'which host am I' must not resolve to 'I own it all'."""
+        with patch.object(self.fs, "_this_host", return_value=""):
+            rep = self._run_isolated()
+        owned = [r for r, s in self.fs.MANIFEST.items() if s.get("owner")]
+        self.assertEqual(rep["deferred_n"], len(owned),
+                         "an unidentified host measured artifacts it cannot own")
+
+    def test_the_denominator_never_exceeds_the_work_done(self):
+        """checked must be what was measured, not len(MANIFEST)."""
+        rep = self._run_isolated()
+        self.assertEqual(rep["in_manifest"], len(self.fs.MANIFEST))
+        self.assertLessEqual(rep["checked"], rep["in_manifest"])
+        self.assertEqual(rep["checked"] + rep["deferred_n"] + self._weekday_skips(),
+                         rep["in_manifest"],
+                         "items vanished from the sweep without being counted "
+                         "as either measured or deferred")
+
+    def test_a_deferred_item_is_never_auto_fixed(self):
+        """The other host's producer must not be re-run here.
+
+        Several owned entries carry `fix` commands. Running risk_manager_agent
+        on the Mac would write a Mac-local artifact that no consumer reads and
+        would make the deferral look repaired.
+        """
+        calls = []
+        with patch.object(self.fs, "_attempt_fix",
+                               side_effect=lambda s: calls.append(s) or "fixed (exit 0)"):
+            with patch.object(self.fs, "_this_host", return_value="mac"):
+                self._run_isolated(auto_fix=True)
+        vm_only_fixes = {s["fix"] for s in self.fs.MANIFEST.values()
+                         if s.get("fix") and s.get("owner") == "apexcapitalc"}
+        self.assertFalse(vm_only_fixes & set(calls),
+                         "ran another host's producer: %s" % (vm_only_fixes & set(calls)))
+
+    # ── a queue is judged on depth, not age alone ─────────────────────────
+    def test_the_manifest_actually_watches_queues(self):
+        """Ratchet: coverage may grow, never shrink back to one queue."""
+        queues = [r for r, s in self.fs.MANIFEST.items() if s.get("queue")]
+        self.assertGreaterEqual(len(queues), 11,
+                                "queue coverage regressed; it was 11 on 2026-08-28")
+        # The three the fix was written to catch must still be watched by name.
+        for rel in ("data/fe_research_queue.json",
+                    "data/ml_shortterm_experiment_queue.json",
+                    "data/ml_longterm_experiment_queue.json"):
+            self.assertIn(rel, queues)
+
+    def test_an_old_but_empty_queue_is_not_stale(self):
+        rel = "data/_probe_queue.json"
+        with self._probe(rel, payload=[], age_h=500, spec_extra={"queue": True}) as rep:
+            self.assertNotIn(rel, [i["item"] for i in rep["issues"]],
+                             "alarmed on an empty queue — that measures the "
+                             "arrival rate of work, not the health of a worker")
+
+    def test_an_old_non_empty_queue_is_stale(self):
+        rel = "data/_probe_queue.json"
+        with self._probe(rel, payload=[{"x": 1}, {"x": 2}], age_h=500,
+                         spec_extra={"queue": True}) as rep:
+            hit = [i for i in rep["issues"] if i["item"] == rel]
+            self.assertTrue(hit, "an undrained 500h-old queue did not alarm")
+            self.assertEqual(hit[0]["queue_depth"], 2)
+            self.assertIn("2 item(s)", hit[0]["detail"])
+
+    def test_an_uncountable_queue_is_not_treated_as_empty(self):
+        """None is not zero. 'I could not count it' must keep the alarm."""
+        rel = "data/_probe_queue.json"
+        with self._probe(rel, payload="{ not json", age_h=500,
+                         spec_extra={"queue": True}, raw=True) as rep:
+            hit = [i for i in rep["issues"] if i["item"] == rel]
+            self.assertTrue(hit, "an unreadable queue passed as empty")
+            self.assertIsNone(hit[0]["queue_depth"])
+
+    def test_queue_depth_never_invents_a_number_from_a_wrapper(self):
+        """len(dict) is a key count, not a depth — and is never 0."""
+        import json as _j, tempfile
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as fh:
+            _j.dump({"generated_at": "x", "capital": 1, "regime": "y"}, fh)
+            p = Path(fh.name)
+        try:
+            self.assertIsNone(self.fs._queue_depth(p))
+            p.write_text(_j.dumps({"picks": [1, 2, 3]}))
+            self.assertEqual(self.fs._queue_depth(p), 3)
+        finally:
+            p.unlink(missing_ok=True)
+
+    # ── the heartbeat is scoped the same way ──────────────────────────────
+    def test_the_heartbeat_is_scoped_to_the_host_that_runs_the_pipeline(self):
+        """A frozen heartbeat on a host that no longer runs main.py is not news."""
+        dead = {"last_started": "2020-01-01T00:00:00", "pid": 999999}
+        with patch.object(self.fs, "_load", return_value=dead):
+            with patch.object(self.fs, "_this_host", return_value="mac"):
+                self.assertIsNone(self.fs._check_heartbeat(),
+                                  "reported a two-week-old crash on a host that "
+                                  "does not run the pipeline")
+            with patch.object(self.fs, "_this_host", return_value="apexcapitalc"):
+                self.assertIsNotNone(self.fs._check_heartbeat(),
+                                     "the owning host stopped detecting mid-run death")
+
+    def test_the_heartbeat_owner_is_not_a_second_hardcoded_fact(self):
+        """It must read state.json's owner, not carry its own copy.
+
+        Two independent spellings of 'who runs the pipeline' drift apart, and
+        the one inside a function body is the one nobody updates.
+        """
+        import ast, inspect
+        tree = ast.parse(inspect.getsource(self.fs._check_heartbeat))
+        consts = {n.value for n in ast.walk(tree)
+                  if isinstance(n, ast.Constant) and isinstance(n.value, str)}
+        self.assertFalse({"mac", "apexcapitalc"} & consts,
+                         "_check_heartbeat hardcodes a host tag instead of "
+                         "deriving the owner from the manifest")
+        self.assertIn("_owner_of", {n.id for n in ast.walk(tree)
+                                    if isinstance(n, ast.Name)})
+
+    # ── helpers ───────────────────────────────────────────────────────────
+    def _weekday_skips(self):
+        from datetime import datetime as _dt
+        if _dt.now().weekday() in self.fs.MARKET_DAYS_ONLY:
+            return 0
+        host = self.fs._this_host()
+        return sum(1 for s in self.fs.MANIFEST.values()
+                   if s.get("weekdays_only")
+                   and (not s.get("owner") or s["owner"] == host))
+
+    def _run_isolated(self, auto_fix=False):
+        """run() against the real data dir but writing state/report to a temp dir.
+
+        STATE_PATH/REPORT_PATH are module-level paths derived from DATA_DIR at
+        import, so rebinding DATA_DIR alone would not move them (memory
+        frozen-container-of-derived-paths) — all three are rebound.
+        """
+        import tempfile
+        with tempfile.TemporaryDirectory() as td:
+            with patch.object(self.fs, "STATE_PATH", Path(td) / "s.json"), \
+                 patch.object(self.fs, "REPORT_PATH", Path(td) / "r.json"):
+                return self.fs.run(auto_fix=auto_fix, send_email=False)
+
+    @contextlib.contextmanager
+    def _probe(self, rel, payload, age_h, spec_extra, raw=False):
+        """Inject one synthetic manifest entry of a given age and depth."""
+        import json as _j, tempfile, time
+        path = self.fs.BASE_DIR / rel
+        spec = {"max_age_h": 10, "critical": False}
+        spec.update(spec_extra)
+        path.write_text(payload if raw else _j.dumps(payload))
+        old = time.time() - age_h * 3600
+        os.utime(path, (old, old))
+        self.fs.MANIFEST[rel] = spec
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                with patch.object(self.fs, "STATE_PATH", Path(td) / "s.json"), \
+                     patch.object(self.fs, "REPORT_PATH", Path(td) / "r.json"):
+                    yield self.fs.run(auto_fix=False, send_email=False)
+        finally:
+            self.fs.MANIFEST.pop(rel, None)
+            path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

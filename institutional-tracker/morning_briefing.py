@@ -785,9 +785,18 @@ def run_morning_briefing() -> dict:
     try:
         fresh = _safe_load("data/freshness_report.json")
         if fresh:
+            # Carry the denominator, not just the verdict. The sentinel only
+            # measures artifacts THIS host owns (no state sync between hosts),
+            # so a Mac report reading "HEALTHY, 0 stale" can be a sweep of 6
+            # items out of 32 — true about what it looked at, and a firm-wide
+            # all-clear to anyone who reads only `overall`.
             briefing["freshness"] = {
                 "overall": fresh.get("overall", "?"),
                 "stale":   fresh.get("stale", 0),
+                "checked": fresh.get("checked"),
+                "in_manifest": fresh.get("in_manifest"),
+                "deferred_to_other_host": fresh.get("deferred_n", 0),
+                "measured_on": fresh.get("host", "?"),
                 "auto_fixed": fresh.get("auto_fixed", []),
             }
             for i in fresh.get("issues", []):
