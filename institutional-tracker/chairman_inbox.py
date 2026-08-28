@@ -47,11 +47,26 @@ def reconcile():
     about to hand them to the board. The inbox is only honest if it reconciles
     first. Returns a warning string when it could not, because a reader that
     silently falls back to a stale local file is the same blind spot again.
+
+    Two failures reach here and they are NOT the same fact. `sync()` raises
+    RuntimeError when it reached the VM, computed the merge, and REFUSED to
+    write because the result would lose evidence; anything else means it could
+    not get the VM's copy at all. Both were reported as "could not reach the
+    VM" until 2026-08-27, and the difference is the whole decision: a network
+    blip self-heals and needs nothing from Jack, while a refusal never
+    self-heals — it had been firing every session for 8.6 days, holding the
+    queue he reads at 206h stale against the VM's 14h, and the only signal said
+    "may be stale". Naming the wrong cause is worse than naming none, because
+    the wrong cause came with an implied "it'll sort itself out".
     """
     try:
         from chairman_queue_sync import sync
         sync(write=True)
         return None
+    except RuntimeError as e:
+        return (f"the VM was REACHED and the merge REFUSED to write ({str(e)[:80]}). "
+                f"This does not self-heal and the queue below is this host's stale "
+                f"copy — chairman_queue_sync needs a look")
     except Exception as e:
         return f"could not reach the VM ({str(e)[:60]}) — this queue may be stale"
 

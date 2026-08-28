@@ -7596,6 +7596,74 @@ class TestPoisonedCountersAreFloored(unittest.TestCase):
             self.assertEqual([], bad, f"{name} still carries poisoned counters: {bad[:5]}")
 
 
+class TestSuppressionIsCheckedOnTheIdentityItWasDecidedOn(unittest.TestCase):
+    """The archive-backing check must use the relation the suppression used.
+
+    `apply_tombstones` admits a row for suppression on `id in arch_ids OR
+    group_key in arch_keys`. The safety check that followed it validated by ID
+    ALONE, so a row suppressed through the group_key path could never satisfy
+    it and `sync()` raised on EVERY run — permanently, not transiently. Measured
+    on the Mac 2026-08-27: of 50 lifecycle-drop-sig rows, 43 matched by id and 5
+    by group_key alone, and those 5 deadlocked the cross-host reconcile for 8.6
+    days. The queue Jack reads at session start was 206h stale while the VM's
+    was 14h, and `chairman_inbox` reported the deadlock as "could not reach the
+    VM" — naming a cause that self-heals for a condition that never does.
+
+    Read against `apply_tombstones`, the repaired predicate is the exact
+    negation of that admission rule, so `sync()` can never hand it a failing
+    row. That is why these tests call it DIRECTLY. A check exercised only
+    through a caller that cannot produce its failing input is not covered, it
+    is merely present — and would go on reporting coverage after a future edit
+    silently broke it.
+    """
+
+    def _fixture(self):
+        import chairman_queue_sync as s
+        return s, {"a"}, {s.group_key({"dedup_key": "shared"})}
+
+    def test_a_row_backed_only_by_a_group_key_sibling_is_not_evidence_loss(self):
+        """The 8.6-day deadlock itself. group_key is a CONTENT key, so an
+        archived sibling means the archive holds a decision about the same
+        subject; the row leaving is a duplicate detection of a filed problem."""
+        s, ids, keys = self._fixture()
+        self.assertEqual(
+            [], s.unbacked_suppressions([{"id": "b", "dedup_key": "shared"}], ids, keys),
+            "a row whose subject IS archived under a sibling id was reported as "
+            "evidence loss; that is the deadlock that stalled the reconcile")
+
+    def test_a_row_backed_by_neither_still_refuses(self):
+        """The guard must not have been loosened into uselessness."""
+        s, ids, keys = self._fixture()
+        self.assertEqual(
+            ["c"], s.unbacked_suppressions([{"id": "c", "dedup_key": "nowhere"}], ids, keys),
+            "a row the archive is NOT holding must still block the write — "
+            "otherwise the fix deletes the evidence the guard exists to keep")
+
+    def test_one_orphan_among_backed_rows_is_not_masked(self):
+        """Fail on ANY unbacked row, never on a majority verdict — the union
+        shape from memory a-union-cannot-prove-all-n, inverted."""
+        s, ids, keys = self._fixture()
+        rows = [{"id": "a"}, {"id": "b", "dedup_key": "shared"},
+                {"id": "c", "dedup_key": "nowhere"}]
+        self.assertEqual(["c"], s.unbacked_suppressions(rows, ids, keys))
+
+    def test_the_two_sites_still_share_one_identity_relation(self):
+        """The pin. Both must consult id AND group_key; whichever site stops
+        doing so re-opens the deadlock, and that is the edit to catch."""
+        import ast, inspect, chairman_queue_sync as s
+        for fn in (s.unbacked_suppressions, s.apply_tombstones):
+            names = {n.id for n in ast.walk(ast.parse(inspect.getsource(fn)))
+                     if isinstance(n, ast.Name)}
+            for needed in ("arch_ids", "arch_keys"):
+                self.assertIn(needed, names,
+                              f"{fn.__name__} no longer consults {needed}; the "
+                              f"suppression rule and its safety check have "
+                              f"drifted apart, which is exactly how the "
+                              f"permanent RuntimeError was introduced")
+            self.assertIn("group_key", names,
+                          f"{fn.__name__} stopped using group_key")
+
+
 class TestChairmanSyncMergeIsIdempotent(unittest.TestCase):
     """merge(merge(a,b), merge(a,b)) == merge(a,b).
 

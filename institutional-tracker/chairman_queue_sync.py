@@ -308,6 +308,57 @@ def merge_actions(local: list, remote: list) -> list:
                      ACTION_TS_FIELDS, "action")
 
 
+def unbacked_suppressions(suppressed: list, arch_ids: set, arch_keys: set) -> list:
+    """Suppressed rows whose subject the archive is NOT holding. Empty is good.
+
+    A suppressed row is only allowed to leave the queue because the archive is
+    holding it; if it is not, we are deleting evidence, which is the failure
+    `chairman_queue_compactor` exists to avoid.
+
+    THE DEADLOCK THIS FIXES
+    -----------------------
+    This test used to be `id not in {ids in the archive}` — by ID ONLY — while
+    `apply_tombstones` admits a row for suppression on `id in arch_ids OR
+    group_key in arch_keys`. Two notions of identity for one decision. A row
+    suppressed through the group_key path can never satisfy an id-based check,
+    so the RuntimeError was PERMANENT rather than transient: measured on the
+    Mac's queue 2026-08-27, of 50 lifecycle-drop-sig rows 43 matched by id and
+    5 matched by group_key alone, and those 5 deadlocked the reconcile for 8.6
+    days. `chairman_inbox` catches this into "could not reach the VM", so the
+    only symptom Jack saw named a cause that was not the cause — a network blip
+    self-heals and needs nothing from him; this never self-heals.
+
+    Matching on the group_key is genuinely backed, not a loosening: group_key is
+    a CONTENT key, so an archived sibling means the archive holds a decision
+    about the same subject and the row leaving is a duplicate detection of an
+    already-filed problem. Nothing about the subject is lost.
+
+    WHY THIS IS A PIN, NOT AN OBSERVATION — and why it is a function
+    ----------------------------------------------------------------
+    Read against `apply_tombstones`, this predicate is now the exact negation of
+    that function's admission rule, so as CALLED it cannot fire: every row in
+    `suppressed` got there by satisfying the very condition checked here. An
+    inline check that cannot fail is worth less than no check, because it reads
+    as coverage — the same vacuous-guard shape as the push-gate assertion that
+    passed on a hook naming TZ=UTC only in its own error message.
+
+    So it is deliberately NOT inline. What it pins is that the two sites keep
+    using one identity relation; it fires the moment an edit to either side
+    makes them disagree, which is precisely how the 8.6-day deadlock was
+    introduced. Kept honest by testing it directly with a row backed by
+    neither — proving the mechanism still refuses — rather than only through
+    `sync()`, which by construction can never present it one.
+    """
+    out = set()
+    for x in suppressed:
+        if not isinstance(x, dict) or not x.get("id"):
+            continue
+        if x["id"] in arch_ids or group_key(x) in arch_keys:
+            continue
+        out.add(x["id"])
+    return sorted(out)
+
+
 def tombstones(archived: list):
     """(ids, group_keys) that chairman_queue_compactor has already filed away."""
     ids, keys = set(), set()
@@ -593,13 +644,7 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
     if rep["ids_dropped"]:
         raise RuntimeError(f"merge would drop {len(rep['ids_dropped'])} id(s) — refusing to write")
 
-    # A suppressed row is only allowed to leave because the archive is holding
-    # it. If it is not actually in the archive we are deleting evidence, which
-    # is the failure chairman_queue_compactor exists to avoid — so prove it,
-    # every run, rather than trusting that the filter above and the archive
-    # union stay in agreement.
-    archived_ids = {x.get("id") for x in m_arch if isinstance(x, dict)}
-    unbacked = sorted(i for i in rep["suppressed"] if i not in archived_ids)
+    unbacked = unbacked_suppressions(suppressed, arch_ids, arch_keys)
     if unbacked:
         raise RuntimeError(
             f"{len(unbacked)} row(s) would be suppressed with no archive record "
