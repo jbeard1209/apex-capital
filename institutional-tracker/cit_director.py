@@ -344,6 +344,55 @@ def _fix_is_specific(proposed_fix: str) -> bool:
 
     return score >= 3   # require at minimum 3 specificity points
 
+
+# ── Log-error classification ─────────────────────────────────────────────────
+# Two ordered readings of one line, then a refusal. The refusal is the point.
+#
+# This used to end `else s.split()[-1][:30]` — the last whitespace token of a
+# line ALREADY truncated to 120 chars. On a truncated line that token is
+# whatever the cut left behind, so a dollar figure sliced mid-number produced
+# the group key "($", which was then templated into "Most frequent error
+# source: `($`" and sent to the board as a diagnosis. A key derived from where
+# a string happened to be cut is not a classification of anything, and reading
+# it as one is memory `fallback-that-means-act`: the substitute a degraded read
+# returns gets acted on exactly like a measurement.
+# The tag is ANCHORED near the level, because main.py's format is
+# "%(asctime)s  %(levelname)-8s  %(message)s" and a `[component]` prefix is the
+# first thing in the message. An unanchored `\[(\w[\w.-]*)\]` also takes
+# brackets out of the message body — "list index out of range [0]" classifies
+# as component "0", and 194 lines were keyed on a filename in mid-sentence.
+# `\S{0,3}` is not slack: many lines lead with a status glyph, e.g.
+# "ERROR      ❌ [cit_morning] timed out after 10 min" (115 lines). A hard
+# anchor on `ERROR\s+\[` loses every one of them, which is the same
+# over-correction as the class pattern below in the other direction.
+_ERROR_TAG_RE = re.compile(r'ERROR\s+\S{0,3}\s*\[(\w[\w.-]*)\]')
+# CamelCase ending in an exception suffix, found ANYWHERE in the line. Anchoring
+# this one to the level instead was the second half of the same mistake: the
+# real line
+#     10:03:06  ERROR     ['XLV', ...]: TypeError("'NoneType' object is not…")
+# names its exception four fields in, and an anchored read misses it, while
+#     16:46:33  ERROR     Buy order failed for AMC: mac is not the writer
+# has no exception at all and an anchored read returns "Buy". Backwards on both.
+# The suffix is MANDATORY — it was optional, which made the whole pattern
+# "the first word after ERROR" and left UNCLASSIFIED_ERROR unreachable on any
+# line with prose in it. Deliberately misses lowercase exceptions like
+# `socket.timeout`: under-claiming here costs a group key, over-claiming sends
+# the board a diagnosis built out of prose.
+_ERROR_CLASS_RE = re.compile(
+    r'\b([A-Z][A-Za-z0-9_]*(?:Error|Exception|Warning|Failure|Timeout))\b')
+UNCLASSIFIED_ERROR = "unclassified"
+
+
+def _error_key(sample: str) -> str:
+    """Component tag, else exception class, else UNCLASSIFIED_ERROR.
+
+    Never invents a key from the shape of the text. "I could not classify this"
+    is a finding a human can act on; "($" is not.
+    """
+    m = _ERROR_TAG_RE.search(sample or "") or _ERROR_CLASS_RE.search(sample or "")
+    return m.group(1) if m else UNCLASSIFIED_ERROR
+
+
 # ── Sensitivity patterns (any match → confidential route only) ───────────────
 # These describe the secret evaluation chains within the firm.
 # The CIT must never surface these to the board — only the Director sees them.
@@ -801,9 +850,18 @@ class CITPipelineMonitor:
                     f"{path_str} is {age:.0f}h old, within the {max_age}h threshold")
 
         # ── 2. Recent log errors ─────────────────────────────────────────────
+        # CLASSIFY EVERY LINE, KEEP THREE SAMPLES OF EACH. This used to keep the
+        # first 3 lines of the day and call the winner among them the "dominant"
+        # error class — a `[:3]` cap with no ordering, which is a sampling rule
+        # nobody chose (memory `budget-spent-in-the-wrong-order`). Measured over
+        # the 11,888 ERROR lines on disk 2026-08-28, the actual dominant class is
+        # TypeError at 3,944 lines; CIT has never once named it, because the
+        # first three lines of a run are almost always something else. Counting
+        # is cheap — the lines are already being read.
         error_count = 0
         warning_count = 0
-        error_samples = []
+        error_counts: dict = {}     # key -> lines seen      (the denominator)
+        error_types: dict = {}      # key -> up to 3 samples (the evidence)
         if LOG_DIR.exists():
             today = datetime.now().strftime("%Y%m%d")
             yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
@@ -818,45 +876,57 @@ class CITPipelineMonitor:
                         for line in text.splitlines():
                             if "  ERROR " in line and "ERROR lines" not in line:
                                 error_count += 1
-                                if len(error_samples) < 3:
-                                    error_samples.append(line.strip()[:120])
+                                s = line.strip()[:120]
+                                # Classified on the SAME truncation the evidence
+                                # shows, so the key can never describe text the
+                                # reader is not looking at.
+                                k = _error_key(s)
+                                error_counts[k] = error_counts.get(k, 0) + 1
+                                bucket = error_types.setdefault(k, [])
+                                if len(bucket) < 3:
+                                    bucket.append(s)
                             elif "  WARNING " in line:
                                 warning_count += 1
                     except Exception:
                         pass
 
         if error_count > 5:
-            # Group samples by error type to identify the dominant failure mode
-            # and generate a specific, actionable proposed_fix. Prefer the
-            # structured "[component]" tag most log lines carry (format is
-            # "HH:MM:SS  LEVEL   [component] message" per main.py's logging
-            # config) — the old fallback grabbed the last whitespace token of
-            # a line already truncated to 120 chars, which could land mid-word
-            # (e.g. inside a dollar figure) and produce a meaningless key like
-            # "($" that then got templated into an invalid proposed_fix.
-            error_types: dict[str, list[str]] = {}
-            for s in error_samples:
-                m = re.search(r'\[(\w[\w.-]*)\]', s) or \
-                    re.search(r'ERROR\s+([A-Za-z][\w.]+(?:Error|Exception|Warning|Fail\w*)?)', s)
-                key = m.group(1) if m else "unclassified"
-                error_types.setdefault(key, []).append(s)
-            top_type = max(error_types, key=lambda k: len(error_types[k]))
+            # Prefer the structured "[component]" tag most log lines carry
+            # (format is "HH:MM:SS  LEVEL   [component] message" per main.py's
+            # logging config), else the exception class, else say so — see
+            # `_error_key`, which owns that decision and is tested directly.
+            #
+            # `top_n` is a count over EVERY line, not over the 3 kept samples.
+            # Ties break on the key so two runs of the same logs cannot report
+            # different dominant classes.
+            top_type = max(sorted(error_counts), key=lambda k: error_counts[k])
+            top_n = error_counts[top_type]
             top_sample = error_types[top_type][0]
-            if top_type == "unclassified":
+            share = f"{top_n} of {error_count}"
+            if top_type == UNCLASSIFIED_ERROR:
+                # Names the file and the concrete next edit, not just "look at
+                # it": this text has to clear `_fix_is_specific` or the finding
+                # is routed to backlog and the ERROR spike is never reported.
                 specific_fix = (
-                    f"{len(error_types[top_type])}/{len(error_samples)} sampled errors "
-                    f"didn't match a recognizable component tag or exception class — "
-                    f"inspect the raw sample manually: `{top_sample[:60]}`."
+                    f"{share} ERROR lines matched no component tag or exception "
+                    f"class, so CIT cannot name the source. Inspect the raw line "
+                    f"in logs/run_*.log: `{top_sample[:60]}`, then add a "
+                    f"`[component]` tag at its logging call site so the next "
+                    f"occurrence classifies."
                 )
             else:
                 specific_fix = (
-                    f"Most frequent error source: `{top_type}` "
-                    f"({len(error_types[top_type])}/{len(error_samples)} sampled). "
+                    f"Most frequent error source: `{top_type}` ({share} lines). "
                     f"Locate the call site in logs/run_*.log matching "
                     f"`{top_sample[:60]}`, fix the underlying condition or demote "
                     f"to `logger.warning()` if this is expected noise, or add "
                     f"retry logic with `time.sleep(2)` before re-raising."
                 )
+            # The whole distribution, not just the winner: "3,944 TypeError and
+            # 5,909 unclassified" is a different problem from "3,944 TypeError".
+            breakdown = ", ".join(
+                f"`{k}` {error_counts[k]}" for k in
+                sorted(error_counts, key=lambda k: (-error_counts[k], k))[:6])
             findings.append({
                 "agent":        self.name,
                 "category":     "BUG_FIX",
@@ -866,10 +936,11 @@ class CITPipelineMonitor:
                 "description":  (
                     f"The last 24-48h of logs contain {error_count} ERROR-level entries "
                     f"({warning_count} WARNINGs). Most frequent error class: `{top_type}` "
-                    f"({len(error_types[top_type])} of {len(error_samples)} sampled). "
+                    f"({share} lines). By class: {breakdown}. "
                     f"Systematic errors indicate an unhandled failure mode."
                 ),
-                "evidence":     "Recent log samples:\n" + "\n".join(f"  • {s}" for s in error_samples),
+                "evidence":     ("Samples of `%s` (%s lines):\n" % (top_type, share)
+                                 + "\n".join(f"  • {s}" for s in error_types[top_type])),
                 "proposed_fix": specific_fix,
                 "auto_implementable": False,
             })

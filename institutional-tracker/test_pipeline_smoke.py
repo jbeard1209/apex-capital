@@ -385,6 +385,113 @@ class TestCITSpecificityGate(unittest.TestCase):
         """Fix under 40 chars always fails."""
         self.assertFalse(self.gate("Fix main.py line 100"))
 
+    def test_an_unclassifiable_error_line_says_so_instead_of_naming_a_fragment(self):
+        """`_error_key` refuses rather than inventing a key from the text shape.
+
+        The old fallback was `s.split()[-1][:30]` on a line already truncated to
+        120 chars, so the "error class" was whatever the cut left behind. A
+        dollar figure sliced mid-number gave the key `($`, which reached the
+        board as "Most frequent error source: `($`".
+        """
+        from cit_director import _error_key, UNCLASSIFIED_ERROR
+        tagged = "14:02:11  ERROR   [alpaca_trader] order rejected: qty <= 0"
+        classed = "14:02:11  ERROR   ConnectionResetError: peer closed"
+        self.assertEqual("alpaca_trader", _error_key(tagged))
+        self.assertEqual("ConnectionResetError", _error_key(classed))
+        self.assertEqual("alpaca_trader",
+                         _error_key(tagged + " ConnectionResetError"),
+                         "the exception class outranked the component tag")
+        # Real line from logs/: the exception is four fields in, so an
+        # ERROR-anchored class pattern misses it entirely.
+        self.assertEqual("TypeError", _error_key(
+            "10:03:06  ERROR   ['XLV', 'DIS']: TypeError(\"'NoneType' object\")"))
+
+        # The real shape of the bug: a truncation that ends mid-token.
+        truncated = "14:02:11  ERROR   position sizing failed for cash of ($"
+        self.assertEqual(UNCLASSIFIED_ERROR, _error_key(truncated))
+        # Prose after the level is not an exception class. This is the case that
+        # made `unclassified` unreachable while the suffix group was optional.
+        self.assertEqual(UNCLASSIFIED_ERROR, _error_key(
+            "16:46:33  ERROR   Buy order failed for AMC: mac is not the writer"))
+        # A bracket in the message body is not a component tag.
+        self.assertEqual(UNCLASSIFIED_ERROR, _error_key(
+            "16:46:33  ERROR   list index out of range [0]"))
+        for junk in ("", "   ", "ERROR", "ERROR   123", "ERROR   ($"):
+            self.assertEqual(UNCLASSIFIED_ERROR, _error_key(junk), repr(junk))
+
+    def test_the_unclassified_finding_still_clears_the_specificity_gate(self):
+        """Otherwise the ERROR spike is routed to backlog and never reported.
+
+        The branch fires exactly when CIT cannot name a component — i.e. when
+        something is logging errors nobody has instrumented. A fix text that
+        then fails the gate turns "unrecognised error source" into silence,
+        which is the failure the branch exists to prevent.
+        """
+        import cit_director as cd
+        # THE FIRST THREE LINES ARE A DIFFERENT CLASS FROM THE DOMINANT ONE.
+        # That is the whole point of the fixture: while CIT classified only the
+        # first 3 samples it would report `alpaca_trader`, which is 3 of 12
+        # lines, and never see the 9 it cannot classify at all.
+        head = ["14:02:%02d  ERROR   [alpaca_trader] order rejected" % i
+                for i in range(3)]
+        tail = ["14:03:%02d  ERROR   position sizing failed for cash of ($" % i
+                for i in range(9)]
+        spike = self._spike(cd, head + tail)
+        self.assertIn("`%s`" % cd.UNCLASSIFIED_ERROR, spike["title"],
+                      "the dominant class was read off the first samples, not "
+                      "off every line")
+        self.assertIn("9 of 12", spike["description"],
+                      "the share is quoted against the sample cap, not the "
+                      "number of ERROR lines actually seen")
+        self.assertIn("`alpaca_trader` 3", spike["description"],
+                      "the by-class breakdown dropped the minority class")
+        self.assertTrue(cd._fix_is_specific(spike["proposed_fix"]),
+                        "the unclassified fix fails CIT's own gate, so the "
+                        "finding is routed to backlog and nobody sees the spike")
+
+    def test_the_dominant_error_class_is_counted_over_every_line(self):
+        """A `[:3]` cap with no ordering is a sampling rule nobody chose.
+
+        Measured on the 11,888 ERROR lines on disk 2026-08-28: the real dominant
+        class is TypeError at 3,944 lines, and CIT had never named it once,
+        because the first three lines of a run are almost always something else
+        (memory `budget-spent-in-the-wrong-order`).
+        """
+        import cit_director as cd
+        lines = (["10:00:%02d  ERROR   [canary] check failed" % i for i in range(3)]
+                 + ["10:01:%02d  ERROR   ['X']: TypeError(\"NoneType\")" % i
+                    for i in range(20)])
+        spike = self._spike(cd, lines)
+        self.assertIn("`TypeError`", spike["title"])
+        self.assertIn("20 of 23", spike["description"])
+        self.assertEqual(3, spike["evidence"].count("•"),
+                         "evidence must sample the class being reported, and "
+                         "cap at 3 so a 3,944-line class cannot flood a proposal")
+        self.assertNotIn("canary", spike["evidence"],
+                         "the evidence shows lines from a class other than the "
+                         "one the title names")
+
+    @staticmethod
+    def _spike(cd, lines):
+        """Run CITPipelineMonitor against a scratch log dir; return the finding."""
+        with tempfile.TemporaryDirectory() as d:
+            logs = Path(d) / "logs"
+            logs.mkdir()
+            stamp = datetime.now().strftime("%Y%m%d")
+            (logs / ("run_%s.log" % stamp)).write_text("\n".join(lines))
+            real_logs, real_data = cd.LOG_DIR, cd.DATA_DIR
+            cd.LOG_DIR, cd.DATA_DIR = logs, Path(d) / "data"
+            cd.DATA_DIR.mkdir()
+            try:
+                findings = cd.CITPipelineMonitor().analyze()
+            finally:
+                cd.LOG_DIR, cd.DATA_DIR = real_logs, real_data
+        spike = [f for f in findings if "ERROR lines" in f.get("title", "")]
+        assert len(spike) == 1, ("the ERROR-spike finding was not produced, so "
+                                 "nothing downstream is being asserted: %r"
+                                 % [f.get("title") for f in findings])
+        return spike[0]
+
 
 class TestCITScannerPrecision(unittest.TestCase):
     """`_audit_files` pattern scanners must not flag known-good code.
