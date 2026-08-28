@@ -133,14 +133,150 @@ def _registry_rows(reg) -> list:
     return reg if isinstance(reg, list) else []
 
 
+# ── one listing per tree, one parse per file ──────────────────────────────
+# `build()` cost 156s, and almost none of it was work: 1,215 ast.parse calls
+# over ~300 distinct files, 20 full rglob walks of the same tree, and
+# `dynamic_agent_registries()` run twice inside a single build. The pre-push
+# gate runs the suite twice and the suite rebuilds the roster eight times, so
+# the firm was paying roughly forty minutes per push to recompute an answer
+# that had not changed. Measured 2026-08-28 with cProfile: compile 50.2s,
+# ast.walk 40.5s over 1.8M nodes, rglob 33.6s over 99,440 scandir calls.
+#
+# Each cache is keyed so a change invalidates it. The AST is keyed on the
+# file's own (mtime_ns, size), so an edit is picked up. The listing is keyed on
+# `base`, which is a per-process snapshot of WHICH files exist — the tests that
+# synthesise a module do it in a tempdir and pass that as `base`, a different
+# key, and nothing in this firm writes a .py file into a tree it then re-lists
+# in the same process. `cache_clear()` exists for anything that ever does.
+_AST_CACHE = {}
+_SRC_CACHE = {}
+_FACTS_CACHE = {}
+_PYFILES_CACHE = {}
+
+
+def cache_clear() -> None:
+    """Drop every cache — for a process that edits the tree it is reading."""
+    _AST_CACHE.clear()
+    _SRC_CACHE.clear()
+    _FACTS_CACHE.clear()
+    _PYFILES_CACHE.clear()
+
+
+def _content_key(base: Path, rel: str):
+    """(path, mtime_ns, size) — None if the file cannot be stat'd."""
+    p = base / rel
+    try:
+        st = p.stat()
+    except OSError:
+        return None
+    return (str(p), st.st_mtime_ns, st.st_size)
+
+
+def _source_of(base: Path, rel: str):
+    """File text, cached on content identity. None if unreadable."""
+    key = _content_key(base, rel)
+    if key is None:
+        return None
+    if key not in _SRC_CACHE:
+        try:
+            _SRC_CACHE[key] = (base / rel).read_text()
+        except Exception:
+            _SRC_CACHE[key] = None
+    return _SRC_CACHE[key]
+
+
+def _ast_of(base: Path, rel: str):
+    """Parsed module, cached on content identity. None if unreadable.
+
+    Returns None rather than raising because every call site here already
+    treats an unparseable file as "tells us nothing", and a cache that stored
+    only successes would re-read a broken file on every pass.
+    """
+    key = _content_key(base, rel)
+    if key is None:
+        return None
+    if key not in _AST_CACHE:
+        src = _source_of(base, rel)
+        try:
+            _AST_CACHE[key] = ast.parse(src) if src is not None else None
+        except Exception:
+            _AST_CACHE[key] = None
+    return _AST_CACHE[key]
+
+
+def parsed_module(path: Path):
+    """Cached AST for an absolute path. None if it cannot be read or parsed.
+
+    The same content-keyed cache as `_ast_of`, reached by full path rather than
+    (base, rel), because `internal_audit_agent._symbol_exists` holds paths and
+    was re-parsing them: 84 census refs, ~30 of which name the 28k-line suite,
+    cost 208s per audit and the pre-push gate pays it twice. Exported rather
+    than copied so there is ONE cache and `cache_clear()` drains all of it — a
+    second private cache in the caller is how a stale parse outlives the edit
+    that should have invalidated it (memory `harness-ran-stale-bytecode`).
+    """
+    return _ast_of(path.parent, path.name)
+
+
+_EMPTY_FACTS = {"classes": frozenset(), "bases": frozenset(),
+                "declares_contract": False, "imports": frozenset()}
+
+
+def _facts_of(base: Path, rel: str) -> dict:
+    """Everything this file's AST is ever asked, read off in one walk, cached.
+
+    `research_team_skips.declares()` answered "does a sibling define this base
+    class?" by walking every sibling module in agents/ — for each of the 17
+    agents it checks, against ~40 siblings, a full `ast.walk` each: 166,000
+    generator calls to answer 17 questions. The facts those walks extract
+    (classes defined, base classes named, whether the context contract is
+    declared, first-level imports) are properties of the FILE, not of the
+    question being asked of it, so they belong to the file's content key.
+
+    An unreadable or unparseable file yields the empty facts, which is what
+    every caller already did with a None tree.
+    """
+    key = _content_key(base, rel)
+    if key is None:
+        return _EMPTY_FACTS
+    if key not in _FACTS_CACHE:
+        tree = _ast_of(base, rel)
+        classes, bases, imports, declares = set(), set(), set(), False
+        for n in (ast.walk(tree) if tree is not None else ()):
+            if isinstance(n, ast.ClassDef):
+                classes.add(n.name)
+                bases.update(b.id for b in n.bases if isinstance(b, ast.Name))
+                for stmt in n.body:
+                    tgts = (stmt.targets if isinstance(stmt, ast.Assign)
+                            else [stmt.target] if isinstance(stmt, ast.AnnAssign) else [])
+                    if any(isinstance(t, ast.Name) and t.id == CONTEXT_CONTRACT
+                           for t in tgts):
+                        declares = True
+            elif isinstance(n, ast.Import):
+                imports.update(a.name.split(".")[0] for a in n.names)
+            elif isinstance(n, ast.ImportFrom) and n.module and n.level == 0:
+                imports.add(n.module.split(".")[0])
+        _FACTS_CACHE[key] = {"classes": frozenset(classes),
+                             "bases": frozenset(bases),
+                             "declares_contract": declares,
+                             "imports": frozenset(imports)}
+    return _FACTS_CACHE[key]
+
+
 def _py_files(base: Path) -> list:
-    out = []
-    for p in base.rglob("*.py"):
-        s = str(p.relative_to(base))
-        if s.startswith((".git/", "venv/", "__pycache__/")) or "/__pycache__/" in s:
-            continue
-        out.append(s)
-    return sorted(out)
+    key = str(base)
+    if key not in _PYFILES_CACHE:
+        out = []
+        for p in base.rglob("*.py"):
+            s = str(p.relative_to(base))
+            if s.startswith((".git/", "venv/", "__pycache__/")) or "/__pycache__/" in s:
+                continue
+            out.append(s)
+        _PYFILES_CACHE[key] = sorted(out)
+    # A copy, on BOTH paths: a cached list handed out by reference is one
+    # careless `.remove()` away from a roster that silently shrinks for every
+    # later caller — and the hit path is the one that would do it 19 times.
+    return list(_PYFILES_CACHE[key])
 
 
 def _crontab() -> str:
@@ -197,6 +333,49 @@ def schedule_pattern(stem: str):
     return re.compile(rf"\b{re.escape(stem)}\.py\b")
 
 
+_WORD_RE = re.compile(r"\w+")
+_PYREF_RE = re.compile(r"\w+\.py\b")
+
+
+def schedule_index(text: str) -> dict:
+    """Every module reference in a schedule text, extracted in one pass.
+
+    `build()` asked `\\b<stem>\\.py\\b` of 481 stems against the crontab and
+    against main.py: 1,752 regex scans of the same two haystacks, 16.5s of the
+    30s a warm build cost. The question is a set membership wearing a regex —
+    `\\b...\\b` matches exactly when the stem is a MAXIMAL run of word
+    characters, so one pass that collects those runs answers all 481 at once.
+
+    This is knowingly a second implementation of `schedule_pattern`, which the
+    docstring above exists to discourage, so it is held to the standard that
+    makes a second implementation safe: `TestScheduleIndexMatchesThePattern`
+    asserts the two agree **per stem**, on the real crontab and the real
+    main.py, for every module in the tree — not on a sample and not on their
+    union (memory a-union-cannot-prove-all-n). A stem that is not a plain word
+    run cannot be represented this way at all, and `indexed_search` falls back
+    to the reference regex for those rather than answering a nearby question.
+    """
+    return {
+        "text": text,
+        "py": frozenset(m.group(0)[:-3] for m in _PYREF_RE.finditer(text)),
+        "words": frozenset(_WORD_RE.findall(text)),
+    }
+
+
+def indexed_search(index: dict, stem: str, as_word: bool = False) -> bool:
+    """Does this schedule text invoke `stem`? Same answer as the regex, O(1).
+
+    `as_word` asks the looser question main.py needs — the bare module name
+    rather than `<stem>.py` — which is the second of the two searches build()
+    ran against main.py.
+    """
+    if not _WORD_RE.fullmatch(stem):
+        pat = (re.compile(rf"\b{re.escape(stem)}\b") if as_word
+               else schedule_pattern(stem))
+        return bool(pat.search(index["text"]))
+    return stem in (index["words"] if as_word else index["py"])
+
+
 def runs_here(agents: list, crontab_text: str = None) -> set:
     """Stems whose invocation chain is rooted in THIS host's crontab.
 
@@ -232,6 +411,12 @@ def runs_here(agents: list, crontab_text: str = None) -> set:
     return here
 
 
+# One name, used by both the cheap text pre-filter and the structural test it
+# guards. Two copies of this string would be two things that can drift apart,
+# and the drift is silent: the filter would skip a file the detector wanted.
+LOADER_CALL = "spec_from_file_location"
+
+
 def dynamic_agent_registries(base: Path = None) -> dict:
     """Agents a module runs by PATH rather than by import: {ClassName: stem}.
 
@@ -261,14 +446,22 @@ def dynamic_agent_registries(base: Path = None) -> dict:
     for rel in _py_files(base):
         if os.path.dirname(rel):        # top-level pipelines only
             continue
-        try:
-            tree = ast.parse((base / rel).read_text())
-        except Exception:
+        # A necessary condition, checked as text before paying for a parse: an
+        # AST call node named `spec_from_file_location` cannot exist unless that
+        # identifier is in the source. 7 of 219 top-level files contain it, so
+        # this skips 212 compiles — including the 1.4MB test module — and the
+        # detection below is unchanged, because a file that merely MENTIONS the
+        # name in a comment still has to satisfy the structural test to count.
+        src = _source_of(base, rel)
+        if src is None or LOADER_CALL not in src:
+            continue
+        tree = _ast_of(base, rel)
+        if tree is None:
             continue
         loads_by_path = any(
             isinstance(n, ast.Call)
-            and ((isinstance(n.func, ast.Attribute) and n.func.attr == "spec_from_file_location")
-                 or (isinstance(n.func, ast.Name) and n.func.id == "spec_from_file_location"))
+            and ((isinstance(n.func, ast.Attribute) and n.func.attr == LOADER_CALL)
+                 or (isinstance(n.func, ast.Name) and n.func.id == LOADER_CALL))
             for n in ast.walk(tree))
         if not loads_by_path:
             continue
@@ -292,7 +485,7 @@ def dynamic_agent_registries(base: Path = None) -> dict:
 CONTEXT_CONTRACT = "REQUIRED_SPREAD_KEYS"
 
 
-def research_team_skips(base: Path = None) -> dict:
+def research_team_skips(base: Path = None, dyn: dict = None) -> dict:
     """{ClassName: pipeline_stem} research_team declines to construct (#79).
 
     Two conditions, both required, mirroring research_team.py's own guard:
@@ -311,36 +504,27 @@ def research_team_skips(base: Path = None) -> dict:
     name prefix so a renamed pod does not silently rejoin the research cycle.
     """
     base = base or BASE
-    dyn = dynamic_agent_registries(base)
+    # `dyn` is condition 2, and `build()` has already computed it by the time it
+    # gets here. Passing it in is the difference between one scan of the tree
+    # and two; recomputing it would be a second derivation of a fact the caller
+    # is holding, which is the shape this file's own docstrings keep warning
+    # about. Default None keeps every other caller working unchanged.
+    dyn = dyn if dyn is not None else dynamic_agent_registries(base)
     if not dyn:
         return {}
 
     def declares(rel: str, depth: int = 0) -> bool:
-        try:
-            tree = ast.parse((base / rel).read_text())
-        except Exception:
-            return False
-        bases = set()
-        for cls in (n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)):
-            for stmt in cls.body:
-                tgts = (stmt.targets if isinstance(stmt, ast.Assign)
-                        else [stmt.target] if isinstance(stmt, ast.AnnAssign) else [])
-                if any(isinstance(t, ast.Name) and t.id == CONTEXT_CONTRACT for t in tgts):
-                    return True
-            bases.update(b.id for b in cls.bases if isinstance(b, ast.Name))
-        if depth or not bases:
+        f = _facts_of(base, rel)
+        if f["declares_contract"]:
+            return True
+        if depth or not f["bases"]:
             return False
         # One hop: find the sibling file in agents/ that defines a base class.
         d = os.path.dirname(rel)
         for sib in sorted(_py_files(base)):
             if os.path.dirname(sib) != d or sib == rel:
                 continue
-            try:
-                sib_tree = ast.parse((base / sib).read_text())
-            except Exception:
-                continue
-            if any(isinstance(n, ast.ClassDef) and n.name in bases
-                   for n in ast.walk(sib_tree)) and declares(sib, depth + 1):
+            if (_facts_of(base, sib)["classes"] & f["bases"]) and declares(sib, depth + 1):
                 return True
         return False
 
@@ -356,17 +540,8 @@ def research_team_skips(base: Path = None) -> dict:
 
 def _imports_of(base: Path, rel: str) -> set:
     """Module names this file imports, first level only."""
-    try:
-        tree = ast.parse((base / rel).read_text())
-    except Exception:
-        return set()
-    mods = set()
-    for n in ast.walk(tree):
-        if isinstance(n, ast.Import):
-            mods.update(a.name.split(".")[0] for a in n.names)
-        elif isinstance(n, ast.ImportFrom) and n.module and n.level == 0:
-            mods.add(n.module.split(".")[0])
-    return mods
+    # A copy: callers own the result, the cache owns the frozenset.
+    return set(_facts_of(base, rel)["imports"])
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -382,18 +557,21 @@ def build(base: Path = BASE, host: str = "local") -> dict:
 
     stems = {os.path.basename(f)[:-3]: f for f in files}
 
+    # Two haystacks, scanned once each instead of 481 times each.
+    cron_idx = schedule_index(cron)
+    main_idx = schedule_index(main_src)
+
     def scheduled_in(stem):
-        pat = schedule_pattern(stem)
         via = []
-        if pat.search(cron):
+        if indexed_search(cron_idx, stem):
             via.append("cron")
-        if pat.search(main_src) or re.search(rf"\b{re.escape(stem)}\b", main_src):
+        if indexed_search(main_idx, stem) or indexed_search(main_idx, stem, as_word=True):
             via.append("main")
         return via
 
     # Everything a scheduled module imports is itself running, one level deep.
     dyn_registries = dynamic_agent_registries(base)
-    skipped_by_research_team = research_team_skips(base)
+    skipped_by_research_team = research_team_skips(base, dyn=dyn_registries)
     directly_scheduled = {s for s in stems if scheduled_in(s)}
     called_by = {}
     for s in sorted(directly_scheduled):

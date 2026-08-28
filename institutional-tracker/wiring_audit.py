@@ -30,6 +30,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import agent_roster            # the ONE module-name matcher; stdlib-only, no cycle
+
 BASE_DIR = Path(__file__).parent
 
 
@@ -715,8 +717,19 @@ def scheduler_reachable(sources: dict, code: Optional[dict] = None,
         e = edges.get(cur, ())
         s = {n for n in prod if n[:-3] in e}
         if cur in loose and not strict:
+            # One word index per source, not one regex scan per (source, stem).
+            # `\b<stem>\b` matches exactly when the stem is a MAXIMAL run of
+            # word characters, so collecting those runs once answers all 218
+            # stems for this file. That is the rewrite `agent_roster` already
+            # carries for the crontab; it is imported rather than re-typed
+            # because a second copy of this exact pattern is what produced six
+            # false reports. Measured on the real corpus 2026-08-28: 20,710
+            # searches, 92.5s -> 3.7s, and the two implementations agree per
+            # (source, stem), not in union — TestTheControlLayerIsCheapEnough
+            # ToRunTwice decides every pair.
+            idx = agent_roster.schedule_index(txt)
             s |= {n for n in prod
-                  if re.search(rf"\b{re.escape(n[:-3])}\b", txt)}
+                  if agent_roster.indexed_search(idx, n[:-3], as_word=True)}
         succ[cur] = s
 
     def _walk(seed):

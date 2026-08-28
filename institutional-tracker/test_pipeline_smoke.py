@@ -6096,6 +6096,139 @@ class TestInstitutionRankingFloor(unittest.TestCase):
         self.assertGreaterEqual(ipt.MIN_RANKING_N, ipt.MIN_AUC_N)
 
 
+class TestScheduleIndexMatchesThePattern(unittest.TestCase):
+    """The roster's fast path must answer what `schedule_pattern` answers.
+
+    `agent_roster.schedule_pattern` is deliberately exported so nobody re-types
+    the `\\b<stem>\\.py\\b` regex — the docstring says so, because a second copy
+    of that pattern in the sweep's isolation graph produced six false reports.
+    `schedule_index`/`indexed_search` are, unavoidably, a second implementation:
+    they turn 1,752 regex scans of the crontab and main.py into set lookups, and
+    that is the difference between a warm roster build costing 30s and 3s.
+
+    A second implementation is safe only if something proves it agrees, so this
+    proves it the strict way: **per stem**, over every module in the real tree,
+    against the real crontab and the real main.py. Not a sample, not a spot
+    check, and not `set(fast) == set(slow)` — a union can hide one stem that the
+    index calls scheduled and the regex does not, and one such stem is an agent
+    the orphan ratchet stops reporting (memory a-union-cannot-prove-all-n).
+
+    Both directions matter and they fail differently: an index that says
+    "scheduled" when the regex says otherwise hides a genuinely orphaned agent;
+    an index that says "not scheduled" nominates a working agent for a PIP.
+    """
+
+    def _corpus(self):
+        import agent_roster as ar
+        stems = sorted({os.path.basename(f)[:-3] for f in ar._py_files(ar.BASE)})
+        texts = {"crontab": ar._crontab()}
+        try:
+            texts["main.py"] = (ar.BASE / "main.py").read_text()
+        except OSError:                      # pragma: no cover - main.py is tracked
+            self.fail("main.py is unreadable, so the corpus is not the real one")
+        return ar, stems, texts
+
+    def test_every_stem_gets_the_same_answer_as_the_regex(self):
+        ar, stems, texts = self._corpus()
+        self.assertGreater(len(stems), 100,
+                           "corpus too small to be the real tree — a passing "
+                           "equivalence proof over nothing proves nothing")
+        for label, text in texts.items():
+            idx = ar.schedule_index(text)
+            for stem in stems:
+                for as_word in (False, True):
+                    ref = bool((re.compile(r"\b%s\b" % re.escape(stem)) if as_word
+                                else ar.schedule_pattern(stem)).search(text))
+                    fast = ar.indexed_search(idx, stem, as_word=as_word)
+                    self.assertEqual(
+                        fast, ref,
+                        "%s: index says %r, schedule_pattern says %r for %r "
+                        "(as_word=%s) — the fast path and the reference matcher "
+                        "have drifted" % (label, fast, ref, stem, as_word))
+
+    def test_word_boundary_traps_that_broke_this_before(self):
+        """The specific confusions the boundary exists to prevent."""
+        import agent_roster as ar
+        text = ("0 7 * * * python3 risk_manager_agent.py\n"
+                "0 8 * * * python3 2fa_helper.py\n"
+                "# see also notes_about_canary.py and canary_agent.py\n")
+        idx = ar.schedule_index(text)
+        for stem, want in (("risk_manager_agent", True),
+                           ("risk_manager", False),   # substring of the above
+                           ("manager_agent", False),  # suffix of the above
+                           ("2fa_helper", True),      # leading digit is a word char
+                           ("fa_helper", False),      # would match if `2` were not
+                           ("canary_agent", True),
+                           ("canary", False)):
+            self.assertEqual(ar.indexed_search(idx, stem), want,
+                             "indexed_search(%r) should be %r" % (stem, want))
+            self.assertEqual(bool(ar.schedule_pattern(stem).search(text)), want,
+                             "schedule_pattern(%r) should be %r" % (stem, want))
+
+    def test_a_stem_the_index_cannot_represent_falls_back(self):
+        """A dotted stem is not a word run; answer it with the regex, not a guess."""
+        import agent_roster as ar
+        idx = ar.schedule_index("0 7 * * * python3 odd.name.py\n")
+        self.assertTrue(ar.indexed_search(idx, "odd.name"),
+                        "a stem the tokenizer cannot express was answered from "
+                        "the token set instead of falling back to the regex")
+        self.assertFalse(ar.indexed_search(ar.schedule_index("nothing here"),
+                                           "odd.name"))
+
+
+class TestRosterCachesInvalidateOnEdit(unittest.TestCase):
+    """A cache keyed on anything but the content is a stale answer waiting.
+
+    The roster's caches exist because the pre-push gate ran the suite twice and
+    the suite rebuilt the roster eight times, paying ~90s each for an answer
+    that had not changed. Correctness of that trade rests entirely on the key:
+    `(path, st_mtime_ns, st_size)`. A same-size edit within one filesystem
+    timestamp tick is the case that would break it, and it is exactly the case
+    the mutation harness hit once already (memory harness-ran-stale-bytecode).
+    """
+
+    def setUp(self):
+        self.sandbox = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.sandbox, True)
+
+    def test_same_size_edit_is_not_served_from_cache(self):
+        import agent_roster as ar
+        f = self.sandbox / "probe_agent.py"
+        f.write_text("class Alpha:\n    pass\n")
+        self.assertEqual(ar._facts_of(self.sandbox, "probe_agent.py")["classes"],
+                         frozenset({"Alpha"}))
+        # Same byte count, different content — the trap for an mtime-only key.
+        f.write_text("class Bravo:\n    pass\n")
+        self.assertEqual(len("class Alpha:\n    pass\n"),
+                         len("class Bravo:\n    pass\n"))
+        self.assertEqual(ar._facts_of(self.sandbox, "probe_agent.py")["classes"],
+                         frozenset({"Bravo"}),
+                         "a same-size edit was served from cache — the key is "
+                         "not content identity and the roster can go stale")
+
+    def test_the_file_listing_is_handed_out_as_a_copy(self):
+        """A caller that mutates the list must not shrink it for everyone else."""
+        import agent_roster as ar
+        (self.sandbox / "a_agent.py").write_text("x = 1\n")
+        (self.sandbox / "b_agent.py").write_text("x = 1\n")
+        first = ar._py_files(self.sandbox)
+        first.remove("a_agent.py")
+        self.assertIn("a_agent.py", ar._py_files(self.sandbox),
+                      "the cached listing was handed out by reference, so one "
+                      "caller's .remove() deleted an agent for every later one")
+
+    def test_cache_clear_lets_a_process_rescan_a_tree_it_wrote(self):
+        import agent_roster as ar
+        (self.sandbox / "one_agent.py").write_text("x = 1\n")
+        self.assertEqual(ar._py_files(self.sandbox), ["one_agent.py"])
+        (self.sandbox / "two_agent.py").write_text("x = 1\n")
+        ar.cache_clear()
+        self.assertEqual(ar._py_files(self.sandbox),
+                         ["one_agent.py", "two_agent.py"],
+                         "cache_clear() did not drop the listing, so a process "
+                         "that writes modules cannot see them")
+
+
 class TestRosterMergeLosesNobody(unittest.TestCase):
     """A merge may only ever ADD an agent. Losing one must take a decision.
 
@@ -15071,6 +15204,234 @@ class TestInternalAudit(unittest.TestCase):
                       "wiring_audit says nothing about internal_audit_agent — the "
                       "one control with no outer ring is the one that must be "
                       "swept for staleness")
+
+
+class TestTheControlLayerIsCheapEnoughToRunTwice(unittest.TestCase):
+    """One audit test cost 9.3 minutes and the pre-push gate pays it twice.
+
+    Both hot spots were the shape the roster had already been fixed for: an
+    answer recomputed per item that had not changed between the asks.
+    `internal_audit_agent._symbol_exists` re-parsed a file per census ref (84
+    refs, ~30 of them naming the 28k-line suite at 0.79s a parse: 208s), and
+    `wiring_audit.scheduler_reachable` ran one whole-file regex per
+    (source, stem) pair (20,710 scans: 92.5s). `audit_census()` went 395.7s ->
+    39.7s with no change to any of its 28 rows.
+
+    A speed-up that changes an answer is not a speed-up, it is a silent
+    regression in a control — and these two controls are the ones that decide
+    whether every OTHER control is alive. So both replacements are asserted to
+    agree PER ITEM with what they replace, over the whole real denominator,
+    never on a union and never on a sample (memory `a-union-cannot-prove-all-n`).
+    """
+
+    def test_the_word_index_agrees_with_the_regex_on_every_source_and_stem(self):
+        """All 20,710 (source, stem) pairs decided — none assumed, none sampled.
+
+        Complete without paying the 99s the old way costs, by splitting the
+        denominator on a fact rather than on a sample:
+
+          * `stem` occurs as a SUBSTRING of the source (877 pairs, 4.2%). These
+            are the only ambiguous ones — present-as-substring but not as a word
+            is exactly the trap `\\b` exists for, the one that would schedule
+            `risk_manager` on the strength of `risk_manager_agent.py`. Every one
+            is decided by running the real regex.
+          * `stem` does not occur as a substring (19,833 pairs). A regex match
+            implies its literal is present, so `\\bstem\\b` cannot match. That
+            implication is not taken on trust either: the loop asserts the index
+            never claims a match for a stem absent from the file, which is the
+            same statement checked from the other side.
+        """
+        import wiring_audit as wa
+        from agent_roster import schedule_index, indexed_search
+
+        sources = wa._py_sources()
+        code = {n: wa._code_only(t) for n, t in sources.items()}
+        prod = {n for n in sources if not n.startswith("test_")}
+        stems = sorted({n[:-3] for n in prod})
+        loose = set()
+        for n in prod:
+            _e, unresolved = wa._invocation_edges(code.get(n, ""), stems)
+            if unresolved:
+                loose.add(n)
+        self.assertGreater(len(loose), 10,
+                           "no loose sources, so the fallback this test covers "
+                           "never ran and nothing was proved")
+
+        ambiguous = 0
+        for src in sorted(loose):
+            txt = code.get(src, "")
+            idx = schedule_index(txt)
+            for stem in stems:
+                got = indexed_search(idx, stem, as_word=True)
+                if stem not in txt:
+                    self.assertFalse(got, "%s: the index matched %r, which does "
+                                          "not occur in the file at all"
+                                          % (src, stem))
+                    continue
+                ambiguous += 1
+                want = bool(re.search(r"\b%s\b" % re.escape(stem), txt))
+                self.assertEqual(want, got,
+                                 "%s x %s: the index and the regex it replaced "
+                                 "disagree" % (src, stem))
+        self.assertGreater(ambiguous, 100,
+                           "only %d pair(s) were substring-ambiguous — the "
+                           "interesting half of the denominator went missing, "
+                           "so this test proved almost nothing" % ambiguous)
+
+    def test_the_reachable_set_is_identical_to_the_walk_it_replaced(self):
+        """End to end, not just the predicate: same sources, same reachable set.
+
+        The per-pair test above proves the MATCHER; this proves the CALL SITE —
+        right index, right haystack, right `as_word` flag. Those are different
+        mistakes and only one of them is visible in a predicate. Checked on both
+        views, because `by_root=True` is a different traversal of the same
+        successors and is the one the cadence check reads.
+        """
+        import wiring_audit as wa
+
+        sources = wa._py_sources()
+        cron = "0 6 * * * main.py\n30 * * * * canary_agent.py\n"
+        code = {n: wa._code_only(t) for n, t in sources.items()}
+        prod = {n for n in sources if not n.startswith("test_")}
+        stems = {n[:-3] for n in prod}
+        roots = {"main.py"} | {n for n in sources
+                               if n in cron and not n.startswith("test_")}
+        edges, loose = {}, set()
+        for n in prod:
+            e, unresolved = wa._invocation_edges(code.get(n, ""), stems)
+            edges[n] = e
+            if unresolved:
+                loose.add(n)
+        succ = {}
+        for cur in prod | roots:                      # the pre-fix computation
+            txt = code.get(cur, "")
+            s = {n for n in prod if n[:-3] in edges.get(cur, ())}
+            if cur in loose:
+                s |= {n for n in prod
+                      if re.search(r"\b%s\b" % re.escape(n[:-3]), txt)}
+            succ[cur] = s
+
+        def walk(seed):
+            reachable, frontier = set(seed), set(seed)
+            while frontier:
+                nxt = set()
+                for cur in frontier:
+                    nxt |= succ.get(cur, set()) - reachable
+                reachable |= nxt
+                frontier = nxt
+            return reachable
+
+        self.assertEqual(walk(roots),
+                         wa.scheduler_reachable(sources, cron_text=cron,
+                                                launchd_text=""),
+                         "the indexed walk reaches a different set of modules "
+                         "than the regex walk it replaced")
+        self.assertEqual({r: walk({r}) for r in roots},
+                         wa.scheduler_reachable(sources, cron_text=cron,
+                                                launchd_text="", by_root=True),
+                         "the per-root view diverged even though the union "
+                         "matched — a union proves one site, not all N")
+
+    def test_a_stem_that_is_not_a_word_run_still_goes_through_the_regex(self):
+        """The index can only represent stems that ARE word runs.
+
+        A stem containing a dot or a hyphen has no `\\w+` run equal to it, so a
+        set membership would answer False to a question the regex answers True.
+        `indexed_search` falls back rather than answering a nearby question, and
+        that fallback is the whole difference between a fast matcher and a wrong
+        one.
+        """
+        from agent_roster import schedule_index, indexed_search
+        txt = "runs foo.bar and my-agent and plain_stem and 2fa_helper daily"
+        idx = schedule_index(txt)
+        for stem in ("foo.bar", "my-agent", "plain_stem", "2fa_helper"):
+            self.assertEqual(bool(re.search(r"\b%s\b" % re.escape(stem), txt)),
+                             indexed_search(idx, stem, as_word=True), stem)
+        self.assertFalse(indexed_search(idx, "fa_helper", as_word=True),
+                         "matched a suffix of a longer word — the substring bug "
+                         "the word boundary exists to prevent")
+
+    def test_a_cached_parse_does_not_outlive_the_edit_that_invalidates_it(self):
+        """A stale AST inside a control is worse than a slow one.
+
+        The suite writes modules under this process and then audits them, so a
+        cache keyed on the path alone would keep answering about the file as it
+        was. Keyed on (path, mtime_ns, size): the same path, edited to the SAME
+        byte length, must give the new answer (memory `harness-ran-stale-bytecode`,
+        where copy2 restoring an mtime made a harness score code it never ran).
+        """
+        import internal_audit_agent as IA
+        import agent_roster
+
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            mod = tmp / "cached_probe.py"
+            mod.write_text("def alpha():\n    return 1\n")
+            with patch.object(IA, "BASE_DIR", tmp):
+                self.assertTrue(IA._symbol_exists("cached_probe.py::alpha"))
+                self.assertFalse(IA._symbol_exists("cached_probe.py::bravo"))
+                mod.write_text("def bravo():\n    return 1\n")   # same size
+                self.assertTrue(IA._symbol_exists("cached_probe.py::bravo"),
+                                "served a parse from before the edit")
+                self.assertFalse(IA._symbol_exists("cached_probe.py::alpha"))
+            agent_roster.cache_clear()
+
+    def test_an_unparseable_file_still_refuses_instead_of_denying(self):
+        """None and False are different verdicts and the cache must not merge them.
+
+        False says "this control was deleted" and becomes a BROKEN census row.
+        None says "I could not read the file" and judges nobody. A cache that
+        stored a failed parse as absence would manufacture a finding against
+        every control named in that file — a control reporting a defect its own
+        machinery produced (memory `the-instrument-measured-itself`).
+        """
+        import internal_audit_agent as IA
+        import agent_roster
+
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            (tmp / "broken_probe.py").write_text("def (((:\n")
+            with patch.object(IA, "BASE_DIR", tmp):
+                self.assertIsNone(IA._symbol_exists("broken_probe.py::anything"))
+                self.assertIsNone(IA._symbol_exists("broken_probe.py::anything"),
+                                  "the second ask, served from cache, changed "
+                                  "the verdict")
+                self.assertFalse(IA._symbol_exists("absent_probe.py::anything"),
+                                 "a file that does not exist is not the same as "
+                                 "one that cannot be parsed")
+            agent_roster.cache_clear()
+
+    def test_the_census_parses_each_file_once_not_once_per_reference(self):
+        """The cost itself, pinned — because here it is a correctness property.
+
+        84 refs name ~30 distinct files, a third of them the suite, at 0.79s a
+        parse. The gate runs the suite twice, so an uncached parse is nine
+        minutes of wall clock per push — and the reflex that fixes a nine-minute
+        test is to weaken the test. Counting parses keeps the fix in the cache
+        where it belongs instead of migrating into the assertion.
+        """
+        import internal_audit_agent as IA
+        import agent_roster
+
+        agent_roster.cache_clear()
+        refs = sorted({r for fc in IA.CONTROL_CENSUS for r in fc.detectors})
+        files = {r.split("::", 1)[0] for r in refs if "::" in r}
+        self.assertGreater(len(refs), len(files),
+                           "no file is named twice, so this test cannot detect "
+                           "re-parsing at all")
+
+        real, seen = ast.parse, []
+
+        def counting_parse(src, *a, **kw):
+            seen.append(len(src))
+            return real(src, *a, **kw)
+
+        with patch.object(agent_roster.ast, "parse", counting_parse):
+            for ref in refs:
+                IA._symbol_exists(ref)
+        self.assertLessEqual(len(seen), len(files),
+                             "%d parse(s) for %d distinct file(s) across %d "
+                             "refs" % (len(seen), len(files), len(refs)))
 
 
 class TestOneDigestADay(unittest.TestCase):

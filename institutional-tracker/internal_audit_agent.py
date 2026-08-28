@@ -87,6 +87,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
+import agent_roster            # content-keyed AST cache; stdlib-only, no cycle
+
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 REPORT = DATA_DIR / "internal_audit_report.json"
@@ -1145,9 +1147,14 @@ def _symbol_exists(ref: str) -> Optional[bool]:
     path = BASE_DIR / fname
     if not path.exists():
         return False
-    try:
-        tree = ast.parse(path.read_text())
-    except (SyntaxError, OSError):
+    # Parsed through the roster's content-keyed cache, not re-read here. 84
+    # refs, ~30 of them naming the 28k-line suite at 0.79s a parse, cost 208s
+    # per audit; the census asks for the same file many times over and the file
+    # does not change between the asks. Keyed on (path, mtime_ns, size), so an
+    # edit IS picked up — which matters, because the suite writes modules under
+    # this process and then audits them.
+    tree = agent_roster.parsed_module(path)
+    if tree is None:                    # unreadable or unparseable — not absent
         return None
     for node in ast.walk(tree):
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) \
