@@ -333,21 +333,24 @@ def unbacked_suppressions(suppressed: list, arch_ids: set, arch_keys: set) -> li
     about the same subject and the row leaving is a duplicate detection of an
     already-filed problem. Nothing about the subject is lost.
 
-    WHY THIS IS A PIN, NOT AN OBSERVATION — and why it is a function
-    ----------------------------------------------------------------
-    Read against `apply_tombstones`, this predicate is now the exact negation of
-    that function's admission rule, so as CALLED it cannot fire: every row in
-    `suppressed` got there by satisfying the very condition checked here. An
-    inline check that cannot fail is worth less than no check, because it reads
-    as coverage — the same vacuous-guard shape as the push-gate assertion that
-    passed on a hook naming TZ=UTC only in its own error message.
+    THE RELATION IS RIGHT ONLY IF THE SOURCE IS DIFFERENT
+    -----------------------------------------------------
+    Widening the relation is half a fix and the dangerous half. Read against
+    `apply_tombstones`, this predicate is the exact negation of that function's
+    admission rule — so if it is handed the SAME sets that admitted the rows, it
+    cannot fire, by construction. That is what the first cut of this fix did on
+    2026-08-27: it swapped an over-strict guard for a vacuous one, deleting a
+    check that had been comparing the suppression against the archive RECORDS
+    while only the identity relation was wrong. The pre-push gate caught it on
+    an existing poison pill; a guard that cannot fail reads as coverage and is
+    worth less than no guard.
 
-    So it is deliberately NOT inline. What it pins is that the two sites keep
-    using one identity relation; it fires the moment an edit to either side
-    makes them disagree, which is precisely how the 8.6-day deadlock was
-    introduced. Kept honest by testing it directly with a row backed by
-    neither — proving the mechanism still refuses — rather than only through
-    `sync()`, which by construction can never present it one.
+    So the caller must source these sets from `archive_backing(m_arch)` — a
+    second, independent read of the archive — never from `tombstones()`. Then
+    the check is a genuine two-source comparison: it fires when the compactor's
+    idea of what is filed and the archive's actual contents disagree, which is
+    real evidence loss, while a row legitimately backed by an archived sibling's
+    group_key passes and the 8.6-day deadlock stays fixed.
     """
     out = set()
     for x in suppressed:
@@ -361,6 +364,34 @@ def unbacked_suppressions(suppressed: list, arch_ids: set, arch_keys: set) -> li
 
 def tombstones(archived: list):
     """(ids, group_keys) that chairman_queue_compactor has already filed away."""
+    ids, keys = set(), set()
+    for r in archived or []:
+        if not isinstance(r, dict):
+            continue
+        if r.get("id"):
+            ids.add(r["id"])
+        keys.add(group_key(r))
+    return ids, keys
+
+
+def archive_backing(archived: list):
+    """(ids, group_keys) the archive is HOLDING — the verification's own source.
+
+    Deliberately a second, independent read of the same records `tombstones()`
+    reads. It must stay that way: `unbacked_suppressions` is only a real check
+    because the sets it validates against come from somewhere other than the
+    sets that made the admission decision. Hand it `tombstones()`' output and it
+    becomes the exact negation of `apply_tombstones`' admission rule — a guard
+    that cannot fire, which reads as coverage and is worth less than no guard.
+    That collapse was written and caught by the gate on 2026-08-28; the AST test
+    `test_the_check_is_not_handed_the_sets_that_made_the_decision` pins it.
+
+    What the pair actually catches is drift BETWEEN the two: `tombstones()`
+    naming a subject the archive does not contain means the compactor and the
+    reconciler disagree about what has been filed, and suppressing on that
+    deletes evidence. Same shape as every coherence law — two independently
+    sourced measurements of one quantity, alarm when the arithmetic disagrees.
+    """
     ids, keys = set(), set()
     for r in archived or []:
         if not isinstance(r, dict):
@@ -644,7 +675,9 @@ def sync(write: bool = True, local_only: bool = False) -> dict:
     if rep["ids_dropped"]:
         raise RuntimeError(f"merge would drop {len(rep['ids_dropped'])} id(s) — refusing to write")
 
-    unbacked = unbacked_suppressions(suppressed, arch_ids, arch_keys)
+    # NOT arch_ids/arch_keys: those came from tombstones() and are what admitted
+    # these rows in the first place. See archive_backing's docstring.
+    unbacked = unbacked_suppressions(suppressed, *archive_backing(m_arch))
     if unbacked:
         raise RuntimeError(
             f"{len(unbacked)} row(s) would be suppressed with no archive record "

@@ -7609,12 +7609,20 @@ class TestSuppressionIsCheckedOnTheIdentityItWasDecidedOn(unittest.TestCase):
     was 14h, and `chairman_inbox` reported the deadlock as "could not reach the
     VM" — naming a cause that self-heals for a condition that never does.
 
-    Read against `apply_tombstones`, the repaired predicate is the exact
-    negation of that admission rule, so `sync()` can never hand it a failing
-    row. That is why these tests call it DIRECTLY. A check exercised only
-    through a caller that cannot produce its failing input is not covered, it
-    is merely present — and would go on reporting coverage after a future edit
-    silently broke it.
+    Widening the relation was half the fix and the dangerous half. Read against
+    `apply_tombstones`, the repaired predicate is the exact negation of that
+    admission rule — so handed the SAME sets that admitted the rows it cannot
+    fire at all. The first cut did exactly that, deleting a check that had been
+    reading the archive RECORDS while only its identity relation was wrong. The
+    pre-push gate caught it on an existing poison pill (`TestArchivedRowsStay-
+    Archived`), which is the second time in two days that swapping an over-strict
+    guard for a vacuous one looked like a fix.
+
+    So the check survives only because `sync()` sources its sets from
+    `archive_backing(m_arch)` — a second, independent read — and the last test
+    here is what holds that apart. These tests call the predicate DIRECTLY
+    because a check exercised only through a caller is not covered, it is merely
+    present, and would go on reporting coverage after a future edit broke it.
     """
 
     def _fixture(self):
@@ -7662,6 +7670,41 @@ class TestSuppressionIsCheckedOnTheIdentityItWasDecidedOn(unittest.TestCase):
                               f"permanent RuntimeError was introduced")
             self.assertIn("group_key", names,
                           f"{fn.__name__} stopped using group_key")
+
+    def test_the_check_is_not_handed_the_sets_that_made_the_decision(self):
+        """The other half. A right relation on the wrong source cannot fire.
+
+        `sync()` must pass `archive_backing(m_arch)` — an independent second read
+        of the archive — and NOT the `arch_ids`/`arch_keys` that `tombstones()`
+        produced and that `apply_tombstones` admitted these very rows on. Handing
+        it those makes the guard the exact negation of the admission rule: zero
+        unbacked rows, always, and the evidence-loss check silently stops
+        existing. Asserted on the AST of the call, not on the source text, since
+        both names appear a few lines above in a comment warning against this.
+        """
+        import ast, inspect, chairman_queue_sync as s
+        tree = ast.parse(inspect.getsource(s.sync))
+        calls = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                 and n.func.id == "unbacked_suppressions"]
+        self.assertEqual(1, len(calls),
+                         "sync() no longer calls unbacked_suppressions exactly "
+                         "once — the archive-backing check has moved or gone")
+        call = calls[0]
+        sources = {n.id for a in call.args for n in ast.walk(a)
+                   if isinstance(n, ast.Name)}
+        sources |= {n.func.id for a in call.args for n in ast.walk(a)
+                    if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)}
+        self.assertIn("archive_backing", sources,
+                      "the check is no longer sourced from a second read of the "
+                      "archive; whatever it is reading now, it is not evidence")
+        for tainted in ("arch_ids", "arch_keys"):
+            self.assertNotIn(
+                tainted, sources,
+                f"sync() passes {tainted} into the archive-backing check. Those "
+                f"are tombstones()' output — the same sets apply_tombstones used "
+                f"to admit these rows — so the check becomes the negation of the "
+                f"admission rule and can never fire. Pass archive_backing(m_arch).")
 
 
 class TestChairmanSyncMergeIsIdempotent(unittest.TestCase):
