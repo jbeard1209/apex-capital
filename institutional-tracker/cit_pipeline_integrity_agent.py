@@ -145,6 +145,13 @@ _PEER_BASE          = "~/institutional-tracker"
 _PEER_UNREACHABLE_H = 6.0   # no contact for this long on the always-on host = HIGH
 _PEER_DOWN_H        = 24.0  # ...and this long = CRITICAL, the firm is running on one leg
 _PEER_SSH_TIMEOUT_S = 20
+# How many probes must agree before an unreachable peer is an outage. One ssh
+# timeout is a dropped packet, not a dead host — the Mac probes every 2h from
+# catch_up, so the cost of waiting for a second opinion is bounded at one probe
+# interval, and the missed-run ladder below still escalates a genuinely dead VM
+# on the very next pass. See `check_peer_host_liveness` for why this number had
+# to be wired to a decision rather than merely printed.
+_PEER_MIN_FAILED_PROBES = 2
 
 # ── Verdicts ──────────────────────────────────────────────────────────────────
 # Only PASS may close a Chairman-queue entry. SKIP is the honest verdict for
@@ -785,16 +792,30 @@ def check_peer_host_liveness(issues: list, skipped: dict):
     state["last_checked"] = now
     state["consecutive_failures"] = int(state.get("consecutive_failures") or 0) + 1
     _write_liveness(state)
+    fails = int(state["consecutive_failures"])
 
     last_ok = state.get("last_ok")
     if not last_ok:
         # No successful contact has EVER been recorded. State the fact; do not
         # invent a duration for it. A fabricated "0.0h" here would read as a
         # blip and be ignored.
-        msg = (f"{_PEER_HOST} is unreachable ({detail}) and this firm has no record "
-               f"of it ever answering. The always-on VM runs main.py ~6x/day against "
-               f"the same Alpaca account; while it is down the Mac is the only host "
-               f"trading, and the Mac only runs while it is awake.")
+        #
+        # Still needs a second probe. With no baseline at all, one timeout is
+        # the weakest evidence this check can hold, not the strongest — and the
+        # time belt used below cannot apply here because there is no `last_ok`
+        # to measure elapsed time from. If the counter itself will not persist,
+        # `_write_liveness` raises rather than returning quietly, so this cannot
+        # degrade into permanent silence.
+        if fails < _PEER_MIN_FAILED_PROBES:
+            logger.info("    Not yet an outage — first failed probe (%d of %d) "
+                        "and no prior contact on record.",
+                        fails, _PEER_MIN_FAILED_PROBES)
+            return
+        msg = (f"{_PEER_HOST} is unreachable ({detail}) on {fails} consecutive probes "
+               f"and this firm has no record of it ever answering. The always-on VM "
+               f"runs main.py several times a day against the same Alpaca account; "
+               f"while it is down the Mac is the only host trading, and the Mac only "
+               f"runs while it is awake.")
         logger.warning(f"    HIGH: {msg}")
         issues.append({"severity": "HIGH", "check": me,
                        "message": msg, "auto_fixed": False})
@@ -802,7 +823,31 @@ def check_peer_host_liveness(issues: list, skipped: dict):
 
     down_h = _ts_age_hours(str(last_ok))
     logger.info(f"    last confirmed contact: {down_h:.1f}h ago "
-                f"({state['consecutive_failures']} consecutive failures)")
+                f"({fails} consecutive failures)")
+
+    # ONE FAILED PROBE IS NOT AN OUTAGE, and this is the reader that
+    # `consecutive_failures` never had. The counter was incremented, persisted
+    # and printed in the alert text since the check was written, but no branch
+    # ever consulted it, so the severity ladder below fired on the first
+    # timeout. That is not a rare corner: the ladder trips whenever a scheduled
+    # main.py run has passed since the last confirmed contact, the Mac probes
+    # every 2h, and the VM fires main.py 4x on its busiest day — replaying the
+    # real snapshot over a Mon-Fri grid, 23 of the 60 weekday probe slots (38%)
+    # would have paged the Chairman CRITICAL/HIGH off a single dropped packet.
+    # The docstring has said "one failed ssh is a blip" the whole time; it just
+    # was not true of the code (memory `an-aggregate-is-not-a-finding` is the
+    # sibling — a maintained number nobody acts on).
+    #
+    # The belt: the counter gate only holds while the outage is young. Past
+    # `_PEER_UNREACHABLE_H` a genuinely dead host has failed three probes, so a
+    # counter still reading 1 is a broken counter, not a healthy VM — and a
+    # broken counter must be able to DELAY this alarm, never to suppress it.
+    if fails < _PEER_MIN_FAILED_PROBES and down_h <= _PEER_UNREACHABLE_H:
+        logger.info("    Not yet an outage — failed probe %d of %d, last "
+                    "confirmed contact %.1fh ago. One dropped ssh packet is "
+                    "not a dead host; re-probing next cycle.",
+                    fails, _PEER_MIN_FAILED_PROBES, down_h)
+        return
 
     # Severity in the firm's own units, not in hours.
     #
@@ -850,7 +895,7 @@ def check_peer_host_liveness(issues: list, skipped: dict):
             return
 
     msg = (f"{_PEER_HOST} has been unreachable for {down_h:.1f}h "
-           f"(last contact {str(last_ok)[:19]}, {state['consecutive_failures']} consecutive "
+           f"(last contact {str(last_ok)[:19]}, {fails} consecutive "
            f"failed probes; {detail}). {basis[0].upper()}{basis[1:]}. This is the ALWAYS-ON "
            f"host: ~63 cron jobs including main.py on the same Alpaca paper account. "
            f"While it is down the Mac is the firm's only host and it only runs while "

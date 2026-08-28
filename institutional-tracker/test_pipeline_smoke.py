@@ -7808,19 +7808,144 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         self.assertNotIn("peer_host_liveness", skipped)
 
     def test_a_single_failed_probe_is_not_an_outage(self):
-        import unittest.mock as mock
+        """`missed` is pinned at 1 ON PURPOSE — that is the hostile case.
+
+        Left to the real crontab this test read the wall clock: whether a
+        scheduled main.py fire had landed in the 20 minutes since last contact
+        decided the verdict, so it passed most of the day and failed for a while
+        after each fire. It caught the bug it was written for exactly 38% of the
+        time. Pinning the ladder's input makes removing the counter gate fail
+        every run instead of two runs in five.
+        """
         import cit_pipeline_integrity_agent as pia
+        self.assertEqual([], self._unreachable(pia, last_ok_h=1.0 / 3,
+                                               prior_failures=0, missed=1),
+                         "one dropped packet must not page the Chairman; the "
+                         "outage clock runs from the last CONFIRMED contact")
+
+    def test_the_second_consecutive_failure_does_raise(self):
+        """The counter gate DELAYS the alarm by one probe. It must not cancel it.
+
+        Belt to `test_a_single_failed_probe_is_not_an_outage`: without this, the
+        cheapest way to make that test pass is to stop raising at all.
+        """
+        import cit_pipeline_integrity_agent as pia
+        issues = self._unreachable(pia, last_ok_h=1.0, prior_failures=1, missed=1)
+        self.assertEqual(len(issues), 1,
+                         "two probes agreeing that the always-on host is "
+                         "unreachable is an outage, not a blip")
+        self.assertIn("2 consecutive", issues[0]["message"],
+                      "the finding must say how many probes confirmed it — a "
+                      "reader deciding whether to drive to the VM needs that")
+
+    @staticmethod
+    def _unreachable(pia, last_ok_h, prior_failures, missed):
+        """Drive check_peer_host_liveness with EVERY input pinned.
+
+        `missed` is mocked rather than derived from the real crontab because it
+        is a function of the wall clock: with the VM firing main.py 4x on its
+        busiest day, whether a fire has landed since `last_ok` depends on what
+        time the suite happens to run. A test whose verdict moves with the hour
+        proves nothing on the run where it passes — and the two-zone push gate
+        runs this suite twice, so it gets two chances to be wrong.
+        """
+        import unittest.mock as mock
         issues, skipped = [], {}
-        recent = (datetime.now() - timedelta(minutes=20)).isoformat()
+        state = {"consecutive_failures": prior_failures}
+        if last_ok_h is not None:
+            state["last_ok"] = (datetime.now()
+                                - timedelta(hours=last_ok_h)).isoformat()
         with mock.patch.object(pia.sys, "platform", "darwin"), \
              mock.patch.object(pia, "_probe_peer",
                                return_value=(False, None, "ssh timed out")), \
-             mock.patch.object(pia, "_load_json", return_value={"last_ok": recent}), \
-             mock.patch.object(pia, "_write_liveness"):
+             mock.patch.object(pia, "_load_json", return_value=state), \
+             mock.patch.object(pia, "_write_liveness"), \
+             mock.patch.object(pia.sched, "peer_crontab", return_value="* * * * * main.py"), \
+             mock.patch.object(pia.sched, "missed_fires_since", return_value=missed), \
+             mock.patch.object(pia.sched, "fires_per_busiest_day", return_value=4):
             pia.check_peer_host_liveness(issues, skipped)
-        self.assertEqual(issues, [],
-                         "one dropped packet must not page the Chairman; the "
-                         "outage clock runs from the last CONFIRMED contact")
+        assert "peer_host_liveness" not in skipped, (
+            "an unreachable peer is a finding or a not-yet, never an "
+            "'I could not look': %r" % skipped)
+        return issues
+
+    def test_a_stuck_failure_counter_can_delay_the_alarm_but_not_suppress_it(self):
+        """The gate is a young-outage gate, not an unconditional one.
+
+        If something resets `peer_host_liveness.json` between probes the counter
+        never reaches 2. A guard that can be silenced by the failure of an
+        adjacent file is not a guard (memory `fallback-that-means-act`), so past
+        `_PEER_UNREACHABLE_H` the count stops mattering: by then a genuinely dead
+        host has failed three probes, and a counter still reading 1 is a broken
+        counter rather than a healthy VM.
+        """
+        import cit_pipeline_integrity_agent as pia
+        issues = self._unreachable(pia, last_ok_h=pia._PEER_UNREACHABLE_H + 1,
+                                   prior_failures=0, missed=1)
+        self.assertEqual(len(issues), 1,
+                         "a %sh-old outage was suppressed because one counter "
+                         "would not climb" % pia._PEER_UNREACHABLE_H)
+        # And the gate is still doing its job on the near side of the belt.
+        self.assertEqual(
+            [], self._unreachable(pia, last_ok_h=pia._PEER_UNREACHABLE_H - 1,
+                                  prior_failures=0, missed=1),
+            "the belt swallowed the gate — every first probe raises again")
+
+    def test_a_first_probe_with_no_prior_contact_is_also_not_an_outage(self):
+        """The no-baseline branch is the WEAKEST evidence here, not the strongest.
+
+        It has no `last_ok` to age from, so the time belt above cannot cover it;
+        it is gated on the counter alone.
+        """
+        import cit_pipeline_integrity_agent as pia
+        for failures_before, expected in ((0, 0), (1, 1)):
+            with self.subTest(prior_failures=failures_before):
+                self.assertEqual(
+                    expected,
+                    len(self._unreachable(pia, last_ok_h=None,
+                                          prior_failures=failures_before,
+                                          missed=1)))
+
+    def test_the_failure_counter_is_read_by_a_decision_not_just_printed(self):
+        """`consecutive_failures` was written, persisted and quoted in the alert
+        text since the check was written — and no branch ever consulted it, so
+        the severity ladder fired on the first ssh timeout. Replaying the real
+        VM crontab over a Mon-Fri grid of the Mac's 2-hourly probes, 23 of 60
+        weekday slots (38%) would have paged the Chairman off one dropped packet.
+
+        AST, not grep: the postmortem comment above the gate contains the string
+        this test is looking for, so a text search would pass on the comment
+        alone after someone deleted the code under it.
+        """
+        import ast
+        import cit_pipeline_integrity_agent as pia
+        src = Path(pia.__file__).read_text()
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "check_peer_host_liveness")
+
+        # Names bound from the counter, e.g. `fails = int(state["consecutive_..."])`.
+        aliases = set()
+        for node in ast.walk(fn):
+            if not isinstance(node, ast.Assign):
+                continue
+            if "consecutive_failures" not in ast.dump(node.value):
+                continue
+            aliases.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        self.assertTrue(aliases,
+                        "nothing in the function binds the counter to a name, "
+                        "so it cannot be participating in any decision")
+
+        # ...used in the test of an `if`, which is what "acted on" means here.
+        gated = [n for n in ast.walk(fn)
+                 if isinstance(n, ast.If)
+                 and any(isinstance(x, ast.Name) and x.id in aliases
+                         for x in ast.walk(n.test))]
+        self.assertTrue(
+            gated,
+            "the consecutive-failure count is maintained and printed but no "
+            "`if` reads it — one dropped ssh packet pages the Chairman again "
+            "(names bound from it: %s)" % sorted(aliases))
 
     def test_a_missing_ssh_client_is_cannot_tell_not_host_is_down(self):
         import unittest.mock as mock
