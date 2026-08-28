@@ -27555,6 +27555,295 @@ class TestTheChairmanInboxHearsAboutClosures(unittest.TestCase):
                              "a second run re-closed an already-closed item")
 
 
+class TestTheEstimatorRefusesRatherThanGuesses(unittest.TestCase):
+    """`kalshi_estimator` is the firm's first producer of a Kalshi p_hat, and
+    every way it can be wrong is a way the firm loses money quietly.
+
+    The module exists because 2,352 settled rows sat behind a gate reported as
+    "waiting for more settlements" when the real cause was that nothing in the
+    firm produced an estimate at all. These tests pin the properties that keep
+    the replacement from failing the same way.
+    """
+
+    @staticmethod
+    def _sandbox():
+        """Point the module at a scratch DATA dir. Returns (module, tmpdir)."""
+        import tempfile
+        import kalshi_estimator as K
+        tmp = Path(tempfile.mkdtemp())
+        K.DATA = tmp
+        K.PREDICTIONS = tmp / "kalshi_predictions.json"
+        K.FIT_FILE = tmp / "fit.json"
+        K.SHADOW_BOOK = tmp / "shadow.json"
+        return K, tmp
+
+    @staticmethod
+    def _row(**kw):
+        r = {"ticker": "T1", "event_ticker": "E1", "settled": False,
+             "voided": False, "selection_rule": None, "market_price": 0.95,
+             "spread": 0.10, "outcome": None, "recorded_at": "2026-08-20T00:00:00Z",
+             "settled_at": None}
+        import kalshi_estimator as K
+        r["selection_rule"] = K.REGIME
+        r.update(kw)
+        return r
+
+    def test_every_name_the_module_references_actually_exists(self):
+        """A NameError inside a function body survives import.
+
+        Two of this module's own constants were referenced in `shadow_verdict`
+        and defined nowhere; `import kalshi_estimator` was still clean, because
+        Python resolves globals at call time. The suite must therefore exercise
+        the code paths, not just the import — the same reason
+        `wiring_audit.py` looks for empty queues rather than for missing files.
+        """
+        import ast, inspect, builtins
+        import kalshi_estimator as K
+        tree = ast.parse(inspect.getsource(K))
+        defined = set(dir(K)) | set(dir(builtins))
+        missing = {}
+        for fn in [n for n in ast.walk(tree)
+                   if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]:
+            local = {a.arg for a in fn.args.args} | {a.arg for a in fn.args.kwonlyargs}
+            if fn.args.vararg:
+                local.add(fn.args.vararg.arg)
+            if fn.args.kwarg:
+                local.add(fn.args.kwarg.arg)
+            for n in ast.walk(fn):
+                if isinstance(n, (ast.Assign, ast.AnnAssign, ast.AugAssign)):
+                    for t in ast.walk(n):
+                        if isinstance(t, ast.Name) and isinstance(t.ctx, ast.Store):
+                            local.add(t.id)
+                elif isinstance(n, (ast.For, ast.comprehension)):
+                    tgt = n.target
+                    for t in ast.walk(tgt):
+                        if isinstance(t, ast.Name):
+                            local.add(t.id)
+                elif isinstance(n, ast.Import):
+                    local |= {(a.asname or a.name).split(".")[0] for a in n.names}
+                elif isinstance(n, ast.ImportFrom):
+                    local |= {(a.asname or a.name) for a in n.names}
+                elif isinstance(n, ast.ExceptHandler) and n.name:
+                    local.add(n.name)
+                elif isinstance(n, (ast.Lambda, ast.ListComp, ast.SetComp,
+                                    ast.DictComp, ast.GeneratorExp)):
+                    for t in ast.walk(n):
+                        if isinstance(t, ast.Name):
+                            local.add(t.id)
+            for n in ast.walk(fn):
+                if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load):
+                    if n.id not in local and n.id not in defined:
+                        missing.setdefault(fn.name, set()).add(n.id)
+        self.assertEqual({}, missing,
+                         "kalshi_estimator references names that do not exist; "
+                         "each is a NameError that import alone cannot catch: "
+                         "%s" % missing)
+
+    def test_fee_rates_are_not_a_second_source(self):
+        """The rates must come from kalshi_client, which owns them.
+
+        AST, not grep: this file's own comments name `FEE_COEF` and `0.07`
+        while explaining why they were removed, so a text search matches the
+        postmortem and passes on the bug it describes.
+        """
+        import ast, inspect
+        import kalshi_estimator as K
+        import kalshi_client as kc
+        self.assertIs(K.MAKER_FEE_RATE, kc.MAKER_FEE_RATE)
+        self.assertIs(K.TAKER_FEE_RATE, kc.TAKER_FEE_RATE)
+        tree = ast.parse(inspect.getsource(K))
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for t in node.targets:
+                    if isinstance(t, ast.Name) and "FEE" in t.id.upper():
+                        self.fail("kalshi_estimator assigns its own fee "
+                                  "constant %r — kalshi_client owns the rates, "
+                                  "and the first cut of this module got both "
+                                  "the rate and the rounding wrong by "
+                                  "redefining them" % t.id)
+
+    def test_cost_never_mixes_a_maker_spread_with_a_taker_fee(self):
+        """Resting and crossing are one choice; a mixed cost is meaningless.
+
+        Pinned numerically rather than structurally: crossing must charge the
+        WHOLE spread and the taker rate, resting HALF and the maker rate.
+        """
+        import kalshi_estimator as K
+        import kalshi_client as kc
+        row = {"market_price": 0.95, "spread": 0.10}
+        rest = K.round_trip_cost(row, cross=False)
+        cross = K.round_trip_cost(row, cross=True)
+        self.assertAlmostEqual(0.05 + kc.MAKER_FEE_RATE * 0.95 * 0.05, rest, 9)
+        self.assertAlmostEqual(0.10 + kc.TAKER_FEE_RATE * 0.95 * 0.05, cross, 9)
+        self.assertGreater(cross, rest * 2 - 1e-9,
+                           "crossing must never price cheaper than twice resting")
+
+    def test_a_degraded_read_returns_none_not_a_number(self):
+        """None is the answer. A substituted constant is a decision in disguise.
+
+        `fallback-that-means-act`: 999 and 350 both silently read as "go".
+        NaN is included because it passes every `is not None` guard.
+        """
+        import kalshi_estimator as K
+        for bad in (None, "0.95", float("nan"), float("inf")):
+            self.assertIsNone(K.round_trip_cost({"market_price": bad,
+                                                 "spread": 0.10}),
+                              "priced a row whose market_price was %r" % (bad,))
+            self.assertIsNone(K.fee_per_contract(bad),
+                              "charged a fee on price %r" % (bad,))
+
+    def test_an_unvalidated_fit_serves_nothing(self):
+        """A correction that has not beaten the market is noise with a decimal."""
+        K, _ = self._sandbox()
+        row = self._row()
+        f = {"regime": K.REGIME, "intercept_cents": 0.6,
+             "slope_cents_per_cent_spread": -0.6,
+             "spread_support_cents": [1.0, 10.0],
+             "fitted_at": K._now().isoformat(),
+             "validated_beats_market": False}
+        self.assertIsNone(K.estimate(row, f),
+                          "served an estimate from a fit that lost to the market")
+        self.assertIsNone(K.signal(row, f))
+        f["validated_beats_market"] = True
+        self.assertIsNotNone(K.estimate(row, f),
+                             "refused a fit that DID beat the market — the "
+                             "guard has to be the validation flag, not a "
+                             "blanket refusal that looks like one")
+
+    def test_signal_never_claims_a_crossable_edge(self):
+        """Every measured crossing cell is negative, on both sides, at n=2,007.
+
+        So a fill obtained by crossing earns a NEGATIVE edge, not a smaller
+        one. The instruction has to survive into the consumer as data.
+        """
+        K, _ = self._sandbox()
+        f = {"regime": K.REGIME, "intercept_cents": 0.6,
+             "slope_cents_per_cent_spread": -0.6,
+             "spread_support_cents": [1.0, 10.0],
+             "fitted_at": K._now().isoformat(),
+             "validated_beats_market": True}
+        s = K.signal(self._row(), f)
+        self.assertIsNotNone(s)
+        self.assertEqual("REST_ONLY", s["execution"])
+        self.assertLess(s["net_cents_if_crossed"], s["net_cents"],
+                        "crossing priced no worse than resting")
+
+    def test_the_shadow_book_cannot_deadlock_on_its_own_gate(self):
+        """Booking is gated on the RULE, never on the fit.
+
+        If the only writer of settled shadow rows were `signal()`, and
+        `signal()` refuses until validation, and validation needs settled rows,
+        then the refusal would be permanent and self-inflicted — the exact
+        block this module was written to remove. Booking must work with NO fit
+        on disk at all.
+        """
+        K, _ = self._sandbox()
+        self.assertIsNone(K.load_fit(), "sandbox should start with no fit")
+        wide = [self._row(ticker="W%d" % i, event_ticker="E%d" % i, spread=0.10)
+                for i in range(3)]
+        self.assertEqual(3, len(K.shadow_candidates(wide)),
+                         "no candidate booked without a validated fit — the "
+                         "book can never fill and the gate never opens")
+        narrow = [self._row(ticker="N1", spread=0.01)]
+        self.assertEqual([], K.shadow_candidates(narrow),
+                         "booked a spread below the rule's own threshold")
+
+    def test_booking_the_same_contract_twice_in_a_day_does_not_inflate_n(self):
+        """The VM scans several times a day. Double-counting one contract
+        reports a confidence the sample has not earned."""
+        K, _ = self._sandbox()
+        rows = [self._row(ticker="W1", spread=0.10)]
+        self.assertEqual(1, K.book_shadow(rows)["added"])
+        self.assertEqual(0, K.book_shadow(rows)["added"])
+        self.assertEqual(1, K.book_shadow(rows)["total"])
+
+    def test_a_resolved_shadow_row_reproduces_the_direct_calculation(self):
+        """Two independently-sourced measurements of one quantity.
+
+        The shadow book computes realized net from its own stored price and
+        cost; the direct calculation recomputes it from the settled row. They
+        must agree, or the ledger is describing a trade the data does not.
+        """
+        K, _ = self._sandbox()
+        row = self._row(ticker="W1", spread=0.10, market_price=0.95)
+        K.book_shadow([row])
+        settled = dict(row, settled=True, outcome=0,
+                       settled_at="2026-08-25T00:00:00Z")
+        self.assertEqual(1, K.resolve_shadow([settled])["resolved"])
+        booked = K.load_rows(K.SHADOW_BOOK)[0]
+        direct = ((0.95 - 0) * 100.0
+                  - K.round_trip_cost(settled, cross=False) * 100.0)
+        self.assertAlmostEqual(direct, booked["realized_net_cents"], 9)
+
+    def test_profitable_requires_the_whole_interval_above_zero(self):
+        """A positive point estimate is not a verdict.
+
+        The measured wide-spread mean is +0.52c with a cluster CI of
+        [-2.25c, +3.65c] and P(>0) = 0.62. Reporting that as PROFITABLE is how
+        a coin flip gets armed.
+        """
+        K, _ = self._sandbox()
+        # Shaped like the real payoff, not like a tidy series: a resting sell
+        # at 95c wins ~+4.9c and loses ~-95c, so the per-leg SD is ~29c and a
+        # sub-cent mean is invisible at this n. A fixture with small dispersion
+        # would make the CI exclude zero and the test would pass while proving
+        # nothing about the case that matters.
+        book = ([{"event_ticker": "W%d" % i, "realized_net_cents": +4.9}
+                 for i in range(286)] +
+                [{"event_ticker": "L%d" % i, "realized_net_cents": -95.1}
+                 for i in range(14)])
+        v = K.shadow_verdict(book)
+        self.assertGreater(v["mean_net_cents"], 0,
+                           "fixture must have a POSITIVE point estimate — that "
+                           "is the case the guard exists for")
+        self.assertTrue(v["ok"], v)
+        self.assertLess(v["ci95_cents"][0], 0)
+        self.assertEqual("UNDECIDED", v["verdict"],
+                         "called a straddling interval PROFITABLE")
+        strong = [{"event_ticker": "E%d" % i, "realized_net_cents": 10.0}
+                  for i in range(K.MIN_SHADOW_EVENTS + 1)]
+        self.assertEqual("PROFITABLE", K.shadow_verdict(strong)["verdict"])
+
+    def test_a_thin_book_refuses_with_a_reason_code(self):
+        """"Cannot tell" must be distinguishable from "no edge"."""
+        K, _ = self._sandbox()
+        v = K.shadow_verdict([{"event_ticker": "E1", "realized_net_cents": 1.0}])
+        self.assertFalse(v["ok"])
+        self.assertEqual("SHADOW_TOO_THIN", v["reason_code"])
+
+    def test_validation_distinguishes_too_young_from_no_edge(self):
+        """A regime 8 days old cannot be validated, and that is not a failure
+        of the estimator — it is a date. The first cut returned "0 usable
+        folds", which reads as "the model is bad"; it means "come back later",
+        and the difference decides whether anyone waits or rebuilds."""
+        import kalshi_estimator as K
+        rows = []
+        for i in range(K.MIN_FIT_ROWS + 50):
+            d = 18 + (i % 8)
+            rows.append(self._row(
+                ticker="T%d" % i, event_ticker="E%d" % i, settled=True,
+                outcome=i % 2, spread=0.05,
+                recorded_at="2026-08-%02dT00:00:00Z" % d,
+                settled_at="2026-08-%02dT12:00:00Z" % (d + 1)))
+        v = K.validate(rows)
+        self.assertFalse(v["ok"])
+        self.assertEqual("REGIME_TOO_YOUNG", v.get("reason_code"), v)
+        self.assertIn("earliest_verdict_date", v)
+
+    def test_the_verdict_thresholds_have_not_been_lowered(self):
+        """These gate whether the firm may act on a Kalshi number at all.
+
+        Pinned as values, deliberately. Reaching a verdict sooner by moving the
+        bar is not reaching a verdict.
+        """
+        import kalshi_estimator as K
+        self.assertGreaterEqual(K.MIN_FIT_ROWS, 400)
+        self.assertGreaterEqual(K.MIN_VALIDATION_FOLDS, 3)
+        self.assertGreaterEqual(K.MIN_SHADOW_EVENTS, 200)
+        self.assertGreaterEqual(K.MIN_REGIME_SPAN_DAYS, 21)
+        self.assertGreaterEqual(K.SHADOW_MIN_SPREAD_C, 5.0)
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.
