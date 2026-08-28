@@ -111,9 +111,13 @@ def _file_age_hours(path: str) -> Optional[float]:
             # List of decision records — use the most recent entry's timestamp
             last = data[-1]
             gen_at = last.get("generated_at") or last.get("timestamp")
-        if gen_at:
-            dt = datetime.fromisoformat(str(gen_at)[:19])
-            return (datetime.now() - dt).total_seconds() / 3600
+        # age_hours preserves the stamp's offset. The old `[:19]` here threw
+        # the offset away and read four hours too NEW on a UTC-stamped report,
+        # which is the direction that clears a staleness gate.
+        from time_utils import age_hours
+        age = age_hours(gen_at, default=None)
+        if age is not None:
+            return age
         # Fall back to OS mtime
         mtime = os.path.getmtime(path)
         return (datetime.now().timestamp() - mtime) / 3600

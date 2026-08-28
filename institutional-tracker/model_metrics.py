@@ -113,12 +113,13 @@ def get_model_metrics() -> dict:
         "trained_at":    meta.get("trained_at"),
     })
 
-    ts = meta.get("trained_at")
-    if ts:
-        try:
-            result["age_days"] = (datetime.now() - datetime.fromisoformat(str(ts)[:19])).days
-        except Exception:
-            pass
+    # `age_days` truncates a float rather than using `timedelta.days`, which
+    # floors toward negative infinity — a model trained an hour ago on a host
+    # one zone ahead used to report as trained "-1 days" ago.
+    from time_utils import age_days as _age_days
+    _age = _age_days(meta.get("trained_at"), default=None)
+    if _age is not None:
+        result["age_days"] = int(_age)
 
     return result
 

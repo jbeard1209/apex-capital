@@ -178,6 +178,13 @@ institutional-tracker/data/agent_roster.json
 # `git ls-files --others`, so ignoring these also keeps them off the VM, which
 # is right — every one of them is per-host by nature.
 institutional-tracker/data/tmp*.tmp
+# The same six corpses again. On 2026-08-23 they were MOVED to a quarantine
+# subdir to preserve them as evidence (see wiring_audit._check_interrupted_writes)
+# and the rule above — anchored at data/ top level — stopped covering them, so
+# the very next `git add -A` staged all six a second time. Moving files out of
+# a glob's reach silently un-ignores them; the ignore rule has to follow the
+# evidence. Per-host by nature, exactly like the originals.
+institutional-tracker/data/.interrupted-writes/
 institutional-tracker/data/*.bak.json
 institutional-tracker/data/*.bak_*.json
 institutional-tracker/data/*.corrupt_backup_*.json

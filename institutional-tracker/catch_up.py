@@ -351,9 +351,9 @@ def _output_age_hours(output_file: str) -> float:
             d = json.load(f)
         # Handle both dict and list-of-dict formats
         record = (d[-1] if isinstance(d, list) and d else d) if d else {}
-        ts = record.get("generated_at", "")
-        if ts:
-            age = (datetime.now() - datetime.fromisoformat(str(ts)[:19])).total_seconds() / 3600
+        from time_utils import age_hours
+        age = age_hours(record.get("generated_at", ""), default=None)
+        if age is not None:
             return max(age, 0.0)
     except Exception:
         pass
@@ -406,9 +406,10 @@ def _pipeline_last_run_hours() -> Optional[float]:
     try:
         with open(PIPELINE_HEARTBEAT) as f:
             hb = json.load(f)
-        ts = hb.get("last_started") or hb.get("last_completed")
-        if ts:
-            age = (datetime.now() - datetime.fromisoformat(str(ts)[:26])).total_seconds() / 3600
+        from time_utils import age_hours
+        age = age_hours(hb.get("last_started") or hb.get("last_completed"),
+                        default=None)
+        if age is not None:
             return max(age, 0.0)
     except Exception:
         pass

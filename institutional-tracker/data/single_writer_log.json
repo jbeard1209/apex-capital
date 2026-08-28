@@ -1642,5 +1642,17 @@
     "verdict": "BLOCK_ENTRY",
     "reason": "mac is not the designated writer (apexcapitalc); this opens exposure",
     "allowed": false
+  },
+  {
+    "ts": "2026-08-24T13:43:51.975476+00:00",
+    "host": "mac",
+    "designated": "apexcapitalc",
+    "mode": "enforce",
+    "symbol": "HASI",
+    "side": "OrderSide.SELL",
+    "qty": "85.0",
+    "verdict": "ALLOW_EXIT",
+    "reason": "mac is not the writer, but this reduces an open position",
+    "allowed": true
   }
 ]

@@ -1,0 +1,23 @@
+[
+  {
+    "signature": "severely stale output: data/risk_bulletin.json (<age>)",
+    "match": null,
+    "note": "data/risk_bulletin.json is 2h old, within the 26h threshold",
+    "by": "CITPipelineMonitor",
+    "date": "2026-08-24T12:09:47.269138"
+  },
+  {
+    "signature": "severely stale output: data/review_recommendations.json (<age>)",
+    "match": null,
+    "note": "data/review_recommendations.json is 2h old, within the 26h threshold",
+    "by": "CITPipelineMonitor",
+    "date": "2026-08-24T12:09:47.311527"
+  },
+  {
+    "signature": "severely stale output: data/irm_daily_check.json (<age>)",
+    "match": null,
+    "note": "data/irm_daily_check.json is 1h old, within the 26h threshold",
+    "by": "CITPipelineMonitor",
+    "date": "2026-08-27T12:02:34.930929"
+  }
+]

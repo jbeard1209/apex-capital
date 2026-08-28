@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-21T04:19:46.942535",
+  "generated_at": "2026-08-28T01:57:36.863130",
   "tickers_scanned": 814,
   "impossible_tickers": [
     "FICO",
@@ -111,14 +111,15 @@
     "MPW",
     "MSCI",
     "NBTB",
+    "NFBK",
     "NSC",
     "NUE",
     "NVR",
     "NWSA",
     "NYT",
     "ODP",
+    "OLPX",
     "ORCL",
-    "PARA",
     "PBA",
     "PBF",
     "PBI",
@@ -146,6 +147,7 @@
     "POOL",
     "POST",
     "PPC",
+    "PRA",
     "PRGO",
     "PRI",
     "PRKS",
@@ -485,11 +487,11 @@
     {
       "ticker": "CAH",
       "metric": "long_term_debt",
-      "value": "latest FY2011 vs record FY2025",
+      "value": "latest FY2011 vs record FY2026",
       "gate": true,
       "impossible": false,
       "severity": "MEDIUM",
-      "note": "long_term_debt series stops at FY2011 but the company reports through FY2025 \u2014 leverage ratio would use a 14yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
+      "note": "long_term_debt series stops at FY2011 but the company reports through FY2026 \u2014 leverage ratio would use a 15yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
     },
     {
       "ticker": "CARR",
@@ -647,11 +649,11 @@
     {
       "ticker": "COTY",
       "metric": "long_term_debt",
-      "value": "latest FY2015 vs record FY2025",
+      "value": "latest FY2015 vs record FY2026",
       "gate": true,
       "impossible": false,
       "severity": "MEDIUM",
-      "note": "long_term_debt series stops at FY2015 but the company reports through FY2025 \u2014 leverage ratio would use a 10yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
+      "note": "long_term_debt series stops at FY2015 but the company reports through FY2026 \u2014 leverage ratio would use a 11yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
     },
     {
       "ticker": "CPB",
@@ -782,11 +784,11 @@
     {
       "ticker": "EL",
       "metric": "long_term_debt",
-      "value": "latest FY2011 vs record FY2025",
+      "value": "latest FY2011 vs record FY2026",
       "gate": true,
       "impossible": false,
       "severity": "MEDIUM",
-      "note": "long_term_debt series stops at FY2011 but the company reports through FY2025 \u2014 leverage ratio would use a 14yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
+      "note": "long_term_debt series stops at FY2011 but the company reports through FY2026 \u2014 leverage ratio would use a 15yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
     },
     {
       "ticker": "EMN",
@@ -1824,6 +1826,24 @@
       "note": "long_term_debt series stops at FY2018 but the company reports through FY2025 \u2014 leverage ratio would use a 7yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
     },
     {
+      "ticker": "NFBK",
+      "metric": "revenue",
+      "value": "empty",
+      "gate": true,
+      "impossible": false,
+      "severity": "MEDIUM",
+      "note": "revenue series empty \u2014 cannot value the company."
+    },
+    {
+      "ticker": "NFBK",
+      "metric": "net_income",
+      "value": "empty",
+      "gate": true,
+      "impossible": false,
+      "severity": "MEDIUM",
+      "note": "net_income series empty \u2014 cannot value the company."
+    },
+    {
       "ticker": "NSC",
       "metric": "long_term_debt",
       "value": "latest FY2017 vs record FY2025",
@@ -1853,11 +1873,11 @@
     {
       "ticker": "NWSA",
       "metric": "shares_outstanding",
-      "value": "latest FY2013 vs record FY2025",
+      "value": "latest FY2013 vs record FY2026",
       "gate": true,
       "impossible": false,
       "severity": "MEDIUM",
-      "note": "shares_outstanding series stops at FY2013 but the company reports through FY2025 \u2014 per-share metrics would use a 12yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
+      "note": "shares_outstanding series stops at FY2013 but the company reports through FY2026 \u2014 per-share metrics would use a 13yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
     },
     {
       "ticker": "NYT",
@@ -1896,6 +1916,24 @@
       "note": "net_income series empty \u2014 cannot value the company."
     },
     {
+      "ticker": "OLPX",
+      "metric": "revenue",
+      "value": "empty",
+      "gate": true,
+      "impossible": false,
+      "severity": "MEDIUM",
+      "note": "revenue series empty \u2014 cannot value the company."
+    },
+    {
+      "ticker": "OLPX",
+      "metric": "net_income",
+      "value": "empty",
+      "gate": true,
+      "impossible": false,
+      "severity": "MEDIUM",
+      "note": "net_income series empty \u2014 cannot value the company."
+    },
+    {
       "ticker": "OR",
       "metric": "fetched_at",
       "value": "missing",
@@ -1921,33 +1959,6 @@
       "impossible": false,
       "severity": "LOW",
       "note": "No fetch timestamp \u2014 cache age unknown; refetch to confirm currency."
-    },
-    {
-      "ticker": "PARA",
-      "metric": "shares_outstanding",
-      "value": null,
-      "gate": true,
-      "impossible": false,
-      "severity": "MEDIUM",
-      "note": "Shares outstanding missing or <= 0 \u2014 per-share metrics undefined; likely an ETF, foreign issuer, or unmapped share tag."
-    },
-    {
-      "ticker": "PARA",
-      "metric": "revenue",
-      "value": "empty",
-      "gate": true,
-      "impossible": false,
-      "severity": "MEDIUM",
-      "note": "revenue series empty \u2014 cannot value the company."
-    },
-    {
-      "ticker": "PARA",
-      "metric": "net_income",
-      "value": "empty",
-      "gate": true,
-      "impossible": false,
-      "severity": "MEDIUM",
-      "note": "net_income series empty \u2014 cannot value the company."
     },
     {
       "ticker": "PBA",
@@ -2051,11 +2062,11 @@
     {
       "ticker": "PG",
       "metric": "long_term_debt",
-      "value": "latest FY2015 vs record FY2025",
+      "value": "latest FY2015 vs record FY2026",
       "gate": true,
       "impossible": false,
       "severity": "MEDIUM",
-      "note": "long_term_debt series stops at FY2015 but the company reports through FY2025 \u2014 leverage ratio would use a 10yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
+      "note": "long_term_debt series stops at FY2015 but the company reports through FY2026 \u2014 leverage ratio would use a 11yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
     },
     {
       "ticker": "PGR",
@@ -2272,6 +2283,24 @@
       "impossible": false,
       "severity": "MEDIUM",
       "note": "long_term_debt series stops at FY2018 but the company reports through FY2025 \u2014 leverage ratio would use a 7yr-stale value. Likely a taxonomy/tag change EDGAR parsing missed."
+    },
+    {
+      "ticker": "PRA",
+      "metric": "revenue",
+      "value": "empty",
+      "gate": true,
+      "impossible": false,
+      "severity": "MEDIUM",
+      "note": "revenue series empty \u2014 cannot value the company."
+    },
+    {
+      "ticker": "PRA",
+      "metric": "net_income",
+      "value": "empty",
+      "gate": true,
+      "impossible": false,
+      "severity": "MEDIUM",
+      "note": "net_income series empty \u2014 cannot value the company."
     },
     {
       "ticker": "PRGO",
@@ -6045,5 +6074,6 @@
       "note": "No fetch timestamp \u2014 cache age unknown; refetch to confirm currency."
     }
   ],
-  "clean": false
+  "clean": false,
+  "bugs_filed": 0
 }

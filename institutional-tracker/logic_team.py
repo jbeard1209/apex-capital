@@ -78,12 +78,19 @@ def _save(path: Path, data):
 
 
 def _days_since(iso_ts: str) -> Optional[int]:
-    if not iso_ts:
-        return None
-    try:
-        return (datetime.now() - datetime.fromisoformat(str(iso_ts)[:19])).days
-    except Exception:
-        return None
+    """Whole days since `iso_ts`, or None when it cannot be read.
+
+    None, not a number: "we don't know when this happened" is a different fact
+    from "it happened long ago", and every caller here tests the result before
+    using it. Truncated, not rounded, so it still reads as whole elapsed days
+    at the day boundary like the old `timedelta.days` did. It differs from
+    `.days` in one place, deliberately: `.days` floors toward negative infinity,
+    so a stamp one hour in the FUTURE came back as -1 — an hour of clock skew
+    between two hosts reported as "yesterday". `int()` truncates toward zero.
+    """
+    from time_utils import age_days
+    d = age_days(iso_ts, default=None)
+    return None if d is None else int(d)
 
 
 # =============================================================================

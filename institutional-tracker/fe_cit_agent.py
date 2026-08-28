@@ -131,13 +131,13 @@ def _file_age_days(path):
 
 
 def _ts_age_days(ts):
-    """Return age of an ISO timestamp in days; inf if blank/invalid."""
-    if not ts:
-        return float("inf")
-    try:
-        return (datetime.now() - datetime.fromisoformat(ts[:19])).total_seconds() / 86400
-    except Exception:
-        return float("inf")
+    """Return age of an ISO timestamp in days; inf if blank/invalid.
+
+    `inf` is fail-closed: the callers ask "is this FE artifact too old", so an
+    undateable artifact must be treated as too old.
+    """
+    from time_utils import age_days
+    return age_days(ts, default=float("inf"))
 
 
 def _now_iso():

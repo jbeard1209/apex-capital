@@ -63,10 +63,14 @@ def _uid() -> str:
     return uuid.uuid4().hex[:12]
 
 def _age_hours(ts: str) -> float:
-    try:
-        return (datetime.now() - datetime.fromisoformat(ts[:19])).total_seconds() / 3600
-    except Exception:
-        return float("inf")
+    """Age in hours; `inf` when the stamp is missing or unreadable.
+
+    `inf` is fail-closed here: ~25 call sites in this module use it as
+    `_age_hours(x) <= max_age_hours` to keep a record in scope, so an
+    unreadable stamp drops the record rather than admitting it forever.
+    """
+    from time_utils import age_hours
+    return age_hours(ts, default=float("inf"))
 
 def _load(path: str) -> list:
     os.makedirs(os.path.dirname(path), exist_ok=True)

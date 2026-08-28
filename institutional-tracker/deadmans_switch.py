@@ -78,13 +78,18 @@ def _parse(ts) -> datetime | None:
     the writing host's wall clock, and this process runs on that same host. See
     memory host_divergence_is_a_bug_class — attaching a fabricated zone here is
     what made three snapshot tests fail on the UTC VM for four hours a night.
+    The naive contract also holds this module's interval arithmetic together:
+    `_parse`d stamps are subtracted from EACH OTHER (the gap scan), so both
+    sides must have the same awareness or the subtraction raises.
+
+    What changed: this used to be `fromisoformat(ts[:19])`, which is naive by
+    TRUNCATION — on an offset-bearing stamp it kept the UTC digits and called
+    them local, reading four hours too new on this Mac. `as_naive_local`
+    CONVERTS instead, so the naive contract survives a producer that starts
+    writing offsets rather than silently mis-dating it.
     """
-    if not ts:
-        return None
-    try:
-        return datetime.fromisoformat(str(ts)[:19])
-    except Exception:
-        return None
+    from time_utils import as_naive_local
+    return as_naive_local(ts)
 
 
 def latest_decision_ts(data) -> datetime | None:

@@ -41,6 +41,7 @@ Usage:
     python3 kalshi_calibration.py --report     # reliability curve + verdict
 """
 
+import hashlib
 import json
 import logging
 import math
@@ -1089,11 +1090,18 @@ def edge_versus_cost(rows=None):
     ALIVE branch is the same instruction by another route. Both send someone to
     build a forecaster. Neither of them has ever compared what a PERFECT
     forecaster could win against what the trade costs — and measured on the live
-    ledger 2026-08-26 (n=1,920 current-regime settled rows) those two numbers
-    are 1.73c and 1.92c, the second being the CHEAPEST execution that exists
+    VM ledger 2026-08-27 (n=2,007 current-regime settled rows) those two numbers
+    are 1.60c and 1.91c, the second being the CHEAPEST execution that exists
     (rest at the mid, maker rate, size enough to amortise the fee round-up;
-    crossing costs 4.01c). An estimator is a large build aimed at a target the
+    crossing costs 3.99c). An estimator is a large build aimed at a target the
     best available evidence puts BELOW the toll.
+
+    These figures move, so they are re-measured on every run and never read from
+    this docstring — `queue_build_decision()` below puts the CURRENT numbers in
+    front of the Chairman. Between 2026-08-26 and 2026-08-27 the edge fell
+    1.73c -> 1.60c while cost held near 1.91c, i.e. the gap moved AGAINST
+    building. A stale number in a comment is how a decision gets made on
+    evidence that has since reversed.
 
     Needs no estimator of our own, which is the point: it is answerable today,
     from rows already on file, and it stays answerable however long
@@ -1311,6 +1319,159 @@ def edge_versus_cost(rows=None):
 VERDICT_STATE = DATA_DIR / "kalshi_verdict_notified.json"
 VERDICT_HEARTBEAT_DAYS = 7
 
+QUEUE_SOURCE = "kalshi_calibration"
+
+
+def queue_build_decision(rows=None, path=None, premise=None, proven=None,
+                         cost=None):
+    """Put the build-or-drop decision on the Chairman's queue. Returns (n, why).
+
+    The three verdicts above reach Jack by email and NOWHERE ELSE. An email is a
+    notification; it is not a record. It has no owner, no clock, no status, and
+    no way to answer — and on 2026-08-27 a search of every `*queue*.json`,
+    `*pending*.json` and `*chairman*.json` on BOTH hosts found zero rows
+    mentioning this decision. So the largest open question in the sector —
+    build an estimator, build a sell-side path, or retire it to scan-only —
+    existed only in the reasoning of whoever last read the mail. That is
+    [[a-decision-recorded-nowhere]] exactly: "nobody decided" and "we lost the
+    decision" were the same observable state. A queue row is the difference:
+    `chairman_decision_sla` puts a 20-day clock on it and escalates it to the
+    board if it goes unanswered. An email expires into the archive.
+
+    WHICH HOST MAY RAISE IT. The two hosts' ledgers are independent files —
+    there is no state sync, and today the VM holds 2,007 settled current-regime
+    rows while this Mac holds 0. A row raised from the empty side would say
+    CANNOT_TELL, and would sit in the same list the Chairman reads as one queue,
+    next to the VM's real MARGINAL. So a host with **no settled rows at all**
+    raises nothing: it is not qualified to answer. That is a scoping rule, not
+    suppression, and the distinction it draws is deliberate — "this host has no
+    ledger" (n == 0) is silent, but "there IS a ledger and it cannot decide"
+    (n > 0, verdict CANNOT_TELL) DOES raise, because a measurement that cannot
+    resolve is itself a decision-relevant state. [[verdict-with-no-consequence]]
+
+    WHY THE KEY IS THE SIGNATURE. `dedup_key` is the three verdicts joined, so
+    the weekly heartbeat re-raising the same reading is suppressed as
+    already-open, and a verdict that MOVES raises a new row. The old row is then
+    closed by us, with a note naming what it moved to — not left standing. Two
+    contradictory open rows for one decision is the failure this function
+    exists to prevent, and an un-closed row keeps counting toward its own board
+    escalation long after the finding under it changed.
+
+    WHY NO NUMBER IS WRITTEN HERE. Every figure below is read out of the detail
+    dicts the verdict functions just computed on this host. `edge_versus_cost`'s
+    own docstring said 1.73c on 2026-08-26 and 1.60c on 2026-08-27 — a decision
+    made against a hardcoded copy of either would be a decision made on evidence
+    that had already moved.
+    """
+    rows = rows if rows is not None else _load_ledger()
+    # A caller that already has the three verdicts passes them in: each is the
+    # exact tuple its function returns. Recomputing costs three full scans of a
+    # 4,000-row ledger for an answer the caller is holding.
+    premise_v, why_premise, _pd = premise or is_premise_alive(rows)
+    proven_v, why_edge = proven or is_edge_proven(rows)
+    cost_v, why_cost, cd = cost or edge_versus_cost(rows)
+
+    n = int(cd.get("settled") or 0)
+    if n <= 0:
+        return 0, ("no settled current-regime rows on this host — not "
+                   "qualified to raise the decision (the peer host's ledger "
+                   "is a different file and is not visible from here)")
+
+    signature = (f"{premise_v}|{'PROVEN' if proven_v else 'NOT_PROVEN'}"
+                 f"|{cost_v}")
+    key = f"kalshi-build-or-drop|{signature}"
+
+    try:
+        from order_ledger import _host_tag
+        host = _host_tag()
+    except Exception:                            # noqa: BLE001
+        host = "unknown-host"
+
+    agg = cd.get("aggregate") or {}
+    if agg:
+        c = agg["cost"]
+        numbers = (
+            f"Measured on {host} over n={agg['n']} settled current-regime rows "
+            f"({SELECTION_RULE}): quoted {agg['quote']*100:.2f}c against "
+            f"{agg['realised']*100:.2f}c settled, so a PERFECT forecaster wins "
+            f"{agg['edge']*100:.2f}c/contract (95% CI "
+            f"{agg['edge_low']*100:.2f}-{agg['edge_high']*100:.2f}c). The "
+            f"cheapest execution that exists costs {c['total']*100:.2f}c "
+            f"({c['maker']['spread']*100:.2f}c half-spread + "
+            f"{c['maker']['fee']*100:.2f}c maker fee); crossing costs "
+            f"{c['taker']['total']*100:.2f}c. NET {agg['net_point']*100:+.2f}c "
+            f"at the point estimate, {agg['net_best_case']*100:+.2f}c at the "
+            f"top of the edge interval. {agg['direction']}.")
+        # The cheaper of the two builds, and it is invisible in the headline
+        # verdict. When the market OVERPRICES yes, harvesting means selling yes
+        # — and every candidate the scanner emits is a BUY of yes at the ask.
+        # So "build an estimator" is not the only door: a sell-side path is a
+        # smaller build aimed at the side the gap is actually on.
+        if agg.get("quote", 0) > agg.get("realised", 0):
+            numbers += (" NOTE: the gap is on the side the firm cannot take — "
+                        "the scanner emits buys of yes only. A sell-side path "
+                        "is a separate and cheaper build than an estimator.")
+    else:
+        numbers = (f"n={n} settled row(s) on {host}, but the aggregate could "
+                   f"not be formed, so the edge cannot be bounded: {why_cost}")
+
+    # Severity is the price of NOT deciding, not the loudness of the finding.
+    # The default outcome of silence is "the sector keeps scanning and never
+    # bets", which costs cron time when the answer is drop, and costs a real
+    # forgone spread every day when the answer is build. Only HARVESTABLE makes
+    # delay expensive.
+    severity = "HIGH" if cost_v == HARVESTABLE else "MEDIUM"
+
+    description = (
+        f"KALSHI BUILD-OR-DROP — premise {premise_v}, edge "
+        f"{'PROVEN' if proven_v else 'NOT PROVEN'}, cost {cost_v}. {numbers} "
+        f"DECISION NEEDED: build an estimator, build the sell-side path, or "
+        f"retire the sector to scan-only. Nothing in the sector can place an "
+        f"order (kalshi_client.place_order() raises unless data/.kalshi_armed "
+        f"exists, and only you create that file), so this is a spending "
+        f"decision, not a risk one — but it has never been recorded anywhere.")
+
+    import chairman_queue as cq
+    kwargs = {"path": path} if path else {}
+
+    # Close FIRST, then submit. The other order leaves a window in which both
+    # the old and the new row are open, and a reader that samples the queue in
+    # that window sees two contradictory verdicts for one decision.
+    #
+    # This read is deliberately outside the lock that resolve() and submit()
+    # each take. Only this function ever writes a QUEUE_SOURCE row, so a
+    # concurrent peer cannot invalidate the answer: the worst case is resolving
+    # a row a twin already resolved (resolve() skips anything not open, so it is
+    # idempotent) or missing one, which the next run picks up.
+    stale = [e for e in cq._load(path or cq.DEFAULT_PATH)
+             if e.get("source") == QUEUE_SOURCE
+             and e.get("status") in cq.OPEN_STATUSES
+             and str(e.get("dedup_key", "")).startswith("kalshi-build-or-drop|")
+             and e.get("dedup_key") != key]
+    if stale:
+        cq.resolve([e["dedup_key"] for e in stale], QUEUE_SOURCE,
+                   note=(f"superseded — the verdict moved to {signature} on "
+                         f"{host} at {_now()[:19]}Z; this row described a "
+                         f"reading that no longer holds"), **kwargs)
+
+    # md5, not hash(): str hashing is salted per interpreter run, so `hash()`
+    # would give the same verdict a different id on every invocation and any
+    # test pinning it would be flaky.
+    short = hashlib.md5(signature.encode()).hexdigest()[:6]
+    added, suppressed = cq.submit([{
+        "id": f"kalshi-build-{datetime.now().strftime('%Y%m%d')}-{short}",
+        "dedup_key": key,
+        "severity": severity,
+        "description": description,
+        "ts": datetime.now().isoformat(),
+        "status": "awaiting_chairman",
+    }], QUEUE_SOURCE, **kwargs)
+
+    if added:
+        return added, (f"raised {severity} ({signature}); closed "
+                       f"{len(stale)} superseded row(s)")
+    return 0, (f"already open, unchanged ({signature})")
+
 
 def email_verdict(rows=None, force=False):
     """Buffer the sector's verdict to Jack. Returns (sent, why_or_why_not).
@@ -1341,6 +1502,24 @@ def email_verdict(rows=None, force=False):
     cost_verdict, why_cost, cost_detail = edge_versus_cost(rows)
     signature = (f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}"
                  f"|{cost_verdict}")
+
+    # BEFORE the dedupe early-return below, deliberately. The queue is the
+    # durable record and the email is the notification; they answer to different
+    # schedules. If this sat after the return, a run where the verdict was
+    # unchanged (the common case, by design) would leave the Chairman's row
+    # untouched — including the run where a previously-evicted or
+    # manually-cleared row needed re-raising. The three verdicts are already
+    # computed above, so passing them in costs nothing.
+    try:
+        _n, _why_q = queue_build_decision(
+            rows, premise=(premise, why_premise, detail),
+            proven=(proven, why_edge), cost=(cost_verdict, why_cost, cost_detail))
+        logger.info(f"  kalshi build decision -> Chairman queue: {_why_q}")
+    except Exception as e:                       # noqa: BLE001
+        # A queue failure must not swallow the email. Loud, not silent: a
+        # decision that reached neither the queue nor the log is the exact
+        # condition this function was added to end.
+        logger.error(f"  kalshi build decision did NOT reach the queue: {e}")
 
     try:
         prior_text = VERDICT_STATE.read_text()
@@ -1555,6 +1734,16 @@ def main():
     print("\n  Until this reads PROVEN, kalshi_scanner.size_position returns 0 "
           "contracts\n  for every DISAGREEMENT candidate. Structural locks are "
           "unaffected —\n  they are arithmetic and need no estimator.")
+
+    # The durable half. main() is holding all three verdicts already, so a plain
+    # `--report` run maintains the Chairman's row rather than leaving the record
+    # behind the reading it just printed. When --email is passed, email_verdict
+    # does this with the same values, so skip the redundant second pass.
+    if not args.email:
+        _, why_q = queue_build_decision(
+            rows, premise=(premise, why_premise, pd),
+            proven=(ok, why), cost=(cost_verdict, why_cost, cd))
+        print(f"\n  queue  : {why_q}")
 
     if args.email:
         sent, why = email_verdict(rows)

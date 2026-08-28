@@ -1,6 +1,8 @@
 {
-  "generated_at": "2026-08-21T04:19:46.948477",
+  "generated_at": "2026-08-28T01:57:37.076369",
   "violations": [],
   "decision_flags": [],
-  "clean": true
+  "clean": true,
+  "bugs_filed": 0,
+  "decisions_filed": 0
 }

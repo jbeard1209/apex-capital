@@ -1,13 +1,13 @@
 {
-  "checked_at": "2026-08-20T21:02:29.184688",
-  "laws": 8,
-  "violated": 0,
-  "cannot_tell": 4,
+  "checked_at": "2026-08-27T22:18:50.030092",
+  "laws": 12,
+  "violated": 1,
+  "cannot_tell": 6,
   "results": [
     {
       "law": "nested_probabilities_are_monotone",
       "verdict": "CANNOT_TELL",
-      "detail": "last scan is 70h old (limit 36h) \u2014 these quotes are history, not evidence about the book now. Owner: Kalshi sector cron. Owner: Kalshi sector.",
+      "detail": "this host (mac) does not schedule kalshi_scanner.py, so its copy of kalshi_ladders.json is stale by construction \u2014 there is no state sync between hosts. Owner: the host whose crontab runs the Kalshi scanner",
       "source_a": "kalshi quote, low rung",
       "source_b": "kalshi quote, high rung (same event)",
       "n_examined": null,
@@ -16,9 +16,18 @@
     {
       "law": "quoted_prices_have_two_sides",
       "verdict": "CANNOT_TELL",
-      "detail": "last scan is 70h old (limit 36h) \u2014 these quotes are history, not evidence about the book now. Owner: Kalshi sector cron. Owner: Kalshi sector.",
+      "detail": "this host (mac) does not schedule kalshi_scanner.py, so its copy of kalshi_scan_log.json is stale by construction \u2014 there is no state sync between hosts. Owner: the host whose crontab runs the Kalshi scanner",
       "source_a": "recorded ask (market_price)",
       "source_b": "bid on the same contract",
+      "n_examined": null,
+      "evidence": []
+    },
+    {
+      "law": "surfaced_rungs_clear_their_ladder",
+      "verdict": "CANNOT_TELL",
+      "detail": "this host (mac) does not schedule kalshi_scanner.py, so its copy of kalshi_scan_log.json is stale by construction \u2014 there is no state sync between hosts. Owner: the host whose crontab runs the Kalshi scanner",
+      "source_a": "the scanner's stored per-candidate coherence verdict",
+      "source_b": "the impossible-ladder set re-derived here from raw rungs",
       "n_examined": null,
       "evidence": []
     },
@@ -33,11 +42,45 @@
     },
     {
       "law": "deployed_set_matches_repo",
-      "verdict": "HOLDS",
-      "detail": "322 tracked .py identical on apex-capital, no uncommitted files there",
+      "verdict": "VIOLATED",
+      "detail": "0 tracked file(s) absent from apex-capital, 28 differ, 0 file(s) run there that are in no commit. The host is not running the repo.",
       "source_a": "git ls-files + local md5 (repo)",
       "source_b": "md5sum + find on the trading host (deployed)",
-      "n_examined": 322,
+      "n_examined": 317,
+      "evidence": [
+        {
+          "differs": "agent_inbox.py"
+        },
+        {
+          "differs": "agent_meeting.py"
+        },
+        {
+          "differs": "apex_improvement_board.py"
+        },
+        {
+          "differs": "backup_data.py"
+        },
+        {
+          "differs": "board_issue_ledger.py"
+        },
+        {
+          "differs": "board_meeting.py"
+        },
+        {
+          "differs": "canary_agent.py"
+        },
+        {
+          "differs": "catch_up.py"
+        }
+      ]
+    },
+    {
+      "law": "shipped_config_matches_repo",
+      "verdict": "HOLDS",
+      "detail": "8 allowlisted data/ file(s) tracked and identical on apex-capital",
+      "source_a": "deploy.sh data/ allowlist \u2229 git ls-files + local md5 (what we chose to ship)",
+      "source_b": "md5sum on the trading host (what it actually has)",
+      "n_examined": 8,
       "evidence": []
     },
     {
@@ -61,7 +104,7 @@
     {
       "law": "broker_host_census",
       "verdict": "HOLDS",
-      "detail": "UNSTAMPED last traded 2026-07-30; apexcapitalc last traded 2026-08-19; mac last traded 2026-08-14; macbookair17 last traded 2026-08-07",
+      "detail": "UNSTAMPED last traded 2026-07-30; apexcapitalc last traded 2026-08-27; mac last traded 2026-08-24; macbookair17 last traded 2026-08-07",
       "source_a": "Alpaca order history, host tag off client_order_id",
       "source_b": "DOCUMENTED_HOST_TAGS / INFRASTRUCTURE.md",
       "n_examined": 4,
@@ -70,10 +113,28 @@
     {
       "law": "broker_orders_are_ledgered",
       "verdict": "HOLDS",
-      "detail": "all 19 order(s) stamped 'mac' since 2026-07-30 passed through order_ledger, and therefore through risk_gate.check",
+      "detail": "all 20 order(s) stamped 'mac' since 2026-07-30 passed through order_ledger, and therefore through risk_gate.check",
       "source_a": "Alpaca order history for orders stamped by THIS host",
       "source_b": "data/order_ledger.json, written inside the patched submit_order",
-      "n_examined": 19,
+      "n_examined": 20,
+      "evidence": []
+    },
+    {
+      "law": "work_queues_drain",
+      "verdict": "HOLDS",
+      "detail": "all 4 measurable work queue(s) either drain inside the 14d deadline or have a scheduled consumer holding a backlog (7 more carry no readable row timestamp)",
+      "source_a": "queue files on disk (how long work has waited)",
+      "source_b": "schedule + reader graph (whether anything can take it)",
+      "n_examined": 4,
+      "evidence": []
+    },
+    {
+      "law": "recorded_exits_are_executed",
+      "verdict": "CANNOT_TELL",
+      "detail": "this host is 'mac'; the sell_log that matters belongs to 'apexcapitalc' and there is no state sync between hosts. Owner: apexcapitalc.",
+      "source_a": "state.json sell_log (this firm's own record of closed trades, and the pnl_pct that cit_director turns into the firm's win rate)",
+      "source_b": "Alpaca order history (what the broker actually filled)",
+      "n_examined": null,
       "evidence": []
     }
   ]

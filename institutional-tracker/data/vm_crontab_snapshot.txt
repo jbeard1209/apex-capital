@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-24T14:29:10Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-08-27T15:30:01Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -293,9 +293,20 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # exactly the `presence-is-not-currency` failure. Chained, a failed scan means
 # no board session at all, which is visible, instead of a confident stale one.
 #
-# FOUR SLOTS, SPREAD ON PURPOSE. Kalshi is a 24/7 exchange and 94.4% of its
-# open markets have no order book at any given moment; the ones that do are
-# whatever is live RIGHT NOW. Scanning the same hour three times samples the
+# FOUR SLOTS, SPREAD ON PURPOSE. Kalshi is a 24/7 exchange and the book that
+# is live is whatever is live RIGHT NOW.
+#
+# This block said "94.4% of open markets have no order book" until 2026-08-24.
+# That rate was real but it was a fact about the FEED, not the exchange: it was
+# measured on the flat /markets walk, which serves multivariate parlay shards
+# first (59,989 of 60,000 on 2026-08-17) and shards have no book by
+# construction. Through /events with shards excluded, 94.9% of the 95,973
+# genuine markets DO carry an ask. Quoting the old number here was a live
+# hazard, not untidiness -- a reader checking it against a live scan concludes
+# the filter is inverted and loosens the one gate that must never be loosened.
+# A rate is a fact about a population: quote the population or drop the rate.
+#
+# Scanning the same hour three times samples the
 # same population three times. 02:10 UTC (22:10 EDT) is the important one —
 # that is US sports in progress, which is where the near-certainty band the
 # Chairman described actually populates. Idempotent per (ticker, date), so
@@ -307,8 +318,15 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # scan failed — that is the day the ledger most needs closing out. 11:45 UTC
 # sits after the overnight settlements and after the 11:10 crontab-snapshot
 # refresh and 11:40 governance sweep, and 1h45m before the 13:30 board meeting.
-# The verdict will read NOT PROVEN — NOT YET for months (200 settled
-# observations minimum). That is the gate working, not the gate failing.
+# THE VERDICT NOW READS "BLOCKED, NOT WAITING", AND THAT IS NOT THE SAME AS
+# "NOT YET". This block promised NOT YET for months on a 200-settled minimum,
+# which told every reader to sit still. The sample passed that months early
+# (1,258 settled) and the gate still cannot open: 0 of 3,157 current-regime
+# rows carry a probability WE produced, because no calibrated estimator is
+# installed. More settlements cannot clear a missing component. An evidentiary
+# blocker discharges with time and means WAIT; a structural one never does and
+# means GO BUILD SOMETHING. Owner: the Chairman, as a build-or-drop decision.
+# Do not read a NOT-YET into this line again.
 45 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --resolve --report --email >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
 
 # --- FIXED INCOME MONITORS (added 2026-08-16) -------------------------------
@@ -374,3 +392,22 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # absence as AGENT_UNSCHEDULED (owner BOARD) and had no way to say so on a
 # schedule. Runs after parameter_audit so the two censuses share a night.
 10 4 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 agent_sweep.py >> logs/agent_sweep_$(date +\%Y\%m\%d).log 2>&1
+
+# --- WEEKEND COHERENCE (added 2026-08-24, Chairman-approved) ----------------
+# main.py runs 1-5 only, so the coherence layer went dark from Fri 20:15 to
+# Mon 13:45 -- a 65.5h window in which positions_conserve and
+# broker_host_census do not run at all. Those two are the ONLY laws that can
+# see the live Alpaca account, and this VM is the only host that can run them
+# (there is no state sync between hosts). Meanwhile the Kalshi scanner runs
+# * * *, so the exchange kept being sampled all weekend with nothing checking
+# the arithmetic on what came back.
+#
+# Read-only. coherence_laws.py compares two independently-sourced measurements
+# and writes a report; it transmits no order and moves no position.
+#
+# --exit-on-violation-only IS REQUIRED HERE, not decoration. The default exit
+# code is 1 on VIOLATED *or* CANNOT_TELL, which is correct for CI and wrong for
+# a scheduler: positions_conserve defers off the writer host on every single
+# run by design, so the strict code would mark this job failed every weekend
+# forever, and a job that always fails is a job whose output nobody reads.
+30 14 * * 6,0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 coherence_laws.py --report --exit-on-violation-only >> logs/coherence_$(date +\%Y\%m\%d).log 2>&1

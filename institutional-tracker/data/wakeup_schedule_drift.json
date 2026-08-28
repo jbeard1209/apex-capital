@@ -1,0 +1,7 @@
+{
+  "generated_at": "2026-08-23T14:11:23.426485",
+  "schedule_source": "snapshot(vm_crontab_snapshot.txt)",
+  "host": "Mac.lan",
+  "n_disagreements": 0,
+  "disagreements": []
+}

@@ -92,12 +92,13 @@ def _now() -> datetime:
 
 
 def _age_hours(ts_str: str) -> float:
-    """Return age of an ISO timestamp in hours. Returns 9999 on parse failure."""
-    try:
-        dt = datetime.fromisoformat(str(ts_str)[:19])
-        return (_now() - dt).total_seconds() / 3600
-    except Exception:
-        return 9999.0
+    """Return age of an ISO timestamp in hours. Returns 9999 on parse failure.
+
+    9999 is fail-closed: this watchdog asks whether CIT's own artifacts have
+    gone stale, so a stamp it cannot read must trip the alarm, not clear it.
+    """
+    from time_utils import age_hours
+    return age_hours(ts_str, default=9999.0)
 
 
 def _get_supervisor(agent_name: str) -> str:

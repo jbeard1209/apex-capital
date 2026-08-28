@@ -268,5 +268,15 @@
     "source": "main",
     "host": "mac",
     "ts": "2026-08-14T15:35:06.875114+00:00"
+  },
+  {
+    "order_id": "fa138544-2aa9-4f29-b43f-83ad212d1262",
+    "client_order_id": "apex-mac-boardmeeting-a1bafae28e3c",
+    "symbol": "HASI",
+    "side": "OrderSide.SELL",
+    "qty": "85",
+    "source": "boardmeeting",
+    "host": "mac",
+    "ts": "2026-08-24T13:43:52.287296+00:00"
   }
 ]

@@ -1,15 +1,162 @@
 {
-  "generated_at": "2026-08-20T21:02:27.147275",
+  "generated_at": "2026-08-27T12:08:30.545604",
   "dry_run": false,
-  "proposals_reviewed": 2,
+  "proposals_reviewed": 5,
   "approved_count": 0,
   "rejected_count": 0,
   "deferred_count": 0,
-  "needs_info_count": 2,
+  "needs_info_count": 5,
   "clarify_path": "data/cit_clarification_requests.json",
   "results": [
     {
-      "proposal_id": "CIT-2026-881",
+      "proposal_id": "fund-sanity-FICO",
+      "title": "Impossible fundamentals for FICO \u2014 quarantine from valuation",
+      "severity": "HIGH",
+      "category": "LOGIC_ERROR",
+      "passed": false,
+      "classification": "NEEDS_INFO",
+      "approves": 3,
+      "rejects": 0,
+      "defers": 0,
+      "clarifies": 4,
+      "votes": [
+        {
+          "deputy": "Deputy Manager",
+          "vote": "CLARIFY",
+          "rationale": "Proposed fix is not specific enough to implement safely: 'Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDG'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
+        },
+        {
+          "deputy": "Deputy CRO",
+          "vote": "APPROVE",
+          "rationale": "No risk control exposure \u2014 evidence checks out."
+        },
+        {
+          "deputy": "Deputy CIT Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
+        },
+        {
+          "deputy": "Deputy Chief of Staff",
+          "vote": "APPROVE",
+          "rationale": "HIGH priority with verified evidence \u2014 within deputy mandate, CoS supports."
+        },
+        {
+          "deputy": "Deputy IRM",
+          "vote": "APPROVE",
+          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
+        },
+        {
+          "deputy": "Deputy R&D Leader",
+          "vote": "CLARIFY",
+          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
+        },
+        {
+          "deputy": "Deputy Operations Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
+        }
+      ]
+    },
+    {
+      "proposal_id": "fund-sanity-MSCI",
+      "title": "Impossible fundamentals for MSCI \u2014 quarantine from valuation",
+      "severity": "HIGH",
+      "category": "LOGIC_ERROR",
+      "passed": false,
+      "classification": "NEEDS_INFO",
+      "approves": 3,
+      "rejects": 0,
+      "defers": 0,
+      "clarifies": 4,
+      "votes": [
+        {
+          "deputy": "Deputy Manager",
+          "vote": "CLARIFY",
+          "rationale": "Proposed fix is not specific enough to implement safely: 'Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDG'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
+        },
+        {
+          "deputy": "Deputy CRO",
+          "vote": "APPROVE",
+          "rationale": "No risk control exposure \u2014 evidence checks out."
+        },
+        {
+          "deputy": "Deputy CIT Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
+        },
+        {
+          "deputy": "Deputy Chief of Staff",
+          "vote": "APPROVE",
+          "rationale": "HIGH priority with verified evidence \u2014 within deputy mandate, CoS supports."
+        },
+        {
+          "deputy": "Deputy IRM",
+          "vote": "APPROVE",
+          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
+        },
+        {
+          "deputy": "Deputy R&D Leader",
+          "vote": "CLARIFY",
+          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
+        },
+        {
+          "deputy": "Deputy Operations Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
+        }
+      ]
+    },
+    {
+      "proposal_id": "fund-sanity-SBAC",
+      "title": "Impossible fundamentals for SBAC \u2014 quarantine from valuation",
+      "severity": "HIGH",
+      "category": "LOGIC_ERROR",
+      "passed": false,
+      "classification": "NEEDS_INFO",
+      "approves": 3,
+      "rejects": 0,
+      "defers": 0,
+      "clarifies": 4,
+      "votes": [
+        {
+          "deputy": "Deputy Manager",
+          "vote": "CLARIFY",
+          "rationale": "Proposed fix is not specific enough to implement safely: 'Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDG'. CIT Director: rewrite the fix with exact function names, file paths, or code changes."
+        },
+        {
+          "deputy": "Deputy CRO",
+          "vote": "APPROVE",
+          "rationale": "No risk control exposure \u2014 evidence checks out."
+        },
+        {
+          "deputy": "Deputy CIT Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix description reads like a general suggestion rather than actionable code change. Provide a specific function name, file, or code snippet."
+        },
+        {
+          "deputy": "Deputy Chief of Staff",
+          "vote": "APPROVE",
+          "rationale": "HIGH priority with verified evidence \u2014 within deputy mandate, CoS supports."
+        },
+        {
+          "deputy": "Deputy IRM",
+          "vote": "APPROVE",
+          "rationale": "No governance exposure, evidence is verifiable, fix doesn't introduce accountability gap."
+        },
+        {
+          "deputy": "Deputy R&D Leader",
+          "vote": "CLARIFY",
+          "rationale": "Fix description is too vague for R&D to assess signal quality impact. Need specific function/file reference."
+        },
+        {
+          "deputy": "Deputy Operations Director",
+          "vote": "CLARIFY",
+          "rationale": "Fix is not actionable \u2014 no specific command, file, or function identified. Operations needs exact steps to implement."
+        }
+      ]
+    },
+    {
+      "proposal_id": "CIT-2026-1204",
       "title": "Replace fixed R&D cadence with event-triggered research cycles",
       "severity": "MEDIUM",
       "category": "VISION",
@@ -17,8 +164,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 2,
-      "clarifies": 3,
+      "defers": 0,
+      "clarifies": 5,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -27,8 +174,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "DEFER",
-          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+          "vote": "CLARIFY",
+          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
         },
         {
           "deputy": "Deputy CIT Director",
@@ -42,8 +189,8 @@
         },
         {
           "deputy": "Deputy IRM",
-          "vote": "DEFER",
-          "rationale": "Change touches governance/oversight mechanisms \u2014 must have IRM principal review, not just deputy approval."
+          "vote": "CLARIFY",
+          "rationale": "IRM requires a specific, verifiable evidence reference before approving any code change. Vague evidence makes post-implementation audit impossible."
         },
         {
           "deputy": "Deputy R&D Leader",
@@ -58,7 +205,7 @@
       ]
     },
     {
-      "proposal_id": "CIT-2026-882",
+      "proposal_id": "CIT-2026-1205",
       "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
       "severity": "LOW",
       "category": "VISION",
@@ -66,8 +213,8 @@
       "classification": "NEEDS_INFO",
       "approves": 2,
       "rejects": 0,
-      "defers": 3,
-      "clarifies": 2,
+      "defers": 2,
+      "clarifies": 3,
       "votes": [
         {
           "deputy": "Deputy Manager",
@@ -76,8 +223,8 @@
         },
         {
           "deputy": "Deputy CRO",
-          "vote": "DEFER",
-          "rationale": "Fix touches risk controls \u2014 this requires the full board and CRO principal sign-off, not just deputies."
+          "vote": "CLARIFY",
+          "rationale": "No verifiable evidence cited (no file:line, metric, or data path). CIT Director must provide specific evidence before CRO can approve."
         },
         {
           "deputy": "Deputy CIT Director",

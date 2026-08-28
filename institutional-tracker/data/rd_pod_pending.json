@@ -583,5 +583,52 @@
     "proposed_fix": "Add parameters for both sources, defaulting to the real reads, and flip the pill to injected=True.",
     "routed_to_pod": "rd",
     "routed_at": "2026-08-17T19:39:55.969080"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 90,
+    "title": "10 ERROR lines \u2014 dominant: `'get'`",
+    "description": "The last 24-48h of logs contain 10 ERROR-level entries (3530 WARNINGs). Most frequent error class: `'get'` (3 of 3 sampled). Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Recent log samples:\n  \u2022 15:40:13  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 13:12:25  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 12:06:58  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'",
+    "proposed_fix": "Most frequent error type: `'get'` (3/3 sampled). Locate the call site in logs/run_*.log matching `15:40:13  ERROR       [Canary] Manager Agent step failed: 's`, wrap it in `except 'get'` and demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-943",
+    "context": {
+      "captured_at": "2026-08-21T18:07:18.363632",
+      "canary_level": "GREEN",
+      "canary_triggers": [],
+      "cro_level": "MODERATE",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 334,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 25,
+      "last_buy": {
+        "ticker": "TFC",
+        "date": "2026-07-31"
+      },
+      "open_issues_count": 4110,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 0,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: GREEN | CRO: MODERATE | Positions: 0 open | Day 334",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-08-21T18:07:18.498574"
+  },
+  {
+    "source": "internal_audit",
+    "severity": "HIGH",
+    "category": "INTEGRATION",
+    "title": "Failure class 'fix_erases_its_detector' has detectors, and none of them runs",
+    "detail": "every surviving detector exists and nothing on a schedule runs it: test_pipeline_smoke.py::TestWrongfulRetirement \u2014 test_pipeline_smoke.py is on no scheduler AND not in the shipped pre-push hook \u2014 nothing runs it at all Owner: CIT \u2014 NO RUNTIME DETECTOR, tests only. The control is correct and dormant, which reads on every report as coverage.",
+    "proposed_fix": "Put a detector on a scheduler (cron manifest or main.py), or record in CONTROL_CENSUS that this class is watched only at push time and accepted as such.",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-08-23T21:24:10.074275"
   }
 ]

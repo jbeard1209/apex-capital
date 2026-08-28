@@ -1,33 +1,21 @@
 {
-  "checked_at": "2026-08-21T00:50:09.099590",
+  "checked_at": "2026-08-27T21:28:20.101598",
   "issues": [
     {
       "severity": "HIGH",
       "check": "deadmans_switch_sanity",
-      "message": "pipeline_heartbeat.json is 149.9h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
-      "auto_fixed": false
-    },
-    {
-      "severity": "HIGH",
-      "check": "email_loop_detection",
-      "message": "Repeated email subjects in buffer (2 unique subject(s) appear 5+ times): \"Coherence: 2 law(s) violated on MacBook-Air-173\" \u00d726; \"Coherence: 1 law(s) violated on MacBook-Air-173\" \u00d77",
-      "auto_fixed": false
-    },
-    {
-      "severity": "HIGH",
-      "check": "single_writer",
-      "message": "the designated writer 'apexcapitalc' has been silent 45h (last order 2026-08-19T08:00) and no other host traded after it \u2014 so a market closure cannot be told apart from an outage from here. Verify the host directly. Guard mode is 'enforce', designated writer 'apexcapitalc'.",
+      "message": "pipeline_heartbeat.json is 314.6h old on a weekday (threshold 26.0h) \u2014 possible genuine pipeline outage or VM issue.",
       "auto_fixed": false
     }
   ],
   "healthy": false,
   "verdicts": {
     "deadmans_switch_sanity": "FAIL",
-    "email_loop_detection": "FAIL",
+    "email_loop_detection": "PASS",
     "agent_file_freshness": "PASS",
     "ml_model_health": "SKIP",
     "peer_host_liveness": "PASS",
-    "single_writer": "FAIL"
+    "single_writer": "PASS"
   },
   "skipped": {
     "ml_model_health": "model_v2_meta.json carries no AUC field \u2014 nothing to compare"

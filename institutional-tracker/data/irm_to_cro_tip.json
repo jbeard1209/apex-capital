@@ -1,17 +1,19 @@
 {
-  "generated_at": "2026-08-14T16:46:45.550316",
+  "generated_at": "2026-08-27T10:51:41.686393",
   "source": "anonymous",
-  "urgency": "HIGH",
-  "risk_score": 5,
-  "alert_summary": "Anonymous risk assessment: 3 concern(s) identified at severity 5/10. Board verdict: MODERATE RISK \u2014 IRM Board finds manageable concerns. Monitor closely.. Recommend board review.",
+  "urgency": "CRITICAL",
+  "risk_score": 10,
+  "alert_summary": "Anonymous risk assessment: 10 concern(s) identified at severity 10/10. Board verdict: ELEVATED RISK \u2014 IRM Board recommends Chairman review flagged items closely.. Recommend board review.",
   "concerns": [
-    "REGIME MISALIGNMENT: Portfolio is 73% deployed in equities. For BULL_LATE regime, Dalio/Klarman frameworks suggest optimal equity allocation is 45\u201365%. Currently 8pp overextended. Recommended action: raise cash buffer to at least 35%.",
-    "Canary Agent \u2014 output is 71h old (threshold: 13h). Agent may have missed a cycle.",
-    "CANARY CONTINUITY: canary_state.json is 71h old. Canary should update every few hours \u2014 a 71h gap suggests it may have stopped running."
+    "REGIME MISALIGNMENT: Portfolio is 87% deployed in equities. For BEAR regime, Dalio/Klarman frameworks suggest optimal equity allocation is 20\u201345%. Currently 42pp overextended. Recommended action: raise cash buffer to at least 55%.",
+    "NO TAIL HEDGE + OVER-DEPLOYED in BEAR regime. Portfolio is both over-exposed to equities AND lacks a hedge \u2014 a combination that creates asymmetric downside risk. Consider SH, SPXS, or raising cash to the optimal 20\u201345% range.",
+    "Chief Risk Officer \u2014 output is 73h old (threshold: 26h). Agent may have missed a cycle.",
+    "Review Agent \u2014 output is 73h old (threshold: 26h). Agent may have missed a cycle.",
+    "Manager Agent \u2014 output is 306h old (threshold: 26h). Agent may have missed a cycle."
   ],
   "findings": [
-    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-67,839) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
-    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,489) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
+    "Historical stress scenario [EXTREME] \u2014 'Global Financial Crisis (2008-09)': estimated loss -68.2% (\u2248$-68,565) if a comparable event occurred today. Lesson: Correlations go to 1 in a crash. Diversification fails precisely when you need it most. Liquidity evaporates. Stop-losses may gap through levels in a fast market.",
+    "Historical stress scenario [SEVERE] \u2014 'COVID Crash (Feb-Mar 2020)': estimated loss -40.7% (\u2248$-40,922) if a comparable event occurred today. Lesson: Fastest 30%-drawdown in history. Daily moves of -10% or more. Intraday circuit breakers triggered. Fat-tail events can arrive with almost zero warning.",
     "No clear disposition effect detected. Manager is not systematically selling winners faster than losers this cycle."
   ]
 }

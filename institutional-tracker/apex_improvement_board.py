@@ -33,7 +33,12 @@ import logging
 import os
 import sys
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime
+
+# Ages come from here, never from `datetime.now() - fromisoformat(ts[:19])`.
+# chairman_action_required.json carries aware AND naive stamps under the same
+# key; `age_days` aligns both against the right `now` instead of truncating.
+from time_utils import age_days as _age_days
 
 import chairman_queue
 
@@ -277,13 +282,9 @@ def review_first_eagle(proposals):
         for p in items:
             ts = (p.get("approved_at") or p.get("reviewed_at") or
                   (p.get("pick_data") or {}).get("generated_at", ""))
-            if ts:
-                try:
-                    days_old = (datetime.now() - datetime.fromisoformat(ts[:19])).days
-                    if days_old <= _REVIEW_WINDOW_DAYS:
-                        recent.append(p)
-                except Exception:
-                    pass
+            days_old = _age_days(ts, default=None)
+            if days_old is not None and days_old <= _REVIEW_WINDOW_DAYS:
+                recent.append(p)
         logger.info("    FE approved picks in last 30d: %d", len(recent))
 
     # FE watchlist emptiness
@@ -321,16 +322,21 @@ def review_issue_resolution(proposals):
         logger.info("    chairman_action_required.json empty -- skipping resolution check.")
         return
 
-    # Filter to last 30 days
-    cutoff = datetime.now() - timedelta(days=_REVIEW_WINDOW_DAYS)
+    # Filter to last 30 days.
+    #
+    # By AGE, not by comparing a parsed stamp against a naive `cutoff`.
+    # chairman_action_required.json carries BOTH aware and naive `ts` values
+    # under the same key, so neither spelling of the old comparison worked on
+    # all of them: `fromisoformat(ts[:19])` threw the offset away and read the
+    # row four hours too new, and dropping the slice would raise TypeError on
+    # exactly the aware rows and silently discard them via the `except` — the
+    # resolution RATE would then be computed over a denominator missing every
+    # row a different producer wrote.
     recent = []
     for entry in chairman:
-        ts = entry.get("ts", "")
-        try:
-            if datetime.fromisoformat(ts[:19]) >= cutoff:
-                recent.append(entry)
-        except Exception:
-            pass
+        age = _age_days(entry.get("ts", ""), default=None)
+        if age is not None and age <= _REVIEW_WINDOW_DAYS:
+            recent.append(entry)
 
     total = len(recent)
     if total == 0:

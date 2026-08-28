@@ -1,29 +1,6 @@
 {
   "entries": [
     {
-      "ts": "2026-07-31T10:26:53.939501",
-      "date": "2026-07-31",
-      "source": "Logic Officer",
-      "portfolio": 97473.44,
-      "pnl_vs_start": -2526.5599999999977,
-      "canary": "GREEN",
-      "cro_level": "LOW",
-      "picks_today": 0,
-      "anomalies": 2,
-      "items": [
-        {
-          "severity": "HIGH",
-          "title": "Research pipeline producing ZERO picks despite 37 active agents",
-          "short": "The firm has 37 agents with status=active. Canary is GREEN. CRO is LOW. Despite all of this, the research pipeline has produced zero picks for approxi"
-        },
-        {
-          "severity": "MEDIUM",
-          "title": "1 pod(s) holding $30,000 with zero positions",
-          "short": "The following pods have significant capital but zero open positions:\n  \u2022 ML / Quantitative: $30,000"
-        }
-      ]
-    },
-    {
       "ts": "2026-07-31T11:08:28.896793",
       "date": "2026-07-31",
       "source": "Logic Team",
@@ -3424,6 +3401,79 @@
           "title": "4 expected agent(s) silent on firm channel >7 days",
           "agent": "CommunicationLogicAgent",
           "short": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Operations Dire"
+        }
+      ]
+    },
+    {
+      "ts": "2026-08-21T05:12:18.087876",
+      "date": "2026-08-21",
+      "source": "Logic Team",
+      "portfolio": 99502.73,
+      "pnl_vs_start": -497.2700000000041,
+      "canary": "GREEN",
+      "cro_level": "LOW",
+      "picks_today": 4,
+      "anomalies": 10,
+      "items": [
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income agents exist but FI pipeline hasn't run recently",
+          "agent": "PipelineLogicAgent",
+          "short": "FI research agents are registered but fi_pipeline_report.json is 158h old."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ML / Quantitative: $30,000 capital, zero positions",
+          "agent": "CapitalLogicAgent",
+          "short": "Pod 'ML / Quantitative' has a $30,000 budget and currently holds $30,000 with zero open positions."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "7 Chairman action item(s) unresolved for >3 days",
+          "agent": "GovernanceLogicAgent",
+          "short": "Items: '?', 'ML v3/v4/v5 fail every nightly run \u2014 pyarrow never', 'logic_team noon run missed when Mac sleeps \u2014 not i'"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "ST model AUC 0.548 \u2014 barely above random; weak edge",
+          "agent": "MLLogicAgent",
+          "short": "The model's holdout ensemble AUC is 0.5477 (walk-forward \u00b10.073) (CV mean 0.5477). That is only marginally better than a"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "12 open positions have no review recommendation",
+          "agent": "DataIntegrityLogicAgent",
+          "short": "state.json shows 12 position(s) that don't appear in review_recommendations.json: ['GS', 'LLY', 'NEE', 'AMAT', 'KO']. Th"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "CIT backlog has 500 open items \u2014 proposals not being actioned",
+          "agent": "CommunicationLogicAgent",
+          "short": "data/cit_backlog.json holds 500 entries, 500 open. A backlog this deep means the CIT is generating proposals far faster "
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "IRM has 3 red flag(s) but CRO=LOW \u2014 risk signals contradict",
+          "agent": "RiskCoherenceLogicAgent",
+          "short": "The Independent Risk Manager is flagging 3 red flag(s) while the CRO risk bulletin shows level=LOW. These two risk monit"
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "Fixed Income pipeline report is 158h old",
+          "agent": "PodHealthLogicAgent",
+          "short": "fi_pipeline_report.json last updated 158h ago. The Fixed Income pipeline should run daily."
+        },
+        {
+          "severity": "MEDIUM",
+          "title": "First Eagle pipeline report is 1168h old",
+          "agent": "PodHealthLogicAgent",
+          "short": "fe_pipeline_log.json last updated 1168h ago. The First Eagle pipeline should run daily."
+        },
+        {
+          "severity": "LOW",
+          "title": "5 expected agent(s) silent on firm channel >7 days",
+          "agent": "CommunicationLogicAgent",
+          "short": "These agents have not posted to the firm channel in 7+ days: Canary Agent, Chief of Staff, IRM Director, Logic Team Dire"
         }
       ]
     }

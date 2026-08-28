@@ -391,13 +391,19 @@ def _load_json_list_safe(path) -> list:
 
 
 def _file_age_hours(path) -> Optional[float]:
-    """Return how old a file's generated_at timestamp is in hours, or None."""
+    """Return how old a file's generated_at timestamp is in hours, or None.
+
+    An unreadable stamp falls through to the file's mtime rather than to a
+    number — mtime is a real observation of when the producer last wrote, and
+    None ("no age") is the honest answer when even that is unavailable.
+    """
+    from time_utils import age_hours
     try:
         data = _load_json_safe(path)
         ts   = data.get("generated_at") or data.get("timestamp") or data.get("last_updated")
-        if ts:
-            dt = datetime.fromisoformat(str(ts)[:19])
-            return (datetime.now() - dt).total_seconds() / 3600
+        age = age_hours(ts, default=None)
+        if age is not None:
+            return age
         mtime = os.path.getmtime(path)
         return (datetime.now().timestamp() - mtime) / 3600
     except Exception:

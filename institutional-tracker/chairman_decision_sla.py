@@ -31,6 +31,7 @@ SOURCES it pulls decisions from:
 DECISION LIFECYCLE (status on each queue entry):
   awaiting_chairman  → surfaced, clock running (deadline = first_surfaced + SLA_DAYS)
   decided            → Chairman resolved it (set by the app session; we archive it)
+  resolved_upstream  → the producer closed the row this mirrors; no decision needed
   escalated_to_board → SLA_DAYS elapsed with no decision; board proposal filed
 
 This agent NEVER makes the decision itself and NEVER sends email. It only
@@ -184,6 +185,71 @@ def _escalate_to_board(item):
     return True
 
 
+ARCHIVE_PATH = DATA / "chairman_resolved_archive.json"   # chairman_queue_compactor's
+
+
+def _close_resolved_upstream(queue_by_id):
+    """Close queue items whose producer has already closed the row they mirror.
+
+    This inbox is a MIRROR of chairman_action_required.json, and it had no path
+    to hear a closure. `chairman_queue.resolve()` closes a row when the condition
+    it described stops being observed, and `chairman_queue_compactor` then moves
+    the closed row to chairman_resolved_archive.json — neither of which this file
+    ever read. So once ingested, an item stayed `awaiting_chairman` until the
+    Chairman decided it or the 20-day clock fired, and a finding that had cleared
+    itself still reached the board as an escalation: a vote on a condition that
+    no longer exists.
+
+    Measured 2026-08-27, both hosts, independently (there is no state sync, so
+    each accumulated its own): 44 of the Mac's 134 pending items (33%) and 22 of
+    the VM's 58 (38%) were already resolved-and-archived upstream and still
+    counting down. Two of them were the top rows of the Chairman's session
+    banner, both marked OVERDUE.
+
+    ABSENCE IS NOT RESOLUTION — this is the half that must not be simplified.
+    An item whose upstream row is in NEITHER file is left exactly as it was.
+    `chairman_queue._submit_locked` evicts a producer's least-severe rows past a
+    per-source cap of 20, so a row can vanish from the upstream file while
+    remaining a live, undecided question; 5 items on the Mac and 10 on the VM are
+    in that state. Closing on absence would delete real decisions on the strength
+    of a cap. Only an upstream row that EXISTS and is explicitly out of
+    OPEN_STATUSES counts — the same rule `chairman_queue.resolve()` states for
+    itself ("absence of a finding means resolved ONLY if the check that would
+    have produced it actually ran"), and the one sweep_governance._closable_kinds
+    learned first.
+
+    Returns the number closed.
+    """
+    from chairman_queue import OPEN_STATUSES
+
+    upstream = {}
+    for row in _load(CHAIR_ACTION, []) + _load(ARCHIVE_PATH, []):
+        if isinstance(row, dict) and row.get("id"):
+            # First writer wins: the live queue is read before the archive, so a
+            # row that was re-raised after being archived reads as open.
+            upstream.setdefault(row["id"], row)
+
+    now = _now()
+    closed = 0
+    for item in queue_by_id.values():
+        if item.get("status") != "awaiting_chairman":
+            continue
+        ids = [item.get("id")] + list(item.get("merged_ids") or [])
+        rows = [upstream[i] for i in ids if i in upstream]
+        if not rows:
+            continue                      # unknown, not resolved — leave it
+        if any(r.get("status") in OPEN_STATUSES for r in rows):
+            continue                      # a merged item is open while ANY leg is
+        item["status"] = "resolved_upstream"
+        item["resolved_at"] = _iso(now)
+        item["resolved_by"] = (
+            "every upstream row was closed by its producer "
+            "(chairman_queue.resolve / compactor archive) — closed by "
+            "re-observation, not by declaration, and never by absence")
+        closed += 1
+    return closed
+
+
 def run(write: bool = True) -> dict:
     queue = _load(QUEUE_PATH, [])
     if not isinstance(queue, list):
@@ -191,6 +257,10 @@ def run(write: bool = True) -> dict:
     queue_by_id = {q["id"]: q for q in queue if isinstance(q, dict) and q.get("id")}
 
     ingested = _ingest(queue_by_id) if write else 0
+    # BEFORE the escalation loop, deliberately: an item the producer has already
+    # closed must never be handed to the board. Ingest runs first so a row that
+    # is re-raised and closed in the same window is still seen.
+    resolved_upstream = _close_resolved_upstream(queue_by_id)
 
     now = _now()
     escalated = []
@@ -216,6 +286,7 @@ def run(write: bool = True) -> dict:
     return {
         "generated_at": _iso(now),
         "ingested": ingested,
+        "resolved_upstream": resolved_upstream,
         "pending_for_chairman": pending_items,
         "escalated_to_board": escalated,
         "sla_days": SLA_DAYS,
@@ -261,7 +332,14 @@ def main():
         print(f"\n  ⚖️  Auto-escalated to BOARD VOTE (SLA blown): "
               f"{', '.join(rep['escalated_to_board'])}")
     if not args.report:
-        print(f"\n  (ingested {rep['ingested']} new item(s) this run)")
+        print(f"\n  (ingested {rep['ingested']} new item(s), closed "
+              f"{rep['resolved_upstream']} already-resolved upstream)")
+    elif rep["resolved_upstream"]:
+        # A dry run reconciles in memory but writes nothing, so the count is
+        # what a real run WOULD close. Saying so keeps `--report` honest: the
+        # list above is already the post-reconciliation set.
+        print(f"\n  ({rep['resolved_upstream']} of these were already resolved "
+              f"upstream and are excluded above; --report writes nothing)")
     print()
 
 

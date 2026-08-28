@@ -156,8 +156,11 @@ def _missed_cos_runs(ts: str) -> int:
         return 0
     try:
         import schedule_expectations as sched
-        from datetime import datetime as _dt
-        when = _dt.fromisoformat(str(ts)[:19]).timestamp()
+        from time_utils import parse_ts
+        _when_dt = parse_ts(ts)
+        if _when_dt is None:
+            return 0
+        when = _when_dt.timestamp()
     except Exception:
         return 0
     n = sched.missed_fires_since("main.py", when)
@@ -226,12 +229,16 @@ def _load_list(path: str) -> list:
 
 
 def _age_hours(ts: str) -> float:
-    if not ts:
-        return float("inf")
-    try:
-        return (datetime.now() - datetime.fromisoformat(ts[:19])).total_seconds() / 3600
-    except Exception:
-        return float("inf")
+    """Age in hours; `inf` when the stamp is missing or unreadable.
+
+    `inf` is fail-closed for the staleness callers here (a report we cannot
+    date is not a fresh report). Note line ~198 uses it for the OPPOSITE
+    question — "was the last email sent recently enough to suppress this one" —
+    where `inf` means "send". That is also the safe direction: a monitor that
+    cannot read its own send log should speak, not stay silent.
+    """
+    from time_utils import age_hours
+    return age_hours(ts, default=float("inf"))
 
 
 def _upsert_chairman_row(rid: str, severity: str, description: str) -> bool:

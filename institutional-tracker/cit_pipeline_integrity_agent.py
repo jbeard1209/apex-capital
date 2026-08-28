@@ -192,13 +192,13 @@ def _file_age_hours(path: str) -> float:
 
 
 def _ts_age_hours(ts: str) -> float:
-    """Return age of an ISO timestamp in hours; inf if blank/invalid."""
-    if not ts:
-        return float("inf")
-    try:
-        return (datetime.now() - datetime.fromisoformat(ts[:19])).total_seconds() / 3600
-    except Exception:
-        return float("inf")
+    """Return age of an ISO timestamp in hours; inf if blank/invalid.
+
+    `inf` is fail-closed: this agent is looking for producers that have stopped,
+    so a stamp it cannot read must read as stale, never as fresh.
+    """
+    from time_utils import age_hours
+    return age_hours(ts, default=float("inf"))
 
 
 def _parse_epoch(ts: str):
@@ -207,12 +207,9 @@ def _parse_epoch(ts: str):
     None means "no readable production time", which is a different fact from
     "produced long ago" and must not be flattened into a large age.
     """
-    if not ts:
-        return None
-    try:
-        return datetime.fromisoformat(str(ts)[:19]).timestamp()
-    except Exception:
-        return None
+    from time_utils import parse_ts
+    dt = parse_ts(ts)
+    return None if dt is None else dt.timestamp()
 
 
 def _get_timestamp_from_json(data, *keys) -> str:

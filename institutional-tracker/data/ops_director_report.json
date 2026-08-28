@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T09:40:51.255310",
+  "generated_at": "2026-08-27T16:11:58.876615",
   "supervised_agents": [
     "Trade Review Team",
     "Creative Agent",
@@ -11,7 +11,7 @@
   "agent_status": {
     "Trade Review Team": {
       "status": "STALE",
-      "note": "Last updated 142h ago",
+      "note": "Last updated 317h ago",
       "data_keys": [
         "generated_at",
         "team",
@@ -32,7 +32,7 @@
     },
     "Capital Efficiency Agent": {
       "status": "STALE",
-      "note": "Last updated 137h ago",
+      "note": "Last updated 160h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -46,7 +46,7 @@
     },
     "Report Generator": {
       "status": "STALE",
-      "note": "Last updated 137h ago",
+      "note": "Last updated 159h ago",
       "data_keys": [
         "timestamp",
         "company_health",
@@ -59,7 +59,7 @@
     },
     "Premarket Check": {
       "status": "OK",
-      "note": "Last updated 1h ago",
+      "note": "Last updated 7h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -84,9 +84,17 @@
     }
   },
   "flags": [
-    "Trade Review Team: report stale (142h old)",
-    "Capital Efficiency Agent: report stale (137h old)",
-    "Report Generator: report stale (137h old)"
+    "Trade Review Team: report stale (317h old)",
+    "Capital Efficiency Agent: report stale (160h old)",
+    "Report Generator: report stale (159h old)"
   ],
-  "summary": "Floor status: 3 OK, 3 stale, 0 missing. 3 flag(s)."
+  "summary": "Floor status: 3 OK, 3 stale, 0 missing, 0 unreadable of 6 supervised. 3 flag(s).",
+  "status_counts": {
+    "OK": 3,
+    "STALE": 3,
+    "NO_REPORT": 0,
+    "ERROR": 0,
+    "unknown": 0,
+    "total": 6
+  }
 }

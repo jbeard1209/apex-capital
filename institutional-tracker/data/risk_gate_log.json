@@ -1,0 +1,11 @@
+[
+  {
+    "ts": "2026-08-24T13:43:52.145395+00:00",
+    "symbol": "HASI",
+    "side": "OrderSide.SELL",
+    "qty": "85.0",
+    "verdict": "ALLOW_EXIT",
+    "reason": "reduces an open position \u2014 exits are never gated",
+    "allowed": true
+  }
+]

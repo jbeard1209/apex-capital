@@ -69,10 +69,14 @@ def _load(path: str):
 
 
 def _age_hours(ts: str) -> float:
-    try:
-        return (datetime.now() - datetime.fromisoformat(ts[:19])).total_seconds() / 3600
-    except Exception:
-        return float("inf")
+    """Age in hours; `inf` when the stamp is missing or unreadable.
+
+    `inf` is fail-closed here: every caller uses this to decide whether an
+    inbox item is too old to act on, so an unreadable stamp must expire the
+    item rather than keep it alive forever.
+    """
+    from time_utils import age_hours
+    return age_hours(ts, default=float("inf"))
 
 
 def _auto_answer_from_files(agent_name: str, topic: str) -> tuple[str | None, str]:

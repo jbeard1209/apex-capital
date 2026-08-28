@@ -1,9 +1,11 @@
 {
-  "last_updated": "2026-08-14T16:46:47.776170",
+  "last_updated": "2026-08-27T21:57:27.168607",
   "real_errors": {
     "unclassified": 12
   },
-  "noise_demoted": {},
+  "noise_demoted": {
+    "timed out": 1
+  },
   "total_real": 12,
-  "total_demoted": 0
+  "total_demoted": 1
 }

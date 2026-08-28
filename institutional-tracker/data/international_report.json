@@ -1,234 +1,335 @@
 {
-  "generated_at": "2026-08-21T04:47:28.827775+00:00",
+  "generated_at": "2026-08-28T02:02:09.804403+00:00",
   "session": "asia_open",
-  "sentiment": "RISK_OFF",
-  "sentiment_score": -3,
+  "sentiment": "RISK_ON",
+  "sentiment_score": 3,
   "indices": [
     {
       "name": "Nikkei 225",
       "ticker": "^N225",
-      "pct": -0.45,
-      "price": 65920.9062
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Hang Seng",
       "ticker": "^HSI",
-      "pct": 0.72,
-      "price": 25883.2402
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Shanghai Comp",
       "ticker": "000001.SS",
-      "pct": 0.0,
-      "price": 3903.8054
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "KOSPI",
       "ticker": "^KS11",
-      "pct": 0.36,
-      "price": 6877.4399
+      "pct": null,
+      "price": 100.0
     },
     {
       "name": "Taiwan Weighted",
       "ticker": "^TWII",
-      "pct": 0.22,
-      "price": 45032.1914
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "ASX 200",
       "ticker": "^AXJO",
-      "pct": -0.34,
-      "price": 9053.2998
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "DAX",
       "ticker": "^GDAXI",
-      "pct": -0.42,
-      "price": 25983.0391
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "FTSE 100",
       "ticker": "^FTSE",
-      "pct": 0.04,
-      "price": 10748.2002
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "CAC 40",
       "ticker": "^FCHI",
-      "pct": -0.57,
-      "price": 8453.0898
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Euro Stoxx 50",
       "ticker": "^STOXX50E",
-      "pct": -0.35,
-      "price": 6422.0601
+      "pct": 1.0,
+      "price": 100.0
     }
   ],
   "currencies": [
     {
       "name": "EUR/USD",
       "ticker": "EURUSD=X",
-      "pct": 0.19,
-      "price": 1.1696
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "GBP/USD",
       "ticker": "GBPUSD=X",
-      "pct": 0.32,
-      "price": 1.3643
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "USD/JPY",
       "ticker": "USDJPY=X",
-      "pct": 0.48,
-      "price": 159.043
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "USD/CNH",
       "ticker": "USDCNH=X",
-      "pct": -0.02,
-      "price": 6.7218
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "AUD/USD",
       "ticker": "AUDUSD=X",
-      "pct": 0.24,
-      "price": 0.7142
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "DXY",
       "ticker": "DX-Y.NYB",
-      "pct": -0.14,
-      "price": 98.763
+      "pct": 1.0,
+      "price": 100.0
     }
   ],
   "etfs": [
     {
       "name": "Japan (EWJ)",
       "ticker": "EWJ",
-      "pct": null,
-      "price": 94.27
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Germany (EWG)",
       "ticker": "EWG",
-      "pct": null,
-      "price": 43.92
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "China LC (FXI)",
       "ticker": "FXI",
-      "pct": -0.03,
-      "price": 35.67
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "UK (EWU)",
       "ticker": "EWU",
-      "pct": null,
-      "price": 48.54
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Europe (VGK)",
       "ticker": "VGK",
-      "pct": -0.24,
-      "price": 92.01
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "EM broad (EEM)",
       "ticker": "EEM",
-      "pct": 0.77,
-      "price": 66.62
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "EAFE (EFA)",
       "ticker": "EFA",
-      "pct": -0.29,
-      "price": 107.35
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Korea (EWY)",
       "ticker": "EWY",
-      "pct": 2.14,
-      "price": 178.16
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Taiwan (EWT)",
       "ticker": "EWT",
-      "pct": -0.6,
-      "price": 104.07
+      "pct": 1.0,
+      "price": 100.0
     }
   ],
   "commodities": [
     {
       "name": "Brent Crude",
       "ticker": "BZ=F",
-      "pct": -0.21,
-      "price": 93.58
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "WTI Crude",
       "ticker": "CL=F",
-      "pct": -1.49,
-      "price": 86.52
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Gold",
       "ticker": "GC=F",
-      "pct": 1.83,
-      "price": 4598.7998
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Copper",
       "ticker": "HG=F",
-      "pct": 1.29,
-      "price": 6.5435
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Silver",
       "ticker": "SI=F",
-      "pct": 1.54,
-      "price": 69.075
+      "pct": 1.0,
+      "price": 100.0
     }
   ],
-  "notable_indices": [],
+  "notable_indices": [
+    {
+      "name": "Nikkei 225",
+      "ticker": "^N225",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "Hang Seng",
+      "ticker": "^HSI",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "Shanghai Comp",
+      "ticker": "000001.SS",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "Taiwan Weighted",
+      "ticker": "^TWII",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "ASX 200",
+      "ticker": "^AXJO",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "DAX",
+      "ticker": "^GDAXI",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "FTSE 100",
+      "ticker": "^FTSE",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "CAC 40",
+      "ticker": "^FCHI",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "Euro Stoxx 50",
+      "ticker": "^STOXX50E",
+      "pct": 1.0,
+      "price": 100.0
+    }
+  ],
   "notable_currencies": [
+    {
+      "name": "EUR/USD",
+      "ticker": "EURUSD=X",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "GBP/USD",
+      "ticker": "GBPUSD=X",
+      "pct": 1.0,
+      "price": 100.0
+    },
     {
       "name": "USD/JPY",
       "ticker": "USDJPY=X",
-      "pct": 0.48,
-      "price": 159.043
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "USD/CNH",
+      "ticker": "USDCNH=X",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "AUD/USD",
+      "ticker": "AUDUSD=X",
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "DXY",
+      "ticker": "DX-Y.NYB",
+      "pct": 1.0,
+      "price": 100.0
     }
   ],
   "notable_commodities": [
     {
-      "name": "Gold",
-      "ticker": "GC=F",
-      "pct": 1.83,
-      "price": 4598.7998
-    },
-    {
-      "name": "Silver",
-      "ticker": "SI=F",
-      "pct": 1.54,
-      "price": 69.075
+      "name": "Brent Crude",
+      "ticker": "BZ=F",
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "WTI Crude",
       "ticker": "CL=F",
-      "pct": -1.49,
-      "price": 86.52
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "Gold",
+      "ticker": "GC=F",
+      "pct": 1.0,
+      "price": 100.0
     },
     {
       "name": "Copper",
       "ticker": "HG=F",
-      "pct": 1.29,
-      "price": 6.5435
+      "pct": 1.0,
+      "price": 100.0
+    },
+    {
+      "name": "Silver",
+      "ticker": "SI=F",
+      "pct": 1.0,
+      "price": 100.0
     }
   ],
   "us_implications": [
-    "Gold +1.8% \u2014 flight-to-safety bid, corroborating the RISK_OFF reading."
+    "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
+    "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
+    "DXY +1.0% \u2014 broad dollar strength; typically headwind for commodities and EM assets.",
+    "Gold +1.0% \u2014 a risk-OFF bid against a RISK_ON tape. Equities and the safe-haven bid disagree; treat the RISK_ON reading as unconfirmed and size accordingly."
   ],
-  "watch_tickers": [],
-  "unreadable": []
+  "watch_tickers": [
+    "AAPL"
+  ],
+  "unreadable": [
+    {
+      "name": "KOSPI",
+      "ticker": "^KS11"
+    }
+  ]
 }

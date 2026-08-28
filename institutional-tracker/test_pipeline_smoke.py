@@ -7208,9 +7208,32 @@ class TestThePushGateIsTheGateTheRepoShips(unittest.TestCase):
         # Production zone: the VM runs UTC, this Mac runs ET, and a fixture that
         # fabricated an ET wall clock was green here and red there for four
         # hours a night. One local pass is not evidence the push is safe.
-        self.assertIn("TZ=UTC python3 test_pipeline_smoke.py", code,
-                      "the gate runs the suite only in the local zone — it cannot "
-                      "see host-divergent failures, which is how one shipped")
+        #
+        # Assert the PROPERTY — a run of the suite carrying TZ=UTC in its env
+        # prefix — never the exact adjacent spelling. This was
+        # `assertIn("TZ=UTC python3 test_pipeline_smoke.py")` and it passed
+        # until c53b522 inserted PYTHONUNBUFFERED=1 BETWEEN those two tokens.
+        # The hook was still correct; the guard failed anyway, and would have
+        # blocked every push for a formatting change. The tempting repair —
+        # loosen it to just `assertIn("TZ=UTC")` — is worse than the bug: the
+        # hook mentions TZ=UTC in its own failure message, so that version
+        # passes on a hook that never runs the second suite at all.
+        runs = [ln for ln in code.splitlines()
+                if re.search(r"python3?\s+test_pipeline_smoke\.py", ln)]
+        self.assertGreaterEqual(
+            len(runs), 2,
+            f"the gate invokes the suite {len(runs)} time(s); it must run it "
+            f"twice — once in the local zone and once in the VM's zone.\n  "
+            + "\n  ".join(runs))
+        utc = [ln for ln in runs
+               if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+python3?\s",
+                           ln)]
+        self.assertTrue(
+            utc,
+            "no invocation of test_pipeline_smoke.py carries TZ=UTC in its "
+            "environment prefix, so the gate runs the suite only in the local "
+            "zone and cannot see host-divergent failures — which is how one "
+            "shipped. Invocations found:\n  " + "\n  ".join(runs))
 
         # Self-check: the hook verifies it is the tracked hook.
         self.assertIn("cmp -s", code,
@@ -24820,9 +24843,20 @@ class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
         code = "\n".join(ln for ln in body.split("\n")
                          if not ln.lstrip().startswith("#"))
 
-        self.assertIn("TZ=UTC", code,
-                      "the gate must run the suite in the VM's zone too — green "
-                      "on the Mac is not green")
+        # This was `assertIn("TZ=UTC", code)` and it could not fail: the hook
+        # names TZ=UTC in its own BLOCKED message, so the substring survives
+        # even if the second suite run is deleted outright. Two guards covered
+        # this property and only one of them could ever fire. Same structural
+        # check as TestThePushGateIsTheGateTheRepoShips — the property is "a run
+        # of the suite carries TZ=UTC in its env prefix", not "the file contains
+        # the letters TZ=UTC".
+        runs = [ln for ln in code.split("\n")
+                if re.search(r"python3?\s+test_pipeline_smoke\.py", ln)]
+        self.assertTrue(
+            [ln for ln in runs
+             if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+python3?\s", ln)],
+            "the gate must RUN the suite in the VM's zone too — green on the "
+            "Mac is not green. Invocations found:\n  " + "\n  ".join(runs))
         self.assertNotIn("|| exit 0", code,
                          "a gate that exits 0 when confused allows every push")
         self.assertIn("|| exit 0", body,
@@ -26697,6 +26731,717 @@ class TestAnUnreadableReportIsNotAHealthyOne(unittest.TestCase):
         self.assertIn("1 unreadable", brief["summary"],
                       f"ERROR must appear in the summary line: "
                       f"{brief['summary']!r}")
+
+
+class TestATruncatedStampIsAWrongAge(unittest.TestCase):
+    """`fromisoformat(ts[:19])` on an offset-bearing stamp is a wrong number.
+
+    `"2026-08-27T15:30:05+00:00"[:19]` is `"2026-08-27T15:30:05"` — a NAIVE
+    datetime holding UTC digits, subtracted from a naive LOCAL `now()`. On this
+    Mac the age comes back exactly one UTC offset too SMALL (4h in EDT, 5h in
+    EST — the error changes with daylight saving). On the VM, where TZ=UTC, the
+    identical line is correct. Green in production, wrong on the machine we
+    audit from: memory host_divergence_is_a_bug_class.
+
+    The direction is what makes it dangerous. Too SMALL means an artifact whose
+    true age is in (12, 16] hours reports as <= 12 and clears a 12-hour
+    freshness gate — a four-hour window every cycle where a producer that has
+    already missed its run reads as healthy. Measured 2026-08-27: 16 aware
+    artifacts misdated, every one by exactly -4.00h, `international_report.json`
+    reading 1.04h at a true age of 5.04h.
+
+    Two things are pinned here, and the second matters more than the first:
+
+      1. The BEHAVIOUR — the converted helpers return the true age of an aware
+         stamp. A ratchet alone would pass on code that removed the slice and
+         broke differently.
+      2. The RATCHET — the count of surviving truncating parses may shrink,
+         never grow.
+
+    Why removing `[:19]` is not the fix: `datetime.now() - fromisoformat(
+    "...+00:00")` raises `TypeError: can't subtract offset-naive and
+    offset-aware datetimes`, and nearly every one of these sites sits in a bare
+    `except Exception`. The age then is not wrong, it is ABSENT — and absent
+    reads as fine (the stale flag stays False). A wrong number can be argued
+    with; silence cannot. `time_utils` handles both.
+    """
+
+    # Sites still parsing with a truncating slice, measured 2026-08-27 after
+    # converting the 14 helper choke points and the two live sites in
+    # apex_improvement_board (44 -> 26). Every one of the 26 was checked against
+    # the producer it actually reads, and every one of those files is naive on
+    # disk today, so all 26 are LATENT: correct now, wrong the day their
+    # producer starts writing an offset — which
+    # `test_the_baseline_sites_are_latent_not_live` is here to catch.
+    # Shrink-only.
+    MODE_A_BASELINE = 26
+
+    # Only cuts that provably land at or after the seconds field, where the
+    # ONLY thing a slice can remove is an offset or a fraction. `[:10]` is
+    # deliberate date extraction and is not this bug.
+    TRUNCATING_CUTS = (19, 26)
+
+    # ---- detector -------------------------------------------------------
+    @staticmethod
+    def _datetime_aliases(tree):
+        """Local names bound to the datetime CLASS, and to the MODULE.
+
+        Alias-resolved rather than grepped because this class is reached five
+        ways in this codebase — `datetime.`, `_dt2.`, `dt.datetime.`,
+        `_date_ctx.`, `datetime.datetime.` — and because `date.fromisoformat`
+        must be excluded: a date has no offset, so there is nothing to discard
+        and nothing to raise. Getting that exclusion wrong is the difference
+        between a 184-row aggregate and a 28-row finding.
+        """
+        cls, mod = set(), set()
+        for n in ast.walk(tree):
+            if isinstance(n, ast.ImportFrom) and n.module == "datetime":
+                for a in n.names:
+                    if a.name == "datetime":
+                        cls.add(a.asname or a.name)
+            elif isinstance(n, ast.Import):
+                for a in n.names:
+                    if a.name == "datetime":
+                        mod.add(a.asname or a.name)
+        return cls, mod
+
+    @classmethod
+    def _is_datetime_fromisoformat(cls, func, dt_cls, dt_mod):
+        if not (isinstance(func, ast.Attribute)
+                and func.attr == "fromisoformat"):
+            return False
+        v = func.value
+        if isinstance(v, ast.Name):
+            return v.id in dt_cls
+        if isinstance(v, ast.Attribute) and isinstance(v.value, ast.Name):
+            return v.value.id in dt_mod and v.attr == "datetime"
+        return False
+
+    @classmethod
+    def _truncating_cut(cls, arg):
+        """N for a bare `<expr>[:N]` with N in TRUNCATING_CUTS, else None."""
+        if isinstance(arg, ast.Subscript) and isinstance(arg.slice, ast.Slice):
+            sl = arg.slice
+            if (sl.lower is None and sl.step is None
+                    and isinstance(sl.upper, ast.Constant)
+                    and sl.upper.value in cls.TRUNCATING_CUTS):
+                return sl.upper.value
+        return None
+
+    @classmethod
+    def _offenders(cls):
+        out = []
+        root = Path(__file__).parent
+        skip = {"venv", ".venv", "site-packages", "__pycache__",
+                "node_modules", ".git"}
+        for p in sorted(root.rglob("*.py")):
+            if any(part in skip for part in p.parts):
+                continue
+            if p.name.startswith("test_"):
+                continue
+            try:
+                src = p.read_text()
+                tree = ast.parse(src)
+            except Exception:
+                continue
+            dt_cls, dt_mod = cls._datetime_aliases(tree)
+            if not (dt_cls or dt_mod):
+                continue
+            lines = src.splitlines()
+            for n in ast.walk(tree):
+                if not (isinstance(n, ast.Call) and n.args):
+                    continue
+                if not cls._is_datetime_fromisoformat(n.func, dt_cls, dt_mod):
+                    continue
+                cut = cls._truncating_cut(n.args[0])
+                if cut is None:
+                    continue
+                out.append((str(p.relative_to(root)), n.lineno, cut,
+                            lines[n.lineno - 1].strip()[:88]))
+        return out
+
+    # ---- 1. behaviour ---------------------------------------------------
+    def test_an_aware_stamp_gets_its_true_age(self):
+        """Zone-independent: asserted against an offset-bearing stamp.
+
+        The pre-push gate runs this suite twice, once in the local zone and
+        once under TZ=UTC. A test written against a naive local stamp would
+        pass in both zones while proving nothing, because the bug is invisible
+        wherever the local offset is zero. Building the stamp from
+        `now(timezone.utc)` makes the expected answer 7.0 in EVERY zone.
+        """
+        from datetime import timezone as _tz
+        import time_utils
+
+        for spelling in ("+00:00", "Z"):
+            stamp = (datetime.now(_tz.utc) - timedelta(hours=7)).isoformat()
+            if spelling == "Z":
+                stamp = stamp.replace("+00:00", "") + "Z"
+            got = time_utils.age_hours(stamp, default=None)
+            self.assertIsNotNone(got, f"{spelling}: aware stamp must parse")
+            self.assertAlmostEqual(
+                7.0, got, places=2,
+                msg=f"{spelling}: an aware stamp 7h old must read 7h in any "
+                    f"zone, got {got}")
+
+            # The old spelling, for contrast — wrong by exactly the local UTC
+            # offset. Under TZ=UTC that offset is 0 and the two agree, which is
+            # precisely why this bug survived on the VM.
+            off = datetime.now().astimezone().utcoffset().total_seconds() / 3600
+            old = (datetime.now()
+                   - datetime.fromisoformat(stamp.replace("Z", "+00:00")[:19])
+                   ).total_seconds() / 3600
+            self.assertAlmostEqual(
+                7.0 + off, old, places=2,
+                msg="the truncating spelling should be wrong by exactly the "
+                    f"local UTC offset ({off}h); if this fails the model of "
+                    "the bug is wrong, not the fix")
+
+    def test_a_naive_stamp_is_unchanged(self):
+        """The 104 naive artifacts must keep reading exactly as before."""
+        import time_utils
+        stamp = (datetime.now() - timedelta(hours=3)).isoformat()
+        self.assertAlmostEqual(3.0, time_utils.age_hours(stamp, default=None),
+                               places=2)
+
+    def test_an_unreadable_stamp_returns_the_callers_own_default(self):
+        """`age_hours` must not pick a substitute for the caller.
+
+        The value put in place of an age you could not compute IS a decision
+        (memory fallback-that-means-act): for a staleness gate a huge number
+        raises the alarm, for a cooldown the same huge number PERMITS the
+        action. Identical form, opposite meaning — so the helper refuses to
+        guess and the caller has to name it where a reviewer can see it.
+        """
+        import time_utils
+        for bad in ("", None, "not a date", "2026-13-45T99:99:99", [], {}):
+            self.assertIsNone(time_utils.age_hours(bad),
+                              f"{bad!r} must yield None, not a number")
+            self.assertEqual(-1.0, time_utils.age_hours(bad, default=-1.0))
+        self.assertTrue(time_utils.is_stale("garbage", 1.0),
+                        "a stamp we cannot read is not evidence of freshness")
+
+    def test_a_future_stamp_is_negative_not_zero(self):
+        """Clamping to 0 makes clock skew indistinguishable from 'just now'."""
+        import time_utils
+        from datetime import timezone as _tz
+        stamp = (datetime.now(_tz.utc) + timedelta(hours=2)).isoformat()
+        self.assertAlmostEqual(-2.0, time_utils.age_hours(stamp, default=None),
+                               places=2)
+        # `timedelta.days` floors toward -inf, so an hour of skew read as
+        # "-1 days" — a day in the past. age_days is a float and does not.
+        near = (datetime.now(_tz.utc) + timedelta(hours=1)).isoformat()
+        self.assertGreater(time_utils.age_days(near, default=None), -1.0)
+
+    def test_the_converted_helpers_date_an_aware_stamp_correctly(self):
+        """The choke points themselves, not just the library underneath.
+
+        These are the functions the 44 sites collapsed into. Each is exercised
+        on a real aware stamp: before the conversion every one of them returned
+        the age minus the local UTC offset.
+        """
+        from datetime import timezone as _tz
+        import importlib
+        stamp = (datetime.now(_tz.utc) - timedelta(hours=9)).isoformat()
+
+        hours_helpers = [
+            ("agent_inbox", "_age_hours"),
+            ("agent_meeting", "_age_hours"),
+            ("cit_pipeline_integrity_agent", "_ts_age_hours"),
+            ("deputy_monitor", "_age_hours"),
+            ("cit_watchdog", "_age_hours"),
+        ]
+        for mod_name, fn_name in hours_helpers:
+            fn = getattr(importlib.import_module(mod_name), fn_name)
+            self.assertAlmostEqual(
+                9.0, fn(stamp), places=2,
+                msg=f"{mod_name}.{fn_name} must read an aware stamp 9h old as "
+                    f"9h, got {fn(stamp)}")
+
+        days_helpers = [("fe_cit_agent", "_ts_age_days"),
+                        ("board_issue_ledger", "_days_since")]
+        for mod_name, fn_name in days_helpers:
+            fn = getattr(importlib.import_module(mod_name), fn_name)
+            self.assertAlmostEqual(
+                9.0 / 24.0, fn(stamp), places=3,
+                msg=f"{mod_name}.{fn_name} must read 9h as 0.375 days")
+
+        lt = importlib.import_module("logic_team")
+        self.assertEqual(0, lt._days_since(stamp),
+                         "9h old is 0 whole days, not -1")
+
+    def test_each_helper_keeps_its_own_fail_closed_constant(self):
+        """A shared helper must not homogenise what 'unknown' means.
+
+        These four modules deliberately disagree: `inf` for an inbox item that
+        should expire, `9999.0` for a watchdog that must alarm, `None` for a
+        ledger where an unknown age must not manufacture an escalation. The
+        conversion routes them all through one parser and must NOT have routed
+        them all to one answer.
+        """
+        import importlib
+        self.assertEqual(float("inf"),
+                         importlib.import_module("agent_inbox")._age_hours(""))
+        self.assertEqual(float("inf"),
+                         importlib.import_module("agent_meeting")._age_hours(""))
+        self.assertEqual(9999.0,
+                         importlib.import_module("cit_watchdog")._age_hours(""))
+        self.assertIsNone(
+            importlib.import_module("board_issue_ledger")._days_since(""))
+        self.assertIsNone(
+            importlib.import_module("logic_team")._days_since(""))
+
+    def test_deadmans_switch_converts_rather_than_truncates(self):
+        """It works in naive local on purpose — but must CONVERT to get there.
+
+        This module subtracts producer stamps from EACH OTHER, so both sides
+        need the same awareness; naive is a deliberate, documented choice
+        (its docstring records three snapshot tests that failed on the UTC VM).
+        `[:19]` also produced a naive datetime — but a wrong one, keeping UTC
+        digits and calling them local. `as_naive_local` converts.
+        """
+        from datetime import timezone as _tz
+        import importlib
+        ds = importlib.import_module("deadmans_switch")
+        aware = datetime.now(_tz.utc) - timedelta(hours=5)
+        got = ds._parse(aware.isoformat())
+        self.assertIsNotNone(got)
+        self.assertIsNone(got.tzinfo, "the module's naive contract must hold")
+        self.assertAlmostEqual(
+            5.0, (datetime.now() - got).total_seconds() / 3600.0, places=2,
+            msg="a naive-by-conversion stamp must still be 5h old on the local "
+                f"clock, got {got}")
+
+    # ---- 2. ratchet -----------------------------------------------------
+    def test_truncating_parses_never_grow(self):
+        found = self._offenders()
+        if len(found) > self.MODE_A_BASELINE:
+            listing = "\n".join(f"    {f}:{ln}  [:{c}]  {t}"
+                                for f, ln, c, t in found)
+            self.fail(
+                f"{len(found)} truncating datetime parses, baseline is "
+                f"{self.MODE_A_BASELINE}. `fromisoformat(ts[:19])` discards a "
+                f"real UTC offset and reads one offset too NEW, which is the "
+                f"direction that clears a staleness gate. Use "
+                f"`time_utils.age_hours(ts, default=...)` instead — and name "
+                f"the default, because it is a decision.\n{listing}")
+        if len(found) < self.MODE_A_BASELINE:
+            self.fail(
+                f"only {len(found)} truncating parses remain (baseline "
+                f"{self.MODE_A_BASELINE}) — lower MODE_A_BASELINE to "
+                f"{len(found)} so the ratchet cannot drift back up. A "
+                f"shrink-only baseline that is never tightened stops being a "
+                f"ratchet.")
+
+    def test_the_ratchet_can_actually_see_a_regression(self):
+        """A detector nobody has watched fail is not known to work.
+
+        Memory the-instrument-measured-itself: prove the instrument fires on a
+        defect built to trip it, and prove it stays quiet on the two lookalikes
+        that are NOT this bug — `date.fromisoformat` (no offset to lose) and
+        `[:10]` (deliberate date extraction).
+        """
+        import tempfile, textwrap
+        cases = [
+            ("from datetime import datetime\n"
+             "def f(t): return datetime.fromisoformat(t[:19])", 1, "plain"),
+            ("import datetime\n"
+             "def f(t): return datetime.datetime.fromisoformat(t[:26])",
+             1, "module-qualified"),
+            ("from datetime import datetime as _dt2\n"
+             "def f(t): return _dt2.fromisoformat(t[:19])", 1, "aliased"),
+            ("from datetime import date\n"
+             "def f(t): return date.fromisoformat(t[:19])", 0, "date class"),
+            ("from datetime import datetime\n"
+             "def f(t): return datetime.fromisoformat(t[:10])", 0, "[:10]"),
+            ("from datetime import datetime\n"
+             "def f(t): return datetime.fromisoformat(t)", 0, "no slice"),
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            for i, (src, want, label) in enumerate(cases):
+                p = Path(td) / f"m{i}.py"
+                p.write_text(textwrap.dedent(src))
+                tree = ast.parse(p.read_text())
+                dt_cls, dt_mod = self._datetime_aliases(tree)
+                n_hits = sum(
+                    1 for n in ast.walk(tree)
+                    if isinstance(n, ast.Call) and n.args
+                    and self._is_datetime_fromisoformat(n.func, dt_cls, dt_mod)
+                    and self._truncating_cut(n.args[0]) is not None)
+                self.assertEqual(want, n_hits, f"detector on {label}: "
+                                               f"expected {want}, got {n_hits}")
+
+    def test_the_baseline_sites_are_latent_not_live(self):
+        """Every surviving site must read a producer that is still naive.
+
+        This is what makes 28 an acceptable place to stop rather than a
+        deferral: the conversion removed every site that is wrong TODAY. If a
+        producer under one of these readers starts writing offsets, this test
+        is the thing that notices — the reader would go wrong silently, and the
+        artifact census here would flip first.
+        """
+        import re as _re
+        aware_pat = _re.compile(
+            r'"(?:generated_at|timestamp|ts|run_at|created_at|updated_at|'
+            r'buffered_at|queued_at|last_started|last_ran|last_seen)"\s*:\s*'
+            r'"[^"]*\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[+-]\d{2}:?\d{2}|Z)"')
+        root = Path(__file__).parent
+        live = []
+        for f, ln, cut, txt in self._offenders():
+            win = "\n".join(
+                (root / f).read_text().splitlines()[max(0, ln - 30):ln + 2])
+            for name in set(_re.findall(r"([a-zA-Z0-9_]+\.json)", win)):
+                p = root / "data" / name
+                if p.exists() and aware_pat.search(p.read_text()[:400000]):
+                    live.append(f"{f}:{ln} reads {name}, which is now AWARE")
+        self.assertEqual(
+            [], live,
+            "a surviving truncating parse now reads an offset-bearing "
+            "producer — it is silently reading one UTC offset too new and must "
+            "move to time_utils.age_hours:\n  " + "\n  ".join(live))
+
+
+class TestTheKalshiBuildDecisionIsRecordedNotJustMailed(unittest.TestCase):
+    """The build-or-drop verdict must reach a queue, not only an inbox.
+
+    On 2026-08-27 the three Kalshi verdicts (premise / edge / cost) were emailed
+    to the Chairman on a weekly heartbeat and appeared in NO `*queue*.json`,
+    `*pending*.json` or `*chairman*.json` on either host. An email has no owner,
+    no clock, no status and no way to answer, so "nobody has decided whether to
+    build the estimator" and "the decision was made and we lost it" were the
+    same observable state — [[a-decision-recorded-nowhere]]. A queue row gets a
+    20-day `chairman_decision_sla` clock and a board escalation; mail does not.
+
+    These pin the four properties that make the row a record rather than a
+    second notification.
+    """
+
+    AGG = {"n": 2007, "quote": 0.9498, "realised": 0.9337, "ci_low": 0.922,
+           "ci_high": 0.9438, "mean_spread": 0.0366, "edge": 0.01603,
+           "edge_low": 0.00596, "edge_high": 0.02777,
+           "cost": {"maker": {"spread": 0.01829, "fee": 0.00083, "total": 0.01912},
+                    "taker": {"spread": 0.03658, "fee": 0.00334, "total": 0.03992},
+                    "spread": 0.01829, "fee": 0.00083, "total": 0.01912},
+           "net_point": -0.00309, "net_best_case": 0.00865,
+           "direction": "market OVERPRICES yes"}
+
+    def _raise(self, path, cost_verdict="MARGINAL", agg=None, settled=2007):
+        import kalshi_calibration as kk
+        detail = {"settled": settled, "strata": {},
+                  "aggregate": (self.AGG if agg is None else agg) if settled else None}
+        return kk.queue_build_decision(
+            [], path=path,
+            premise=("DEAD", "premise reason", {"settled": settled}),
+            proven=(False, "edge reason"),
+            cost=(cost_verdict, "cost reason", detail))
+
+    def _open(self, path):
+        return [r for r in json.loads(Path(path).read_text())
+                if r.get("status") == "awaiting_chairman"]
+
+    def test_a_host_with_no_ledger_raises_nothing(self):
+        """There is no state sync: the VM holds 2,007 settled rows, the Mac 0.
+
+        A row raised from the empty side would read CANNOT_TELL and would land
+        in the same list the Chairman reads as one queue, beside the VM's real
+        verdict. n == 0 means "this host has no ledger", which is not an answer.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            p = str(Path(d) / "q.json")
+            Path(p).write_text("[]")
+            n, why = self._raise(p, "CANNOT_TELL", settled=0)
+            self.assertEqual(0, n, "an empty host must not raise the decision")
+            self.assertIn("not qualified", why)
+            self.assertEqual([], self._open(p))
+
+    def test_a_ledger_that_cannot_decide_still_raises(self):
+        """The mirror of the above, and the one that is easy to get wrong.
+
+        "No ledger here" is silence; "there IS a ledger and it cannot resolve"
+        is a decision-relevant state and must reach an owner. Collapsing the two
+        into one `if not settled` is how a control goes quiet exactly when it
+        has something to say. [[verdict-with-no-consequence]]
+        """
+        with tempfile.TemporaryDirectory() as d:
+            p = str(Path(d) / "q.json")
+            Path(p).write_text("[]")
+            n, _ = self._raise(p, "CANNOT_TELL", agg=None, settled=12)
+            self.assertEqual(1, n, "12 settled rows that cannot decide is a "
+                                   "finding, not an absence")
+            self.assertEqual(1, len(self._open(p)))
+
+    def test_a_moved_verdict_supersedes_rather_than_accumulates(self):
+        """One decision, one open row — and the old one CLOSED, never dropped.
+
+        Leaving the prior row open gives the Chairman two contradictory verdicts
+        for one question, and the stale one keeps counting down toward its own
+        board escalation. Deleting it instead would erase the fact that the
+        reading moved, which is the same erasure the ledger exists to prevent.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            p = str(Path(d) / "q.json")
+            Path(p).write_text("[]")
+            self._raise(p, "MARGINAL")
+            self.assertEqual(0, self._raise(p, "MARGINAL")[0],
+                             "the weekly heartbeat must not re-raise an "
+                             "unchanged verdict")
+
+            harvestable = dict(self.AGG, edge_low=0.025, net_point=0.006)
+            self._raise(p, "HARVESTABLE", agg=harvestable)
+
+            rows = json.loads(Path(p).read_text())
+            self.assertEqual(2, len(rows), "the superseded row is kept")
+            self.assertEqual(1, len(self._open(rows and p)),
+                             "exactly one open row per decision")
+            closed = [r for r in rows if r.get("status") == "resolved"]
+            self.assertEqual(1, len(closed))
+            self.assertIn("superseded", closed[0].get("resolved_by", ""),
+                          "a closed row must say what replaced it")
+            self.assertIn("HARVESTABLE", closed[0].get("resolved_by", ""))
+
+    def test_the_dedup_key_carries_all_three_verdicts(self):
+        """Any one of premise / edge / cost moving must re-raise.
+
+        The cost verdict moves independently of the other two — the spread can
+        narrow UNHARVESTABLE into MARGINAL while the premise stays DEAD. A key
+        built from a subset would suppress exactly the news worth having.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            p = str(Path(d) / "q.json")
+            Path(p).write_text("[]")
+            self._raise(p, "MARGINAL")
+            key = self._open(p)[0]["dedup_key"]
+            for token in ("DEAD", "NOT_PROVEN", "MARGINAL"):
+                self.assertIn(token, key,
+                              f"{token} is not in the dedup key, so a change "
+                              f"in it would be suppressed as a duplicate")
+
+    def test_the_row_carries_measured_numbers_not_written_ones(self):
+        """Every figure comes from the detail dict, so it moves when it moves.
+
+        `edge_versus_cost`'s docstring read 1.73c on 2026-08-26 and 1.60c on
+        2026-08-27. A row that quoted a constant would put a decision in front
+        of the Chairman on evidence that had already reversed.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            p = str(Path(d) / "q.json")
+            Path(p).write_text("[]")
+            self._raise(p, "MARGINAL")
+            first = self._open(p)[0]["description"]
+            self.assertIn("1.60c", first, "the measured edge must appear")
+            self.assertIn("1.91c", first, "the measured cost must appear")
+            self.assertIn("-0.31c", first, "the measured net must appear")
+
+            moved = dict(self.AGG, edge=0.033, edge_low=0.025,
+                         net_point=0.014, net_best_case=0.020)
+            second = self._raise(p, "HARVESTABLE", agg=moved) and \
+                self._open(p)[0]["description"]
+            self.assertIn("3.30c", second)
+            self.assertNotIn("1.60c", second,
+                             "the new row is quoting the old measurement")
+
+    def test_the_decision_is_raised_from_a_scheduled_entry_point(self):
+        """A producer nobody calls is the firm's oldest bug class.
+
+        RUN the entry point; do not read it. The first version of this test
+        walked the AST for a Call node inside `main()`, and a mutation that
+        wrapped the call in `if False:` still PASSED — the node was lexically
+        present and permanently unreachable. That is the same defect the test
+        was written to catch, wearing the test's own shape:
+        [[a-union-cannot-prove-all-n]]. Reachability is a property of execution.
+
+        The recorder means nothing is written: the behaviour of the function
+        itself is pinned by the five tests above.
+        """
+        import io
+        import kalshi_calibration as kk
+        calls = []
+        with patch.object(kk, "queue_build_decision",
+                          lambda *a, **k: calls.append(k) or (0, "stub")), \
+                patch.object(sys, "argv", ["kalshi_calibration.py", "--report"]), \
+                patch("sys.stdout", io.StringIO()):
+            kk.main()
+        self.assertEqual(1, len(calls),
+                         "`--report` did not reach queue_build_decision — the "
+                         "Chairman's row exists only if someone runs it by hand")
+
+    def test_email_verdict_queues_even_when_it_sends_nothing(self):
+        """The queue is the record; the mail is the notification.
+
+        `email_verdict` returns early when the signature is unchanged — the
+        common case, by design. If the queue call sat below that return, the
+        durable row would only be maintained on the runs that also sent mail,
+        re-coupling the record to the notification.
+
+        So the test drives exactly that path: seed the state file with the
+        verdict this host is about to compute, so the function is guaranteed to
+        take its early return, and assert the queue call happened anyway.
+        Nothing is buffered and no mail can leave — the early return is above
+        every `buffer_email` in the function.
+        """
+        import kalshi_calibration as kk
+        rows = kk._load_ledger()
+        premise, _, _ = kk.is_premise_alive(rows)
+        proven, _ = kk.is_edge_proven(rows)
+        cost, _, _ = kk.edge_versus_cost(rows)
+        signature = f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}|{cost}"
+
+        calls = []
+        with tempfile.TemporaryDirectory() as d:
+            state = Path(d) / "verdict.json"
+            state.write_text(json.dumps({
+                "signature": signature,
+                "at": datetime.now(timezone.utc).isoformat(),
+                "subject": "seeded", "buffered_at": datetime.now().isoformat(),
+                "delivery": "buffered"}))
+            with patch.object(kk, "VERDICT_STATE", state), \
+                    patch.object(kk, "queue_build_decision",
+                                 lambda *a, **k: calls.append(k) or (0, "stub")):
+                sent, why = kk.email_verdict(rows)
+
+        self.assertFalse(sent, "the seeded state must force the early return, "
+                               "otherwise this test proves nothing about it")
+        self.assertIn("unchanged", why)
+        self.assertEqual(1, len(calls),
+                         "email_verdict returned early WITHOUT maintaining the "
+                         "Chairman's row — on an unchanged verdict (the normal "
+                         "case) the decision would go unrecorded")
+        self.assertEqual({"premise", "proven", "cost"}, set(calls[0]),
+                         "the three verdicts are already computed at that point "
+                         "and must be passed in, not rescanned")
+
+
+class TestTheChairmanInboxHearsAboutClosures(unittest.TestCase):
+    """A decision already resolved upstream must not reach the board.
+
+    `chairman_decision_queue.json` is a MIRROR of chairman_action_required.json.
+    `chairman_queue.resolve()` closes a row when its condition stops being
+    observed, and `chairman_queue_compactor` archives the closed row — and this
+    inbox read neither. Once ingested, an item stayed `awaiting_chairman` until
+    the Chairman decided it or the 20-day clock escalated it to a board vote on
+    a condition that no longer existed.
+
+    Measured 2026-08-27 on both hosts, independently: 44 of the Mac's 134
+    pending items (33%) and 22 of the VM's 58 (38%) were already resolved and
+    archived upstream while still counting down. Two of them were the top rows
+    of the Chairman's own session banner, both marked OVERDUE.
+    """
+
+    def _env(self, d, queue, actions, archive):
+        import chairman_decision_sla as sla
+        p = {n: Path(d) / f"{n}.json" for n in
+             ("queue", "actions", "archive", "cit")}
+        p["queue"].write_text(json.dumps(queue))
+        p["actions"].write_text(json.dumps(actions))
+        p["archive"].write_text(json.dumps(archive))
+        p["cit"].write_text("[]")
+        return sla, patch.multiple(
+            sla, QUEUE_PATH=p["queue"], CHAIR_ACTION=p["actions"],
+            ARCHIVE_PATH=p["archive"], CIT_PENDING=p["cit"]), p
+
+    @staticmethod
+    def _item(iid, days_old=1, **kw):
+        first = datetime.utcnow() - timedelta(days=days_old)
+        item = {"id": iid, "severity": "MEDIUM", "description": iid,
+                "status": "awaiting_chairman", "first_surfaced": first.isoformat(),
+                "deadline": (first + timedelta(days=20)).isoformat()}
+        item.update(kw)
+        return item
+
+    def test_a_row_the_producer_closed_leaves_the_inbox(self):
+        with tempfile.TemporaryDirectory() as d:
+            sla, env, p = self._env(
+                d, [self._item("a"), self._item("b")],
+                [{"id": "a", "status": "resolved"},
+                 {"id": "b", "status": "awaiting_chairman"}], [])
+            with env:
+                rep = sla.run(write=True)
+            self.assertEqual(1, rep["resolved_upstream"])
+            self.assertEqual(["b"], [q["id"] for q in rep["pending_for_chairman"]])
+            saved = {q["id"]: q for q in json.loads(p["queue"].read_text())}
+            self.assertEqual("resolved_upstream", saved["a"]["status"])
+            self.assertIn("never by absence", saved["a"]["resolved_by"])
+
+    def test_a_row_the_compactor_archived_also_leaves(self):
+        """The compactor moves closed rows OUT of the live file entirely.
+
+        Reading only chairman_action_required.json would see those as missing,
+        not as closed — which is the case below that must stay open.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            sla, env, _ = self._env(d, [self._item("a")], [],
+                                    [{"id": "a", "status": "resolved"}])
+            with env:
+                rep = sla.run(write=True)
+            self.assertEqual(1, rep["resolved_upstream"])
+            self.assertEqual([], rep["pending_for_chairman"])
+
+    def test_an_upstream_row_that_is_simply_GONE_stays_open(self):
+        """Absence is not resolution — the half that must never be simplified.
+
+        `chairman_queue._submit_locked` evicts a producer's least-severe rows
+        past a per-source cap of 20, so a row can vanish from the upstream file
+        while remaining a live, undecided question. 5 items on the Mac and 10 on
+        the VM are in exactly that state. Closing on absence would delete real
+        decisions on the strength of a cap.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            sla, env, _ = self._env(d, [self._item("evicted")], [], [])
+            with env:
+                rep = sla.run(write=True)
+            self.assertEqual(0, rep["resolved_upstream"],
+                             "an item with no upstream row anywhere was closed "
+                             "— absence was read as resolution")
+            self.assertEqual(["evicted"],
+                             [q["id"] for q in rep["pending_for_chairman"]])
+
+    def test_a_merged_item_stays_open_while_any_leg_is_open(self):
+        with tempfile.TemporaryDirectory() as d:
+            sla, env, _ = self._env(
+                d, [self._item("m", merged_ids=["m2"])],
+                [{"id": "m", "status": "resolved"},
+                 {"id": "m2", "status": "awaiting_chairman"}], [])
+            with env:
+                rep = sla.run(write=True)
+            self.assertEqual(0, rep["resolved_upstream"],
+                             "one still-open leg keeps the merged decision live")
+
+    def test_an_overdue_resolved_item_is_not_escalated_to_the_board(self):
+        """The consequence, and the reason reconciliation runs BEFORE escalation.
+
+        This is the failure the whole class describes: a 21-day-old item whose
+        finding cleared last week becomes a STRATEGY proposal the board votes on.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            sla, env, p = self._env(
+                d, [self._item("stale", days_old=21)],
+                [{"id": "stale", "status": "resolved"}], [])
+            with env:
+                rep = sla.run(write=True)
+            self.assertEqual([], rep["escalated_to_board"],
+                             "a resolved finding was escalated to a board vote")
+            self.assertEqual("[]", p["cit"].read_text().strip(),
+                             "a board proposal was filed for a closed condition")
+
+            # And the control case: same age, still open upstream -> DOES escalate.
+            sla2, env2, p2 = self._env(
+                d + "", [self._item("live", days_old=21)],
+                [{"id": "live", "status": "awaiting_chairman"}], [])
+            with env2:
+                rep2 = sla2.run(write=True)
+            self.assertEqual(["live"], rep2["escalated_to_board"],
+                             "the SLA stopped escalating anything at all — the "
+                             "fix disabled the clock instead of reconciling it")
+
+    def test_reconciliation_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as d:
+            sla, env, _ = self._env(d, [self._item("a")],
+                                    [{"id": "a", "status": "resolved"}], [])
+            with env:
+                first = sla.run(write=True)["resolved_upstream"]
+                second = sla.run(write=True)["resolved_upstream"]
+            self.assertEqual((1, 0), (first, second),
+                             "a second run re-closed an already-closed item")
 
 
 if __name__ == "__main__":

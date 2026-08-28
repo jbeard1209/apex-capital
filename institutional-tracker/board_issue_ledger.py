@@ -172,13 +172,15 @@ def _save(path: Path, obj) -> None:
 
 
 def _days_since(iso: Optional[str], now: Optional[datetime] = None) -> Optional[float]:
-    if not iso:
-        return None
-    try:
-        then = datetime.fromisoformat(str(iso)[:26])
-    except (TypeError, ValueError):
-        return None
-    return ((now or datetime.now()) - then).total_seconds() / 86400.0
+    """Days since `iso` as a float, or None when it cannot be read.
+
+    None, not 0 and not a large number: an issue whose stamp is unreadable has
+    an unknown age, and both substitutes are decisions — 0 hides an overdue
+    issue, a large number manufactures an escalation. The callers here already
+    test for None.
+    """
+    from time_utils import age_days
+    return age_days(iso, default=None, now=now)
 
 
 def _blank() -> dict:
