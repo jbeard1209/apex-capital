@@ -27650,7 +27650,16 @@ class TestATruncatedStampIsAWrongAge(unittest.TestCase):
     # producer starts writing an offset — which
     # `test_the_baseline_sites_are_latent_not_live` is here to catch.
     # Shrink-only.
-    MODE_A_BASELINE = 26
+    #
+    # 26 -> 24 on 2026-08-28: `main.py` and `board_meeting.py` both read
+    # `morning_briefing.json::generated_at` through this slice to gate a 4-hour
+    # freshness window, and that producer had since started writing an
+    # offset-aware stamp — so those two were no longer latent, they were LIVE,
+    # and the gate had quietly stopped opening on any host whose zone is not
+    # UTC. Both now go through `time_utils.age_hours`, which is also why the
+    # `is not None` guard appears at each site: a stamp that cannot be read is
+    # not a fresh one.
+    MODE_A_BASELINE = 24
 
     # Only cuts that provably land at or after the seconds field, where the
     # ONLY thing a slice can remove is an offset or a fraction. `[:10]` is
@@ -28154,7 +28163,17 @@ class TestTheKalshiBuildDecisionIsRecordedNotJustMailed(unittest.TestCase):
         take its early return, and assert the queue call happened anyway.
         Nothing is buffered and no mail can leave — the early return is above
         every `buffer_email` in the function.
+
+        The seed alone does NOT force the return. `delivery_state` is consulted
+        inside the branch and answers from THIS host's email buffer, which the
+        test does not seed: a subject of "seeded" that no buffer has ever heard
+        of reads as `lost`, and the function correctly re-queues instead of
+        returning. That is real behaviour (pinned below), but it made this test
+        pass on the Mac and fail on the VM for a reason that had nothing to do
+        with what it measures — [[host_divergence_is_a_bug_class]]. So the
+        receipt is pinned too.
         """
+        import email_buffer
         import kalshi_calibration as kk
         rows = kk._load_ledger()
         premise, _, _ = kk.is_premise_alive(rows)
@@ -28171,6 +28190,8 @@ class TestTheKalshiBuildDecisionIsRecordedNotJustMailed(unittest.TestCase):
                 "subject": "seeded", "buffered_at": datetime.now().isoformat(),
                 "delivery": "buffered"}))
             with patch.object(kk, "VERDICT_STATE", state), \
+                    patch.object(email_buffer, "delivery_state",
+                                 lambda *a, **k: ("pending", "in tonight's digest")), \
                     patch.object(kk, "queue_build_decision",
                                  lambda *a, **k: calls.append(k) or (0, "stub")):
                 sent, why = kk.email_verdict(rows)
@@ -28185,6 +28206,43 @@ class TestTheKalshiBuildDecisionIsRecordedNotJustMailed(unittest.TestCase):
         self.assertEqual({"premise", "proven", "cost"}, set(calls[0]),
                          "the three verdicts are already computed at that point "
                          "and must be passed in, not rescanned")
+
+    def test_an_unchanged_verdict_that_was_never_delivered_is_re_queued(self):
+        """The other side of the branch above, so pinning one does not hide it.
+
+        "I buffered it" is not "Jack read it". If the digest that was carrying
+        the verdict was dropped, an unchanged signature must NOT be treated as
+        already-reported — that is how a sector goes silent for a week while
+        its state file says it reported.
+        """
+        import email_buffer
+        import kalshi_calibration as kk
+        rows = kk._load_ledger()
+        premise, _, _ = kk.is_premise_alive(rows)
+        proven, _ = kk.is_edge_proven(rows)
+        cost, _, _ = kk.edge_versus_cost(rows)
+        signature = f"{premise}|{'PROVEN' if proven else 'NOT_PROVEN'}|{cost}"
+
+        buffered = []
+        with tempfile.TemporaryDirectory() as d:
+            state = Path(d) / "verdict.json"
+            state.write_text(json.dumps({
+                "signature": signature,
+                "at": datetime.now(timezone.utc).isoformat(),
+                "subject": "seeded", "buffered_at": datetime.now().isoformat(),
+                "delivery": "buffered"}))
+            with patch.object(kk, "VERDICT_STATE", state), \
+                    patch.object(email_buffer, "delivery_state",
+                                 lambda *a, **k: ("lost", "no digest carried it")), \
+                    patch.object(email_buffer, "buffer_email",
+                                 lambda **k: buffered.append(k) or True), \
+                    patch.object(kk, "queue_build_decision",
+                                 lambda *a, **k: (0, "stub")):
+                sent, why = kk.email_verdict(rows)
+
+        self.assertTrue(sent, f"a lost verdict stayed silent: {why}")
+        self.assertEqual(1, len(buffered),
+                         "reported as sent without enqueueing anything")
 
 
 class TestTheChairmanInboxHearsAboutClosures(unittest.TestCase):

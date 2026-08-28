@@ -38,6 +38,7 @@ from datetime import datetime
 from typing import Optional
 
 import atomic_json as aj
+import time_utils
 
 logging.basicConfig(
     level=logging.INFO,
@@ -2669,11 +2670,13 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
         if os.path.exists(_mb_path):
             with open(_mb_path) as _f:
                 _mb = json.load(_f)
-            _mb_age = (
-                datetime.now() -
-                datetime.fromisoformat(str(_mb.get("generated_at",""))[:19])
-            ).total_seconds() / 3600
-            if _mb_age < 4:
+            # See main.py's copy of this gate: `[:19]` cuts the offset off an
+            # offset-aware stamp, so the age was the host's zone offset, not
+            # the file's age. Both sites were latent until morning_briefing.py
+            # started writing tz-aware stamps; then the 4h gate stopped
+            # opening on any host east of UTC. (#117)
+            _mb_age = time_utils.age_hours(_mb.get("generated_at"))
+            if _mb_age is not None and _mb_age < 4:
                 _mkt  = _mb.get("sections", {}).get("market",   {}).get("status", "?")
                 _risk = _mb.get("sections", {}).get("risk",     {}).get("risk_level", "?")
                 _irm  = _mb.get("sections", {}).get("irm",      {}).get("risk_score", "?")

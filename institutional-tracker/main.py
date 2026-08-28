@@ -50,6 +50,8 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
+import time_utils
+
 # ---------------------------------------------------------------------------
 # Raise file-descriptor limit early — prevents "Too many open files" when
 # importing manager_agent late in a heavy pipeline run (yfinance + sqlite +
@@ -198,11 +200,13 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
         if _mb_path.exists():
             with open(_mb_path) as _mb_f:
                 _morning_briefing = json.load(_mb_f)
-            _mb_age = (
-                datetime.now() -
-                datetime.fromisoformat(str(_morning_briefing.get("generated_at", ""))[:19])
-            ).total_seconds() / 3600
-            if _mb_age < 4:
+            # `[:19]` + naive `datetime.now()` was correct only by accident of
+            # the host's zone: it CUTS the offset off an offset-aware stamp and
+            # then reads UTC as local wall-clock, so the same file is 0.2h old
+            # on the VM and 4.2h old on the Mac. Since morning_briefing.json
+            # became offset-aware this gate silently stopped opening. (#117)
+            _mb_age = time_utils.age_hours(_morning_briefing.get("generated_at"))
+            if _mb_age is not None and _mb_age < 4:
                 logger.info(
                     f"  📋 Morning briefing loaded ({_mb_age:.1f}h old) | "
                     f"Market: {_morning_briefing.get('sections', {}).get('market', {}).get('status', '?')} | "
