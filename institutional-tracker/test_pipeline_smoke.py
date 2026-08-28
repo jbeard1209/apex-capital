@@ -6584,6 +6584,47 @@ class TestRosterMergeLosesNobody(unittest.TestCase):
             [a for a in adopted["agents"] if a["name"] == "Vanished"][0]["first_declared"],
             "2026-06-01", "adopt rewrote history instead of preserving it")
 
+    def test_adopt_cannot_launder_a_demotion_out_of_the_manifest(self):
+        """The other half of the same ratchet, which was NOT protected.
+
+        `vanished` has been sticky since adopt() was written; `research_cycle`
+        took the discovered value, so one --adopt on a host mid-demotion would
+        re-declare the agent as never-having-loaded and the ratchet would be
+        green on it forever. The escape hatch is the one check() already
+        honours — a recorded retirement — not a re-baseline.
+        """
+        import agent_roster as ar
+        prev = {"agents": [
+            {"name": "Demoted",  "file": "d.py", "research_cycle": True,
+             "first_declared": "2026-06-01"},
+            {"name": "Retired",  "file": "r.py", "research_cycle": True,
+             "first_declared": "2026-06-01",
+             "retired_at": "2026-08-01", "retirement_reason": "folded into d.py"},
+        ]}
+        def row(name, rc):
+            return {"name": name, "kind": "module", "file": f"{name}.py", "tier": 0,
+                    "team": None, "employment": "employed", "hosts": ["mac"],
+                    "research_cycle": rc}
+        orig = ar.MANIFEST_PATH
+        td = Path(tempfile.mkdtemp())
+        try:
+            ar.MANIFEST_PATH = td / "m.json"
+            ar.MANIFEST_PATH.write_text(json.dumps(prev))
+            adopted = ar.adopt({"agents": [row("Demoted", False),
+                                           row("Retired", False),
+                                           row("Fresh", False)]})
+        finally:
+            ar.MANIFEST_PATH = orig
+        got = {a["name"]: a["research_cycle"] for a in adopted["agents"]}
+        self.assertTrue(got["Demoted"],
+                        "one --adopt cleared a declared research_cycle — the "
+                        "demotion the ratchet exists to catch is now its baseline")
+        self.assertFalse(got["Retired"],
+                         "a recorded retirement must still be able to leave the "
+                         "research cycle, or the manifest can never shrink at all")
+        self.assertFalse(got["Fresh"],
+                         "a never-declared agent must not be invented as loading")
+
     def test_the_schedule_is_both_hosts_not_just_this_one(self):
         """"Scheduled" must mean scheduled ANYWHERE the firm runs.
 
@@ -11148,6 +11189,65 @@ class TestIntegrityWatchdogHasAMacFallback(unittest.TestCase):
                                "host guard (bare df/free) — it will mislabel "
                                "the Mac's own disk as GCP disk usage; add a "
                                "metadata-server host guard there first")
+
+
+class TestTheRosterRatchetRunsOnBothHosts(unittest.TestCase):
+    """A ratchet only ratchets on the host that runs it.
+
+    The roster is host-local — derived from the code plus this machine's
+    agent_registry.json, and there is no state sync — so the VM's 11:25 UTC
+    `agent_roster.py --check` says nothing about the Mac. Until 2026-08-28 the
+    Mac ran it never and the manifest declared research_cycle for nobody, which
+    printed as "NOT ARMED" and read to everything downstream as GREEN.
+
+    Both halves are asserted, because they fail differently and both silently:
+    unscheduled means nobody measures, unarmed means the measurement is vacuous
+    (memory `presence-is-not-currency`).
+    """
+
+    def test_the_ratchet_is_scheduled_on_the_mac(self):
+        import catch_up
+        jobs = [j for j in catch_up.JOB_REGISTRY
+                if j.get("script") == "agent_roster.py"]
+        self.assertTrue(jobs, "agent_roster.py --check is not in the Mac's "
+                              "catch_up registry — a deleted or renamed agent is "
+                              "only noticed after deploy.sh ships it")
+        job = jobs[0]
+        self.assertIn("--check", job.get("args", []),
+                      "the Mac's roster job must ratchet, not just rebuild")
+        self.assertNotIn("--adopt", job.get("args", []),
+                         "an automated --adopt re-baselines every loss it sees; "
+                         "adopting is a human decision after looking at what left")
+        self.assertEqual(job["run_days"], "all",
+                         "agents can stop loading on a weekend too")
+
+    def test_the_ratchet_is_scheduled_on_the_vm(self):
+        snap = Path(__file__).resolve().parent / "data" / "vm_crontab_snapshot.txt"
+        if not snap.exists():
+            self.skipTest("no crontab snapshot deployed")
+        live = [ln for ln in snap.read_text().splitlines()
+                if ln.strip() and not ln.lstrip().startswith("#")
+                and "agent_roster.py" in ln and "--check" in ln]
+        self.assertTrue(live, "the VM crontab no longer runs agent_roster.py "
+                              "--check; the host that actually trades is the one "
+                              "whose research pool went 50 -> 8")
+
+    def test_the_manifest_on_this_host_is_armed(self):
+        """`research_cycle` is absent from manifests adopted before the check
+        existed, so check() reports zero declared rather than firing on all of
+        them. That is the right default and a terrible steady state: it is
+        indistinguishable from a clean pass."""
+        import agent_roster as ar
+        man = ar._load(ar.MANIFEST_PATH, None)
+        if man is None:
+            self.skipTest("no manifest adopted on this host")
+        armed = sum(1 for a in man.get("agents", [])
+                    if a.get("research_cycle") is True)
+        self.assertGreater(armed, 0,
+                           "the research-coverage ratchet is NOT ARMED on this "
+                           "host — run `python3 agent_roster.py --merge-remote "
+                           "--adopt`. Until then check() cannot report a "
+                           "demotion, only a vanishing.")
 
 
 class TestDeployBudgetIsSingleHost(unittest.TestCase):

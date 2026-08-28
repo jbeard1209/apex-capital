@@ -321,6 +321,42 @@ JOB_REGISTRY = [
         "catchup_window":  (0, 24),
         "once_per_wakeup": True,
     },
+
+    # ── Agent-roster ratchet ──────────────────────────────────────────────────
+    # Added 2026-08-28, after the Chief of Staff's Stage-1 coaching set
+    # status="noticed" — a status research_team.py would not load — and took 43
+    # agents out of the VM's research cycle in one 05:00→08:00 pass. The VM has
+    # run this check from its own crontab all along; the Mac never has.
+    #
+    # The CoS itself only runs from main.py, which #81 removed from this host,
+    # so the Mac cannot suffer THAT demotion. The reason the Mac needs its own
+    # copy is the other direction: the ratchet's two halves are both computed
+    # from the code, and the code lives here. An agent file deleted or renamed,
+    # or an edit to research_team.py's status filter, changes this host's roster
+    # the moment it is saved and the VM's only after deploy.sh ships it. The
+    # VM's ratchet therefore cannot fire until the loss is already in
+    # production; ours fires while it is still a working-tree edit. Rosters are
+    # host-local (no state sync), so this is a second measurement, not a copy.
+    #
+    # 7:30 EDT is 11:30 UTC — five minutes after the VM's 11:25 UTC run, so on
+    # any given day the two hosts' rosters are measured close enough together
+    # that a difference between them is a real divergence rather than a clock
+    # artifact. Once daily is the right cadence: the manifest moves only on
+    # --adopt, and what is being detected is a standing loss, not a transient.
+    # `--check` writes data/agent_roster.json before it returns, so a RED exit
+    # still refreshes the TTL and cannot start a re-run loop; escalate() upserts
+    # on a deterministic id, so a standing RED files once rather than daily.
+    {
+        "name":            "agent_roster_check",
+        "script":          "agent_roster.py",
+        "args":            ["--check"],
+        "output_file":     "data/agent_roster.json",
+        "ttl_hours":       26,
+        "fire_times_edt":  [7.5],
+        "run_days":        "all",
+        "catchup_window":  (0, 24),
+        "once_per_wakeup": True,
+    },
 ]
 
 

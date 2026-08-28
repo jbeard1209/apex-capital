@@ -1089,7 +1089,19 @@ def adopt(roster: dict) -> dict:
             # The baseline the research-coverage half of the ratchet compares
             # against. Without it, an agent that stops being loaded is a silent
             # loss — see check()'s docstring for the 50→8 drop that proved it.
-            "research_cycle": bool(a.get("research_cycle")),
+            #
+            # Declared-True is sticky, for the same reason the loop below keeps
+            # a vanished name: taking the discovered value would let ONE --adopt
+            # re-baseline a demotion away and leave the ratchet permanently
+            # green on it. Growth is free, shrinkage needs a reason — and the
+            # reason is the same escape hatch check() honours, a recorded
+            # retirement. Without this, the two halves of one ratchet had
+            # opposite laundering rules: `vanished` was protected here since it
+            # was written, `left_research_cycle` was not.
+            "research_cycle": bool(a.get("research_cycle")) or (
+                p.get("research_cycle") is True
+                and not (p.get("retired_at") and p.get("retirement_reason"))
+            ),
             "hosts": a["hosts"],
             "first_declared": p.get("first_declared", today),
             "last_seen": today,

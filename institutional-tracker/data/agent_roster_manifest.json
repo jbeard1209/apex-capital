@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-20T01:43:27.627892",
+  "generated_at": "2026-08-28T20:42:55.627837",
   "count": 161,
   "agents": [
     {
@@ -9,11 +9,12 @@
       "tier": 1,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -24,11 +25,12 @@
       "tier": 0,
       "team": "cit",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -39,11 +41,12 @@
       "tier": 0,
       "team": "cit",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -54,11 +57,12 @@
       "tier": 0,
       "team": "cit",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -69,11 +73,12 @@
       "tier": 0,
       "team": "cit",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -84,11 +89,12 @@
       "tier": 0,
       "team": "cit",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -99,11 +105,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -114,11 +121,12 @@
       "tier": 0,
       "team": null,
       "employment": "superseded",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -129,11 +137,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -144,11 +153,12 @@
       "tier": 1,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -159,11 +169,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -174,11 +185,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -189,11 +201,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -204,11 +217,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -219,11 +233,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -234,11 +249,12 @@
       "tier": null,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -249,11 +265,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -264,11 +281,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -279,11 +297,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -294,11 +313,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -309,11 +329,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -324,11 +345,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -339,11 +361,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -354,11 +377,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -369,11 +393,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -384,11 +409,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -399,11 +425,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -414,11 +441,12 @@
       "tier": 1,
       "team": "infrastructure",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -429,11 +457,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -444,11 +473,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -459,11 +489,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -474,11 +505,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -489,11 +521,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -504,11 +537,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -519,11 +553,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -534,11 +569,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -549,11 +585,12 @@
       "tier": 1,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -564,11 +601,12 @@
       "tier": 1,
       "team": "r_and_d",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -579,11 +617,12 @@
       "tier": null,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -594,11 +633,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -609,11 +649,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -624,11 +665,12 @@
       "tier": 1,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -639,11 +681,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -654,11 +697,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -669,11 +713,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -684,11 +729,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -699,11 +745,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -714,11 +761,12 @@
       "tier": 0,
       "team": null,
       "employment": "superseded",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -729,11 +777,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -744,11 +793,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -759,11 +809,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -774,11 +825,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -789,11 +841,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -804,11 +857,12 @@
       "tier": null,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -819,11 +873,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -834,11 +889,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -849,11 +905,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -864,11 +921,12 @@
       "tier": null,
       "team": "analytics",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -879,11 +937,12 @@
       "tier": null,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -894,11 +953,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -909,11 +969,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -924,11 +985,12 @@
       "tier": 0,
       "team": null,
       "employment": "superseded",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -939,11 +1001,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -954,11 +1017,12 @@
       "tier": 1,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -969,11 +1033,12 @@
       "tier": 2,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -984,11 +1049,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -999,11 +1065,12 @@
       "tier": 3,
       "team": "research",
       "employment": "employed",
+      "research_cycle": true,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1014,11 +1081,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1029,11 +1097,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1044,11 +1113,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1059,11 +1129,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1074,11 +1145,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1089,11 +1161,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1104,11 +1177,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1119,11 +1193,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1134,11 +1209,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-19",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1149,11 +1225,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1164,11 +1241,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1179,11 +1257,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1194,11 +1273,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1209,11 +1289,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1224,11 +1305,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1239,11 +1321,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1254,11 +1337,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1269,11 +1353,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1284,11 +1369,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1299,11 +1385,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1314,11 +1401,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1329,11 +1417,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1344,11 +1433,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1359,11 +1449,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1374,11 +1465,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1389,11 +1481,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1404,11 +1497,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1419,11 +1513,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1434,11 +1529,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1449,11 +1545,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1464,11 +1561,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1479,11 +1577,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1494,11 +1593,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1509,11 +1609,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1524,11 +1625,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1539,11 +1641,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1554,11 +1657,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-19",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1569,11 +1673,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1584,11 +1689,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1599,11 +1705,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-19",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1614,11 +1721,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-19",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1629,11 +1737,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1644,11 +1753,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1659,11 +1769,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1674,11 +1785,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1689,11 +1801,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1704,11 +1817,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1719,11 +1833,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1734,11 +1849,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1749,11 +1865,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1764,11 +1881,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1779,11 +1897,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1794,11 +1913,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1809,11 +1929,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1824,11 +1945,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1839,11 +1961,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1854,11 +1977,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1869,11 +1993,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1884,11 +2009,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1899,11 +2025,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1914,11 +2041,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1929,11 +2057,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1944,11 +2073,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1959,11 +2089,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1974,11 +2105,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -1989,11 +2121,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2004,11 +2137,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2019,11 +2153,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2034,11 +2169,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2049,11 +2185,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2064,11 +2201,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2079,11 +2217,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2094,11 +2233,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2109,11 +2249,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2124,11 +2265,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2139,11 +2281,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2154,11 +2297,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2169,11 +2313,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2184,11 +2329,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2199,11 +2345,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2214,11 +2361,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2229,11 +2377,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2244,11 +2393,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2259,11 +2409,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-19",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2274,11 +2425,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2289,11 +2441,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2304,11 +2457,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2319,11 +2473,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2334,11 +2489,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2349,11 +2505,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2364,11 +2521,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2379,11 +2537,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2394,11 +2553,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-01",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     },
@@ -2409,11 +2569,12 @@
       "tier": 0,
       "team": null,
       "employment": "employed",
+      "research_cycle": false,
       "hosts": [
         "local"
       ],
       "first_declared": "2026-08-19",
-      "last_seen": "2026-08-19",
+      "last_seen": "2026-08-28",
       "retired_at": null,
       "retirement_reason": null
     }
