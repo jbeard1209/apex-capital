@@ -921,7 +921,31 @@ def fetch_remote() -> dict:
 
 # ──────────────────────────────────────────────────────────────────────────
 def check(roster: dict, manifest: dict) -> dict:
-    """Ratchet: the roster may grow freely; it may only shrink with a reason."""
+    """Ratchet: the roster may grow freely; it may only shrink with a reason.
+
+    Two ways to lose an agent, and the ratchet has to cover both.
+
+    VANISHED — the row is gone. That is the loss this ratchet was built for.
+
+    LEFT THE RESEARCH CYCLE — the row is still here, still "employed", and no
+    longer runs. On 2026-08-28 the VM went from 50 loaded agents at 05:00 to 8
+    at 08:00: the Chief of Staff moved 43 rows to status "noticed", which
+    research_team.py would not load. Nothing vanished, so this function returned
+    GREEN while 84% of the firm's research coverage — Technology, Financials,
+    Industrials, all ten First-Eagle agents, the whole FI pod — stopped
+    producing. The count was right there in the roster's own printout
+    (`c['research_cycle']`) and nothing ratcheted it.
+
+    Named per agent, not totalled: "43 fewer" is a number nobody can act on,
+    and a drop that exactly offsets a rise reads as no change at all (memory
+    `an-aggregate-is-not-a-finding`).
+
+    `research_cycle` is absent from manifests adopted before this check existed,
+    so the ratchet arms itself on the next --adopt rather than firing on every
+    row at once. `research_cycle_declared` reports how many rows carry the
+    baseline, so an unarmed ratchet cannot be mistaken for a passing one
+    (memory `presence-is-not-currency`).
+    """
     have = {a["name"]: a for a in roster.get("agents", [])}
     declared = {a["name"]: a for a in manifest.get("agents", [])}
 
@@ -935,16 +959,34 @@ def check(roster: dict, manifest: dict) -> dict:
                          "last_seen": d.get("last_seen"),
                          "hosts": d.get("hosts")})
 
+    left_research = []
+    for name, d in declared.items():
+        if d.get("research_cycle") is not True:
+            continue                       # never declared as loading, or unarmed
+        a = have.get(name)
+        if a is None or a.get("research_cycle"):
+            continue                       # gone entirely (vanished), or still loading
+        if d.get("retired_at") and d.get("retirement_reason"):
+            continue                       # a recorded decision, not a loss
+        left_research.append({"name": name, "file": d.get("file"),
+                              "last_seen": d.get("last_seen"),
+                              "status": a.get("status"),
+                              "employment": a.get("employment")})
+
     added = sorted(set(have) - set(declared))
     unscheduled = sorted(n for n, a in have.items()
                          if a["runs_via"] == ["UNSCHEDULED"] and a["employment"] == "employed")
+    lost = bool(vanished or left_research)
     return {
         "declared": len(declared),
         "discovered": len(have),
         "vanished": vanished,
+        "left_research_cycle": sorted(left_research, key=lambda r: r["name"]),
+        "research_cycle_declared": sum(1 for d in declared.values()
+                                       if d.get("research_cycle") is True),
         "added": added,
         "unscheduled": unscheduled,
-        "status": "RED" if vanished else ("GREEN" if not added else "GREEN_GREW"),
+        "status": "RED" if lost else ("GREEN" if not added else "GREEN_GREW"),
     }
 
 
@@ -964,37 +1006,71 @@ def escalate(rep: dict) -> bool:
     The dedup_key is stable across runs (it names the agents, not the date), so
     a daily cron re-stating the same loss folds into one decision rather than
     filing thirty.
+
+    The two loss classes are filed SEPARATELY. A vanished agent and an agent
+    that stopped being loaded have different remedies — recover the row, versus
+    find out why the loader declined it — and folding them into one "N agents
+    lost" row is the aggregate that names no cause.
     """
-    names = sorted(v["name"] for v in rep.get("vanished", []))
-    if not names:
+    vanished = sorted(v["name"] for v in rep.get("vanished", []))
+    left = sorted(v["name"] for v in rep.get("left_research_cycle", []))
+    if not vanished and not left:
         return False
-    key = "agent_roster:vanished:" + ",".join(names)
+
+    pending = []
+    if vanished:
+        pending.append((
+            "agent_roster:vanished:" + ",".join(vanished),
+            f"roster-vanished-{datetime.date.today().isoformat()}",
+            f"{len(vanished)} agent(s) vanished from the roster",
+            (f"agent_roster --check found {len(vanished)} agent(s) declared in "
+             f"agent_roster_manifest.json but discovered on NO host, with no "
+             f"retired_at/retirement_reason recorded: {', '.join(vanished)}.\n\n"
+             "An agent leaving the firm must be a decision, never a rename, a "
+             "bad merge, or a deploy that overwrote a host's registry. Either "
+             "recover it, or record the retirement and its reason so the "
+             "manifest reflects a choice that was actually made.")))
+    if left:
+        by_status = {}
+        for v in rep.get("left_research_cycle", []):
+            by_status[v.get("status")] = by_status.get(v.get("status"), 0) + 1
+        pending.append((
+            "agent_roster:left_research_cycle:" + ",".join(left),
+            f"roster-left-research-{datetime.date.today().isoformat()}",
+            f"{len(left)} agent(s) stopped being loaded into the research cycle",
+            (f"{len(left)} agent(s) still on the books, still employed, are no "
+             f"longer loaded by research_team.py: {', '.join(left)}.\n\n"
+             f"Current statuses: {by_status}.\n\n"
+             "This is the shape of the 2026-08-28 incident: 43 agents moved to "
+             "a coaching status the loader would not run, research coverage "
+             "fell 84% in one cycle, and nothing vanished — so the ratchet was "
+             "green. Either the status change was intended (record why), or the "
+             "agents are being held out of service by a rule nobody chose.")))
+
     try:
         actions = _load(CHAIR_ACTION_PATH, [])
         if not isinstance(actions, list):
             return False
-        if any(isinstance(a, dict) and a.get("dedup_key") == key for a in actions):
-            return False
-        actions.append({
-            "id": f"roster-vanished-{datetime.date.today().isoformat()}",
-            "severity": "CRITICAL",
-            "category": "GOVERNANCE",
-            "title": f"{len(names)} agent(s) vanished from the roster",
-            "description": (
-                f"agent_roster --check found {len(names)} agent(s) declared in "
-                f"agent_roster_manifest.json but discovered on NO host, with no "
-                f"retired_at/retirement_reason recorded: {', '.join(names)}.\n\n"
-                "An agent leaving the firm must be a decision, never a rename, a "
-                "bad merge, or a deploy that overwrote a host's registry. Either "
-                "recover it, or record the retirement and its reason so the "
-                "manifest reflects a choice that was actually made."),
-            "source": "agent_roster",
-            "ts": datetime.datetime.utcnow().isoformat() + "Z",
-            "status": "awaiting_chairman",
-            "dedup_key": key,
-        })
-        CHAIR_ACTION_PATH.write_text(json.dumps(actions, indent=2))
-        return True
+        seen = {a.get("dedup_key") for a in actions if isinstance(a, dict)}
+        filed = False
+        for key, aid, title, desc in pending:
+            if key in seen:
+                continue
+            actions.append({
+                "id": aid,
+                "severity": "CRITICAL",
+                "category": "GOVERNANCE",
+                "title": title,
+                "description": desc,
+                "source": "agent_roster",
+                "ts": datetime.datetime.utcnow().isoformat() + "Z",
+                "status": "awaiting_chairman",
+                "dedup_key": key,
+            })
+            filed = True
+        if filed:
+            CHAIR_ACTION_PATH.write_text(json.dumps(actions, indent=2))
+        return filed
     except Exception:
         return False
 
@@ -1010,6 +1086,10 @@ def adopt(roster: dict) -> dict:
             "name": a["name"], "kind": a["kind"], "file": a["file"],
             "tier": a["tier"], "team": a["team"],
             "employment": a["employment"],
+            # The baseline the research-coverage half of the ratchet compares
+            # against. Without it, an agent that stops being loaded is a silent
+            # loss — see check()'s docstring for the 50→8 drop that proved it.
+            "research_cycle": bool(a.get("research_cycle")),
             "hosts": a["hosts"],
             "first_declared": p.get("first_declared", today),
             "last_seen": today,
@@ -1077,11 +1157,25 @@ def main():
         if rep["added"]:
             print(f"    +{len(rep['added'])} new since the manifest: "
                   f"{', '.join(rep['added'][:8])}{'…' if len(rep['added']) > 8 else ''}")
-        if rep["vanished"]:
-            print(f"\n  ⛔ {len(rep['vanished'])} DECLARED AGENT(S) HAVE VANISHED "
-                  f"with no recorded retirement:")
-            for v in rep["vanished"]:
-                print(f"       • {v['name']}  ({v['file']}, last seen {v['last_seen']})")
+        # The research-coverage half only means anything once a manifest has
+        # been adopted that records it. Say so, rather than letting an unarmed
+        # ratchet read as a clean one.
+        if not rep["research_cycle_declared"]:
+            print("    research-coverage ratchet NOT ARMED — no manifest row "
+                  "declares research_cycle; run --adopt to arm it")
+        if rep["vanished"] or rep["left_research_cycle"]:
+            if rep["vanished"]:
+                print(f"\n  ⛔ {len(rep['vanished'])} DECLARED AGENT(S) HAVE VANISHED "
+                      f"with no recorded retirement:")
+                for v in rep["vanished"]:
+                    print(f"       • {v['name']}  ({v['file']}, last seen {v['last_seen']})")
+            if rep["left_research_cycle"]:
+                print(f"\n  ⛔ {len(rep['left_research_cycle'])} DECLARED AGENT(S) NO "
+                      f"LONGER LOAD INTO THE RESEARCH CYCLE "
+                      f"(of {rep['research_cycle_declared']} declared):")
+                for v in rep["left_research_cycle"]:
+                    print(f"       • {v['name']}  (status {v['status']}, "
+                          f"{v['employment']}, last seen {v['last_seen']})")
             if not args.report:
                 filed = escalate(rep)
                 print(f"    {'filed for the Chairman' if filed else 'already filed'} "

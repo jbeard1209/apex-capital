@@ -29321,6 +29321,286 @@ class TestAZeroPickCycleRequiresACycle(unittest.TestCase):
                          "the temp file must be renamed, not left beside the real one")
 
 
+class TestLosingAnAgentToAStatusIsStillLosingIt(unittest.TestCase):
+    """The roster ratchet watched for rows that disappear, not rows that stop.
+
+    On 2026-08-28 the VM's research pool went 50 -> 8 in one Chief-of-Staff
+    pass. No agent vanished; 43 of them moved to a status research_team.py
+    would not load. `check()` compared names against names, found every name
+    still present, and returned GREEN while 84% of the firm's research coverage
+    went dark. The count it needed was printed two lines above the ratchet.
+    """
+
+    def setUp(self):
+        # adopt() folds the CURRENT manifest in so a vanished agent cannot be
+        # laundered out by one --adopt. That means it reads prod's 161 rows
+        # unless it is pointed somewhere else.
+        import agent_roster as ar
+        self._ar = ar
+        d = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        self._manifest_orig = ar.MANIFEST_PATH
+        ar.MANIFEST_PATH = Path(d) / "agent_roster_manifest.json"
+        self.addCleanup(setattr, ar, "MANIFEST_PATH", self._manifest_orig)
+
+    def _roster(self, rows):
+        return {"agents": [dict(r) for r in rows], "host": "test"}
+
+    def _declared(self, rows):
+        return self._ar.adopt(self._roster(rows))
+
+    def _row(self, name, research_cycle=True, **kw):
+        r = {"name": name, "kind": "registry", "file": f"agents/{name}.py",
+             "tier": 1, "team": "research", "employment": "employed",
+             "hosts": ["vm"], "research_cycle": research_cycle,
+             "runs_via": ["research_team"], "status": "active"}
+        r.update(kw)
+        return r
+
+    def test_an_agent_that_stops_loading_is_a_red_not_a_green(self):
+        import agent_roster as ar
+        declared = self._declared([self._row("Keeps"), self._row("Stops")])
+        now = self._roster([
+            self._row("Keeps"),
+            self._row("Stops", research_cycle=False, status="noticed"),
+        ])
+        rep = ar.check(now, declared)
+        self.assertEqual([], rep["vanished"],
+                         "test premise broken: nothing should have vanished")
+        self.assertEqual(["Stops"], [v["name"] for v in rep["left_research_cycle"]],
+                         "an agent that stopped loading was not reported")
+        self.assertEqual("RED", rep["status"],
+                         "43 agents left the research cycle and the ratchet was GREEN")
+
+    def test_the_incident_shape_reproduces(self):
+        """50 declared, 8 still loading, nothing vanished — the real event."""
+        import agent_roster as ar
+        names = [f"A{i:02d}" for i in range(50)]
+        declared = self._declared([self._row(n) for n in names])
+        now = self._roster(
+            [self._row(n) for n in names[:8]] +
+            [self._row(n, research_cycle=False, status="noticed") for n in names[8:]])
+        rep = ar.check(now, declared)
+        self.assertEqual(42, len(rep["left_research_cycle"]))
+        self.assertEqual("RED", rep["status"])
+        # Named, not totalled: "42 fewer" is not something anyone can act on.
+        self.assertIn("A49", [v["name"] for v in rep["left_research_cycle"]])
+        self.assertEqual("noticed", rep["left_research_cycle"][0]["status"])
+
+    def test_a_recorded_retirement_is_a_decision_not_a_loss(self):
+        import agent_roster as ar
+        declared = self._declared([self._row("Gone")])
+        declared["agents"][0]["retired_at"] = "2026-08-01"
+        declared["agents"][0]["retirement_reason"] = "superseded by B"
+        now = self._roster([self._row("Gone", research_cycle=False,
+                                      employment="retired")])
+        rep = ar.check(now, declared)
+        self.assertEqual([], rep["left_research_cycle"],
+                         "a retirement with a recorded reason fired the ratchet")
+
+    def test_an_unarmed_ratchet_does_not_read_as_a_passing_one(self):
+        """Manifests adopted before this check carry no research_cycle key."""
+        import agent_roster as ar
+        legacy = {"agents": [{"name": "Old", "file": "a.py", "last_seen": "2026-08-19"}]}
+        now = self._roster([self._row("Old", research_cycle=False)])
+        rep = ar.check(now, legacy)
+        self.assertEqual(0, rep["research_cycle_declared"],
+                         "a legacy manifest must not be treated as a baseline")
+        self.assertEqual([], rep["left_research_cycle"],
+                         "an unarmed ratchet fired on every row at once")
+
+    def test_adopt_records_the_baseline_the_check_reads(self):
+        """The classic shape: a fix that removes the field its own check reads."""
+        import agent_roster as ar
+        declared = ar.adopt(self._roster([self._row("X"),
+                                          self._row("Y", research_cycle=False)]))
+        by_name = {a["name"]: a for a in declared["agents"]}
+        self.assertIs(True, by_name["X"]["research_cycle"])
+        self.assertIs(False, by_name["Y"]["research_cycle"])
+
+    def test_the_two_loss_classes_escalate_separately(self):
+        """Recovering a deleted row and un-benching an agent are different jobs."""
+        import agent_roster as ar
+        with tempfile.TemporaryDirectory() as td:
+            orig = ar.CHAIR_ACTION_PATH
+            try:
+                ar.CHAIR_ACTION_PATH = Path(td) / "chairman_action_required.json"
+                ar.CHAIR_ACTION_PATH.write_text("[]")
+                rep = {"vanished": [{"name": "Deleted"}],
+                       "left_research_cycle": [{"name": "Benched", "status": "noticed"}]}
+                self.assertTrue(ar.escalate(rep))
+                filed = json.loads(ar.CHAIR_ACTION_PATH.read_text())
+                keys = sorted(a["dedup_key"] for a in filed)
+                self.assertEqual(2, len(filed),
+                                 "two different failures folded into one action")
+                self.assertTrue(any(k.startswith("agent_roster:vanished:") for k in keys))
+                self.assertTrue(any(k.startswith("agent_roster:left_research_cycle:")
+                                    for k in keys))
+                # Idempotent: a daily cron restating the same loss files once.
+                self.assertFalse(ar.escalate(rep))
+                self.assertEqual(2, len(json.loads(ar.CHAIR_ACTION_PATH.read_text())))
+            finally:
+                ar.CHAIR_ACTION_PATH = orig
+
+
+class TestTheMigrationVoidsCountersWithoutErasingHistory(unittest.TestCase):
+    """migrate_lifecycle_counters.py undoes the demotions the broken ladder made.
+
+    The counters are voided rather than adjusted: the ladder now charges only
+    against positive run evidence, and no run evidence exists for any past
+    cycle, so every accrued count is unproven. What must NOT be voided is the
+    employment record — HR's audit reads lifecycle fields to decide whether it
+    can see anything at all, and a migration that wiped them would leave the
+    firm unable to distinguish "no discipline happened" from "I am blind".
+    """
+
+    def _registry(self, agents):
+        d = tempfile.mkdtemp()
+        p = Path(d) / "agent_registry.json"
+        p.write_text(json.dumps({"agents": agents}))
+        self.addCleanup(shutil.rmtree, d, ignore_errors=True)
+        return p
+
+    def _noticed(self, name="A", **kw):
+        r = {"class_name": name, "status": "noticed", "sector": "Tech",
+             "consecutive_zero_cycles": 8, "exoneration_count": 7,
+             "performance_notice": "Formal performance notice — 8 cycles.",
+             "performance_notice_sent": "2026-08-28"}
+        r.update(kw)
+        return r
+
+    def _run(self, path, apply=False):
+        import migrate_lifecycle_counters as m
+        reg = json.loads(path.read_text())
+        if m.already_applied(reg):
+            return reg, [], []
+        restore, needs_review, counters = m.plan(reg)
+        if apply:
+            m.apply(reg, restore, counters, "2026-08-28")
+            path.write_text(json.dumps(reg))
+        return reg, restore, counters
+
+    def test_a_coached_agent_comes_back_and_the_counter_is_voided(self):
+        p = self._registry([self._noticed("A"),
+                            {"class_name": "B", "status": "active",
+                             "consecutive_zero_cycles": 6}])
+        reg, restore, counters = self._run(p, apply=True)
+        by = {a["class_name"]: a for a in reg["agents"]}
+        self.assertEqual("active", by["A"]["status"])
+        self.assertEqual(0, by["A"]["consecutive_zero_cycles"])
+        self.assertEqual(0, by["B"]["consecutive_zero_cycles"],
+                         "an active agent's counter is just as unproven")
+        self.assertEqual("active", by["B"]["status"], "B was never demoted")
+
+    def test_the_live_notice_is_vacated_but_the_record_survives(self):
+        p = self._registry([self._noticed("A")])
+        reg, _, _ = self._run(p, apply=True)
+        a = reg["agents"][0]
+        for f in ("performance_notice", "performance_notice_sent"):
+            self.assertNotIn(f, a, f"{f} outlived the force behind it")
+        hist = a["lifecycle_history"][0]
+        self.assertEqual("noticed", hist["from_status"])
+        self.assertEqual(8, hist["from_consecutive_zero_cycles"])
+        self.assertEqual(7, hist["exoneration_count_at_vacatur"])
+        self.assertIn("performance_notice", hist,
+                      "the notice text was deleted rather than filed")
+        self.assertEqual(7, a["exoneration_count"],
+                         "the exoneration record is history, not stage state")
+        self.assertIn("2026-08-28", a["reinstated_at"])
+
+    def test_an_earlier_reinstatement_is_not_overwritten(self):
+        """Prod rows already carry one. Two hosts, one merge, one HR record."""
+        p = self._registry([self._noticed(
+            "A", reinstated_at="2026-07-31",
+            reinstatement_reason="whole-picture exoneration")])
+        reg, _, _ = self._run(p, apply=True)
+        hist = reg["agents"][0]["lifecycle_history"][0]
+        self.assertEqual("2026-07-31", hist["reinstated_at"])
+        self.assertEqual("whole-picture exoneration", hist["reinstatement_reason"])
+
+    def test_terminal_and_deactivated_rows_keep_their_status(self):
+        p = self._registry([{"class_name": "R", "status": "retired",
+                             "consecutive_zero_cycles": 30},
+                            {"class_name": "I", "status": "inactive",
+                             "consecutive_zero_cycles": 8}])
+        reg, restore, _ = self._run(p, apply=True)
+        by = {a["class_name"]: a for a in reg["agents"]}
+        self.assertEqual([], [a["class_name"] for a in restore])
+        self.assertEqual("retired", by["R"]["status"],
+                         "only a Co-Chairman may un-retire an agent")
+        self.assertEqual("inactive", by["I"]["status"],
+                         "'inactive' is a pre-ladder deactivation, not a stage")
+        self.assertEqual(0, by["I"]["consecutive_zero_cycles"])
+
+    def test_running_it_twice_changes_nothing(self):
+        p = self._registry([self._noticed("A")])
+        self._run(p, apply=True)
+        first = p.read_text()
+        self._run(p, apply=True)
+        self.assertEqual(json.loads(first), json.loads(p.read_text()),
+                         "a second --apply mutated the registry again")
+
+    def test_the_migrated_registry_is_still_auditable_by_hr(self):
+        """A fix must not blind the control that would catch its recurrence."""
+        import hr_retirement_audit as hra
+        p = self._registry([self._noticed("A")])
+        reg, _, _ = self._run(p, apply=True)
+        observable, reasons = hra._lifecycle_is_observable(reg["agents"])
+        self.assertTrue(
+            observable,
+            f"HR went blind after the migration: {reasons}")
+
+    def test_a_reassigned_agent_is_flagged_not_silently_restored(self):
+        """Stage 3 overwrote the sector; the original is recorded nowhere."""
+        p = self._registry([self._noticed("A", status="reassigned",
+                                          sector="Utilities",
+                                          reassigned_to="Utilities")])
+        _, restore, _ = self._run(p)
+        import migrate_lifecycle_counters as m
+        reg = json.loads(p.read_text())
+        _, needs_review, _ = m.plan(reg)
+        self.assertEqual(["A"], [a["class_name"] for a in needs_review])
+
+    def test_the_orphan_exemption_cannot_be_bought_with_prose(self):
+        """A migration is scheduled nowhere on purpose; an agent is not.
+
+        wiring_audit hard-fails a module that writes a consumed artifact and no
+        scheduler reaches — correctly, and it caught this migration on the first
+        run. The exemption that resolves that must be narrower than the check it
+        opts out of, or the next forgotten agent buys silence with a filename.
+        """
+        import wiring_audit as wa
+        real = (Path(__file__).parent / "migrate_lifecycle_counters.py").read_text()
+        self.assertTrue(wa._is_one_shot_migration("migrate_lifecycle_counters.py", real))
+
+        # Prose is not a declaration — this check has been fooled by comments twice.
+        self.assertFalse(wa._is_one_shot_migration(
+            "migrate_sneaky.py", '"""Sets MIGRATION_ID somewhere."""\nx = 1\n'),
+            "a docstring naming MIGRATION_ID bought an exemption")
+        # Nor is a nested one.
+        self.assertFalse(wa._is_one_shot_migration(
+            "migrate_sneaky.py", "def f():\n    MIGRATION_ID = 'x'\n"),
+            "a local variable bought a module-level exemption")
+        # And the name alone is not enough either way.
+        self.assertFalse(wa._is_one_shot_migration("some_agent.py",
+                                                   "MIGRATION_ID = 'x'\n"))
+        self.assertTrue(wa._is_one_shot_migration("migrate_x.py",
+                                                  "MIGRATION_ID = 'x'\n"))
+
+    def test_it_refuses_an_empty_registry(self):
+        """An empty file is not a registry with nothing to migrate."""
+        import migrate_lifecycle_counters as m
+        p = self._registry([])
+        rc = subprocess.run(
+            [sys.executable, str(Path(__file__).parent / "migrate_lifecycle_counters.py"),
+             "--registry", str(p), "--apply"],
+            capture_output=True, text=True, cwd=str(Path(__file__).parent))
+        self.assertEqual(2, rc.returncode, rc.stdout + rc.stderr)
+        self.assertIn("REFUSING", rc.stdout)
+        self.assertEqual({"agents": []}, json.loads(p.read_text()),
+                         "the refusal still wrote to the registry")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

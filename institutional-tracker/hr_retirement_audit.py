@@ -43,6 +43,7 @@ import os
 import re
 from collections import defaultdict, OrderedDict
 
+import agent_lifecycle
 import chairman_queue
 
 logger = logging.getLogger("hr_retirement_audit")
@@ -244,9 +245,14 @@ def _lifecycle_is_observable(agents):
     if not agents:
         return False, ["registry is empty — nothing to audit"]
 
+    # A reinstatement is lifecycle evidence too. migrate_lifecycle_counters.py
+    # vacates the stage state of every wrongly-demoted agent, so a registry it
+    # has cleaned carries no live notice and no coaching status — and without
+    # these two fields this check would then declare the whole PIP lifecycle
+    # unobservable on the strength of a fix.
     lifecycle_fields = ("reassigned_to", "retired_at", "performance_notice_sent",
-                        "pip_issued_at")
-    lifecycle_statuses = {"retired", "reassigned", "pip", "noticed"}
+                        "pip_issued_at", "reinstated_at", "lifecycle_history")
+    lifecycle_statuses = ({"retired"} | agent_lifecycle.COACHING_STATUSES)
 
     if not any(a.get("status") in lifecycle_statuses for a in agents) and \
        not any(any(f in a for f in lifecycle_fields) for a in agents):

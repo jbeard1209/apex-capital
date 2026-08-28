@@ -341,6 +341,43 @@ ESCALATION_ENTRYPOINTS = {
 }
 
 
+def _is_one_shot_migration(name: str, code_txt: str) -> bool:
+    """Is this a hand-run data migration rather than an orphaned agent?
+
+    A migration is meant to be scheduled nowhere: it runs once, by hand, on each
+    host separately (there is no state sync between the Mac and the VM), and a
+    cron entry for it would be the defect. But it writes a file eight modules
+    read, so the orphan check hard-fails on it exactly like a forgotten agent.
+
+    The exemption is deliberately hard to widen. BOTH must hold:
+      * the filename starts with `migrate_`, and
+      * the module assigns a top-level `MIGRATION_ID` — parsed from the AST, so
+        a docstring mentioning MIGRATION_ID cannot buy an exemption. This check
+        has been fooled by its own postmortem prose twice (see
+        `_escalation_path` and check_orphan_agents), and an exemption is a
+        far more attractive thing to fool than a finding.
+
+    A real agent named `migrate_something.py` would still have to declare a
+    MIGRATION_ID constant it does not use, which is not something anyone does by
+    accident. The exemptions are listed by name in the audit output.
+    """
+    if not name.startswith("migrate_") or not name.endswith(".py"):
+        return False
+    try:
+        tree = ast.parse(code_txt)
+    except SyntaxError:
+        return False
+    for node in tree.body:                       # top level only
+        if isinstance(node, ast.Assign):
+            for t in node.targets:
+                if isinstance(t, ast.Name) and t.id == "MIGRATION_ID":
+                    return True
+        elif isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name) and node.target.id == "MIGRATION_ID":
+                return True
+    return False
+
+
 def _escalation_path(name: str, code_txt: str):
     """The escalation entry point this module calls, or None.
 
@@ -872,8 +909,17 @@ def check_orphan_agents(sources: dict):
     writer_stems = {n[:-3] for n, t in sources.items()
                     if not n.startswith("test_") and write_re.search(t)}
 
+    migrations = sorted(n for n in sources if _is_one_shot_migration(n, code[n]))
+
     for name, txt in sources.items():
         if name in reachable or name.startswith("test_"):
+            continue
+
+        # A one-shot migration is SUPPOSED to be scheduled nowhere. It is run by
+        # hand, once, on each host separately (there is no state sync), and
+        # putting it on a scheduler would be the bug. Exempted narrowly and
+        # announced by name below — an exemption nobody can see is a hole.
+        if name in migrations:
             continue
 
         # An agent whose product is a ROUTED ITEM, not a file, is an orphan the
@@ -964,6 +1010,12 @@ def check_orphan_agents(sources: dict):
             )
             found_orphans.add(name)
             break   # one finding per orphan module is enough
+
+    if migrations:
+        notes.append(
+            f"[orphan-agent] OK — {len(migrations)} one-shot migration(s) exempted "
+            f"from the orphan check ({', '.join(migrations)}); each is run by hand "
+            f"on each host and must NOT be scheduled")
 
     # A module that got fixed must be REMOVED from the baseline, or the ratchet
     # silently loosens and a future regression would be waved through.

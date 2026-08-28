@@ -1802,6 +1802,14 @@ class AgentFactory:
                         agent.pop("performance_notice_sent", None)
                         agent.pop("pip_issued_at", None)
                         agent.pop("reassigned_to", None)
+                        # The *date* stamps were cleared here; the notice and
+                        # PIP text were not, so a recovered agent went back to
+                        # active still carrying an unrescinded formal notice —
+                        # a record that outlived the force behind it. Anything
+                        # reading the text for "is this agent in trouble?" saw
+                        # trouble forever.
+                        agent.pop("performance_notice", None)
+                        agent.pop("pip_plan", None)
                         logger.info(
                             f"  [AgentFactory] ✓ {cn} RECOVERED → ACTIVE "
                             f"({hits} approved pick(s) this cycle). "
