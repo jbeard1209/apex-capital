@@ -7962,6 +7962,76 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         self.assertEqual(issues, [])
 
 
+class TestTheJanitorSweepsTheCacheThisHostActuallyWrites(unittest.TestCase):
+    """A cleaner that reports success having deleted nothing.
+
+    `disk_janitor` exists because the VM's 9.7GB disk has twice hit 100% and
+    truncated 35 JSON files mid-write. It swept `BASE/"**/__pycache__"` through
+    `glob.glob` with no `recursive=True`, where `**` degrades to a single `*` —
+    so it matched one directory level down and never the top-level cache, which
+    on the VM is 8.2MB of the 8.7MB total. And on the Mac, Apple's python sets
+    `sys.pycache_prefix`, so no repo-relative pattern can match anything at all
+    while 345MB accumulates elsewhere.
+
+    Both halves matter for correctness, not just disk: a stale .pyc is served
+    whenever the source's mtime SECOND and byte size both match, so a mutation
+    test that restores the file and checks the md5 still runs the mutant.
+    """
+
+    def test_the_sweep_is_actually_recursive(self):
+        import disk_janitor as dj
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            top = root / "__pycache__"
+            deep = root / "a" / "b" / "__pycache__"
+            for p in (top, deep):
+                p.mkdir(parents=True)
+                (p / "x.pyc").write_bytes(b"\x00")
+            n = dj.prune([root / "**" / "__pycache__"])
+            self.assertFalse(top.exists(),
+                             "the top-level cache — the big one on the VM — "
+                             "survived the sweep; `**` is being read as `*`")
+            self.assertFalse(deep.exists())
+            self.assertEqual(2, n)
+
+    def test_a_redirected_cache_is_swept_and_only_this_project_s_subtree(self):
+        """Honour `sys.pycache_prefix`, but do not delete the whole prefix.
+
+        The prefix mirrors absolute source paths beneath it and is shared with
+        every other Python project on the machine — none of which are the
+        trading firm's to clear.
+        """
+        import unittest.mock as mock
+        import disk_janitor as dj
+        with tempfile.TemporaryDirectory() as d:
+            prefix = Path(d) / "cache"
+            base = dj.BASE.resolve()
+            mine = prefix / base.relative_to(base.anchor)
+            other = prefix / "some" / "other" / "project"
+            for p in (mine, other):
+                p.mkdir(parents=True)
+                (p / "x.pyc").write_bytes(b"\x00")
+            with mock.patch.object(dj.sys, "pycache_prefix", str(prefix)):
+                globs = [str(g) for g in dj.bytecode_caches()]
+                self.assertIn(str(mine), globs,
+                              "the redirected cache is not swept, so on this "
+                              "Mac the janitor clears nothing")
+                self.assertNotIn(str(prefix), globs,
+                                 "sweeping the whole prefix would delete other "
+                                 "projects' bytecode")
+                dj.prune(dj.bytecode_caches())
+            self.assertFalse(mine.exists())
+            self.assertTrue(other.exists(),
+                            "the janitor reached outside this project")
+
+    def test_no_prefix_means_no_extra_glob(self):
+        """On the VM `pycache_prefix` is None — the in-tree sweep is the answer."""
+        import unittest.mock as mock
+        import disk_janitor as dj
+        with mock.patch.object(dj.sys, "pycache_prefix", None):
+            self.assertEqual(1, len(dj.bytecode_caches()))
+
+
 class TestPoisonedCountersAreFloored(unittest.TestCase):
     """Stopping the doubling did not undo it — `max` preserves 2^228 forever.
 

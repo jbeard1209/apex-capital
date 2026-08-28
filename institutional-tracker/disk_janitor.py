@@ -14,6 +14,36 @@ import os, shutil, subprocess, sys, glob, time
 from pathlib import Path
 
 BASE = Path(__file__).parent
+
+def bytecode_caches():
+    """Where THIS interpreter actually writes .pyc files. Two hosts, two answers.
+
+    The VM's `~/venv/bin/python3` leaves `__pycache__` beside the source, which
+    is what this script always assumed. The Mac's Apple python sets
+    `sys.pycache_prefix` to ~/Library/Caches/com.apple.python, so not one
+    bytecode file is ever written under the repo and every repo-relative sweep
+    for `__pycache__` here has been a no-op against 345MB (measured 2026-08-28).
+
+    That is not only a disk question. A stale .pyc is served whenever the source
+    mtime SECOND and byte size both match, which is exactly what a same-length
+    edit inside one second produces — so a mutation test that restores a file,
+    verifies the md5, and clears `./**/__pycache__` still runs the mutant on
+    this Mac, because the cache it cleared was never the cache in use. That cost
+    three full suite runs and a blocked push today (memory
+    `harness-ran-stale-bytecode`).
+
+    Only this project's subtree of the prefix is returned. The prefix mirrors
+    the absolute source path underneath it, so the mapping is exact — and it is
+    shared with every other Python project on the machine, which has no business
+    being deleted by the trading firm's janitor.
+    """
+    globs = [BASE / "**" / "__pycache__"]
+    prefix = getattr(sys, "pycache_prefix", None)
+    if prefix:
+        base = BASE.resolve()
+        globs.append(Path(prefix) / base.relative_to(base.anchor))
+    return globs
+
 def pct_used():
     st = os.statvfs("/")
     return round(100 * (1 - st.f_bavail / st.f_blocks))
@@ -21,7 +51,13 @@ def pct_used():
 def prune(paths_globs, older_days=None):
     n = 0
     for g in paths_globs:
-        for p in glob.glob(str(g)):
+        # `recursive=True` or `**` silently degrades to a single `*`, matching
+        # exactly one directory level. That is why the biggest cache on the VM —
+        # institutional-tracker/__pycache__ itself, 8.2MB of the 8.7MB total —
+        # was never once pruned on a 9.7GB disk that has twice filled to 100%
+        # and truncated 35 JSON files mid-write. The pattern looked recursive
+        # and was not.
+        for p in glob.glob(str(g), recursive=True):
             try:
                 if older_days and (time.time() - os.path.getmtime(p)) < older_days * 86400:
                     continue
@@ -34,7 +70,7 @@ def prune(paths_globs, older_days=None):
 if __name__ == "__main__":
     before = pct_used()
     n  = prune([BASE/"logs/*.log"], older_days=5)
-    n += prune([BASE/"data/matrix_cache/*", BASE/"**/__pycache__"], older_days=None)
+    n += prune([BASE/"data/matrix_cache/*"] + bytecode_caches(), older_days=None)
     n += prune(["/tmp/yf*", "/tmp/tmp*"], older_days=2)
     if pct_used() > 80:
         # keep newest 2 backups only
