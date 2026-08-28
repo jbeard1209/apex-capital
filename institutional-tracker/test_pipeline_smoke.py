@@ -29601,6 +29601,130 @@ class TestTheMigrationVoidsCountersWithoutErasingHistory(unittest.TestCase):
                          "the refusal still wrote to the registry")
 
 
+class TestAHighFindingHasToReachAnOwner(unittest.TestCase):
+    """The Logic Officer detected the 43-agent demotion. Nobody was told.
+
+    _rule_mass_reassignment fired HIGH at 06:02:54 on 2026-08-28, two hours
+    before the research cycle loaded 8 agents instead of 50. The finding was
+    correct, specific and early. It went into cit_pending_proposals.json —
+    157 rows, behind an 840-item CIT backlog running 55 days late — and never
+    appeared in the Chairman's queue or inbox at all.
+
+    These pin the raise AND the close, because an alarm with no way out is the
+    other half of the same failure.
+    """
+
+    def setUp(self):
+        import tempfile
+        import logic_officer
+        self.lo = logic_officer
+        self.tmp = tempfile.mkdtemp()
+        (Path(self.tmp) / "data").mkdir()
+        self._cwd = os.getcwd()
+        os.chdir(self.tmp)
+        self.addCleanup(os.chdir, self._cwd)
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.queue = Path(self.tmp) / "data" / "chairman_action_required.json"
+
+    def _finding(self, rule="mass_reassignment", severity="HIGH"):
+        return {"rule": rule, "severity": severity,
+                "title": "43 agents reassigned in one pass",
+                "observation": "50 loaded at 05:00, 8 at 08:00.",
+                "why_its_wrong": "A coaching stage removed them from service.",
+                "suggested_resolution": "Load coaching statuses."}
+
+    def _rows(self):
+        return json.loads(self.queue.read_text()) if self.queue.exists() else []
+
+    def test_the_rule_keys_map_matches_what_the_rules_actually_emit(self):
+        """Grep would match this file's own postmortem prose. AST does not."""
+        import ast
+        src = (Path(__file__).parent / "logic_officer.py").read_text()
+        tree = ast.parse(src)
+        emitted = {}
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.FunctionDef):
+                continue
+            for sub in ast.walk(node):
+                if not isinstance(sub, ast.Dict):
+                    continue
+                for k, v in zip(sub.keys, sub.values):
+                    if (isinstance(k, ast.Constant) and k.value == "rule"
+                            and isinstance(v, ast.Constant)
+                            and isinstance(v.value, str)):
+                        emitted.setdefault(node.name, set()).add(v.value)
+
+        declared = {f.__name__ for f in self.lo.ALL_RULES}
+        self.assertEqual(declared, set(self.lo.RULE_KEYS),
+                         "a rule in ALL_RULES has no RULE_KEYS entry (or vice "
+                         "versa) — it can raise to the Chairman but never close")
+        for fn_name, key in self.lo.RULE_KEYS.items():
+            self.assertIn(fn_name, emitted,
+                          f"{fn_name} stamps no literal 'rule' key on its finding")
+            self.assertEqual({key}, emitted[fn_name],
+                             f"RULE_KEYS says {fn_name} emits {key!r}, the code "
+                             f"emits {sorted(emitted[fn_name])}")
+
+    def test_a_high_finding_reaches_the_chairman_queue(self):
+        out = self.lo._escalate_to_chairman([self._finding()],
+                                            set(self.lo.RULE_KEYS))
+        self.assertEqual(1, out["raised"])
+        rows = self._rows()
+        self.assertEqual(1, len(rows))
+        self.assertEqual("logic-officer:mass_reassignment", rows[0]["dedup_key"])
+        self.assertEqual("awaiting_chairman", rows[0]["status"])
+        self.assertEqual("HIGH", rows[0]["severity"])
+        self.assertIn("50 loaded at 05:00", rows[0]["description"])
+
+    def test_a_medium_finding_does_not(self):
+        """Six rules against a cap of 20 — but only the serious ones spend it."""
+        self.lo._escalate_to_chairman(
+            [self._finding(rule="idle_capital", severity="MEDIUM")],
+            set(self.lo.RULE_KEYS))
+        self.assertEqual([], self._rows())
+
+    def test_re_running_does_not_re_raise(self):
+        for _ in range(3):
+            self.lo._escalate_to_chairman([self._finding()],
+                                          set(self.lo.RULE_KEYS))
+        self.assertEqual(1, len(self._rows()),
+                         "a rule that fires every cycle consumed the queue")
+
+    def test_a_cleared_condition_closes_its_row(self):
+        self.lo._escalate_to_chairman([self._finding()], set(self.lo.RULE_KEYS))
+        out = self.lo._escalate_to_chairman([], set(self.lo.RULE_KEYS))
+        self.assertEqual(1, out["resolved"])
+        self.assertNotIn(self._rows()[0]["status"],
+                         ("awaiting_chairman", "open"))
+
+    def test_a_rule_that_threw_does_not_close_its_row(self):
+        """Silence from a broken detector is not evidence the condition cleared."""
+        self.lo._escalate_to_chairman([self._finding()], set(self.lo.RULE_KEYS))
+        ran_clean = set(self.lo.RULE_KEYS) - {"_rule_mass_reassignment"}
+        out = self.lo._escalate_to_chairman([], ran_clean)
+        self.assertEqual(0, out["resolved"])
+        self.assertIn("mass_reassignment", out["blind"])
+        self.assertEqual("awaiting_chairman", self._rows()[0]["status"])
+
+    def test_it_only_ever_closes_its_own_rows(self):
+        import chairman_queue
+        chairman_queue.submit([{"id": "x", "dedup_key": "logic-officer:idle_capital",
+                                "severity": "HIGH", "description": "someone else's",
+                                "status": "awaiting_chairman"}], "cit_director")
+        self.lo._escalate_to_chairman([], set(self.lo.RULE_KEYS))
+        rows = self._rows()
+        self.assertEqual(1, len(rows))
+        self.assertEqual("awaiting_chairman", rows[0]["status"],
+                         "closed another producer's item on a key collision")
+
+    def test_the_run_reports_the_escalation(self):
+        """A result dict that omits it lets the step be deleted unnoticed."""
+        import inspect
+        src = inspect.getsource(self.lo.run_logic_officer)
+        self.assertIn("_escalate_to_chairman(findings, ran_clean)", src)
+        self.assertIn('"chairman":', src)
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

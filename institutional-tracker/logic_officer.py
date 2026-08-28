@@ -377,6 +377,25 @@ ALL_RULES = [
     _rule_portfolio_unexplained_loss,
 ]
 
+#: The literal `rule` key each rule function stamps on the finding it returns.
+#:
+#: A rule that finds nothing returns None, so the *resolve* half of the
+#: Chairman escalation below cannot ask the finding what rule it came from —
+#: it has to ask this map. Deriving the key from __name__ does not work
+#: (_rule_zero_picks emits "zero_picks_anomaly", _rule_cit_proposal_pileup
+#: emits "proposal_pileup"), and guessing an identifier that a consumer must
+#: match is the exact bug class this firm keeps paying for. Every entry is
+#: AST-checked against the literal the function actually returns, so adding or
+#: renaming a rule fails the suite rather than silently losing its close path.
+RULE_KEYS = {
+    "_rule_zero_picks":                 "zero_picks_anomaly",
+    "_rule_mass_reassignment":          "mass_reassignment",
+    "_rule_extended_cro_high":          "extended_cro_high_no_review",
+    "_rule_idle_capital":               "idle_capital",
+    "_rule_cit_proposal_pileup":        "proposal_pileup",
+    "_rule_portfolio_unexplained_loss": "unexplained_loss",
+}
+
 
 # =============================================================================
 # STATE BUILDER
@@ -494,6 +513,111 @@ def _write_board_proposals(findings: list) -> int:
 
 
 # =============================================================================
+# CHAIRMAN ESCALATION
+# =============================================================================
+#
+# Filing a HIGH into cit_pending_proposals.json is not raising it.
+#
+# On 2026-08-28 _rule_mass_reassignment fired HIGH at 06:02:54 — two hours
+# before the 08:00 research cycle loaded 8 agents instead of 50, because the
+# coaching ladder had demoted 43 of them into a status research_team.py does
+# not load. The detector worked. It was early, specific and correct, and it
+# named the right condition. It reached nobody: _write_board_proposals put it
+# in a queue holding 157 rows, behind a CIT backlog of 840 items running 55
+# days late, where its only consumers are a board meeting that votes on a
+# handful per session. Zero rows for it ever appeared in the Chairman's queue
+# or inbox. The Logic Officer was the one serious-finding producer in the firm
+# with no path to an owner — 15 other modules already submit here.
+#
+# So HIGH/CRITICAL now goes to BOTH: the board queue owns the fix, the
+# Chairman queue owns the decision. Volume is bounded by construction — the
+# dedup key is the rule, and there are six rules, against a per-source cap of
+# 20 — so this cannot become the kind of flood the firm has been burned by.
+#
+# The close path matters as much as the raise. An alarm with no way out
+# becomes `pip-integrity-20260702-00-deadmans_switch_sani`: five weeks
+# awaiting_chairman after the condition cleared, re-surfacing in every
+# briefing. But absence of a finding only means "cleared" if the rule that
+# would have produced it actually RAN — a rule that raised an exception is a
+# blind detector, not a quiet one, and closing on that silence would mark
+# every open item fixed at the moment the firm went blind to them. Hence
+# `ran_clean`: only rules that returned normally are allowed to resolve.
+
+CHAIRMAN_SOURCE     = "logic_officer"
+CHAIRMAN_SEVERITIES = ("HIGH", "CRITICAL")
+
+
+def _dedup_key(rule: str) -> str:
+    """The one spelling of a row's identity, used by BOTH the raise and the close.
+
+    Written out separately because the first draft of this spelled it
+    "logic-officer:%s" on the way in and bare "%s" on the way out, so every
+    close silently matched nothing and the raise half looked like it worked.
+    Two spellings of one identifier is the bug class in the header above,
+    reproduced inside its own fix.
+    """
+    return f"logic-officer:{rule}"
+
+
+def _escalate_to_chairman(findings: list, ran_clean) -> dict:
+    """Raise serious findings to the Chairman queue; close the ones that cleared.
+
+    `ran_clean` is the set of rule FUNCTION names that returned without
+    raising this cycle. A rule missing from it is not evidence of anything.
+    """
+    try:
+        import chairman_queue
+    except Exception as e:                          # pragma: no cover
+        logger.warning(f"  Could not reach the Chairman queue: {e}")
+        return {"raised": 0, "already_open": 0, "resolved": 0, "blind": []}
+
+    serious = [f for f in findings
+               if f.get("severity") in CHAIRMAN_SEVERITIES and f.get("rule")]
+    firing  = {f["rule"] for f in serious}
+    today   = datetime.now().strftime("%Y%m%d")
+
+    entries = [{
+        "id":          f"logic-officer-{today}-{f['rule']}",
+        "dedup_key":   _dedup_key(f["rule"]),
+        "severity":    f["severity"],
+        "category":    "COHERENCE",
+        "description": (
+            f"{f.get('title','')}\n\n"
+            f"OBSERVED: {f.get('observation','')}\n\n"
+            f"WHY THIS IS WRONG: {f.get('why_its_wrong','')}\n\n"
+            f"SUGGESTED RESOLUTION: {f.get('suggested_resolution','')}"
+        ),
+        "status":      "awaiting_chairman",
+        "raised_at":   datetime.now().isoformat(),
+    } for f in serious]
+
+    raised, already_open = (chairman_queue.submit(entries, CHAIRMAN_SOURCE)
+                            if entries else (0, 0))
+
+    # Only a rule that ran cleanly and did not fire may close its own row.
+    cleared = {RULE_KEYS[fn] for fn in ran_clean if fn in RULE_KEYS} - firing
+    closed  = chairman_queue.resolve(
+        {_dedup_key(r) for r in cleared}, CHAIRMAN_SOURCE,
+        note="Logic Officer re-ran this rule and the condition no longer holds."
+    ) if cleared else []
+
+    # A rule that threw is a detector we are blind through. Say so out loud
+    # rather than letting its silence read as a pass. Named by rule key, which
+    # is what the held-open queue rows are keyed on.
+    blind = sorted(RULE_KEYS[fn] for fn in set(RULE_KEYS) - set(ran_clean))
+    if blind:
+        logger.warning(
+            "  %d rule(s) did not complete — their Chairman rows are held open, "
+            "not closed: %s", len(blind), ", ".join(blind))
+
+    if raised or closed:
+        logger.info("  Chairman queue: %d raised, %d already open, %d resolved.",
+                    raised, already_open, len(closed))
+    return {"raised": raised, "already_open": already_open,
+            "resolved": len(closed), "blind": blind}
+
+
+# =============================================================================
 # FIRM CHANNEL POST
 # =============================================================================
 
@@ -584,10 +708,15 @@ def run_logic_officer() -> dict:
     logger.info("Logic Officer — coherence check...")
     state    = _build_state()
     findings = []
+    # Which rules actually got to an answer. A rule that threw reported
+    # nothing for the same reason a rule that found nothing did, and only one
+    # of those two is allowed to close a Chairman row.
+    ran_clean = set()
 
     for rule_fn in ALL_RULES:
         try:
             result = rule_fn(state)
+            ran_clean.add(rule_fn.__name__)
             if result:
                 findings.append(result)
                 sev = result.get("severity","?")
@@ -617,6 +746,9 @@ def run_logic_officer() -> dict:
     if n_proposals:
         logger.info(f"  {n_proposals} board proposal(s) submitted for vote")
 
+    # The board queue owns the fix; the Chairman queue owns the decision.
+    escalation = _escalate_to_chairman(findings, ran_clean)
+
     # Post to firm channel
     if findings:
         _post_to_firm_channel(findings)
@@ -628,6 +760,7 @@ def run_logic_officer() -> dict:
         "findings":        findings,
         "anomalies_found": len(findings),
         "proposals_added": n_proposals,
+        "chairman":        escalation,
     }
 
 
