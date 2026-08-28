@@ -9263,7 +9263,11 @@ class TestKalshiSector(unittest.TestCase):
 
     def test_the_calibration_verdict_starts_unproven_and_says_why(self):
         import kalshi_calibration as cal
-        ok, why = cal.is_edge_proven([])
+        # A zero denominator must outrank the estimator state, so the state is
+        # pinned to the one that would otherwise shout.
+        ok, why = cal.is_edge_proven([], est={
+            "state": cal.EST_ABSENT, "earliest": None,
+            "why": "synthetic", "discharged_by": "synthetic"})
         self.assertFalse(ok)
         self.assertIn("NOT YET", why)
 
@@ -9948,7 +9952,10 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         this fired on a partly-estimated ledger it would mask the real
         sample-size answer forever."""
         rows = self._rows(60) + self._rows(1, p_hat=0.97)
-        ok, why = self.cal.is_edge_proven(rows)
+        # ABSENT on purpose: the strongest form of "one estimate reopens the
+        # question" is that the coverage guard dominates even when the host's
+        # estimator is the one state that WOULD produce the headline.
+        ok, why = self.cal.is_edge_proven(rows, est=self._absent())
         self.assertFalse(ok)
         self.assertNotIn("BLOCKED", why)
         self.assertIn("NOT YET", why)
@@ -9958,7 +9965,8 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         Absence of estimates among no rows proves nothing about the estimator."""
         for n in (0, 10):
             with self.subTest(n=n):
-                _, why = self.cal.is_edge_proven(self._rows(n))
+                _, why = self.cal.is_edge_proven(self._rows(n),
+                                                 est=self._absent())
                 self.assertNotIn("BLOCKED", why,
                                  f"claimed a structural blocker from {n} row(s)")
 
@@ -9966,7 +9974,8 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         """Same scoping as every other check here. 300 rows of a rule the
         scanner no longer applies must not be evidence that today's rule has no
         estimator — that would be [[sample-outlived-its-rule]] inverted."""
-        _, why = self.cal.is_edge_proven(self._rows(300, regime=False))
+        _, why = self.cal.is_edge_proven(self._rows(300, regime=False),
+                                         est=self._absent())
         self.assertNotIn("BLOCKED", why)
 
     def test_pending_rows_count_toward_the_estimator_question(self):
@@ -10073,6 +10082,19 @@ class TestTheEdgeMustClearTheToll(unittest.TestCase):
                  "outcome": 1 if i < hits else 0, "market_price": quote,
                  "p_hat": None, "days_to_close": days, "spread": spread}
                 for i in range(n)]
+
+    # The rows were synthetic from the day this class was written; the
+    # ESTIMATOR STATE was not, and nothing noticed until `estimator_status()`
+    # gave `is_edge_proven` a second host-local input. Both tests below passed
+    # on the Mac (no fit file -> UNFITTED -> "BLOCKED") and failed on the VM
+    # (fitted, unvalidated -> NOT_SERVING -> "NOT YET, ON A DATED WAIT") at
+    # b087544. Neither host was wrong and neither was the code: the assertion
+    # was reading production. A fixture is only synthetic on the end you
+    # remembered to synthesize ([[host_divergence_is_a_bug_class]]).
+    def _est(self, state, earliest=None):
+        return {"state": state, "earliest": earliest,
+                "why": f"synthetic {state}",
+                "discharged_by": "a synthetic fixture, discharged by nothing"}
 
     # --------------------------------------------- one interval, one formula --
 
@@ -10337,7 +10359,7 @@ class TestTheEdgeMustClearTheToll(unittest.TestCase):
         the estimator must beat is how a large build gets authorised against a
         target nobody measured."""
         rows = self._rows(400, 0.95, 374, spread=0.037)
-        ok, why = self.cal.is_edge_proven(rows)
+        ok, why = self.cal.is_edge_proven(rows, est=self._est(self.cal.EST_ABSENT))
         self.assertFalse(ok)
         self.assertIn("BLOCKED", why)
         self.assertIn("THE BAR IT WOULD HAVE TO CLEAR", why)
@@ -10348,17 +10370,29 @@ class TestTheEdgeMustClearTheToll(unittest.TestCase):
 
     def test_the_bar_never_suppresses_the_blocker(self):
         """The blocker is the finding; the bar is context. If pricing the toll
-        raises, the verdict must still be BLOCKED — a control that goes silent
-        when its decoration breaks is worse than one without the decoration."""
+        raises, the verdict must still lead with its own headline — a control
+        that goes silent when its decoration breaks is worse than one without
+        the decoration.
+
+        Checked on EVERY structural state, not just the absent one. Each state
+        has its own headline and its own owner, so "the blocker survives" is
+        three claims; asserting it about one of them proves the other two only
+        while they happen to share a code path."""
         rows = self._rows(400, 0.95, 374, spread=0.037)
-        real = self.cal.edge_versus_cost
-        try:
-            self.cal.edge_versus_cost = lambda *a, **k: 1 / 0
-            ok, why = self.cal.is_edge_proven(rows)
-        finally:
-            self.cal.edge_versus_cost = real
-        self.assertFalse(ok)
-        self.assertIn("BLOCKED, NOT WAITING", why)
+        heads = {self.cal.EST_ABSENT: "BLOCKED, NOT WAITING",
+                 self.cal.EST_UNFITTED: "BLOCKED, NOT WAITING",
+                 self.cal.EST_NOT_SERVING: "NOT YET, ON A DATED WAIT"}
+        for state, head in heads.items():
+            real = self.cal.edge_versus_cost
+            try:
+                self.cal.edge_versus_cost = lambda *a, **k: 1 / 0
+                ok, why = self.cal.is_edge_proven(
+                    rows, est=self._est(state, earliest="2026-09-08"))
+            finally:
+                self.cal.edge_versus_cost = real
+            self.assertFalse(ok, state)
+            self.assertIn(head, why, f"{state} lost its headline when the "
+                                     f"toll raised")
 
     def test_a_cost_flip_alone_changes_the_email_signature(self):
         """The toll moves independently of the other two verdicts: the premise
@@ -29447,6 +29481,61 @@ class TestTheVerdictMeasuresTheEstimatorInsteadOfDescribingIt(unittest.TestCase)
                                      "about kalshi_scanner's source code")
         self.assertGreater(checked, 20, "the scan found almost no verdict text, "
                                         "so passing proves nothing")
+
+    def test_no_test_asserts_a_headline_it_did_not_pin(self):
+        """The ratchet for how this class's own arrival broke two older tests.
+
+        `is_edge_proven` reads ONE host-local fact — `estimator_status()`,
+        which answers from this host's fit file. Before the four states there
+        was a single structural blocker, so a test could assert "BLOCKED"
+        without pinning anything and be right on every host by accident. It
+        stopped being an accident at b087544: the VM has a fit, the Mac does
+        not, so the same two assertions passed here and failed there — 1511 of
+        1513, on behaviour that was correct on both hosts.
+
+        Scoped to the two verdict words the branch can produce. A test may
+        still read the ambient estimator — most call sites here hit an earlier
+        gate and never reach the branch at all, and several exist precisely to
+        prove that guard holds. What it may not do is assert BLOCKED or NOT
+        YET without having said which state produced it, because those are the
+        only two words the structural branch writes.
+        """
+        import ast
+        src = Path(__file__).read_text()
+        tree = ast.parse(src)
+        heads = ("BLOCKED", "NOT YET")
+        checked = 0
+        offenders = []
+        for fn in ast.walk(tree):
+            if not (isinstance(fn, ast.FunctionDef)
+                    and fn.name.startswith("test_")):
+                continue
+            calls = [c for c in ast.walk(fn)
+                     if isinstance(c, ast.Call)
+                     and getattr(c.func, "attr", None) == "is_edge_proven"]
+            if not calls:
+                continue
+            # Docstrings are excluded the same way as above and for the same
+            # reason: this very docstring names both headlines.
+            body = fn.body[1:] if (fn.body and isinstance(fn.body[0], ast.Expr)
+                                   and isinstance(getattr(fn.body[0], "value", None),
+                                                  ast.Constant)) else fn.body
+            names_head = any(
+                isinstance(s, ast.Constant) and isinstance(s.value, str)
+                and any(h in s.value for h in heads)
+                for stmt in body for s in ast.walk(stmt))
+            if not names_head:
+                continue
+            checked += 1
+            if not all(any(k.arg == "est" for k in c.keywords) for c in calls):
+                offenders.append(fn.name)
+        self.assertGreater(checked, 4,
+                           "almost no test in this file names a structural "
+                           "verdict word, so this ratchet is guarding nothing")
+        self.assertEqual([], offenders,
+                         "these assert a structural verdict word but call "
+                         "is_edge_proven without est=, so they are really "
+                         "asking which host they are running on")
 
 
 class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
