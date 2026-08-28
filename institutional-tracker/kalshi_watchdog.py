@@ -293,7 +293,14 @@ def project(now: Optional[datetime] = None) -> dict:
     total_settled = sum(v["settled"] for v in strata.values())
 
     report: Dict[str, dict] = {}
-    gate_dates: List[str] = []
+    # Every gate that is still SHUT, with the date it opens. A gate that is MET
+    # contributes nothing, which is the whole reason this used to read
+    # `max(gate_dates or [])` and why that expression is a ValueError on
+    # exactly one day: the day the last sample gate is met, when the list is
+    # empty. The watchdog would have died uncaught, from cron, on the morning
+    # the campaign it supervises finally succeeded — reproduced at aedecd8
+    # with 70 settled rows in each of the three strata.
+    open_gates: Dict[str, str] = {}
     for name in strata:
         v = strata[name]
         dates = sorted(d for d in v["pending_dates"] if d)
@@ -302,7 +309,7 @@ def project(now: Optional[datetime] = None) -> dict:
             eta, reachable = "MET", True
         elif len(dates) >= need:
             eta, reachable = dates[need - 1].date().isoformat(), True
-            gate_dates.append(eta)
+            open_gates[name] = eta
         else:
             eta, reachable = None, False
         report[name] = {
@@ -317,12 +324,49 @@ def project(now: Optional[datetime] = None) -> dict:
         total_eta = "MET"
     elif len(all_dates) >= need_total:
         total_eta = all_dates[need_total - 1].date().isoformat()
-        gate_dates.append(total_eta)
+        open_gates["total"] = total_eta
     else:
         total_eta = None
 
+    # The estimator's gate is a gate. It is a DIFFERENT blocker from sample
+    # size — discharged by walk-forward validation clearing, not by more
+    # settlements — but it is dated, and this number is the one the firm reads
+    # as "when a verdict becomes possible". It was absent from the max, and on
+    # 2026-08-28 the two disagreed by 13 days: the estimator said 09-08, the
+    # strata said 09-21, and only the accident that 09-21 is the later of the
+    # two kept the reported date honest. Sourced from `estimator_status()`, the
+    # module that owns the definition, never re-derived here.
+    #
+    # An UNDATED blocker outranks a dated one. If the estimator is absent or
+    # unfitted there is no date at which it opens, so reporting the strata date
+    # would be a constant that reads as "on track" for a gate that is not
+    # ([[fallback-that-means-act]]).
+    est_gate = None
+    try:
+        est = kc.estimator_status()
+        if est.get("state") == kc.EST_NOT_SERVING:
+            est_gate = est.get("earliest")
+            if est_gate:
+                open_gates["estimator"] = est_gate
+            else:
+                est_gate = "UNDATED"
+        elif est.get("state") in (kc.EST_ABSENT, kc.EST_UNFITTED):
+            est_gate = "UNDATED"
+    except Exception:                                   # noqa: BLE001
+        est_gate = "UNKNOWN"
+
     unreachable = [n for n, v in report.items() if not v["reachable"]]
-    binding = None if unreachable or total_eta is None else max(gate_dates or [])
+    if unreachable:
+        binding, binding_gate_name = None, "strata_without_inventory"
+    elif total_eta is None:
+        binding, binding_gate_name = None, "total_without_inventory"
+    elif est_gate in ("UNDATED", "UNKNOWN"):
+        binding, binding_gate_name = None, "estimator"
+    elif not open_gates:
+        binding, binding_gate_name = "MET", "none"
+    else:
+        binding_gate_name = max(open_gates, key=lambda k: open_gates[k])
+        binding = open_gates[binding_gate_name]
 
     # Is --resolve actually running? `settled_at` is written by resolve_settlements
     # and by nothing else, so it is the one honest liveness signal for that job.
@@ -368,6 +412,12 @@ def project(now: Optional[datetime] = None) -> dict:
         "resolve_pending": n_pending,
         "resolve_budget": budget,
         "binding_gate":  binding,
+        # WHICH gate binds decides what you would DO about it. "2026-09-21"
+        # alone reads as "wait for settlements" whoever wrote it, and that is
+        # the wrong instruction when the estimator is the one holding the date.
+        "binding_gate_name": binding_gate_name,
+        "open_gates":    open_gates,
+        "estimator_gate": est_gate,
         "unreachable":   unreachable,
     }
 
@@ -503,6 +553,35 @@ def evaluate(proj: dict, prev: Optional[dict]) -> List[dict]:
                           "Inventory is still arriving; reachable if intake holds.")),
         })
 
+    # 3b. Which gate is the last one shut? Every check above measures intake,
+    #     so a clean run reads as "collection is on track" — true, and beside
+    #     the point when the thing holding the verdict is not collection at
+    #     all. The estimator's gate is discharged by validation clearing, and
+    #     no amount of settling discharges it, so it needs saying out loud or
+    #     the firm keeps waiting for the wrong event.
+    name = proj.get("binding_gate_name")
+    if name == "estimator":
+        eg = proj.get("estimator_gate")
+        findings.append({
+            "kind": "GATE_IS_NOT_SAMPLE_SIZE", "severity": "MEDIUM",
+            "detail": (f"Every sample gate this watchdog measures is on track, "
+                       f"but the verdict is held by the ESTIMATOR, which is "
+                       f"{'undated' if eg in ('UNDATED', 'UNKNOWN') else eg}. "
+                       f"More settlements do not discharge it — walk-forward "
+                       f"validation clearing does. Reading the date above as "
+                       f"'collect until then' waits for the wrong event."),
+        })
+    elif name and name not in ("none",) and proj.get("open_gates", {}).get("estimator"):
+        # Both gates dated and the estimator is NOT the later one: fine today,
+        # worth stating, because the pair is exactly what made this invisible.
+        findings.append({
+            "kind": "GATE_BEHIND_ANOTHER_GATE", "severity": "LOW",
+            "detail": (f"Binding gate is `{name}` at {proj.get('binding_gate')}; "
+                       f"the estimator opens earlier, at "
+                       f"{proj['open_gates']['estimator']}. Both must clear, so "
+                       f"the earlier one is not the date to plan against."),
+        })
+
     # 4. Is the date drifting?
     if prev and prev.get("binding_gate") and proj.get("binding_gate"):
         try:
@@ -628,7 +707,15 @@ def _print_report(res: dict) -> None:
     print(f"\n  total settled : {res['total_settled']} "
           f"(need {res['need_total']} more -> {res['total_eta'] or 'UNREACHABLE'})")
     print(f"  overdue unsettled: {res['overdue_unsettled']}")
-    print(f"\n  BINDING GATE  : {res['binding_gate'] or 'UNREACHABLE'}")
+    # The gate's NAME travels with its date. A bare date is read as an
+    # instruction ("collect until then") and only one of the gate names makes
+    # that instruction the right one.
+    print(f"\n  BINDING GATE  : {res['binding_gate'] or 'UNREACHABLE'}"
+          f"  (gate: {res.get('binding_gate_name', '?')})")
+    if res.get("open_gates"):
+        print("  gates still shut: "
+              + ", ".join(f"{k}={v}" for k, v in sorted(res["open_gates"].items(),
+                                                        key=lambda kv: kv[1])))
     print(f"  STATUS        : {res['status']}")
     for f in res["findings"]:
         print(f"\n  [{f['severity']}] {f['kind']}\n    {f['detail']}")

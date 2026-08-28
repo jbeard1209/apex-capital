@@ -23801,6 +23801,200 @@ class TestTheWatchdogDoesNotAssertACauseItNeverMeasured(unittest.TestCase):
                          "RESOLVE_MAX_LOOKUPS")
 
 
+class TestTheBindingGateSurvivesItsOwnSuccess(unittest.TestCase):
+    """The projected verdict date was a max over the gates that are still shut.
+
+    Two defects lived in that one expression, found 2026-08-28:
+
+    1. `max(gate_dates or [])` — the `or []` guards `None`, not emptiness, so
+       the call is `max([])` and raises `ValueError` on exactly one day: the
+       day the last sample gate is met and no gate contributes a date. Nothing
+       up the stack catches it, so the cron watchdog would have died, silently
+       and only once, on the morning the campaign it supervises succeeded.
+       A supervisor that crashes on success is worse than one that never ran:
+       the firm reads the absence of an alarm as the absence of a problem.
+
+    2. The ESTIMATOR's gate was not in the max at all. On 2026-08-28 the VM
+       watchdog reported `BINDING GATE: 2026-09-21` while `is_edge_proven`
+       reported a dated wait at 2026-09-08 — two dated gates, one of them
+       invisible, and only the accident that 09-21 is the later of the two
+       kept the printed number honest. Reverse the accident and the watchdog
+       under-reports the wait.
+
+    The two are one bug: a max is only as honest as the set it ranges over, and
+    that set was both incomplete and allowed to be empty. Both directions are
+    pinned below, plus the rule from [[fallback-that-means-act]] that an
+    UNDATED blocker outranks a dated one — an absent estimator has no date at
+    which it opens, so printing the strata date would be a constant that reads
+    as "on track" for a gate that is not.
+    """
+
+    def _w(self):
+        import kalshi_watchdog
+        return kalshi_watchdog
+
+    NOW = datetime(2026, 9, 21, 12, 0, tzinfo=timezone.utc)
+
+    def _rows(self, settled_per, pending_per, close_in_days):
+        """Rows in every stratum, so no stratum is unreachable for lack of
+        inventory (which outranks every gate and would mask the case)."""
+        import kalshi_calibration as kc
+        out = []
+        for _name, lo, hi in kc.HORIZON_STRATA:
+            days = float(lo) + 1.0
+            for _ in range(settled_per):
+                out.append({"selection_rule": kc.SELECTION_RULE, "settled": True,
+                            "outcome": 1, "market_price": 0.95,
+                            "days_to_close": days, "spread": 0.02,
+                            "recorded_at": (self.NOW - timedelta(hours=1)).isoformat(),
+                            "close_time": (self.NOW - timedelta(days=1)).isoformat(),
+                            "settled_at": (self.NOW - timedelta(hours=2)).isoformat()})
+            for _ in range(pending_per):
+                out.append({"selection_rule": kc.SELECTION_RULE, "settled": False,
+                            "outcome": None, "market_price": 0.95,
+                            "days_to_close": days, "spread": 0.02,
+                            "recorded_at": (self.NOW - timedelta(hours=1)).isoformat(),
+                            "close_time": (self.NOW + timedelta(days=close_in_days)).isoformat(),
+                            "settled_at": None})
+        return out
+
+    def _project(self, rows, est_state, earliest=None):
+        """Project against synthetic rows AND a synthetic estimator state.
+
+        Both ends are stubbed on purpose. The estimator state is host-local —
+        the Mac has no fit file, the VM does — so a test that reads the ambient
+        one passes here and fails there for reasons that have nothing to do
+        with what it measures ([[host_divergence_is_a_bug_class]]).
+        """
+        import kalshi_calibration as kc
+        w = self._w()
+        est = {"state": est_state, "earliest": earliest,
+               "why": "synthetic", "discharged_by": "a fixture"}
+        real_status, real_load = kc.estimator_status, w._load
+        kc.estimator_status = lambda module=None: est
+        w._load = (lambda path, default:
+                   rows if "prediction" in str(path) else real_load(path, default))
+        try:
+            return w.project(now=self.NOW)
+        finally:
+            kc.estimator_status, w._load = real_status, real_load
+
+    def test_the_watchdog_does_not_crash_on_the_day_the_last_gate_opens(self):
+        import kalshi_calibration as kc
+        # Enough settled in every stratum that both the per-horizon and the
+        # 200-total gates are MET, so nothing at all is left shut.
+        per = max(kc.MIN_SETTLED_PER_HORIZON,
+                  kc.MIN_SETTLED_FOR_VERDICT // len(kc.HORIZON_STRATA) + 1)
+        rows = self._rows(per, 0, 0)
+        proj = self._project(rows, kc.EST_SERVING)          # must not raise
+        self.assertEqual(proj["open_gates"], {},
+                         "fixture failed to meet every gate; the crash case "
+                         "was never reached")
+        self.assertEqual(proj["binding_gate"], "MET")
+        self.assertEqual(proj["binding_gate_name"], "none")
+
+    def test_the_estimator_gate_can_be_the_binding_one(self):
+        import kalshi_calibration as kc
+        rows = self._rows(20, 60, 7)          # strata open 2026-09-28
+        proj = self._project(rows, kc.EST_NOT_SERVING, earliest="2026-12-01")
+        self.assertIn("estimator", proj["open_gates"],
+                      "the estimator's dated gate is not in the set the "
+                      "binding date is chosen from")
+        self.assertTrue(any(k != "estimator" for k in proj["open_gates"]),
+                        "fixture left no sample gate shut, so the estimator "
+                        "would win by default and prove nothing")
+        self.assertEqual(proj["binding_gate"], "2026-12-01")
+        self.assertEqual(proj["binding_gate_name"], "estimator")
+
+    def test_a_later_sample_gate_still_wins_and_says_so(self):
+        import kalshi_calibration as kc
+        rows = self._rows(20, 60, 7)          # strata open 2026-09-28
+        proj = self._project(rows, kc.EST_NOT_SERVING, earliest="2026-09-08")
+        self.assertEqual(proj["open_gates"].get("estimator"), "2026-09-08")
+        self.assertEqual(proj["binding_gate"], "2026-09-28")
+        self.assertNotEqual(proj["binding_gate_name"], "estimator")
+        # Naming the gate is the point: "2026-09-28" alone reads as "wait for
+        # settlements" whichever gate produced it.
+        self.assertIn(proj["binding_gate_name"], proj["open_gates"])
+
+    def test_an_undated_estimator_outranks_every_dated_gate(self):
+        import kalshi_calibration as kc
+        rows = self._rows(20, 60, 7)
+        for state in (kc.EST_ABSENT, kc.EST_UNFITTED):
+            proj = self._project(rows, state)
+            self.assertIsNone(proj["binding_gate"],
+                              f"{state}: a dated sample gate was reported as "
+                              f"the wait while an undated blocker stands")
+            self.assertEqual(proj["binding_gate_name"], "estimator", state)
+            self.assertEqual(proj["estimator_gate"], "UNDATED", state)
+
+    def test_a_broken_estimator_status_does_not_become_a_confident_date(self):
+        import kalshi_calibration as kc
+        w = self._w()
+        rows = self._rows(20, 60, 7)
+        real = kc.estimator_status
+        real_load = w._load
+
+        def boom(module=None):
+            raise RuntimeError("estimator module is unimportable")
+
+        kc.estimator_status = boom
+        w._load = (lambda path, default:
+                   rows if "prediction" in str(path) else real_load(path, default))
+        try:
+            proj = w.project(now=self.NOW)
+        finally:
+            kc.estimator_status, w._load = real, real_load
+        self.assertEqual(proj["estimator_gate"], "UNKNOWN")
+        self.assertIsNone(proj["binding_gate"],
+                          "an unreadable estimator state was reported as a "
+                          "date; not knowing is not a schedule")
+
+    def test_the_finding_says_more_settlements_will_not_discharge_it(self):
+        """The watchdog's other checks all measure intake, so a clean run reads
+        as 'collection is on track' — true, and the wrong instruction when the
+        thing holding the verdict is not collection."""
+        w = self._w()
+        proj = {"collector": {"role": "collector", "evidence": "test"},
+                "stall_hours": 1.0, "n_examined": 500, "strata": {},
+                "unreachable": [], "overdue_unsettled": 0,
+                "binding_gate": "2026-12-01", "binding_gate_name": "estimator",
+                "open_gates": {"1-7d": "2026-09-28", "estimator": "2026-12-01"},
+                "estimator_gate": "2026-12-01"}
+        found = [f for f in w.evaluate(proj, None)
+                 if f["kind"] == "GATE_IS_NOT_SAMPLE_SIZE"]
+        self.assertEqual(len(found), 1,
+                         "the estimator held the binding date and the watchdog "
+                         "reported it as an ordinary sample-size wait")
+        self.assertEqual(found[0]["severity"], "MEDIUM")
+        self.assertIn("2026-12-01", found[0]["detail"])
+
+        # And when it is NOT the binding one, the pair is still worth stating —
+        # that is exactly the configuration that hid the bug for a month.
+        proj["binding_gate"], proj["binding_gate_name"] = "2026-09-28", "1-7d"
+        proj["open_gates"]["estimator"] = "2026-09-08"
+        kinds = {f["kind"] for f in w.evaluate(proj, None)}
+        self.assertIn("GATE_BEHIND_ANOTHER_GATE", kinds)
+        self.assertNotIn("GATE_IS_NOT_SAMPLE_SIZE", kinds)
+
+    def test_the_watchdog_asks_the_owner_for_the_estimator_state(self):
+        """AST, not grep: the postmortem comment above the call names
+        `estimator_status()` too, and a text search cannot tell the two apart —
+        which is how a check ends up passing on its own explanation."""
+        import ast
+        w = self._w()
+        tree = ast.parse(Path(w.__file__).read_text())
+        calls = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call)
+                 and isinstance(n.func, ast.Attribute)
+                 and n.func.attr == "estimator_status"]
+        self.assertGreaterEqual(
+            len(calls), 1,
+            "kalshi_watchdog does not call estimator_status(); the estimator's "
+            "gate is either missing from the projection or re-derived here, "
+            "and a supervisor that restates a rule goes stale the day it moves")
+
+
 class TestThePremiseVerdictSpeaksOnlyForTheHorizonsItSampled(unittest.TestCase):
     """A verdict must not be wider than the sample that produced it.
 
