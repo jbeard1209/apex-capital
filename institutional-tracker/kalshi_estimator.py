@@ -124,6 +124,32 @@ PREDICTIONS = DATA / "kalshi_predictions.json"
 FIT_FILE = DATA / "kalshi_estimator_fit.json"
 SHADOW_BOOK = DATA / "kalshi_shadow_book.json"
 
+
+def _write_json(path: Path, obj) -> None:
+    """Serialize first, then swap the file in one atomic rename.
+
+    `path.write_text(...)` truncates the file BEFORE it has anything to put
+    there, so an exception mid-serialize — or a cron job killed at the wrong
+    instant — leaves an empty or half-written file where the history used to
+    be. Memory `truncate-before-lock`: 193 of 200 messages lost that way, and
+    the receipt still said "delivered".
+
+    That matters more here than almost anywhere else in the firm. The shadow
+    book and the quote track are FORWARD-RECORDED — a fill observation missed
+    at 14:05 cannot be reconstructed at 14:06 from anything, because the book
+    that would have proved it is gone. Losing this file does not delay a
+    verdict, it deletes the evidence the verdict needs.
+    """
+    tmp = path.with_name(path.name + f".tmp{os.getpid()}")
+    try:
+        tmp.write_text(json.dumps(obj, indent=2))
+        os.replace(str(tmp), str(path))
+    finally:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+
 # The selection rule the fit is valid for. A fit is a statement about the
 # population a rule admits; change the rule and the sample is describing a
 # population that no longer exists. `sample-outlived-its-rule` is the memory —
@@ -718,6 +744,52 @@ def estimate(row: dict, f: Optional[dict] = None) -> Optional[float]:
     return _apply(f, row)
 
 
+def estimate_with_reason(row: dict, f: Optional[dict] = None):
+    """(p_hat, reason). `kalshi_scanner`'s estimator contract, and the only
+    place the reason a row has NO estimate is authored.
+
+    A row that records `p_hat: null` and nothing else is indistinguishable from
+    a row written before this module existed. That ambiguity is not academic:
+    `kalshi_calibration.is_edge_proven` had to resolve it by reading the
+    scanner's SOURCE — "find_disagreement_candidates takes an estimator and is
+    always called without it" — because the ledger could not say. Source is the
+    wrong evidence for a question about data; the day the wiring changed, that
+    verdict became false and nothing in the ledger disagreed with it.
+
+    So the reason travels with the row. The four cases are four different
+    actions, and a caller that collapses them is back to "we need more data":
+      - no module          -> build one            (the scanner's own default)
+      - no usable fit      -> run --fit on the host that holds the settlements
+      - fit not serving    -> wait, on a stated date, for walk-forward to clear
+      - declined this row  -> nothing; the row is outside what was fitted
+    """
+    f = f if f is not None else load_fit()
+    if f is None:
+        return None, ("kalshi_estimator installed, no usable fit on disk "
+                      "(missing, stale, or fitted under a retired regime) "
+                      "— run `kalshi_estimator.py --fit` where the "
+                      "settlements are")
+    if not f.get("validated_beats_market"):
+        v = f.get("validation") or {}
+        why = v.get("why") or "walk-forward validation incomplete"
+        when = v.get("earliest_verdict_date")
+        return None, ("kalshi_estimator installed and fitted, NOT SERVING: "
+                      + why + (f" (earliest verdict {when})" if when else ""))
+    p = _apply(f, row)
+    if p is None:
+        lo, hi = (f.get("spread_support_cents") or [None, None])[:2]
+        s = row.get("spread")
+        return None, ("kalshi_estimator serving but declined this row: spread "
+                      + (f"{s * 100:.1f}c" if _is_number(s) else "unreadable")
+                      + " outside the fitted support ["
+                      + (f"{lo:.1f}, {hi:.1f}" if _is_number(lo) and _is_number(hi)
+                         else "unknown")
+                      + "]c, or the corrected price fell outside [0,1]")
+    return p, (f"kalshi_estimator fit {str(f.get('fitted_at'))[:10]} "
+               f"(n={f.get('n')}): bias = {f['intercept_cents']:+.3f} "
+               f"{f['slope_cents_per_cent_spread']:+.4f} * spread(c)")
+
+
 def signal(row: dict, f: Optional[dict] = None) -> Optional[dict]:
     """A tradeable signal for one row, or None if there is nothing to do.
 
@@ -874,7 +946,7 @@ def book_shadow(rows: Optional[List[dict]] = None) -> dict:
              if (c["ticker"], c["booked_at"][:10]) not in seen]
     if added:
         book.extend(added)
-        SHADOW_BOOK.write_text(json.dumps(book, indent=2))
+        _write_json(SHADOW_BOOK, book)
     return {"added": len(added), "total": len(book), "path": str(SHADOW_BOOK)}
 
 
@@ -973,7 +1045,7 @@ def record_quotes(book: Optional[List[dict]] = None,
         })
         added += 1
     if added:
-        QUOTE_TRACK.write_text(json.dumps(track, indent=2))
+        _write_json(QUOTE_TRACK, track)
     return {"observed": added, "open_legs": len(open_tickers),
             "total": len(track), "ts": ts, "path": str(QUOTE_TRACK)}
 
@@ -1082,7 +1154,7 @@ def resolve_shadow(rows: Optional[List[dict]] = None) -> dict:
                                    - e["cost_cents_rest"])
         n += 1
     if n:
-        SHADOW_BOOK.write_text(json.dumps(book, indent=2))
+        _write_json(SHADOW_BOOK, book)
     return {"resolved": n,
             "open": sum(1 for e in book if e.get("outcome") is None),
             "total": len(book)}
@@ -1130,22 +1202,44 @@ def shadow_verdict(book: Optional[List[dict]] = None) -> dict:
                         "UNPROFITABLE" if hi < 0 else "UNDECIDED")}
 
 
+def refit() -> Optional[dict]:
+    """fit + validate + persist, as one operation. The fit dict, or None.
+
+    Split out of `_cmd_fit` because a fit that is not written and not validated
+    is not a refit — it is a calculation nobody can read. The scheduled caller
+    (`kalshi_calibration --resolve`, where the labels land) was calling `fit()`
+    and discarding the result, so the gate `estimate()` consults could never
+    have flipped from a cron run: `validated_beats_market` is written HERE and
+    nowhere else. Same defect shape as the one this module exists to fix — the
+    component was present, and nothing carried its output to the consumer.
+
+    `reason_code` and `earliest_verdict_date` are persisted alongside `why` so
+    a consumer branches on a field instead of parsing prose; `why` is for the
+    human reading the report, not for the code reading the file.
+    """
+    f = fit()
+    if f is None:
+        return None
+    v = validate()
+    f["validated_at"] = _now().isoformat()
+    f["validation"] = {k: v[k] for k in
+                       ("ok", "reason_code", "n_folds",
+                        "mean_brier_improvement", "folds_improved",
+                        "beats_market", "why", "earliest_verdict_date")
+                       if k in v}
+    f["validated_beats_market"] = bool(v.get("ok") and v.get("beats_market"))
+    _write_json(FIT_FILE, f)
+    return f
+
+
 # --------------------------------------------------------------------------
 # CLI
 # --------------------------------------------------------------------------
 def _cmd_fit() -> int:
-    f = fit()
+    f = refit()
     if f is None:
         print("REFUSED — not enough settled current-regime rows to fit.")
         return 1
-    v = validate()
-    f["validated_at"] = _now().isoformat()
-    f["validation"] = {k: v[k] for k in
-                       ("ok", "n_folds", "mean_brier_improvement",
-                        "folds_improved", "beats_market", "why") if k in v}
-    f["validated_beats_market"] = bool(v.get("ok") and v.get("beats_market"))
-
-    FIT_FILE.write_text(json.dumps(f, indent=2))
     ci = f.get("slope_ci95")
     print(f"  n={f['n']} rows / {f['n_clusters']} events")
     print(f"  bias(c) = {f['intercept_cents']:+.3f} "

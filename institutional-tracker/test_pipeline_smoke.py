@@ -9897,10 +9897,22 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
                  "p_hat": p_hat, "market_price": 0.96,
                  "days_to_close": days} for i in range(n)]
 
+    # The estimator's state is now MEASURED rather than asserted from another
+    # module's source, so it is a second input to this verdict — and it is
+    # host-local (the Mac has no fit file, the VM does). Injecting it keeps
+    # every fixture below synthetic on both ends, which is what the class
+    # docstring promises. A test that took the ambient state would pass on the
+    # Mac and fail on the VM for reasons having nothing to do with the rule
+    # under test.
+    def _absent(self):
+        return {"state": self.cal.EST_ABSENT, "earliest": None,
+                "why": "kalshi_estimator is not importable (synthetic)",
+                "discharged_by": "building the module"}
+
     def test_no_estimator_anywhere_is_reported_as_blocked_not_as_not_yet(self):
         """The defect itself. A sample with no estimate must not be described in
         language that implies more of it would help."""
-        ok, why = self.cal.is_edge_proven(self._rows(300))
+        ok, why = self.cal.is_edge_proven(self._rows(300), est=self._absent())
         self.assertFalse(ok)
         self.assertIn("BLOCKED", why)
         self.assertNotIn("NOT YET", why,
@@ -9910,14 +9922,14 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
     def test_the_blocked_verdict_says_more_data_will_not_help(self):
         """A refusal that does not say what would discharge it gets read as
         'wait' by default — [[verdict-with-no-consequence]]."""
-        _, why = self.cal.is_edge_proven(self._rows(300))
+        _, why = self.cal.is_edge_proven(self._rows(300), est=self._absent())
         self.assertIn("cannot change this verdict", why)
         self.assertIn("Owner:", why, "a blocker with no owner is a wish")
 
     def test_the_structural_blocker_outranks_a_thin_sample(self):
         """The ordering bug, pinned. 60 rows is BOTH too few AND estimate-free;
         the answer must be the one that does not resolve itself with time."""
-        ok, why = self.cal.is_edge_proven(self._rows(60))
+        ok, why = self.cal.is_edge_proven(self._rows(60), est=self._absent())
         self.assertFalse(ok)
         self.assertIn("BLOCKED", why)
 
@@ -9925,7 +9937,7 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         """And it outranks stratification, which is the gate that was actually
         firing in production — 1,230 of 1,258 settled rows in the 1-7d band."""
         rows = self._rows(300, days=3.0)          # all one horizon stratum
-        ok, why = self.cal.is_edge_proven(rows)
+        ok, why = self.cal.is_edge_proven(rows, est=self._absent())
         self.assertFalse(ok)
         self.assertIn("BLOCKED", why)
         self.assertNotIn("not spread across the horizons", why)
@@ -9962,7 +9974,7 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         they carry a `p_hat` slot the moment they are recorded. Requiring
         settlement first would re-create the delay this fix removes."""
         rows = self._rows(300, settled=False)
-        ok, why = self.cal.is_edge_proven(rows)
+        ok, why = self.cal.is_edge_proven(rows, est=self._absent())
         self.assertFalse(ok)
         self.assertIn("BLOCKED", why)
         self.assertIn("0 of 300", why)
@@ -9971,7 +9983,7 @@ class TestWaitingIsNotTheSameAsStuck(unittest.TestCase):
         """The verdict text changed; the answer did not. This must never become
         a route to sizing a position."""
         for rows in (self._rows(300), self._rows(300, settled=False)):
-            self.assertIs(False, self.cal.is_edge_proven(rows)[0])
+            self.assertIs(False, self.cal.is_edge_proven(rows, est=self._absent())[0])
 
     # ------------------------------------------- where the damage actually is --
 
@@ -29087,6 +29099,354 @@ class TestTheEstimatorRefusesRatherThanGuesses(unittest.TestCase):
                          json.loads(buf2.getvalue())["execution_curve"]
                          .get("reason_code"),
                          "priced a curve for a book with no legs in it")
+
+
+class TestTheEstimatorIsReachableFromTheScheduledPath(unittest.TestCase):
+    """A capability nobody can reach on the cron path is not installed.
+
+    `kalshi_scanner.find_disagreement_candidates` has accepted an `estimator`
+    since it was written. `main()` — which IS every cron run — never passed
+    one. So for the sector's whole life every row recorded `p_hat: null` with
+    the rationale "no calibrated estimator installed", `is_edge_proven` read
+    that back and reported BLOCKED, and the report was correct.
+
+    Then `kalshi_estimator.py` landed. It fitted, it validated, it produced
+    estimates on demand — and the ledger went on recording nulls, because a
+    default parameter is not wiring. Nothing would have changed until somebody
+    remembered a keyword argument. That is [[orphan_agents_blindness]] with one
+    producer instead of twelve, and the only difference is that this one had a
+    consumer sitting right next to it asking for exactly what it made.
+
+    Every check here is AST-based. A text search for "default_estimator" would
+    match the postmortem comments this module is full of, including the ones
+    directly above the code under test — a grep here proves the prose exists,
+    not the call ([[a-union-cannot-prove-all-n]]).
+    """
+
+    def _tree(self, mod):
+        import ast
+        return ast.parse((Path(__file__).parent / f"{mod}.py").read_text())
+
+    def _func(self, tree, name):
+        import ast
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) \
+                    and node.name == name:
+                return node
+        self.fail(f"{name}() not found")
+
+    # ------------------------------------------------------- the wiring --
+
+    def test_scan_resolves_an_estimator_when_its_caller_passes_none(self):
+        """The fix, at the exact place the gap was. `scan()` must not simply
+        forward its own None — that is what it did for months."""
+        import ast
+        fn = self._func(self._tree("kalshi_scanner"), "scan")
+        calls = [n for n in ast.walk(fn)
+                 if isinstance(n, ast.Call)
+                 and getattr(n.func, "id", None) == "default_estimator"]
+        self.assertTrue(calls, "scan() never calls default_estimator(); the "
+                               "scheduled path is the no-estimator path again")
+        assigned = [n for n in ast.walk(fn)
+                    if isinstance(n, ast.Assign)
+                    and any(getattr(t, "id", None) == "estimator"
+                            for t in n.targets)]
+        self.assertTrue(assigned, "default_estimator() is called but its result "
+                                  "is never bound to `estimator`")
+
+    def test_the_default_estimator_is_the_module_the_firm_actually_built(self):
+        """Resolved by import, not by a registry entry someone maintains."""
+        import kalshi_scanner as KS
+        est = KS.default_estimator()
+        self.assertIsNotNone(est, "kalshi_estimator is importable in this "
+                                  "checkout, so the default must resolve")
+        self.assertTrue(callable(est))
+        import kalshi_estimator as KE
+        self.assertIs(est, KE.estimate_with_reason,
+                      "the default must be the reason-carrying entry point; "
+                      "estimate() alone loses WHY a row has no p_hat")
+
+    def test_the_estimator_is_handed_the_row_not_the_raw_market(self):
+        """One definition of `market_price` and `spread`. The estimator was
+        fitted on the ledger's columns, so it must score the same object the
+        ledger persists — re-deriving them from the raw market would be a
+        second definition of one quantity, silently divergent."""
+        import ast
+        fn = self._func(self._tree("kalshi_scanner"),
+                        "find_disagreement_candidates")
+        calls = [n for n in ast.walk(fn)
+                 if isinstance(n, ast.Call)
+                 and getattr(n.func, "id", None) == "estimator"]
+        self.assertEqual(1, len(calls), "expected exactly one estimator(...) call")
+        self.assertEqual(1, len(calls[0].args))
+        self.assertEqual("row", getattr(calls[0].args[0], "id", None),
+                         "the estimator must be given the row, not `m`")
+
+    def test_a_row_with_no_estimate_records_what_the_writer_observed(self):
+        """The default rationale is a claim about THIS CALL, never about the
+        firm. The old string asserted "no calibrated estimator installed" —
+        a statement about another module's source, which `is_edge_proven` then
+        read out of the ledger and repeated to the Chairman as a finding."""
+        import kalshi_scanner as KS
+        m = {"ticker": "T", "yes_ask_dollars": 0.95, "yes_bid_dollars": 0.94,
+             "yes_ask_size_fp": "100000000000000000", "title": "T",
+             "close_time": (datetime.now(timezone.utc)
+                            + timedelta(days=30)).isoformat()}
+        out = KS.find_disagreement_candidates([m])
+        self.assertEqual(1, len(out), "fixture rejected before the gates")
+        self.assertIsNone(out[0]["p_hat"])
+        self.assertIn("find_disagreement_candidates", out[0]["rationale"],
+                      "a row may only record what its own writer observed")
+
+    def test_every_refusal_to_estimate_carries_a_reason(self):
+        """`p_hat: null` with no reason is indistinguishable from a row written
+        before the estimator existed. Each of the four states is a different
+        instruction and the row has to say which one it hit."""
+        import kalshi_estimator as KE
+        row = {"market_price": 0.96, "spread": 0.03}
+        for fit, expect in (
+            (None, "no usable fit"),
+            ({"validated_beats_market": False,
+              "validation": {"why": "spans 8d of the 21d minimum",
+                             "earliest_verdict_date": "2026-09-08"}},
+             "NOT SERVING"),
+            ({"validated_beats_market": True, "intercept_cents": 0.7,
+              "slope_cents_per_cent_spread": -0.57,
+              "spread_support_cents": [90.0, 95.0]}, "declined this row"),
+        ):
+            with self.subTest(expect=expect):
+                p, why = KE.estimate_with_reason(row, f=fit) if fit else \
+                    (None, KE.estimate_with_reason(row, f={"validated_beats_market": None,
+                                                           "validation": {}})[1])
+                if fit is None:
+                    p, why = None, None
+                    with patch.object(KE, "load_fit", lambda: None):
+                        p, why = KE.estimate_with_reason(row)
+                self.assertIsNone(p)
+                self.assertIn(expect, why)
+
+    def test_a_served_estimate_says_which_fit_produced_it(self):
+        import kalshi_estimator as KE
+        p, why = KE.estimate_with_reason(
+            {"market_price": 0.96, "spread": 0.03},
+            f={"validated_beats_market": True, "intercept_cents": 0.731,
+               "slope_cents_per_cent_spread": -0.5744, "n": 2113,
+               "fitted_at": "2026-08-28T12:00:00+00:00",
+               "spread_support_cents": [1.0, 20.0]})
+        self.assertIsNotNone(p)
+        self.assertIn("2026-08-28", why)
+        self.assertIn("2113", why)
+
+    # -------------------------------------------- the refit that persists --
+
+    def test_the_scheduled_refit_writes_the_flag_the_gate_reads(self):
+        """`fit()` returns a dict and writes nothing. `validated_beats_market`
+        — the single field `estimate()` consults before it will serve — is
+        written only by `refit()`. A scheduled caller that used `fit()` would
+        print a fresh slope every day while the gate stayed shut forever."""
+        import ast
+        fn = self._func(self._tree("kalshi_calibration"), "_shadow_pass")
+        names = {getattr(n.func, "attr", None) for n in ast.walk(fn)
+                 if isinstance(n, ast.Call)}
+        self.assertIn("refit", names,
+                      "_shadow_pass must call ke.refit(), which persists")
+        self.assertNotIn("fit", names,
+                         "ke.fit() computes and discards; its result never "
+                         "reaches estimate()")
+
+    def test_refit_is_the_only_writer_of_the_serving_flag(self):
+        import ast
+        tree = self._tree("kalshi_estimator")
+        writers = set()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                for sub in ast.walk(node):
+                    if isinstance(sub, ast.Assign):
+                        for t in sub.targets:
+                            if isinstance(t, ast.Subscript) and \
+                                    getattr(getattr(t, "slice", None), "value",
+                                            None) == "validated_beats_market":
+                                writers.add(node.name)
+        self.assertEqual({"refit"}, writers,
+                         f"two sources for one gate flag: {sorted(writers)}")
+
+    def test_the_estimator_never_truncates_a_forward_recorded_file(self):
+        """`write_text` empties the file before it has anything to put there.
+        The shadow book and the quote track cannot be rebuilt — a fill
+        observation missed at 14:05 is gone, not late ([[truncate-before-lock]],
+        and `fill_rate` is not recoverable backwards by construction)."""
+        import ast
+        tree = self._tree("kalshi_estimator")
+        bad = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and \
+                    getattr(node.func, "attr", None) == "write_text":
+                owner = getattr(node.func.value, "id", None)
+                if owner in ("SHADOW_BOOK", "QUOTE_TRACK", "FIT_FILE",
+                             "PREDICTIONS", "LADDERS"):
+                    bad.append(f"{owner}.write_text at line {node.lineno}")
+        self.assertEqual([], bad, f"truncating write to a data file: {bad}")
+
+
+class TestTheVerdictMeasuresTheEstimatorInsteadOfDescribingIt(unittest.TestCase):
+    """`is_edge_proven` used to hardcode "no calibrated estimator is installed
+    (find_disagreement_candidates takes one and is always called without it)".
+
+    That sentence was true, it was read to the Chairman as a build-or-drop
+    finding, and it was a claim about ANOTHER MODULE'S SOURCE. The moment the
+    scanner was wired, the verdict became false and nothing in this file
+    disagreed with it — the same failure as [[auditor_ground_truth]]: an
+    auditor is only as honest as the document it measures against.
+
+    Four states, four instructions, and the whole point of the function is that
+    they are not interchangeable.
+    """
+
+    def setUp(self):
+        import kalshi_calibration as cal
+        self.cal = cal
+
+    def _rows(self, n):
+        return [{"selection_rule": self.cal.SELECTION_RULE, "settled": True,
+                 "outcome": i % 2, "p_hat": None, "market_price": 0.96,
+                 "spread": 0.03, "days_to_close": 3.0} for i in range(n)]
+
+    class _FakeKE:
+        def __init__(self, fit):
+            self._fit = fit
+
+        def load_fit(self):
+            return self._fit
+
+    def test_an_unimportable_module_is_blocked_and_owned_by_the_chairman(self):
+        e = {"state": self.cal.EST_ABSENT, "earliest": None,
+             "why": "not importable", "discharged_by": "building the module"}
+        ok, why = self.cal.is_edge_proven(self._rows(300), est=e)
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertIn("Chairman", why)
+
+    def test_a_fit_that_was_never_run_is_blocked_not_waiting(self):
+        """Installed but unfitted does not discharge with time either — and it
+        is host-local, so it can be true on the Mac and false on the VM at the
+        same instant. The instruction has to name the host."""
+        e = self.cal.estimator_status(self._FakeKE(None))
+        self.assertEqual(self.cal.EST_UNFITTED, e["state"])
+        ok, why = self.cal.is_edge_proven(self._rows(300), est=e)
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertIn("--fit", why)
+        self.assertIn("host", why, "an instruction that does not say WHERE to "
+                                   "run it is unactionable on two hosts")
+
+    def test_a_fitted_estimator_awaiting_validation_is_a_dated_wait(self):
+        """The ONE state where waiting is correct — and it must carry the date,
+        because a wait with no end is how a project runs forever on 'we just
+        need more data'."""
+        e = self.cal.estimator_status(self._FakeKE(
+            {"validated_beats_market": False,
+             "validation": {"why": "regime spans 8d of the 21d minimum",
+                            "earliest_verdict_date": "2026-09-08"}}))
+        self.assertEqual(self.cal.EST_NOT_SERVING, e["state"])
+        ok, why = self.cal.is_edge_proven(self._rows(300), est=e)
+        self.assertFalse(ok)
+        self.assertNotIn("BLOCKED", why,
+                         "a wait that a known date discharges is not a blocker")
+        self.assertIn("2026-09-08", why, "a dated wait must state its date")
+        self.assertIn("not more settlements", why)
+
+    def test_a_serving_estimator_reaching_no_row_is_the_wiring_blocker(self):
+        """The least obvious of the four and the one this session created the
+        possibility of: the component works and its output reaches nothing."""
+        e = self.cal.estimator_status(self._FakeKE(
+            {"validated_beats_market": True, "n": 2113,
+             "fitted_at": "2026-08-28T00:00:00+00:00"}))
+        self.assertEqual(self.cal.EST_SERVING, e["state"])
+        ok, why = self.cal.is_edge_proven(self._rows(300), est=e)
+        self.assertFalse(ok)
+        self.assertIn("BLOCKED", why)
+        self.assertIn("wiring", why)
+        self.assertIn("engineering", why,
+                      "routed to the Chairman it would sit in a build-or-drop "
+                      "queue behind a decision that was already made")
+
+    def test_the_four_states_do_not_share_one_instruction(self):
+        """The property under test is DISTINGUISHABILITY. Four verdicts that
+        differ only in wording are one verdict, and collapsing them is exactly
+        the defect the BLOCKED/NOT-YET split was introduced to fix."""
+        fits = {
+            self.cal.EST_UNFITTED: None,
+            self.cal.EST_NOT_SERVING: {"validated_beats_market": False,
+                                       "validation": {"why": "spans 8d",
+                                                      "earliest_verdict_date":
+                                                          "2026-09-08"}},
+            self.cal.EST_SERVING: {"validated_beats_market": True, "n": 5,
+                                   "fitted_at": "2026-08-28T00:00:00+00:00"},
+        }
+        seen = {}
+        for state, fit in fits.items():
+            e = self.cal.estimator_status(self._FakeKE(fit))
+            self.assertEqual(state, e["state"])
+            seen[state] = self.cal.is_edge_proven(self._rows(300), est=e)[1]
+        seen[self.cal.EST_ABSENT] = self.cal.is_edge_proven(
+            self._rows(300),
+            est={"state": self.cal.EST_ABSENT, "earliest": None,
+                 "why": "not importable",
+                 "discharged_by": "building the module"})[1]
+        self.assertEqual(4, len(set(seen.values())),
+                         "two estimator states produce the identical verdict "
+                         "text, so the reader cannot tell them apart")
+
+        # Distinct strings are not enough — four differently-worded ways to say
+        # "wait" would pass that and would be the original defect. The content
+        # that matters is WHICH ONE defers: exactly one of the four states is
+        # discharged by time, and the other three name something to go and do.
+        waits = [s for s, why in seen.items() if "BLOCKED" not in why]
+        self.assertEqual([self.cal.EST_NOT_SERVING], waits,
+                         f"exactly one state may read as a wait; got {waits}")
+
+        # And none of them opens the gate, whatever the wording.
+        for state, why in seen.items():
+            with self.subTest(state=state):
+                self.assertIs(False, self.cal.is_edge_proven(
+                    self._rows(300),
+                    est=(self.cal.estimator_status(self._FakeKE(fits[state]))
+                         if state in fits else
+                         {"state": state, "earliest": None, "why": "x",
+                          "discharged_by": "y"}))[0],
+                    f"{state} opened the gate on a ledger with no estimates")
+
+    def test_the_verdict_no_longer_asserts_another_modules_source(self):
+        """The literal regression. No verdict `is_edge_proven` RETURNS may
+        claim the scanner is called without an estimator — that is measured
+        now, and it is false.
+
+        Scoped to the returned strings, and docstrings are excluded on
+        purpose: the first cut of this test failed against the postmortem in
+        `estimator_status`, which quotes the retired sentence in order to
+        explain why it is retired. A check that cannot tell an assertion from
+        a description of a retired assertion forbids writing the history down.
+        """
+        import ast
+        tree = ast.parse((Path(__file__).parent
+                          / "kalshi_calibration.py").read_text())
+        fn = next(n for n in ast.walk(tree)
+                  if isinstance(n, ast.FunctionDef) and n.name == "is_edge_proven")
+        # Only `Return` subtrees, which is what makes the docstring exclusion
+        # automatic rather than a filter someone has to maintain: a docstring
+        # is an Expr statement and can never appear inside a return expression.
+        checked = 0
+        for node in ast.walk(fn):
+            if not isinstance(node, ast.Return):
+                continue
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
+                    checked += 1
+                    self.assertNotIn("always called without it", sub.value,
+                                     "a returned verdict still asserts a fact "
+                                     "about kalshi_scanner's source code")
+        self.assertGreater(checked, 20, "the scan found almost no verdict text, "
+                                        "so passing proves nothing")
 
 
 class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):

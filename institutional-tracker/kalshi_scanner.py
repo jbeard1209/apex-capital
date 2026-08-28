@@ -464,14 +464,51 @@ def annualized_return(ask, days):
     return ((1.0 - ask) / ask) * 365.0 / days
 
 
+def default_estimator():
+    """The p_hat producer the firm actually has installed, or None.
+
+    This function is the fix for a wiring gap that outlived the component it
+    was waiting on. `find_disagreement_candidates` has taken an `estimator`
+    since the day it was written; `main()` — which is every cron run — never
+    passed one. So every row in the ledger recorded `p_hat: null`, and
+    `is_edge_proven` correctly reported BLOCKED. Then `kalshi_estimator.py`
+    landed, fitted, and produced estimates on demand... and the ledger went on
+    recording nulls, because a default parameter is not wiring. Nothing would
+    have changed until a human remembered an argument.
+
+    A capability the firm owns must be reachable from the scheduled path with
+    nobody remembering anything. That is the whole difference between this and
+    the 12 agents of `orphan_agents_blindness`.
+
+    Returns None only when the module genuinely is not there — in which case
+    "no calibrated estimator installed" is a true statement about the firm, and
+    the rows should say it.
+    """
+    try:
+        import kalshi_estimator as ke
+    except Exception:                                # noqa: BLE001
+        return None
+    return ke.estimate_with_reason
+
+
 def find_disagreement_candidates(markets, estimator=None, stats=None):
     """The Chairman's original idea, logged and quarantined.
 
-    `estimator(market) -> (p_hat, rationale)` or None. With no estimator this
-    returns the near-certainty band annotated with the probability we would
-    have to be right about — which is the honest output, because the firm does
-    not yet own a calibrated tail estimator and printing a number we have not
-    measured is exactly the failure mode in memory `plausible-is-not-validated`.
+    `estimator(row) -> (p_hat, rationale)` or None. Takes the ROW, not the raw
+    market: the row's `market_price` and `spread` are the exact two columns the
+    estimator was fitted on and the exact two the ledger persists, so passing
+    the row makes it impossible for the estimator to be scoring a differently-
+    derived number than the one recorded next to its answer. Re-deriving them
+    from `m` would be a second definition of one quantity, which is the bug
+    class this file's `--pages` comment already postmortems.
+
+    With no estimator this returns the near-certainty band annotated with the
+    probability we would have to be right about — the honest output, because
+    printing a number we have not measured is exactly the failure mode in
+    memory `plausible-is-not-validated`. `scan()` supplies `default_estimator()`
+    so the scheduled path is never the no-estimator path by accident; a caller
+    that passes nothing here really does get nothing, and the rationale says
+    which of those two situations produced the null.
 
     Nothing here is ever sized. `size_position` refuses these until
     `kalshi_calibration.is_edge_proven()` passes.
@@ -563,11 +600,17 @@ def find_disagreement_candidates(markets, estimator=None, stats=None):
             "annualized_return": round(apy, 4),
             "rules_primary": str(m.get("rules_primary") or "")[:300],
             "requires_estimate": True,
-            "p_hat": None, "rationale": "no calibrated estimator installed",
+            # "no estimator was passed", NOT "no estimator exists" — this
+            # function cannot know the second, and for months it asserted it
+            # anyway. `is_edge_proven` then read that string back out of the
+            # ledger and repeated it to the Chairman as a build-or-drop
+            # finding. A row may only record what its writer actually observed.
+            "p_hat": None,
+            "rationale": "no estimator supplied to find_disagreement_candidates",
         }
         if estimator is not None:
             try:
-                p_hat, why = estimator(m)
+                p_hat, why = estimator(row)
                 p = kc.parse_price(p_hat)
                 row["p_hat"] = p
                 row["rationale"] = why
@@ -819,6 +862,18 @@ def size_position(candidate, sleeve_dollars, calibration_ok=None):
 # -------------------------------------------------------------------- scan --
 
 def scan(max_pages=60, estimator=None, check_mutex=True):
+    # The scheduled path resolves its own estimator. `estimator=None` here
+    # means "use whatever the firm has installed", not "use nothing" — because
+    # the only caller in production is `main()`, and for the whole life of this
+    # sector `main()` passed nothing and the ledger recorded nothing. A
+    # capability reachable only by remembering a keyword argument is, from the
+    # cron's point of view, not installed at all.
+    #
+    # `find_disagreement_candidates` keeps the literal reading of None so it
+    # stays a pure function of its arguments for tests. The wiring belongs at
+    # the entry point that was broken, not in the routine that was correct.
+    estimator = estimator if estimator is not None else default_estimator()
+
     # ONE walk of /events, and everything downstream is derived from it.
     #
     # This used to walk markets, then call `kc.get_event()` once per event to

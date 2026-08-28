@@ -246,9 +246,16 @@ def record_from_scan(scan=None):
             "floor_strike": c.get("floor_strike"),
             "cap_strike": c.get("cap_strike"),
             "yes_sub_title": c.get("yes_sub_title"),
-            # what WE said. None is honest: no calibrated estimator exists yet,
-            # and a null here is what keeps an unmeasured guess out of the
-            # sample rather than quietly defaulting it to the market price.
+            # What WE said. A null is still honest — the estimator declined
+            # this row, or is not yet serving — and it keeps an unmeasured
+            # guess out of the sample rather than quietly defaulting to the
+            # market price. What CHANGED (2026-08-28) is that a null now has
+            # to say which: `rationale` is written on every row, served or
+            # not, so "0 rows carry a p_hat" can be read back as a cause
+            # instead of an absence. It read "no calibrated estimator exists
+            # yet" here for months while kalshi_estimator.py sat fitted on the
+            # VM and unwired — see estimator_status() below, which measures
+            # that instead of asserting it.
             "p_hat": c.get("p_hat"),
             "rationale": c.get("rationale"),
             "close_time": c.get("close_time"),
@@ -535,7 +542,70 @@ def horizon_strata(rows):
     return out
 
 
-def is_edge_proven(rows=None):
+EST_ABSENT, EST_UNFITTED, EST_NOT_SERVING, EST_SERVING = (
+    "ABSENT", "UNFITTED", "NOT_SERVING", "SERVING")
+
+
+def estimator_status(module=None) -> dict:
+    """What the firm's p_hat producer can do RIGHT NOW, on THIS host.
+
+    Replaces a sentence that used to be hardcoded into `is_edge_proven`'s
+    verdict: "no calibrated estimator is installed (find_disagreement_candidates
+    takes one and is always called without it)". That was true when written, it
+    was read out to the Chairman as a build-or-drop finding, and it was a claim
+    about another module's SOURCE CODE — so the day the scanner was wired to an
+    estimator, the verdict became false and nothing in this file noticed.
+
+    A control must measure the thing, not describe it. The four states are four
+    different instructions, and they are not interchangeable:
+
+      ABSENT       the module is not importable  -> build it.        Permanent.
+      UNFITTED     installed, no usable fit here -> run --fit where the settled
+                   rows are. The ledger is host-local and unsynced, so this can
+                   be true on the Mac and false on the VM at the same instant.
+      NOT_SERVING  fitted, but it did not beat the market out-of-sample, so it
+                   refuses to emit -> a DATED wait, which can still end in "no".
+      SERVING      it will produce a p_hat when asked.
+
+    `module` is injectable so a test can pin the ordering rule without asking
+    which host it is running on ([[host_divergence_is_a_bug_class]]).
+    """
+    ke = module
+    if ke is None:
+        try:
+            import kalshi_estimator as ke   # noqa: PLC0415
+        except Exception as e:              # noqa: BLE001
+            return {"state": EST_ABSENT, "earliest": None,
+                    "why": (f"kalshi_estimator is not importable "
+                            f"({type(e).__name__}: {e})"),
+                    "discharged_by": "building the module"}
+    try:
+        f = ke.load_fit()
+    except Exception as e:                  # noqa: BLE001
+        f = None
+        _ = e
+    if not f:
+        return {"state": EST_UNFITTED, "earliest": None,
+                "why": ("kalshi_estimator is installed but has no usable fit on "
+                        "this host — missing, stale, or fitted under a regime "
+                        "the scanner has since retired"),
+                "discharged_by": ("running `kalshi_estimator.py --fit` on the "
+                                  "host holding the settled rows; the ledger is "
+                                  "host-local and there is no state sync")}
+    v = f.get("validation") or {}
+    if not f.get("validated_beats_market"):
+        return {"state": EST_NOT_SERVING,
+                "earliest": v.get("earliest_verdict_date"),
+                "why": ("kalshi_estimator is fitted but has not beaten the "
+                        "market out-of-sample, so it refuses to serve: "
+                        + str(v.get("why") or "validation incomplete")),
+                "discharged_by": "walk-forward validation clearing"}
+    return {"state": EST_SERVING, "earliest": None, "discharged_by": None,
+            "why": (f"kalshi_estimator serving, fit {str(f.get('fitted_at'))[:10]} "
+                    f"on n={f.get('n')}")}
+
+
+def is_edge_proven(rows=None, est=None):
     """(bool, reason). The gate `kalshi_scanner.size_position` consults.
 
     Returns False for "not yet", for "no", AND for "blocked", with different
@@ -613,18 +683,56 @@ def is_edge_proven(rows=None):
             # A failure to price the toll must not suppress the blocker itself;
             # the blocker is the finding, the bar is the context.
             bar = ""
+        # WHY there is no estimate decides what the reader should DO, and the
+        # answer is measured, not asserted. See `estimator_status`.
+        e = est if est is not None else estimator_status()
+        state, ewhy = e.get("state"), e.get("why")
+        locks = (" The arithmetic locks are unaffected either way: they need "
+                 "no estimator, and this gate does not hold them.")
+
+        if state == EST_NOT_SERVING:
+            # The one state where waiting is the correct instruction — and it
+            # still must not borrow the open-ended wording of the sample-size
+            # refusals, because this wait has a date on it and can end in "no".
+            when = e.get("earliest")
+            return False, (
+                f"NOT YET, ON A DATED WAIT — 0 of {len(regime)} current-regime "
+                f"rows carry an estimate ({n} settled), because the estimator "
+                f"is installed and fitted but is REFUSING TO SERVE. {ewhy}. "
+                f"What discharges this is {e.get('discharged_by')}"
+                + (f", earliest {when}" if when else "")
+                + f" — not more settlements, and the wait can legitimately end "
+                  f"in 'this does not beat the market'. Owner: nobody yet; "
+                  f"revisit"
+                + (f" on {when}." if when else " when validation next runs.")
+                + f"{locks}{bar}")
+
+        if state == EST_SERVING:
+            # Worst of the four and the least obvious: the component works, and
+            # its output is reaching no row. Exactly `orphan_agents_blindness`
+            # with one producer instead of twelve.
+            return False, (
+                f"BLOCKED, NOT WAITING — 0 of {len(regime)} current-regime rows "
+                f"carry an estimate ({n} settled), and yet {ewhy}. So the "
+                f"estimator is WORKING AND UNREAD: the scanner is not attaching "
+                f"what the firm can already produce, or is declining every row "
+                f"as outside the fitted spread support. Collecting more "
+                f"settlements cannot change this verdict — the missing link is "
+                f"wiring, not observation. Owner: engineering — check that "
+                f"kalshi_scanner.scan() still resolves default_estimator() and "
+                f"that rows carry a `rationale`.{locks}{bar}")
+
+        # ABSENT, or UNFITTED. Both are components that are not running, and
+        # neither discharges with time.
         return False, (
             f"BLOCKED, NOT WAITING — 0 of {len(regime)} current-regime rows "
             f"carry an estimate of our own ({n} of them settled). The sector "
             f"records the market's price and the probability we would have to "
             f"be right about; it has never recorded a probability WE produced, "
-            f"because no calibrated estimator is installed "
-            f"(kalshi_scanner.find_disagreement_candidates takes one and is "
-            f"always called without it). Collecting more settlements cannot "
-            f"change this verdict — the missing input is a component, not an "
-            f"observation. Owner: the Chairman, as a build-or-drop decision. "
-            f"Note that the arithmetic locks are unaffected: they need no "
-            f"estimator, and this gate does not hold them.{bar}")
+            f"because {ewhy}. Collecting more settlements cannot change this "
+            f"verdict — the missing input is a component, not an observation. "
+            f"What discharges it is {e.get('discharged_by')}. Owner: the "
+            f"Chairman, as a build-or-drop decision.{locks}{bar}")
 
     if n < MIN_SETTLED_FOR_VERDICT:
         return False, (f"NOT YET — {n}/{MIN_SETTLED_FOR_VERDICT} settled "
@@ -1655,6 +1763,48 @@ def email_verdict(rows=None, force=False):
         return False, f"buffer failed: {e}"
 
 
+def _shadow_pass(refit: bool = False) -> str:
+    """Drive kalshi_estimator's forward-recording pass. Never raises.
+
+    Wrapped rather than inlined because this is a SIDE job on the calibration
+    command: if the estimator is missing or throws, `--record` must still
+    record. The failure is printed, not swallowed silently — a try/except that
+    returns nothing is how this codebase loses integrations.
+
+    Order is the estimator's own and is load-bearing: book, then quote, then
+    resolve. A leg opened today needs a quote observation on the same pass, and
+    a leg settling today needs its final observation before it is closed out —
+    `fill_rate` needs two observations to bound an interval, and the cheapest
+    place to lose the second is here.
+    """
+    try:
+        import kalshi_estimator as ke
+    except Exception as e:                       # noqa: BLE001
+        return f"estimator unavailable ({type(e).__name__}: {e})"
+    try:
+        booked   = ke.book_shadow()
+        quotes   = ke.record_quotes()
+        resolved = ke.resolve_shadow()
+        out = (f"booked +{booked['added']} (book {booked['total']}), "
+               f"quotes +{quotes['observed']} on {quotes['open_legs']} open leg(s), "
+               f"resolved +{resolved['resolved']} ({resolved['open']} still open)")
+        if refit:
+            # `refit()`, NOT `fit()`. `fit()` returns a dict and writes nothing;
+            # `validated_beats_market` — the one field `estimate()` consults
+            # before it will serve — is written only by `refit()`. Calling the
+            # wrong one here would have left the gate permanently shut while
+            # this line printed a slope every day, which is the same defect the
+            # estimator exists to fix: the component ran and its output reached
+            # no consumer.
+            f = ke.refit()
+            out += ("; refit REFUSED (too few settled rows)" if not f else
+                    f"; refit n={f['n']} slope={f['slope_cents_per_cent_spread']:+.4f}"
+                    f" validated={bool(f.get('validated_beats_market'))}")
+        return out
+    except Exception as e:                       # noqa: BLE001
+        return f"FAILED — {type(e).__name__}: {e}"
+
+
 def main():
     import argparse
     ap = argparse.ArgumentParser()
@@ -1669,9 +1819,30 @@ def main():
     if args.record:
         _, msg = record_from_scan()
         print(f"  record : {msg}")
+        # The shadow book, quote track and refit hang off THIS command rather
+        # than a crontab line of their own, and the position is load-bearing
+        # rather than convenient. `book_shadow` reads the open rows that
+        # `record_from_scan` has just written; `record_quotes` reads the ladder
+        # snapshot `kalshi_scanner.py` wrote immediately before it in the same
+        # cron chain. Anywhere else in the schedule one of the two inputs is a
+        # generation stale.
+        #
+        # It is also the answer to how kalshi_estimator.py was reachable at all.
+        # It shipped to the VM (deploy.sh rsyncs the working tree) and ran from
+        # nothing: no cron line, no caller, no test. An orphaned module that
+        # produces the one measurement the sector's verdict turns on is
+        # indistinguishable from not having built it — memory
+        # `orphan_agents_blindness`.
+        print(f"  shadow : {_shadow_pass()}")
     if args.resolve:
         _, msg = resolve_settlements()
         print(f"  resolve: {msg}")
+        # Refit where the labels land. A fit is a function of settled rows, so
+        # the moment new ones arrive is the only moment the fit can change, and
+        # any other cadence is either stale or wasted. `fit()` refuses on its
+        # own when the sample is too thin; it is not this function's job to
+        # decide that twice.
+        print(f"  shadow : {_shadow_pass(refit=True)}")
 
     rows = _load_ledger()
     settled = sum(1 for r in rows if r.get("settled"))
