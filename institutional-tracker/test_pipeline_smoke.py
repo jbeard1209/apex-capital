@@ -5210,6 +5210,204 @@ class TestHostSpecificChecksStayOnTheirHost(unittest.TestCase):
                         f"metadata probe returned an unexpected value: {ip!r}")
 
 
+class TestCreditFeedIgnoresIntradayNaNStub(unittest.TestCase):
+    """yfinance started emitting a stub row for the current day with NaN OHLC.
+
+    2026-09-04: `yf.Ticker("HYG").history(period="5d")` returns 5 rows, the
+    LAST of which has NaN Open/High/Low/Close and nonzero Volume. Every bond
+    ETF the credit monitor reads (HYG/LQD/TLT/IEF/SHY) behaved this way, so
+    `_fetch_raw`'s `.iloc[-1]` grabbed the stub, produced NaN, and the whole
+    credit read went UNKNOWN — dragging fi_pipeline into permanent abstain.
+    The fix is `dropna()` before taking the last close.
+
+    This test builds the exact vendor artifact and asserts the fetch reads the
+    real close from the prior row rather than the stub. Runs offline — patches
+    the yfinance import so it does not touch the network.
+    """
+
+    def test_stub_row_of_nan_is_skipped_for_the_prior_close(self):
+        import fi_credit_monitor as C
+        import pandas as pd
+        import numpy as np
+        import types
+
+        real_close = 79.11
+        stub_and_prior = pd.DataFrame({
+            "Open":   [79.14, np.nan],
+            "High":   [79.23, np.nan],
+            "Low":    [79.10, np.nan],
+            "Close":  [real_close, np.nan],
+            "Volume": [34_409_100, 23_037_581],
+        }, index=pd.to_datetime(["2026-09-02", "2026-09-03"]))
+
+        class FakeTicker:
+            def __init__(self, *_a, **_kw): pass
+            def history(self, *_a, **_kw): return stub_and_prior
+
+        fake_yf = types.SimpleNamespace(Ticker=FakeTicker)
+        real_yf = sys.modules.get("yfinance")
+        sys.modules["yfinance"] = fake_yf
+        try:
+            got = C._fetch_raw("HYG")
+        finally:
+            if real_yf is None:
+                sys.modules.pop("yfinance", None)
+            else:
+                sys.modules["yfinance"] = real_yf
+
+        self.assertIsNotNone(got, "the stub-row fix regressed — got None")
+        self.assertAlmostEqual(got, real_close, places=4,
+                               msg=f"took the stub NaN instead of {real_close}")
+
+    def test_all_nan_history_still_returns_none(self):
+        import fi_credit_monitor as C
+        import pandas as pd
+        import numpy as np
+        import types
+
+        all_nan = pd.DataFrame({
+            "Open": [np.nan, np.nan], "High": [np.nan, np.nan],
+            "Low":  [np.nan, np.nan], "Close": [np.nan, np.nan],
+            "Volume": [1, 2],
+        }, index=pd.to_datetime(["2026-09-02", "2026-09-03"]))
+
+        class FakeTicker:
+            def __init__(self, *_a, **_kw): pass
+            def history(self, *_a, **_kw): return all_nan
+
+        fake_yf = types.SimpleNamespace(Ticker=FakeTicker)
+        real_yf = sys.modules.get("yfinance")
+        sys.modules["yfinance"] = fake_yf
+        try:
+            self.assertIsNone(C._fetch_raw("HYG"),
+                              "a genuinely blank history must degrade to None")
+        finally:
+            if real_yf is None:
+                sys.modules.pop("yfinance", None)
+            else:
+                sys.modules["yfinance"] = real_yf
+
+
+class TestEdgarCachePathIsWhereTheProducerWrites(unittest.TestCase):
+    """Two CIT checkers looked at a directory the producer never wrote to.
+
+    `fe_edgar_fundamentals.CACHE_DIR = "data/fe_fundamentals_cache"` (line 28)
+    but `apex_system_cit_agent._EDGAR_CACHE_DIR` and
+    `fe_cit_agent._EDGAR_CACHE_DIR` read `"data/edgar_cache"` — a phantom
+    directory that never contained anything. Both checkers filed HIGH
+    "EDGAR cache empty -- fe_edgar_fundamentals may not be running" every day
+    against ~1100 fresh files sitting one directory over.
+
+    Classic wiring contract bug ([[wiring_contract_bugs]]): the producer's
+    identity was one string and the consumer's identity was a different
+    string, and the code compiled and ran without ever agreeing.
+
+    This test pins that the two consumers point at the producer's actual path.
+    Any drift here means an "EDGAR cache empty" alert is either a false alarm
+    or is looking at the wrong thing.
+    """
+
+    def test_the_two_cit_checkers_point_at_the_producer(self):
+        import fe_edgar_fundamentals, apex_system_cit_agent, fe_cit_agent
+        producer = str(fe_edgar_fundamentals.CACHE_DIR)
+        self.assertTrue(producer.endswith("fe_fundamentals_cache"),
+                        f"producer path changed unexpectedly: {producer!r}")
+        for consumer_name, consumer_path in [
+            ("apex_system_cit_agent", apex_system_cit_agent._EDGAR_CACHE_DIR),
+            ("fe_cit_agent", fe_cit_agent._EDGAR_CACHE_DIR),
+        ]:
+            self.assertTrue(
+                producer.endswith(consumer_path)
+                or consumer_path.endswith("fe_fundamentals_cache"),
+                f"{consumer_name} reads {consumer_path!r} but the producer "
+                f"writes to {producer!r} — the phantom-dir bug is back",
+            )
+
+
+class TestEmailLoopDetectorReadsFlushSemantics(unittest.TestCase):
+    """The detector was in an alert-storm loop against ITS OWN daily architecture.
+
+    apex_system_cit_agent's email-loop check keyed on subject-only and counted
+    across the entire buffer. R&D and Chief-of-Staff fire on 4-6 cron slots per
+    day, so by 13:00 UTC the buffer legitimately holds identical subjects from
+    those regenerations; the 22:00 flush is where they collapse to one line
+    (email_buffer.buffer_email docstring explains why). The detector saw the
+    pre-flush state, called it "email loop", and filed HIGH BUG_FIX every day.
+    See [[cit_bug_fixer_alert_loop]].
+
+    Fix: key on `dedup_key or subject` (the flush key), and require a BURST —
+    THRESHOLD entries within one hour — because a genuine bug regenerates in
+    seconds, not on a cron schedule.
+    """
+
+    def _run_check(self, buffer):
+        import types, apex_system_cit_agent as A
+        buffer_path = A._EMAIL_BUFFER
+        original_read = None
+        try:
+            A._EMAIL_BUFFER = str(Path(tempfile.mkdtemp()) / "email_buffer.json")
+            Path(A._EMAIL_BUFFER).write_text(json.dumps(buffer))
+            proposals = []
+            A.check_email_buffer(proposals)
+        finally:
+            A._EMAIL_BUFFER = buffer_path
+        return [p for p in proposals if "burst" in json.dumps(p, default=str).lower()
+                or "loop" in json.dumps(p, default=str).lower()]
+
+    def _entry(self, subj, at, body="x", dedup_key=None):
+        e = {"subject": subj, "html_body": body, "sender_name": "s",
+             "buffered_at": at, "key_metrics": {}}
+        if dedup_key:
+            e["dedup_key"] = dedup_key
+        return e
+
+    def test_scheduled_reruns_over_the_day_do_not_alert(self):
+        """The exact false-positive: 4 R&D briefings from the 4 cron slots."""
+        buf = [
+            self._entry("R&D Team Briefing | 2026-09-04", "2026-09-04T05:00:00"),
+            self._entry("R&D Team Briefing | 2026-09-04", "2026-09-04T08:00:00"),
+            self._entry("R&D Team Briefing | 2026-09-04", "2026-09-04T16:00:00"),
+            self._entry("R&D Team Briefing | 2026-09-04", "2026-09-04T19:15:00"),
+        ]
+        self.assertEqual(self._run_check(buf), [],
+                         "cron-spaced same-subject re-runs must not read as a loop")
+
+    def test_a_real_burst_still_alerts(self):
+        """A genuine bug regenerating in seconds is what the detector is for."""
+        buf = [
+            self._entry("stuck loop", "2026-09-04T10:00:00"),
+            self._entry("stuck loop", "2026-09-04T10:00:10"),
+            self._entry("stuck loop", "2026-09-04T10:00:30"),
+            self._entry("stuck loop", "2026-09-04T10:01:00"),
+        ]
+        found = self._run_check(buf)
+        self.assertEqual(len(found), 1, "3+ enqueues inside a minute is a loop")
+
+    def test_dedup_key_beats_subject_when_the_producer_gave_one(self):
+        """Same subject, distinct dedup_keys: two different reports, not a loop.
+
+        The coherence-loss case ([[email_buffer]] docstring): subject reads
+        "Coherence: 1 law(s) violated on mac", but each is a different alarm.
+        Producers that pass dedup_key are declaring "these are DIFFERENT even
+        though the subject reads the same" — the detector must honor that.
+        """
+        buf = [
+            self._entry("Coherence: 1 law(s) violated on mac", "2026-09-04T10:00:00",
+                        body="alarm A", dedup_key="coherence.rule_A"),
+            self._entry("Coherence: 1 law(s) violated on mac", "2026-09-04T10:00:10",
+                        body="alarm B", dedup_key="coherence.rule_B"),
+            self._entry("Coherence: 1 law(s) violated on mac", "2026-09-04T10:00:20",
+                        body="alarm C", dedup_key="coherence.rule_C"),
+        ]
+        self.assertEqual(self._run_check(buf), [],
+                         "distinct dedup_keys are distinct reports, not a loop")
+
+    def test_irm_review_copies_still_excluded(self):
+        buf = [self._entry("[IRM REVIEW] anything", f"2026-09-04T10:00:{i:02d}")
+               for i in range(6)]
+        self.assertEqual(self._run_check(buf), [])
+
+
 class TestWrongfulRetirement(unittest.TestCase):
     """Retirement is the only irreversible thing HR does. It ran unchecked.
 
@@ -30934,6 +31132,404 @@ class TestAHighFindingHasToReachAnOwner(unittest.TestCase):
         src = inspect.getsource(self.lo.run_logic_officer)
         self.assertIn("_escalate_to_chairman(findings, ran_clean)", src)
         self.assertIn('"chairman":', src)
+
+
+class TestHedgeExemptionOutcomeTracking(unittest.TestCase):
+    """Jack ratified the hedge carve-out 2026-09-04 on one condition.
+
+    "if it turns out well then great it is ok to do but if it fails make sure
+    there arent exemptions in the future or at least its a stricter policy."
+
+    Pins the four halves of that condition:
+      1) Every exempted trade writes an outcome row with the pre-state, so
+         "how did it turn out?" can actually be asked later.
+      2) Grading closes rows the exemption was meant to justify — falling
+         net beta is WORKED, stubborn beta + losses is FAILED, missing data
+         is UNKNOWN.
+      3) A recent failure rate over the policy threshold auto-disables the
+         carve-out and escalates to the Chairman.
+      4) `risk_gate._hedge_verdict` honours the disable flag — a disabled
+         carve-out MUST NOT quietly re-allow exemptions on the next trade.
+    """
+
+    def setUp(self):
+        import tempfile
+        self.tmp = tempfile.mkdtemp()
+        (Path(self.tmp) / "data").mkdir()
+        self._cwd = os.getcwd()
+        os.chdir(self.tmp)
+        self.addCleanup(os.chdir, self._cwd)
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        # Isolate the module state files to this temp dir.
+        import hedge_exemption_outcomes as heo
+        self._orig_out = heo.OUTCOMES_PATH
+        self._orig_state = heo.STATE_PATH
+        heo.OUTCOMES_PATH = Path(self.tmp) / "data" / "hedge_exemption_outcomes.json"
+        heo.STATE_PATH    = Path(self.tmp) / "data" / "hedge_carveout_state.json"
+        self.heo = heo
+        self.addCleanup(setattr, heo, "OUTCOMES_PATH", self._orig_out)
+        self.addCleanup(setattr, heo, "STATE_PATH", self._orig_state)
+
+    def _snap(self, cash=6000.0, pv=100_000.0, positions=None):
+        return {"cash": cash, "portfolio_value": pv,
+                "positions": positions or {}}
+
+    def test_record_use_writes_the_pre_state(self):
+        """No pre-state means no way to grade the exemption later."""
+        oid = self.heo.record_use("SH", "BUY", 100, 45.0,
+                                  self._snap(positions={"SPY": {"qty": 200, "price": 500}}),
+                                  reason="reduces beta")
+        self.assertIsNotNone(oid)
+        rows = json.loads(self.heo.OUTCOMES_PATH.read_text())
+        self.assertEqual(1, len(rows))
+        r = rows[0]
+        self.assertEqual("SH", r["symbol"])
+        self.assertEqual("OPEN", r["status"])
+        self.assertEqual(45.0, r["price"])
+        self.assertEqual(6000.0, r["pre_cash_usd"])
+        self.assertEqual(100_000.0, r["pre_equity_usd"])
+        # The pre_net_beta field is present regardless of whether the beta
+        # module could compute one — the grader distinguishes "measured" from
+        # "unmeasurable" and that distinction must survive the write.
+        self.assertIn("pre_net_beta", r)
+
+    def test_record_use_dedups_within_the_minute(self):
+        """A pipeline that hedges twice in the same second is one intent."""
+        s = self._snap()
+        oid1 = self.heo.record_use("SH", "BUY", 100, 45.0, s, "r")
+        oid2 = self.heo.record_use("SH", "BUY", 100, 45.0, s, "r")
+        self.assertEqual(oid1, oid2)
+        self.assertEqual(1, len(json.loads(self.heo.OUTCOMES_PATH.read_text())))
+
+    def test_grade_closes_positions_that_are_gone_from_the_book(self):
+        """The exemption's point is achieved or missed when the hedge lifts."""
+        # Pre: |beta| = 0.5 (long-heavy). Row is OPEN.
+        rows = [{
+            "id": "hedge-outcome-SH-20260901T1200",
+            "ts_open": (datetime.now(timezone.utc) - timedelta(days=3)).isoformat(),
+            "symbol": "SH", "side": "BUY", "qty": 100.0, "price": 45.0,
+            "pre_net_beta": 0.50, "pre_cash_usd": 6000.0, "pre_equity_usd": 100_000.0,
+            "reason": "reduces beta", "status": "OPEN",
+            "ts_close": None, "close_price": None, "close_net_beta": None,
+            "close_cash_usd": None, "pnl_usd": None, "verdict_reason": None,
+        }]
+        self.heo.OUTCOMES_PATH.write_text(json.dumps(rows))
+        # Snap now: SH is gone, |beta| fell to 0.30 → WORKED
+        snap = self._snap(cash=6100.0, pv=100_500.0, positions={
+            "SPY": {"qty": 100, "price": 505.0},   # only long left
+        })
+        # Force a specific pre_net_beta path: monkey-patch _pre_net_beta so the
+        # test does not depend on portfolio_beta's cache / catalog.
+        self.heo._pre_net_beta = lambda s: 0.30
+        # And stub the current quote for the closed SH position.
+        import risk_gate as rg
+        self._orig_quote = rg._quote
+        rg._quote = lambda sym: 40.0  # SH fell from 45 → 40
+        self.addCleanup(setattr, rg, "_quote", self._orig_quote)
+
+        out = self.heo.grade_outcomes(snap=snap)
+        self.assertEqual(1, out["graded"])
+        self.assertEqual(1, out["worked"])
+        rows = json.loads(self.heo.OUTCOMES_PATH.read_text())
+        self.assertEqual("WORKED", rows[0]["status"])
+        self.assertIsNotNone(rows[0]["ts_close"])
+        # SH BUY at 45, closed at 40 → −$500 P&L; still WORKED because beta shrank.
+        self.assertAlmostEqual(-500.0, rows[0]["pnl_usd"], places=1)
+
+    def test_failed_verdict_needs_both_flat_beta_and_loss(self):
+        rows = [{
+            "id": "hedge-outcome-SH-20260901T1200",
+            "ts_open": (datetime.now(timezone.utc) - timedelta(days=3)).isoformat(),
+            "symbol": "SH", "side": "BUY", "qty": 100.0, "price": 45.0,
+            "pre_net_beta": 0.50, "pre_cash_usd": 6000.0, "pre_equity_usd": 100_000.0,
+            "reason": "reduces beta", "status": "OPEN",
+            "ts_close": None, "close_price": None, "close_net_beta": None,
+            "close_cash_usd": None, "pnl_usd": None, "verdict_reason": None,
+        }]
+        self.heo.OUTCOMES_PATH.write_text(json.dumps(rows))
+        snap = self._snap(positions={"SPY": {"qty": 200, "price": 500.0}})
+        # Beta did NOT fall AND the hedge lost money → FAILED
+        self.heo._pre_net_beta = lambda s: 0.50
+        import risk_gate as rg
+        self._orig_quote = rg._quote
+        rg._quote = lambda sym: 40.0
+        self.addCleanup(setattr, rg, "_quote", self._orig_quote)
+
+        out = self.heo.grade_outcomes(snap=snap)
+        self.assertEqual(1, out["failed"])
+        self.assertEqual("FAILED",
+                         json.loads(self.heo.OUTCOMES_PATH.read_text())[0]["status"])
+
+    def test_auto_disable_flips_state_when_failure_rate_over_threshold(self):
+        """The 'stricter policy' half of the ratification."""
+        now = datetime.now(timezone.utc)
+        rows = []
+        # 6 FAILED and 4 WORKED → 60% failure rate, > 40% threshold.
+        for i in range(6):
+            rows.append({"id": f"f{i}", "status": "FAILED",
+                         "ts_close": (now - timedelta(days=10 - i)).isoformat()})
+        for i in range(4):
+            rows.append({"id": f"w{i}", "status": "WORKED",
+                         "ts_close": (now - timedelta(days=1)).isoformat()})
+        self.heo.OUTCOMES_PATH.write_text(json.dumps(rows))
+        self.assertTrue(self.heo.is_enabled(), "state should default enabled")
+        res = self.heo.maybe_auto_tighten()
+        self.assertTrue(res["acted"], f"did not disable: {res}")
+        self.assertFalse(self.heo.is_enabled(),
+                         "carve-out did not disable after auto-tighten")
+        state = json.loads(self.heo.STATE_PATH.read_text())
+        self.assertIsNotNone(state.get("disabled_at"))
+        self.assertIn("failed", str(state.get("disabled_reason") or "").lower())
+
+    def test_auto_disable_does_not_fire_on_small_sample(self):
+        """Three failures in three uses is bad luck, not a pattern."""
+        now = datetime.now(timezone.utc)
+        rows = [{"id": f"f{i}", "status": "FAILED",
+                 "ts_close": (now - timedelta(days=1)).isoformat()}
+                for i in range(3)]
+        self.heo.OUTCOMES_PATH.write_text(json.dumps(rows))
+        res = self.heo.maybe_auto_tighten()
+        self.assertFalse(res["acted"])
+        self.assertIn("sample too small", res["reason"])
+        self.assertTrue(self.heo.is_enabled())
+
+    def test_risk_gate_hedge_verdict_honours_the_disable_flag(self):
+        """A disabled carve-out MUST NOT re-allow — the point of the tracker."""
+        # Flip the state to disabled.
+        self.heo._save_state({**self.heo._DEFAULT_STATE, "enabled": False,
+                              "disabled_at": datetime.now(timezone.utc).isoformat(),
+                              "disabled_reason": "test"})
+        import risk_gate as rg
+        # Stub is_structural_hedge so the module thinks SH is a hedge without
+        # depending on portfolio_beta's catalog.
+        import portfolio_beta
+        self._orig_is_h = portfolio_beta.is_structural_hedge
+        portfolio_beta.is_structural_hedge = lambda sym: str(sym).upper() == "SH"
+        self.addCleanup(setattr, portfolio_beta,
+                        "is_structural_hedge", self._orig_is_h)
+        snap = self._snap(positions={"SPY": {"qty": 200, "price": 500}})
+        verdict = rg._hedge_verdict("SH", "BUY", 100, 45.0, snap)
+        self.assertTrue(verdict["consulted"],
+                        "the verdict must say the carve-out was consulted so "
+                        "the caller can name it in the block message")
+        self.assertFalse(verdict["allowed"],
+                         "a disabled carve-out MUST refuse — this is the "
+                         "'stricter policy' half of the ratification")
+        self.assertIn("DISABLED", verdict["reason"])
+
+
+class TestStage4RetirementRequiresChairmanRatification(unittest.TestCase):
+    """Chairman directive 2026-09-04: retirement is a human decision.
+
+    Before this change, `chief_of_staff_agent.py` at the Stage 4 branch set
+    `agent["status"] = "retired"` in-line — a self-executing termination that
+    inherited every upstream bug that could inflate consecutive_zero_cycles.
+    Seven wrongful retirements had to be reversed by hand.
+
+    Two invariants:
+      1) The threshold constant is at least 60 cycles (double the pre-2026-09
+         value). Any regression below 60 shortens the runway back toward the
+         window that produced the seven wrongful firings.
+      2) The Stage 4 branch does not assign `status = "retired"` in code.
+         Retirement is only possible via a human editing the registry after
+         seeing the queued Chairman decision entry. If a future edit re-adds
+         `status = "retired"` inside `_update_agent_performance`, this test
+         has to fail, because that is the shape of the bug we just retired.
+    """
+
+    def test_replace_cycles_threshold_is_at_least_60(self):
+        import chief_of_staff_agent as cos
+        self.assertGreaterEqual(
+            cos.PERF_REPLACE_CYCLES, 60,
+            "PERF_REPLACE_CYCLES < 60 shortens the runway back below the "
+            "window that produced 7 wrongful terminations. See the header "
+            "comment on the constant for the history.")
+        # Ladder is monotone; a regression that leaves the constant intact but
+        # inverts the ordering breaks the stages just as badly.
+        self.assertLess(cos.PERF_NOTICE_CYCLES, cos.PERF_PIP_CYCLES)
+        self.assertLess(cos.PERF_PIP_CYCLES, cos.PERF_REASSIGN_CYCLES)
+        self.assertLess(cos.PERF_REASSIGN_CYCLES, cos.PERF_REPLACE_CYCLES)
+
+    def test_stage_4_branch_does_not_self_execute_retirement(self):
+        """AST, not grep. A commented-out line still counts as absent to AST.
+
+        We isolate the `_update_agent_performance` function and prove no
+        assignment inside it sets `agent["status"] = "retired"`. The permanent
+        and no-replacement branches were already blocked from setting it; the
+        third branch (the one this change guarded) is the only place that ever
+        did, so a positive result names exactly that regression.
+        """
+        import ast, inspect, chief_of_staff_agent as cos
+        # Find the class body containing _update_agent_performance.
+        src = inspect.getsource(cos)
+        tree = ast.parse(src)
+        target = None
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.FunctionDef)
+                    and node.name == "_update_agent_performance"):
+                target = node
+                break
+        self.assertIsNotNone(
+            target, "_update_agent_performance not found — was it renamed?")
+
+        offenders = []
+        for sub in ast.walk(target):
+            if not isinstance(sub, ast.Assign):
+                continue
+            # Match agent["status"] = "retired" and agent.status = "retired".
+            if not (isinstance(sub.value, ast.Constant)
+                    and sub.value.value == "retired"):
+                continue
+            for tgt in sub.targets:
+                # Subscript form: agent["status"] = "retired"
+                if isinstance(tgt, ast.Subscript):
+                    idx = tgt.slice
+                    if isinstance(idx, ast.Constant) and idx.value == "status":
+                        offenders.append(sub.lineno)
+                # Attribute form: agent.status = "retired"
+                if (isinstance(tgt, ast.Attribute) and tgt.attr == "status"):
+                    offenders.append(sub.lineno)
+
+        self.assertEqual(
+            [], offenders,
+            "_update_agent_performance contains a direct `status = 'retired'` "
+            "assignment at line(s) %s. That is the self-executing termination "
+            "the 2026-09-04 change disabled. Route through the Chairman queue "
+            "instead — see the block that writes retirement_pending_reason."
+            % offenders)
+
+    def test_stage_4_branch_queues_a_chairman_decision(self):
+        """The complement: not-writing-retired is only safe if a human is told."""
+        import ast, inspect, chief_of_staff_agent as cos
+        # _update_agent_performance is a class method, not a module-level fn;
+        # walk the AST to isolate its body, then check the resulting source.
+        mod_src = inspect.getsource(cos)
+        tree = ast.parse(mod_src)
+        target = None
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.FunctionDef)
+                    and node.name == "_update_agent_performance"):
+                target = node
+                break
+        self.assertIsNotNone(target)
+        src = ast.get_source_segment(mod_src, target) or ""
+        self.assertIn("chairman_queue", src,
+                      "Stage 4 no longer self-executes but does not queue a "
+                      "Chairman decision either — the agent enters an invisible "
+                      "hold that nobody can act on. Import and submit.")
+        self.assertIn("AGENT_TERMINATION", src,
+                      "the queue entry must carry a category the resolver can "
+                      "route; AGENT_TERMINATION is the one chairman_inbox "
+                      "understands for this class.")
+        self.assertIn("retirement_pending", src,
+                      "the agent record must be marked so a subsequent cycle "
+                      "does not re-fire the branch; retirement_pending is the "
+                      "flag the branch checks and sets.")
+
+
+class TestMLLoopFeatureOverridePicksTheRightNamespace(unittest.TestCase):
+    """ml_improvement_loop._load_matrix used to hardcode fe.FEATURE_COLS in the
+    feature_override path. LT targets are built against fe.LT_FEATURE_COLS (9
+    cols, not 47), so an override that named a top-SHAP feature indexed
+    position 19 into an 8-col array and raised IndexError. Idea #2 hit that
+    2026-08-15 and the loop wrote an ERROR row; because _next_untested_idea
+    treats ERROR as tested, the same crash would never have been retried on
+    its own. Same pattern as [[both-sides-of-a-comparison]]: two correct
+    halves (FEATURE_COLS ↔ ST matrix, LT_FEATURE_COLS ↔ LT matrix), one
+    comparison that pairs the wrong halves.
+    """
+
+    def test_load_matrix_selects_LT_namespace_for_LT_targets(self):
+        import ast
+        import ml_improvement_loop
+        src = Path(ml_improvement_loop.__file__).read_text()
+        tree = ast.parse(src)
+        # Isolate _load_matrix's source so the assertion cannot pick up an
+        # unrelated helper elsewhere in the file.
+        target = next((n for n in ast.walk(tree)
+                       if isinstance(n, ast.FunctionDef) and n.name == "_load_matrix"), None)
+        self.assertIsNotNone(target, "_load_matrix vanished from ml_improvement_loop")
+        body = ast.get_source_segment(src, target) or ""
+        self.assertIn("LT_FEATURE_COLS", body,
+                      "_load_matrix must consult LT_FEATURE_COLS for LT targets; "
+                      "without it, a feature_override with a FEATURE_COLS position "
+                      "will IndexError against the 9-col LT matrix.")
+        self.assertIn("LT_TARGETS", body,
+                      "the switch has to key off fe.LT_TARGETS — hardcoding "
+                      "outcome_252d misses risk_adjusted_252d and any future "
+                      "long-horizon label.")
+
+
+class TestBoardRemembererReachesTheBoard(unittest.TestCase):
+    """Standing verdicts (KR-TECH DO-NOT-SHORT, the hedge carve-out narrow-
+    scope commitment, the retirement-requires-Chairman ratification) live in
+    board_rememberer.STANDING_VERDICTS. The whole point of the module is
+    that they enter every board meeting's record BEFORE any position paper is
+    composed — otherwise the pod that carries the verdict is the only party
+    that remembers it and the board can, and did before, quietly decide
+    something contradictory. This test pins the wire.
+
+    Three assertions, matched to the failure modes:
+      1. The module exists and the KR-TECH verdict is on the list — a
+         curated list that quietly loses its flagship entry is the exact
+         forgetting we're guarding against.
+      2. _build_anonymous_briefing puts a standing_reminders key on the
+         briefing dict — position papers read the briefing, so a missing
+         key drops the verdicts before they reach any voter.
+      3. _ops_director_position PREPENDS the reminders to positions[] with
+         the "STANDING VERDICT" prefix — the HTML minutes and downstream
+         digest walk positions[]; a reminder appended after the floor summary
+         or handed off in a sidecar field would not appear in the record
+         readers actually consult.
+    """
+
+    def test_standing_verdicts_list_carries_the_KR_TECH_entry(self):
+        import board_rememberer as br
+        ids = [v["id"] for v in br.STANDING_VERDICTS]
+        self.assertIn(
+            "KR-TECH-DO-NOT-SHORT", ids,
+            "the KR/AI-hardware DO-NOT-SHORT verdict is the reason this "
+            "module exists; losing it from STANDING_VERDICTS silently would "
+            "reproduce the very forgetting the module was built to prevent.")
+
+    def test_briefing_dict_carries_standing_reminders(self):
+        import board_meeting as bm
+        briefing = bm._build_anonymous_briefing({"cos": {}, "irm": {}, "irm_daily": {}})
+        self.assertIn(
+            "standing_reminders", briefing,
+            "the briefing dict must carry standing_reminders — every voting "
+            "position reads the briefing, so a missing key is how the "
+            "verdicts stop reaching the room.")
+        self.assertIsInstance(
+            briefing["standing_reminders"], list,
+            "standing_reminders must be a list even when the rememberer is "
+            "unavailable (the error goes to briefing['reminders_error']); "
+            "None would crash the ops director's list concatenation.")
+
+    def test_ops_director_prepends_standing_verdicts_to_positions(self):
+        import board_meeting as bm
+        fake_briefing = {
+            "standing_reminders": [
+                {"id": "TEST-VERDICT-XYZ",
+                 "headline": "test verdict headline text"},
+            ],
+        }
+        pos = bm._ops_director_position(fake_briefing)
+        self.assertTrue(
+            any("STANDING VERDICT" in p and "TEST-VERDICT-XYZ" in p
+                for p in pos["positions"]),
+            "the ops director's positions[] must include the standing "
+            "verdicts with the STANDING VERDICT prefix — that's the path "
+            "into the HTML minutes and the emailed digest, both of which "
+            "walk positions[]. Handing them off only in a sidecar field "
+            "would keep them out of the record readers consult.")
+        # And prepended, not appended — a reminder that lands after the
+        # floor summary can be missed by a reader that stops at the first
+        # sentence.
+        self.assertIn(
+            "STANDING VERDICT", pos["positions"][0],
+            "reminders must lead, not trail — a reader that quotes only the "
+            "first item on positions[] must still hit the verdict.")
 
 
 if __name__ == "__main__":
