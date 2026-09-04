@@ -50174,5 +50174,69 @@
     "summary": "ESCALATION: Proposal 'Pre-trade devil's advocate: adversarial challenge before high-conviction buys' has been through 3 deputy clarification rounds and still cannot be approved. Deputy board cannot resolve this \u2014 Chairman review required. Proposal ID: CIT-2026-1226. Last clarification: Operations cannot verify or assign this fix without a specific file path, log reference, or metric. CIT Director: add a concrete evidence reference.",
     "urgency": "HIGH",
     "status": "PENDING"
+  },
+  {
+    "id": "CMR-3E4D53",
+    "ts": "2026-09-04T09:13:09.360445",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 687h: [LOW] print() in production code: backup_data.py:161. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-2785E4",
+    "ts": "2026-09-04T09:13:14.078564",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 687h: [LOW] print() in production code: backup_data.py:164. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-527767",
+    "ts": "2026-09-04T09:13:18.207365",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 687h: [LOW] print() in production code: chairman_inbox.py:98. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-1619BF",
+    "ts": "2026-09-04T09:13:21.971151",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 687h: [LOW] Long f-string in logger.debug/info: cit_auto_implementer.py:194. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-91FFA5",
+    "ts": "2026-09-04T10:15:10.386886",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 688h: [LOW] print() in production code: backup_data.py:161. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-F3599B",
+    "ts": "2026-09-04T10:15:15.868000",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 688h: [LOW] print() in production code: backup_data.py:164. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-FEA261",
+    "ts": "2026-09-04T10:15:19.803187",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 688h: [LOW] print() in production code: chairman_inbox.py:98. Reporter: CITCodeInspector. Description: print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+    "urgency": "NORMAL",
+    "status": "PENDING"
+  },
+  {
+    "id": "CMR-CDE86E",
+    "ts": "2026-09-04T10:15:23.475110",
+    "from_agent": "CIT Watchdog",
+    "summary": "Unresolved issue for 688h: [LOW] Long f-string in logger.debug/info: cit_auto_implementer.py:194. Reporter: CITCodeInspector. Description: Very long log strings are evaluated even when the log level means they won't be emitted. Use lazy % formatting or guard ",
+    "urgency": "NORMAL",
+    "status": "PENDING"
   }
 ]

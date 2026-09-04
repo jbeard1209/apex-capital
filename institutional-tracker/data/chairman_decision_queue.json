@@ -2139,12 +2139,13 @@
     "dedup_key": "Agent zero-pick streaks: # exonerated, # genuine concern \u2014 HR memo written",
     "title": "Agent zero-pick streaks: 63 exonerated, 0 genuine concern \u2014 HR memo written",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-15T12:30:01.390604",
     "deadline": "2026-09-04T12:30:01.390604",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:agent zero-pick streaks: # exonerated, # genuine concern )"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:agent zero-pick streaks: # exonerated, # genuine concern )",
+    "escalated_at": "2026-09-04T12:30:02.279547"
   },
   {
     "id": "investigator-20260811-catchup_window_gap",
@@ -2152,13 +2153,14 @@
     "description": "main.py has not run on EITHER host since 2026-08-07 23:02 EDT (4+ days). Root cause found in catch_up.py: main.py has four catchup_window ranges, all confined to roughly 9:45am-6pm EDT market hours. The Mac has woken 5 times since (Aug 8 08:10/19:31, Aug 9 18:24, Aug 10 20:33, Aug 11 18:05 EDT) and every single wake fell outside all four windows, so _is_job_missed() never triggered a catch-up run even though the true staleness (96h+) far exceeds any TTL. This is independent of and compounds the VM outage (peer_host_liveness/single_writer, open since 2026-08-06 23:26): even if the VM were reachable, the Mac fallback for main.py has a structural blind spot for any wake time outside market hours. 19 open Alpaca paper positions (~$63k of ~$99.7k equity) have had no fresh research, risk bulletin, or Manager decision in 4+ days. PARTIAL FIX SHIPPED this run: cit_pipeline_integrity_agent.py (dead-man switch / peer-liveness / single-writer watchdog) is now mirrored into catch_up.py JOB_REGISTRY with catchup_window=(0,24) so monitoring itself no longer goes dark on off-hours wakes. main.py's own catchup_window was deliberately NOT widened to (0,24) in this run because loosening when a trading pipeline is allowed to catch up is a bigger, riskier change than a monitoring-only mirror and needs a Chairman call on the tradeoff (e.g. catching up main.py at 2am EDT means opening/sizing positions off stale/closed-market data). File: catch_up.py JOB_REGISTRY (fire_times_edt / catchup_window per job); root-cause trace via logs/catchup_launchd.log WAKE-UP CATCH-UP RUNNER session headers.",
     "dedup_key": "main_pipeline_catchup_window_gap",
     "source": "weekly_investigator",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-15T12:30:01.390604",
     "deadline": "2026-09-04T12:30:01.390604",
     "upstream_first_seen": "2026-08-11T18:25:29.762410",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:main_pipeline_catchup_window_gap)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:main_pipeline_catchup_window_gap)",
+    "escalated_at": "2026-09-04T12:30:02.279547"
   },
   {
     "id": "investigator-20260811-apex_system_cit_host_guard",
@@ -2166,13 +2168,14 @@
     "description": "apex_system_cit_agent.py (cron staleness / disk / email-loop watchdog) is, like cit_pipeline_integrity_agent.py was before this run's fix, scheduled VM-only (vm_crontab_snapshot.txt: 0 13 * * *) with zero Mac fallback -- so it too went dark for the full VM outage. NOT mirrored onto the Mac this run: check_gcp_health() (apex_system_cit_agent.py lines ~204-245) shells out to bare disk-usage and memory commands with no host guard, so running it on the Mac would mislabel the Mac's own disk/memory as GCP disk/memory usage -- the exact host-specific-check bug class already fixed once for gcp_ip_changed (guarded by TestHostSpecificChecksStayOnTheirHost). Needs a metadata-server-style host guard (skip cleanly when not running on the VM) added to check_gcp_health() before it can be safely added to catch_up.py JOB_REGISTRY. Regression test test_apex_system_cit_agent_is_not_blindly_mirrored (test_pipeline_smoke.py) documents this omission so it is not silently 'fixed' by copy-pasting the integrity-agent registry entry.",
     "dedup_key": "apex_system_cit_agent_host_guard_gap",
     "source": "weekly_investigator",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-15T12:30:01.390604",
     "deadline": "2026-09-04T12:30:01.390604",
     "upstream_first_seen": "2026-08-11T18:25:29.762410",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:apex_system_cit_agent_host_guard_gap)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:apex_system_cit_agent_host_guard_gap)",
+    "escalated_at": "2026-09-04T12:30:02.279547"
   },
   {
     "id": "LTIA-20260811182620",
@@ -2181,12 +2184,13 @@
     "dedup_key": "ml_auc_mediocre",
     "title": "[LTIA] Suspend ML-driven buys \u2014 model AUC below random",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-15T12:30:01.390604",
     "deadline": "2026-09-04T12:30:01.390604",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:ml_auc_mediocre)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:ml_auc_mediocre)",
+    "escalated_at": "2026-09-04T12:30:02.279547"
   },
   {
     "id": "apex-sys-cit-20260805-1300-cron_job_stale_on_we",
@@ -2194,13 +2198,14 @@
     "description": "Cron job stale on weekday -- ML drift monitor log 104h old (threshold 36h)",
     "dedup_key": "sha1:19b540c99785ce93",
     "source": "apex_system_cit_agent",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-15T12:30:01.390604",
     "deadline": "2026-09-04T12:30:01.390604",
     "upstream_first_seen": "2026-08-05T13:00:01.996974",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:19b540c99785ce93)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:19b540c99785ce93)",
+    "escalated_at": "2026-09-04T12:30:02.279547"
   },
   {
     "id": "lifecycle-drop-sig-e72ace4241ce",
@@ -2252,13 +2257,14 @@
     "severity": "MEDIUM",
     "description": "[ENTRY_WINDOW] The DO-NOT-SHORT verdict on the Korea/AI-hardware thesis (STRAT-2026-0730-kr-tech-short) has a flip condition firing. The rally-back-toward-the-50MA entry the 2026-07-30 verdict named has appeared \u2014 recovered out of the squeeze zone: QCOM (0th -> 25th pctile). KR-stress signal is NONE. Re-examine the thesis; this is an alert, not a trade \u2014 the short book still requires the live KR-stress gate.",
     "source": "Tech-Short Pod (thesis watch)",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-15T12:30:01.390604",
     "deadline": "2026-09-04T12:30:01.390604",
     "upstream_first_seen": "2026-08-14T20:20:11.728652+00:00",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=tx:entry window the do not short verdict on the korea ai har)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=tx:entry window the do not short verdict on the korea ai har)",
+    "escalated_at": "2026-09-04T12:30:02.279547"
   },
   {
     "id": "apex-sys-cit-20260817-1300-cron_job_stale_on_we",
@@ -3160,5 +3166,19 @@
     "times_seen": 1,
     "review_type": "scheduled_time_gate",
     "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=tx:scheduled revisit chairman directive # # # task ## revisi)"
+  },
+  {
+    "id": "apex-sys-cit-20260903-1300-email_loop_detected_",
+    "severity": "HIGH",
+    "description": "Email loop detected -- 1 subject(s) appear 3+ times in buffer: \"apex capital \u2014 r&d team briefing | sep 03, 2026\" x3",
+    "dedup_key": "sha1:65b6682ef823bf33",
+    "source": "apex_system_cit_agent",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-09-04T12:30:02.196375",
+    "deadline": "2026-09-24T12:30:02.196375",
+    "upstream_first_seen": "2026-09-03T13:00:02.236965",
+    "surfaced_channel": "claude_app",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:65b6682ef823bf33)"
   }
 ]

@@ -1,11 +1,11 @@
 {
-  "last_updated": "2026-09-04T06:04:01.272019",
+  "last_updated": "2026-09-04T11:10:17.360827",
   "real_errors": {
-    "unclassified": 12
+    "unclassified": 16
   },
   "noise_demoted": {
     "timed out": 1
   },
-  "total_real": 12,
+  "total_real": 16,
   "total_demoted": 1
 }

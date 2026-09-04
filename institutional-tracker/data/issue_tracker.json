@@ -1834,12 +1834,12 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 16,
+    "escalation_count": 18,
     "signature": "print() in production code: backup_data.py:161",
     "last_seen_at": "2026-09-03T21:05:34.474788",
     "occurrences": 28,
     "latest_title": "print() in production code: backup_data.py:161",
-    "last_escalated_at": "2026-09-03T18:22:54.457396",
+    "last_escalated_at": "2026-09-04T10:15:06.134353",
     "notes": "[2026-09-03 18:22] Stale >48h \u2014 escalation_count now 16"
   },
   {
@@ -1856,12 +1856,12 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 16,
+    "escalation_count": 18,
     "signature": "print() in production code: backup_data.py:164",
     "last_seen_at": "2026-09-03T21:05:34.620827",
     "occurrences": 28,
     "latest_title": "print() in production code: backup_data.py:164",
-    "last_escalated_at": "2026-09-03T18:22:54.614595",
+    "last_escalated_at": "2026-09-04T10:15:13.972440",
     "notes": "[2026-09-03 18:22] Stale >48h \u2014 escalation_count now 16"
   },
   {
@@ -2291,12 +2291,12 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 15,
+    "escalation_count": 17,
     "signature": "print() in production code: chairman_inbox.py:98",
     "last_seen_at": "2026-09-03T21:05:37.512650",
     "occurrences": 28,
     "latest_title": "print() in production code: chairman_inbox.py:98",
-    "last_escalated_at": "2026-09-03T18:22:54.789761",
+    "last_escalated_at": "2026-09-04T10:15:18.078280",
     "notes": "[2026-09-03 18:22] Stale >48h \u2014 escalation_count now 15"
   },
   {
@@ -2566,12 +2566,12 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Convert to `logger.info('message %s', var)` style.",
-    "escalation_count": 15,
+    "escalation_count": 17,
     "signature": "long f-string in logger.debug/info: cit_auto_implementer.py:194",
     "last_seen_at": "2026-09-03T21:05:41.660863",
     "occurrences": 28,
     "latest_title": "Long f-string in logger.debug/info: cit_auto_implementer.py:194",
-    "last_escalated_at": "2026-09-03T18:22:54.974092",
+    "last_escalated_at": "2026-09-04T10:15:21.762347",
     "notes": "[2026-09-03 18:22] Stale >48h \u2014 escalation_count now 15"
   },
   {
@@ -2588,12 +2588,12 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
-    "escalation_count": 15,
+    "escalation_count": 17,
     "signature": "print() in production code: cit_migration_audit.py:87",
     "last_seen_at": "2026-09-03T21:05:41.741294",
     "occurrences": 28,
     "latest_title": "print() in production code: cit_migration_audit.py:87",
-    "last_escalated_at": "2026-09-03T18:22:55.137172",
+    "last_escalated_at": "2026-09-04T10:15:25.370846",
     "notes": "[2026-09-03 18:22] Stale >48h \u2014 escalation_count now 15"
   },
   {
@@ -92272,7 +92272,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:31:59.868874"
   },
   {
     "issue_id": "ISS-6469",
@@ -92291,7 +92292,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:03.036181"
   },
   {
     "issue_id": "ISS-6470",
@@ -92310,7 +92312,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:05.654699"
   },
   {
     "issue_id": "ISS-6471",
@@ -92329,7 +92332,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:08.224250"
   },
   {
     "issue_id": "ISS-6472",
@@ -92348,7 +92352,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:10.702958"
   },
   {
     "issue_id": "ISS-6473",
@@ -92367,7 +92372,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:12.662225"
   },
   {
     "issue_id": "ISS-6474",
@@ -92386,7 +92392,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:14.984556"
   },
   {
     "issue_id": "ISS-6475",
@@ -92405,7 +92412,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:17.454096"
   },
   {
     "issue_id": "ISS-6476",
@@ -92424,7 +92432,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:19.756425"
   },
   {
     "issue_id": "ISS-6477",
@@ -92483,7 +92492,8 @@
     "resolved_at": null,
     "resolution": null,
     "auto_fix_hint": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
-    "escalation_count": 0
+    "escalation_count": 2,
+    "last_escalated_at": "2026-09-04T07:32:20.375719"
   },
   {
     "issue_id": "ISS-6480",

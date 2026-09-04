@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "chairman_ratified_at": "2026-09-04",
+  "chairman_ratified_by": "Jack Beard, Co-Chairman",
+  "threshold_failure_rate": 0.4,
+  "min_sample": 5,
+  "disabled_at": null,
+  "disabled_reason": null
+}

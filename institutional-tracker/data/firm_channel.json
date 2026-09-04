@@ -1,157 +1,5 @@
 [
   {
-    "ts": "2026-08-27T06:12:52.403476",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in disk_janitor.py:31: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T06:12:53.038790",
-    "date": "2026-08-27",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 3 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T06:16:51.633005",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [europe_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T06:16:51.639235",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T06:16:51.644452",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T06:16:53.333307",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T10:22:25.865535",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [europe_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:22:25.871078",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:22:25.876226",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:22:27.736417",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T10:02:00.089186",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:02:00.095994",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:02:00.102548",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:02:01.994437",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T10:07:59.086919",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:07:59.092272",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:07:59.097316",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:08:00.855280",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T14:13:48.777828",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
     "ts": "2026-08-27T14:13:48.783704",
     "date": "2026-08-27",
     "agent": "International Analyst (IMI)",
@@ -4003,5 +3851,157 @@
     "category": "SECURITY",
     "priority": "HIGH",
     "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
+  },
+  {
+    "ts": "2026-09-04T08:19:53.384052",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: auto-fixed 1: morning_briefing.json; newly stale: premarket_alerts.json (167h old (budget 30h)), morning_briefing.json (165h old (budget 30h)), research_team_report.json (196h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:19:53.587148",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: premarket_alerts.json (167h old (budget 30h)), morning_briefing.json (165h old (budget 30h)), research_team_report.json (196h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:19:53.648680",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: premarket_alerts.json (167h old (budget 30h)), morning_briefing.json (165h old (budget 30h)), research_team_report.json (196h old (budget 100h)), _probe_queue.json (500h old (budget 10h) \u2014 still )",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:19:54.016613",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: premarket_alerts.json (167h old (budget 30h)), morning_briefing.json (165h old (budget 30h)), research_team_report.json (196h old (budget 100h)), _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:19:54.544457",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: premarket_alerts.json (167h old (budget 30h)), morning_briefing.json (165h old (budget 30h)), research_team_report.json (196h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:19:55.094742",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: premarket_alerts.json (167h old (budget 30h)), morning_briefing.json (165h old (budget 30h)), research_team_report.json (196h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:28:48.249936",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "Global session [pre_market] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:28:48.307734",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:28:48.339206",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T08:31:59.381165",
+    "date": "2026-09-04",
+    "agent": "Foreign Order Detector",
+    "category": "SECURITY",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
+  },
+  {
+    "ts": "2026-09-04T11:03:04.373833",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: auto-fixed 1: morning_briefing.json; newly stale: morning_briefing.json (168h old (budget 30h)), research_team_report.json (199h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:03:04.518513",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (168h old (budget 30h)), research_team_report.json (199h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:03:04.885572",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (168h old (budget 30h)), research_team_report.json (199h old (budget 100h)), _probe_queue.json (500h old (budget 10h) \u2014 still )",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:03:04.982650",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (168h old (budget 30h)), research_team_report.json (199h old (budget 100h)), _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:03:05.910194",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (168h old (budget 30h)), research_team_report.json (199h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:03:06.209346",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (168h old (budget 30h)), research_team_report.json (199h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:22:04.415591",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:22:04.780036",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:22:05.288922",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
+    "priority": "NORMAL"
   }
 ]

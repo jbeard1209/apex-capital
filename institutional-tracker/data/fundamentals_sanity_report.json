@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-04T09:52:43.097926",
+  "generated_at": "2026-09-04T15:06:16.951586",
   "tickers_scanned": 814,
   "impossible_tickers": [
     "FICO",
@@ -6075,5 +6075,5 @@
     }
   ],
   "clean": false,
-  "bugs_filed": 0
+  "bugs_filed": 3
 }

@@ -1,0 +1,40 @@
+[
+  {
+    "id": "hedge-outcome-SH-20260904T1211",
+    "ts_open": "2026-09-04T12:11:11.994416+00:00",
+    "symbol": "SH",
+    "side": "buy",
+    "qty": 100.0,
+    "price": 32.23,
+    "pre_net_beta": 0.3,
+    "pre_cash_usd": null,
+    "pre_equity_usd": null,
+    "reason": "net beta 0.64 -> 0.59",
+    "status": "OPEN",
+    "ts_close": null,
+    "close_price": null,
+    "close_net_beta": null,
+    "close_cash_usd": null,
+    "pnl_usd": null,
+    "verdict_reason": null
+  },
+  {
+    "id": "hedge-outcome-SH-20260904T1453",
+    "ts_open": "2026-09-04T14:53:08.615488+00:00",
+    "symbol": "SH",
+    "side": "buy",
+    "qty": 100.0,
+    "price": 32.36,
+    "pre_net_beta": 0.3,
+    "pre_cash_usd": null,
+    "pre_equity_usd": null,
+    "reason": "net beta 0.64 -> 0.59",
+    "status": "OPEN",
+    "ts_close": null,
+    "close_price": null,
+    "close_net_beta": null,
+    "close_cash_usd": null,
+    "pnl_usd": null,
+    "verdict_reason": null
+  }
+]

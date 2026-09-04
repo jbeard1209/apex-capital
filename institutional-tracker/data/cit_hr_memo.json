@@ -1,9 +1,18 @@
 {
-  "generated_at": "2026-09-04T04:19:51.369725",
+  "generated_at": "2026-09-04T10:07:09.971384",
   "canary_level": "GREEN",
-  "cro_level": "UNKNOWN",
-  "buys_blocked": false,
-  "assigned_sectors": [],
+  "cro_level": "MODERATE",
+  "buys_blocked": true,
+  "assigned_sectors": [
+    "biotech",
+    "cloud & saas",
+    "consumer staples",
+    "cybersecurity",
+    "financials",
+    "healthcare",
+    "materials",
+    "technology"
+  ],
   "streak_agents": [],
   "exonerated": [],
   "genuine_concern": [],

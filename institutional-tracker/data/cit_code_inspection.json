@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-09-03T21:05:16.687107",
-  "files_scanned": 221,
-  "total_findings": 551,
+  "generated_at": "2026-09-04T10:06:43.603939",
+  "files_scanned": 225,
+  "total_findings": 553,
   "findings": [
     {
       "agent": "CITCodeInspector",
@@ -1933,9 +1933,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 55,
-      "title": "Possible missing makedirs before file write in fe_pipeline.py:817",
+      "title": "Possible missing makedirs before file write in fe_pipeline.py:827",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
-      "evidence": "fe_pipeline.py line 817: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
+      "evidence": "fe_pipeline.py line 827: `with open(PICKS_QUEUE_FILE, \"w\") as f:`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -1999,9 +1999,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 55,
-      "title": "Possible missing makedirs before file write in fi_credit_monitor.py:408",
+      "title": "Possible missing makedirs before file write in fi_credit_monitor.py:423",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
-      "evidence": "fi_credit_monitor.py line 408: `with open(CACHE_PATH, \"w\") as f:`",
+      "evidence": "fi_credit_monitor.py line 423: `with open(CACHE_PATH, \"w\") as f:`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -2101,6 +2101,28 @@
       "title": "print() in production code: fundamentals_sanity.py:267",
       "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
       "evidence": "fundamentals_sanity.py line 267: `print(f\"  CIT proposals filed: {rep.get('bugs_filed', 0)}\")`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: hedge_exemption_outcomes.py:468",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "hedge_exemption_outcomes.py line 468: `print(json.dumps({\"grade\": r, \"summary\": summary(),`",
+      "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
+      "auto_implementable": true
+    },
+    {
+      "agent": "CITCodeInspector",
+      "category": "QUICK_WIN",
+      "severity": "LOW",
+      "confidence": 75,
+      "title": "print() in production code: hedge_exemption_outcomes.py:471",
+      "description": "print() calls bypass the structured logging system \u2014 output won't appear in log files or be captured by monitoring.",
+      "evidence": "hedge_exemption_outcomes.py line 471: `print(json.dumps({\"auto_tighten\": maybe_auto_tighten()}, indent=2))`",
       "proposed_fix": "Replace `print(...)` with `logger.info(...)` or `logger.debug(...)`.",
       "auto_implementable": true
     },
@@ -3011,9 +3033,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 55,
-      "title": "Possible missing makedirs before file write in logic_team_implementation_agent.py:71",
+      "title": "Possible missing makedirs before file write in logic_team_implementation_agent.py:84",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
-      "evidence": "logic_team_implementation_agent.py line 71: `with open(path, \"w\") as f:`",
+      "evidence": "logic_team_implementation_agent.py line 84: `with open(path, \"w\") as f:`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -3385,9 +3407,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 80,
-      "title": "Silent exception in ml_improvement_loop.py:965",
+      "title": "Silent exception in ml_improvement_loop.py:968",
       "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-      "evidence": "ml_improvement_loop.py line 965: `except Exception: pass`",
+      "evidence": "ml_improvement_loop.py line 968: `except Exception: pass`",
       "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
       "auto_implementable": false
     },
@@ -3396,9 +3418,9 @@
       "category": "BUG_FIX",
       "severity": "MEDIUM",
       "confidence": 55,
-      "title": "Possible missing makedirs before file write in ml_improvement_loop.py:964",
+      "title": "Possible missing makedirs before file write in ml_improvement_loop.py:967",
       "description": "File opened for writing but `os.makedirs` not found anywhere in this file. If the output directory doesn't exist, the write will crash.",
-      "evidence": "ml_improvement_loop.py line 964: `open(str(BASE_DIR / \"data\" / \"alpha_decay_report.json\"), \"w\"), indent=2)`",
+      "evidence": "ml_improvement_loop.py line 967: `open(str(BASE_DIR / \"data\" / \"alpha_decay_report.json\"), \"w\"), indent=2)`",
       "proposed_fix": "Add `os.makedirs(os.path.dirname(path), exist_ok=True)` before the write.",
       "auto_implementable": false
     },
@@ -6069,6 +6091,6 @@
     "CRITICAL": 0,
     "HIGH": 0,
     "MEDIUM": 69,
-    "LOW": 482
+    "LOW": 484
   }
 }

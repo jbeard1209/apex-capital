@@ -2364,5 +2364,33 @@
     "conviction": 3.0,
     "source_agent": null,
     "manager_decision": null
+  },
+  {
+    "timestamp": "2026-09-04T08:08:27.369063",
+    "ticker": "ZZFAKE",
+    "action": "BUY_NEW",
+    "order_id": "zz-fake-order-1",
+    "executed": true,
+    "intraday_context": "PRE_POST_MARKET",
+    "decision_price": 10.0,
+    "fill_price": null,
+    "slippage_bps": null,
+    "conviction": 3.0,
+    "source_agent": null,
+    "manager_decision": null
+  },
+  {
+    "timestamp": "2026-09-04T10:50:07.343569",
+    "ticker": "ZZFAKE",
+    "action": "BUY_NEW",
+    "order_id": "zz-fake-order-1",
+    "executed": true,
+    "intraday_context": "MID_SESSION",
+    "decision_price": 10.0,
+    "fill_price": null,
+    "slippage_bps": null,
+    "conviction": 3.0,
+    "source_agent": null,
+    "manager_decision": null
   }
 ]

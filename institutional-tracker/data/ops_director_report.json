@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-04T06:01:51.858237",
+  "generated_at": "2026-09-04T10:56:34.851924",
   "supervised_agents": [
     "Trade Review Team",
     "Creative Agent",
@@ -11,7 +11,7 @@
   "agent_status": {
     "Trade Review Team": {
       "status": "STALE",
-      "note": "Last updated 498h ago",
+      "note": "Last updated 503h ago",
       "data_keys": [
         "generated_at",
         "team",
@@ -32,7 +32,7 @@
     },
     "Capital Efficiency Agent": {
       "status": "STALE",
-      "note": "Last updated 341h ago",
+      "note": "Last updated 346h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -46,7 +46,7 @@
     },
     "Report Generator": {
       "status": "STALE",
-      "note": "Last updated 341h ago",
+      "note": "Last updated 346h ago",
       "data_keys": [
         "timestamp",
         "company_health",
@@ -58,8 +58,8 @@
       ]
     },
     "Premarket Check": {
-      "status": "STALE",
-      "note": "Last updated 165h ago",
+      "status": "OK",
+      "note": "Last updated 1h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -73,7 +73,7 @@
     },
     "Earnings Predictor": {
       "status": "STALE",
-      "note": "Last updated 194h ago",
+      "note": "Last updated 199h ago",
       "data_keys": [
         "generated_at",
         "lookahead_days",
@@ -84,16 +84,15 @@
     }
   },
   "flags": [
-    "Trade Review Team: report stale (498h old)",
-    "Capital Efficiency Agent: report stale (341h old)",
-    "Report Generator: report stale (341h old)",
-    "Premarket Check: report stale (165h old)",
-    "Earnings Predictor: report stale (194h old)"
+    "Trade Review Team: report stale (503h old)",
+    "Capital Efficiency Agent: report stale (346h old)",
+    "Report Generator: report stale (346h old)",
+    "Earnings Predictor: report stale (199h old)"
   ],
-  "summary": "Floor status: 1 OK, 5 stale, 0 missing, 0 unreadable of 6 supervised. 5 flag(s).",
+  "summary": "Floor status: 2 OK, 4 stale, 0 missing, 0 unreadable of 6 supervised. 4 flag(s).",
   "status_counts": {
-    "OK": 1,
-    "STALE": 5,
+    "OK": 2,
+    "STALE": 4,
     "NO_REPORT": 0,
     "ERROR": 0,
     "unknown": 0,

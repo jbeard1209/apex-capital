@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-08-28T09:10:48.000814",
+  "generated_at": "2026-09-04T09:41:55.488030",
   "agent": "Pre-Market Check",
   "overall_status": "CLEAR",
-  "portfolio_value": 101086.39,
-  "n_positions": 18,
+  "portfolio_value": 99587.73,
+  "n_positions": 20,
   "vix": {
-    "vix": 14.45,
+    "vix": 14.03,
     "elevated": false,
     "data_available": true
   },
   "spy_proxy": {
-    "spy_gap_pct": 0.15,
+    "spy_gap_pct": -0.0,
     "data_available": true,
-    "direction": "up"
+    "direction": "flat"
   },
   "severity_counts": {},
   "alerts": []

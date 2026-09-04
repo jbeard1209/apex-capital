@@ -256,5 +256,26 @@
     },
     "dedup_key": "coherence:mac:deployed_set_matches_repo,shipped_config_matches_repo",
     "buffered_at": "2026-09-03T18:26:53.550754"
+  },
+  {
+    "subject": "CIT: 3 persistent issue(s) unresolved after 54+ board approvals",
+    "sender_name": "",
+    "html_body": "\n<div style=\"font-family:Arial;background:#0d1117;color:#c9d1d9;padding:20px;max-width:700px;\">\n  <h2 style=\"color:#f85149;\">\ud83d\udea8 CIT: Persistent Issues Need Your Attention</h2>\n  <p>The following issues have been approved by the board <strong>3 or more times</strong>\n     but remain unresolved. They need direct Chairman action.</p>\n  <ul style=\"padding-left:20px;line-height:2.0;\"><li style='margin-bottom:8px;color:#f0883e;'><strong>Impossible fundamentals for FICO \u2014 quarantine from valuation</strong> \u2014 approved <strong>54\u00d7 </strong> without resolution<br><span style='color:#8b949e;font-size:12px;'>long_term_debt/total_assets=1.64 (FY2025: long-term debt $3.06B exceeds total assets $1.87B \u2014 physically impossible; lik</span></li><li style='margin-bottom:8px;color:#f0883e;'><strong>Impossible fundamentals for MSCI \u2014 quarantine from valuation</strong> \u2014 approved <strong>54\u00d7 </strong> without resolution<br><span style='color:#8b949e;font-size:12px;'>long_term_debt/total_assets=1.09 (FY2025: long-term debt $6.20B exceeds total assets $5.70B \u2014 physically impossible; lik</span></li><li style='margin-bottom:8px;color:#f0883e;'><strong>Impossible fundamentals for SBAC \u2014 quarantine from valuation</strong> \u2014 approved <strong>52\u00d7 </strong> without resolution<br><span style='color:#8b949e;font-size:12px;'>long_term_debt/total_assets=1.11 (FY2025: long-term debt $12.90B exceeds total assets $11.58B \u2014 physically impossible; l</span></li></ul>\n  <p style=\"color:#8b949e;font-size:12px;margin-top:16px;border-top:1px solid #21262d;padding-top:8px;\">\n    Full details in data/chairman_action_required.json \u00b7 Board meeting 2026-09-04 11:02\n  </p>\n</div>",
+    "key_metrics": {},
+    "dedup_key": "",
+    "buffered_at": "2026-09-04T11:02:41.830439"
+  },
+  {
+    "subject": "\ud83d\udccb CIT Board Approved 3 Proposal(s) \u2014 Sep 04",
+    "sender_name": "cit_board_approved",
+    "html_body": "\n<div style=\"font-family:Arial;background:#0d1117;color:#c9d1d9;padding:16px;max-width:700px;\">\n  <h3 style=\"color:#58a6ff;margin-bottom:10px;\">\ud83d\udccb CIT Board-Approved Proposals (3)</h3>\n  <table style=\"width:100%;border-collapse:collapse;font-size:13px;\">\n    <thead><tr style=\"background:#161b22;\">\n      <th style=\"padding:6px 8px;text-align:left;color:#8b949e;\">Status</th>\n      <th style=\"padding:6px 8px;text-align:left;color:#8b949e;\">Proposal</th>\n      <th style=\"padding:6px 8px;text-align:left;color:#8b949e;\">Root Cause / Action</th>\n    </tr></thead>\n    <tbody><tr><td style='padding:5px 8px;color:#58a6ff;'>\ud83d\udc64 Needs You</td><td style='padding:5px 8px;'>Impossible fundamentals for FICO \u2014 quarantine from valuation</td><td style='padding:5px 8px;color:#8b949e;font-size:12px;'>long_term_debt/total_assets=1.64 (FY2025: long-term debt $3.</td></tr><tr><td style='padding:5px 8px;color:#58a6ff;'>\ud83d\udc64 Needs You</td><td style='padding:5px 8px;'>Impossible fundamentals for MSCI \u2014 quarantine from valuation</td><td style='padding:5px 8px;color:#8b949e;font-size:12px;'>long_term_debt/total_assets=1.09 (FY2025: long-term debt $6.</td></tr><tr><td style='padding:5px 8px;color:#58a6ff;'>\ud83d\udc64 Needs You</td><td style='padding:5px 8px;'>Impossible fundamentals for SBAC \u2014 quarantine from valuation</td><td style='padding:5px 8px;color:#8b949e;font-size:12px;'>long_term_debt/total_assets=1.11 (FY2025: long-term debt $12</td></tr></tbody>\n  </table>\n  <p style=\"color:#484f58;font-size:11px;margin-top:12px;\">\n    \u2705 Fixed = already resolved in code \u00b7 \u2699 Needs Owner = a producing agent stopped, assign it \u00b7\n    \ud83d\udc64 Needs You = requires Chairman review\n  </p>\n</div>",
+    "key_metrics": {
+      "Total Approved": 3,
+      "Fixed": 0,
+      "Infrastructure": 0,
+      "Needs You": 3
+    },
+    "dedup_key": "",
+    "buffered_at": "2026-09-04T11:02:42.298912"
   }
 ]
