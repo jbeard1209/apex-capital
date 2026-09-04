@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-27T16:11:58.876615",
+  "generated_at": "2026-09-04T06:01:51.858237",
   "supervised_agents": [
     "Trade Review Team",
     "Creative Agent",
@@ -11,7 +11,7 @@
   "agent_status": {
     "Trade Review Team": {
       "status": "STALE",
-      "note": "Last updated 317h ago",
+      "note": "Last updated 498h ago",
       "data_keys": [
         "generated_at",
         "team",
@@ -32,7 +32,7 @@
     },
     "Capital Efficiency Agent": {
       "status": "STALE",
-      "note": "Last updated 160h ago",
+      "note": "Last updated 341h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -46,7 +46,7 @@
     },
     "Report Generator": {
       "status": "STALE",
-      "note": "Last updated 159h ago",
+      "note": "Last updated 341h ago",
       "data_keys": [
         "timestamp",
         "company_health",
@@ -58,8 +58,8 @@
       ]
     },
     "Premarket Check": {
-      "status": "OK",
-      "note": "Last updated 7h ago",
+      "status": "STALE",
+      "note": "Last updated 165h ago",
       "data_keys": [
         "generated_at",
         "agent",
@@ -72,8 +72,8 @@
       ]
     },
     "Earnings Predictor": {
-      "status": "OK",
-      "note": "Last updated 12h ago",
+      "status": "STALE",
+      "note": "Last updated 194h ago",
       "data_keys": [
         "generated_at",
         "lookahead_days",
@@ -84,14 +84,16 @@
     }
   },
   "flags": [
-    "Trade Review Team: report stale (317h old)",
-    "Capital Efficiency Agent: report stale (160h old)",
-    "Report Generator: report stale (159h old)"
+    "Trade Review Team: report stale (498h old)",
+    "Capital Efficiency Agent: report stale (341h old)",
+    "Report Generator: report stale (341h old)",
+    "Premarket Check: report stale (165h old)",
+    "Earnings Predictor: report stale (194h old)"
   ],
-  "summary": "Floor status: 3 OK, 3 stale, 0 missing, 0 unreadable of 6 supervised. 3 flag(s).",
+  "summary": "Floor status: 1 OK, 5 stale, 0 missing, 0 unreadable of 6 supervised. 5 flag(s).",
   "status_counts": {
-    "OK": 3,
-    "STALE": 3,
+    "OK": 1,
+    "STALE": 5,
     "NO_REPORT": 0,
     "ERROR": 0,
     "unknown": 0,

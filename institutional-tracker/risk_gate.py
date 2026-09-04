@@ -474,6 +474,25 @@ def _hedge_verdict(symbol, side, qty, price, snap) -> dict:
             return out
         out["consulted"] = True
 
+        # Second-order kill switch. The carve-out is auto-disabled when its
+        # recent graded outcomes fail at rate ≥ THRESHOLD_FAILURE_RATE — the
+        # "if it fails, stricter policy" half of the 2026-09-04 ratification.
+        # A disabled carve-out reports CANNOT_TELL-shaped output: consulted,
+        # not allowed, with a reason the caller will append to the block.
+        try:
+            import hedge_exemption_outcomes as _heo
+            if not _heo.is_enabled():
+                out["reason"] = (f"{sym} is a structural hedge, but the hedge "
+                                 f"carve-out is currently DISABLED by the "
+                                 f"outcome tracker (auto-tightened after "
+                                 f"recent failures). Re-enable in "
+                                 f"data/hedge_carveout_state.json after "
+                                 f"Chairman review.")
+                return out
+        except Exception as e:
+            logger.warning(f"  [risk_gate] outcome-tracker check failed "
+                           f"open: {e}")
+
         pv = _finite((snap or {}).get("portfolio_value"))
         if pv is None or pv <= 0:
             out["reason"] = (f"{sym} is a structural hedge but equity could not "
@@ -577,6 +596,20 @@ def log(symbol, side, qty, verdict, reason, allowed) -> None:
         pass
     if verdict == "ALLOW_HEDGE_REDUCES_BETA":
         _escalate_exemption(symbol, side, qty, reason)
+        # Record the pre-state for outcome grading. Errors here MUST NOT
+        # break the trade (the tracker is bookkeeping; the trade is the
+        # thing) — swallowed, then logged.
+        try:
+            import hedge_exemption_outcomes as _heo
+            snap = _snapshot_cache.get("snap") or {}
+            # An open price is needed to grade P&L later. `log()` does not
+            # carry price — best-effort a quote here rather than let the
+            # tracker fall back to UNKNOWN forever.
+            open_px = _quote(symbol)
+            _heo.record_use(symbol, side, qty, price=open_px, snap=snap,
+                            reason=reason)
+        except Exception as e:
+            logger.warning(f"  [risk_gate] outcome recording failed: {e}")
 
 
 def _escalate_exemption(symbol, side, qty, reason) -> None:

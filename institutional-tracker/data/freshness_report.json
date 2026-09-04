@@ -1,27 +1,171 @@
 {
-  "generated_at": "2026-07-03T17:15:00.761416",
+  "generated_at": "2026-08-28T16:24:22.763202",
   "agent": "Freshness Sentinel",
-  "checked": 21,
-  "ok": 19,
-  "stale": 2,
-  "auto_fixed": [
-    "data/etf_research_brief.json"
-  ],
-  "issues": [
+  "checked": 6,
+  "in_manifest": 32,
+  "host": "mac",
+  "deferred": [
+    {
+      "item": "data/manager_decisions.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/review_recommendations.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/state.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/risk_bulletin.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/canary_state.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/irm_daily_check.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/hr_report.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/chief_of_staff_report.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/logic_team_findings.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/fi_pipeline_report.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/fe_pipeline_log.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
     {
       "item": "data/etf_research_brief.json",
-      "status": "STALE",
-      "detail": "33h old (budget 30h)",
-      "critical": false,
-      "new_alert": true,
-      "auto_fix": "fixed (exit 0)"
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/etf_pod_orders.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/sector_assignments.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/missed_winners_report.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/ml_live_picks_log.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
     },
     {
       "item": "data/data_quality_report.json",
-      "status": "STALE",
-      "detail": "501h old (budget 54h)",
-      "critical": false
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/cit_implementation_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/rd_pod_pending.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/ml_pod_pending.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/fi_picks_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/fe_picks_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/hr_action_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/fe_research_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/ml_shortterm_experiment_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
+    },
+    {
+      "item": "data/ml_longterm_experiment_queue.json",
+      "owner": "apexcapitalc",
+      "measured_here": false,
+      "reason": "owned by apexcapitalc; this host is mac"
     }
   ],
-  "overall": "DEGRADED"
+  "deferred_n": 26,
+  "ok": 6,
+  "stale": 0,
+  "auto_fixed": [],
+  "issues": [],
+  "overall": "HEALTHY"
 }

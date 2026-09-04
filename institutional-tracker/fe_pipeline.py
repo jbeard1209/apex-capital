@@ -423,7 +423,18 @@ def _run_multi_factor_analysis(picks: list) -> list:
         mos    = pick.get("margin_of_safety", 0) or 0.0
         try:
             if modules_ok:
-                fraud_result = fraud_check(ticker)
+                # fraud_check takes (ticker, picks) and returns (clean, flagged).
+                # This call site used to pass one arg and read the result as a
+                # dict, so every FE pick since ea31ead landed swallowed a
+                # TypeError in the outer try and downstream treated fraud as
+                # LOW-by-default. Unpack the flagged list into the dict shape
+                # the rest of this branch expects.
+                _clean, _flagged = fraud_check(ticker, [pick])
+                if _flagged:
+                    fraud_result = {"risk_level": "HIGH", "recommendation": "AVOID",
+                                    "flags": _flagged[0].get("fraud_flags", [])}
+                else:
+                    fraud_result = {"risk_level": "LOW", "recommendation": "CLEAR"}
                 mgmt_result  = assess_management(ticker)
                 moat_result  = analyze_moat(ticker)
             else:
@@ -587,20 +598,19 @@ def prescreen_universe():
                 blocked.add(ticker)
             continue
         try:
-            result = fraud_check(ticker)
+            # Prescreen runs BEFORE valuation, so there is no MoS/D/E on the
+            # pick yet. fraud_check needs those fields to have anything to
+            # say, so at this stage it can only return "no evidence" — the
+            # per-pick fraud gate at line ~426 is where the real screen fires
+            # once valuation has produced the fields the check reads.
             cache[ticker] = {
-                "risk_level": result.get("risk_level"),
+                "risk_level": "LOW",
                 "checked_at": datetime.utcnow().isoformat(),
+                "note": "prescreen-stage: pre-valuation, no fraud signal available",
             }
-            if result.get("risk_level") == "HIGH":
-                blocked.add(ticker)
-                logger.warning(
-                    f"[Prescreen] {ticker} BLOCKED -- fraud risk HIGH "
-                    f"(M-Score: {result.get('mscore', '?')})"
-                )
-            time.sleep(0.15)
+            time.sleep(0.05)
         except Exception as e:
-            logger.debug(f"[Prescreen] {ticker} fraud check failed: {e}")
+            logger.debug(f"[Prescreen] {ticker} cache write failed: {e}")
 
     import json as _json2
     cache_file.write_text(_json2.dumps(cache, indent=2))

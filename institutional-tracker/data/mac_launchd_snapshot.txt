@@ -1,5 +1,5 @@
 # MAC SCHEDULE — the firm's SECOND scheduler. launchd, not cron.
-# Captured 2026-08-27T15:30:01Z on MacBook-Air-173.local
+# Captured 2026-09-04T06:28:03Z on MacBook-Air-173.local
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 

@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-08-27T15:30:01Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-09-04T06:28:03Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -411,3 +411,43 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # run by design, so the strict code would mark this job failed every weekend
 # forever, and a job that always fails is a job whose output nobody reads.
 30 14 * * 6,0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 coherence_laws.py --report --exit-on-violation-only >> logs/coherence_$(date +\%Y\%m\%d).log 2>&1
+
+# --- RECONCILIATION + ML CHAIN (added 2026-08-28, Chairman-approved batch) ---
+#
+# Both entries below close queue row AUD-20260702094001, open since 2026-07-02
+# and past its SLA. Neither transmits an order; checked before scheduling.
+#
+# reconciliation_check.py compares what agents PROMISED against Alpaca ground
+# truth. Its own header claimed "Runs every 30 minutes" for the firm's entire
+# history and it was never true: the module appeared in no scheduler on either
+# host. It looked employed to wiring_audit only because risk_gate.py imports
+# _mirror_check from it, and reachability over the import graph cannot tell
+# "someone imports a helper" from "this file's work gets done". data/firm_value.json,
+# whose sole writer is this module and which performance_forecaster reads as the
+# firm's equity, was five days stale when that was found.
+#
+# CADENCE IS DERIVED, NOT ROUND. The promises it reconciles are made by main.py,
+# so it runs 25 min after each main.py run (13:45/16:00/18:00/20:15 UTC) and at
+# no other time. Running it when no pipeline has fired only re-reads claims it
+# already checked, and every extra pass is another chance to email the same
+# CRITICAL twice — see the 2026-07-26 email flood.
+10 14 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 reconciliation_check.py >> logs/recon_$(date +\%Y\%m\%d).log 2>&1
+25 16,18 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 reconciliation_check.py >> logs/recon_$(date +\%Y\%m\%d).log 2>&1
+40 20 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 reconciliation_check.py >> logs/recon_$(date +\%Y\%m\%d).log 2>&1
+
+# ML RESEARCH CHAIN. ml_longterm_label_checker.py (0 23 * * 0, above) was the
+# only link ever scheduled, so it has been checking labels for a chain whose
+# next three stages never ran. Ordered by data dependency, not by convenience:
+# labels land Sun 23:00 -> the improvement agent reads them -> the experiment
+# runners consume its proposals. Spacing is generous because these are the only
+# heavy jobs on the box and a runner that starts before its input is written
+# reads a stale file and reports a confident number about nothing.
+40 23 * * 0 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_longterm_improvement_agent.py >> logs/ml_chain_$(date +\%Y\%m\%d).log 2>&1
+30 1 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_longterm_experiment_runner.py >> logs/ml_chain_$(date +\%Y\%m\%d).log 2>&1
+30 4 * * 1 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_shortterm_experiment_runner.py >> logs/ml_chain_$(date +\%Y\%m\%d).log 2>&1
+
+# Feature drift is the one that must NOT be weekly: it is the detector for the
+# model silently going stale between retrains, so its cadence has to be shorter
+# than the interval it is meant to catch. Weekdays pre-open.
+0 12 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_feature_drift_monitor.py >> logs/ml_chain_$(date +\%Y\%m\%d).log 2>&1
+0 4 * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 log_retention.py >> logs/log_retention_$(date +\%Y\%m\%d).log 2>&1

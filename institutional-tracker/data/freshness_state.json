@@ -1,18 +1,23 @@
 {
   "data/manager_decisions.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/review_recommendations.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/state.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/risk_bulletin.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/canary_state.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/irm_daily_check.json": {
     "status": "OK"
@@ -21,13 +26,16 @@
     "status": "OK"
   },
   "data/hr_report.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/chief_of_staff_report.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/logic_team_findings.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/cit_pending_proposals.json": {
     "status": "OK"
@@ -36,17 +44,20 @@
     "status": "OK"
   },
   "data/fi_pipeline_report.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/fe_pipeline_log.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/etf_research_brief.json": {
     "status": "STALE",
-    "last_action": "2026-07-03T17:15:00.761416"
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/etf_pod_orders.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/research_team_report.json": {
     "status": "OK"
@@ -55,16 +66,24 @@
     "status": "OK"
   },
   "data/missed_winners_report.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/ml_live_picks_log.json": {
-    "status": "OK"
+    "status": "STALE",
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "data/data_quality_report.json": {
     "status": "STALE",
-    "last_action": "2026-07-03T14:15:01.219274"
+    "last_action": "2026-08-28T02:25:05.541567"
   },
   "heartbeat": {
+    "status": "OK"
+  },
+  "data/digest_queue.json": {
+    "status": "OK"
+  },
+  "data/chairman_decision_queue.json": {
     "status": "OK"
   }
 }

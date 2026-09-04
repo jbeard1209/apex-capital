@@ -48,7 +48,8 @@ logger = logging.getLogger("fe_cit_agent")
 _APPROVED_PATH     = "data/fe_approved_picks.json"
 _REJECTED_PATH     = "data/fe_rejected_picks.json"
 _WATCHLIST_PATH    = "data/fe_watchlist.json"
-_EDGAR_CACHE_DIR   = "data/edgar_cache"
+# Same phantom path fix as apex_system_cit_agent — see comment there.
+_EDGAR_CACHE_DIR   = "data/fe_fundamentals_cache"
 _CHAIRMAN_PATH     = "data/chairman_action_required.json"
 _LOCK_PATH         = "data/.fe_cit_agent.lock"
 _PIPELINE_LOG_PATH = "data/fe_pipeline_log.json"

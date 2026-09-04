@@ -108,7 +108,22 @@ def _fetch_raw(ticker: str) -> float | None:
         hist = t.history(period="5d")
         if hist.empty:
             return None
-        value = float(hist["Close"].iloc[-1])
+        # 2026-09-04: yfinance began returning a stub row for the current
+        # trading day with Open/High/Low/Close = NaN and nonzero Volume for
+        # bond ETFs (HYG/LQD/TLT/IEF/SHY). `iloc[-1]` grabs that stub, `float`
+        # produces NaN, and _fetch_raw drops the whole ticker as "no data" —
+        # even though a real close from the prior session sits one row up.
+        # Every FI credit read went UNKNOWN for the same reason, and the
+        # firm's HY-spread abstain cascaded from there.
+        #
+        # Take the last non-NaN close: the stub is the extra row we do not
+        # want, and the 4 prior rows are all real. NaN's `is not None` guard
+        # (memory `nan-is-not-none`) is preserved by the check below — this
+        # only stops using the stub AS IF it were the reading.
+        close = hist["Close"].dropna()
+        if close.empty:
+            return None
+        value = float(close.iloc[-1])
     except Exception as e:
         logger.debug(f"  [{ticker}] fetch failed: {e}")
         return None

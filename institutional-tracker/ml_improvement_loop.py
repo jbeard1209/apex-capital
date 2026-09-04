@@ -177,8 +177,11 @@ def _load_matrix(target: str, feature_override: list[str] | None = None):
         log.info(f"  LT matrix capped to {LT_ROW_CAP:,} rows (was {len(X)+len(idx):,})")
 
     if feature_override:
-        # meta is a DataFrame — use FEATURE_COLS directly
-        cols = fe.FEATURE_COLS
+        # LT targets (outcome_252d, risk_adjusted_252d) are built against the
+        # 9-col LT_FEATURE_COLS. Using FEATURE_COLS here indexed a 47-slot
+        # namespace into an 8-col array and blew up on idea #2. See
+        # [[both-sides-of-a-comparison]].
+        cols = fe.LT_FEATURE_COLS if target in fe.LT_TARGETS else fe.FEATURE_COLS
         col_idx = {c: i for i, c in enumerate(cols)}
         # Only keep features that exist in the matrix
         keep = [c for c in feature_override if c in col_idx]

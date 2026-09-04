@@ -1,5 +1,5 @@
 {
- "checked_at": "2026-08-27T22:19:15.835544",
+ "checked_at": "2026-09-03T18:26:56.889985",
  "falsifiability": [
   {
    "control": "nested_probabilities_are_monotone",
@@ -49,6 +49,13 @@
    "injected": true,
    "pill": "an agent emits a verb outside the manager's vocabulary",
    "detail": "rejected the pill: 1 verb(s) emitted that the manager cannot name: ZZPILLVERB. An unrecognised verb is not rejected, it is unheard."
+  },
+  {
+   "control": "lifecycle_statuses_are_runnable",
+   "verdict": "PROVEN",
+   "injected": true,
+   "pill": "the ladder assigns a status that is neither runnable nor terminal",
+   "detail": "rejected the pill: 1 of 3 status(es) the ladder assigns are neither runnable nor terminal: 'sabbatical' (line 8). An agent put there is employed, unable to work, and still countin"
   },
   {
    "control": "positions_conserve",

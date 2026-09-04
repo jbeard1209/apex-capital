@@ -1,0 +1,734 @@
+{
+  "created": "2026-09-04",
+  "source_commit": "02a3a56",
+  "source_note": "The 97 files preserved by the 2026-07-25 disaster-recovery commit.",
+  "method": "Cross-checked against VM crontab (recent), Mac launchd snapshot, and an in-tree import index.",
+  "totals": {
+    "scheduled": 15,
+    "imported": 23,
+    "dark": 59
+  },
+  "buckets": {
+    "scheduled": [
+      {
+        "file": "apex_system_cit_agent.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": [
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "edgar_transcript_agent.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fi_cit_agent.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": [
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "fi_position_monitor.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fi_risk_monitor.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "macro_regime_model.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_improvement_loop.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": [
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "ml_longterm_experiment_runner.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": [
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "ml_longterm_improvement_agent.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_longterm_label_checker.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_shortterm_experiment_runner.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_validate_longterm.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "performance_tracker.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "predictive_model/etf_research_agent.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "short_interest_monitor.py",
+        "in_vm_cron": true,
+        "in_mac_launchd": false,
+        "callers": []
+      }
+    ],
+    "imported": [
+      {
+        "file": "agent_inbox.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "alpaca_ws_listener.py",
+          "apex_improvement_board.py",
+          "apex_system_cit_agent.py",
+          "board_meeting.py",
+          "canary_agent.py",
+          "capital_efficiency_agent.py",
+          "chief_of_staff_agent.py",
+          "cit_auto_implementer.py",
+          "cit_director.py",
+          "cit_pipeline_integrity_agent.py",
+          "cit_watchdog.py",
+          "crypto_signal_agent.py",
+          "deputy_board.py",
+          "deputy_monitor.py",
+          "earnings_predictor.py",
+          "edgar_transcript_agent.py",
+          "energy_research_team.py",
+          "etf_pod_board.py",
+          "etf_research_agent.py",
+          "fe_board.py",
+          "fe_cio_agent.py",
+          "fe_cit_agent.py",
+          "fe_research_orchestrator.py",
+          "fi_board.py",
+          "head_agent.py",
+          "hr_agent.py",
+          "international_analyst.py",
+          "irm_review_agent.py",
+          "liquidity_stress_test.py",
+          "log_review_agent.py",
+          "macro_regime_model.py",
+          "manager_agent.py",
+          "ml_longterm_cit_agent.py",
+          "ml_longterm_experiment_runner.py",
+          "ml_pod_board.py",
+          "ml_rd_bridge_agent.py",
+          "ml_research_team_leader.py",
+          "ml_shortterm_cit_agent.py",
+          "ml_shortterm_experiment_runner.py",
+          "morning_briefing.py",
+          "operations_director.py",
+          "pod_macro_agent.py",
+          "portfolio_attribution_agent.py",
+          "position_risk_monitor.py",
+          "premarket_check.py",
+          "pretrade_compliance_agent.py",
+          "quiver_signal_agent.py",
+          "rd_geopolitical_team.py",
+          "rd_historical_analyst.py",
+          "rd_pod_board.py",
+          "rd_team_leader.py",
+          "research_team.py",
+          "review_agent.py",
+          "short_interest_monitor.py",
+          "signal_engine.py",
+          "tca_agent.py",
+          "trade_review_team.py",
+          "weekly_brainstorm.py"
+        ]
+      },
+      {
+        "file": "agent_meeting.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "agent_inbox.py",
+          "edgar_transcript_agent.py",
+          "liquidity_stress_test.py",
+          "log_review_agent.py",
+          "portfolio_attribution_agent.py",
+          "position_aging_agent.py",
+          "position_risk_monitor.py",
+          "quiver_signal_agent.py",
+          "short_interest_monitor.py",
+          "tca_agent.py",
+          "weekly_brainstorm.py",
+          "weekly_health_report.py"
+        ]
+      },
+      {
+        "file": "fe_altman.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_cit_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "fe_cycle_earnings.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_earnings_analyzer.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "agents/cos_fe_contrarianrecovery_agent.py",
+          "agents/cos_fe_smallmidcapvalue_agent.py"
+        ]
+      },
+      {
+        "file": "fe_management_quality.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_pipeline.py"
+        ]
+      },
+      {
+        "file": "fe_moat_analyzer.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_pipeline.py"
+        ]
+      },
+      {
+        "file": "fe_peer_comparison.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_piotroski.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_research_orchestrator.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_research_scheduler.py"
+        ]
+      },
+      {
+        "file": "fe_reverse_dcf.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_scoring_suite.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_pipeline.py"
+        ]
+      },
+      {
+        "file": "fe_smart_money.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_thesis_builder.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "agents/cos_fe_contrarianrecovery_agent.py",
+          "agents/cos_fe_smallmidcapvalue_agent.py"
+        ]
+      },
+      {
+        "file": "fe_value_trap.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_watchlist.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fe_pipeline.py",
+          "fe_scoring_suite.py"
+        ]
+      },
+      {
+        "file": "fe_web_research.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "agents/cos_fe_contrarianrecovery_agent.py",
+          "agents/cos_fe_smallmidcapvalue_agent.py"
+        ]
+      },
+      {
+        "file": "feature_engineer.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "experiments_lt_feature_ab.py",
+          "ml_improvement_loop.py",
+          "ml_shortterm_experiment_runner.py",
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "fi_executor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "fi_pipeline.py",
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "portfolio_tracker.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "performance_tracker.py",
+          "portfolio_risk_dashboard.py"
+        ]
+      },
+      {
+        "file": "position_risk_monitor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "pretrade_compliance_agent.py",
+          "test_pipeline_smoke.py"
+        ]
+      },
+      {
+        "file": "wake_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": [
+          "agent_meeting.py",
+          "test_pipeline_smoke.py"
+        ]
+      }
+    ],
+    "dark": [
+      {
+        "file": "agents/cos_fi_municipal_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "agents/cos_fi_tips_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "alpaca_ws_listener.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "apex_improvement_board.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "build_365d_labels.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "cit_auto_implementer.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "crypto_signal_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "event_trigger.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/__init__.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/activist_investor_monitor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/business_model_analyzer.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/capital_structure_deep.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/competitive_intelligence.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/earnings_quality_deep.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/esg_controversy.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/executive_background.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/financial_forensics.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/industry_dynamics.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/management_researcher.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/moat_researcher.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/risk_researcher.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/supply_chain_risk.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/synthesis_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_agents/valuation_researcher.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "fe_research_scheduler.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "liquidity_stress_test.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "log_review_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r2.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r3.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r3_fixed.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r3b.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r4.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r5.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r6.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_chain_r7.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_experiment_chain.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_experiment_v2b.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_longterm_cit_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_longterm_data_watchdog.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_longterm_drift_monitor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "ml_shortterm_cit_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "portfolio_attribution_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "portfolio_risk_dashboard.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "position_aging_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "pretrade_compliance_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "price_feature_backfill.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "quiver_signal_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "run_alt_data.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "st_daily_tracker.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "strategic_roadmap.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "tca_agent.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "teaching_division/chief_learning_officer.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "teaching_division/finance_fundamentals_tutor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "teaching_division/ib_tutor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "teaching_division/investment_tutor.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "teaching_division/quiz_master.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "teaching_division/teaching_engine.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "weekly_brainstorm.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      },
+      {
+        "file": "weekly_health_report.py",
+        "in_vm_cron": false,
+        "in_mac_launchd": false,
+        "callers": []
+      }
+    ]
+  }
+}

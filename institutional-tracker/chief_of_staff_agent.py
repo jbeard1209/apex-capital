@@ -93,13 +93,17 @@ SPAWN_PER_CYCLE          = 2     # max new agents per daily run (quality > quant
 
 # ── Four-stage dignified performance system (Chairman directive 2026-06-09) ─
 # Agents are never fired abruptly. They receive support, a PIP, a role change,
-# then — only if all else fails — a replacement is spawned and they retire.
-# Thresholds increased per Chairman direction 2026-06-09: agents need more time.
+# then — only if all else fails — a replacement is proposed and Chairman must
+# ratify. Thresholds increased per Chairman direction 2026-06-09: agents need
+# more time. Doubled again 2026-09-04 (Chairman: 7 prior wrongful terminations
+# means the bar to fire is too low; raise the runway and require a human ACK
+# instead of self-executing at Stage 4). See [[fix_that_erased_its_detector]]
+# and [[a-coaching-stage-that-removes-you]] for the pattern this guards.
 PERF_NOTICE_CYCLES       = 8     # Stage 1: formal notice + encouragement + improvement plan
 PERF_PIP_CYCLES          = 14    # Stage 2 (new): formal PIP — intensified support, no restructuring yet
 PERF_REASSIGN_CYCLES     = 20    # Stage 3: role reassignment to different sector
-PERF_REPLACE_CYCLES      = 30    # Stage 4: spawn fresh top-level replacement; agent retires
-# (cycles here = R&D cycles, each ~4 days → Stage 4 ≈ 120 days of runway)
+PERF_REPLACE_CYCLES      = 60    # Stage 4: PROPOSE replacement; Chairman must ratify. Never auto-retires.
+# (cycles here = R&D cycles, each ~4 days → Stage 4 ≈ 240 days of runway)
 # The counter is capped at one tick per calendar day in _update_agent_performance();
 # without that cap this review ran once per main.py invocation (4x/weekday on the VM)
 # and the 120-day runway above collapsed to roughly 8 trading days.
@@ -1935,24 +1939,88 @@ class AgentFactory:
                             "event": "permanent_runway_extended",
                         })
                     else:
-                        agent["status"]        = "retired"
-                        agent["retired_at"]    = today
-                        agent["retirement_reason"] = (
+                        # RETIREMENT REQUIRES CHAIRMAN RATIFICATION.
+                        #
+                        # Before 2026-09-04 this branch self-executed the retirement
+                        # (agent["status"] = "retired"). That produced 7 wrongful
+                        # terminations the Chairman had to reverse by hand — the
+                        # "employees being reinstated" that made him raise the bar.
+                        # A self-executing Stage 4 turned an accumulating counter
+                        # into an irreversible decision made by nobody, and every
+                        # bug upstream that inflated czc (attribution outages,
+                        # sector blackouts, the ladder firing on 64% of the roster
+                        # in one pass) landed as a real firing without review.
+                        #
+                        # New contract: at Stage 4 the agent stays in `reassigned`
+                        # — nothing else in the firm treats it as gone — and a
+                        # Chairman decision entry is queued. Only a human ACK
+                        # (registry edit setting status="retired", or an equivalent
+                        # resolver reading the queue) can end an agent's tenure.
+                        # If the queue is never actioned, the agent keeps running.
+                        # That is the intended failure mode: uncertainty means the
+                        # employee stays employed. See [[verdict-with-no-consequence]].
+                        pending_at_prior = agent.get("retirement_pending_at")
+                        already_queued   = bool(pending_at_prior)
+                        agent["retirement_pending"]      = True
+                        agent["retirement_pending_at"]   = pending_at_prior or today
+                        agent["retirement_pending_czc"]  = czc
+                        agent["retirement_pending_reason"] = (
                             f"After {czc} cycles without an approved pick — including a PIP "
                             f"at cycle {PERF_PIP_CYCLES} and a role reassignment at cycle "
-                            f"{PERF_REASSIGN_CYCLES} — this agent has reached the end of its "
-                            f"runway. A fresh specialist will be spawned for this slot. "
-                            f"The agent's contributions and record are preserved in the registry."
+                            f"{PERF_REASSIGN_CYCLES} — this agent has reached the Stage 4 "
+                            f"threshold. Retirement is NOT automatic: awaiting Chairman "
+                            f"ratification. Agent remains in the roster (status=reassigned) "
+                            f"until ratified. Full record preserved."
                         )
+                        # Don't burn further cycles while awaiting ratification —
+                        # otherwise a decision that sits for a week produces a
+                        # bigger, scarier-looking czc every day and the queue
+                        # entry starts self-justifying.
+                        agent["consecutive_zero_cycles"] = PERF_REPLACE_CYCLES
+                        # Queue Chairman decision (once — subsequent cycles at the
+                        # same threshold see already_queued and don't spam the queue;
+                        # chairman_queue.submit dedups anyway, but this is cheaper).
+                        if not already_queued:
+                            try:
+                                import chairman_queue
+                                chairman_queue.submit(
+                                    [{
+                                        "id": "cos-retire-%s-%s" % (
+                                            today.replace("-", ""),
+                                            cn.lower().replace("agent", "")[:28]),
+                                        "dedup_key": "retirement_ratification:%s" % cn,
+                                        "severity": "MEDIUM",
+                                        "category": "AGENT_TERMINATION",
+                                        "description": (
+                                            "Agent %s has reached Stage 4 (%d consecutive "
+                                            "zero-pick cycles, past PIP at %d and reassignment "
+                                            "at %d). Auto-retirement is disabled. Ratify or "
+                                            "reject in the registry. Sector: %s. Reassigned "
+                                            "to: %s. Exonerations recorded: %d."
+                                        ) % (cn, czc, PERF_PIP_CYCLES, PERF_REASSIGN_CYCLES,
+                                             agent.get("sector", "?"),
+                                             agent.get("reassigned_to", "?"),
+                                             agent.get("exoneration_count", 0)),
+                                        "status": "awaiting_chairman",
+                                        "raised_at": datetime.now().isoformat(),
+                                    }],
+                                    source="chief_of_staff",
+                                )
+                            except Exception as e:
+                                logger.warning(
+                                    "  [AgentFactory] chairman_queue.submit failed for "
+                                    "%s (%s); agent stays in reassigned regardless.", cn, e)
                         logger.warning(
-                            f"  [AgentFactory] {cn} → RETIRED after {czc} cycles. "
-                            f"A top-level replacement will be queued. "
-                            f"Contributions logged and preserved."
+                            f"  [AgentFactory] {cn} → Stage 4 threshold ({czc} cycles). "
+                            f"Chairman ratification REQUESTED (queue entry). "
+                            f"Agent remains ACTIVE in role until ratified."
                         )
                         changed.append({
                             "class_name": cn, "old_status": old_status,
-                            "new_status": "retired", "consecutive_zero_cycles": czc,
-                            "event": "retirement", "replacement_needed": True,
+                            "new_status": old_status,  # unchanged — still reassigned
+                            "consecutive_zero_cycles": czc,
+                            "event": "retirement_awaiting_chairman",
+                            "needs_chairman": True,
                         })
 
                 # ── Stage 3: Role Reassignment ─────────────────────────────

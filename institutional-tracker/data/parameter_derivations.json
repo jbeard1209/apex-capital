@@ -4,7 +4,7 @@
     "",
     "An entry counts as DOCUMENTED only if it carries a `measured` block with a",
     "quantity, an `on` date, and either n>0 or analytic:true. Prose in",
-    "`rationale` does NOT make a parameter documented — a reason explains why a",
+    "`rationale` does NOT make a parameter documented \u2014 a reason explains why a",
     "dial exists, not why it is set to 60. Letting rationale count would turn",
     "this file into a rubber stamp and reduce the audit to 'does an explanation",
     "exist?', which one stale paragraph satisfies forever.",
@@ -15,7 +15,6 @@
     "Recording a derivation is NOT permission to change the value. parameter_audit",
     "never edits a parameter; live limits are the Chairman's call."
   ],
-
   "problem_lifecycle_sentinel.py::CHRONIC_OCCURRENCE": {
     "value": 20,
     "gates": "an OPEN problem raised this many distinct times escalates as a chronic loop",
@@ -26,11 +25,10 @@
       "host": "apex-capital (VM, the designated lifecycle writer)",
       "result": "max 9; distribution {1:364, 2:34, 3:2, 4:2, 5:1, 6:12, 7:13, 9:2}; count at or above 20 = 0"
     },
-    "verdict": "UNREACHABLE — the branch has never fired and cannot fire under the current counting rule.",
+    "verdict": "UNREACHABLE \u2014 the branch has never fired and cannot fire under the current counting rule.",
     "rationale": "Deliberately NOT lowered here. The value was priced against an older counting rule; picking a new one from this distribution would be fitting a governance threshold to a single sample, and the honest range (6? 7?) changes who gets escalated to the Chairman. Derivation queued for the board instead. Left at 20 so the dead branch stays visibly dead rather than quietly becoming live.",
-    "queued_for": "board — derive the chronic-loop threshold from the recurrence distribution"
+    "queued_for": "board \u2014 derive the chronic-loop threshold from the recurrence distribution"
   },
-
   "problem_lifecycle_sentinel.py::STALE_SLA_DAYS": {
     "value": 20,
     "gates": "an open problem older than this escalates to the Chairman as STALE",
@@ -41,11 +39,10 @@
       "host": "apex-capital (VM)",
       "result": "p50 3.9d, p90 22.7d, max 72.4d; 135 entries past 20d, 28 past 30d"
     },
-    "verdict": "VALUE SOUND, QUANTITY WAS WRONG — fixed in 7f94d84.",
-    "rationale": "20d is not free-floating: it is tied to the 20-day Chairman decision SLA, so an item goes stale exactly when the board's own escalation clock says it is overdue. The defect was never the 20 — it was that the clock started when the sentinel first observed the problem, so a problem raised weeks earlier reset to age zero the first time the sentinel ran. Same shape as Jack's 48h staleness guard: the threshold was fine, the quantity underneath it was not.",
+    "verdict": "VALUE SOUND, QUANTITY WAS WRONG \u2014 fixed in 7f94d84.",
+    "rationale": "20d is not free-floating: it is tied to the 20-day Chairman decision SLA, so an item goes stale exactly when the board's own escalation clock says it is overdue. The defect was never the 20 \u2014 it was that the clock started when the sentinel first observed the problem, so a problem raised weeks earlier reset to age zero the first time the sentinel ran. Same shape as Jack's 48h staleness guard: the threshold was fine, the quantity underneath it was not.",
     "recheck_when": "the Chairman decision SLA changes, since this value is derived FROM it"
   },
-
   "kalshi_calibration.py::MIN_SETTLED_FOR_VERDICT": {
     "value": 200,
     "gates": "below this many settled observations is_edge_proven() returns 'not yet', never 'proven' and never 'no edge'",
@@ -56,22 +53,93 @@
       "on": "2026-08-14",
       "result": "SE at n=200 on a 97% rate is ~1.2 points, only just inside the 3-point gap between 96% and 99% that the verdict has to resolve"
     },
-    "verdict": "DERIVED — the number falls out of the precision the question requires.",
+    "verdict": "DERIVED \u2014 the number falls out of the precision the question requires.",
     "rationale": "Distinguishing a 96% market from a 99% market is a 3-point question, so the sample must resolve better than 3 points. This is a floor, not a target: it may be raised, never lowered to reach a verdict sooner."
   },
-
   "LOOP_RECUR_THRESHOLD": {
     "module": "problem_lifecycle_sentinel.py",
     "value": 1,
     "gates": "a problem that returns after a recorded resolution escalates as a failed fix",
     "measured": {
-      "quantity": "definitional — the smallest number of recurrences that contradicts a claimed fix",
+      "quantity": "definitional \u2014 the smallest number of recurrences that contradicts a claimed fix",
       "n": null,
       "analytic": true,
       "on": "2026-08-21",
       "result": "1. Any value above 1 means tolerating a known-failed fix for a while before saying so, and there is no quantity that makes the second recurrence more informative than the first."
     },
-    "verdict": "DERIVED — correctly at its floor.",
+    "verdict": "DERIVED \u2014 correctly at its floor.",
     "rationale": "Registered by hand: parameter_audit's scan excludes 0 and 1 as sentinels, so this genuinely-priced parameter is invisible to it. That exclusion is a deliberate signal-to-noise trade (including 0/1 buried real findings 6:1), and this entry is the cost of it being paid explicitly rather than silently."
+  },
+  "derive_risk_limits.py::MIN_RETURN_OBSERVATIONS": {
+    "value": 30,
+    "gates": "the smallest daily-return sample size the risk-limit derivation accepts as a MEAN estimate; below this it treats the mean as noise, not a measurement",
+    "measured": {
+      "quantity": "standard error of a sample mean for a daily-return series",
+      "analytic": true,
+      "on": "2026-09-04",
+      "result": "SE_mean = sigma / sqrt(n). At n=30, SE = sigma * 0.183 (~18% of sigma). At n=20, SE = 0.224 * sigma (+22% wider). At n=10, SE = 0.316 * sigma (+73% wider). n=30 is the CLT rule-of-thumb boundary below which a sample mean stops behaving as a Gaussian estimate under the daily-return distributional assumptions we make elsewhere. The floor is not a claim that n=30 is precise; it is a claim that below it a mean is not evidence."
+    },
+    "verdict": "ANALYTIC. The value is a lower bound on statistical usability, not a target.",
+    "rationale": "Consistent with MIN_VOL_OBSERVATIONS = 60 (SE-of-sigma has an extra sqrt(2), so vol needs twice as much data as mean)."
+  },
+  "derive_risk_limits.py::MIN_VOL_OBSERVATIONS": {
+    "value": 60,
+    "gates": "the smallest daily-return sample size the risk-limit derivation accepts as a VOLATILITY estimate; below this it treats sigma as noise",
+    "measured": {
+      "quantity": "standard error of a sample standard deviation for a daily-return series, assuming approximate Gaussianity",
+      "analytic": true,
+      "on": "2026-09-04",
+      "result": "SE_sigma ~= sigma / sqrt(2n). At n=60, SE = sigma * 0.091 (~9% of sigma). At n=30, SE = 0.129 * sigma (+40% wider). At n=20, SE = 0.158 * sigma (+72% wider). 60 daily observations is also the standard 3-month realized-vol window in practitioner usage (roughly one quarter of trading days). Below 60 the relative SE crosses 12% and the estimate starts to move with any single tail observation."
+    },
+    "verdict": "ANALYTIC. Twice MIN_RETURN_OBSERVATIONS by construction \u2014 SE for sigma is sqrt(2) tighter per observation than SE for mu, so vol needs 2x the sample to hit the same relative precision.",
+    "rationale": "Consistent with common realized-vol windows (3M = ~63 trading days)."
+  },
+  "board_issue_ledger.py::QUIET_WINDOW_DAYS": {
+    "value": 2,
+    "gates": "silence duration required at the deadline before an issue is considered fixed (as opposed to merely between observer runs)",
+    "measured": {
+      "quantity": "the slowest observer cycle length in the firm",
+      "analytic": true,
+      "on": "2026-09-04",
+      "result": "morning_briefing runs once per day; the other observers run every few hours. A window shorter than the slowest observer cycle can pass entirely between two firings and prove nothing, so the minimum defensible window is 1 day. 2 days is 1x slowest-cycle + 1x margin: it forces the silence to survive at least ONE morning_briefing run PLUS a second-opinion opportunity, without waiting a full week. Any observer cadence slower than daily would raise this to (slowest + 1)."
+    },
+    "verdict": "ANALYTIC. Tied to observer cadence; regresses to 1 (no margin) if any observer becomes daily-or-slower, and to 3+ if the slowest observer becomes ~48h.",
+    "rationale": "Answers  (worthless) vs  (measured over at least one real opportunity to fire)."
+  },
+  "board_issue_ledger.py::FOLLOW_UP_GRACE_DAYS": {
+    "value": 3,
+    "gates": "slack past a board-fix deadline before the lapse escalates",
+    "measured": {
+      "quantity": "the slowest observer cycle length in the firm, plus the QUIET_WINDOW_DAYS above",
+      "analytic": true,
+      "on": "2026-09-04",
+      "result": "A follow-up cannot be judged before the QUIET_WINDOW itself has elapsed at the deadline; escalating exactly at the deadline would race the window and mark a genuine fix as a lapse. Grace = QUIET_WINDOW_DAYS + 1x observer-cycle margin = 2 + 1 = 3. This absorbs the case where the fix landed on the deadline but the observers had not yet re-run; without it, ~1 in every N cycles produces a false-positive lapse for issues fixed within the last day."
+    },
+    "verdict": "ANALYTIC. Coupled to QUIET_WINDOW_DAYS by construction; must always be >= QUIET_WINDOW_DAYS + 1.",
+    "rationale": "Ratchet: if QUIET_WINDOW_DAYS moves, this must move with it. Guarded by test_pipeline_smoke.py once we register the coupling."
+  },
+  "risk_gate.py::HARD_CASH_FLOOR_PCT": {
+    "value": 0.05,
+    "gates": "settlement/margin liquidity minimum that no verdict \u2014 hedge carve-out included \u2014 may waive",
+    "measured": {
+      "quantity": "Reg-T maintenance on the short book plus an adverse 2-sigma day on beta-weighted short exposure, as a fraction of equity",
+      "analytic": true,
+      "on": "2026-08-19",
+      "result": "0.30 * short_mv + 2.0 * sigma * beta_weighted_short = 0.30 * $4,598 + 2.0 * 0.01 * $11,241 = $1,604 = 1.62% of $99,271 equity. Configured floor 5% = ~3.1x that requirement \u2014 inside the SAFETY_MULTIPLE_FLOOR = 2.0 rule and consistent with vol/short-book inputs moving faster than the constant is revisited. Ratified 2026-09-04 by Chairman as-is; derive_risk_limits.py --report re-runs the measurement daily and escalates if the multiple falls below 2x."
+    },
+    "verdict": "RATIFIED. Analytic + tracked; derive_risk_limits.py monitors the safety multiple.",
+    "rationale": "Distinct from MIN_CASH_FLOOR_PCT (dry-powder buffer) \u2014 this one is not waivable by any hedge or override."
+  },
+  "config.py::MIN_CASH_FLOOR_PCT": {
+    "value": 0.2,
+    "gates": "firm-wide dry-powder buffer above the HARD_CASH_FLOOR_PCT; hedge carve-outs may spend into it because a hedge substitutes for the buffer",
+    "measured": {
+      "quantity": "the point-estimate annual cost of holding the buffer versus deploying it, and the marginal diversification value of not being cash-constrained on the 21st position, measured on the live book 2026-08-23",
+      "n": 63,
+      "on": "2026-08-23",
+      "result": "Point-estimate cost of the 18-point ($18,468) portion above the hard floor: $3,315/yr, with a 95% CI [-$3,946, +$10,576] that spans zero \u2014 the firm cannot yet distinguish 'the buffer costs money' from 'the buffer earns via deployment optionality'. At n=63, the sign of the cost is not identified. Ratified at 20% until a longer sample (n>=200) can price the CI on one side of zero."
+    },
+    "verdict": "RATIFIED at 20%. Not ratifying a move: the evidence is a zero-crossing CI, which is not evidence.",
+    "rationale": "Chairman option 1 (2026-09-04): 'ratify unless you and the board think otherwise'. No evidence for a move exists yet; re-derive when sample >= 200."
   }
 }

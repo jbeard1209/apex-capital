@@ -19,5 +19,19 @@
     "note": "data/irm_daily_check.json is 1h old, within the 26h threshold",
     "by": "CITPipelineMonitor",
     "date": "2026-08-27T12:02:34.930929"
+  },
+  {
+    "signature": "severely stale output: data/canary_state.json (<age>)",
+    "match": null,
+    "note": "data/canary_state.json is 0h old, within the 13h threshold",
+    "by": "CITPipelineMonitor",
+    "date": "2026-08-29T21:41:13.396838"
+  },
+  {
+    "signature": "severely stale output: data/rd_system_performance.json (<age>)",
+    "match": null,
+    "note": "data/rd_system_performance.json is 0h old, within the 26h threshold",
+    "by": "CITPipelineMonitor",
+    "date": "2026-09-03T18:28:09.445404"
   }
 ]

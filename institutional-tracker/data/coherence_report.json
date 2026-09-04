@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-08-27T22:18:50.030092",
-  "laws": 12,
-  "violated": 1,
+  "checked_at": "2026-09-03T21:08:24.992970",
+  "laws": 13,
+  "violated": 2,
   "cannot_tell": 6,
   "results": [
     {
@@ -43,45 +43,34 @@
     {
       "law": "deployed_set_matches_repo",
       "verdict": "VIOLATED",
-      "detail": "0 tracked file(s) absent from apex-capital, 28 differ, 0 file(s) run there that are in no commit. The host is not running the repo.",
+      "detail": "0 tracked file(s) absent from apex-capital, 3 differ, 0 file(s) run there that are in no commit. The host is not running the repo.",
       "source_a": "git ls-files + local md5 (repo)",
       "source_b": "md5sum + find on the trading host (deployed)",
-      "n_examined": 317,
+      "n_examined": 321,
       "evidence": [
         {
-          "differs": "agent_inbox.py"
+          "differs": "cit_director.py"
         },
         {
-          "differs": "agent_meeting.py"
+          "differs": "test_pipeline_smoke.py"
         },
         {
-          "differs": "apex_improvement_board.py"
-        },
-        {
-          "differs": "backup_data.py"
-        },
-        {
-          "differs": "board_issue_ledger.py"
-        },
-        {
-          "differs": "board_meeting.py"
-        },
-        {
-          "differs": "canary_agent.py"
-        },
-        {
-          "differs": "catch_up.py"
+          "differs": "wakeup_recovery.py"
         }
       ]
     },
     {
       "law": "shipped_config_matches_repo",
-      "verdict": "HOLDS",
-      "detail": "8 allowlisted data/ file(s) tracked and identical on apex-capital",
+      "verdict": "VIOLATED",
+      "detail": "0 allowlist entr(ies) name an untracked file so the include is inert, 0 chosen file(s) absent from apex-capital, 1 differ. The host is not running the configuration the firm decided on.",
       "source_a": "deploy.sh data/ allowlist \u2229 git ls-files + local md5 (what we chose to ship)",
       "source_b": "md5sum on the trading host (what it actually has)",
       "n_examined": 8,
-      "evidence": []
+      "evidence": [
+        {
+          "differs": "data/vm_crontab_snapshot.txt"
+        }
+      ]
     },
     {
       "law": "emitted_verbs_are_handled",
@@ -90,6 +79,15 @@
       "source_a": "agents/*.py action|signal literals (producers)",
       "source_b": "manager_agent KNOWN_ACTIONS + ACTION_ALIASES (consumer)",
       "n_examined": 3,
+      "evidence": []
+    },
+    {
+      "law": "lifecycle_statuses_are_runnable",
+      "verdict": "HOLDS",
+      "detail": "5 status(es) assignable by the ladder (active, noticed, pip, reassigned, retired), all runnable or terminal",
+      "source_a": "statuses the CoS ladder assigns (its own AST)",
+      "source_b": "statuses the firm declares runnable or terminal (agent_lifecycle)",
+      "n_examined": 5,
       "evidence": []
     },
     {
@@ -104,7 +102,7 @@
     {
       "law": "broker_host_census",
       "verdict": "HOLDS",
-      "detail": "UNSTAMPED last traded 2026-07-30; apexcapitalc last traded 2026-08-27; mac last traded 2026-08-24; macbookair17 last traded 2026-08-07",
+      "detail": "UNSTAMPED last traded 2026-07-30; apexcapitalc last traded 2026-09-03; mac last traded 2026-08-24; macbookair17 last traded 2026-08-07",
       "source_a": "Alpaca order history, host tag off client_order_id",
       "source_b": "DOCUMENTED_HOST_TAGS / INFRASTRUCTURE.md",
       "n_examined": 4,

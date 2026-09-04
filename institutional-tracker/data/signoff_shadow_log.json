@@ -10,2164 +10,6 @@
       "no green test+audit on record (test_result=None)",
       "missing required sign-off from: CIT, IRM"
     ],
-    "at": "2026-08-21T14:17:32.748140+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:20:27.445973+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:20:27.452628+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:20:27.458020+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:32:06.646887+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:32:06.652237+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:32:06.657183+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:36:41.053089+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:36:41.058514+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:36:41.063277+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:41:00.569113+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:41:00.575002+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:41:00.580087+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:44:29.200687+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:44:29.206155+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:44:29.210965+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:47:24.391245+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:47:24.397316+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:47:24.402079+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:58:01.916165+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:58:01.922081+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T14:58:01.927303+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:01:02.082519+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:01:02.088218+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:01:02.093278+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:04:32.572917+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:04:32.578623+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:04:32.583411+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:07:31.139033+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:07:31.144569+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:07:31.149597+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:13:31.516239+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:13:31.522751+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:13:31.527483+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:16:48.458844+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:16:48.464455+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:16:48.469227+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:19:47.570913+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:19:47.576903+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:19:47.581863+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:35:02.249533+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:35:02.255712+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:35:02.260684+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:38:27.644841+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:38:27.650336+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:38:27.655293+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:41:25.898482+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:41:25.905855+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T15:41:25.911206+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T16:06:59.751477+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T16:51:18.530078+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T17:12:26.458106+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T17:33:34.115361+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T17:54:39.092468+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T18:15:45.893972+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T18:36:53.796569+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T18:58:01.415928+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T19:19:04.396590+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-21T19:40:13.659879+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T13:52:20.638998+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T13:52:20.644822+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T13:52:20.649632+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T13:55:14.968735+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T13:55:14.974353+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T13:55:14.979279+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:06:49.377638+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:06:49.382757+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:06:49.387572+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:11:09.753347+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:11:09.759192+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:11:09.764216+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:11:44.328051+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:11:44.334747+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:11:44.339536+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:13:58.465742+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:13:58.472621+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:13:58.477616+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:14:35.292325+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:14:35.297352+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:14:35.302615+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:15:30.361650+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:15:30.366868+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:15:30.371943+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:19:16.332713+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:19:16.338212+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:19:16.343085+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:20:52.775598+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:20:52.780576+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:20:52.785386+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:25:04.244427+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:25:04.250432+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:25:04.255752+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:27:38.364408+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:27:38.370855+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:27:38.376704+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:31:42.546641+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:31:42.551872+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:31:42.556653+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:36:46.276314+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:36:46.281700+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:36:46.286841+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:41:04.664781+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:41:04.670496+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:41:04.675709+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:41:04.689628+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:41:04.694881+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T14:41:04.699671+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:11:51.721138+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:11:51.726476+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:11:51.731200+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:18:24.477773+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:18:24.483394+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:18:24.488491+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:22:07.782355+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:22:07.788197+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:22:07.793243+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:36:24.121392+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:36:24.126473+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:36:24.131472+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:41:04.005957+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:41:04.011437+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:41:04.016463+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:45:07.399098+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:45:07.404548+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-22T15:45:07.409588+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:16:17.981792+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:16:17.987244+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:16:17.992324+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:20:12.259262+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:20:12.264647+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:20:12.269587+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:24:54.512958+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:24:54.518903+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:24:54.523714+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:28:44.972840+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:28:44.978670+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:28:44.983563+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:35:46.166018+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:35:46.171424+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:35:46.176299+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:39:39.249700+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:39:39.254957+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:39:39.260070+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:44:28.477796+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:44:28.483214+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T18:44:28.488158+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:15:51.161133+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:15:51.172724+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:15:51.180878+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:20:26.739814+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:20:26.748719+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:20:26.754043+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:39:06.269832+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:39:06.275626+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:39:06.280485+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:44:30.767972+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:44:30.773831+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:44:30.778815+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:49:39.601035+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:49:39.606668+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:49:39.611428+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:54:48.329369+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:54:48.334794+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:54:48.339699+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:58:42.555408+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
-    "at": "2026-08-23T21:58:42.560498+00:00"
-  },
-  {
-    "change_id": "boardmeeting-apply-code-changes",
-    "actuator": "board_meeting._apply_code_changes",
-    "mode": "SHADOW",
-    "would_block": true,
-    "allow": true,
-    "reasons": [
-      "touches hard-line file(s): main.py",
-      "no green test+audit on record (test_result=None)",
-      "missing required sign-off from: CIT, IRM"
-    ],
     "at": "2026-08-23T21:58:42.565268+00:00"
   },
   {
@@ -6498,5 +4340,2163 @@
       "missing required sign-off from: CIT, IRM"
     ],
     "at": "2026-08-28T01:57:33.044253+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T02:37:21.956418+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T02:37:21.962555+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T02:37:21.968153+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T02:44:07.178467+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T02:44:07.184928+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T02:44:07.191868+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:09:14.599997+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:09:14.608174+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:09:14.615521+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:19:36.885575+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:19:36.891147+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:19:36.896148+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:26:17.950439+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:26:17.956208+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T03:26:17.962198+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:01:28.176192+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:01:28.181537+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:01:28.186247+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:03:04.122702+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:06:13.026207+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:06:13.031042+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:06:13.035651+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:08:43.055202+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:08:43.060254+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:08:43.065526+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:12:50.670016+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:12:50.675736+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:12:50.680595+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:15:21.513094+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:15:21.518096+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T15:15:21.522824+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:00:02.599362+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:00:02.604803+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:00:02.609551+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:04:53.186737+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:04:53.191962+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:04:53.197026+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:07:28.480693+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:07:28.485688+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:07:28.492254+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:15:55.601970+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:15:55.607622+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:15:55.612803+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:19:19.277491+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:19:19.282458+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:19:19.287418+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:22:25.947100+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:22:25.952326+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:22:25.957081+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:25:22.442995+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:25:22.448547+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:25:22.453920+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:28:32.959644+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:28:32.964814+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:28:32.969586+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:31:22.251893+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:31:22.257221+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:31:22.262048+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:33:48.381193+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:33:48.386547+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:33:48.392023+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:38:49.552778+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:38:49.557927+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:38:49.562828+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:41:23.014780+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:41:23.020175+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T16:41:23.027705+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:06:53.776775+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:06:53.782628+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:06:53.787497+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:12:22.593216+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:12:22.598508+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:12:22.603135+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:14:55.468670+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:14:55.473915+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:14:55.478511+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:18:30.426713+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:18:30.432079+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:18:30.436678+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:22:13.526397+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:22:13.531323+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:22:13.536363+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:24:42.145116+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:24:42.150473+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T17:24:42.155055+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T19:54:57.788639+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T19:54:57.805758+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T19:54:57.815493+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:02:39.117970+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:02:39.123187+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:02:39.127784+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:06:13.661944+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:06:13.667616+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:06:13.672283+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:09:10.261816+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:09:10.267020+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:09:10.271884+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:20:04.800047+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:20:04.805881+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:20:04.810488+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:23:06.705418+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:23:06.710788+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:23:06.715604+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:27:12.572362+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:27:12.577518+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:27:12.582135+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:30:13.962696+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:30:13.968015+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:30:13.972755+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:33:39.212162+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:33:39.217311+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:33:39.224125+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:36:43.194719+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:36:43.209396+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:36:43.222481+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:50:03.367053+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:50:03.372148+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:50:03.376741+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:54:15.751845+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:54:15.757200+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:54:15.762228+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:57:58.427499+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:57:58.432591+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T20:57:58.438156+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:00:39.797568+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:00:39.802604+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:00:39.807297+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:20:41.907823+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:20:41.913564+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:20:41.919838+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:28:25.920570+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:28:25.925869+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:28:25.930751+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:31:35.470522+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:31:35.475754+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:31:35.482426+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:48:18.489260+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:48:18.494550+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:48:18.500774+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:52:43.010082+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:52:43.018669+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:52:43.024394+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:56:00.529848+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:56:00.539330+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T21:56:00.544847+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:07:21.844458+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:07:21.850844+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:07:21.856033+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:11:32.363035+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:11:32.377112+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:11:32.388832+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:16:08.167595+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:16:08.177535+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:16:08.188620+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:19:34.872184+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:19:34.879267+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-08-28T22:19:34.884476+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T03:37:59.594300+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T03:38:00.291879+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T03:38:00.342988+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T06:05:06.044000+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T06:05:06.258485+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T06:05:06.489076+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T09:52:33.493367+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T09:52:33.550696+00:00"
+  },
+  {
+    "change_id": "boardmeeting-apply-code-changes",
+    "actuator": "board_meeting._apply_code_changes",
+    "mode": "SHADOW",
+    "would_block": true,
+    "allow": true,
+    "reasons": [
+      "touches hard-line file(s): main.py",
+      "no green test+audit on record (test_result=None)",
+      "missing required sign-off from: CIT, IRM"
+    ],
+    "at": "2026-09-04T09:52:33.943371+00:00"
   }
 ]

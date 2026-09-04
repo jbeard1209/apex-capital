@@ -56,7 +56,13 @@ _CHAIRMAN_PATH   = "data/chairman_action_required.json"
 _LOCK_PATH       = "data/.apex_system_cit.lock"
 _DB_PATH         = "data/historical_13f.db"
 _EMAIL_BUFFER    = "data/email_buffer.json"
-_EDGAR_CACHE_DIR = "data/edgar_cache"
+# Where fe_edgar_fundamentals ACTUALLY writes — see fe_edgar_fundamentals.CACHE_DIR.
+# The old path "data/edgar_cache" was a phantom: fe_edgar_fundamentals wrote to
+# `fe_fundamentals_cache/` and never populated `edgar_cache/`, so this check filed
+# "EDGAR cache empty -- fe_edgar_fundamentals may not be running" every day for
+# ~1000 fresh files sitting one directory over. Classic wiring contract bug
+# ([[wiring_contract_bugs]]).
+_EDGAR_CACHE_DIR = "data/fe_fundamentals_cache"
 _DATA_DIR        = "data"
 _LOGS_DIR        = "logs"
 
@@ -412,22 +418,60 @@ def check_email_buffer(proposals):
                      "(threshold %d); email sender may be broken"
                      % (len(buffer), _EMAIL_OVERFLOW))
 
-    # Loop detection: same subject 3+ times (excluding IRM REVIEW copies)
-    subject_counts = {}
+    # Loop detection: a genuine loop is a BURST (an agent's bug regenerating the
+    # same mail in seconds), not four scheduled re-runs over the trading day. The
+    # detector used to key on subject alone and count over the whole buffer, so
+    # every day it saw R&D and CoS mails from 4-6 cron fires and posted
+    # PIPELINE_ALERT for a state that the 22:00 digest will collapse to one line.
+    # See email_buffer.buffer_email's docstring for why dedupe is delayed until
+    # flush; see [[cit_bug_fixer_alert_loop]] for the alert-storm that produced.
+    #
+    # Two fixes here:
+    #   1. Key on `dedup_key or subject` — the same key flush uses. When the
+    #      producer supplied an identity, honor it; the subject may be a display
+    #      string that carries a count, not an identity.
+    #   2. Require a burst window — 3+ enqueues under the same key within an
+    #      hour, not spread across the whole day. Widely-spaced same-key entries
+    #      are what flush is FOR and are not a defect.
+    from datetime import datetime, timedelta
+
+    _BURST_WINDOW = timedelta(hours=1)
+    grouped: dict = {}
     for entry in buffer:
         if not isinstance(entry, dict):
             continue
         subj = entry.get("subject", "").strip()
         if not subj or subj.startswith("[IRM REVIEW]"):
             continue
-        key = subj.lower()
-        subject_counts[key] = subject_counts.get(key, 0) + 1
+        key = entry.get("dedup_key") or subj.lower()
+        ts_raw = entry.get("buffered_at", "")
+        try:
+            ts = datetime.fromisoformat(ts_raw) if ts_raw else None
+        except (TypeError, ValueError):
+            ts = None
+        grouped.setdefault(key, []).append((ts, subj))
 
-    loops = {k: v for k, v in subject_counts.items() if v >= _EMAIL_LOOP_THRESHOLD}
+    def _is_burst(items):
+        # A burst is _EMAIL_LOOP_THRESHOLD+ entries whose timestamps span less
+        # than one hour. Entries without a timestamp are conservative — treated
+        # as unknown and not counted as burst evidence.
+        stamps = sorted([ts for ts, _ in items if ts is not None])
+        if len(stamps) < _EMAIL_LOOP_THRESHOLD:
+            return False
+        # Sliding window: any run of THRESHOLD stamps within _BURST_WINDOW.
+        for i in range(len(stamps) - _EMAIL_LOOP_THRESHOLD + 1):
+            if stamps[i + _EMAIL_LOOP_THRESHOLD - 1] - stamps[i] <= _BURST_WINDOW:
+                return True
+        return False
+
+    loops = {k: len(items) for k, items in grouped.items() if _is_burst(items)}
     if loops:
-        examples = "; ".join('"%s" x%d' % (k[:50], v) for k, v in list(loops.items())[:3])
+        examples = "; ".join(
+            '"%s" x%d' % ((k if len(k) < 50 else k[:47] + "..."), v)
+            for k, v in list(loops.items())[:3]
+        )
         _raise_issue(proposals, "HIGH", "BUG_FIX",
-                     "Email loop detected -- %d subject(s) appear %d+ times in buffer: %s"
+                     "Email burst detected -- %d key(s) with %d+ enqueues within 1h: %s"
                      % (len(loops), _EMAIL_LOOP_THRESHOLD, examples[:120]))
     else:
         logger.info("    No email loops detected.")
@@ -598,6 +642,18 @@ def main():
         check_email_buffer(proposals)
         check_edgar_cache(proposals)
         check_improvement_proposals(proposals)
+
+        # Grade any open hedge-exemption outcomes and auto-tighten the
+        # carve-out if recent failure rate has crossed policy. Chairman
+        # ratified the exemption 2026-09-04 on the condition that failures
+        # produce a stricter policy — this is where that happens. Errors
+        # swallowed: the tracker is bookkeeping, not a health signal.
+        try:
+            import hedge_exemption_outcomes as _heo
+            _heo.grade_outcomes()
+            _heo.maybe_auto_tighten()
+        except Exception as e:
+            logger.warning("  hedge_exemption_outcomes sweep failed: %s", e)
 
         if proposals:
             _update_chairman_queue(proposals)

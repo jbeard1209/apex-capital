@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-08-23T14:11:23.426485",
+  "generated_at": "2026-09-03T21:32:46.129699",
   "schedule_source": "snapshot(vm_crontab_snapshot.txt)",
-  "host": "Mac.lan",
+  "host": "MacBook-Air-173.local",
   "n_disagreements": 0,
   "disagreements": []
 }

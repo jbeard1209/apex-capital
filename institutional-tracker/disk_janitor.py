@@ -76,7 +76,7 @@ if __name__ == "__main__":
         # keep newest 2 backups only
         b = sorted(glob.glob(str(BASE/"data/backups/*")), key=os.path.getmtime)
         for p in b[:-2]: shutil.rmtree(p, ignore_errors=True); n += 1
-        n += prune([BASE/"data/edgar_cache/*"], older_days=14)
+        n += prune([BASE/"data/fe_fundamentals_cache/*"], older_days=14)
     after = pct_used()
     print(f"janitor: {before}% -> {after}% ({n} items removed)")
     sys.exit(1 if after > 88 else 0)

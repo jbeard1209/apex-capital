@@ -2,261 +2,6 @@
   "first_detected": "2026-05-07T08:31:28.073487",
   "history": [
     {
-      "ts": "2026-08-08T20:15:21.562798",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-09T18:24:57.233478",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-09T18:25:29.892839",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-10T20:33:59.780062",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-10T20:34:33.417366",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-11T18:06:22.581110",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-11T18:08:54.423078",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-11T21:07:35.695995",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-14T11:33:23.694688",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-14T11:34:47.605497",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-14T13:10:05.796912",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-15T23:17:05.973704",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-16T02:25:30.460100",
-      "beat_rate_coverage_pct": 0,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-16T20:25:23.653389",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-16T20:31:56.792761",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-17T06:22:13.240458",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-17T12:14:45.107463",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-17T18:10:18.214660",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-17T21:07:00.759177",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-18T06:10:15.303783",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-18T12:03:46.759694",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-18T18:17:25.748138",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-18T21:12:44.724755",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-19T06:10:15.716356",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-19T12:04:48.202919",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-19T18:13:43.733883",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-19T21:07:31.993883",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-20T06:09:27.716295",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-20T12:07:38.466846",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-20T18:11:56.418256",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-20T21:01:47.330647",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-21T06:11:19.950830",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-21T12:07:53.556724",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-21T18:07:14.017200",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-21T21:14:51.762172",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-22T06:15:14.258884",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-22T12:10:02.611834",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-22T18:04:37.144883",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-22T21:11:52.129226",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-23T06:12:51.330440",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-23T12:08:35.393278",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-23T18:06:51.676232",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-23T21:22:25.541992",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-24T06:02:02.654621",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-24T12:09:49.840228",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-24T18:01:33.345340",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-24T22:34:02.939994",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-25T06:15:45.762784",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-25T12:14:15.178353",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-25T18:06:03.102978",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
-      "ts": "2026-08-25T21:22:15.192171",
-      "beat_rate_coverage_pct": 100,
-      "sample_size": 5
-    },
-    {
       "ts": "2026-08-26T14:03:59.830815",
       "beat_rate_coverage_pct": 100,
       "sample_size": 5
@@ -298,6 +43,261 @@
     },
     {
       "ts": "2026-08-27T22:17:15.570795",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-27T22:40:47.441474",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T06:18:15.186287",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T06:57:06.725210",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T07:38:38.218334",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T08:09:59.944937",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T08:49:12.628855",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T09:40:55.753885",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T10:58:49.402178",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T11:24:17.647769",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T12:13:09.272455",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T18:02:32.400631",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T22:16:39.587841",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-28T23:06:22.395868",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T00:08:18.615085",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T01:09:10.428002",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T02:08:58.650721",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T03:09:36.719589",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T04:12:32.136668",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T05:10:06.255324",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T06:11:20.277018",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T06:52:24.529442",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T07:21:54.646235",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T08:00:41.940452",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T08:33:35.288112",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T09:02:56.590892",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T09:53:52.355539",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T10:03:49.186732",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T11:13:52.522420",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T11:20:00.833479",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T12:25:33.679194",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T13:05:11.730545",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T13:37:39.967282",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T14:16:11.091492",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T14:48:40.620891",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T15:58:58.700888",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T16:19:01.904258",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T17:18:27.900794",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T17:38:29.914462",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T18:55:37.116093",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T19:35:54.095281",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T20:21:06.075191",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T20:50:32.858384",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T21:47:48.825859",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T22:08:05.775820",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T23:13:39.404250",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-29T23:15:49.529289",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-08-30T14:23:52.904846",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-09-03T18:17:16.753165",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-09-03T18:28:13.372422",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-09-03T18:52:51.853378",
+      "beat_rate_coverage_pct": 100,
+      "sample_size": 5
+    },
+    {
+      "ts": "2026-09-03T21:05:20.160017",
       "beat_rate_coverage_pct": 100,
       "sample_size": 5
     }
