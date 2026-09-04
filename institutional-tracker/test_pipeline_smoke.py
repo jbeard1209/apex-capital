@@ -619,8 +619,20 @@ class TestChairmanQueueDedup(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as d:
             target = Path(d) / "cit_pending_proposals.json"
-            orig_cit_pending = ltia.CIT_PENDING
-            ltia.CIT_PENDING = target
+            # The producer dedups against BOTH pending AND still-open rows in
+            # the approved queue (see [[a-queue-that-never-empties]]), so a
+            # test that only rebinds CIT_PENDING will read the real production
+            # cit_approved_proposals.json and dedup against whatever is in it
+            # — for cro_paralysis specifically, that file has open rows, so
+            # the first call would return False and target would never exist.
+            # Rebind both, and hand CIT_APPROVED an empty list so the test
+            # stays hermetic.
+            approved = Path(d) / "cit_approved_proposals.json"
+            approved.write_text("[]")
+            orig_cit_pending  = ltia.CIT_PENDING
+            orig_cit_approved = ltia.CIT_APPROVED
+            ltia.CIT_PENDING  = target
+            ltia.CIT_APPROVED = approved
             try:
                 ltia._board_cro_paralysis({"rule": "cro_paralysis",
                     "title": "CRO at HIGH for 32+ days"})
@@ -631,7 +643,8 @@ class TestChairmanQueueDedup(unittest.TestCase):
                 self.assertEqual(len(queue), 1,
                     "same rule re-fired with a growing day count must not duplicate")
             finally:
-                ltia.CIT_PENDING = orig_cit_pending
+                ltia.CIT_PENDING  = orig_cit_pending
+                ltia.CIT_APPROVED = orig_cit_approved
 
     def test_logic_officer_write_board_proposals_dedups_by_rule(self):
         import logic_officer as lo
