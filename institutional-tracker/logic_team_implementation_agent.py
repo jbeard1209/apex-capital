@@ -50,7 +50,20 @@ DATA_DIR         = BASE_DIR / "data"
 LT_RESOLUTIONS   = DATA_DIR / "logic_team_resolutions.json"
 LT_FINDINGS      = DATA_DIR / "logic_team_findings.json"
 CIT_PENDING      = DATA_DIR / "cit_pending_proposals.json"
+CIT_APPROVED     = DATA_DIR / "cit_approved_proposals.json"
 FIRM_CHANNEL     = DATA_DIR / "firm_channel.json"
+
+# Statuses that mean "this proposal has NOT reached a terminal resolution yet"
+# — dedup must treat them as still-open so LTIA doesn't re-file a finding that
+# is sitting in the approved queue waiting for a human to actually do the work.
+# See [[a-queue-that-never-empties]]: the 193 "Expected agents silent" rows
+# were the same LOW/IMPROVEMENT finding, approved once and never implemented,
+# with LTIA re-filing every cycle because pending was empty.
+_OPEN_STATUSES = {
+    "pending", "approved", "in_progress", "in_review",
+    "routed_to_implementer", "awaiting_chairman",
+    "ESCALATED_TO_CHAIRMAN",
+}
 IMPL_LOG         = DATA_DIR / "lt_implementation_log.json"
 
 os.chdir(BASE_DIR)
@@ -125,7 +138,24 @@ def _escalate_to_board(title: str, description: str, recommended_owner: str,
         if not isinstance(pending, list):
             pending = []
         key = dedup_key or title
+        # The pending-only dedup let approved-but-open proposals become
+        # invisible: once the deputy board approves the finding, the pending
+        # row is gone, so the next LTIA cycle re-files. That is exactly how
+        # 193 duplicate "Expected agents silent" rows accumulated in the
+        # approved queue. Fold the approved queue into the dedup surface,
+        # keyed to still-open statuses only — once something is
+        # implemented/rejected/closed, LTIA is free to re-file if the
+        # underlying finding recurs.
+        approved = _load(CIT_APPROVED, [])
+        if not isinstance(approved, list):
+            approved = []
+        open_approved_keys = {
+            (p.get("dedup_key") or p.get("title",""))
+            for p in approved
+            if str(p.get("status","")).lower() in {s.lower() for s in _OPEN_STATUSES}
+        }
         existing = {p.get("dedup_key") or p.get("title","") for p in pending}
+        existing |= open_approved_keys
         if key in existing:
             return False
         pending.append({
@@ -575,6 +605,21 @@ def run_triage() -> dict:
     logger.info("  LT IMPLEMENTATION AGENT — TRIAGE")
     logger.info(f"  {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 55)
+
+    # Publish a heartbeat from each of the five core report-writing agents
+    # BEFORE the sub-agent that scans the channel decides whether to file
+    # "expected agents silent". These agents don't post to firm_channel by
+    # contract — they write reports; the bridge reads the latest report
+    # and posts a diagnostic line. Without this, LTIA would re-file the
+    # finding forever (see [[a-queue-that-never-empties]] and the 985-row
+    # duplicate backlog cleaned up 2026-09-04). Best-effort — if the
+    # bridge errors, LTIA continues; the finding will simply reappear and
+    # the error surfaces in the next canary sweep.
+    try:
+        import channel_heartbeat_bridge
+        channel_heartbeat_bridge.main()
+    except Exception as _e:
+        logger.warning(f"  channel_heartbeat_bridge skipped: {_e}")
 
     tracker = _load(LT_RESOLUTIONS, {"open": {}})
     open_findings = tracker.get("open", {})
