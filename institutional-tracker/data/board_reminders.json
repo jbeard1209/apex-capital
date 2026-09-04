@@ -1,0 +1,28 @@
+{
+  "generated_at": "2026-09-04T10:01:51.852056+00:00",
+  "count": 3,
+  "reminders": [
+    {
+      "id": "KR-TECH-DO-NOT-SHORT",
+      "headline": "KR/AI-hardware DO NOT SHORT. Extension is a DISQUALIFIER, not a bonus (fwd 20d +6.99%, shorts win 39.1% at high extension).",
+      "why_it_matters": "The 2026-07-30 measurement corrected a design that ranked the MOST extended names as the BEST shorts. Anyone proposing a KR/AI-hardware short must first show the anti-chasing rule is satisfied. See tech_short_pod.py::MIN_EXTENSION_PCTILE and the memory [[kr_tech_short_pod]].",
+      "added_on": "2026-07-30",
+      "evidence": "tech_short_report.json missing \u2014 verdict presumed to stand"
+    },
+    {
+      "id": "HEDGE-CARVE-OUT-NARROW",
+      "headline": "Hedge carve-out is narrow (max 2 slots above cap, structural beta only, HARD_CASH_FLOOR_PCT never waived) and outcome-tracked.",
+      "why_it_matters": "The carve-out was ratified 2026-09-04 with the explicit condition that outcomes are graded. hedge_exemption_outcomes.py auto-tightens at 40% failure rate over n>=5. If a proposal argues for widening the carve-out, the board must first see the outcome-tracker's current grade. See memory [[fallback-that-means-act]].",
+      "added_on": "2026-09-04",
+      "evidence": "carve-out active; outcomes tracked in hedge_exemption_outcomes.py"
+    },
+    {
+      "id": "RETIREMENT-REQUIRES-CHAIRMAN",
+      "headline": "Agent retirement is a Chairman decision. Stage 4 (60 R&D cycles) queues a ratification entry; the loop never self-executes a fire.",
+      "why_it_matters": "Ratified 2026-09-04 after seven wrongful auto-terminations. PERF_REPLACE_CYCLES = 60 (\u2248240 days runway). Any proposal to shorten the ladder must argue against that history first. See [[a-coaching-stage-that-removes-you]] and [[fix_that_erased_its_detector]].",
+      "added_on": "2026-09-04",
+      "evidence": "PERF_REPLACE_CYCLES=60, Stage-4 branch queues Chairman ratification"
+    }
+  ],
+  "note": "Read by board_meeting.py at meeting start. Standing verdicts are curated in board_rememberer.py::STANDING_VERDICTS \u2014 additions and removals are Chairman decisions, not per-run outputs."
+}

@@ -289,13 +289,30 @@ def _build_anonymous_briefing(reports: dict) -> dict:
         ),
     }
 
+    # Standing reminders — verdicts the board must not forget. See
+    # board_rememberer.py. If the module isn't importable or the read fails,
+    # we log and continue with an empty list rather than silently pretending
+    # nothing needs remembering — the reader on the other side sees "reminder
+    # subsystem unavailable" and can escalate that, which is better than a
+    # meeting minute that quietly loses the KR-Tech guardrail.
+    standing_reminders: list = []
+    reminders_error = None
+    try:
+        from board_rememberer import main as _rememberer_main
+        _rem = _rememberer_main(write=True)
+        standing_reminders = _rem.get("reminders", []) or []
+    except Exception as _e:
+        reminders_error = str(_e)
+
     return {
-        "briefing_id":  datetime.now().strftime("%Y%m%d-%H%M%S"),
-        "prepared_at":  datetime.now().isoformat(),
-        "note":         "All source attributions redacted. Reports labelled A, B, C only.",
-        "report_a":     report_a,
-        "report_b":     report_b,
-        "report_c":     report_c,
+        "briefing_id":       datetime.now().strftime("%Y%m%d-%H%M%S"),
+        "prepared_at":       datetime.now().isoformat(),
+        "note":              "All source attributions redacted. Reports labelled A, B, C only.",
+        "report_a":          report_a,
+        "report_b":          report_b,
+        "report_c":          report_c,
+        "standing_reminders": standing_reminders,
+        "reminders_error":   reminders_error,
     }
 
 
@@ -2414,17 +2431,30 @@ def _ops_director_position(briefing: dict) -> dict:
             "agent_status": {},
         }
 
+    # Ops director carries the standing reminders into the position papers
+    # so they land in the HTML minutes and any downstream reader that walks
+    # positions[] (e.g. the emailed digest). They are prepended, ahead of
+    # the floor summary — a verdict "in the record" is only useful if it is
+    # read before decisions are made.
+    _reminders = (briefing or {}).get("standing_reminders", []) or []
+    _reminder_lines = [
+        f"STANDING VERDICT [{r.get('id','?')}]: {r.get('headline','')}"
+        for r in _reminders
+    ]
+    positions_out = _reminder_lines + [brief.get("summary", "")]
+
     return {
         "agent":       "Operations Director",
         "role":        "Floor Operations & Supervised Agents (Non-Voting)",
         "vote":        None,
         "non_voting":  True,
-        "positions":   [brief.get("summary", "")],
+        "positions":   positions_out,
         "actions":     [],
         "vote_weight": {},    # non-voting — no votes cast; required by _synthesise_consensus
         "dissents":    [],    # required by _build_html_minutes pos['dissents'] access
         "floor_brief": brief,
         "flags":       brief.get("flags", []),
+        "standing_reminders": _reminders,
         "statement":   brief.get("summary", ""),
         # 'summary' required by _build_html_minutes pos['summary'] direct access
         "summary":     brief.get("summary", "Floor brief unavailable."),
@@ -2726,6 +2756,24 @@ def run_board_meeting(dry_run: bool = False, send_email: bool = True) -> dict:
     logger.info("\n  Step 2/6: Anonymising reports — stripping agent identities...")
     briefing = _build_anonymous_briefing(reports)
     logger.info(f"  ✓ Briefing package prepared (ID: {briefing['briefing_id']})")
+
+    # Read standing reminders into the meeting record BEFORE any position
+    # paper is composed. The whole point of the rememberer is that a verdict
+    # (e.g. KR-Tech DO-NOT-SHORT) is quoted at the top of every cycle so an
+    # agent proposing a contradictory action has to argue against a record
+    # already in the room. If the subsystem errored, log the error at the
+    # same altitude — a silent absence would be the failure mode we're
+    # trying to prevent.
+    _reminders = briefing.get("standing_reminders", []) or []
+    _rem_err   = briefing.get("reminders_error")
+    if _rem_err:
+        logger.warning(f"  [Rememberer] subsystem unavailable: {_rem_err}")
+    elif not _reminders:
+        logger.info("  [Rememberer] no standing verdicts on file")
+    else:
+        logger.info(f"  [Rememberer] {len(_reminders)} standing verdict(s) — entering record:")
+        for _r in _reminders:
+            logger.info(f"    • [{_r.get('id','?')}] {_r.get('headline','')}")
 
     # 3. Position papers
     logger.info("\n  Step 3/6: Collecting position papers from all agents...")
