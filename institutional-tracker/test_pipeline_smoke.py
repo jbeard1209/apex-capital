@@ -21754,8 +21754,14 @@ class TestLatenessComesFromTheSchedule(unittest.TestCase):
         """The other half of the test above: deleting the constant without
         wiring the replacement would also pass it."""
         import ast
+        # wakeup_recovery is listed here but NOT in the constants test above:
+        # it still carries a per-job `max_stale_hours`, deliberately, as the
+        # second independent measurement the missed-fire check is conjoined
+        # with. What it must never do again is answer "was a run missed?" from
+        # that number alone.
         for fname in ["fi_cit_agent.py", "fe_cit_agent.py",
-                      "cit_pipeline_integrity_agent.py"]:
+                      "cit_pipeline_integrity_agent.py",
+                      "wakeup_recovery.py"]:
             p = Path(__file__).parent / fname
             tree = ast.parse(p.read_text())
             names = set()
@@ -24141,7 +24147,8 @@ class TestRecoveryDerivesItsScheduleFromTheCrontab(unittest.TestCase):
 
     def test_a_weekday_only_job_is_not_recovered_on_a_weekend(self):
         w, sched = self._sched()
-        dow, _p, _wp, _n = w._resolve_job("fe_pipeline.py", "fe", "1-5", sched)
+        dow, _p, _wp, _n = w._resolve_job(
+            "fe_pipeline.py", "fe", "1-5", sched)
         self.assertEqual(sorted(dow), [0, 1, 2, 3, 4],
                          "fe_pipeline's crontab is `0 15 * * 1-5`")
         for weekend in (5, 6):
@@ -24170,7 +24177,7 @@ class TestRecoveryDerivesItsScheduleFromTheCrontab(unittest.TestCase):
         drift = []
         for script, prefix, _h, declared_dow, _a in w.JOBS:
             _d, _p, _wp, notes = w._resolve_job(script, prefix,
-                                                declared_dow, sched)
+                                                    declared_dow, sched)
             drift.extend(notes)
         self.assertEqual(drift, [], "JOBS disagrees with the live crontab:\n" +
                          "\n".join(drift))
@@ -24189,7 +24196,7 @@ class TestRecoveryDerivesItsScheduleFromTheCrontab(unittest.TestCase):
                    ("morning_briefing.py", "briefing", "*")]
         for script, prefix, declared_dow in shipped:
             _d, _p, _wp, notes = w._resolve_job(script, prefix,
-                                                declared_dow, sched)
+                                                    declared_dow, sched)
             self.assertTrue(notes, f"{script}: shipped defect not detected")
 
     def test_an_unparseable_dow_widens_to_every_day_rather_than_skipping(self):
@@ -24263,6 +24270,409 @@ class TestRecoveryDerivesItsScheduleFromTheCrontab(unittest.TestCase):
         self.assertNotIn("if drift", call,
                          "_record_drift must run on every pass, not only on "
                          "failure, or the last bad report outlives the bug")
+
+
+class TestAnAgeLimitCannotAnswerWasAnythingMissed(unittest.TestCase):
+    """A flat wall-clock threshold cannot express "did a scheduled fire fail".
+
+    2026-08-28, measured on the VM: `coherence_laws.runs_match_schedule` read
+    `✗ VIOLATED — main.py started 5 time(s) today; the schedule asks for 4`,
+    and logs/cron_20260828.log carried
+    `[2026-08-28T06:00:01] RECOVERY RUN: .../main.py`. The crontab schedules
+    main.py at 13:45/16:00/18:00/20:15 UTC Mon-Fri, so the ordinary overnight
+    gap is 17h30m and the Friday-to-Monday gap is 65h30m — both far past the
+    7h `max_stale_hours` in `wakeup_recovery.JOBS`. At the 06:00 UTC check the
+    log is ~9h45m old, NOTHING has been missed, and recovery launched a full
+    pipeline run at 02:00 ET on stale data, outside market hours, every single
+    weekday. Swept across all ten entries at their own check times, 6 of 10
+    fired with nothing missed.
+
+    The file already knew this shape: `rd_team_leader` carries the same
+    postmortem, closed by raising 3h to 11h. That is a better constant on a
+    schedule where no constant is right — the honest worst age for a
+    weekday-only job is ~70h (Monday 06:00 looking back at Friday), and a 70h
+    limit would leave a genuine Wednesday outage unrecovered for three days.
+    So the repair is a second, differently-sourced question — has the most
+    recent scheduled fire time passed with no run? — used as a CONJUNCTION
+    with the age limit, never as a replacement. A conjunction can only
+    withhold a run recovery would otherwise have made, so it cannot introduce
+    a launch that does not happen today, and launching main.py places orders.
+    """
+
+    FRI = datetime(2026, 8, 28, 18, 0)      # a real Friday: the day measured
+    MON = datetime(2026, 8, 31, 6, 0)
+
+    # main.py's real weekday schedule, verbatim in the form the crontab states
+    # it. Written as cron text, not as a set of instants, so these tests score
+    # the same parser production does rather than a second reading of it.
+    MAIN_CRON = (
+        "45 13 * * 1-5 cd ~/x && python3 main.py >> logs/cron_$(date).log 2>&1\n"
+        "0 16 * * 1-5 cd ~/x && python3 main.py >> logs/cron_$(date).log 2>&1\n"
+        "0 18 * * 1-5 cd ~/x && python3 main.py >> logs/cron_$(date).log 2>&1\n"
+        "15 20 * * 1-5 cd ~/x && python3 main.py >> logs/cron_$(date).log 2>&1\n"
+    )
+
+    @staticmethod
+    def _at(*args):
+        """A wall-clock instant as the epoch a log mtime would carry."""
+        return datetime(*args).timestamp()
+
+    # ── there must be exactly one cron parser in this repo ──
+
+    def test_the_fire_times_are_not_re_derived_in_this_file(self):
+        """The first draft of this fix hand-rolled fire-set parsing here, with
+        a grace window I picked by eye. `schedule_expectations` already owned
+        all of it — its own docstring names this bug class, and it DERIVES the
+        grace from `catch_up.PIPELINE_TIMEOUT_S` instead of guessing.
+
+        Two cron parsers in one repo is the duplication-then-drift shape the
+        module exists to catch, so the absence of the second one is pinned.
+        AST, not grep: the docstring above `_missed_scheduled_fire` names
+        `lateness` and `missed_fires_since` in prose, and a text search would
+        match my own explanation ([[a-union-cannot-prove-all-n]]).
+        """
+        import ast
+        import wakeup_recovery as w
+        tree = ast.parse(Path(w.__file__).read_text())
+
+        imported = {n.asname or n.name
+                    for node in ast.walk(tree)
+                    if isinstance(node, ast.Import) for n in node.names}
+        self.assertIn("se", imported,
+                      "wakeup_recovery must import schedule_expectations")
+
+        fn = next(n for n in tree.body
+                  if isinstance(n, ast.FunctionDef)
+                  and n.name == "_missed_scheduled_fire")
+        called = {c.func.attr for c in ast.walk(fn)
+                  if isinstance(c, ast.Call)
+                  and isinstance(c.func, ast.Attribute)
+                  and isinstance(c.func.value, ast.Name)
+                  and c.func.value.id == "se"}
+        self.assertIn("missed_fires_since", called,
+                      "the verdict must come from the shared module")
+
+        defined = {n.name for n in ast.walk(tree)
+                   if isinstance(n, ast.FunctionDef)}
+        self.assertNotIn("_expand_num", defined,
+                         "a second numeric cron-field parser is back")
+
+    def test_the_grace_window_is_derived_not_declared_here(self):
+        """45 minutes was my guess; it is also the runner's real job budget.
+        That agreement is the point — pin the source, not the number."""
+        import catch_up
+        import schedule_expectations as se
+        self.assertAlmostEqual(se.DEFAULT_GRACE_MIN,
+                               catch_up.PIPELINE_TIMEOUT_S / 60.0, places=6)
+
+    # ── the question the constant could not ask ──
+
+    def test_the_run_we_actually_observed_is_now_refused(self):
+        """Friday 06:00 UTC, log written by Thursday's 20:15 run: 9.8h old,
+        over the 7h limit, and nothing whatsoever was missed."""
+        import wakeup_recovery as w
+        missed, why = w._missed_scheduled_fire(
+            "main.py", self._at(2026, 8, 27, 20, 15),
+            datetime(2026, 8, 28, 6, 0), self.MAIN_CRON)
+        self.assertFalse(missed, "this is the 02:00 ET pipeline run on stale "
+                                 "data that placed orders every weekday")
+        self.assertIn("already ran", why)
+
+    def test_a_genuinely_missed_fire_is_still_recovered(self):
+        """The conjunction must not become a way of never running."""
+        import wakeup_recovery as w
+        missed, why = w._missed_scheduled_fire(
+            "main.py", self._at(2026, 8, 27, 20, 15), self.FRI, self.MAIN_CRON)
+        self.assertTrue(missed)
+        # 13:45 and 16:00 both came due; 18:00 is still inside its grace.
+        self.assertIn("2 scheduled fire(s)", why)
+
+    def test_missing_fires_are_counted_not_timed(self):
+        """Hours are not comparable across schedules — ten hours overnight
+        costs the firm nothing and ten across a trading afternoon costs it four
+        pipeline runs. Counted runs say the same thing every day."""
+        import wakeup_recovery as w
+        for mtime, want in ((self._at(2026, 8, 28, 14, 0), 1),
+                            (self._at(2026, 8, 28, 12, 0), 2),
+                            (self._at(2026, 8, 27, 12, 0), 6)):
+            missed, why = w._missed_scheduled_fire("main.py", mtime, self.FRI,
+                                                   self.MAIN_CRON)
+            self.assertTrue(missed)
+            self.assertIn(f"{want} scheduled fire(s)", why)
+
+    def test_an_outage_inside_a_grace_window_is_not_reported_on_time(self):
+        """THE bug in the first version of this mapping, caught before it
+        shipped by sweeping every job at every check time.
+
+        `se.lateness()` judges only the most recent fire and returns ON_TIME
+        while inside its grace window, on the documented ground that the
+        previous fire "already was" judged on the last run. True for a monitor
+        that runs often; false for this one, which runs every six hours. At
+        18:30 on a Friday with nothing since Thursday, lateness() says ON_TIME
+        because 18:00 is still inside grace — and the 13:45 and 16:00 fires
+        that genuinely failed go unrecovered. A conjunction that SUPPRESSES a
+        real recovery is the one failure this must not have, so the verdict is
+        counted over all fires since the log, not judged on the newest one.
+        """
+        import schedule_expectations as se
+        import wakeup_recovery as w
+        when = datetime(2026, 8, 28, 18, 30)
+        stale = self._at(2026, 8, 27, 20, 15)
+
+        self.assertEqual(
+            se.lateness("main.py", stale, now=when,
+                        cron_text=self.MAIN_CRON)["verdict"], se.ON_TIME,
+            "if this changes, schedule_expectations moved and the whole "
+            "reason for not using lateness() here should be re-read")
+
+        missed, why = w._missed_scheduled_fire("main.py", stale, when,
+                                               self.MAIN_CRON)
+        self.assertTrue(missed, f"a real outage went unrecovered: {why}")
+
+    def test_a_run_inside_the_grace_window_still_counts(self):
+        """A job that starts at 13:45 has not written its log by 13:45."""
+        import wakeup_recovery as w
+        missed, why = w._missed_scheduled_fire(
+            "main.py", self._at(2026, 8, 28, 13, 47),
+            datetime(2026, 8, 28, 14, 0), self.MAIN_CRON)
+        self.assertFalse(missed, f"13:45 is minutes old, not a miss: {why}")
+
+    def test_the_weekend_gap_is_not_read_as_an_outage(self):
+        """Monday 06:00 looking back at FRIDAY's last fire. Giving up on the
+        weekend is what made every Monday morning look like an outage."""
+        import wakeup_recovery as w
+        missed, why = w._missed_scheduled_fire(
+            "main.py", self._at(2026, 8, 28, 20, 15), self.MON, self.MAIN_CRON)
+        self.assertFalse(missed, f"65.5h old and entirely on schedule: {why}")
+
+    def test_every_cannot_tell_falls_back_to_the_age_limit(self):
+        """Three degraded readings, one direction: hand the decision back to
+        the age limit, i.e. behave exactly as this file did before. Resolving
+        any of them to "nothing missed" would turn a blind spot into silence.
+        """
+        import wakeup_recovery as w
+        stale = self._at(2026, 8, 27, 20, 15)
+        for label, args in (
+                ("unreadable schedule", ("main.py", stale, self.FRI, "")),
+                ("scheduled nowhere", ("nope.py", stale, self.FRI,
+                                       self.MAIN_CRON)),
+                ("no schedule passed", ("main.py", stale, self.FRI, None))):
+            missed, why = w._missed_scheduled_fire(*args)
+            self.assertTrue(missed, f"{label} must not read as 'nothing missed'")
+            self.assertIn("age limit alone", why, label)
+
+    def test_no_log_at_all_is_a_miss_only_once_something_was_due(self):
+        import wakeup_recovery as w
+        missed, why = w._missed_scheduled_fire("main.py", None, self.FRI,
+                                               self.MAIN_CRON)
+        self.assertTrue(missed, "no log at all is the clearest miss there is")
+        self.assertIn("no log at all", why)
+        # Saturday: main.py is weekdays-only, so nothing has come due since
+        # Friday 20:15 and an absent log is not evidence against it.
+        sat_early = datetime(2026, 8, 29, 1, 0)
+        self.assertFalse(
+            w._missed_scheduled_fire("main.py", self._at(2026, 8, 28, 20, 15),
+                                     sat_early, self.MAIN_CRON)[0])
+
+    def test_both_conjuncts_read_the_same_clock(self):
+        """`age` measured off time.time() while `missed` measured off `now`
+        would give one comparison two clocks ([[both-sides-of-a-comparison]]).
+        """
+        import wakeup_recovery as w
+        past = datetime(2020, 1, 2, 12, 0)
+        self.assertAlmostEqual(
+            w._age_h(datetime(2020, 1, 2, 6, 0).timestamp(), past), 6.0,
+            places=3, msg="age must be measured against the passed-in now")
+        self.assertIsNone(w._age_h(None, past))
+
+    # ── the conjunction, in run_recovery itself ──
+
+    class _Frozen(datetime):
+        _at = None
+
+        @classmethod
+        def now(cls, tz=None):
+            return cls._at
+
+    # One line per job, in the form the real crontab uses, so run_recovery's
+    # own parser is what turns these into a schedule.
+    THREE_CRON = (
+        "45 13 * * 5 cd ~/x && python3 alpha.py >> logs/alpha_$(date).log 2>&1\n"
+        "45 13 * * 5 cd ~/x && python3 beta.py >> logs/beta_$(date).log 2>&1\n"
+        "10 17 * * 5 cd ~/x && python3 gamma.py >> logs/gamma_$(date).log 2>&1\n"
+    )
+
+    def _run_at(self, when, jobs, mtimes, cron=None):
+        """Drive the real run_recovery against a synthetic clock and crontab.
+
+        Returns the scripts _run_job was asked to launch. The crontab is
+        injected as TEXT rather than as a parsed schedule so the production
+        parser stays in the loop.
+        """
+        import wakeup_recovery as w
+        launched = []
+        frozen = type("F", (self._Frozen,), {"_at": when})
+        with patch.object(w, "JOBS", jobs), \
+             patch.object(w, "datetime", frozen), \
+             patch.object(w, "_crontab_text",
+                          lambda: (cron or self.THREE_CRON, "test")), \
+             patch.object(w, "_get_uptime_minutes", lambda: 9999.0), \
+             patch.object(w, "_freshest_log_mtime",
+                          lambda p: mtimes[sorted(p)[0]]), \
+             patch.object(w, "_record_drift", lambda *a, **k: None), \
+             patch.object(w, "_send_recovery_email", lambda *a, **k: None), \
+             patch.object(w, "_run_job",
+                          lambda s, *a, **k: (launched.append(s), True)[1]):
+            w.run_recovery(force=False, dry_run=True)
+        return launched
+
+    def _three_jobs(self):
+        """One genuinely missed, one old-but-on-schedule, one missed-but-fresh.
+
+        All three in ONE pass on purpose: the missed job is what gets past the
+        early "all jobs fresh" return, so the other two exercise the guard in
+        the run loop rather than the counter above it.
+        """
+        jobs = [("alpha.py", "alpha", 7, "*", []),
+                ("beta.py",  "beta",  1, "*", []),
+                ("gamma.py", "gamma", 7, "*", [])]
+        #  alpha: 30h old, Fri 13:45 never ran            -> RUN
+        #  beta:  4.25h old (>1h limit) but Fri 13:45 ran -> skip
+        #  gamma: Fri 17:10 missed, but only 1h old       -> skip
+        mtimes = {"alpha": self._at(2026, 8, 27, 12, 0),
+                  "beta":  self._at(2026, 8, 28, 13, 45),
+                  "gamma": self._at(2026, 8, 28, 17, 0)}
+        return jobs, mtimes
+
+    def test_old_and_missed_are_both_required_to_launch(self):
+        jobs, mtimes = self._three_jobs()
+        self.assertEqual(self._run_at(self.FRI, jobs, mtimes), ["alpha.py"],
+                         "beta is over its age limit but nothing was missed; "
+                         "gamma missed a fire but its log is fresh. Only the "
+                         "job that is BOTH may be relaunched.")
+
+    def test_the_guard_can_only_withhold_never_add(self):
+        """Non-vacuity from the safe side: with the missed-fire check disabled
+        (every job reported missed, the pre-fix behaviour), beta launches too.
+
+        This is what makes the previous test meaningful, and it states the
+        property that let this ship at all — a conjunction cannot introduce a
+        launch, and every launch here runs a live pipeline."""
+        import wakeup_recovery as w
+        jobs, mtimes = self._three_jobs()
+        with patch.object(w, "_missed_scheduled_fire",
+                          lambda *a, **k: (True, "disabled")):
+            launched = self._run_at(self.FRI, jobs, mtimes)
+        self.assertEqual(launched, ["alpha.py", "beta.py"],
+                         "the age limit alone relaunches beta — the defect")
+
+    def test_a_job_the_crontab_does_not_schedule_today_is_untouched(self):
+        """The weekend guard predates this and must survive it."""
+        jobs, mtimes = self._three_jobs()
+        sat = datetime(2026, 8, 29, 18, 0)
+        self.assertEqual(self._run_at(sat, jobs, mtimes), [])
+
+    def test_a_quiet_pass_still_stops_before_the_run_loop(self):
+        """The periodic check counts stale jobs, and it must ask the same
+        question the run loop does — otherwise every check reports "N stale
+        job(s) detected — running recovery" and walks the whole plan before
+        skipping all of it. The early return is what makes the ordinary case
+        cheap AND what makes the log readable.
+
+        Observed by call count: the early-return path prices freshness once
+        per job, the run loop prices it a second time.
+        """
+        import wakeup_recovery as w
+        jobs = [("beta.py", "beta", 1, "*", []),
+                ("gamma.py", "gamma", 1, "*", [])]
+        calls = []
+
+        def _mtime(prefixes):
+            calls.append(sorted(prefixes)[0])
+            # Both over their 1h limit; both fired and ran on schedule.
+            return {"beta": self._at(2026, 8, 28, 13, 45),
+                    "gamma": self._at(2026, 8, 28, 17, 10)}[sorted(prefixes)[0]]
+
+        launched = []
+        frozen = type("F", (self._Frozen,), {"_at": self.FRI})
+        with patch.object(w, "JOBS", jobs), \
+             patch.object(w, "datetime", frozen), \
+             patch.object(w, "_crontab_text", lambda: (self.THREE_CRON, "t")), \
+             patch.object(w, "_get_uptime_minutes", lambda: 9999.0), \
+             patch.object(w, "_freshest_log_mtime", _mtime), \
+             patch.object(w, "_record_drift", lambda *a, **k: None), \
+             patch.object(w, "_send_recovery_email", lambda *a, **k: None), \
+             patch.object(w, "_run_job",
+                          lambda s, *a, **k: (launched.append(s), True)[1]):
+            w.run_recovery(force=False, dry_run=True)
+        self.assertEqual(launched, [])
+        self.assertEqual(len(calls), len(jobs),
+                         "the counter reached a different verdict than the run "
+                         f"loop and fell through to it: {calls}")
+
+    # ── why the constant cannot simply be re-priced ──
+
+    def test_the_live_table_still_needs_the_conjunction(self):
+        """main.py's 7h limit sits far below the 65.5h gap its own schedule
+        produces, so on the 00:00 and 06:00 checks the age test says "stale"
+        whatever the job did. Pinned so nobody deletes `_missed_scheduled_fire`
+        believing the thresholds carry the decision. They do not — and the
+        number is NOT fixable by raising it: 65.5h is the Friday-to-Monday gap,
+        and a 66h limit would leave a genuine Wednesday outage unrecovered for
+        two and a half days.
+        """
+        import schedule_expectations as se
+        import wakeup_recovery as w
+        cron, source = w._crontab_text()
+        if source == "unavailable" or not se.entries_for("main.py", cron):
+            self.skipTest("no crontab snapshot on this host")
+        gap = se.max_legit_gap_h("main.py", cron)
+        limit = dict((j[0], j[2]) for j in w.JOBS)["main.py"]
+        self.assertIsNotNone(gap)
+        self.assertGreater(gap, limit,
+                           "if this ever fails the schedule changed; re-derive "
+                           "before concluding the age limit became sufficient")
+
+    def test_the_real_snapshot_produces_no_spurious_relaunch(self):
+        """The whole finding, scored against the live schedule rather than a
+        fixture: at every check time on every day each job actually runs, with
+        the log exactly as fresh as the schedule says it honestly should be,
+        the answer must be "nothing missed" every single time. Measured
+        2026-08-29: 24 of 260 such points would relaunch on the age limit
+        alone, 0 on the conjunction.
+        """
+        import schedule_expectations as se
+        import wakeup_recovery as w
+        cron, source = w._crontab_text()
+        if source == "unavailable":
+            self.skipTest("no crontab snapshot on this host")
+        sched, _ = w._crontab_schedule(cron)
+        monday = datetime(2026, 8, 31)
+        flat = spurious = points = 0
+        for script, prefix, max_stale_h, dow_s, _a in w.JOBS:
+            dow, _p, _wp, _n = w._resolve_job(script, prefix, dow_s, sched)
+            for d in sorted(dow):
+                for h in (0, 6, 12, 18):          # its own `0 */6 * * *`
+                    now = monday + timedelta(days=d, hours=h)
+                    _s, fire = se.last_scheduled_fire(script, now, cron)
+                    if fire is None:
+                        continue
+                    points += 1
+                    age = (now - fire).total_seconds() / 3600.0
+                    old = age > max_stale_h
+                    flat += bool(old)
+                    missed, _w = w._missed_scheduled_fire(
+                        script, fire.timestamp(), now, cron)
+                    if old and missed:
+                        spurious += 1
+        self.assertGreater(points, 100, "the sweep found almost nothing to "
+                                        "score — check the snapshot")
+        self.assertGreater(flat, 0, "if the age limit alone no longer fires "
+                                    "here, this test has stopped proving "
+                                    "anything and the thresholds changed")
+        self.assertEqual(spurious, 0,
+                         f"{spurious} of {points} honest check points still "
+                         f"relaunch a live pipeline on stale data")
 
 
 class TestBufferedIsNotDelivered(unittest.TestCase):

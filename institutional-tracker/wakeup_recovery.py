@@ -41,6 +41,8 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import schedule_expectations as se
+
 # ─── Config ──────────────────────────────────────────────────────────────────
 
 BASE_DIR   = Path(__file__).parent
@@ -226,9 +228,19 @@ def _expand_dow(field: str):
     return days or None
 
 
-def _crontab_schedule() -> tuple:
-    """({script: {'dow': set, 'prefixes': set}}, source)."""
-    text, source = _crontab_text()
+def _crontab_schedule(text: str = None) -> tuple:
+    """({script: {'dow': set, 'prefixes': set}}, source).
+
+    Only the two facts this file needs beyond the schedule itself: which days a
+    job runs, and which log prefix the crontab writes it to. WHEN it fires is
+    NOT re-derived here — `schedule_expectations` already owns that, and a
+    second cron parser in this repo is the duplication-then-drift shape the
+    whole module exists to catch. Pass `text` to score an injected crontab.
+    """
+    if text is None:
+        text, source = _crontab_text()
+    else:
+        source = "provided"
     sched: dict = {}
     for raw in text.splitlines():
         line = raw.strip()
@@ -239,7 +251,7 @@ def _crontab_schedule() -> tuple:
         fields = line.split(None, 5)
         if len(fields) < 6:
             continue
-        _minute, _hour, dom, month, dow_f, command = fields
+        _minute_f, _hour_f, dom, month, dow_f, command = fields
         dow = _expand_dow(dow_f)
         # Cron ORs day-of-month against day-of-week when both are restricted,
         # and a month restriction makes "which weekday" meaningless for our
@@ -269,9 +281,106 @@ def _crontab_schedule() -> tuple:
     return sched, source
 
 
+def _missed_scheduled_fire(script: str, mtime_epoch, now: datetime,
+                           cron_text: str = None) -> tuple:
+    """Did a SCHEDULED run actually fail to happen? -> (missed, why)
+
+    `max_stale_hours` asks "is the log old?" — a wall-clock question about a
+    schedule that is not evenly spaced. main.py's weekday fires are 13:45,
+    16:00, 18:00 and 20:15 UTC, so the ordinary overnight gap is 17h30m and the
+    Friday-to-Monday gap is 65h30m, both far past its 7h limit. At the 06:00 UTC
+    check every single weekday the log is ~9h45m old, nothing has been missed,
+    and recovery fires anyway: measured 2026-08-28 on the VM, a full
+    "RECOVERY RUN" of main.py at 06:00:01 (02:00 ET, outside market hours, on
+    stale data) every day, and `coherence_laws.runs_match_schedule` reporting
+    observed=5 intended=4. Swept across all ten entries at their own check times
+    (00/06/12/18 UTC): 6 of 10 fire with nothing missed — premarket_check on 20
+    of 20 checks (its limit is 0h, so it is stale always), main.py on 11 of 20,
+    and four weekday jobs on the Monday checks.
+
+    This file already knew the shape. `rd_team_leader` carries the same
+    postmortem three entries up, "fixed" by raising 3h to 11h against its ~9h45m
+    gap — a better value for one row, on a schedule where no flat value is
+    correct at all. So ask the question the constant cannot: has the most recent
+    scheduled fire time passed without a run?
+
+    The answer comes from `schedule_expectations`, which already owns it and
+    whose own docstring names this bug class. Re-deriving fire times here would
+    put a second cron parser in the repo whose grace window I would have had to
+    guess; that module derives it from `catch_up.PIPELINE_TIMEOUT_S`, so the
+    window a job is allowed for its own runtime tracks the budget the runner
+    actually gives it.
+
+    The count comes from `se.missed_fires_since`, not `se.lateness`. lateness()
+    judges only the MOST RECENT fire and reports ON_TIME while inside its grace
+    window, on the documented ground that the previous fire "already was" judged
+    on the last run — true for a monitor that runs often, false for this one,
+    which runs every six hours. Checked at 18:30 on a Friday with nothing since
+    Thursday, lateness() returns ON_TIME because 18:00 is still inside grace,
+    and the 13:45 and 16:00 fires that were genuinely missed go unrecovered.
+    That would make the conjunction SUPPRESS a real recovery, which is exactly
+    the failure it must not have. Counting fires since the log was written asks
+    about all of them.
+
+    Counted runs are also the honest unit of severity: ten hours overnight costs
+    the firm nothing and ten hours across a trading afternoon costs it four
+    pipeline runs, so a message priced in hours says different things on
+    different days for no reason.
+
+    Used as a CONJUNCTION with max_stale_hours, never as a replacement. It can
+    only withhold a run recovery would otherwise have made, so it cannot
+    introduce a launch that does not happen today — and launching main.py places
+    orders. Every "cannot tell" therefore resolves to "missed", which hands the
+    decision back to the age limit alone: the pre-fix behaviour, loudly.
+    """
+    if not (cron_text or "").strip():
+        return True, ("the schedule could not be read — falling back to the "
+                      "age limit alone")
+    # A fire is only missed once its grace window has closed; inside it the job
+    # may still be running and simply not have written yet.
+    cutoff = now - timedelta(minutes=se.DEFAULT_GRACE_MIN)
+
+    if mtime_epoch is None:
+        # No log at all is not "cannot tell" — it is the strongest evidence of
+        # a miss, but only once something was actually due.
+        status, fire = se.last_scheduled_fire(script, cutoff, cron_text)
+        if status in (se.SCHEDULE_UNREADABLE, se.NOT_SCHEDULED_HERE):
+            return True, f"{_why_cannot_tell(status)} and there is no log"
+        if fire is None:
+            return False, "scheduled here, but no fire has come due yet"
+        return True, f"no log at all, and {fire:%a %H:%M} was due"
+
+    n = se.missed_fires_since(script, mtime_epoch, cutoff, cron_text)
+    if n is None:
+        return True, _why_cannot_tell(
+            se.last_scheduled_fire(script, cutoff, cron_text)[0])
+    if n == 0:
+        return False, (f"every scheduled fire through {cutoff:%a %H:%M} "
+                       f"already ran ({_age_h(mtime_epoch, now):.1f}h old)")
+    return True, (f"{n} scheduled fire(s) came due since the log was last "
+                  f"written and none of them ran")
+
+
+def _age_h(mtime_epoch, now: datetime) -> float | None:
+    """Log age in hours, measured against the SAME `now` the missed-fire check
+    uses. Reading `time.time()` here instead would give the two conjuncts two
+    different clocks for one comparison ([[both-sides-of-a-comparison]])."""
+    if mtime_epoch is None:
+        return None
+    return (now - datetime.fromtimestamp(mtime_epoch)).total_seconds() / 3600.0
+
+
+def _why_cannot_tell(status: str) -> str:
+    """The two ways the schedule cannot answer, said in words not enum names."""
+    if status == se.NOT_SCHEDULED_HERE:
+        return ("this host's crontab does not schedule it — falling back to "
+                "the age limit alone")
+    return "the schedule could not be read — falling back to the age limit alone"
+
+
 def _resolve_job(script: str, declared_prefix: str, declared_dow: str,
                  sched: dict) -> tuple:
-    """(dow, prefixes, disagreements) — crontab wins, the table is the check.
+    """(dow, prefixes, write_prefix, disagreements) — crontab wins.
 
     The declared values are not authority and not decoration: they are the
     second independent measurement. When they disagree with production, that
@@ -356,17 +465,37 @@ def _log_age_hours(log_prefix: str) -> float | None:
     return None
 
 
+def _log_mtime(log_prefix: str) -> float | None:
+    """Epoch mtime of the most recent log matching the prefix, or None."""
+    for date_str in [_today(), _yesterday()]:
+        log_path = LOGS_DIR / f"{log_prefix}_{date_str}.log"
+        if log_path.exists():
+            return log_path.stat().st_mtime
+    return None
+
+
+def _freshest_log_mtime(prefixes) -> float | None:
+    """Epoch mtime of the most recent log across every prefix this job writes.
+
+    `schedule_expectations.lateness()` compares an instant against a scheduled
+    instant, so it needs the mtime, not an age. Deriving the age from this one
+    measurement rather than reading the disk twice also means the two can never
+    disagree about which log was freshest.
+    """
+    ms = [m for m in (_log_mtime(p) for p in sorted(prefixes)) if m is not None]
+    return max(ms) if ms else None
+
+
 def _freshest_log_age(prefixes) -> float | None:
     """Age of the most recent log across every prefix this job may write.
 
-    A job proven to have run by ANY of its logs has run. Taking the minimum
-    (freshest) is what makes the real cron log count again: before this,
-    fe_pipeline's freshness came from one hand-named prefix, and if that prefix
-    was wrong the fifteen-o'clock cron run was invisible no matter how recent.
+    A job proven to have run by ANY of its logs has run. Taking the freshest is
+    what makes the real cron log count again: before this, fe_pipeline's
+    freshness came from one hand-named prefix, and if that prefix was wrong the
+    fifteen-o'clock cron run was invisible no matter how recent.
     """
-    ages = [a for a in (_log_age_hours(p) for p in sorted(prefixes))
-            if a is not None]
-    return min(ages) if ages else None
+    m = _freshest_log_mtime(prefixes)
+    return None if m is None else (time.time() - m) / 3600.0
 
 def _run_job(script: str, log_prefix: str, extra_args: list[str], dry_run: bool = False) -> bool:
     """
@@ -484,7 +613,8 @@ def run_recovery(force: bool = False, dry_run: bool = False, check_only: bool = 
     now        = datetime.now()
     today_dow  = now.weekday()
 
-    sched, sched_source = _crontab_schedule()
+    cron_text, sched_source = _crontab_text()
+    sched, _ = _crontab_schedule(cron_text)
     plan: list = []
     drift: list = []
     for script, declared_prefix, max_stale_h, declared_dow, extra_args in JOBS:
@@ -524,8 +654,12 @@ def run_recovery(force: bool = False, dry_run: bool = False, check_only: bool = 
         for script, prefixes, max_stale_h, dow, _, _wp in plan:
             if today_dow not in dow:
                 continue
-            age = _freshest_log_age(prefixes)
-            if age is None or age > max_stale_h:
+            mtime = _freshest_log_mtime(prefixes)
+            age = _age_h(mtime, now)
+            if age is not None and age <= max_stale_h:
+                continue
+            missed, _why = _missed_scheduled_fire(script, mtime, now, cron_text)
+            if missed:
                 stale_count += 1
         if stale_count == 0:
             logger.info("[Recovery] All jobs fresh — nothing to do.")
@@ -543,12 +677,34 @@ def run_recovery(force: bool = False, dry_run: bool = False, check_only: bool = 
                 logger.info(f"  {'– NOT TODAY':12s} {script:<30s} "
                             f"(scheduled {sorted(dow)}, today {today_dow})")
                 continue
-            age = _freshest_log_age(prefixes)
+            mtime = _freshest_log_mtime(prefixes)
+            age = _age_h(mtime, now)
             status = f"{age:.1f}h old" if age is not None else "NO LOG"
-            stale  = age is None or age > max_stale_h
-            flag   = "⚠ STALE" if stale else "✓ OK"
+            old = age is None or age > max_stale_h
+            missed, why = _missed_scheduled_fire(script, mtime, now, cron_text)
+            flag = "⚠ STALE" if (old and missed) else "✓ OK"
             logger.info(f"  {flag:12s} {script:<30s} (max={max_stale_h}h, "
                         f"actual={status}, logs={sorted(prefixes)})")
+            if old and not missed:
+                # The distinction the flat limit could not draw. Printed so a
+                # reader can see WHY a job that looks old is not being rerun.
+                logger.info(f"  {'':12s} {'':<30s} over the age limit but "
+                            f"nothing was missed: {why}")
+            gap = se.max_legit_gap_h(script, cron_text)
+            if gap is not None and max_stale_h <= gap:
+                # A limit at or below the largest gap the schedule itself
+                # produces is not a threshold, it is a schedule: on some honest
+                # day the age test says "stale" whatever the job did. NOT drift
+                # and not fixable by editing the number — main.py's worst gap is
+                # 65.5h only because of Friday-to-Monday, and a 66h limit would
+                # leave a genuine Wednesday outage unrecovered for 2.5 days. So
+                # it is reported to a reader here, never added to the drift
+                # list: a bucket that must be empty cannot also hold a finding
+                # nobody can close ([[an-aggregate-is-not-a-finding]]).
+                logger.info(f"  {'':12s} {'':<30s} max={max_stale_h}h is at or "
+                            f"below the {gap:.1f}h gap this schedule itself "
+                            f"produces — the age test decides nothing here, "
+                            f"the missed-fire check does")
         return
 
     # Wait for network if fresh reboot
@@ -572,14 +728,26 @@ def run_recovery(force: bool = False, dry_run: bool = False, check_only: bool = 
             continue
 
         # Check freshness
-        age = _freshest_log_age(prefixes)
+        mtime = _freshest_log_mtime(prefixes)
+        age = _age_h(mtime, now)
         if age is not None and age <= max_stale_h and not force:
             skipped.append(f"{script} ({age:.1f}h old, ok)")
             logger.info(f"[Recovery] SKIP {script} — fresh ({age:.1f}h old, limit={max_stale_h}h)")
             continue
 
+        # Old, but was anything actually MISSED? Both must say yes. `force`
+        # still overrides both, because a human asking for a rerun is not a
+        # measurement to be second-guessed.
+        missed, why = _missed_scheduled_fire(script, mtime, now, cron_text)
+        if not missed and not force:
+            skipped.append(f"{script} (over the limit, nothing missed)")
+            logger.info(f"[Recovery] SKIP {script} — past the {max_stale_h}h "
+                        f"age limit but on schedule: {why}")
+            continue
+
         age_str = f"{age:.1f}h old" if age is not None else "no log"
-        logger.info(f"[Recovery] STALE {script} ({age_str}, limit={max_stale_h}h) — running now")
+        logger.info(f"[Recovery] STALE {script} ({age_str}, limit={max_stale_h}h, "
+                    f"{why}) — running now")
 
         success = _run_job(script, write_prefix, extra_args, dry_run=dry_run)
         if success:
