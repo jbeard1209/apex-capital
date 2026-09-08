@@ -3201,7 +3201,9 @@
     "first_surfaced": "2026-09-05T12:30:02.052221",
     "deadline": "2026-09-25T12:30:02.052221",
     "upstream_first_seen": "2026-09-04T13:00:01.758152",
-    "surfaced_channel": "claude_app"
+    "surfaced_channel": "claude_app",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:b8dfe7125a395bdd)"
   },
   {
     "id": "coherence-runs_match_schedule",
@@ -3214,7 +3216,9 @@
     "upstream_first_seen": "2026-08-31T20:17:54.843835",
     "surfaced_channel": "claude_app",
     "resolved_at": "2026-09-08T12:30:01.637509",
-    "resolved_by": "every upstream row was closed by its producer (chairman_queue.resolve / compactor archive) \u2014 closed by re-observation, not by declaration, and never by absence"
+    "resolved_by": "every upstream row was closed by its producer (chairman_queue.resolve / compactor archive) \u2014 closed by re-observation, not by declaration, and never by absence",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=tx:coherence law violated runs match schedule this host apex)"
   },
   {
     "id": "apex-sys-cit-20260906-1300-gcp_disk_usage_eleva",
@@ -3226,7 +3230,9 @@
     "first_surfaced": "2026-09-07T12:30:02.029402",
     "deadline": "2026-09-27T12:30:02.029402",
     "upstream_first_seen": "2026-09-06T13:00:01.682807",
-    "surfaced_channel": "claude_app"
+    "surfaced_channel": "claude_app",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:83193a62c62b503e)"
   },
   {
     "id": "hr-retire-20260906-reinstatement_review_due-cryptoequitiesagent",
@@ -3237,7 +3243,9 @@
     "status": "awaiting_chairman",
     "first_surfaced": "2026-09-07T12:30:02.029402",
     "deadline": "2026-09-27T12:30:02.029402",
-    "surfaced_channel": "claude_app"
+    "surfaced_channel": "claude_app",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:reinstatement_review_due:cryptoequitiesagent)"
   },
   {
     "id": "kalshi-build-20260908-c9f4d8",
@@ -3249,6 +3257,25 @@
     "first_surfaced": "2026-09-08T12:30:01.577671",
     "deadline": "2026-09-28T12:30:01.577671",
     "upstream_first_seen": "2026-09-08T11:45:48.471842",
-    "surfaced_channel": "claude_app"
+    "surfaced_channel": "claude_app",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:kalshi-build-or-drop|dead|not_proven|unharvestable)"
+  },
+  {
+    "id": "chairman-directive-20260908-slow-gate-scheduling",
+    "created_at": "2026-09-08T16:40:43.514300",
+    "deadline": "2026-09-15",
+    "severity": "MEDIUM",
+    "status": "AWAITING_CHAIRMAN",
+    "surfaced_channel": "chairman_decision_queue",
+    "source": "gate-refactor 2026-09-04",
+    "title": "Wire slow_gate.py into the VM (or Mac) scheduler",
+    "why_it_matters": "The pre-push gate was split 2026-09-04 into a fast subset (wiring_audit + TestWiringContracts, ~25s) and a slow_gate.py (full 1559-test suite dual-zone, ~4.5h). The fast half now guards every push. The slow half must run on a schedule OFF the push path, on the host that runs the money (VM). Until it is, ~1500 tests are green-until-someone-runs-them, which is exactly the state that produced 'a queue that never empties' in the past.",
+    "requested_action": "Add a scheduler entry (VM crontab preferred \u2014 the host that trades the account) that runs `~/venv/bin/python3 institutional-tracker/slow_gate.py` once per weekday, and wire data/slow_gate_report.json into the freshness sentinel so a red slow gate escalates like any other production failure. Cadence is a Chairman call; nightly is the conservative default.",
+    "notes": [
+      "Fast gate proven this session: 36s wall clock vs previous ~16 min.",
+      "Split ships with a TestFastGateSplitIsTheOneWeShip guard class so the runner can't silently revert to the full-suite mode.",
+      "See [[gate-outlived-its-connection]] for the incident narrative."
+    ]
   }
 ]

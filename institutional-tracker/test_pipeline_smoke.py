@@ -31545,6 +31545,85 @@ class TestBoardRemembererReachesTheBoard(unittest.TestCase):
             "first item on positions[] must still hit the verdict.")
 
 
+class TestFastGateSplitIsTheOneWeShip(unittest.TestCase):
+    """The 2026-09-04 split: pre-push runs the wiring-contract tests only, the
+    rest run off-path via slow_gate.py.
+
+    Every part of that split needs a pin. If any single one silently regressed —
+    the hook goes back to running the full 1559-test suite, or slow_gate.py
+    disappears, or the fast subset stops running under TZ=UTC — the failure
+    mode is the same "push exits 141 while the gate said OK" this split
+    exists to prevent. The tests below assert each of them independently.
+    """
+
+    def _hook_text(self):
+        root = subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(Path(__file__).parent),
+        ).decode().strip()
+        p = Path(root) / "scripts" / "git-hooks" / "pre-push"
+        self.assertTrue(p.exists(), f"tracked hook missing: {p}")
+        return p.read_text()
+
+    def test_fast_gate_runs_TestWiringContracts_not_the_full_suite(self):
+        text = self._hook_text()
+        self.assertIn(
+            "test_pipeline_smoke.TestWiringContracts", text,
+            "The hook must invoke the wiring-contract class specifically. If it "
+            "reverts to `python3 test_pipeline_smoke.py`, the gate runs ~4.5h "
+            "and github closes the SSH connection under it (SIGPIPE, exit 141).")
+        # And NOT the whole suite — the specific regression this pin exists to
+        # catch is a diff that broadens the runner and re-introduces the timeout.
+        self.assertNotRegex(
+            text, r"python3\s+test_pipeline_smoke\.py",
+            "The hook must not invoke test_pipeline_smoke.py as a script — that "
+            "runs all 1559 tests and blows past github's SSH idle timeout.")
+
+    def test_fast_gate_still_runs_both_zones(self):
+        text = self._hook_text()
+        # Both invocations must be present — the local one, and the TZ=UTC one.
+        # Without the UTC pass, host-divergence bugs [[host_divergence_is_a_bug_class]]
+        # would ship green.
+        local_ct = text.count("python3 -m unittest -v test_pipeline_smoke.TestWiringContracts")
+        self.assertGreaterEqual(
+            local_ct, 2,
+            "Fast gate should invoke TestWiringContracts twice — once in the "
+            "local zone and once under TZ=UTC.")
+        self.assertIn(
+            "TZ=UTC PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContracts",
+            text,
+            "The second invocation must set TZ=UTC so the VM zone is measured.")
+
+    def test_slow_gate_script_exists_and_runs_the_full_suite(self):
+        # The whole reason the hook can be fast is that the SLOW gate covers
+        # the rest. If slow_gate.py disappears, or stops invoking the full
+        # smoke suite, the split has silently lost half its coverage.
+        p = Path(__file__).parent / "slow_gate.py"
+        self.assertTrue(p.exists(), "slow_gate.py must exist alongside the fast pre-push gate.")
+        src = p.read_text()
+        # The slow gate must actually invoke the full suite (not just the fast
+        # subset — that would make it redundant).
+        self.assertIn(
+            "test_pipeline_smoke.py", src,
+            "slow_gate.py must invoke the full test_pipeline_smoke.py suite; "
+            "otherwise the fast/slow split loses coverage.")
+        self.assertIn(
+            'TZ', src,
+            "slow_gate.py must still measure the TZ=UTC zone — the split is "
+            "about pushing the runtime off the SSH pipe, not dropping the "
+            "host-divergence check.")
+
+    def test_slow_gate_reports_to_a_stable_path(self):
+        # The Chairman queue and the freshness sentinel both key off the slow
+        # gate report path. Renaming it silently would make a red slow gate
+        # invisible.
+        src = (Path(__file__).parent / "slow_gate.py").read_text()
+        self.assertIn(
+            'slow_gate_report.json', src,
+            "slow_gate.py must write to data/slow_gate_report.json — that is "
+            "the path the Chairman queue and the report readers consult.")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

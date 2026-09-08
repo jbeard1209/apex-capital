@@ -1,11 +1,30 @@
 #!/bin/bash
 # =============================================================================
-# Apex Capital — pre-push gate.
+# Apex Capital — pre-push gate (FAST subset).
 #
-# Blocks a push if the wiring audit or the contract tests fail. Catches the
-# silent producer/consumer bug class (a producer emits a rule/pod/category name
-# no consumer handles, .get()/try-except swallows it, output is produced but
-# never acted on) before it reaches prod, where the VM runs it 6x a day.
+# Blocks a push if the wiring audit or the WIRING-CONTRACT tests fail. Catches
+# the silent producer/consumer bug class (a producer emits a rule/pod/category
+# name no consumer handles, .get()/try-except swallows it, output is produced
+# but never acted on) before it reaches prod, where the VM runs it 6x a day.
+#
+# 2026-09-04 SPLIT: the FULL smoke suite (1559 tests, ~2h 14min per zone) used
+# to run here. That is longer than github's SSH idle timeout, which meant every
+# push under the "old" gate exited 141 (SIGPIPE — connection died while the
+# gate was still running). The gate would say "OK" and the push would still
+# fail. Under `--no-verify` the fix could not even land through its own gate.
+# See [[gate-outlived-its-connection]].
+#
+# The fast gate here runs the tests that DIRECTLY guard "block-push" contracts:
+#   * wiring_audit.py — statically enforces producer/consumer name matches.
+#   * TestWiringContracts (56 tests) — the specific bug class this hook exists
+#     to catch. Ran under both the local zone and TZ=UTC (VM zone) to keep the
+#     host-divergence guard from memory [[host_divergence_is_a_bug_class]].
+#
+# The rest of the suite (~1500 tests) runs OFF the push path via
+# `institutional-tracker/slow_gate.py`, scheduled by the host that runs main.py
+# (VM cron / Mac launchd) and reporting to `data/slow_gate_report.json`. The
+# Chairman decision queue tracks its status; a red slow-gate escalates the same
+# way any other production failure does.
 #
 # Install (.git/hooks is not cloned, so every checkout must do this once):
 #   cp scripts/git-hooks/pre-push .git/hooks/pre-push && chmod +x .git/hooks/pre-push
@@ -74,7 +93,7 @@ if [ -f "$TRACKED_HOOK" ]; then
     fi
 fi
 
-echo "[pre-push] wiring audit + smoke tests..."
+echo "[pre-push] fast gate: wiring audit + TestWiringContracts (local + TZ=UTC)..."
 
 python3 wiring_audit.py --quiet || {
     echo "[pre-push] BLOCKED: wiring contract violation. Run: python3 wiring_audit.py"
@@ -113,11 +132,14 @@ _report_smoke_failure() {
     echo "  ── full log: $f (kept deliberately) ───────────────────────────"
 }
 
-# PYTHONUNBUFFERED so stdout and stderr interleave in the order they happened
-# instead of the whole suite's stdout landing in one block at the end.
+# Fast gate: TestWiringContracts only. This is the specific class that pins the
+# producer/consumer name-match contracts the hook exists to protect. Every
+# other test class in test_pipeline_smoke.py runs off the push path via
+# slow_gate.py.
 SMOKE_OUT="$(mktemp)"
-PYTHONUNBUFFERED=1 python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
-    echo "[pre-push] BLOCKED: smoke tests failed:"
+PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContracts \
+    > "$SMOKE_OUT" 2>&1 || {
+    echo "[pre-push] BLOCKED: wiring-contract tests failed:"
     _report_smoke_failure "$SMOKE_OUT"
     exit 1
 }
@@ -128,12 +150,14 @@ PYTHONUNBUFFERED=1 python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
 # (00:00-04:00 ET) — found 2026-08-02, green locally the whole time.
 # "Green on the Mac is not green" (memory host_divergence_is_a_bug_class);
 # the gate should measure the host that actually runs the money.
-TZ=UTC PYTHONUNBUFFERED=1 python3 test_pipeline_smoke.py > "$SMOKE_OUT" 2>&1 || {
-    echo "[pre-push] BLOCKED: smoke tests pass locally but FAIL under TZ=UTC,"
+TZ=UTC PYTHONUNBUFFERED=1 python3 -m unittest -v test_pipeline_smoke.TestWiringContracts \
+    > "$SMOKE_OUT" 2>&1 || {
+    echo "[pre-push] BLOCKED: wiring-contract tests pass locally but FAIL under TZ=UTC,"
     echo "[pre-push] which is the zone the GCP VM runs in. This would ship red."
     _report_smoke_failure "$SMOKE_OUT"
     exit 1
 }
 rm -f "$SMOKE_OUT"
 
-echo "[pre-push] OK (local zone + TZ=UTC)"
+echo "[pre-push] OK (fast gate, local + TZ=UTC)."
+echo "[pre-push] Slow gate (full suite, ~4.5h) runs off-path via slow_gate.py — see data/slow_gate_report.json."
