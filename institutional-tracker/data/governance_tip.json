@@ -2,5 +2,6 @@
   "concern": "Independent risk assessment (anonymous): 10 serious concern(s) at severity 10/10. Board verdict: ELEVATED RISK \u2014 IRM Board recommends Chairman review flagged items closely.. Top concern: REGIME MISALIGNMENT: Portfolio is 87% deployed in equities. For BEAR regime, Dalio/Klarman frameworks suggest optimal equity allocation is 20\u201345%. Currently 42pp overextended. Recommended action: raise cash buffer to at least 55%.",
   "trigger_emergency": true,
   "written_at": "2026-08-27T10:51:41.685766",
-  "read": false
+  "read": true,
+  "consumed_at": "2026-09-07T09:33:35.911876"
 }

@@ -36,5 +36,24 @@
     "close_cash_usd": null,
     "pnl_usd": null,
     "verdict_reason": null
+  },
+  {
+    "id": "hedge-outcome-SH-20260904T1809",
+    "ts_open": "2026-09-04T18:09:20.345394+00:00",
+    "symbol": "SH",
+    "side": "buy",
+    "qty": 100.0,
+    "price": 32.38,
+    "pre_net_beta": 0.3,
+    "pre_cash_usd": null,
+    "pre_equity_usd": null,
+    "reason": "net beta 0.64 -> 0.59",
+    "status": "OPEN",
+    "ts_close": null,
+    "close_price": null,
+    "close_net_beta": null,
+    "close_cash_usd": null,
+    "pnl_usd": null,
+    "verdict_reason": null
   }
 ]

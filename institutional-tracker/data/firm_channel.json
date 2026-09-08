@@ -1,1101 +1,5 @@
 [
   {
-    "ts": "2026-08-27T14:13:48.783704",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T14:13:48.791507",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T14:13:50.499774",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T10:20:37.384256",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:20:37.389844",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:20:37.394923",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:20:39.086750",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T10:31:15.501164",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:31:15.507763",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:31:15.513612",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T10:31:17.789605",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T14:37:50.838655",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T14:37:50.846624",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T14:37:50.852257",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T14:37:52.798389",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T11:04:51.991911",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:04:51.998166",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:04:52.003457",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:04:53.919748",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T11:11:25.445951",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:11:25.453807",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:11:25.459676",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:11:27.686180",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T11:20:27.466279",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:20:27.472285",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:20:27.478101",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:20:30.845645",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T15:29:06.360161",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T15:29:06.367233",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T15:29:06.376614",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T15:29:08.887039",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T11:45:49.300085",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:45:49.305975",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:45:49.312686",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:45:51.091136",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T11:52:27.143856",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:52:27.149414",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:52:27.154631",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T11:52:29.066174",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T12:01:50.157574",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:01:50.163638",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:01:50.168791",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:01:52.122463",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T12:08:30.305579",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "MORNING session complete: 16 board proposal(s), 445 quick win(s), 2 ThinkTank idea(s). Total new findings: 728.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.377199",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.404689",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.423113",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.435732",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.462992",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in disk_janitor.py:31: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.482862",
-    "date": "2026-08-27",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 324h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T12:08:30.491555",
-    "date": "2026-08-27",
-    "agent": "CIT ThinkTank",
-    "category": "IMPROVEMENT",
-    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T12:08:31.264039",
-    "date": "2026-08-27",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T12:11:50.207616",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:11:50.213827",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:11:50.220437",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:11:52.296586",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T16:18:24.476097",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:18:24.481617",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:18:24.487293",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:18:26.267313",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T16:26:03.964733",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:26:03.974540",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:26:03.982241",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:26:06.754201",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T12:35:12.121177",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:35:12.133307",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:35:12.139202",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T12:35:14.576549",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T16:45:06.576490",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:45:06.582820",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:45:06.588583",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T16:45:09.146150",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T22:02:09.838218",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:02:09.929696",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:02:09.938620",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:03:28.984450",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T22:37:37.393509",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:37:37.399251",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:37:37.404647",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:37:39.276412",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-28T02:44:24.190289",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:44:24.197347",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:44:24.203993",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:44:26.385222",
-    "date": "2026-08-28",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T22:44:43.256476",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "EVENING session complete: 14 board proposal(s), 447 quick win(s), 0 ThinkTank idea(s). Total new findings: 773.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T22:44:43.263260",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:44:43.269456",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:44:43.274923",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:44:43.280482",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:44:43.285999",
-    "date": "2026-08-27",
-    "agent": "CIT Director",
-    "category": "PROPOSAL",
-    "content": "[MEDIUM] Silent exception in disk_janitor.py:31: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T22:44:43.537832",
-    "date": "2026-08-27",
-    "agent": "Deputy Board",
-    "category": "PIPELINE_ALERT",
-    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-    "priority": "HIGH"
-  },
-  {
-    "ts": "2026-08-27T23:09:35.970763",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T23:09:35.984735",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T23:09:35.990833",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T23:09:38.509231",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-27T23:19:52.417131",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T23:19:52.423343",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T23:19:52.428997",
-    "date": "2026-08-27",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-27T23:19:54.468195",
-    "date": "2026-08-27",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-28T03:26:34.690124",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T03:26:34.697477",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T03:26:34.704034",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T03:26:36.808705",
-    "date": "2026-08-28",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-28T02:25:06.165102",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:42:59.321614",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:42:59.392894",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:45:32.353528",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: auto-fixed 7: risk_bulletin.json, canary_state.json, hr_report.json, logic_team_findings.json, fi_pipeline_report.json, etf_research_brief.json, missed_winners_report.json; newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:32.660476",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:32.884015",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:32.933322",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:33.415271",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:33.460150",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:36.892854",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:45:36.944656",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:45:36.977125",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:45:38.360817",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:45:38.392087",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T02:45:43.391511",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:43.512688",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:43.553362",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still ), pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:43.893473",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin), pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:43.935046",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T02:45:44.289018",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-    "priority": "URGENT"
-  },
-  {
-    "ts": "2026-08-28T11:01:27.208003",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:01:27.216613",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:01:35.559279",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:01:35.564575",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:01:35.574083",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:01:37.847950",
-    "date": "2026-08-28",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-28T11:06:12.256192",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:06:12.263670",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:06:20.921850",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:06:20.927351",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:06:20.932423",
-    "date": "2026-08-28",
-    "agent": "International Analyst (IMI)",
-    "category": "INTL_MARKETS",
-    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T11:06:23.061619",
-    "date": "2026-08-28",
-    "agent": "Foreign Order Detector",
-    "category": "SECURITY",
-    "priority": "HIGH",
-    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-  },
-  {
-    "ts": "2026-08-28T15:08:42.150422",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-    "priority": "NORMAL"
-  },
-  {
-    "ts": "2026-08-28T15:08:42.158280",
-    "date": "2026-08-28",
-    "agent": "Freshness Sentinel",
-    "category": "OPS_ALERT",
-    "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-    "priority": "NORMAL"
-  },
-  {
     "ts": "2026-08-28T15:08:50.678351",
     "date": "2026-08-28",
     "agent": "International Analyst (IMI)",
@@ -4002,6 +2906,1102 @@
     "agent": "International Analyst (IMI)",
     "category": "INTL_MARKETS",
     "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T11:37:05.431143",
+    "date": "2026-09-04",
+    "agent": "Foreign Order Detector",
+    "category": "SECURITY",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
+  },
+  {
+    "ts": "2026-09-04T18:17:44.619444",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: auto-fixed 1: morning_briefing.json; newly stale: morning_briefing.json (171h old (budget 30h)), research_team_report.json (202h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:17:44.763976",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (171h old (budget 30h)), research_team_report.json (202h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:17:44.836486",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (171h old (budget 30h)), research_team_report.json (202h old (budget 100h)), _probe_queue.json (500h old (budget 10h) \u2014 still )",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:17:45.303027",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (171h old (budget 30h)), research_team_report.json (202h old (budget 100h)), _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:17:45.801652",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (171h old (budget 30h)), research_team_report.json (202h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:17:46.533244",
+    "date": "2026-09-04",
+    "agent": "Freshness Sentinel",
+    "category": "OPS_ALERT",
+    "content": "\ud83d\udd50 FRESHNESS: newly stale: morning_briefing.json (171h old (budget 30h)), research_team_report.json (202h old (budget 100h))",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:26:14.059960",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:26:14.096713",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:26:14.129347",
+    "date": "2026-09-04",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T18:29:07.526723",
+    "date": "2026-09-04",
+    "agent": "Foreign Order Detector",
+    "category": "SECURITY",
+    "priority": "HIGH",
+    "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
+  },
+  {
+    "ts": "2026-09-04T20:55:59.641859",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 16 board proposal(s), 484 quick win(s), 2 ThinkTank idea(s). Total new findings: 1125.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.649728",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.655865",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.661092",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.666599",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.671850",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.678681",
+    "date": "2026-09-04",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 525h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-04T20:55:59.683920",
+    "date": "2026-09-04",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-04T20:56:00.198881",
+    "date": "2026-09-04",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.360780",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 585.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.367411",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.372487",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.377647",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.382871",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.388524",
+    "date": "2026-09-04",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-04T20:58:52.768188",
+    "date": "2026-09-04",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.584885",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 588.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.589851",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.594725",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.599610",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.604488",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.609461",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T06:13:22.830011",
+    "date": "2026-09-05",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.610857",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 595.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.615878",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.620779",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.625631",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.630499",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.635348",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T12:07:25.697278",
+    "date": "2026-09-05",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.088483",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PIPELINE_ALERT",
+    "content": "Stale issue reminder: 1 issue(s) unresolved >48h. Top: [ISS-6511] Backlog curated: 214 stale/duplicate ite",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.122221",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 609.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.127109",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.131950",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.136822",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.141666",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.146485",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T18:23:26.212037",
+    "date": "2026-09-05",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.466175",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 568.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.471665",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.476583",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.481525",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.486434",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.491314",
+    "date": "2026-09-05",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-05T21:20:19.559877",
+    "date": "2026-09-05",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T06:07:57.964114",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 562.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-06T06:07:57.969587",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T06:07:57.974469",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T06:07:57.979358",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T06:07:57.984157",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T06:07:57.988913",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T06:07:58.058920",
+    "date": "2026-09-06",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.263032",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.268427",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.273285",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.278195",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.283053",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.287893",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T12:24:39.360112",
+    "date": "2026-09-06",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.478249",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.483400",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.488278",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.493163",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.497980",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.502802",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T18:14:34.580595",
+    "date": "2026-09-06",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.417274",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.422240",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.427101",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.431980",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.436849",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.441732",
+    "date": "2026-09-06",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-06T21:11:36.520236",
+    "date": "2026-09-06",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.269209",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 549.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.275462",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.280368",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.285246",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.290180",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.295085",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T06:17:49.374618",
+    "date": "2026-09-07",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T09:33:35.780303",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T09:58:26.636368",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T10:21:48.185156",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T10:46:15.333379",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T11:10:36.490891",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T11:34:13.881125",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T11:59:04.403111",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T12:03:48.108062",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "TASK_REQUEST",
+    "content": "TASK REQUEST \u2192 Manager Agent: Risk finding: Filed missing canary alert: Canary ORANGE alert \u2014 unfiled in issue tracker.  [Ref: ISS-4099]",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.435200",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 17 board proposal(s), 484 quick win(s), 2 ThinkTank idea(s). Total new findings: 538.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.440111",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.444970",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.449876",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.454825",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.459765",
+    "date": "2026-09-07",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.464629",
+    "date": "2026-09-07",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 588h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.469522",
+    "date": "2026-09-07",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-07T12:03:55.563312",
+    "date": "2026-09-07",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-07T12:24:07.843096",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T12:48:00.723417",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T13:12:23.261294",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T13:35:53.701935",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T14:00:43.343823",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T14:24:58.281531",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T14:49:11.888914",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T15:13:06.875761",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-07T15:37:04.178852",
+    "date": "2026-09-07",
+    "agent": "Canary Agent",
+    "category": "MARKET_NOTE",
+    "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
+    "priority": "URGENT"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.684886",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "EVENING session complete: 17 board proposal(s), 484 quick win(s), 2 ThinkTank idea(s). Total new findings: 1072.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.691728",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.697458",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.703189",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.708980",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.714750",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.720515",
+    "date": "2026-09-08",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Replace fixed R&D cadence with event-triggered research cycles: R&D last ran 609h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after ea",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.726330",
+    "date": "2026-09-08",
+    "agent": "CIT ThinkTank",
+    "category": "IMPROVEMENT",
+    "content": "VISION PROPOSAL \u2014 Pre-trade devil's advocate: adversarial challenge before high-conviction buys: The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T16:09:08.839231",
+    "date": "2026-09-08",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.519792",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "MORNING session complete: 15 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 536.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.527024",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.533926",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.540774",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.547667",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.554495",
+    "date": "2026-09-08",
+    "agent": "CIT Director",
+    "category": "PROPOSAL",
+    "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:40.683427",
+    "date": "2026-09-08",
+    "agent": "Deputy Board",
+    "category": "PIPELINE_ALERT",
+    "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 2 need clarification from CIT Director out of 2 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T17:00:46.289283",
+    "date": "2026-09-08",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "Global session [after_hours] | Sentiment: NEUTRAL (+0) | Notable: no major moves. Watch: none flagged.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:46.294662",
+    "date": "2026-09-08",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "International session shows no outsized moves. US open likely to be driven by domestic catalysts.",
+    "priority": "NORMAL"
+  },
+  {
+    "ts": "2026-09-08T17:00:46.620913",
+    "date": "2026-09-08",
+    "agent": "R&D Team Leader",
+    "category": "SECTOR_OBS",
+    "content": "Research cycle complete: 17 picks across 0 sectors (16 high-conviction 4\u2605+). Top sectors: . Top picks: NOW, MSFT, LLY, JPM, BLK.",
+    "priority": "HIGH"
+  },
+  {
+    "ts": "2026-09-08T17:00:46.626428",
+    "date": "2026-09-08",
+    "agent": "International Analyst (IMI)",
+    "category": "INTL_MARKETS",
+    "content": "[IMI Desk cycle report] Global sentiment: NEUTRAL (+0) | no major moves. Key implication: International session shows no outsized moves. US open likely to be driven by domestic catalysts.",
     "priority": "NORMAL"
   }
 ]

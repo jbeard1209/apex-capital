@@ -1,5 +1,5 @@
 {
- "checked_at": "2026-09-03T18:26:56.889985",
+ "checked_at": "2026-09-08T16:09:12.017556",
  "falsifiability": [
   {
    "control": "nested_probabilities_are_monotone",

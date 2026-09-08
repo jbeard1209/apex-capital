@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-09-04T15:23:36.398448+00:00",
+  "checked_at": "2026-09-08T23:31:15.737405+00:00",
   "power": "UNKNOWN",
   "gcp_status": null,
-  "writer": "PASS",
-  "detail": "gcloud timed out after 60s (network? auth prompt?)",
-  "writer_msg": "designated writer 'apexcapitalc' last traded 1.7h ago"
+  "writer": "UNKNOWN",
+  "detail": "gcloud has no credentials on this host. Run: gcloud auth login",
+  "writer_msg": "could not read the broker: URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>"
 }

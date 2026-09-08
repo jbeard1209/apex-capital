@@ -11,8 +11,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:19:06.895100+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "info-20260727-oracle-terminated",
@@ -26,8 +26,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "watch-20260727-data-integrity",
@@ -41,8 +41,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:19:06.895100+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "pip-integrity-20260630-20-email_loop_detection",
@@ -58,8 +58,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:19:06.895100+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "pip-integrity-20260702-00-deadmans_switch_sani",
@@ -75,8 +75,8 @@
     "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260701000009",
@@ -92,8 +92,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 65,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 65d (raised 2026-07-01). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 69,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 69d (raised 2026-07-01). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260701000009-436df4",
@@ -109,8 +109,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 65,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 65d (raised 2026-07-01). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 69,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 69d (raised 2026-07-01). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "AUD-20260702094001",
@@ -124,8 +124,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:19:06.895100+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260702014906-FE-349e0a",
@@ -141,8 +141,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 64,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 64d (raised 2026-07-02). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 68,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 68d (raised 2026-07-02). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260702120033",
@@ -158,8 +158,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 64,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 64d (raised 2026-07-02). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 68,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 68d (raised 2026-07-02). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260702120033-7461cf",
@@ -175,8 +175,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 64,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 64d (raised 2026-07-02). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 68,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 68d (raised 2026-07-02). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "INVEST-2026-0703-ml-parquet",
@@ -195,8 +195,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "INVEST-2026-0703-lt-noon-miss",
@@ -214,8 +214,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "INVEST-BUG-2026-0703-pyarrow",
@@ -235,8 +235,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 62,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 62d (raised 2026-07-04). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 66,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 66d (raised 2026-07-04). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "INVEST-BUG-2026-0703-lt-cron",
@@ -256,8 +256,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 62,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 62d (raised 2026-07-04). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 66,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 66d (raised 2026-07-04). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LT-125400-cro_extended_no_review",
@@ -275,8 +275,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 50,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 50d (raised 2026-07-16). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 54,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 54d (raised 2026-07-16). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LT-160139-cro_paralysis",
@@ -294,8 +294,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 51,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 51d (raised 2026-07-15). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 55,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 55d (raised 2026-07-15). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260715115334",
@@ -313,8 +313,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 50,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 50d (raised 2026-07-16). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 54,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 54d (raised 2026-07-16). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260714133149",
@@ -330,8 +330,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 51,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 51d (raised 2026-07-15). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 55,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 55d (raised 2026-07-15). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260714133205",
@@ -347,8 +347,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 51,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 51d (raised 2026-07-15). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 55,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 55d (raised 2026-07-15). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260723112501-FI",
@@ -362,8 +362,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260723112501-FE",
@@ -377,8 +377,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260723112501-ETF",
@@ -392,8 +392,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "FOD-20260723112502",
@@ -407,8 +407,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260723112501-FI-e5ea31",
@@ -424,8 +424,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260723112501-FE-e5ea31",
@@ -441,8 +441,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "PHM-20260723112501-ETF-e5ea31",
@@ -458,8 +458,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LT-175022-cro_extended_no_review",
@@ -517,8 +517,8 @@
     "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LT-175022-cro_paralysis",
@@ -575,8 +575,8 @@
     "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260723113542",
@@ -592,8 +592,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LO-20260724175022-extended_cro_high_no_review",
@@ -651,8 +651,8 @@
     "times_seen_lost": "original value had 71 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 43,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 43d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 47,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 47d (raised 2026-07-23). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260730-2145-email_buffer_overflo",
@@ -670,8 +670,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T10:17:14.944251+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260730-2145-email_loop_detected_",
@@ -690,7 +690,11 @@
     "merged_titles": [
       "'Email loop detected -- 5 subject(s) appear 3+ times in buffer: \"[cro report] apex capital \u2014 risk:low | manager gra\" x8; \"apex capital \u2014 r&d team briefing | jul 30, 2026\" x5; \"apex cap' has been OPEN ",
       "''Email loop detected -- 5 subject(s) appear 3+ times in buffer: \"[cro report] apex capital \u2014 risk:low | manager gra\" x8; \"apex capital \u2014 r&d team briefing | jul 30, 2026\" x5; \"apex cap' has been OPEN"
-    ]
+    ],
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T08:55:01.823669+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-07-29; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260730-1720-edgar_cache_director",
@@ -705,8 +709,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260730-1720-deep_research_librar",
@@ -755,8 +759,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260730134552",
@@ -776,8 +780,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260730101004-74e9bc",
@@ -794,8 +798,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260730134552-d9ebd5",
@@ -815,8 +819,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fund-sanity-FICO",
@@ -833,8 +837,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fund-sanity-MSCI",
@@ -851,8 +855,8 @@
     "times_seen_lost": "original value had 70 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fund-sanity-SBAC",
@@ -869,8 +873,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:19:06.895100+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 35d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "STRAT-2026-0730-kr-tech-short",
@@ -887,8 +891,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 35d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ARCH-2026-0730-orphan-agents",
@@ -905,8 +909,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 35d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260730103213",
@@ -923,8 +927,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:19:06.895100+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 35d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LO-20260730125005-zero_picks_anomaly",
@@ -941,8 +945,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 35d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "RDEVT-20260730174325-INDEX_GAP",
@@ -959,8 +963,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 35d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260731-1058-long_term_model_file",
@@ -976,8 +980,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260731-1058-long_term_ml_output_",
@@ -993,8 +997,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260731-1421-cron_job_stale_on_we",
@@ -1172,7 +1176,7 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:54d4549d6593879a)",
     "times_seen_lost": "original value had 68 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "merged_ids": [
-      "apex-sys-cit-20260903-1300-cron_job_stale_on_we"
+      "apex-sys-cit-20260908-1300-cron_job_stale_on_we"
     ]
   },
   {
@@ -1189,8 +1193,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260731-1421-email_loop_detected_",
@@ -1206,8 +1210,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LT-151009-wiring_contract_violation",
@@ -1224,8 +1228,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 34d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260731151009",
@@ -1242,8 +1246,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T06:55:02.062476+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 34d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 39d (raised 2026-07-31). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260730-2132-outcome_365d_labels_",
@@ -1258,8 +1262,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T00:55:01.695282+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 35d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 40,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 40d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260730-2132-long_term_ml_output_",
@@ -1274,8 +1278,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T00:55:01.695282+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 35d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 40,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 40d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260730-2132-long_term_model_due_",
@@ -1290,8 +1294,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T00:55:01.695282+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 35d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 40,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 40d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260730-2132-long_term_model_pred",
@@ -1306,8 +1310,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T00:55:01.695282+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 35d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 40,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 40d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "ml-lt-cit-20260730-2132-consider_whether_sec",
@@ -1322,8 +1326,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T00:55:01.695282+00:00",
-    "stale_days": 35,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 35d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 40,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 40d (first observed 2026-07-30; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260730-2145-gcp_disk_usage_eleva",
@@ -1516,8 +1520,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fund-sanity-TDG",
@@ -1534,8 +1538,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fund-sanity-WING",
@@ -1552,8 +1556,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260731160120",
@@ -1570,8 +1574,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-19T08:18:44.386461+00:00",
-    "stale_days": 36,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 41,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 41d (first observed 2026-07-29; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260731-1840-email_buffer_overflo",
@@ -1587,8 +1591,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T20:55:01.608260+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 39d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260731-1840-email_loop_detected_",
@@ -1604,8 +1608,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T20:55:01.608260+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 39d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260731-1840-edgar_cache_partiall",
@@ -1621,8 +1625,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-28T04:55:01.760283+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 35,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 35d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fi-cit-20260731-1855-imp-duration",
@@ -1638,8 +1642,8 @@
     "times_seen_lost": "original value had 69 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-20T22:55:01.229441+00:00",
-    "stale_days": 34,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 34d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 39,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 39d (first observed 2026-07-31; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260801-1300-gcp_disk_usage_eleva",
@@ -1694,8 +1698,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-AGENT_ISOLATED",
@@ -1716,8 +1720,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-AGENT_OUTPUT_NEVER_PRODUCED",
@@ -1738,8 +1742,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-AGENT_OUTPUT_UNCONSUMED",
@@ -1760,8 +1764,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-AGENT_UNREVIEWED",
@@ -1782,8 +1786,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-AGENT_UNSCHEDULED",
@@ -1804,8 +1808,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-AGENT_WRITES_ON_IMPORT",
@@ -1826,8 +1830,8 @@
     "times_seen_lost": "original value had 48 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-21T22:55:01.980902+00:00",
-    "stale_days": 33,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 33d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 38,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 38d (first observed 2026-08-01; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260803-1300-cron_job_stale_on_we",
@@ -1860,8 +1864,8 @@
     "times_seen_lost": "original value had 8 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-23T14:55:01.646967+00:00",
-    "stale_days": 32,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 32d (first observed 2026-08-03; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 36,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 36d (first observed 2026-08-03; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "COUNCIL-HR-etf_picks-20260803120001",
@@ -1878,8 +1882,8 @@
     "times_seen_lost": "original value had 8 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-23T14:55:01.646967+00:00",
-    "stale_days": 32,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 32d (raised 2026-08-03). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 36,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 36d (raised 2026-08-03). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "RDEVT-20260803135504-OIL_SHOCK",
@@ -1896,8 +1900,8 @@
     "times_seen_lost": "original value had 6 digits (non-idempotent sum() merge, fixed 2026-08-06); true count unrecoverable, floored to 1",
     "sla_breached": true,
     "sla_breached_at": "2026-08-23T14:55:01.646967+00:00",
-    "stale_days": 32,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 32d (raised 2026-08-03). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 36,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 36d (raised 2026-08-03). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260804-1300-cron_job_stale_on_we",
@@ -1936,8 +1940,8 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:agent zero-pick streaks: # exonerated, # genuine concern )",
     "sla_breached": true,
     "sla_breached_at": "2026-08-25T14:55:02.064794+00:00",
-    "stale_days": 30,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 30d (raised 2026-08-05). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 34,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 34d (raised 2026-08-05). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "investigator-20260811-catchup_window_gap",
@@ -1951,8 +1955,8 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:main_pipeline_catchup_window_gap)",
     "sla_breached": true,
     "sla_breached_at": "2026-09-03T18:55:01.953964+00:00",
-    "stale_days": 20,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-14; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 25,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 25d (first observed 2026-08-14; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "investigator-20260811-apex_system_cit_host_guard",
@@ -1966,8 +1970,8 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:apex_system_cit_agent_host_guard_gap)",
     "sla_breached": true,
     "sla_breached_at": "2026-09-03T18:55:01.953964+00:00",
-    "stale_days": 20,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-14; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 25,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 25d (first observed 2026-08-14; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "LTIA-20260811182620",
@@ -1983,8 +1987,8 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:ml_auc_mediocre)",
     "sla_breached": true,
     "sla_breached_at": "2026-09-03T12:55:01.325049+00:00",
-    "stale_days": 21,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 21d (raised 2026-08-14). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 25,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open 25d (raised 2026-08-14). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260805-1300-cron_job_stale_on_we",
@@ -2009,15 +2013,15 @@
     "description": "[ENTRY_WINDOW] The DO-NOT-SHORT verdict on the Korea/AI-hardware thesis (STRAT-2026-0730-kr-tech-short) has a flip condition firing. The rally-back-toward-the-50MA entry the 2026-07-30 verdict named has appeared \u2014 recovered out of the squeeze zone: QCOM (0th -> 25th pctile). KR-stress signal is NONE. Re-examine the thesis; this is an alert, not a trade \u2014 the short book still requires the live KR-stress gate.",
     "status": "awaiting_chairman",
     "ts": "2026-08-14T20:20:11.728652+00:00",
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:entry window the do not short verdict on the korea ai har)",
-    "merged_ids": [
-      "kr-short-entry-2026-09"
-    ],
     "sla_breached": true,
     "sla_breached_at": "2026-09-03T22:55:01.590807+00:00",
-    "stale_days": 20,
-    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-14; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
+    "stale_days": 25,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 25d (first observed 2026-08-14; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close.",
+    "times_seen": 1,
+    "merge_note": "3 action record(s) folded by chairman_queue_sync (key=tx:entry window the do not short verdict on the korea ai har)",
+    "merged_ids": [
+      "kr-short-entry-2026-09"
+    ]
   },
   {
     "id": "sweep-sweep_did_not_run-sweep_governance",
@@ -2028,6 +2032,10 @@
     "source": "sweep_governance",
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run-sweep_governance)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-06T14:55:01.796545+00:00",
+    "stale_days": 22,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 22d (first observed 2026-08-17; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close.",
     "status": null
   },
   {
@@ -2052,7 +2060,11 @@
     "status": "awaiting_chairman",
     "dedup_key": "sha1:97dd52c19577f7c0",
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:97dd52c19577f7c0)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:97dd52c19577f7c0)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-06T14:55:01.796545+00:00",
+    "stale_days": 22,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 22d (first observed 2026-08-17; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "fi-cit-20260817-1330-degraded_credit_read",
@@ -2064,7 +2076,11 @@
     "status": "awaiting_chairman",
     "dedup_key": "fi_cit:DEGRADED_CREDIT_READ",
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:degraded_credit_read)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:fi_cit:degraded_credit_read)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-06T14:55:01.796545+00:00",
+    "stale_days": 22,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 22d (first observed 2026-08-17; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "SWEEP-SWEEP_DID_NOT_RUN",
@@ -2077,7 +2093,11 @@
     "times_approved": 2,
     "queued_at": "2026-08-17T13:30:07.119388",
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-06T14:55:01.796545+00:00",
+    "stale_days": 22,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 22d (first observed 2026-08-17; the row in the queue was raised later, so this problem recurred and this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "sla-escalation-pip-integrity-20260630-20-email_loop_detection",
@@ -2163,6 +2183,10 @@
     "description": "Pick-gate trial verdict: UNMEASURABLE. The control arm has decayed to 3 of the original 15 incumbents \u2014 below the 5-name floor. Incumbent membership was frozen at the trial's start and only ever shrinks, so waiting longer cannot restore it. The cap needs a judgement call, not another window. Scoreboard \u2014 trial +0.69% (n=18), incumbents +0.34% (n=3 of 15 still held), SPY +3.84%. Decide whether MAX_OPEN_POSITIONS stays at 20 or returns to 15. The trial cannot answer it. Trial closed \u2014 no further reviews will run.",
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:pick gate trial verdict unmeasurable the control arm has )",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T08:55:01.823669+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-19; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close.",
     "status": null
   },
   {
@@ -2188,25 +2212,6 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:deadmans_switch_sanity)"
   },
   {
-    "id": "coherence-deployed_set_matches_repo",
-    "severity": "HIGH",
-    "description": "COHERENCE LAW VIOLATED \u2014 deployed_set_matches_repo: 0 tracked file(s) absent from apex-capital, 2 differ, 0 file(s) run there that are in no commit. The host is not running the repo.",
-    "source": "coherence_laws",
-    "ts": "2026-08-19T07:39:14.404385",
-    "last_seen": "2026-08-29T10:34:14.681355",
-    "reopened_after_archive": true,
-    "status": "awaiting_chairman",
-    "reopened_at": "2026-08-27T15:19:05.105606",
-    "n_examined": 321,
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated deployed set matches repo # tracke)",
-    "merged_titles": [
-      "COHERENCE LAW VIOLATED \u2014 deployed_set_matches_repo: 0 tracked file(s) absent from apex-capital, 3 differ, 0 file(s) run there that are in no commit. The host is not running the repo.",
-      "COHERENCE LAW VIOLATED \u2014 deployed_set_matches_repo: 1 tracked file(s) absent from apex-capital, 9 differ, 0 file(s) run there that are in no commit. The host is not running the repo.",
-      "COHERENCE LAW VIOLATED \u2014 deployed_set_matches_repo: 1 tracked file(s) absent from apex-capital, 6 differ, 0 file(s) run there that are in no commit. The host is not running the repo."
-    ]
-  },
-  {
     "id": "data-integrity-2026-08-19",
     "source": "Data Integrity Sentinel (CIT)",
     "severity": "HIGH",
@@ -2215,10 +2220,17 @@
     "ts": "2026-08-19T12:20:19.663410",
     "reopened_after_archive": true,
     "merged_ids": [
-      "data-integrity-2026-09-04"
+      "data-integrity-2026-09-05",
+      "data-integrity-2026-09-06",
+      "data-integrity-2026-09-07",
+      "data-integrity-2026-09-08"
     ],
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:firm data integrity sweep is red fundamentals # issue s s)"
+    "merge_note": "6 action record(s) folded by chairman_queue_sync (key=tx:firm data integrity sweep is red fundamentals # issue s s)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T12:55:02.045112+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-07-29; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "recon-high-ledger_drift",
@@ -2228,6 +2240,10 @@
     "description": "Reconciliation HIGH \u2014 LEDGER_DRIFT: Pod ledger ($104,284) diverges -6.3% from the real account ($98,066). Reports built on the pod ledger are MISSTATING firm value by $-6,217. Reconcile pod cash/positions to Alpaca. Raised by reconciliation_check.py; it has no other escalation path.",
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:reconciliation high ledger drift pod ledger # # diverges )",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T12:55:02.045112+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-19; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close.",
     "status": null
   },
   {
@@ -2238,6 +2254,10 @@
     "description": "Reconciliation HIGH \u2014 CASH_FLOOR: Cash is 6.0% of portfolio ($5,863) \u2014 below 20% floor. A buy bypassed the cash floor guardrail. Raised by reconciliation_check.py; it has no other escalation path.",
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:reconciliation high cash floor cash is # # of portfolio #)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T12:55:02.045112+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-19; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close.",
     "status": null
   },
   {
@@ -2248,6 +2268,10 @@
     "description": "Reconciliation HIGH \u2014 MAX_POSITIONS: 21 positions open \u2014 exceeds 20 maximum. Raised by reconciliation_check.py; it has no other escalation path.",
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:reconciliation high max positions # positions open exceed)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T12:55:02.045112+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-19; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close.",
     "status": null
   },
   {
@@ -2273,9 +2297,9 @@
     "times_seen": 1,
     "evidence": "risk_limit_derivation.json",
     "merged_ids": [
-      "risk-limit-derivation-2026-08-30"
+      "risk-limit-derivation-2026-09-06"
     ],
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:decision the two limits that gate every entry have never )"
+    "merge_note": "3 action record(s) folded by chairman_queue_sync (key=tx:decision the two limits that gate every entry have never )"
   },
   {
     "id": "fe-cit-20260821-0019-edgar_cache_director",
@@ -2299,7 +2323,11 @@
     "status": "awaiting_chairman",
     "dedup_key": "sha1:726f9324eb253b36",
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:726f9324eb253b36)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:726f9324eb253b36)",
+    "sla_breached": true,
+    "sla_breached_at": "2026-09-08T14:55:01.938693+00:00",
+    "stale_days": 20,
+    "sla_note": "OPEN with no resolution past the 20d SLA \u2014 open >= 20d (first observed 2026-08-19; the row carries no raise date, so this is a floor, not the age). It needs a decision \u2014 resolve, reassign, or explicitly close."
   },
   {
     "id": "apex-sys-cit-20260820-1300-email_loop_detected_",
@@ -2321,7 +2349,12 @@
     "status": "awaiting_chairman",
     "ts": "2026-08-20T14:55:01.748193+00:00",
     "merged_ids": [
-      "lifecycle-drop-sig-90158a5e5157"
+      "lifecycle-drop-sig-084f0ca3f3e9",
+      "lifecycle-drop-sig-0fd24236addf",
+      "lifecycle-drop-sig-59899b98d9df",
+      "lifecycle-drop-sig-90158a5e5157",
+      "lifecycle-drop-sig-bdd145a69e42",
+      "lifecycle-drop-sig-ff9abac71121"
     ],
     "merged_titles": [
       "'Cron job stale on weekday -- ML drift monitor log 56h old (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped.",
@@ -2338,7 +2371,7 @@
       "'Cron job stale on weekday -- ML drift monitor log 89h old (threshold 36h)' disappeared from every queue with NO recorded resolution. Verify it was actually fixed, not silently dropped. NOTE: this hos"
     ],
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml drift monitor log #h old thr)"
+    "merge_note": "8 action record(s) folded by chairman_queue_sync (key=tx:cron job stale on weekday ml drift monitor log #h old thr)"
   },
   {
     "id": "kalshi-wd-resolution_stalled-20260822121502",
@@ -2360,14 +2393,18 @@
     "times_seen": 1,
     "evidence": "parameter_audit_report.json",
     "merged_ids": [
-      "parameter-audit-regressed-2026-09-04"
+      "parameter-audit-regressed-2026-09-05",
+      "parameter-audit-regressed-2026-09-06",
+      "parameter-audit-regressed-2026-09-07",
+      "parameter-audit-regressed-2026-09-08"
     ],
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:regressed # consequential parameter s gained no derivatio)",
+    "merge_note": "6 action record(s) folded by chairman_queue_sync (key=tx:regressed # consequential parameter s gained no derivatio)",
     "merged_titles": [
       "REGRESSED: 5 consequential parameter(s) gained no derivation since the baseline of 50. A dial that gates an order, an email or a verdict is now set to a number nobody can defend.\n    board_issue_ledge",
       "REGRESSED: 12 consequential parameter(s) gained no derivation since the baseline of 50. A dial that gates an order, an email or a verdict is now set to a number nobody can defend.\n    board_issue_ledg",
       "REGRESSED: 16 consequential parameter(s) gained no derivation since the baseline of 50. A dial that gates an order, an email or a verdict is now set to a number nobody can defend.\n    apex_system_cit_",
-      "REGRESSED: 12 consequential parameter(s) gained no derivation since the baseline of 50. A dial that gates an order, an email or a verdict is now set to a number nobody can defend.\n    apex_system_cit_"
+      "REGRESSED: 12 consequential parameter(s) gained no derivation since the baseline of 50. A dial that gates an order, an email or a verdict is now set to a number nobody can defend.\n    apex_system_cit_",
+      "REGRESSED: 13 consequential parameter(s) gained no derivation since the baseline of 50. A dial that gates an order, an email or a verdict is now set to a number nobody can defend.\n    apex_system_cit_"
     ]
   },
   {
@@ -2463,7 +2500,8 @@
     "status": "awaiting_chairman",
     "source": "kalshi_calibration",
     "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:kalshi-build-or-drop|dead|not_proven|marginal)"
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:kalshi-build-or-drop|dead|not_proven|marginal)",
+    "reopened_after_archive": true
   },
   {
     "id": "apex-sys-cit-20260828-1300-cron_job_stale_on_we",
@@ -2476,19 +2514,6 @@
     "dedup_key": "sha1:deca2b62860d7b45",
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:deca2b62860d7b45)"
-  },
-  {
-    "id": "coherence-shipped_config_matches_repo",
-    "severity": "HIGH",
-    "description": "COHERENCE LAW VIOLATED \u2014 shipped_config_matches_repo: 0 allowlist entr(ies) name an untracked file so the include is inert, 0 chosen file(s) absent from apex-capital, 1 differ. The host is not running the configuration the firm decided on.",
-    "source": "coherence_laws",
-    "n_examined": 8,
-    "ts": "2026-08-28T11:02:55.979884",
-    "last_seen": "2026-08-29T10:34:14.683488",
-    "reopened_after_archive": true,
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated shipped config matches repo # allo)",
-    "status": null
   },
   {
     "id": "coherence-runs_match_schedule-0bb231",
@@ -2609,17 +2634,61 @@
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:65b6682ef823bf33)"
   },
   {
+    "id": "apex-sys-cit-20260904-1300-edgar_cache_partiall",
+    "severity": "MEDIUM",
+    "category": "IMPROVEMENT",
+    "description": "EDGAR cache partially stale -- 281 of 1095 file(s) older than 30d; fe_edgar_fundamentals may not be refreshing data",
+    "source": "apex_system_cit_agent",
+    "ts": "2026-09-04T13:00:01.758152",
+    "status": "awaiting_chairman",
+    "dedup_key": "sha1:b8dfe7125a395bdd",
+    "times_seen": 1,
+    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:b8dfe7125a395bdd)"
+  },
+  {
+    "id": "pip-integrity-20260905-19-single_writer",
+    "dedup_key": "single_writer",
+    "severity": "HIGH",
+    "description": "the designated writer 'apexcapitalc' has been silent 27h (last order 2026-09-04T20:16) and no other host traded after it \u2014 so a market closure cannot be told apart from an outage from here. Verify the host directly. Guard mode is 'enforce', designated writer 'apexcapitalc'.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-09-05T19:07:57.592701",
+    "status": "awaiting_chairman",
+    "reopened_after_archive": true
+  },
+  {
+    "id": "pip-integrity-20260907-11-email_loop_detection",
+    "dedup_key": "email_loop_detection",
+    "severity": "HIGH",
+    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:LOW | Manager Grade:F | Sep 07, 2026\" \u00d75",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-09-07T11:14:03.663763",
+    "status": "awaiting_chairman",
+    "reopened_after_archive": true
+  },
+  {
+    "id": "pip-integrity-20260908-17-peer_host_liveness",
+    "dedup_key": "peer_host_liveness",
+    "severity": "CRITICAL",
+    "description": "apex-capital has been unreachable for 26.1h (last contact 2026-09-07T14:52:52, 1 consecutive failed probes; ssh to apex-capital failed: ssh: connect to host 34.182.202.196 port 22: Network is unreachable). The VM's schedule could not be read (no trustworthy vm_crontab_snapshot), so this falls back to elapsed hours \u2014 thresholds 6.0h/24.0h. This is the ALWAYS-ON host: ~63 cron jobs including main.py on the same Alpaca paper account. While it is down the Mac is the firm's only host and it only runs while awake. If the instance was restarted its external IP has changed \u2014 update it with gcp_setup/update_ip.sh <NEW_IP>.",
+    "source": "cit_pipeline_integrity_agent",
+    "ts": "2026-09-08T17:00:47.719150",
+    "status": "awaiting_chairman",
+    "reopened_after_archive": true
+  },
+  {
     "id": "coherence-nested_probabilities_are_monotone",
     "severity": "HIGH",
-    "description": "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 72 of 2673 testable ladder(s) quote a nested pair that no set of probabilities can produce; 63 ladder(s) not testable (one-sided), 756 non-monotone on asks alone but spread-explicable",
+    "description": "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 69 of 2326 testable ladder(s) quote a nested pair that no set of probabilities can produce; 60 ladder(s) not testable (one-sided), 704 non-monotone on asks alone but spread-explicable",
     "source": "coherence_laws",
-    "n_examined": 2673,
+    "n_examined": 2326,
     "ts": "2026-08-28T13:48:43.621763",
-    "last_seen": "2026-09-04T13:49:01.228633",
+    "last_seen": "2026-09-08T20:17:43.676496",
     "reopened_after_archive": true,
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated nested probabilities are monotone )",
     "merged_titles": [
+      "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 69 of 2460 testable ladder(s) quote a nested pair that no set of probabilities can produce; 49 ladder(s) not testable (one-sided), 640 non-m",
+      "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 72 of 2673 testable ladder(s) quote a nested pair that no set of probabilities can produce; 63 ladder(s) not testable (one-sided), 756 non-m",
       "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 72 of 2966 testable ladder(s) quote a nested pair that no set of probabilities can produce; 72 ladder(s) not testable (one-sided), 1170 non-",
       "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 24 of 2166 testable ladder(s) quote a nested pair that no set of probabilities can produce; 55 ladder(s) not testable (one-sided), 720 non-m",
       "COHERENCE LAW VIOLATED \u2014 nested_probabilities_are_monotone: 16 of 2077 testable ladder(s) quote a nested pair that no set of probabilities can produce; 17 ladder(s) not testable (one-sided), 599 non-m",
@@ -2635,9 +2704,9 @@
     "severity": "HIGH",
     "description": "COHERENCE LAW VIOLATED \u2014 positions_conserve: 0 position(s) held at the broker with no ledger entry, 1 ledger entr(ies) with no position. Every stop-loss and holding-period rule reads the ledger.",
     "source": "coherence_laws",
-    "n_examined": 20,
+    "n_examined": 19,
     "ts": "2026-08-28T18:02:52.150290",
-    "last_seen": "2026-09-04T13:49:01.228641",
+    "last_seen": "2026-09-08T20:17:43.676520",
     "reopened_after_archive": true,
     "times_seen": 1,
     "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated positions conserve # position s he)",
@@ -2645,62 +2714,26 @@
       "COHERENCE LAW VIOLATED \u2014 positions_conserve: 1 position(s) held at the broker with no ledger entry, 0 ledger entr(ies) with no position. Every stop-loss and holding-period rule reads the ledger.",
       "COHERENCE LAW VIOLATED \u2014 positions_conserve: 0 position(s) held at the broker with no ledger entry, 1 ledger entr(ies) with no position. Every stop-loss and holding-period rule reads the ledger. (A: A"
     ],
-    "status": null
-  },
-  {
-    "id": "coherence-runs_match_schedule",
-    "severity": "HIGH",
-    "description": "COHERENCE LAW VIOLATED \u2014 runs_match_schedule: main.py started 5 time(s) today; the schedule asks for 4. An overrun is never legitimate \u2014 something is launching the pipeline outside the schedule.",
-    "source": "coherence_laws",
-    "n_examined": 74,
-    "ts": "2026-08-31T20:17:54.843835",
-    "last_seen": "2026-09-03T20:19:10.090221",
     "status": "awaiting_chairman",
-    "reopened_at": "2026-09-03T20:19:10.090225",
-    "reopened_after_archive": true,
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=tx:coherence law violated runs match schedule main py starte)"
+    "reopened_at": "2026-09-08T20:17:43.676525"
   },
   {
-    "id": "apex-sys-cit-20260904-1300-edgar_cache_partiall",
+    "id": "hr-retire-20260906-reinstatement_review_due-cryptoequitiesagent",
+    "dedup_key": "REINSTATEMENT_REVIEW_DUE:CryptoEquitiesAgent",
+    "severity": "HIGH",
+    "category": "GOVERNANCE",
+    "description": "CryptoEquitiesAgent was reinstated on 2026-08-01 after its 2026-05-14 Stage-4 retirement was vacated, on the condition that it be monitored and confirmed necessary. That review is due 2026-09-01 (OVERDUE by 5 day(s)).\n\nHR's verdict on the recorded evidence: TERMINATE \u2014 25 dated observation(s), the credit channel was live and 33 other agent(s) were credited, and this agent earned none.\n\nThis agent is PERMANENT \u2014 a termination needs explicit Co-Chairman authorisation and cannot be actioned by HR alone.\n\nEvidence: {\"channel_alive\": true, \"credited_picks\": 0, \"exonerated_cycles\": 7, \"firm_approved_picks\": 935, \"firm_attributed_picks\": 935, \"observations\": 25, \"other_agents_credited\": [\"Agent 1\", \"Agent 2\", \"Agent 3\", \"Agent 4\", \"Agent 5\", \"Agent 6\", \"Agent 7\", \"Agent 8\", \"Agent biotechresearchagent_cos\", \"Agent communicationsmediaagent_cos\", \"Agent consumerdiscretionaryagent_cos\", \"Agent dividenddefensiveagent_cos\", \"Agent dividendyieldagent_cos\", \"Agent financialsectoragent_cos\", \"Agent geopoliticalriskanalyst_cos\", \"Agent globaltechagent_cos\", \"Agent healthcarepharmaagent_cos\", \"Agent industrialsdefenseagent_cos\", \"Agent internationalemergingagent_cos\", \"Agent ipomomentumagent_cos\", \"Agent macroratessensitivityagent_cos\", \"Agent macroregimemonitoragent_cos\", \"Agent materialsminingagent_cos\", \"Agent microcapalphaagent_cos\", \"Agent shortinterestmonitoragent_cos\", \"Agent smallcapgrowthagent_cos\", \"Agent valueopportunityagent_cos\", \"EnergyTransitionAgent\", \"ReviewAgent\", \"USFossilFuelsAgent\", \"USGridInfrastructureAgent\", \"USNuclearAgent\", \"USRenewablesAgent\"], \"window_cycles_scanned\": 50, \"window_start\": \"2026-08-01\"}",
+    "status": "awaiting_chairman",
+    "raised_at": "2026-09-06T22:30:02.357712",
+    "source": "hr_retirement_audit"
+  },
+  {
+    "id": "kalshi-build-20260908-c9f4d8",
+    "dedup_key": "kalshi-build-or-drop|DEAD|NOT_PROVEN|UNHARVESTABLE",
     "severity": "MEDIUM",
-    "category": "IMPROVEMENT",
-    "description": "EDGAR cache partially stale -- 281 of 1095 file(s) older than 30d; fe_edgar_fundamentals may not be refreshing data",
-    "source": "apex_system_cit_agent",
-    "ts": "2026-09-04T13:00:01.758152",
+    "description": "KALSHI BUILD-OR-DROP \u2014 premise DEAD, edge NOT PROVEN, cost UNHARVESTABLE. Measured on apexcapitalc over n=5661 settled current-regime rows (two_sided+band90_99+horizon1_90d+apy>=rf): quoted 94.84c against 93.43c settled, so a PERFECT forecaster wins 1.42c/contract (95% CI 0.80-2.09c). The cheapest execution that exists costs 2.14c (2.05c half-spread + 0.09c maker fee); crossing costs 4.45c. NET -0.72c at the point estimate, -0.05c at the top of the edge interval. market OVERPRICES yes. NOTE: the gap is on the side the firm cannot take \u2014 the scanner emits buys of yes only. A sell-side path is a separate and cheaper build than an estimator. DECISION NEEDED: build an estimator, build the sell-side path, or retire the sector to scan-only. Nothing in the sector can place an order (kalshi_client.place_order() raises unless data/.kalshi_armed exists, and only you create that file), so this is a spending decision, not a risk one \u2014 but it has never been recorded anywhere.",
+    "ts": "2026-09-08T11:45:48.471842",
     "status": "awaiting_chairman",
-    "dedup_key": "sha1:b8dfe7125a395bdd",
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:sha1:b8dfe7125a395bdd)"
-  },
-  {
-    "id": "pip-integrity-20260829-22-single_writer",
-    "dedup_key": "single_writer",
-    "severity": "HIGH",
-    "description": "the designated writer 'apexcapitalc' has been silent 27h (last order 2026-08-28T20:18) and no other host traded after it \u2014 so a market closure cannot be told apart from an outage from here. Verify the host directly. Guard mode is 'enforce', designated writer 'apexcapitalc'.",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-08-29T20:54:31.966829",
-    "status": "awaiting_chairman",
-    "reopened_after_archive": true,
-    "merged_ids": [
-      "pip-integrity-20260829-20-single_writer"
-    ],
-    "merged_titles": [
-      "the designated writer 'apexcapitalc' has been silent 29h (last order 2026-08-28T20:16) and no other host traded after it \u2014 so a market closure cannot be told apart from an outage from here. Verify the"
-    ],
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:single_writer)"
-  },
-  {
-    "id": "pip-integrity-20260903-18-email_loop_detection",
-    "dedup_key": "email_loop_detection",
-    "severity": "HIGH",
-    "description": "Repeated email subjects in buffer (1 unique subject(s) appear 5+ times): \"[CRO REPORT] Apex Capital \u2014 Risk:MODERATE | Manager Grade:F | Sep 03, 2026\" \u00d75",
-    "source": "cit_pipeline_integrity_agent",
-    "ts": "2026-09-03T18:50:01.833059",
-    "status": "awaiting_chairman",
-    "reopened_after_archive": true,
-    "times_seen": 1,
-    "merge_note": "2 action record(s) folded by chairman_queue_sync (key=dk:email_loop_detection)"
+    "source": "kalshi_calibration"
   }
 ]

@@ -1,7 +1,7 @@
 {
   "host": "apex-capital",
-  "last_checked": "2026-09-04T09:45:48.631452",
-  "consecutive_failures": 0,
-  "last_ok": "2026-09-04T09:45:48.631452",
-  "remote_heartbeat_age_h": -3.9863429691666665
+  "last_checked": "2026-09-08T17:00:47.665056",
+  "consecutive_failures": 1,
+  "last_ok": "2026-09-07T14:52:52.205446",
+  "remote_heartbeat_age_h": -3.1192051044444447
 }

@@ -630,5 +630,42 @@
     "proposed_fix": "Put a detector on a scheduler (cron manifest or main.py), or record in CONTROL_CENSUS that this class is watched only at push time and accepted as such.",
     "routed_to_pod": "rd",
     "routed_at": "2026-08-23T21:24:10.074275"
+  },
+  {
+    "agent": "CITPipelineMonitor",
+    "category": "BUG_FIX",
+    "severity": "MEDIUM",
+    "confidence": 90,
+    "title": "7 ERROR lines \u2014 dominant: `Canary`",
+    "description": "The last 24-48h of logs contain 7 ERROR-level entries (1514 WARNINGs). Most frequent error class: `Canary` (7 of 7 lines). By class: `Canary` 7. Systematic errors indicate an unhandled failure mode.",
+    "evidence": "Samples of `Canary` (7 of 7 lines):\n  \u2022 12:00:51  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 09:59:58  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'\n  \u2022 11:12:32  ERROR       [Canary] Manager Agent step failed: 'str' object has no attribute 'get'",
+    "proposed_fix": "Most frequent error source: `Canary` (7 of 7 lines). Locate the call site in logs/run_*.log matching `12:00:51  ERROR       [Canary] Manager Agent step failed: 's`, fix the underlying condition or demote to `logger.warning()` if this is expected noise, or add retry logic with `time.sleep(2)` before re-raising.",
+    "auto_implementable": false,
+    "id": "CIT-2026-852",
+    "context": {
+      "captured_at": "2026-09-07T12:02:33.313903",
+      "canary_level": "ORANGE",
+      "canary_triggers": [],
+      "cro_level": "LOW",
+      "portfolio_value": null,
+      "open_positions": 0,
+      "paper_day": 334,
+      "cash_balance": null,
+      "loss_streak": 0,
+      "win_streak": 0,
+      "buys_blocked": false,
+      "total_closed_trades": 25,
+      "last_buy": {
+        "ticker": "TFC",
+        "date": "2026-07-31"
+      },
+      "open_issues_count": 4335,
+      "open_critical_issues": 0,
+      "pending_proposals_count": 0,
+      "critical_pending": 0
+    },
+    "context_summary": "Canary: ORANGE | CRO: LOW | Positions: 0 open | Day 334",
+    "routed_to_pod": "rd",
+    "routed_at": "2026-09-07T12:02:33.457752"
   }
 ]

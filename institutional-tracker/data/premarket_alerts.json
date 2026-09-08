@@ -1,19 +1,28 @@
 {
-  "generated_at": "2026-09-04T09:41:55.488030",
+  "generated_at": "2026-09-07T08:51:17.352701",
   "agent": "Pre-Market Check",
-  "overall_status": "CLEAR",
-  "portfolio_value": 99587.73,
-  "n_positions": 20,
+  "overall_status": "MEDIUM",
+  "portfolio_value": 99272.85,
+  "n_positions": 18,
   "vix": {
-    "vix": 14.03,
+    "vix": 15.25,
     "elevated": false,
     "data_available": true
   },
   "spy_proxy": {
-    "spy_gap_pct": -0.0,
+    "spy_gap_pct": -0.08,
     "data_available": true,
-    "direction": "flat"
+    "direction": "down"
   },
-  "severity_counts": {},
-  "alerts": []
+  "severity_counts": {
+    "MEDIUM": 1
+  },
+  "alerts": [
+    {
+      "severity": "MEDIUM",
+      "category": "GAP_DOWN",
+      "ticker": "AMGN",
+      "message": "Large overnight gap-down: -5.08% (threshold: -3%). Review thesis."
+    }
+  ]
 }

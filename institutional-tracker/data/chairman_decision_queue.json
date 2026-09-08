@@ -2272,13 +2272,14 @@
     "description": "Cron job stale on weekday -- ML drift monitor log 65h old (threshold 36h)",
     "dedup_key": "sha1:f12f1c98ffd297c6",
     "source": "apex_system_cit_agent",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "upstream_first_seen": "2026-08-17T13:00:01.969853",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:f12f1c98ffd297c6)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:f12f1c98ffd297c6)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "apex-sys-cit-20260817-1300-email_loop_detected_",
@@ -2286,13 +2287,14 @@
     "description": "Email loop detected -- 2 subject(s) appear 3+ times in buffer: \"apex capital \u2014 r&d team briefing | aug 17, 2026\" x3; \"wakeup_recovery\" x3",
     "dedup_key": "sha1:97dd52c19577f7c0",
     "source": "apex_system_cit_agent",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "upstream_first_seen": "2026-08-17T13:00:01.998959",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:97dd52c19577f7c0)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:97dd52c19577f7c0)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "fi-cit-20260817-1330-degraded_credit_read",
@@ -2300,13 +2302,14 @@
     "description": "Credit read is degraded (regime=UNKNOWN; no reading for: HY spread). fi_pipeline abstains on this read \u2014 zero FI picks and zero orders until the feed returns. If this repeats across days, the yfinance proxy for those tickers has broken, not the market.",
     "dedup_key": "fi_cit:DEGRADED_CREDIT_READ",
     "source": "fi_cit_agent",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "upstream_first_seen": "2026-08-17T13:30:05.864090+00:00",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:fi_cit:degraded_credit_read)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:fi_cit:degraded_credit_read)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "SWEEP-SWEEP_DID_NOT_RUN",
@@ -2315,12 +2318,13 @@
     "dedup_key": "sweep-sweep_did_not_run",
     "title": "Sweep: 1 finding(s) \u2014 missed weekly sweeps",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sweep-sweep_did_not_run)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "sla-escalation-pip-integrity-20260630-20-email_loop_detection",
@@ -2329,12 +2333,13 @@
     "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): pip-integrity-#",
     "title": "[SLA] Board must decide (Chairman did not respond in 20d): pip-integrity-2026063",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "sla-escalation-INVEST-BUG-2026-0703-pyarrow",
@@ -2343,12 +2348,13 @@
     "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): INVEST-BUG-#-#-",
     "title": "[SLA] Board must decide (Chairman did not respond in 20d): INVEST-BUG-2026-0703-",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "sla-escalation-INV-20260725-ORPHAN-CODE",
@@ -2357,12 +2363,13 @@
     "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): INV-#-ORPHAN-C",
     "title": "[SLA] Board must decide (Chairman did not respond in 20d): INV-20260725-ORPHAN-C",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "sla-escalation-data-integrity-2026-07-27",
@@ -2371,12 +2378,13 @@
     "dedup_key": "[SLA] Board must decide (Chairman did not respond in #d): data-integrity-#-#",
     "title": "[SLA] Board must decide (Chairman did not respond in 20d): data-integrity-2026-0",
     "source": "unknown",
-    "status": "awaiting_chairman",
+    "status": "escalated_to_board",
     "first_surfaced": "2026-08-18T12:30:02.265303",
     "deadline": "2026-09-07T12:30:02.265303",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:[sla] board must decide (chairman did not respond in #d):)",
+    "escalated_at": "2026-09-08T12:30:01.637902"
   },
   {
     "id": "lifecycle-drop-sig-9f58cda02644",
@@ -3036,13 +3044,15 @@
     "description": "KALSHI BUILD-OR-DROP \u2014 premise DEAD, edge NOT PROVEN, cost MARGINAL. Measured on apexcapitalc over n=2113 settled current-regime rows (two_sided+band90_99+horizon1_90d+apy>=rf): quoted 95.00c against 93.61c settled, so a PERFECT forecaster wins 1.39c/contract (95% CI 0.43-2.52c). The cheapest execution that exists costs 1.93c (1.85c half-spread + 0.08c maker fee); crossing costs 4.03c. NET -0.54c at the point estimate, +0.58c at the top of the edge interval. market OVERPRICES yes. NOTE: the gap is on the side the firm cannot take \u2014 the scanner emits buys of yes only. A sell-side path is a separate and cheaper build than an estimator. DECISION NEEDED: build an estimator, build the sell-side path, or retire the sector to scan-only. Nothing in the sector can place an order (kalshi_client.place_order() raises unless data/.kalshi_armed exists, and only you create that file), so this is a spending decision, not a risk one \u2014 but it has never been recorded anywhere.",
     "dedup_key": "kalshi-build-or-drop|DEAD|NOT_PROVEN|MARGINAL",
     "source": "kalshi_calibration",
-    "status": "awaiting_chairman",
+    "status": "resolved_upstream",
     "first_surfaced": "2026-08-28T12:30:01.645804",
     "deadline": "2026-09-17T12:30:01.645804",
     "upstream_first_seen": "2026-08-28T11:45:45.265688",
     "surfaced_channel": "claude_app",
     "times_seen": 1,
-    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:kalshi-build-or-drop|dead|not_proven|marginal)"
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:kalshi-build-or-drop|dead|not_proven|marginal)",
+    "resolved_at": "2026-09-08T12:30:01.637509",
+    "resolved_by": "every upstream row was closed by its producer (chairman_queue.resolve / compactor archive) \u2014 closed by re-observation, not by declaration, and never by absence"
   },
   {
     "id": "apex-sys-cit-20260828-1300-cron_job_stale_on_we",
@@ -3180,5 +3190,65 @@
     "surfaced_channel": "claude_app",
     "times_seen": 1,
     "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:65b6682ef823bf33)"
+  },
+  {
+    "id": "apex-sys-cit-20260904-1300-edgar_cache_partiall",
+    "severity": "MEDIUM",
+    "description": "EDGAR cache partially stale -- 281 of 1095 file(s) older than 30d; fe_edgar_fundamentals may not be refreshing data",
+    "dedup_key": "sha1:b8dfe7125a395bdd",
+    "source": "apex_system_cit_agent",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-09-05T12:30:02.052221",
+    "deadline": "2026-09-25T12:30:02.052221",
+    "upstream_first_seen": "2026-09-04T13:00:01.758152",
+    "surfaced_channel": "claude_app"
+  },
+  {
+    "id": "coherence-runs_match_schedule",
+    "severity": "HIGH",
+    "description": "COHERENCE LAW VIOLATED \u2014 runs_match_schedule: this host (apexcapitalc) is the designated pipeline writer and its crontab schedules main.py ZERO times. The pipeline is not scheduled anywhere.",
+    "source": "coherence_laws",
+    "status": "resolved_upstream",
+    "first_surfaced": "2026-09-06T12:30:01.719221",
+    "deadline": "2026-09-26T12:30:01.719221",
+    "upstream_first_seen": "2026-08-31T20:17:54.843835",
+    "surfaced_channel": "claude_app",
+    "resolved_at": "2026-09-08T12:30:01.637509",
+    "resolved_by": "every upstream row was closed by its producer (chairman_queue.resolve / compactor archive) \u2014 closed by re-observation, not by declaration, and never by absence"
+  },
+  {
+    "id": "apex-sys-cit-20260906-1300-gcp_disk_usage_eleva",
+    "severity": "MEDIUM",
+    "description": "GCP disk usage elevated -- 75% used (threshold 70%)",
+    "dedup_key": "sha1:83193a62c62b503e",
+    "source": "apex_system_cit_agent",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-09-07T12:30:02.029402",
+    "deadline": "2026-09-27T12:30:02.029402",
+    "upstream_first_seen": "2026-09-06T13:00:01.682807",
+    "surfaced_channel": "claude_app"
+  },
+  {
+    "id": "hr-retire-20260906-reinstatement_review_due-cryptoequitiesagent",
+    "severity": "HIGH",
+    "description": "CryptoEquitiesAgent was reinstated on 2026-08-01 after its 2026-05-14 Stage-4 retirement was vacated, on the condition that it be monitored and confirmed necessary. That review is due 2026-09-01 (OVERDUE by 5 day(s)).\n\nHR's verdict on the recorded evidence: TERMINATE \u2014 25 dated observation(s), the credit channel was live and 33 other agent(s) were credited, and this agent earned none.\n\nThis agent is PERMANENT \u2014 a termination needs explicit Co-Chairman authorisation and cannot be actioned by HR alone.\n\nEvidence: {\"channel_alive\": true, \"credited_picks\": 0, \"exonerated_cycles\": 7, \"firm_approved_picks\": 935, \"firm_attributed_picks\": 935, \"observations\": 25, \"other_agents_credited\": [\"Agent 1\", \"Agent 2\", \"Agent 3\", \"Agent 4\", \"Agent 5\", \"Agent 6\", \"Agent 7\", \"Agent 8\", \"Agent biotechresearchagent_cos\", \"Agent communicationsmediaagent_cos\", \"Agent consumerdiscretionaryagent_cos\", \"Agent dividenddefensiveagent_cos\", \"Agent dividendyieldagent_cos\", \"Agent financialsectoragent_cos\", \"Agent geopoliticalriskanalyst_cos\", \"Agent globaltechagent_cos\", \"Agent healthcarepharmaagent_cos\", \"Agent industrialsdefenseagent_cos\", \"Agent internationalemergingagent_cos\", \"Agent ipomomentumagent_cos\", \"Agent macroratessensitivityagent_cos\", \"Agent macroregimemonitoragent_cos\", \"Agent materialsminingagent_cos\", \"Agent microcapalphaagent_cos\", \"Agent shortinterestmonitoragent_cos\", \"Agent smallcapgrowthagent_cos\", \"Agent valueopportunityagent_cos\", \"EnergyTransitionAgent\", \"ReviewAgent\", \"USFossilFuelsAgent\", \"USGridInfrastructureAgent\", \"USNuclearAgent\", \"USRenewablesAgent\"], \"window_cycles_scanned\": 50, \"window_start\": \"2026-08-01\"}",
+    "dedup_key": "REINSTATEMENT_REVIEW_DUE:CryptoEquitiesAgent",
+    "source": "hr_retirement_audit",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-09-07T12:30:02.029402",
+    "deadline": "2026-09-27T12:30:02.029402",
+    "surfaced_channel": "claude_app"
+  },
+  {
+    "id": "kalshi-build-20260908-c9f4d8",
+    "severity": "MEDIUM",
+    "description": "KALSHI BUILD-OR-DROP \u2014 premise DEAD, edge NOT PROVEN, cost UNHARVESTABLE. Measured on apexcapitalc over n=5661 settled current-regime rows (two_sided+band90_99+horizon1_90d+apy>=rf): quoted 94.84c against 93.43c settled, so a PERFECT forecaster wins 1.42c/contract (95% CI 0.80-2.09c). The cheapest execution that exists costs 2.14c (2.05c half-spread + 0.09c maker fee); crossing costs 4.45c. NET -0.72c at the point estimate, -0.05c at the top of the edge interval. market OVERPRICES yes. NOTE: the gap is on the side the firm cannot take \u2014 the scanner emits buys of yes only. A sell-side path is a separate and cheaper build than an estimator. DECISION NEEDED: build an estimator, build the sell-side path, or retire the sector to scan-only. Nothing in the sector can place an order (kalshi_client.place_order() raises unless data/.kalshi_armed exists, and only you create that file), so this is a spending decision, not a risk one \u2014 but it has never been recorded anywhere.",
+    "dedup_key": "kalshi-build-or-drop|DEAD|NOT_PROVEN|UNHARVESTABLE",
+    "source": "kalshi_calibration",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-09-08T12:30:01.577671",
+    "deadline": "2026-09-28T12:30:01.577671",
+    "upstream_first_seen": "2026-09-08T11:45:48.471842",
+    "surfaced_channel": "claude_app"
   }
 ]

@@ -1,149 +1,147 @@
 {
-  "generated_at": "2026-08-28T11:02:56.095436",
-  "date": "2026-08-28",
+  "generated_at": "2026-09-07T09:38:13.294272",
+  "date": "2026-09-07",
   "sections": {
     "market": {
       "status": "UNKNOWN",
       "regime_confidence": 0.875,
-      "regime_age_hours": 674.8,
-      "canary_level": "GREEN",
-      "alert_count": 0,
-      "triggers": [],
-      "last_updated": ""
+      "regime_age_hours": 913.4,
+      "canary_level": "ORANGE",
+      "alert_count": 3,
+      "triggers": [
+        "SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal)",
+        "Position pressure: DOW down -5.2%",
+        "Position pressure: NNN down -5.3%"
+      ],
+      "last_updated": "2026-09-07T09:33:35.772048"
     },
     "risk": {
-      "risk_level": "MODERATE",
-      "cvar_95": 2035.01,
+      "risk_level": "LOW",
+      "cvar_95": 1475.19,
       "directives": [
-        "MODERATE RISK: Standard momentum-capture thresholds apply. 3\u2605+ picks eligible; maintain normal position sizing."
+        "LOW RISK: Favourable environment for deployment. Full position-sizing and standard conviction thresholds apply."
       ],
       "pdo_signal": "STANDARD DEPLOYMENT",
-      "last_updated": "2026-08-24T09:43:00.021476"
+      "last_updated": "2026-09-07T09:33:36.593888"
     },
     "portfolio": {
-      "portfolio_value": 101225.31,
-      "cash": 19476.55,
-      "deployed_pct": 80.8,
-      "n_positions": 19,
+      "portfolio_value": 99272.85,
+      "cash": 24223.23,
+      "deployed_pct": 75.6,
+      "n_positions": 18,
       "positions": [
         {
-          "ticker": "AES",
-          "qty": 304.0,
-          "pnl_pct": -0.51,
+          "ticker": "ABBV",
+          "qty": 27.0,
+          "pnl_pct": 0.16,
           "side": "PositionSide.LONG"
         },
         {
-          "ticker": "AMC",
-          "qty": 1092.0,
-          "pnl_pct": 10.24,
+          "ticker": "AES",
+          "qty": 304.0,
+          "pnl_pct": -0.07,
+          "side": "PositionSide.LONG"
+        },
+        {
+          "ticker": "AMGN",
+          "qty": 12.0,
+          "pnl_pct": 1.51,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "BAC",
           "qty": 92.0,
-          "pnl_pct": -1.07,
+          "pnl_pct": -0.46,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "BILL",
           "qty": 84.0,
-          "pnl_pct": 1.51,
+          "pnl_pct": 0.88,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "CART",
           "qty": 99.0,
-          "pnl_pct": 12.12,
+          "pnl_pct": 13.49,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "DOW",
           "qty": 134.0,
-          "pnl_pct": -2.25,
+          "pnl_pct": -5.25,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "FCX",
           "qty": 88.0,
-          "pnl_pct": 16.19,
+          "pnl_pct": 8.48,
           "side": "PositionSide.LONG"
         },
         {
-          "ticker": "GLD",
-          "qty": 17.0,
-          "pnl_pct": 4.17,
+          "ticker": "MELI",
+          "qty": 1.0,
+          "pnl_pct": 1.21,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "NNN",
           "qty": 104.0,
-          "pnl_pct": -3.44,
-          "side": "PositionSide.LONG"
-        },
-        {
-          "ticker": "PCG",
-          "qty": 227.0,
-          "pnl_pct": 2.56,
-          "side": "PositionSide.LONG"
-        },
-        {
-          "ticker": "PINS",
-          "qty": 231.0,
-          "pnl_pct": -1.34,
-          "side": "PositionSide.LONG"
-        },
-        {
-          "ticker": "SOFI",
-          "qty": 322.0,
-          "pnl_pct": 1.29,
+          "pnl_pct": -5.34,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "SQM",
           "qty": 48.0,
-          "pnl_pct": 8.78,
+          "pnl_pct": 3.16,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "T",
           "qty": 168.0,
-          "pnl_pct": 4.43,
+          "pnl_pct": 3.46,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "UL",
           "qty": 55.0,
-          "pnl_pct": 1.88,
+          "pnl_pct": 0.67,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "USB",
           "qty": 91.0,
-          "pnl_pct": -2.33,
+          "pnl_pct": -1.05,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "VFC",
           "qty": -320.0,
-          "pnl_pct": 9.56,
+          "pnl_pct": 11.63,
           "side": "PositionSide.SHORT"
+        },
+        {
+          "ticker": "VRTX",
+          "qty": 10.0,
+          "pnl_pct": 1.2,
+          "side": "PositionSide.LONG"
         },
         {
           "ticker": "VZ",
           "qty": 86.0,
-          "pnl_pct": 3.32,
+          "pnl_pct": 3.6,
           "side": "PositionSide.LONG"
         },
         {
           "ticker": "XLE",
           "qty": 58.0,
-          "pnl_pct": -0.09,
+          "pnl_pct": 2.57,
           "side": "PositionSide.LONG"
         }
       ]
     },
     "rd": {
-      "report_age_hours": 30.9,
+      "report_age_hours": 269.5,
       "pick_count": 17,
       "top_picks": [
         {
@@ -483,8 +481,8 @@
     },
     "context": {
       "historical": {
-        "summary": "SPY BULL | Momentum: early-bull | VIX: low (14.5) | Rates: rising rates \u2014 2 warning signal(s), 0 opportunity signal(s). Current conditions are broadly consistent with mid-cycle momentum environments where the strategy has historically performed. Maintain normal conviction thresholds and position siz",
-        "last_updated": "2026-08-28T09:51:20.146340",
+        "summary": "SPY BULL | Momentum: early-bull | VIX: low (15.1) | Rates: rising rates \u2014 2 warning signal(s), 0 opportunity signal(s). Current conditions are broadly consistent with mid-cycle momentum environments where the strategy has historically performed. Maintain normal conviction thresholds and position siz",
+        "last_updated": "2026-09-07T09:36:32.101682",
         "fresh": true
       },
       "geopolitical": {
@@ -494,25 +492,17 @@
           "AI Infrastructure Supercycle (2023\u20132025)",
           "US-China Semiconductor Export Controls (2022\u20132025)"
         ],
-        "last_updated": "2026-08-28T09:51:22.036755",
+        "last_updated": "2026-09-07T09:36:32.105245",
         "fresh": true
       },
       "macro_policy": {
         "summary": "AI Fiscal Cycle (2023\u20132025) \u2014 Industrial policy creates durable multi-year tailwinds. CHIPS Act subsidies benefit domestic semiconductor manufacturing (Intel, TSMC US fab). Follow the fiscal direction, not just the Fed.",
-        "last_updated": "2026-08-28T09:51:22.036755",
+        "last_updated": "2026-09-07T09:36:32.105245",
         "fresh": true
       },
       "system_performance": {
         "health_score": 0,
         "issues": [
-          {
-            "type": "STOP_LOSS_BREACH_UNRESOLVED",
-            "severity": "HIGH",
-            "ticker": "HASI",
-            "pnl_pct": -8.04,
-            "breach_pct": 1.0,
-            "message": "HASI is -8.0% \u2014 1.0% past the -7% stop-loss limit. Position should have been closed automatically. Every additional cycle open compounds the loss beyond the policy-defined maximum."
-          },
           {
             "type": "ALERT_FATIGUE",
             "severity": "CRITICAL",
@@ -526,14 +516,21 @@
             "trigger": "POSITION ALERT: SH",
             "count": 23,
             "message": "'POSITION ALERT: SH' fired 23 times without resolution. This is a decision-loop failure: the canary correctly identifies the problem, but the response pipeline is not closing the position. Repeated identical alerts without resolution erode the signal-to-noise ratio and indicate a gap between detection and execution."
+          },
+          {
+            "type": "ALERT_FATIGUE",
+            "severity": "HIGH",
+            "trigger": "SPY data unavailable \u2014 failing safe to O",
+            "count": 5,
+            "message": "'SPY data unavailable \u2014 failing safe to O' fired 5 times without resolution. This is a decision-loop failure: the canary correctly identifies the problem, but the response pipeline is not closing the position. Repeated identical alerts without resolution erode the signal-to-noise ratio and indicate a gap between detection and execution."
           }
         ],
-        "last_updated": "2026-08-28T09:51:26.716023",
+        "last_updated": "2026-09-07T09:36:32.171007",
         "fresh": true
       }
     },
     "cos": {
-      "report_age_hours": 178.0,
+      "report_age_hours": 416.6,
       "attention_items": [
         {
           "priority": "HIGH",
@@ -564,10 +561,10 @@
       "last_updated": "2026-08-21T01:00:35.900897"
     },
     "cit": {
-      "pending_count": 5,
-      "approved_count": 1858,
-      "backlog_count": 500,
-      "latest_session": "evening",
+      "pending_count": 0,
+      "approved_count": 1882,
+      "backlog_count": 494,
+      "latest_session": "morning",
       "top_proposals": [
         {
           "agent": "CITCodeInspector",
@@ -579,9 +576,9 @@
           "evidence": "alpaca_ws_listener.py line 42: `except: pass`",
           "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
           "auto_implementable": false,
-          "id": "CIT-2026-046",
+          "id": "CIT-2026-050",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -597,7 +594,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -615,9 +612,9 @@
           "evidence": "alpaca_ws_listener.py line 53: `except: pass`",
           "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
           "auto_implementable": false,
-          "id": "CIT-2026-047",
+          "id": "CIT-2026-051",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -633,7 +630,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -651,9 +648,9 @@
           "evidence": "alpaca_ws_listener.py line 96: `except Exception: pass`",
           "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
           "auto_implementable": false,
-          "id": "CIT-2026-048",
+          "id": "CIT-2026-052",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -669,7 +666,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -687,9 +684,9 @@
           "evidence": "alpaca_ws_listener.py line 114: `except: pass`",
           "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
           "auto_implementable": false,
-          "id": "CIT-2026-049",
+          "id": "CIT-2026-053",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -705,7 +702,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -718,14 +715,14 @@
           "category": "BUG_FIX",
           "severity": "MEDIUM",
           "confidence": 80,
-          "title": "Silent exception in disk_janitor.py:31",
+          "title": "Silent exception in disk_janitor.py:67",
           "description": "`except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
-          "evidence": "disk_janitor.py line 31: `except Exception: pass`",
+          "evidence": "disk_janitor.py line 67: `except Exception: pass`",
           "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
           "auto_implementable": false,
-          "id": "CIT-2026-157",
+          "id": "CIT-2026-163",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -741,13 +738,13 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
           },
           "context_summary": "Canary: GREEN | CRO: MODERATE | Positions: 0 open | Day 334",
-          "issue_id": "ISS-0232"
+          "issue_id": "ISS-5971"
         },
         {
           "agent": "CITCodeInspector",
@@ -759,9 +756,9 @@
           "evidence": "edgar_transcript_agent.py line 85: `except: pass`",
           "proposed_fix": "Replace with `except Exception as e: logger.warning(f'...: {e}')` at minimum.",
           "auto_implementable": false,
-          "id": "CIT-2026-158",
+          "id": "CIT-2026-164",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -777,7 +774,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -786,121 +783,7 @@
           "issue_id": "ISS-2500"
         }
       ],
-      "all_pending": [
-        {
-          "agent": "CITThinkTank",
-          "category": "VISION",
-          "severity": "MEDIUM",
-          "confidence": 78,
-          "title": "Replace fixed R&D cadence with event-triggered research cycles",
-          "description": "R&D last ran 347h ago and fires on a fixed 3-day clock. Markets don't care about our schedule. High-conviction opportunities emerge after earnings beats, sector breakouts, and macro prints \u2014 not on a Tuesday-every-three-days basis. Proposal: keep the 3-day heartbeat, but add event triggers: any sector ETF moving >3% in a day forces an immediate targeted R&D cycle for that sector only. Canary YELLOW triggers a full cycle. This would have caught the DIS move that fired ORANGE today.",
-          "evidence": "last_research_run: 2026-08-14 (347h ago). Canary fired 210 alert(s) today without fresh research.",
-          "proposed_fix": "In canary_agent.py: when a sector ETF moves >3% intraday, write `data/rd_trigger.json` with the sector name. In main.py Step 3c: if rd_trigger.json exists and is <4h old, run rd_team_leader.py --sector <name> regardless of 3-day cadence. Delete the trigger file after the cycle completes.",
-          "auto_implementable": false,
-          "id": "CIT-2026-1227",
-          "context": {
-            "captured_at": "2026-08-28T11:00:38.036819",
-            "canary_level": "GREEN",
-            "canary_triggers": [],
-            "cro_level": "MODERATE",
-            "portfolio_value": null,
-            "open_positions": 0,
-            "paper_day": 334,
-            "cash_balance": null,
-            "loss_streak": 0,
-            "win_streak": 0,
-            "buys_blocked": false,
-            "total_closed_trades": 25,
-            "last_buy": {
-              "ticker": "TFC",
-              "date": "2026-07-31"
-            },
-            "open_issues_count": 3273,
-            "open_critical_issues": 0,
-            "pending_proposals_count": 0,
-            "critical_pending": 0
-          },
-          "context_summary": "Canary: GREEN | CRO: MODERATE | Positions: 0 open | Day 334",
-          "routed_to_pod": "main",
-          "routed_at": "2026-08-28T11:00:38.569668"
-        },
-        {
-          "agent": "CITThinkTank",
-          "category": "VISION",
-          "severity": "LOW",
-          "confidence": 72,
-          "title": "Pre-trade devil's advocate: adversarial challenge before high-conviction buys",
-          "description": "The BUY pipeline has no adversarial check. Review Agent recommends \u2192 Manager Agent approves \u2192 trade executes. The IRM reviews decisions post-hoc but can't stop a trade in-flight. Proposal: for any BUY with conviction \u22654\u2605, spawn a 'BearCaseAgent' that reads the same thesis and produces a structured counter-argument: what would have to be true for this trade to fail? What's the base rate of success for this sector/pattern? Does the canary context invalidate the thesis? Manager Agent sees both the bull and bear case before deciding. This won't block good trades \u2014 it will surface hidden risks on marginal ones.",
-          "evidence": "Current pipeline: Review \u2192 Manager (single path). 32 historical buys with no pre-trade adversarial check in pipeline.",
-          "proposed_fix": "Add BearCaseAgent class to manager_agent.py. Instantiate it inline when conviction >= 4 before placing the order. It reads the pick's sector, RSI, recent news context (from canary/geopolitical data), and writes a structured counter-case to `data/bear_cases.json`. Manager Agent's final decision logs both cases for IRM post-trade review.",
-          "auto_implementable": false,
-          "id": "CIT-2026-1228",
-          "context": {
-            "captured_at": "2026-08-28T11:00:38.036819",
-            "canary_level": "GREEN",
-            "canary_triggers": [],
-            "cro_level": "MODERATE",
-            "portfolio_value": null,
-            "open_positions": 0,
-            "paper_day": 334,
-            "cash_balance": null,
-            "loss_streak": 0,
-            "win_streak": 0,
-            "buys_blocked": false,
-            "total_closed_trades": 25,
-            "last_buy": {
-              "ticker": "TFC",
-              "date": "2026-07-31"
-            },
-            "open_issues_count": 3273,
-            "open_critical_issues": 0,
-            "pending_proposals_count": 0,
-            "critical_pending": 0
-          },
-          "context_summary": "Canary: GREEN | CRO: MODERATE | Positions: 0 open | Day 334",
-          "routed_to_pod": "main",
-          "routed_at": "2026-08-28T11:00:38.570969"
-        },
-        {
-          "id": "fund-sanity-FICO",
-          "source": "Fundamentals Sanity Validator (CIT)",
-          "category": "LOGIC_ERROR",
-          "severity": "HIGH",
-          "confidence": 88,
-          "title": "Impossible fundamentals for FICO \u2014 quarantine from valuation",
-          "description": "long_term_debt/total_assets=1.64 (FY2025: long-term debt $3.06B exceeds total assets $1.87B \u2014 physically impossible; likely a bad EDGAR source value.)",
-          "evidence": "fundamentals_sanity: FICO fails plausibility: long_term_debt/total_assets=1.64 (FY2025: long-term debt $3.06B exceeds total assets $1.87B \u2014 physically impossible; likely a bad EDGAR source value.)",
-          "proposed_fix": "Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDGAR source fact \u2014 quarantine the ticker via is_reliable() so no pod values or trades it until corrected.",
-          "auto_implementable": false,
-          "ts": "2026-08-28T15:01:28.345143"
-        },
-        {
-          "id": "fund-sanity-MSCI",
-          "source": "Fundamentals Sanity Validator (CIT)",
-          "category": "LOGIC_ERROR",
-          "severity": "HIGH",
-          "confidence": 88,
-          "title": "Impossible fundamentals for MSCI \u2014 quarantine from valuation",
-          "description": "long_term_debt/total_assets=1.09 (FY2025: long-term debt $6.20B exceeds total assets $5.70B \u2014 physically impossible; likely a bad EDGAR source value.)",
-          "evidence": "fundamentals_sanity: MSCI fails plausibility: long_term_debt/total_assets=1.09 (FY2025: long-term debt $6.20B exceeds total assets $5.70B \u2014 physically impossible; likely a bad EDGAR source value.)",
-          "proposed_fix": "Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDGAR source fact \u2014 quarantine the ticker via is_reliable() so no pod values or trades it until corrected.",
-          "auto_implementable": false,
-          "ts": "2026-08-28T15:01:28.345143"
-        },
-        {
-          "id": "fund-sanity-SBAC",
-          "source": "Fundamentals Sanity Validator (CIT)",
-          "category": "LOGIC_ERROR",
-          "severity": "HIGH",
-          "confidence": 88,
-          "title": "Impossible fundamentals for SBAC \u2014 quarantine from valuation",
-          "description": "long_term_debt/total_assets=1.11 (FY2025: long-term debt $12.90B exceeds total assets $11.58B \u2014 physically impossible; likely a bad EDGAR source value.)",
-          "evidence": "fundamentals_sanity: SBAC fails plausibility: long_term_debt/total_assets=1.11 (FY2025: long-term debt $12.90B exceeds total assets $11.58B \u2014 physically impossible; likely a bad EDGAR source value.)",
-          "proposed_fix": "Refetch on fixed fe_edgar_fundamentals.py; if the value persists it is a bad EDGAR source fact \u2014 quarantine the ticker via is_reliable() so no pod values or trades it until corrected.",
-          "auto_implementable": false,
-          "ts": "2026-08-28T15:01:28.345143"
-        }
-      ],
+      "all_pending": [],
       "think_tank": [
         {
           "agent": "CITThinkTank",
@@ -976,7 +859,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-002",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -992,7 +875,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -1012,7 +895,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-003",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -1028,7 +911,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -1048,7 +931,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-005",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -1064,7 +947,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -1084,7 +967,7 @@
           "auto_implementable": true,
           "id": "CIT-2026-006",
           "context": {
-            "captured_at": "2026-08-27T22:41:30.444482",
+            "captured_at": "2026-09-07T06:16:23.193421",
             "canary_level": "GREEN",
             "canary_triggers": [],
             "cro_level": "MODERATE",
@@ -1100,7 +983,7 @@
               "ticker": "TFC",
               "date": "2026-07-31"
             },
-            "open_issues_count": 3198,
+            "open_issues_count": 4334,
             "open_critical_issues": 0,
             "pending_proposals_count": 5,
             "critical_pending": 0
@@ -1109,12 +992,12 @@
           "issue_id": "ISS-2165"
         }
       ],
-      "last_updated": "2026-08-27T22:44:43.229094",
-      "morning_fresh": false,
+      "last_updated": "2026-09-07T06:17:49.242561",
+      "morning_fresh": true,
       "evening_fresh": true
     },
     "irm": {
-      "report_age_hours": 24.2,
+      "report_age_hours": 262.8,
       "risk_score": 10,
       "red_flags": [
         "REGIME MISALIGNMENT: Portfolio is 87% deployed in equities. For BEAR regime, Dalio/Klarman frameworks suggest optimal equity allocation is 20\u201345%. Currently 42pp overextended. Recommended action: raise cash buffer to at least 55%.",
@@ -1142,42 +1025,15 @@
       "last_updated": "2026-08-14T16:46:37.825652"
     },
     "board": {
-      "meeting_age_hours": 25.2,
+      "meeting_age_hours": 0.0,
       "unanimous_count": 0,
-      "majority_count": 2,
+      "majority_count": 1,
       "vetoed_count": 1,
-      "split_count": 6,
+      "split_count": 7,
       "unvoted_count": 0,
       "unclassified_count": 0,
       "action_count": 9,
       "top_decisions": [
-        {
-          "id": "CLOSE_HASI",
-          "action": "SELL HASI at market \u2014 stop-loss breach",
-          "urgency": "IMMEDIATE",
-          "executor": "Manager Agent",
-          "vote_score": 8,
-          "votes": [
-            [
-              "Manager Agent",
-              "STRONG"
-            ],
-            [
-              "Chief of Staff",
-              "STRONG"
-            ],
-            [
-              "Risk Manager",
-              "STRONG"
-            ],
-            [
-              "Independent Risk Manager",
-              "STRONG"
-            ]
-          ],
-          "classification": "MAJORITY",
-          "proceed": true
-        },
         {
           "id": "FIX_PIPELINE_ORDER",
           "action": "Reorder daily pipeline: Risk Manager \u2192 Chief of Staff (CoS reads risk data before filing brief)",
@@ -1206,6 +1062,29 @@
           "proceed": true
         },
         {
+          "id": "CLOSE_NNN",
+          "action": "SELL NNN \u2014 stop-loss breach",
+          "urgency": "IMMEDIATE",
+          "executor": "Manager Agent",
+          "vote_score": 6,
+          "votes": [
+            [
+              "Chief of Staff",
+              "STRONG"
+            ],
+            [
+              "Risk Manager",
+              "STRONG"
+            ],
+            [
+              "Independent Risk Manager",
+              "STRONG"
+            ]
+          ],
+          "classification": "SPLIT",
+          "proceed": false
+        },
+        {
           "id": "LOWER_ESCALATION_THRESHOLD",
           "action": "Escalate to Chairman in daily brief whenever risk level \u2265 ELEVATED (currently only escalates on CRITICAL)",
           "urgency": "THIS_WEEK",
@@ -1226,10 +1105,10 @@
         }
       ],
       "trades_executed": 0,
-      "last_updated": "2026-08-27T09:52:07.440819"
+      "last_updated": "2026-09-07T09:35:57.389387"
     },
     "manager": {
-      "age_hours": 330.3,
+      "age_hours": 568.9,
       "total_decisions": 283,
       "buys": 120,
       "sells": 0,
@@ -1333,36 +1212,37 @@
       "last_updated": "2026-08-14T16:46:35.827789"
     },
     "review": {
-      "age_hours": 97.3,
+      "age_hours": 0.0,
       "buy_count": 0,
       "sell_count": 1,
       "top_buys": [],
       "top_sells": [
         {
-          "ticker": "HASI",
+          "ticker": "DOW",
           "side": "long",
-          "qty": 85.0,
-          "avg_entry": 42.26,
-          "current_price": 38.86,
-          "unrealized_pnl_pct": -8.04,
+          "qty": 134.0,
+          "avg_entry": 31.07,
+          "current_price": 29.44,
+          "unrealized_pnl_pct": -5.25,
           "hold_days": null,
-          "weight_pct": 3.28,
+          "weight_pct": 3.97,
           "momentum": {
-            "trend": "neutral",
+            "trend": "bearish",
             "above_50ma": false,
-            "above_200ma": true,
-            "pct_from_50ma": -0.3,
-            "pct_from_200ma": 6.43,
-            "rsi_14": 49.6
+            "above_200ma": false,
+            "pct_from_50ma": -0.86,
+            "pct_from_200ma": -4.42,
+            "rsi_14": 40.3
           },
           "action": "SELL",
-          "priority": 1,
+          "priority": 2,
           "reasons": [
-            "Stop-loss breached: -8.0% (limit: -7%)"
+            "Entry date unknown \u2014 max-hold rule could not be evaluated for this position (ledger gap; see entry_date_ledger)",
+            "Momentum reversed bearish while underwater (RSI=40.3, -0.9% vs 50MA)"
           ]
         }
       ],
-      "last_updated": "2026-08-24T09:43:50.803291"
+      "last_updated": "2026-09-07T09:35:55.602903"
     },
     "trade_review": {
       "finding_count": 1,
@@ -1392,544 +1272,270 @@
       "last_updated": ""
     },
     "ops_director": {
-      "age_hours": 0.7,
+      "age_hours": 0.0,
       "floor_status": "STALE",
       "agents_reviewed": 6,
       "issues_found": 4,
       "top_issues": [
-        "Trade Review Team: report stale (335h old)",
-        "Capital Efficiency Agent: report stale (178h old)",
-        "Report Generator: report stale (177h old)"
+        "Trade Review Team: report stale (574h old)",
+        "Capital Efficiency Agent: report stale (417h old)",
+        "Report Generator: report stale (417h old)"
       ],
       "directive": "Floor status: 2 OK, 4 stale, 0 missing, 0 unreadable of 6 supervised. 4 flag(s).",
-      "last_updated": "2026-08-28T10:22:40.845090"
+      "last_updated": "2026-09-07T09:35:56.782737"
     },
     "firm_channel": {
-      "total": 73,
+      "total": 22,
       "by_agent": {
-        "Foreign Order Detector": 11,
-        "International Analyst (IMI)": 33,
-        "Freshness Sentinel": 22,
-        "Deputy Board": 1,
-        "CIT Director": 6
+        "Canary Agent": 1,
+        "Deputy Board": 3,
+        "CIT Director": 18
       },
       "by_category": {
-        "SECURITY": 11,
-        "INTL_MARKETS": 33,
-        "OPS_ALERT": 22,
-        "PIPELINE_ALERT": 1,
-        "PROPOSAL": 6
+        "MARKET_NOTE": 1,
+        "PIPELINE_ALERT": 3,
+        "PROPOSAL": 18
       },
       "urgent": [
         {
-          "ts": "2026-08-28T11:01:37.847950",
-          "date": "2026-08-28",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-        },
-        {
-          "ts": "2026-08-28T02:45:44.289018",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
+          "ts": "2026-09-07T09:33:35.780303",
+          "date": "2026-09-07",
+          "agent": "Canary Agent",
+          "category": "MARKET_NOTE",
+          "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
           "priority": "URGENT"
         },
         {
-          "ts": "2026-08-28T02:45:43.935046",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
+          "ts": "2026-09-07T06:17:49.269209",
+          "date": "2026-09-07",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 549.",
+          "priority": "HIGH"
         },
         {
-          "ts": "2026-08-28T02:45:43.893473",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin), pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
+          "ts": "2026-09-06T21:11:36.417274",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+          "priority": "HIGH"
         },
         {
-          "ts": "2026-08-28T02:45:43.553362",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still ), pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:43.512688",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:43.391511",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:33.460150",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:33.415271",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:32.933322",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
+          "ts": "2026-09-06T18:14:34.478249",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+          "priority": "HIGH"
         }
       ],
       "posts": [
         {
-          "ts": "2026-08-28T11:01:37.847950",
-          "date": "2026-08-28",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-        },
-        {
-          "ts": "2026-08-28T11:01:35.574083",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T11:01:35.564575",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T11:01:35.559279",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "Global session [us_session] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T11:01:27.216613",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T11:01:27.208003",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:45:44.289018",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
+          "ts": "2026-09-07T09:33:35.780303",
+          "date": "2026-09-07",
+          "agent": "Canary Agent",
+          "category": "MARKET_NOTE",
+          "content": "\ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%. All BUY orders blocked. Defensive mode active.",
           "priority": "URGENT"
         },
         {
-          "ts": "2026-08-28T02:45:43.935046",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:43.893473",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin), pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:43.553362",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still ), pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:43.512688",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:43.391511",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 2026-08-14T18:)",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:38.392087",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:45:38.360817",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:45:36.977125",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:45:36.944656",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:45:36.892854",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:45:33.460150",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:33.415271",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:32.933322",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:32.884015",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:32.660476",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:45:32.353528",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: auto-fixed 7: risk_bulletin.json, canary_state.json, hr_report.json, logic_team_findings.json, fi_pipeline_report.json, etf_research_brief.json, missed_winners_report.json; newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T02:42:59.392894",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin)",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:42:59.321614",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 still )",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T02:25:06.165102",
-          "date": "2026-08-28",
-          "agent": "Freshness Sentinel",
-          "category": "OPS_ALERT",
-          "content": "\ud83d\udd50 FRESHNESS: newly stale: manager_decisions.json (322h old (budget 26h)), review_recommendations.json (89h old (budget 26h)), state.json (320h old (budget 26h)), risk_bulletin.json (89h old (budget 26h)), canary_state.json (23h old (budget 14h))",
-          "priority": "URGENT"
-        },
-        {
-          "ts": "2026-08-28T03:26:36.808705",
-          "date": "2026-08-28",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-        },
-        {
-          "ts": "2026-08-28T03:26:34.704034",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T03:26:34.697477",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-28T03:26:34.690124",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T23:19:54.468195",
-          "date": "2026-08-27",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-        },
-        {
-          "ts": "2026-08-27T23:19:52.428997",
-          "date": "2026-08-27",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T23:19:52.423343",
-          "date": "2026-08-27",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T23:19:52.417131",
-          "date": "2026-08-27",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T23:09:38.509231",
-          "date": "2026-08-27",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-        },
-        {
-          "ts": "2026-08-27T23:09:35.990833",
-          "date": "2026-08-27",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T23:09:35.984735",
-          "date": "2026-08-27",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T23:09:35.970763",
-          "date": "2026-08-27",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
-          "priority": "NORMAL"
-        },
-        {
-          "ts": "2026-08-27T22:44:43.537832",
-          "date": "2026-08-27",
+          "ts": "2026-09-07T06:17:49.374618",
+          "date": "2026-09-07",
           "agent": "Deputy Board",
           "category": "PIPELINE_ALERT",
-          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred, 5 need clarification from CIT Director out of 5 proposal(s). Clarification requests written to data/cit_clarification_requests.json \u2014 CIT Director must respond before these proposals can be re-voted.",
-          "priority": "HIGH"
-        },
-        {
-          "ts": "2026-08-27T22:44:43.285999",
-          "date": "2026-08-27",
-          "agent": "CIT Director",
-          "category": "PROPOSAL",
-          "content": "[MEDIUM] Silent exception in disk_janitor.py:31: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-27T22:44:43.280482",
-          "date": "2026-08-27",
+          "ts": "2026-09-07T06:17:49.295085",
+          "date": "2026-09-07",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-07T06:17:49.290180",
+          "date": "2026-09-07",
           "agent": "CIT Director",
           "category": "PROPOSAL",
           "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-27T22:44:43.274923",
-          "date": "2026-08-27",
+          "ts": "2026-09-07T06:17:49.285246",
+          "date": "2026-09-07",
           "agent": "CIT Director",
           "category": "PROPOSAL",
           "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-27T22:44:43.269456",
-          "date": "2026-08-27",
+          "ts": "2026-09-07T06:17:49.280368",
+          "date": "2026-09-07",
           "agent": "CIT Director",
           "category": "PROPOSAL",
           "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-27T22:44:43.263260",
-          "date": "2026-08-27",
+          "ts": "2026-09-07T06:17:49.275462",
+          "date": "2026-09-07",
           "agent": "CIT Director",
           "category": "PROPOSAL",
           "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-27T22:44:43.256476",
-          "date": "2026-08-27",
+          "ts": "2026-09-07T06:17:49.269209",
+          "date": "2026-09-07",
           "agent": "CIT Director",
           "category": "PROPOSAL",
-          "content": "EVENING session complete: 14 board proposal(s), 447 quick win(s), 0 ThinkTank idea(s). Total new findings: 773.",
+          "content": "MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 549.",
           "priority": "HIGH"
         },
         {
-          "ts": "2026-08-28T02:44:26.385222",
-          "date": "2026-08-28",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
-        },
-        {
-          "ts": "2026-08-28T02:44:24.203993",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "EUR/USD +1.0% \u2014 stronger euro = FX headwind for US multinationals reporting in USD (MSFT, GOOGL, META).",
+          "ts": "2026-09-06T21:11:36.520236",
+          "date": "2026-09-06",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-28T02:44:24.197347",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "USD/JPY +1.0% (yen weakening) \u2014 historically tailwind for US equities; watch Japan carry trade unwind risk.",
+          "ts": "2026-09-06T21:11:36.441732",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-28T02:44:24.190289",
-          "date": "2026-08-28",
-          "agent": "International Analyst (IMI)",
-          "category": "INTL_MARKETS",
-          "content": "Global session [asia_open] | Sentiment: RISK_ON (+3) | Notable: Nikkei 225 +1.0%, Hang Seng +1.0%, Shanghai Comp +1.0%, Taiwan Weighted +1.0%. Watch: AAPL.",
+          "ts": "2026-09-06T21:11:36.436849",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
           "priority": "NORMAL"
         },
         {
-          "ts": "2026-08-27T22:37:39.276412",
-          "date": "2026-08-27",
-          "agent": "Foreign Order Detector",
-          "category": "SECURITY",
-          "priority": "HIGH",
-          "content": "\ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account."
+          "ts": "2026-09-06T21:11:36.431980",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T21:11:36.427101",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T21:11:36.422240",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T21:11:36.417274",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+          "priority": "HIGH"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.580595",
+          "date": "2026-09-06",
+          "agent": "Deputy Board",
+          "category": "PIPELINE_ALERT",
+          "content": "Deputy Board: 0 approved, 0 rejected, 0 deferred out of 5 proposal(s).",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.502802",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in disk_janitor.py:67: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.497980",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:114: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.493163",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:96: `except Exception: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.488278",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:53: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.483400",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "[MEDIUM] Silent exception in alpaca_ws_listener.py:42: `except: pass` swallows all errors silently \u2014 downstream code may produce wrong results without any log entry.",
+          "priority": "NORMAL"
+        },
+        {
+          "ts": "2026-09-06T18:14:34.478249",
+          "date": "2026-09-06",
+          "agent": "CIT Director",
+          "category": "PROPOSAL",
+          "content": "EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank idea(s). Total new findings: 566.",
+          "priority": "HIGH"
         }
       ]
     }
   },
   "alerts": [
-    "\u26a0 R&D report is 31h old \u2014 research may be stale",
+    "\ud83d\udea8 Canary ORANGE \u2014 emergency cascade active: SPY data unavailable \u2014 raising to YELLOW (data feed issue; not a crash signal); Position pressure: DOW down -5.2%; Position pressure: NNN down -5.3%",
+    "\u26a0 DOW is down -5.2% \u2014 monitor stop-loss",
+    "\u26a0 NNN is down -5.3% \u2014 monitor stop-loss",
+    "\u26a0 R&D report is 269h old \u2014 research may be stale",
     "\u2699 System: 3 operational issue(s) flagged",
     "\ud83d\udccc CoS: Manager Agent graded F (18/100) \u2014 below standard. Chairman review recommended.",
     "\ud83d\udccc CoS: Historical win rate only 25%. Review Team has issued corrective directives to Ma",
     "\ud83d\udca1 CIT ThinkTank: 6 VISION proposal(s) awaiting board unanimous vote",
     "\ud83d\udd0d IRM: 10 red flag(s) from overnight board check",
     "\ud83d\udc65 HR: 1 agent(s) flagged for performance review",
-    "\ud83d\udea8 Manager: no decision for 330h (234h excl. weekends, threshold 20h) \u2014 DEAD-MAN'S SWITCH",
+    "\ud83d\udea8 Manager: no decision for 569h (377h excl. weekends, threshold 20h) \u2014 DEAD-MAN'S SWITCH",
     "\ud83c\udfe2 Ops Director: 4 issue(s) on the floor",
-    "\ud83d\udce2 Foreign Order Detector: \ud83d\udea8 2 unexplained account order(s) \u2014 possible second actor on the Alpaca account.",
-    "\ud83d\udce2 Freshness Sentinel: \ud83d\udd50 FRESHNESS: newly stale: pipeline_heartbeat (mid-run death) (main.py started 20",
-    "\ud83d\udce2 Freshness Sentinel: \ud83d\udd50 FRESHNESS: newly stale: _probe_queue.json (500h old (budget 10h) \u2014 holdin), pi",
-    "\ud83d\udce2 Firm Channel: 2 further urgent post(s) not shown"
+    "\ud83d\udce2 Canary Agent: \ud83d\udea8 CANARY ORANGE \u2014 SPY data unavailable \u2014 raising to YELLOW (data feed issue; not",
+    "\ud83d\udce2 CIT Director: MORNING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank id",
+    "\ud83d\udce2 CIT Director: EVENING session complete: 14 board proposal(s), 484 quick win(s), 0 ThinkTank id"
   ],
   "watchlist": [],
   "agent_status": {
     "canary": {
-      "fresh": false,
-      "level": "GREEN"
+      "fresh": true,
+      "level": "ORANGE"
     },
     "cro": {
-      "fresh": false,
-      "risk_level": "MODERATE"
+      "fresh": true,
+      "risk_level": "LOW"
     },
     "rd_team": {
       "fresh": false,
@@ -1955,12 +1561,12 @@
       "fresh": false
     },
     "cit": {
-      "morning_fresh": false,
+      "morning_fresh": true,
       "evening_fresh": true,
-      "pending": 5
+      "pending": 0
     },
     "irm": {
-      "fresh": true,
+      "fresh": false,
       "score": 10
     },
     "hr": {
@@ -1968,15 +1574,15 @@
       "health": 9.8
     },
     "board": {
-      "fresh": false,
-      "last_meeting": "2026-08-27T09:52:07.440819"
+      "fresh": true,
+      "last_meeting": "2026-09-07T09:35:57.389387"
     },
     "manager": {
       "fresh": false,
       "decisions": 283
     },
     "review": {
-      "fresh": false,
+      "fresh": true,
       "buy_recs": 0
     },
     "trade_review": {
