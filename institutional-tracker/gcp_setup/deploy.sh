@@ -64,8 +64,9 @@ echo "=============================================="
 # pod_health_monitor on the VM compares this stamp to the repo; if the repo has
 # moved and the stamp is >3 days old it escalates CRITICAL (anti-"stale prod").
 GIT_SHA=$(cd "$LOCAL_DIR" && git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+GIT_BRANCH=$(cd "$LOCAL_DIR" && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 cat > "${LOCAL_DIR}deploy_stamp.json" <<STAMP
-{"sha": "$GIT_SHA", "deployed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "from_host": "$(hostname)"}
+{"sha": "$GIT_SHA", "branch": "$GIT_BRANCH", "deployed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "from_host": "$(hostname)"}
 STAMP
 echo "  Deploy stamp: $GIT_SHA @ $(date -u +%Y-%m-%d)"
 

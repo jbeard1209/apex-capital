@@ -138,18 +138,30 @@ def _pod_positions(pod: str) -> int:
 def _deploy_drift_check() -> dict:
     """PRODUCTION SELF-CHECK: is this host running stale code?
 
-    deploy.sh ships deploy_stamp.json (repo SHA + date). If the GitHub repo's HEAD
-    has moved past our stamp AND the stamp is >3 days old, production is drifting
-    behind the codebase — exactly how the VM silently ran June-3 code for a month
-    (the "two brains" incident). Absent stamp = dev machine, check skipped."""
+    deploy.sh ships deploy_stamp.json (repo SHA + branch + date). If that branch's
+    HEAD on GitHub has moved past our stamp AND the stamp is >3 days old, production
+    is drifting behind the codebase — exactly how the VM silently ran June-3 code
+    for a month (the "two brains" incident). Absent stamp = dev machine, check
+    skipped.
+
+    Compares against the STAMPED branch, not the repo's default branch. Real
+    development has been happening on a feature branch (e.g. feat/signoff-ledger)
+    while `main` sat untouched for two months — comparing against `origin HEAD`
+    (which resolves to `main`) would misdiagnose drift forever: it would either
+    never see commits pushed to the real working branch, or (once main is stale
+    enough) permanently misfire CRITICAL even right after a clean deploy. Old
+    stamps without a "branch" field fall back to HEAD so this doesn't break on
+    a stamp written before this field existed."""
     stamp_p = BASE_DIR / "deploy_stamp.json"
     if not stamp_p.exists():
         return {"status": "SKIPPED (no stamp — dev host)"}
     stamp = _load(stamp_p, {})
+    branch = str(stamp.get("branch") or "").strip()
+    ref = f"refs/heads/{branch}" if branch and branch != "unknown" else "HEAD"
     try:
         import subprocess
         out = subprocess.run(
-            ["git", "ls-remote", "git@github.com:jbeard1209/apex-capital.git", "HEAD"],
+            ["git", "ls-remote", "git@github.com:jbeard1209/apex-capital.git", ref],
             capture_output=True, text=True, timeout=20)
         remote_sha = out.stdout.split()[0] if out.returncode == 0 and out.stdout else None
     except Exception:
@@ -165,8 +177,9 @@ def _deploy_drift_check() -> dict:
         pass
     drifted = local_sha and not remote_sha.startswith(local_sha) and (age_days or 0) > 3
     if drifted:
-        detail = (f"Production code is STALE: deployed {local_sha} {age_days}d ago but the "
-                  f"repo HEAD has moved ({remote_sha[:8]}). Run `bash gcp_setup/ship.sh` "
+        branch_label = branch if branch and branch != "unknown" else "HEAD"
+        detail = (f"Production code is STALE: deployed {local_sha} {age_days}d ago but "
+                  f"{branch_label} has moved ({remote_sha[:8]}). Run `bash gcp_setup/ship.sh` "
                   "from the Mac. (Prevention layer from the June/July stale-prod incident.)")
         _escalate("PROD", {"name": "Deploy drift", "fix": "bash gcp_setup/ship.sh (from Mac)",
                            "owner": "Chairman"}, "STALE_CODE", "CRITICAL", detail)

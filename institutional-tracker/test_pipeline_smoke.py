@@ -8885,6 +8885,71 @@ class TestSingleWriterGuard(unittest.TestCase):
         self.assertIn("HOST_ID_FILE", src[i:j],
                       "_host_tag must read the persisted id, not the live hostname")
 
+    def test_deploy_drift_compares_against_the_stamped_branch_not_default(self):
+        """Real development happens on a feature branch (feat/signoff-ledger);
+        `main` sat two months stale. A drift check hardcoded to `git ls-remote
+        ... HEAD` (which resolves to the default branch) would compare the
+        deployed SHA against the wrong branch forever: it would either miss
+        real commits pushed to the working branch, or — once main is stale
+        enough — report CRITICAL drift right after a clean deploy. The stamp
+        must carry the branch that was actually shipped, and the check must
+        ask GitHub about that branch, not the default one."""
+        import subprocess
+        import tempfile
+        import pod_health_monitor as phm
+
+        calls = []
+
+        def fake_run(cmd, **kwargs):
+            calls.append(cmd)
+            class R:
+                returncode = 0
+                stdout = "deadbeefcafe\trefs/heads/feat/signoff-ledger\n"
+            return R()
+
+        with tempfile.TemporaryDirectory() as td:
+            stamp_dir = Path(td)
+            (stamp_dir / "deploy_stamp.json").write_text(json.dumps({
+                "sha": "deadbee", "branch": "feat/signoff-ledger",
+                "deployed_at": "2020-01-01T00:00:00Z",
+            }))
+            orig_base = phm.BASE_DIR
+            orig_run = subprocess.run
+            phm.BASE_DIR = stamp_dir
+            subprocess.run = fake_run
+            try:
+                phm._deploy_drift_check()
+            finally:
+                phm.BASE_DIR = orig_base
+                subprocess.run = orig_run
+
+        self.assertTrue(calls, "the drift check never called git ls-remote")
+        ref_arg = calls[0][-1]
+        self.assertEqual(ref_arg, "refs/heads/feat/signoff-ledger",
+                         "the drift check asked about the wrong ref — it must "
+                         "ask about the branch the stamp says was deployed, "
+                         "not the repo's default branch")
+
+        # Backward compat: an old stamp with no "branch" field must still work.
+        calls.clear()
+        with tempfile.TemporaryDirectory() as td:
+            stamp_dir = Path(td)
+            (stamp_dir / "deploy_stamp.json").write_text(json.dumps({
+                "sha": "deadbee", "deployed_at": "2020-01-01T00:00:00Z",
+            }))
+            orig_base = phm.BASE_DIR
+            orig_run = subprocess.run
+            phm.BASE_DIR = stamp_dir
+            subprocess.run = fake_run
+            try:
+                phm._deploy_drift_check()
+            finally:
+                phm.BASE_DIR = orig_base
+                subprocess.run = orig_run
+        self.assertEqual(calls[0][-1], "HEAD",
+                         "a branch-less legacy stamp must fall back to HEAD, "
+                         "not crash or silently skip the check")
+
     # ── wiring ───────────────────────────────────────────────────────────────
     def test_the_guard_sits_on_the_one_submit_choke_point(self):
         src = Path(__file__).resolve().parent / "order_ledger.py"
