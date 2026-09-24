@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-09-04T06:28:03Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-09-24T07:15:56Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -209,7 +209,7 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # Heavy: n_jobs=-1 on a 2-CPU VM. Saturday morning is the only window with no
 # main.py pipeline and no overnight_ml_runner (which ends its 0 3 * * 2-6 run
 # well before), so it cannot starve the trading path.
-30 6 * * 6 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_improvement_loop.py >> logs/ml_improve_$(date +\%Y\%m\%d).log 2>&1
+30 6 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_improvement_loop.py >> logs/ml_improve_$(date +\%Y\%m\%d).log 2>&1
 
 # HR Retirement Audit — Sunday 6:30 PM EDT = 22:30 UTC, weekly.
 # Runs 30 min after hr_agent's weekly pass so it audits a settled registry.
