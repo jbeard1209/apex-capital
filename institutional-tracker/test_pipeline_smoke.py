@@ -2877,6 +2877,48 @@ class TestWiringContracts(unittest.TestCase):
                          "the quote track recorded nulls for a rung that had "
                          "both values")
 
+    def test_mirror_execution_refuses_without_all_four_gates(self):
+        """The armed-execution scaffold must fail-closed when ANY gate is
+        missing — not silently emit candidates on a partial green.
+
+        Four gates protect the queue: backtest edge proven, paper gate ready,
+        arm file present, arm payload's `phase` in the recognized budget set.
+        On the Mac this test host has no scanner ledger, so backtest+paper
+        will always fail — which is the point: the wiring should still be
+        loadable, its gates should still enumerate every failure, and the
+        candidate queue file must not exist as a side-effect of importing.
+        A fail-closed scaffold that silently un-fails once one gate flips
+        green is worse than no scaffold — [[guardrail-on-one-path]].
+        """
+        import kalshi_mirror_execute as kme
+        gates = kme._gates()
+        self.assertFalse(gates["ready"], "expected fail-closed on this host")
+        self.assertGreaterEqual(len(gates["blockers"]), 1,
+                                "at least one blocker must be reported")
+        # `_gates()` must not create the arm file as a side effect. Ever.
+        self.assertFalse(kme.ARM_FILE.exists(),
+                         "reading gates must NEVER produce the arm file — "
+                         "that write is Chairman-only")
+
+    def test_mirror_execute_names_no_order_client(self):
+        """The armed-execution scaffold emits CANDIDATES, not orders.
+
+        This test pins the boundary: `kalshi_mirror_execute.py` may import
+        `kalshi_client` (to compute fees on the candidate line) but must
+        NOT reference any of its order-placement functions. The kalshi_sector
+        rule — Claude never places bets, never handles account keys — is
+        enforced statically here so a future edit cannot silently add a
+        place_order call.
+        """
+        src = (Path(__file__).parent / "kalshi_mirror_execute.py").read_text()
+        forbidden = ["place_order", "submit_order", "create_order",
+                     "cancel_order", "sign_order", ".api_key", "KALSHI_API_KEY"]
+        offenders = [name for name in forbidden if name in src]
+        self.assertEqual(offenders, [],
+                         "kalshi_mirror_execute names order-placement symbol(s): "
+                         f"{offenders} — this module is a candidate emitter, "
+                         "not a trader")
+
 
 class TestTheFirmHasTwoSchedulers(unittest.TestCase):
     """Schedule ground truth must cover BOTH schedulers, not one host's half.
