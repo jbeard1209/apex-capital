@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-09-24T07:15:56Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-09-28T16:00:21Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -328,6 +328,19 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # means GO BUILD SOMETHING. Owner: the Chairman, as a build-or-drop decision.
 # Do not read a NOT-YET into this line again.
 45 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_calibration.py --resolve --report --email >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
+
+# --- KALSHI MIRROR PHASE 1 (paper prospective) + PHASE 2 SCAFFOLD (2026-09-28) --
+# Runs 10 min after settlement so freshly-resolved rows land in today's window.
+# kalshi_mirror_paper.py --report: reads the ledger, filters to rows first
+#   observed on/after the pinned start date, computes the tight-tier
+#   aggregates prospectively, writes data/kalshi_mirror_paper_report.json.
+#   Emits no orders. Nothing here creates the arming file — that is
+#   Chairman-only. Reports "gate not ready" until n>=500 & CI-low>0 & 30d elapsed.
+# kalshi_mirror_execute.py: fail-closed candidate emitter. Runs the four-gate
+#   check (backtest proven, paper gate ready, arm file present, phase valid);
+#   only writes to data/kalshi_mirror_candidate_queue.jsonl when ALL FOUR pass.
+#   Refuses harmlessly (with an audit trail) until then. Does not place orders.
+55 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_mirror_paper.py --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1 && /home/jackbeard/venv/bin/python3 kalshi_mirror_execute.py >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
 
 # --- FIXED INCOME MONITORS (added 2026-08-16) -------------------------------
 # Both were written, wired to consumers, and scheduled nowhere. Neither could
