@@ -114,6 +114,14 @@ MANIFEST = {
     # block that is a REAL dead producer rather than an ownership artifact. It
     # was indistinguishable from the 13 false alarms until they were removed.
     "data/data_quality_report.json":     {"max_age_h": 54, "critical": False, "owner": VM},
+    # Slow gate (full test suite dual-zone, ~4.5h). Chairman directive
+    # 2026-09-08 required a scheduled runner off the push path AND wiring the
+    # report into this manifest, so a red slow gate escalates through the same
+    # freshness path as any other production failure. VM cron runs it at 03:30
+    # UTC on Sun + Tue-Sat (skipping Monday's ML experiment window). Budget
+    # 30h gives a nightly cadence one full miss before firing.
+    "data/slow_gate_report.json":        {"max_age_h": 30, "critical": False, "owner": VM,
+                                          "fix": "slow_gate.py"},
 
     # ── Queues ─────────────────────────────────────────────────────────────
     # Added 2026-08-28. Until then this manifest watched 21 reports and exactly

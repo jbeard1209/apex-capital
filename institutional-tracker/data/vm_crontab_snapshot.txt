@@ -1,5 +1,5 @@
 # CANONICAL PROD SCHEDULE — verbatim snapshot of the GCP VM's live crontab.
-# Captured 2026-09-28T16:00:21Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
+# Captured 2026-09-29T07:29:45Z from apex-capital via ssh via: ssh apex-capital 'crontab -l'
 # DO NOT hand-edit — it is a mirror, not a control surface.
 # Refresh with: bash scripts/refresh_crontab_snapshot.sh
 
@@ -464,3 +464,10 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 # than the interval it is meant to catch. Weekdays pre-open.
 0 12 * * 1-5 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 ml_feature_drift_monitor.py >> logs/ml_chain_$(date +\%Y\%m\%d).log 2>&1
 0 4 * * * cd /home/jackbeard/institutional-tracker && /home/jackbeard/venv/bin/python3 log_retention.py >> logs/log_retention_$(date +\%Y\%m\%d).log 2>&1
+
+# --- SLOW GATE (Chairman directive 2026-09-08, deadline 2026-09-15) --------
+# Full test suite (~4.5h dual-zone) OFF the push path, ON the trading host.
+# Skips Monday to avoid the 01:30 / 04:30 UTC ML experiment runners.
+# freshness_sentinel now watches data/slow_gate_report.json — a red slow gate
+# escalates through the same freshness path as any other production failure.
+30 3 * * 0,2-6 cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 slow_gate.py >> logs/slow_gate_$(date +\%Y\%m\%d).log 2>&1
