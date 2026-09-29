@@ -35,6 +35,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -221,21 +222,178 @@ def _mark_cooldown(rule: str):
 
 
 def _run_script(script: str, args: list = None, timeout: int = 180) -> tuple:
-    """Run a project script as a subprocess. Returns (ok, detail)."""
+    """Run a project script as a subprocess. Returns (ok, detail, tail).
+
+    On success:  (True,  "ok",       "")
+    On failure:  (False, "<code>",   "<full stderr, up to 4KB>")
+
+    ``tail`` is the raw stderr (or stdout, when stderr was empty), kept
+    so ``_diagnose_failure`` can look at what actually broke without
+    re-running the script. Historically this function returned only
+    ``(ok, detail)`` with detail truncated to 120 chars; when a handler
+    failed the log said ``fe_rerun_failed:timeout`` and nothing carried
+    the actual reason — that opacity is what let pipeline decay hide
+    for weeks. Every caller in this file unpacks three values now.
+    """
     args = args or []
     path = BASE_DIR / script
     if not path.exists():
-        return False, f"missing_script:{script}"
+        return False, f"missing_script:{script}", ""
     try:
         r = subprocess.run([sys.executable, str(path), *args],
                            capture_output=True, text=True, timeout=timeout)
         if r.returncode == 0:
-            return True, "ok"
-        return False, f"exit{r.returncode}:{(r.stderr or r.stdout)[:120].strip()}"
-    except subprocess.TimeoutExpired:
-        return False, "timeout"
+            return True, "ok", ""
+        tail = (r.stderr or r.stdout or "")[-4096:]
+        return False, f"exit{r.returncode}:{(r.stderr or r.stdout)[:120].strip()}", tail
+    except subprocess.TimeoutExpired as e:
+        # text=True means .stderr is already str; be defensive if not.
+        raw = getattr(e, "stderr", None) or getattr(e, "output", None) or ""
+        if isinstance(raw, bytes):
+            raw = raw.decode(errors="replace")
+        return False, "timeout", raw[-4096:]
     except Exception as e:
-        return False, f"error:{e}"
+        return False, f"error:{e}", ""
+
+
+# =============================================================================
+# AUTO-DIAGNOSIS — turn "rerun_failed:timeout" into a real root cause
+# =============================================================================
+# When an auto-action's subprocess returns non-zero (or times out), the old
+# behavior was to log the opaque failure and move on — the LT finding stayed
+# open, the cooldown expired 24h later, the same handler ran, the same opaque
+# failure logged. Nobody ever saw WHY the script actually broke. That silence
+# is the pipeline-decay bug class: the fix pass exists, and it is failing,
+# but the failure never reaches the Chairman with enough shape to act on.
+#
+# _diagnose_failure inspects the failure with two cheap probes:
+#   1. The stderr tail — grep for ModuleNotFoundError, FileNotFoundError,
+#      PermissionError, MemoryError, ConnectionError. These name the
+#      concrete cause the operator needs to see.
+#   2. The script's expected primary output — is it missing? how stale?
+#      A pipeline that has not written its report in 927h is not "timing
+#      out today"; the output has been dead for a month and the handler
+#      only just noticed.
+#
+# _escalate_handler_failure then files a board proposal that carries the
+# diagnosis into its description, dedup'd on rule+script so a chronic
+# breakage produces ONE queue row instead of one per cycle.
+# =============================================================================
+
+# Known script → expected primary output artifact under BASE_DIR/data.
+# The list only names the scripts THIS module reruns; anything else
+# falls back to a filename-stem probe in _diagnose_failure.
+_SCRIPT_OUTPUTS: dict = {
+    "rd_team_leader.py":              "data/research_team_report.json",
+    "fi_pipeline.py":                 "data/fi_pipeline_report.json",
+    "fe_pipeline.py":                 "data/fe_pipeline_log.json",
+    "review_agent.py":                "data/review_agent_log.json",
+    "pod_ledger.py":                  "data/pod_ledger.json",
+    "predictive_model/ml_model.py":   "data/model_meta.json",
+    "ml_live_test_runner.py":         "data/ml_live_tests.json",
+}
+
+
+# Stderr-tail needles → short root-cause label. First match wins; order
+# matters (more specific classes before more general ones). Every label
+# is deliberately concrete so the Chairman queue reads "cause:missing_module"
+# instead of "cause:error".
+_CAUSE_NEEDLES = (
+    ("ModuleNotFoundError",  "missing_module"),
+    ("ImportError",          "import_error"),
+    ("FileNotFoundError",    "missing_input"),
+    ("PermissionError",      "permission_denied"),
+    ("MemoryError",          "oom"),
+    ("KeyboardInterrupt",    "interrupted"),
+    ("APIError",             "broker_api_error"),
+    ("Unauthorized",         "auth_error"),
+    ("HTTPError",            "http_error"),
+    ("ConnectionError",      "network_error"),
+    ("TimeoutError",         "inner_timeout"),
+    ("JSONDecodeError",      "corrupt_input_json"),
+    ("Traceback",            "unhandled_exception"),
+)
+
+
+def _diagnose_failure(script: str, detail: str, tail: str) -> str:
+    """Best-effort root cause after ``_run_script`` returned (False, ...).
+
+    Returns a compact one-line diagnosis suitable for both the action
+    log and a board-proposal description. Never returns empty — worst
+    case it returns just the failure class ("timeout" / "exit1" / ...)
+    so the caller can always concatenate it into a return string.
+    """
+    parts: list = [detail.split(":", 1)[0]]      # "timeout" / "exit1" / "missing_script"
+
+    # Output-file probe.
+    out_rel = _SCRIPT_OUTPUTS.get(script)
+    if not out_rel:
+        stem = Path(script).stem
+        for candidate in (f"data/{stem}_report.json",
+                          f"data/{stem}_log.json",
+                          f"data/{stem}.json"):
+            if (BASE_DIR / candidate).exists():
+                out_rel = candidate
+                break
+
+    if out_rel:
+        p = BASE_DIR / out_rel
+        if not p.exists():
+            parts.append(f"output_missing:{out_rel}")
+        else:
+            try:
+                age_h = (time.time() - p.stat().st_mtime) / 3600
+                parts.append(f"output:{out_rel} {age_h:.0f}h old")
+            except OSError as e:
+                parts.append(f"output_stat_failed:{e}")
+    else:
+        parts.append("output:unknown_path")
+
+    # Stderr-tail probe.
+    if tail:
+        for needle, label in _CAUSE_NEEDLES:
+            if needle in tail:
+                parts.append(f"cause:{label}")
+                break
+        tail_short = " ".join(tail.split())[-240:]
+        parts.append(f"stderr_tail:'{tail_short}'")
+
+    return "; ".join(parts)
+
+
+def _escalate_handler_failure(entry: dict, script: str, diagnosis: str) -> str:
+    """After an auto-action fails, file a board proposal that names the
+    diagnosed cause so it reaches the Chairman queue with shape.
+
+    Dedup key is ``rule+script`` so a chronic breakage (same rule, same
+    script failing every 24h) collapses to ONE queue row rather than
+    one per cycle. Once the board rejects or implements the row, the
+    dedup releases and a later recurrence can re-file — matching the
+    same "still-open statuses" fold-in ``_escalate_to_board`` uses.
+    """
+    rule = entry.get("rule", "")
+    title = f"[LTIA] Auto-action failed: {script} ({rule})"
+    submitted = _escalate_to_board(
+        title,
+        f"An LT Implementation auto-action failed and could not self-heal. "
+        f"Original finding: '{entry.get('title','?')}' (rule={rule}, "
+        f"open {entry.get('days_open',0)}d). "
+        f"Diagnosis: {diagnosis}. "
+        f"Without a real cause the finding used to stay open forever while "
+        f"the same opaque 'rerun_failed:timeout' logged every 24h; this "
+        f"escalation names what actually broke.",
+        recommended_owner="CIT",
+        severity="HIGH",
+        proposed_fix=(
+            f"CIT: read the diagnosis, reproduce (`python3 {script}` on the affected host), "
+            f"and either fix the failing precondition (missing module, stale input, "
+            f"exhausted timeout) or degrade the caller so the finding closes. If the "
+            f"diagnosis says 'output NNNh old', the pipeline has been dead longer than "
+            f"the LT finding is old — check the writer, not the reader."
+        ),
+        dedup_key=f"handler_failure::{rule}::{script}",
+    )
+    return "board_proposal_submitted" if submitted else "already_in_queue"
 
 
 # =============================================================================
@@ -256,7 +414,8 @@ def _auto_rerun_research(entry: dict) -> str:
     if _within_cooldown("rerun_research", hours=24):
         return "skipped:cooldown_24h"
     logger.info("  → Re-running rd_team_leader.py to break the research dark window...")
-    ok, detail = _run_script("rd_team_leader.py", timeout=240)
+    script = "rd_team_leader.py"
+    ok, detail, tail = _run_script(script, timeout=240)
     _mark_cooldown("rerun_research")
     if ok:
         _post_to_channel(
@@ -264,7 +423,10 @@ def _auto_rerun_research(entry: dict) -> str:
             f"('{entry.get('title','?')[:50]}') — re-ran rd_team_leader.py to regenerate picks.",
             priority="HIGH")
         return "auto_reran_research_pipeline"
-    return f"research_rerun_failed:{detail}"
+    diag = _diagnose_failure(script, detail, tail)
+    entry["last_diagnosis"] = diag
+    esc = _escalate_handler_failure(entry, script, diag)
+    return f"research_rerun_failed:{diag[:220]}|esc:{esc}"
 
 
 def _auto_rerun_pod_pipeline(entry: dict) -> str:
@@ -278,14 +440,17 @@ def _auto_rerun_pod_pipeline(entry: dict) -> str:
     if _within_cooldown(cd_key, hours=24):
         return "skipped:cooldown_24h"
     logger.info(f"  → Re-running {script} to refresh {pod.upper()} pod picks...")
-    ok, detail = _run_script(script, timeout=300)
+    ok, detail, tail = _run_script(script, timeout=300)
     _mark_cooldown(cd_key)
     if ok:
         _post_to_channel(
             f"🔧 LT auto-action: {pod.upper()} pipeline was stale/empty "
             f"('{entry.get('title','?')[:50]}') — re-ran {script}.", priority="NORMAL")
         return f"auto_reran_{script}"
-    return f"{pod}_rerun_failed:{detail}"
+    diag = _diagnose_failure(script, detail, tail)
+    entry["last_diagnosis"] = diag
+    esc = _escalate_handler_failure(entry, script, diag)
+    return f"{pod}_rerun_failed:{diag[:220]}|esc:{esc}"
 
 
 def _auto_reconcile_positions(entry: dict) -> str:
@@ -293,7 +458,8 @@ def _auto_reconcile_positions(entry: dict) -> str:
     if _within_cooldown("reconcile_reviews", hours=12):
         return "skipped:cooldown_12h"
     logger.info("  → Re-running review_agent.py to re-sync position coverage...")
-    ok, detail = _run_script("review_agent.py", args=["--quiet"], timeout=180)
+    script = "review_agent.py"
+    ok, detail, tail = _run_script(script, args=["--quiet"], timeout=180)
     _mark_cooldown("reconcile_reviews")
     if ok:
         _post_to_channel(
@@ -301,7 +467,10 @@ def _auto_reconcile_positions(entry: dict) -> str:
             f"('{entry.get('title','?')[:50]}') — re-ran review_agent.py to restore "
             f"stop-loss / exit monitoring.", priority="HIGH")
         return "auto_reconciled_reviews"
-    return f"review_rerun_failed:{detail}"
+    diag = _diagnose_failure(script, detail, tail)
+    entry["last_diagnosis"] = diag
+    esc = _escalate_handler_failure(entry, script, diag)
+    return f"review_rerun_failed:{diag[:220]}|esc:{esc}"
 
 
 def _auto_reconcile_pod_ledger(entry: dict) -> str:
@@ -309,7 +478,8 @@ def _auto_reconcile_pod_ledger(entry: dict) -> str:
     if _within_cooldown("reconcile_pod_ledger", hours=12):
         return "skipped:cooldown_12h"
     logger.info("  → Re-running pod_ledger.py to recompute pod values...")
-    ok, detail = _run_script("pod_ledger.py", timeout=120)
+    script = "pod_ledger.py"
+    ok, detail, tail = _run_script(script, timeout=120)
     _mark_cooldown("reconcile_pod_ledger")
     if ok:
         _post_to_channel(
@@ -317,7 +487,10 @@ def _auto_reconcile_pod_ledger(entry: dict) -> str:
             f"('{entry.get('title','?')[:50]}') — re-ran pod_ledger.py to recompute "
             f"positions_value and pod P&L.", priority="NORMAL")
         return "auto_reconciled_pod_ledger"
-    return f"pod_ledger_rerun_failed:{detail}"
+    diag = _diagnose_failure(script, detail, tail)
+    entry["last_diagnosis"] = diag
+    esc = _escalate_handler_failure(entry, script, diag)
+    return f"pod_ledger_rerun_failed:{diag[:220]}|esc:{esc}"
 
 
 def _auto_train_model(entry: dict) -> str:
@@ -325,7 +498,8 @@ def _auto_train_model(entry: dict) -> str:
     if _within_cooldown("train_model", hours=24):
         return "skipped:cooldown_24h"
     logger.info("  → Training ML model (predictive_model/ml_model.py)...")
-    ok, detail = _run_script("predictive_model/ml_model.py", timeout=600)
+    script = "predictive_model/ml_model.py"
+    ok, detail, tail = _run_script(script, timeout=600)
     _mark_cooldown("train_model")
     if ok:
         _post_to_channel(
@@ -334,7 +508,10 @@ def _auto_train_model(entry: dict) -> str:
             f"model.pkl/model_meta.json. Real AUC now available to monitors.",
             priority="HIGH")
         return "auto_trained_model"
-    return f"model_train_failed:{detail}"
+    diag = _diagnose_failure(script, detail, tail)
+    entry["last_diagnosis"] = diag
+    esc = _escalate_handler_failure(entry, script, diag)
+    return f"model_train_failed:{diag[:220]}|esc:{esc}"
 
 
 def _auto_start_ml_tracking(entry: dict) -> str:
@@ -342,7 +519,8 @@ def _auto_start_ml_tracking(entry: dict) -> str:
     if _within_cooldown("start_ml_tracking", hours=24):
         return "skipped:cooldown_24h"
     logger.info("  → Running ml_live_test_runner.py --enter to begin live ML validation...")
-    ok, detail = _run_script("ml_live_test_runner.py", args=["--enter"], timeout=180)
+    script = "ml_live_test_runner.py"
+    ok, detail, tail = _run_script(script, args=["--enter"], timeout=180)
     _mark_cooldown("start_ml_tracking")
     if ok:
         _post_to_channel(
@@ -350,7 +528,10 @@ def _auto_start_ml_tracking(entry: dict) -> str:
             f"('{entry.get('title','?')[:50]}') — started ml_live_test_runner --enter. "
             f"Evaluate after 20 trading days.", priority="NORMAL")
         return "auto_started_ml_tracking"
-    return f"ml_tracking_failed:{detail}"
+    diag = _diagnose_failure(script, detail, tail)
+    entry["last_diagnosis"] = diag
+    esc = _escalate_handler_failure(entry, script, diag)
+    return f"ml_tracking_failed:{diag[:220]}|esc:{esc}"
 
 
 # ---- BOARD-ESCALATION HANDLERS ----------------------------------------------

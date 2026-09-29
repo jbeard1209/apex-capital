@@ -31731,6 +31731,411 @@ class TestFastGateSplitIsTheOneWeShip(unittest.TestCase):
             "the path the Chairman queue and the report readers consult.")
 
 
+class TestCategorizerNeverMisrouteCarveOuts(unittest.TestCase):
+    """Poison-pill test for the categorizer.
+
+    The 15-day fallback in chairman_decision_sla.py auto-escalates any
+    overdue decision to the board — UNLESS the categorizer marked it a
+    carve-out (arm_gate / capital / hr / protected_file). A carve-out
+    that misclassifies as auto-board is the worst-case failure of this
+    system: the board would auto-approve a decision only the Chairman
+    is allowed to make. So this class fabricates a poison pill for each
+    carve-out and asserts the classifier holds.
+
+    Rules the categorizer needed to add for these to work — dropping any
+    one of them would regress:
+      * arm_gate: "kalshi-phase-", "arm mirror", "kalshi_armed" (dedup
+        file marker), "-arm " (id suffix from real chairman queue).
+      * hr: "hr_retirement", "keep-advocacy veto" (from the HR-veto
+        memory).
+      * capital: "pod budget", "position cap", "reallocate capital".
+      * protected_file: needle match on shape-carrying fields only
+        (title/proposed_fix/dedup_key) — a filename mentioned in the
+        description ("~63 cron jobs including main.py") must NOT flag
+        the item as a protected-file edit.
+    """
+
+    def setUp(self):
+        from chairman_decision_categorizer import classify, is_carve_out
+        self.classify = classify
+        self.is_carve_out = is_carve_out
+
+    # ---- carve-outs must ALWAYS be recognised ----------------------------
+
+    def _assert_carve_out(self, item, expected_name):
+        cat = self.classify(item)
+        self.assertEqual(cat.name, expected_name,
+            f"{item['id']!r} must classify as {expected_name}, got {cat.name}")
+        self.assertFalse(cat.board_may_ratify,
+            f"{item['id']!r} is a carve-out — board_may_ratify must be False.")
+        self.assertTrue(self.is_carve_out(item),
+            f"{item['id']!r} is_carve_out() must return True.")
+
+    def test_arm_gate_kalshi_phase_2(self):
+        # This exact phrasing is what the arming plan wrote into the queue.
+        self._assert_carve_out(
+            {"id": "kalshi-phase-2-arm", "title": "arm Kalshi mirror phase 2",
+             "description": "flip kalshi_mirror_armed and let the Phase 2 executor place real orders"},
+            "arm_gate")
+
+    def test_arm_gate_fi_arming(self):
+        self._assert_carve_out(
+            {"id": "fi-arm-decision", "title": "FI arming decision",
+             "description": "arm FI: create data/.fi_armed"},
+            "arm_gate")
+
+    def test_arm_gate_kill_switch(self):
+        self._assert_carve_out(
+            {"id": "risk-1", "title": "flip enforce mode on the kill-switch",
+             "description": "shadow_to_enforce transition needs Chairman sign-off"},
+            "arm_gate")
+
+    def test_hr_termination(self):
+        self._assert_carve_out(
+            {"id": "hr-1", "title": "terminate agent fi_analyst_2",
+             "description": "PIP verdict: three failed cycles"},
+            "hr")
+
+    def test_hr_keep_advocacy_veto(self):
+        # From [[hr_keep_advocacy_veto]]: a peer KEEP advocacy vetoes.
+        self._assert_carve_out(
+            {"id": "hr-2", "title": "advocacy veto: mm_specialist_3",
+             "description": "peer KEEP advocacy blocks termination — convert to PIP"},
+            "hr")
+
+    def test_capital_reallocate(self):
+        self._assert_carve_out(
+            {"id": "cap-1", "title": "reallocate capital to ML pod",
+             "description": "shift $50k from macro to ML pod budget"},
+            "capital")
+
+    def test_capital_position_cap(self):
+        self._assert_carve_out(
+            {"id": "cap-2", "title": "raise position cap to 20",
+             "description": "sizing-cap change"},
+            "capital")
+
+    def test_protected_file_edit_in_title(self):
+        # A proposal whose TITLE names a protected file is a
+        # protected-file edit and must be Chairman-only.
+        self._assert_carve_out(
+            {"id": "prot-1",
+             "title": "improve error handling in alpaca_trader.py",
+             "description": "wrap the submit loop in retry",
+             "proposed_fix": "edit alpaca_trader.py to add a backoff",
+             "dedup_key": "alpaca_trader_retry"},
+            "protected_file")
+
+    # ---- casual filename mention in DESCRIPTION must NOT carve out -------
+
+    def test_protected_filename_in_description_is_not_protected(self):
+        # This is the 2026-09-28 false positive: 7 real queue items
+        # tripped protected_file because the description mentioned main.py
+        # ("~63 cron jobs including main.py on the same account"). None
+        # of these proposals actually edited main.py; the categorizer
+        # was too eager. FIELDS_NARROW fixes this — protected_file is
+        # matched only against title/proposed_fix/dedup_key/category.
+        item = {"id": "fresh-1",
+                "title": "stale FE pipeline output",
+                "description": "the VM runs ~63 cron jobs including main.py "
+                               "6x/day and fe_pipeline is one of them",
+                "dedup_key": "fresh_fe_pipeline",
+                "proposed_fix": "rerun fe_pipeline.py on the VM"}
+        cat = self.classify(item)
+        self.assertNotEqual(cat.name, "protected_file",
+            "A protected filename mentioned casually in the description "
+            "must NOT flag an item as a protected-file edit proposal.")
+        # (freshness is the correct destination here.)
+        self.assertTrue(cat.board_may_ratify,
+            "A freshness item must be board-ratifiable.")
+
+    # ---- auto-board categories must reach the board ---------------------
+
+    def test_wiring_is_board_ratifiable(self):
+        cat = self.classify({"id": "sweep-agent_input_unproduced-fi_report",
+                             "title": "Sweep: 13 finding(s) — inputs unproduced"})
+        self.assertEqual(cat.name, "wiring")
+        self.assertTrue(cat.board_may_ratify)
+
+    def test_cit_code_is_board_ratifiable(self):
+        cat = self.classify(
+            {"id": "apex-sys-cit-20260910-1300-edgar_cache_partially_stale",
+             "title": "EDGAR cache partially stale",
+             "description": "280 of 1095 file(s) older than 30d",
+             "dedup_key": "pip-integrity-edgar_cache"})
+        self.assertEqual(cat.name, "cit_code")
+        self.assertTrue(cat.board_may_ratify)
+
+    def test_freshness_is_board_ratifiable(self):
+        cat = self.classify({"id": "fresh-fe",
+                             "title": "fe_pipeline_log.json is 927h old",
+                             "description": "stale producer, needs rerun"})
+        self.assertEqual(cat.name, "freshness")
+        self.assertTrue(cat.board_may_ratify)
+
+
+class TestSLAFallbackHonorsCarveOuts(unittest.TestCase):
+    """Poison-pill test for chairman_decision_sla.run().
+
+    The 15-day fallback must escalate overdue auto-board items to the
+    board, and NEVER escalate carve-outs — instead flagging them as
+    chairman_only_overdue. If this ever regresses, the board would
+    auto-approve an arm-gate flip or an HR termination on the Chairman's
+    behalf, which is exactly the authority carve-outs exist to protect.
+
+    The test builds a temp queue with:
+      * one arm_gate item, deadline in the past
+      * one hr item, deadline in the past
+      * one wiring item, deadline in the past
+      * one wiring item, deadline in the FUTURE (control)
+    """
+
+    def test_carve_outs_never_escalate_only_auto_board_does(self):
+        import chairman_decision_sla as sla
+
+        with tempfile.TemporaryDirectory() as d:
+            data = Path(d)
+            queue_path        = data / "chairman_decision_queue.json"
+            cit_pending_path  = data / "cit_pending_proposals.json"
+            chair_action_path = data / "chairman_action_required.json"
+            archive_path      = data / "chairman_resolved_archive.json"
+            # Empty upstream files so _close_resolved_upstream doesn't
+            # find any of the injected ids as already-resolved and
+            # short-circuit them out of the escalation path.
+            chair_action_path.write_text("[]")
+            archive_path.write_text("[]")
+            cit_pending_path.write_text("[]")
+
+            past   = (datetime.now() - timedelta(days=30)).isoformat()
+            future = (datetime.now() + timedelta(days=5)).isoformat()
+
+            # NB: category is NOT stamped here — sla.run() re-stamps every
+            # row on every call, so we test the classifier + the SLA
+            # end-to-end. The invariant: an arm-gate or HR item, however
+            # overdue, never lands in escalated_to_board.
+            queue = [
+                {"id": "arm-1", "title": "arm Kalshi mirror phase 2",
+                 "description": "flip kalshi_mirror_armed",
+                 "status": "awaiting_chairman",
+                 "first_surfaced": past, "deadline": past,
+                 "severity": "HIGH"},
+                {"id": "hr-1", "title": "terminate agent fi_analyst_2",
+                 "description": "PIP verdict",
+                 "status": "awaiting_chairman",
+                 "first_surfaced": past, "deadline": past,
+                 "severity": "MEDIUM"},
+                {"id": "wire-1", "title": "wiring gap: unproduced input",
+                 "description": "sweep-agent_input_unproduced",
+                 "status": "awaiting_chairman",
+                 "first_surfaced": past, "deadline": past,
+                 "severity": "MEDIUM"},
+                {"id": "wire-2", "title": "wiring gap: unconsumed output",
+                 "description": "sweep-agent_output_unconsumed",
+                 "status": "awaiting_chairman",
+                 "first_surfaced": past, "deadline": future,
+                 "severity": "LOW"},
+            ]
+            queue_path.write_text(json.dumps(queue))
+
+            orig_queue         = sla.QUEUE_PATH
+            orig_cit_pending   = sla.CIT_PENDING
+            orig_chair_action  = sla.CHAIR_ACTION
+            orig_archive       = sla.ARCHIVE_PATH
+            sla.QUEUE_PATH    = queue_path
+            sla.CIT_PENDING   = cit_pending_path
+            sla.CHAIR_ACTION  = chair_action_path
+            sla.ARCHIVE_PATH  = archive_path
+            try:
+                report = sla.run(write=True)
+            finally:
+                sla.QUEUE_PATH    = orig_queue
+                sla.CIT_PENDING   = orig_cit_pending
+                sla.CHAIR_ACTION  = orig_chair_action
+                sla.ARCHIVE_PATH  = orig_archive
+
+            # The arm-gate and HR rows must be flagged as chairman-only
+            # overdue and NOT escalated to the board.
+            self.assertIn("arm-1", report["chairman_only_overdue"],
+                "arm-gate item was overdue but must stay chairman-only.")
+            self.assertIn("hr-1",  report["chairman_only_overdue"],
+                "HR item was overdue but must stay chairman-only.")
+            self.assertNotIn("arm-1", report["escalated_to_board"],
+                "POISON PILL: arm-gate must NEVER auto-escalate.")
+            self.assertNotIn("hr-1",  report["escalated_to_board"],
+                "POISON PILL: HR must NEVER auto-escalate.")
+
+            # The wiring row past deadline must escalate; the one still
+            # within its deadline must not.
+            self.assertIn("wire-1", report["escalated_to_board"],
+                "Overdue wiring item should auto-escalate at 15d.")
+            self.assertNotIn("wire-2", report["escalated_to_board"],
+                "Non-overdue wiring item must not escalate yet.")
+
+            # The written queue must carry chairman_only=True on the
+            # carve-outs — future runs read this back and rely on it.
+            with open(queue_path) as f:
+                written = {q["id"]: q for q in json.load(f)}
+            self.assertTrue(written["arm-1"].get("chairman_only"),
+                "arm-gate row must persist chairman_only=True.")
+            self.assertTrue(written["hr-1"].get("chairman_only"),
+                "HR row must persist chairman_only=True.")
+            self.assertFalse(written["wire-1"].get("chairman_only", False),
+                "wiring row must not carry chairman_only=True.")
+
+    def test_sla_days_is_fifteen(self):
+        # Chairman directive 2026-09-29: 20-day fallback tightened to 15.
+        # If this drifts back to 20 the whole point is lost.
+        import chairman_decision_sla as sla
+        self.assertEqual(sla.SLA_DAYS, 15,
+            "Chairman directive 2026-09-29 set the board-fallback SLA to 15 days.")
+
+
+class TestAutoDiagnosisFillsInTheGap(unittest.TestCase):
+    """Auto-diagnosis is the fix for pipeline decay: a failed auto-action
+    used to log 'fe_rerun_failed:timeout' and nothing else — the finding
+    stayed open forever, the same opaque failure re-logged every 24h,
+    and the actual cause never reached the Chairman. These tests pin
+    the shape of the fix so it cannot regress silently.
+    """
+
+    def test_diagnose_extracts_missing_module(self):
+        from logic_team_implementation_agent import _diagnose_failure
+        tail = ("Traceback (most recent call last):\n"
+                "  File \"fe_pipeline.py\", line 12, in <module>\n"
+                "    import pyarrow\n"
+                "ModuleNotFoundError: No module named 'pyarrow'\n")
+        diag = _diagnose_failure("fe_pipeline.py", "exit1:ModuleNotFoundError", tail)
+        self.assertIn("cause:missing_module", diag,
+            "diagnosis must name the concrete cause, not just the exit code.")
+        self.assertIn("stderr_tail", diag,
+            "diagnosis must include an operator-readable stderr excerpt.")
+
+    def test_diagnose_reports_output_staleness_when_known(self):
+        from logic_team_implementation_agent import _diagnose_failure, _SCRIPT_OUTPUTS
+        # fe_pipeline.py is in the known-outputs table.
+        self.assertIn("fe_pipeline.py", _SCRIPT_OUTPUTS,
+            "fe_pipeline.py must have a known output path so the "
+            "diagnostic can report its staleness.")
+        diag = _diagnose_failure("fe_pipeline.py", "timeout", "")
+        # We assert either 'output:' (file exists with an age) or
+        # 'output_missing:' — never a silent skip.
+        self.assertTrue(("output:" in diag) or ("output_missing:" in diag),
+            "diagnosis for a known script must mention its output "
+            "file's presence or age.")
+
+    def test_diagnose_never_returns_empty(self):
+        from logic_team_implementation_agent import _diagnose_failure
+        # Even with no tail and an unknown script, the diagnostic
+        # returns AT LEAST the failure class. A silent empty return
+        # would send the caller back to the opaque-log state.
+        diag = _diagnose_failure("nonexistent_script_xyz.py", "timeout", "")
+        self.assertTrue(diag.startswith("timeout"),
+            "diagnosis must always begin with the failure class.")
+        self.assertGreater(len(diag), len("timeout"),
+            "diagnosis must add SOMETHING even for an unknown script "
+            "(here: 'output:unknown_path').")
+
+    def test_handler_failure_files_a_board_proposal_with_the_diagnosis(self):
+        """A failing auto-action must escalate to the board — otherwise
+        the finding stays open and the pipeline stays decayed. Mocks
+        _run_script to force a failure with a real stderr, then asserts
+        the escalation carries the diagnosis in its description."""
+        import logic_team_implementation_agent as ltia
+
+        with tempfile.TemporaryDirectory() as d:
+            target   = Path(d) / "cit_pending_proposals.json"
+            approved = Path(d) / "cit_approved_proposals.json"
+            approved.write_text("[]")
+            orig_pending  = ltia.CIT_PENDING
+            orig_approved = ltia.CIT_APPROVED
+            ltia.CIT_PENDING  = target
+            ltia.CIT_APPROVED = approved
+            try:
+                # Force a failure that carries a real stderr through.
+                fake_run = lambda script, args=None, timeout=180: (
+                    False, "exit1:ModuleNotFoundError",
+                    "Traceback (most recent call last):\n"
+                    "  File \"fe_pipeline.py\"\n"
+                    "ModuleNotFoundError: No module named 'pyarrow'\n"
+                )
+                # Also stub out _within_cooldown so the handler does not
+                # short-circuit on a stale cooldown from a prior test run.
+                with patch.object(ltia, "_run_script", side_effect=fake_run), \
+                     patch.object(ltia, "_within_cooldown", return_value=False), \
+                     patch.object(ltia, "_mark_cooldown"), \
+                     patch.object(ltia, "_post_to_channel"):
+                    result = ltia._auto_rerun_pod_pipeline({
+                        "rule": "fe_pipeline_stale",
+                        "title": "FE pipeline stale 927h",
+                        "days_open": 5,
+                    })
+
+                # The return string must carry the diagnosis, not the
+                # opaque 'timeout' original.
+                self.assertIn("cause:missing_module", result,
+                    "handler must include the diagnosed cause in its result.")
+
+                # And a board proposal must have been queued with the
+                # diagnosis in its description.
+                self.assertTrue(target.exists(),
+                    "handler-failure escalation must create a board "
+                    "proposal, not just log locally.")
+                with open(target) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "one failure should produce exactly one board proposal.")
+                proposal = queue[0]
+                self.assertIn("cause:missing_module", proposal["description"],
+                    "board proposal description must carry the concrete "
+                    "diagnosed cause.")
+                self.assertEqual(proposal["dedup_key"],
+                    "handler_failure::fe_pipeline_stale::fe_pipeline.py",
+                    "handler-failure dedup_key must be stable across cycles "
+                    "so a chronic breakage does not spam the board.")
+            finally:
+                ltia.CIT_PENDING  = orig_pending
+                ltia.CIT_APPROVED = orig_approved
+
+    def test_handler_failure_dedups_across_repeat_runs(self):
+        """The same handler failing twice in a row must produce ONE board
+        proposal — the whole point of dedup_key=rule+script is that a
+        chronic breakage collapses. Without this, a broken pipeline
+        would file a fresh proposal every 24h."""
+        import logic_team_implementation_agent as ltia
+
+        with tempfile.TemporaryDirectory() as d:
+            target   = Path(d) / "cit_pending_proposals.json"
+            approved = Path(d) / "cit_approved_proposals.json"
+            approved.write_text("[]")
+            orig_pending  = ltia.CIT_PENDING
+            orig_approved = ltia.CIT_APPROVED
+            ltia.CIT_PENDING  = target
+            ltia.CIT_APPROVED = approved
+            try:
+                fake_run = lambda script, args=None, timeout=180: (
+                    False, "timeout", "ConnectionError: EDGAR unreachable\n"
+                )
+                with patch.object(ltia, "_run_script", side_effect=fake_run), \
+                     patch.object(ltia, "_within_cooldown", return_value=False), \
+                     patch.object(ltia, "_mark_cooldown"), \
+                     patch.object(ltia, "_post_to_channel"):
+                    ltia._auto_rerun_pod_pipeline({
+                        "rule": "fe_pipeline_stale",
+                        "title": "FE pipeline stale — day 1", "days_open": 5})
+                    ltia._auto_rerun_pod_pipeline({
+                        "rule": "fe_pipeline_stale",
+                        "title": "FE pipeline stale — day 2", "days_open": 6})
+
+                with open(target) as f:
+                    queue = json.load(f)
+                self.assertEqual(len(queue), 1,
+                    "same rule+script failing twice must dedup to one "
+                    "board proposal, not two.")
+            finally:
+                ltia.CIT_PENDING  = orig_pending
+                ltia.CIT_APPROVED = orig_approved
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

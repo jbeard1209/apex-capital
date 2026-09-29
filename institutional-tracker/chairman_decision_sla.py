@@ -16,13 +16,24 @@ This agent is the governance backstop the Chairman asked for (2026-07-27):
   • Surface decision-needed items to Jack FIRST in the Claude APP, never email.
     It maintains data/chairman_decision_queue.json — a clean, deduped inbox that
     a Claude app session reads and presents. Email is deliberately NOT used here.
-  • Enforce the SLA_DAYS deadline — 20 days, per Chairman directive 2026-07-29,
-    tightened from the original 50. Any item still undecided that long after it
-    was first
-    surfaced is auto-escalated to a BOARD VOTE (a STRATEGY proposal appended to
-    data/cit_pending_proposals.json, consumed by deputy_board.py / board_meeting.py),
-    and its status flips to "escalated_to_board". The firm never stalls on a
-    silent non-decision again.
+  • Enforce the SLA_DAYS deadline — 15 days, per Chairman directive 2026-09-29,
+    tightened from 20 ("if i am not approving something after 15 days or something,
+    have the board vote on it"). Any item still undecided that long after it was
+    first surfaced is auto-escalated to a BOARD VOTE (a STRATEGY proposal appended
+    to data/cit_pending_proposals.json, consumed by deputy_board.py /
+    board_meeting.py), and its status flips to "escalated_to_board". The firm
+    never stalls on a silent non-decision again.
+  • CARVE-OUTS. Chairman directive 2026-09-29: some decisions are the Chairman's
+    alone and the board cannot ratify them, no matter how long they sit —
+    flipping a live-trading arm gate (Kalshi, FI, kill-switch), reallocating
+    capital, HR verdicts on individual agents, and edits to protected files
+    (alpaca_trader.py, main.py, risk_manager_agent.py, irm_review_agent.py,
+    board_meeting.py, manager_agent.py). These are classified by
+    chairman_decision_categorizer.classify() and their queue rows carry
+    chairman_only=True. They are still SURFACED forever (with an overdue flag
+    once past 15d), but the escalation loop leaves them alone. The alternative —
+    handing the board a vote it does not have the authority to hold — is the
+    failure mode this carve-out prevents.
 
 SOURCES it pulls decisions from:
   • data/chairman_action_required.json  — items with status "awaiting_chairman"
@@ -33,9 +44,12 @@ DECISION LIFECYCLE (status on each queue entry):
   decided            → Chairman resolved it (set by the app session; we archive it)
   resolved_upstream  → the producer closed the row this mirrors; no decision needed
   escalated_to_board → SLA_DAYS elapsed with no decision; board proposal filed
+  (chairman_only=True items never leave awaiting_chairman via escalation; they
+   just carry chairman_only_overdue=True once past the deadline.)
 
 This agent NEVER makes the decision itself and NEVER sends email. It only
-surfaces, tracks the clock, and — as a last resort — hands the call to the board.
+surfaces, tracks the clock, and — as a last resort — hands the call to the board
+(unless the item is Chairman-only; see the carve-out note above).
 """
 from __future__ import annotations
 import json, argparse, datetime
@@ -46,6 +60,12 @@ from pathlib import Path
 # undone by the next ingest — the producer/consumer mismatch this firm keeps
 # rediscovering. Imported, never re-implemented.
 from chairman_queue_sync import group_key as _group_key
+# One taxonomy for the whole Chairman-queue contract. chairman_inbox.py groups
+# by the same categories so what the Chairman SEES at session start matches what
+# the SLA gates escalation on. If those two callers kept separate taxonomies,
+# an arm-gate item could pass the inbox as "arm gate" and still get escalated
+# by the SLA — the aggregate-is-not-a-finding failure this firm keeps hitting.
+from chairman_decision_categorizer import classify as _classify
 import problem_lifecycle_sentinel as _PLS
 
 DATA = Path(__file__).resolve().parent / "data"
@@ -53,7 +73,9 @@ CHAIR_ACTION  = DATA / "chairman_action_required.json"   # upstream producers
 QUEUE_PATH    = DATA / "chairman_decision_queue.json"     # the app-facing inbox (this agent owns it)
 CIT_PENDING   = DATA / "cit_pending_proposals.json"       # board escalation target
 
-SLA_DAYS = 20   # Chairman directive 2026-07-29: escalate to board after 20 days, not 50
+SLA_DAYS = 15   # Chairman directive 2026-09-29: escalate at 15 days, not 20
+                # ("if i am not approving something after 15 days or something,
+                #  have the board vote on it")
 
 
 def _load(path: Path, default):
@@ -125,7 +147,7 @@ def _ingest(queue_by_id):
         # old first_seen values would retroactively blow the deadline on the
         # whole existing backlog and flood the board with escalations on the
         # first run. We keep the original timestamp for reference only.
-        queue_by_id[aid] = {
+        row = {
             "id": aid,
             "severity": a.get("severity", "MEDIUM"),
             "description": a.get("description", ""),
@@ -142,8 +164,22 @@ def _ingest(queue_by_id):
             "upstream_first_seen": a.get("first_seen_of_group") or a.get("ts"),
             "surfaced_channel": "claude_app",   # explicitly NOT email
         }
+        _stamp_category(row)
+        queue_by_id[aid] = row
         added += 1
     return added
+
+
+def _stamp_category(item: dict) -> None:
+    """Attach category + chairman_only + carve_out_reason to an item in place.
+    Idempotent — callers can invoke this on already-stamped rows and either the
+    stamp stays (fields present) or is refreshed (categorizer rules changed).
+    We refresh unconditionally so a rule update flows to existing queue rows on
+    the next run rather than requiring a queue rebuild."""
+    cat = _classify(item)
+    item["category"] = cat.name
+    item["chairman_only"] = not cat.board_may_ratify
+    item["category_label"] = cat.label
 
 
 def _escalate_to_board(item):
@@ -262,17 +298,33 @@ def run(write: bool = True) -> dict:
     # is re-raised and closed in the same window is still seen.
     resolved_upstream = _close_resolved_upstream(queue_by_id)
 
+    # Backfill category on rows ingested before this stamp existed, and refresh
+    # on every run so a categorizer rule change flows to the queue without
+    # requiring a rebuild. Cheap — pure classification, no I/O.
+    for item in queue_by_id.values():
+        _stamp_category(item)
+
     now = _now()
     escalated = []
+    chairman_only_overdue = []
     for item in queue_by_id.values():
         if item.get("status") != "awaiting_chairman":
             continue
         deadline = _parse_ts(item.get("deadline"))
-        if deadline and now >= deadline:
-            if write and _escalate_to_board(item):
-                item["status"] = "escalated_to_board"
-                item["escalated_at"] = _iso(now)
-                escalated.append(item["id"])
+        if not (deadline and now >= deadline):
+            continue
+        if item.get("chairman_only"):
+            # CARVE-OUT: the board cannot ratify this class of decision (arm
+            # gate / capital / HR / protected file). Do NOT hand it to the
+            # board — but tag it so the app inbox can surface it as overdue
+            # and never let it slip out of view.
+            item["chairman_only_overdue"] = True
+            chairman_only_overdue.append(item["id"])
+            continue
+        if write and _escalate_to_board(item):
+            item["status"] = "escalated_to_board"
+            item["escalated_at"] = _iso(now)
+            escalated.append(item["id"])
 
     pending_items = [q for q in queue_by_id.values() if q.get("status") == "awaiting_chairman"]
     # Sort the app inbox: soonest deadline first, then severity.
@@ -289,6 +341,7 @@ def run(write: bool = True) -> dict:
         "resolved_upstream": resolved_upstream,
         "pending_for_chairman": pending_items,
         "escalated_to_board": escalated,
+        "chairman_only_overdue": chairman_only_overdue,
         "sla_days": SLA_DAYS,
     }
 
@@ -331,6 +384,13 @@ def main():
     if rep["escalated_to_board"]:
         print(f"\n  ⚖️  Auto-escalated to BOARD VOTE (SLA blown): "
               f"{', '.join(rep['escalated_to_board'])}")
+    if rep.get("chairman_only_overdue"):
+        # Chairman-only decisions blew the 15d clock but the board CANNOT
+        # ratify them — surface them here so they never slip out of view.
+        # They stay awaiting_chairman forever.
+        print(f"\n  🔒 CHAIRMAN-ONLY overdue (>{SLA_DAYS}d, no board fallback): "
+              f"{', '.join(rep['chairman_only_overdue'][:10])}"
+              f"{' …' if len(rep['chairman_only_overdue']) > 10 else ''}")
     if not args.report:
         print(f"\n  (ingested {rep['ingested']} new item(s), closed "
               f"{rep['resolved_upstream']} already-resolved upstream)")
