@@ -1659,7 +1659,8 @@ def infrastructure_doc() -> Optional[Path]:
     Returns None rather than a non-existent Path: the caller must be able to
     tell "no inventory" from "an inventory I could not parse".
     """
-    for cand in (BASE_DIR.parent / "INFRASTRUCTURE.md",
+    for cand in (BASE_DIR.parent / "docs" / "INFRASTRUCTURE.md",
+                 BASE_DIR.parent / "INFRASTRUCTURE.md",
                  BASE_DIR / "INFRASTRUCTURE.md"):
         if cand.exists():
             return cand

@@ -20,18 +20,49 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 # ============================================================
-#  ★ CONFIGURATION — edit these lines
+#  ★ CONFIGURATION — read from environment (see .env.example)
 # ============================================================
+#
+# Users are supplied as a JSON object in APEX_DASHBOARD_USERS, e.g.
+#     export APEX_DASHBOARD_USERS='{"jack":"StrongPass!","guest":"viewonly"}'
+# Fallback: a single username in APEX_DASHBOARD_USER (default "jack") with
+# the password in APEX_DASHBOARD_PASSWORD.
+#
+# If neither is set and PASSWORD_REQUIRED is True (the default), the server
+# refuses to start — fail-closed rather than run with hardcoded credentials.
 
-PASSWORD_REQUIRED = True          # Set False to make it fully public (no login)
+PASSWORD_REQUIRED = os.environ.get("APEX_DASHBOARD_PASSWORD_REQUIRED", "1") != "0"
+PORT              = int(os.environ.get("APEX_DASHBOARD_PORT", "5050"))
 
-# Add as many users as you like: "username": "password"
-USERS = {
-    "jack":  "REDACTED_DASHBOARD_PASSWORD",   # your personal login
-    "guest": "REDACTED_GUEST_PASSWORD",       # share this with anyone you trust
-}
 
-PORT = 5050                       # change if this port is in use
+def _load_users_from_env() -> dict:
+    raw = os.environ.get("APEX_DASHBOARD_USERS", "").strip()
+    if raw:
+        try:
+            users = json.loads(raw)
+            if isinstance(users, dict) and all(
+                isinstance(k, str) and isinstance(v, str) for k, v in users.items()
+            ):
+                return users
+        except Exception:
+            pass
+    single = os.environ.get("APEX_DASHBOARD_PASSWORD", "").strip()
+    if single:
+        return {os.environ.get("APEX_DASHBOARD_USER", "jack"): single}
+    return {}
+
+
+USERS = _load_users_from_env()
+
+if PASSWORD_REQUIRED and not USERS:
+    print(
+        "dashboard_server.py: PASSWORD_REQUIRED is on but no users are configured.\n"
+        "  Set APEX_DASHBOARD_USERS (JSON) or APEX_DASHBOARD_PASSWORD in your env\n"
+        "  (see .env.example at the repo root), or set\n"
+        "  APEX_DASHBOARD_PASSWORD_REQUIRED=0 to run without auth (localhost only!).",
+        file=sys.stderr,
+    )
+    sys.exit(1)
 
 # ============================================================
 
@@ -393,7 +424,7 @@ def main():
     print(f"  Data dir:     {DATA_DIR}")
     print(f"  Auto-refresh: every 30 seconds")
     print()
-    print("  To make it PUBLIC → see START.md for ngrok instructions")
+    print("  To make it PUBLIC → see docs/OPERATIONS.md for ngrok instructions")
     print("  Press Ctrl+C to stop.")
     print("=" * 60)
     print()

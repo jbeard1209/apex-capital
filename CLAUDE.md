@@ -4,13 +4,17 @@ AI-driven **paper-trading** firm in Python. This file is the cold-start brief fo
 Claude session. Read it before making changes.
 
 - **Local dev:** `/Users/jackbeard/Claude investment strategy/` (most code under `institutional-tracker/`)
-- **INFRASTRUCTURE.md is the single source of truth for every host/account — read it
-  before assuming where anything runs. Code is NOT live until you deploy — and both
-  scripts live under `institutional-tracker/`, not the repo root, so run them from there:
-  `cd institutional-tracker && bash gcp_setup/deploy.sh`. (Written as `bash gcp_setup/ship.sh`
-  here since the scripts were committed; from the "Local dev" directory two lines above,
-  that path does not exist and the command fails instantly — the same shape as the VM
-  freshness check below, which was documented for a month and could never have run.)**
+- **[docs/INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) is the single source of truth for every
+  host/account — read it before assuming where anything runs. Code is NOT live until you
+  deploy — and both scripts live under `institutional-tracker/`, not the repo root, so run
+  them from there: `cd institutional-tracker && bash gcp_setup/deploy.sh`. (Written as
+  `bash gcp_setup/ship.sh` here since the scripts were committed; from the "Local dev"
+  directory two lines above, that path does not exist and the command fails instantly —
+  the same shape as the VM freshness check below, which was documented for a month and
+  could never have run.) The doc moved from the repo root to docs/ on 2026-09-29;
+  `coherence_laws.py::infrastructure_doc()` and `deploy.sh` both look in docs/ first and
+  fall back to the old repo-root location, so nothing broke — but if you find a comment
+  or a script still hardcoded to the root path, fix it.**
 - **Cloud (CRITICAL — two hosts run this firm, do not forget the VM):**
   - **GCP VM** `apex-capital-495523` (ssh alias `apex-capital`): ALWAYS-ON second brain with its
     own crontab (~63 jobs incl. main.py 6×/day) trading the SAME Alpaca paper account as the Mac.
