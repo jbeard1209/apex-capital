@@ -1,0 +1,72 @@
+name: Feature request
+description: Propose a new capability, agent, control, or workflow for Apex Capital.
+title: "[FEAT] "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature requests are more likely to land if they name the design pressure that forced them ("I hit a wall while doing X") rather than an aesthetic preference ("would be nice if..."). Aesthetic preferences are fine too, just say so.
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should exist? One paragraph.
+      placeholder: |
+        A weekly cron that snapshots `data/model_meta.json` into `data/model_meta_history/` so a regression in walk-forward AUC has a diff to review.
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What went wrong (or nearly went wrong) that would have been prevented by this?
+      placeholder: |
+        The 0.67 leaky AUC number persisted for months because nothing preserved the previous number to compare against.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Which subsystem?
+      options:
+        - Research pod (R&D / ML / Macro / FI / FE)
+        - Manager / trading path
+        - Risk (CRO / IRM)
+        - HR / agent lifecycle
+        - Oversight (CIT / Logic / Internal Audit / coherence laws)
+        - Chairman queue / board governance
+        - Data pipeline / feeds
+        - Dashboard / operator ergonomics
+        - Infrastructure / CI / tooling
+        - Other (specify below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: |
+        What existing invariant might this change touch? Prefer to over-report; "I don't see any" is a fine answer, and reviewers will still push back.
+      placeholder: |
+        Adds a new coherence law; will need a paired poison pill (per CONTRIBUTING.md).
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What did you almost do instead, and why did you reject it?
+
+  - type: checkboxes
+    id: protected
+    attributes:
+      label: Protected-file check
+      description: |
+        Would this feature require editing `alpaca_trader.py`, `main.py`, `risk_manager_agent.py`, `irm_review_agent.py`, `board_meeting.py`, or `manager_agent.py`?
+      options:
+        - label: No, this can be implemented without touching a protected file.
+        - label: Yes — I understand this needs a Chairman decision before it can land.

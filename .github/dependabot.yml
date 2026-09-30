@@ -1,0 +1,57 @@
+# Dependabot configuration.
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Weekly cadence, not daily — a firm with pinned deps does not need
+# a nightly stream of PRs, and a stream of PRs is a form of noise
+# that hides real signal. The pre-push gate is expensive; churn on
+# dependency PRs would swallow it.
+
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /institutional-tracker
+    schedule:
+      interval: weekly
+      day: monday
+      time: "12:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - python
+    commit-message:
+      prefix: "deps"
+      include: scope
+    # Group patch-level and dev-only updates so the weekly noise is
+    # one PR, not fifteen. Real security bumps and majors still open
+    # their own PR.
+    groups:
+      patch-updates:
+        update-types:
+          - patch
+      minor-dev-updates:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # Alpaca SDK breaking changes have historically required
+      # coordinated edits to alpaca_trader.py (a protected file);
+      # majors get pinned and reviewed manually.
+      - dependency-name: "alpaca-py"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "12:00"
+      timezone: America/New_York
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - github-actions
+    commit-message:
+      prefix: "ci"
+      include: scope
