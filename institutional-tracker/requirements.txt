@@ -1,6 +1,6 @@
 alpaca-py>=0.15.0
 yfinance>=0.2.36
-pandas>=2.0.0
+pandas>=3.0.6
 numpy>=1.24.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
