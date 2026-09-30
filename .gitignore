@@ -205,6 +205,8 @@ institutional-tracker/data/single_writer_log.json
 institutional-tracker/data/peer_host_liveness.json
 institutional-tracker/data/position_sizes.json
 institutional-tracker/data/kalshi_predictions.json
+institutional-tracker/data/kalshi_daily_status.json
+institutional-tracker/data/kalshi_daily_status_prior.json
 institutional-tracker/data/wake_log.json
 institutional-tracker/data/wake_contract_breaches.json
 institutional-tracker/data/agent_status.json

@@ -1,6 +1,7 @@
 # Apex Capital
 
 [![tests](https://github.com/jbeard1209/apex-capital/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/jbeard1209/apex-capital/actions/workflows/tests.yml)
+[![codeql](https://github.com/jbeard1209/apex-capital/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/jbeard1209/apex-capital/actions/workflows/codeql.yml)
 [![python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![paper-trading](https://img.shields.io/badge/trading-paper%20only-lightgrey.svg)](https://alpaca.markets/docs/trading/paper-trading/)
@@ -112,6 +113,26 @@ subsystems. That constraint is the reason each agent can run under its
 own cron entry, on either host, without having to be aware of the others.
 
 For the full brief, see [CLAUDE.md](CLAUDE.md).
+
+### Deep dives
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — daily pipeline, three
+  lines of defence, coherence laws, poison-pill tests, wiring contracts,
+  Chairman queue.
+- [docs/QUANTITATIVE_METHODS.md](docs/QUANTITATIVE_METHODS.md) —
+  walk-forward evaluation, 20-day embargo, baseline comparison, Brier
+  score, feature-engineering discipline.
+- [docs/POSTMORTEMS.md](docs/POSTMORTEMS.md) — the incidents whose
+  guards are still load-bearing.
+- [docs/INFRASTRUCTURE.md](docs/INFRASTRUCTURE.md) — where everything
+  actually runs (Mac, GCP VM, Alpaca).
+- [docs/kalshi_build_plan.md](docs/kalshi_build_plan.md) — the six-lane
+  research plan for the Kalshi event-contract sector.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — pre-push gate install,
+  wiring-contract rules, protected files.
+- [SECURITY.md](SECURITY.md) — threat model, credential handling,
+  responsible disclosure.
+- [CHANGELOG.md](CHANGELOG.md) — noteworthy changes.
 
 ---
 

@@ -1,0 +1,42 @@
+# CODEOWNERS — reviewers who must sign off on changes
+#
+# Only Jack Beard maintains this repository. This file exists so that GitHub
+# labels every PR with the maintainer's name and so that the protected-file
+# rules named in CONTRIBUTING.md are enforced by the review pane, not only by
+# the reviewer's memory.
+#
+# See https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything not called out below.
+*                                                             @jbeard1209
+
+# Trading path — protected files. See CONTRIBUTING.md "Protected files".
+# Edits require a Chairman decision recorded in
+# data/chairman_decision_queue.json.
+institutional-tracker/alpaca_trader.py                        @jbeard1209
+institutional-tracker/main.py                                 @jbeard1209
+institutional-tracker/manager_agent.py                        @jbeard1209
+institutional-tracker/risk_manager_agent.py                   @jbeard1209
+institutional-tracker/irm_review_agent.py                     @jbeard1209
+institutional-tracker/board_meeting.py                        @jbeard1209
+
+# Third-line-of-defence: coherence laws, poison pills, wiring contracts.
+# The whole point of the third line is that its own controls cannot be
+# quietly weakened, so every change here needs a fresh review.
+institutional-tracker/coherence_laws.py                       @jbeard1209
+institutional-tracker/internal_audit_agent.py                 @jbeard1209
+institutional-tracker/test_pipeline_smoke.py                  @jbeard1209
+institutional-tracker/wiring_audit.py                         @jbeard1209
+
+# Kalshi arm gates. `data/.kalshi_armed` and
+# `data/.kalshi_mirror_armed` are Chairman-only physically-present
+# actions, and no automated process is allowed to create them. Any code
+# change that touches the gate check needs a separate review.
+institutional-tracker/kalshi_client.py                        @jbeard1209
+institutional-tracker/kalshi_mirror_execute.py                @jbeard1209
+
+# Deploy and crontab tooling — the "code that ships code".
+institutional-tracker/gcp_setup/                              @jbeard1209
+institutional-tracker/data/vm_crontab_snapshot.txt            @jbeard1209
+scripts/git-hooks/                                            @jbeard1209
+.github/                                                      @jbeard1209

@@ -32136,6 +32136,101 @@ class TestAutoDiagnosisFillsInTheGap(unittest.TestCase):
                 ltia.CIT_APPROVED = orig_approved
 
 
+class TestKalshiDailyStatusIsWiredEndToEnd(unittest.TestCase):
+    """kalshi_daily_status.py reads five upstream Kalshi files and writes
+    one Chairman-facing summary.
+
+    Three failure modes to prevent up front:
+
+    1. Missing upstream files. On the Mac only kalshi_scan_log.json exists;
+       the other four live on the VM. The brief must handle every subset —
+       zero present, some present, all present — without raising. Any
+       KeyError or attribute lookup on a None crashes the cron job and the
+       Chairman loses today's snapshot.
+
+    2. Cron un-scheduling. The whole point of the brief is that it runs
+       daily and produces a state file. If the crontab entry is removed
+       or renamed, the brief becomes an unscheduled agent — exactly the
+       memory-index `orphan_agents_blindness` shape — and the failure
+       mode is silent (the state file just stops updating; nothing pages).
+       The snapshot's kalshi_daily_status.py line has to survive.
+
+    3. Chairman-row emission on non-events. The brief appends to
+       chairman_action_required.json only when a gate flips from BLOCKED
+       to GREEN. If the same-day rerun keeps appending rows on level
+       state, the Chairman inbox drowns in "still WAITING". Idempotency
+       has to be tested.
+    """
+
+    def test_import_is_clean(self):
+        """Module imports without side effects on either host."""
+        import importlib
+        mod = importlib.import_module("kalshi_daily_status")
+        self.assertTrue(hasattr(mod, "build_status"))
+        self.assertTrue(hasattr(mod, "main"))
+
+    def test_build_status_survives_missing_upstream(self):
+        """Every one of the five upstream files can be missing without a
+        crash — that is the Mac case today.
+        """
+        import kalshi_daily_status as k
+        orig = {
+            "scan": k.SCAN_LOG, "cal": k.CALIB_REPORT, "paper": k.PAPER_REPORT,
+            "exec": k.CANDIDATE_QUEUE, "board": k.BOARD_REPORT,
+        }
+        try:
+            missing = Path("/nonexistent/path/that/cannot/exist.json")
+            k.SCAN_LOG = k.CALIB_REPORT = k.PAPER_REPORT = missing
+            k.CANDIDATE_QUEUE = k.BOARD_REPORT = missing
+            status = k.build_status()
+            for key in ("scan", "calibration", "paper_mirror", "execute",
+                        "gate_label", "bottom_line"):
+                self.assertIn(key, status,
+                              f"missing key '{key}' — brief will crash the cron job "
+                              f"on the day upstream files vanish")
+            self.assertEqual(status["scan"]["state"], "MISSING")
+            self.assertEqual(status["calibration"]["state"], "MISSING")
+        finally:
+            k.SCAN_LOG = orig["scan"]
+            k.CALIB_REPORT = orig["cal"]
+            k.PAPER_REPORT = orig["paper"]
+            k.CANDIDATE_QUEUE = orig["exec"]
+            k.BOARD_REPORT = orig["board"]
+
+    def test_no_flip_row_on_level_state(self):
+        """Re-running on the same state must not append a Chairman row."""
+        import kalshi_daily_status as k
+        prior = {"scan": {"structural_arbs_found": 0},
+                 "paper_mirror": {"verdict": False}}
+        current = {"scan": {"structural_arbs_found": 0},
+                   "paper_mirror": {"verdict": False}}
+        self.assertIsNone(k._has_flip_to_green(prior, current))
+
+    def test_flip_row_on_structural_arb_appearing(self):
+        """When a structural arb appears where none existed, escalate."""
+        import kalshi_daily_status as k
+        prior = {"scan": {"structural_arbs_found": 0},
+                 "paper_mirror": {"verdict": False}}
+        current = {"scan": {"structural_arbs_found": 2},
+                   "paper_mirror": {"verdict": False}}
+        reason = k._has_flip_to_green(prior, current)
+        self.assertIsNotNone(reason)
+        self.assertIn("structural", reason.lower())
+
+    def test_cron_snapshot_names_this_agent(self):
+        """kalshi_daily_status must appear in the canonical VM crontab.
+
+        This is the wiring half. An agent nothing calls is invisible; the
+        crontab snapshot is the ground truth for what the VM actually runs.
+        """
+        snapshot = Path(__file__).parent / "data" / "vm_crontab_snapshot.txt"
+        text = snapshot.read_text()
+        self.assertIn("kalshi_daily_status.py", text,
+                      "kalshi_daily_status.py is not in the VM crontab "
+                      "snapshot — the brief is unscheduled and will silently "
+                      "stop updating")
+
+
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)  # ensure relative paths resolve correctly
     # Load EVERY TestCase in this module.

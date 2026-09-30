@@ -342,6 +342,22 @@ PATH=/home/jackbeard/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:
 #   Refuses harmlessly (with an audit trail) until then. Does not place orders.
 55 11 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_mirror_paper.py --report >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1 && /home/jackbeard/venv/bin/python3 kalshi_mirror_execute.py >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
 
+# --- KALSHI DAILY STATUS BRIEF (added 2026-09-30) --------------------------
+# The five Kalshi output files (scan log, calibration report, paper-mirror
+# report, execute queue, board vote) each answer a slice of "where are we
+# with Kalshi today". This aggregates them into ONE stable file at
+# data/kalshi_daily_status.json so the Chairman does not read five files
+# to see whether anything changed. A gate flip from BLOCKED to GREEN also
+# appends a row to data/chairman_action_required.json — the only two events
+# that need a decision. Does not place orders. Does not create arm files.
+#
+# Runs at 12:20 UTC, 25 min after the 11:55 mirror-paper/execute pass and
+# 35 min after the 11:45 calibration resolve, so every upstream report is
+# fresh when this reads it. Idempotent: rerunning within the same day
+# overwrites the status file and skips the chairman row (which is emitted
+# only on state transitions, not on level).
+20 12 * * * cd "/home/jackbeard/institutional-tracker" && /home/jackbeard/venv/bin/python3 kalshi_daily_status.py --report --quiet >> logs/kalshi_$(date +\%Y\%m\%d).log 2>&1
+
 # --- FIXED INCOME MONITORS (added 2026-08-16) -------------------------------
 # Both were written, wired to consumers, and scheduled nowhere. Neither could
 # even import until fi_data_layer gained get_credit_spreads /
