@@ -1,5 +1,10 @@
 # Apex Capital
 
+[![tests](https://github.com/jbeard1209/apex-capital/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/jbeard1209/apex-capital/actions/workflows/tests.yml)
+[![python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![paper-trading](https://img.shields.io/badge/trading-paper%20only-lightgrey.svg)](https://alpaca.markets/docs/trading/paper-trading/)
+
 **A paper-trading firm I built in Python.** Sixty-plus agents — analysts,
 risk officers, board members, an internal auditor — each with a narrow
 job, together running a full daily research and paper-trading cycle
@@ -74,27 +79,32 @@ without me sitting at the keyboard.
 The daily pipeline lives at `institutional-tracker/main.py`. It calls, in
 order:
 
-```
-   Canary  (system health)
-      │
-      v
-   Chief of Staff  (day plan)
-      │
-      v
-   Research pods ──┬── R&D pod
-                   ├── ML pod             ── picks ──> Manager ──> Alpaca (paper)
-                   ├── Macro/ETF pod              │
-                   ├── FI (fixed-income) pod      │
-                   └── FE (fundamental-equity) pod
-      │                                            │
-      v                                            v
-   CRO  (risk bulletins) ────HIGH/CRIT────────>  blocks buys
-      │
-      v
-   IRM  (independent risk) ──> Chairman queue
-      │
-      v
-   HR + CIT + Logic + Internal Audit  (oversight)
+```mermaid
+flowchart TB
+    canary["Canary<br/><i>system health</i>"] --> cos["Chief of Staff<br/><i>day plan</i>"]
+    cos --> pods
+    subgraph pods ["Research pods"]
+        direction LR
+        rd["R&amp;D"]
+        ml["ML"]
+        macro["Macro / ETF"]
+        fi["FI<br/>(fixed income)"]
+        fe["FE<br/>(fundamental equity)"]
+    end
+    pods -- picks --> manager["Manager<br/><i>reviews &amp; submits</i>"]
+    manager -- paper orders --> alpaca[("Alpaca<br/>paper account")]
+    cro["CRO<br/><i>risk bulletins</i>"] -- HIGH / CRIT blocks buys --> manager
+    manager --> irm["IRM<br/><i>independent risk</i>"]
+    irm --> chairman[["Chairman queue"]]
+    manager --> oversight
+    subgraph oversight ["Oversight (async)"]
+        direction LR
+        hr["HR"]
+        cit["CIT"]
+        logic["Logic"]
+        audit["Internal Audit<br/><i>third line</i>"]
+    end
+    oversight --> chairman
 ```
 
 Every arrow is a queue or a JSON file, never an in-process call across

@@ -1,0 +1,61 @@
+name: tests
+
+on:
+  push:
+    branches: [main, "feat/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wiring-contracts:
+    name: wiring-contracts (${{ matrix.tz }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # America/New_York = the Mac's local zone (dev host).
+          # UTC              = the GCP VM's zone (production host).
+          # Both must pass, because "green on the Mac is not green" —
+          # see memory host_divergence_is_a_bug_class.
+          - tz: America-New_York
+            env_tz: America/New_York
+          - tz: UTC
+            env_tz: UTC
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: institutional-tracker/requirements.txt
+
+      - name: Install requirements
+        working-directory: institutional-tracker
+        run: |
+          python -m pip install --upgrade pip
+          # test_pipeline_smoke.py transitively imports the entire firm, so
+          # every runtime dep in requirements.txt has to be resolvable — the
+          # test class itself only runs static string-matching against
+          # producer/consumer routing tables, but Python has to parse the
+          # modules first.
+          python -m pip install -r requirements.txt
+
+      - name: Run producer/consumer wiring contracts
+        working-directory: institutional-tracker
+        env:
+          TZ: ${{ matrix.env_tz }}
+          PYTHONUNBUFFERED: "1"
+        run: |
+          # Same test class the local pre-push gate runs (twice: local + UTC).
+          # These 58 tests pin the "silent identifier mismatch" bug class — a
+          # producer emitting a rule/pod/category name no consumer handles.
+          python -m unittest -v test_pipeline_smoke.TestWiringContracts

@@ -1,0 +1,21 @@
+# Language detection hints for github.com/github/linguist.
+# Without these, JSON runtime artifacts and generated tables can drown out the
+# actual codebase in the repo's language bar. Apex Capital is Python.
+
+# Documented artifacts — mostly reports and briefings — that are technically
+# JSON but do not represent hand-written source, so they shouldn't count.
+institutional-tracker/data/*.json                    linguist-generated=true
+institutional-tracker/data/**/*.json                 linguist-generated=true
+institutional-tracker/predictive_model/data/*.json   linguist-generated=true
+
+# Snapshots + committed metric outputs — machine-written, not hand-authored.
+institutional-tracker/data/*_snapshot.json           linguist-generated=true
+institutional-tracker/data/*_report.json             linguist-generated=true
+institutional-tracker/data/*_ledger.json             linguist-generated=true
+
+# Documentation prose — do not count as "code" for the language bar.
+*.md                                                 linguist-documentation=true
+
+# Force cross-platform line endings for shell + hooks.
+*.sh                                                 text eol=lf
+scripts/git-hooks/*                                  text eol=lf
