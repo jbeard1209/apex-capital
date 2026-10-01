@@ -24,6 +24,7 @@ import ast
 import glob
 import json
 import math
+import os
 import re
 import sys
 from datetime import datetime
@@ -1295,6 +1296,40 @@ def _replaces_its_output(code_txt: str, out: str) -> Optional[bool]:
     return True
 
 
+_SNAPSHOT_DECL = re.compile(
+    r"^_WIRING_SNAPSHOT\s*=\s*(\{[^}]*\}|\[[^\]]*\]|\([^)]*\))", re.M)
+
+
+def _declared_snapshots(code_txt: str) -> set:
+    """Latest-state outputs declared by this writer.
+
+    A writer may annotate a file as a latest-state snapshot by declaring, at
+    module scope::
+
+        _WIRING_SNAPSHOT = {"freshness_report.json"}
+
+    This is an EXPLICIT assertion that every generation of the file is a
+    complete picture of state — losing an intermediate generation is sampling,
+    not destruction. Honour it so the cadence detector doesn't call it a loss.
+
+    The opt-out is not a magic silencer: `check_snapshot_declarations_match_writes`
+    cross-checks every entry against the module's own output literals, so a
+    typo'd filename falsely silencing a real finding is a smoke-test failure,
+    not a quiet downgrade. Scoped to module scope so one accumulator file
+    can live beside snapshots in the same module.
+    """
+    m = _SNAPSHOT_DECL.search(code_txt)
+    if not m:
+        return set()
+    try:
+        val = ast.literal_eval(m.group(1))
+    except (ValueError, SyntaxError):
+        return set()
+    if isinstance(val, (set, list, tuple, frozenset)):
+        return {s for s in val if isinstance(s, str)}
+    return set()
+
+
 def _file_is_replaced(code: dict, writers, out: str) -> Optional[bool]:
     """Is `out` replaced wholesale, or accumulated? A property of the FILE.
 
@@ -1306,8 +1341,15 @@ def _file_is_replaced(code: dict, writers, out: str) -> Optional[bool]:
     read as destructive and buried the one real finding.
 
     So: if ANY module that writes this file reads it first, the file
-    accumulates. Unanimous None (nobody's source settles it) stays None.
+    accumulates. If ANY writer declares the file as a latest-state snapshot
+    (`_WIRING_SNAPSHOT`), the sampling is intentional and not destructive.
+    Unanimous None (nobody's source settles it) stays None.
     """
+    out_basename = os.path.basename(out)
+    for w in writers:
+        decl = _declared_snapshots(code.get(w, ""))
+        if out in decl or out_basename in decl:
+            return False
     verdicts = [_replaces_its_output(code.get(w, ""), out) for w in writers]
     if any(v is False for v in verdicts):
         return False
@@ -1472,6 +1514,45 @@ def check_reader_keeps_up_with_writer(sources: dict, code: Optional[dict] = None
             notes.append(
                 f"[reader-cadence] {r} reads {out} {rd} vs {w}'s {wr} — {out} "
                 f"accumulates, so this is lateness, not loss")
+
+
+def check_snapshot_declarations_match_writes(sources: dict):
+    """Every `_WIRING_SNAPSHOT` entry must name a file the module actually writes.
+
+    The opt-out is a deliberate assertion ("this file is latest-state") and
+    must be checked, or a typo silently silences a real cadence finding — the
+    same shape of failure as a drift tracker whose detector reads a field the
+    fix accidentally renamed (`fix-that-erased-its-detector`). Rule the opt-out
+    cannot abuse: no silencing a file the module does not write.
+    """
+    out_re = re.compile(r'["\']([\w./-]+\.json)["\']')
+    write_re = re.compile(r"\b(?:write_text|json\.dump|atomic_write|_save)\b")
+    writer_stems = {n[:-3] for n, t in sources.items()
+                    if not n.startswith("test_") and write_re.search(t)}
+
+    violations = []
+    for name, txt in sources.items():
+        if name.startswith("test_"):
+            continue
+        declared = _declared_snapshots(txt)
+        if not declared:
+            continue
+        # Normalize both sides to basenames: writers may use either
+        # DATA / "foo.json" (basename captured) or "data/foo.json" (prefix
+        # captured). The declaration should match either shape without
+        # forcing writers to pick one.
+        writes_full = set(_declared_outputs(
+            txt, out_re, writer_stems=writer_stems - {name[:-3]}))
+        writes = {os.path.basename(f) for f in writes_full}
+        orphans = {os.path.basename(d) for d in declared} - writes
+        if orphans:
+            for orphan in sorted(orphans):
+                violations.append(
+                    f"{name} declares _WIRING_SNAPSHOT ← {orphan!r} but does "
+                    f"not write that file; the opt-out silences nothing real "
+                    f"and may be a typo"
+                )
+    return violations
 
 
 #: A temp file older than this is not a write in flight, it is a corpse.
@@ -1859,6 +1940,8 @@ def run_checks() -> dict:
     check_orphan_queues(sources)
     check_orphan_agents(sources)
     check_reader_keeps_up_with_writer(sources)
+    for v in check_snapshot_declarations_match_writes(sources):
+        problems.append(f"[snapshot-decl] {v}")
     check_coherence_layer()
     check_internal_audit()
     check_interrupted_writes()

@@ -65,7 +65,6 @@ SHADOW_FILE     = DATA_DIR / "fi_shadow_orders.json"
 ARM_FILE        = DATA_DIR / ".fi_armed"
 CANARY_FILE     = DATA_DIR / "canary_state.json"
 IRM_FILE        = DATA_DIR / "irm_daily_check.json"
-CIT_HR_MEMO     = DATA_DIR / "cit_hr_memo.json"
 
 FI_CAPITAL = 30_000.0
 

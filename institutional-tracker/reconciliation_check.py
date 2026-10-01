@@ -43,6 +43,10 @@ logger = logging.getLogger("reconciliation")
 
 REPORT_PATH = "data/reconciliation_report.json"
 
+#: Latest-state reconciliation snapshot. Each check rewrites the full picture;
+#: morning_briefing reads the newest reconciliation. No history semantics.
+_WIRING_SNAPSHOT = {"reconciliation_report.json"}
+
 # Mirror config.py guardrails — deliberately hardcoded here so the
 # reconciler doesn't silently pass if config.py has a wrong value.
 _MIN_CASH_FLOOR_PCT    = 0.20

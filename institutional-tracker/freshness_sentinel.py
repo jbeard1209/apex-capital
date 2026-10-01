@@ -41,6 +41,11 @@ DATA_DIR    = BASE_DIR / "data"
 STATE_PATH  = DATA_DIR / "freshness_state.json"     # sentinel's own memory
 REPORT_PATH = DATA_DIR / "freshness_report.json"    # for briefing/dashboard
 
+#: Latest-state freshness snapshot. Each scan rewrites the full picture of
+#: tracked artifacts; the morning briefing reads the current state. There is
+#: no missed-generation harm — a sentinel reads the newest state, not a log.
+_WIRING_SNAPSHOT = {"freshness_report.json"}
+
 ALERT_COOLDOWN_H = 12     # one alert + one auto-fix attempt per item per 12h
 MARKET_DAYS_ONLY = {0, 1, 2, 3, 4}   # Mon-Fri
 

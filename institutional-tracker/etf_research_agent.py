@@ -37,6 +37,12 @@ GEO_PATH        = DATA / "rd_geopolitical_context.json"
 BRIEF_PATH      = DATA / "etf_research_brief.json"
 LOCK_FILE       = DATA / ".etf_research_agent.lock"
 
+#: Latest-state outputs. Each run computes a fresh picture of ETF research —
+#: losing an intermediate generation is sampling, not destruction. Read by
+#: pod_health_monitor on a slower cadence; that is intentional. See
+#: wiring_audit._declared_snapshots.
+_WIRING_SNAPSHOT = {"etf_research_brief.json"}
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------

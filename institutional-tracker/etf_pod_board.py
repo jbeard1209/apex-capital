@@ -50,6 +50,11 @@ DATA = BASE / "data"
 
 BRIEF_PATH    = DATA / "etf_research_brief.json"
 ORDERS_PATH   = DATA / "etf_pod_orders.json"
+
+#: Latest-state orders. Each run writes the current slate of pod orders;
+#: there is no history requirement, and the manager reads whatever is most
+#: recent. Pod health monitor samples at a slower cadence intentionally.
+_WIRING_SNAPSHOT = {"etf_pod_orders.json"}
 MINUTES_PATH  = DATA / "etf_board_meeting.json"
 LOCK_FILE     = DATA / ".etf_pod_board.lock"
 MACRO_PATH    = DATA / "pod3_macro_signals.json"    # pod_macro_agent scored ETFs

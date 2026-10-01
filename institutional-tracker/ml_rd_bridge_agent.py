@@ -50,6 +50,11 @@ _BRIDGE_OUT        = DATA / "rd_ml_bridge_signals.json"
 _ML_HISTORY        = DATA / "rd_ml_history.json"
 _ML_SUGGESTIONS    = DATA / "ml_suggestions.json"
 
+#: Latest-state features. Each run computes current per-ticker R&D features
+#: and regime context from scratch; board_meeting reads whatever is most
+#: recent. There is no history for a cadence-slow reader to miss here.
+_WIRING_SNAPSHOT = {"rd_ml_bridge_signals.json"}
+
 _LOCK_PATH         = "/tmp/ml_rd_bridge.lock"
 
 

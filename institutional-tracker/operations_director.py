@@ -38,6 +38,11 @@ SUPERVISED_FILES = {
 
 OPS_REPORT_PATH = "data/ops_director_report.json"
 
+#: Latest-state floor brief. Each run rewrites the complete picture of agent
+#: floor status; morning_briefing reads the most recent brief. Older briefs
+#: are superseded, not missed.
+_WIRING_SNAPSHOT = {"ops_director_report.json"}
+
 
 # Every status build_floor_brief can assign to an agent. The floor-status line
 # is DERIVED from this tuple, because writing the buckets out by hand is exactly

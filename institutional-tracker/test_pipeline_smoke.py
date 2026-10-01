@@ -835,9 +835,17 @@ class TestCriticalImports(unittest.TestCase):
 # 8. Active agent count health check
 # =============================================================================
 class TestAgentRegistry(unittest.TestCase):
+    """agent_registry.json is per-host runtime state the Chief-of-Staff factory
+    writes on its first run and is gitignored by design. A developer Mac that
+    has never completed a factory run has no file to audit, so skip visibly
+    rather than erroring — same pattern as the hr_history.json tests above.
+    The VM's slow-gate run, where the file always exists, keeps this ratchet
+    live."""
 
     def setUp(self):
         reg_path = Path(__file__).parent / "data" / "agent_registry.json"
+        if not reg_path.exists():
+            self.skipTest(f"no agent_registry.json on this host — nothing to check")
         self.agents = json.loads(reg_path.read_text()).get("agents", [])
 
     def test_at_least_20_active_agents(self):
@@ -6173,9 +6181,20 @@ class TestWrongfulRetirement(unittest.TestCase):
                          "review dates exist but nothing raises them")
 
     def test_live_registry_has_no_duplicate_agent_records(self):
-        """Roster counts and per-agent evaluations both double-count duplicates."""
+        """Roster counts and per-agent evaluations both double-count duplicates.
+
+        agent_registry.json is per-host runtime state the Chief-of-Staff
+        factory writes on its first run and is gitignored by design. A
+        developer Mac that has never completed a factory run has no file to
+        audit, so skip visibly — same pattern as
+        test_a_vacated_retirement_is_always_on_the_hook above. The VM's
+        slow-gate run, where the file always exists, keeps this ratchet live.
+        """
         import collections
-        reg = json.load(open(Path(__file__).parent / "data" / "agent_registry.json"))
+        reg_path = Path(__file__).parent / "data" / "agent_registry.json"
+        if not reg_path.exists():
+            self.skipTest(f"no agent_registry.json on this host — nothing to check")
+        reg = json.load(open(reg_path))
         dupes = [cn for cn, n in collections.Counter(
             a.get("class_name") for a in reg.get("agents", [])).items() if n > 1]
         self.assertEqual(dupes, [], f"duplicate registry records: {dupes}")
@@ -14436,6 +14455,89 @@ class TestReaderCadence(unittest.TestCase):
             "check_reader_keeps_up_with_writer", called,
             "the cadence check exists but run_checks never calls it — an "
             "unrun detector is an absent one")
+
+
+class TestSnapshotOptOut(unittest.TestCase):
+    """`_WIRING_SNAPSHOT` is an opt-out from the destructive-cadence finding.
+
+    It is an assertion ("this file is latest-state semantics; sampling it on a
+    slower cadence does not lose information"). An opt-out that silences a
+    file the module does not write is a typo pretending to be a decision,
+    which is the exact shape of `fix-that-erased-its-detector`. The checker
+    has to refuse those, or the opt-out is a quiet downgrade of the finding.
+    """
+
+    #: zzfast 1.0h, zzslow 72.0h (weekday-only).
+    CRON = ("0 * * * * cd ~/it && /usr/bin/python3 zzfast.py\n"
+            "0 3 * * 1-5 cd ~/it && /usr/bin/python3 zzslow.py\n")
+
+    def setUp(self):
+        import wiring_audit
+        self.wa = wiring_audit
+
+    def _cadence_note(self, sources):
+        wa = self.wa
+        keep = wa.problems, wa.notes
+        wa.problems, wa.notes = [], []
+        try:
+            wa.check_reader_keeps_up_with_writer(sources, cron_text=self.CRON)
+            return " ".join(wa.notes)
+        finally:
+            wa.problems, wa.notes = keep
+
+    def test_declared_snapshot_downgrades_destructive_to_latest_state(self):
+        """The core promise: a declared snapshot is not destructive, even when
+        the writer blows away each generation. Without the opt-out, this
+        exact pair reads as "cannot be recovered"; with it, as lateness."""
+        without = {
+            "zzfast.py": 'OUT = "data/zzbook.json"\njson.dump(d, open(OUT, "w"))\n',
+            "zzslow.py": 'r = json.load(open("data/zzbook.json"))\n',
+        }
+        n_without = self._cadence_note(without)
+        self.assertIn("cannot be recovered", n_without, n_without)
+
+        with_decl = dict(without)
+        with_decl["zzfast.py"] = (
+            'OUT = "data/zzbook.json"\n'
+            '_WIRING_SNAPSHOT = {"zzbook.json"}\n'
+            'json.dump(d, open(OUT, "w"))\n'
+        )
+        n_with = self._cadence_note(with_decl)
+        self.assertNotIn("cannot be recovered", n_with, n_with)
+        self.assertIn("accumulates, so this is lateness", n_with, n_with)
+
+    def test_declaring_a_file_the_module_does_not_write_is_rejected(self):
+        """The opt-out's integrity depends on it. A writer that silences a
+        filename it never writes is pointing at the wrong file; the real
+        destructive pair is still unobserved and the audit now says OK."""
+        sources = {
+            "zzfast.py": (
+                'OUT = "data/zzbook.json"\n'
+                '_WIRING_SNAPSHOT = {"not_zzbook.json"}\n'
+                'json.dump(d, open(OUT, "w"))\n'
+            ),
+            "zzslow.py": 'r = json.load(open("data/zzbook.json"))\n',
+        }
+        viols = self.wa.check_snapshot_declarations_match_writes(sources)
+        self.assertTrue(
+            any("not_zzbook.json" in v for v in viols),
+            f"a typo'd opt-out slipped past the integrity check: {viols!r}")
+
+    def test_the_check_is_wired_into_the_audit(self):
+        src = Path(self.wa.__file__).read_text()
+        run_checks = next(
+            n for n in ast.walk(ast.parse(src))
+            if isinstance(n, ast.FunctionDef) and n.name == "run_checks")
+        called = set()
+        for n in ast.walk(run_checks):
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name):
+                called.add(n.func.id)
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute):
+                called.add(n.func.attr)
+        self.assertIn(
+            "check_snapshot_declarations_match_writes", called,
+            "the opt-out integrity check exists but run_checks never calls "
+            "it — an unrun gate is a bypassable one")
 
 
 class TestWorkQueuesDrain(unittest.TestCase):

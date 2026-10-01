@@ -49,6 +49,11 @@ _DATA = {
     "out":        "data/rd_system_performance.json",
 }
 
+#: Latest-state recommendations. Each run rewrites the current list of
+#: review items based on current positions and triggers; morning_briefing
+#: reads the newest recommendations. No history semantics.
+_WIRING_SNAPSHOT = {"review_recommendations.json"}
+
 # ── Thresholds ───────────────────────────────────────────────────────────────
 TAKE_PROFIT_TARGET_PCT       = 20.0   # flag if position held > this past target
 TAKE_PROFIT_CRITICAL_PCT     = 35.0   # critical if > this past target
