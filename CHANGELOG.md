@@ -10,6 +10,31 @@ in [docs/POSTMORTEMS.md](docs/POSTMORTEMS.md) and in the memory index.
 
 ---
 
+## 2026-10-01
+
+### Added
+- `_WIRING_SNAPSHOT` module-level sentinel + `wiring_audit`
+  `check_snapshot_declarations_match_writes` typo guard. Writers that
+  rewrite a complete latest-state picture every run declare the
+  snapshot filename; the destructive-reader-cadence sweep then
+  downgrades their pairs to the ordinary lateness bucket. A declaration
+  naming a file the module does not write fails the audit — this is
+  the opt-out layer, and silencing a real finding by typo is the trap
+  that forced the guard to exist.
+- Opt-out applied to the seven writers whose semantics it fits:
+  `etf_research_agent`, `etf_pod_board`, `ml_rd_bridge_agent`,
+  `freshness_sentinel`, `reconciliation_check`, `rd_system_performance`,
+  `operations_director`. Dead constant `fi_executor.CIT_HR_MEMO`
+  deleted (it read a file written by `cit_director`).
+- `TestSnapshotOptOut` (three cases) pins the mechanism.
+
+### Fixed
+- README pod file names (`pod1_rd_*.py` etc. did not exist) and the
+  test count (`6000+` → `~1,500`); minor drift that misdescribed the
+  repo layout.
+
+---
+
 ## 2026-09-30
 
 ### Added

@@ -254,9 +254,10 @@ apex-capital/
     ├── hr_agent.py
     │
     ├── research_team.py         # pod orchestration
-    ├── pod1_rd_*.py             # R&D pod
-    ├── pod2_ml_*.py             # ML pod
-    ├── pod3_macro_*.py          # macro/ETF pod
+    ├── rd_pod_board.py          # R&D pod board
+    ├── ml_pod_board.py          # ML pod board
+    ├── etf_pod_board.py         # ETF / macro pod board
+    ├── pod_macro_agent.py       # macro research
     ├── fi_*.py                  # fixed-income pod
     ├── fe_*.py                  # fundamental-equity pod
     │
@@ -270,7 +271,7 @@ apex-capital/
     ├── chairman_decision_categorizer.py  # single-source taxonomy
     │
     ├── wiring_audit.py          # weekly dead-integration sweep
-    ├── test_pipeline_smoke.py   # smoke + wiring contracts (~6000+ tests)
+    ├── test_pipeline_smoke.py   # smoke + wiring contracts (~1,500 tests)
     ├── model_test_harness.py    # walk-forward AUC vs baseline
     │
     ├── predictive_model/        # ML feature engineering + training
