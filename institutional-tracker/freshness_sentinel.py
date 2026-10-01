@@ -121,7 +121,7 @@ MANIFEST = {
     # UTC on Sun + Tue-Sat (skipping Monday's ML experiment window). Budget
     # 30h gives a nightly cadence one full miss before firing.
     "data/slow_gate_report.json":        {"max_age_h": 30, "critical": False, "owner": VM,
-                                          "fix": "slow_gate.py"},
+                                          "fix": "slow_gate.py", "verdict_key": "ok"},
 
     # ── Queues ─────────────────────────────────────────────────────────────
     # Added 2026-08-28. Until then this manifest watched 21 reports and exactly
@@ -381,19 +381,35 @@ def run(auto_fix: bool = True, send_email: bool = True) -> dict:
             if stale and depth == 0:
                 stale = False
 
+        # A fresh report can still say "I failed". Until 2026-09-30 this loop
+        # read only the mtime, so slow_gate_report.json — wired in here so "a
+        # red slow gate escalates" — was counted OK every night it was red.
+        # `verdict_key` names a field that must be literally True; a missing or
+        # unreadable verdict is not a pass.
+        red = False
+        if not stale and spec.get("verdict_key"):
+            payload = _load(path, None)
+            red = not (isinstance(payload, dict)
+                       and payload.get(spec["verdict_key"]) is True)
+
         prev = sentinel.get(rel, {})
-        if not stale:
+        if not stale and not red:
             ok_count += 1
-            if prev.get("status") == "STALE":
+            if prev.get("status") in ("STALE", "RED"):
                 logger.info("  RECOVERED: %s (%.0fh old)", rel, age)
             sentinel[rel] = {"status": "OK"}
             continue
 
-        detail = (f"missing" if age is None else f"{age:.0f}h old (budget {max_age}h)")
+        status = "RED" if red else "STALE"
+        if red:
+            detail = (f"fresh ({age:.0f}h) but reports "
+                      f"{spec['verdict_key']}={payload.get(spec['verdict_key']) if isinstance(payload, dict) else 'unreadable'}")
+        else:
+            detail = (f"missing" if age is None else f"{age:.0f}h old (budget {max_age}h)")
         if spec.get("queue"):
             detail += (" — holding an uncountable number of items" if depth is None
                        else f" — still holding {depth} item(s)")
-        issue = {"item": rel, "status": "STALE", "detail": detail,
+        issue = {"item": rel, "status": status, "detail": detail,
                  "critical": spec.get("critical", False)}
         if spec.get("queue"):
             issue["queue_depth"] = depth
@@ -408,18 +424,19 @@ def run(auto_fix: bool = True, send_email: bool = True) -> dict:
                 pass
 
         if not in_cooldown:
-            sentinel[rel] = {"status": "STALE", "last_action": now.isoformat()}
+            sentinel[rel] = {"status": status, "last_action": now.isoformat()}
             issue["new_alert"] = True
-            if auto_fix and spec.get("fix"):
+            # Re-running the producer cures staleness, not a red verdict.
+            if auto_fix and spec.get("fix") and not red:
                 outcome = _attempt_fix(spec["fix"])
                 issue["auto_fix"] = outcome
                 if outcome.startswith("fixed"):
                     fixed.append(rel)
         else:
-            sentinel[rel] = {**prev, "status": "STALE"}
+            sentinel[rel] = {**prev, "status": status}
 
         issues.append(issue)
-        logger.warning("  STALE%s: %s — %s%s",
+        logger.warning("  %s%s: %s — %s%s", status,
                        " [CRITICAL]" if issue["critical"] else "",
                        rel, detail,
                        f" | auto-fix: {issue.get('auto_fix','-')}" if issue.get("auto_fix") else "")

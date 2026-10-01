@@ -797,18 +797,18 @@ class CommunicationLogicAgent:
 
         if fc:
             # Find agents that haven't posted in >7 days
-            cutoff = datetime.now() - timedelta(days=7)
+            # firm_channel mixes naive and +00:00 stamps (2026-09-28 on); a
+            # `ts[:19]` parse read the aware ones one UTC offset too new on
+            # the Mac. age_days aligns both; an unreadable stamp is not recent.
+            from time_utils import age_days
             recent_posters = set()
             for msg in fc:
                 ts = msg.get("ts","") or msg.get("date","")
                 agent = msg.get("agent","")
                 if ts and agent:
-                    try:
-                        msg_dt = datetime.fromisoformat(ts[:19])
-                        if msg_dt > cutoff:
-                            recent_posters.add(agent)
-                    except Exception:
-                        pass
+                    d = age_days(ts)
+                    if d is not None and d < 7:
+                        recent_posters.add(agent)
 
             expected_agents = {
                 "Chief of Staff", "IRM Director", "Canary Agent", "CIT Director",

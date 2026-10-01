@@ -17,7 +17,7 @@ Claude session. Read it before making changes.
   or a script still hardcoded to the root path, fix it.**
 - **Cloud (CRITICAL — two hosts run this firm, do not forget the VM):**
   - **GCP VM** `apex-capital-495523` (ssh alias `apex-capital`): ALWAYS-ON second brain with its
-    own crontab (~63 jobs incl. main.py 6×/day) trading the SAME Alpaca paper account as the Mac.
+    own crontab (100 python jobs incl. main.py 4×/day, measured 2026-09-30) trading the SAME Alpaca paper account as the Mac.
     Its repo does NOT auto-pull — deploy via `institutional-tracker/gcp_setup/deploy.sh` or it runs stale code (it ran
     June-3 code for a month → phantom alert emails + divergent trading vs the Mac).
     **The VM is NOT a git checkout** — `deploy.sh` rsyncs with `--exclude=.git/`, so any

@@ -976,8 +976,9 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             # Verify the freshly-written report is within TTL (sanity check)
             _e_gen_at = energy_rpt.get("generated_at", "")
             if _e_gen_at:
-                from datetime import datetime as _edt
-                _e_age_h = (_edt.now() - _edt.fromisoformat(str(_e_gen_at)[:19])).total_seconds() / 3600
+                # Unreadable stamp = assume stale and discard (fail closed).
+                _e_age_h = time_utils.age_hours(
+                    _e_gen_at, default=time_utils.UNKNOWN_IS_ANCIENT)
                 if _e_age_h > _RESEARCH_TTL_HOURS:
                     logger.warning(f"  Energy report already stale ({_e_age_h:.0f}h) — discarding picks")
                     energy_picks = []

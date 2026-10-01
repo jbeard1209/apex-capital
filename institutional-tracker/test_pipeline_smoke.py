@@ -7841,7 +7841,11 @@ class TestThePushGateIsTheGateTheRepoShips(unittest.TestCase):
         # hook mentions TZ=UTC in its own failure message, so that version
         # passes on a hook that never runs the second suite at all.
         runs = [ln for ln in code.splitlines()
-                if re.search(r"python3?\s+test_pipeline_smoke\.py", ln)]
+                # Since the 2026-09-08 fast/slow split the hook runs
+                # `python3 -m unittest test_pipeline_smoke.TestWiringContracts`;
+                # a pin on the old spelling made this red on every Mac run.
+                if re.search(r"python3?\s+(test_pipeline_smoke\.py|"
+                             r"-m\s+unittest\b.*\btest_pipeline_smoke\b)", ln)]
         self.assertGreaterEqual(
             len(runs), 2,
             f"the gate invokes the suite {len(runs)} time(s); it must run it "
@@ -26795,7 +26799,11 @@ class TestThePrePushGateIsTheOneWeShip(unittest.TestCase):
         # of the suite carries TZ=UTC in its env prefix", not "the file contains
         # the letters TZ=UTC".
         runs = [ln for ln in code.split("\n")
-                if re.search(r"python3?\s+test_pipeline_smoke\.py", ln)]
+                # Since the 2026-09-08 fast/slow split the hook runs
+                # `python3 -m unittest test_pipeline_smoke.TestWiringContracts`;
+                # a pin on the old spelling made this red on every Mac run.
+                if re.search(r"python3?\s+(test_pipeline_smoke\.py|"
+                             r"-m\s+unittest\b.*\btest_pipeline_smoke\b)", ln)]
         self.assertTrue(
             [ln for ln in runs
              if re.match(r"^\s*(\w+=\S+\s+)*TZ=UTC(\s+\w+=\S+)*\s+python3?\s", ln)],
@@ -28727,7 +28735,11 @@ class TestATruncatedStampIsAWrongAge(unittest.TestCase):
     # UTC. Both now go through `time_utils.age_hours`, which is also why the
     # `is not None` guard appears at each site: a stamp that cannot be read is
     # not a fresh one.
-    MODE_A_BASELINE = 24
+    # 24 -> 22 on 2026-09-30: `firm_channel.json` (read by logic_team's
+    # CommunicationLogicAgent) and `research_team_report.json` began carrying
+    # +00:00 stamps on the VM, and test_the_baseline_sites_are_latent_not_live
+    # flipped red there. Both sites now use time_utils.
+    MODE_A_BASELINE = 22
 
     # Only cuts that provably land at or after the seconds field, where the
     # ONLY thing a slice can remove is an offset or a fraction. `[:10]` is
@@ -30595,6 +30607,44 @@ class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
         finally:
             p.unlink(missing_ok=True)
 
+    # ── a fresh report that says "I failed" is not OK ─────────────────────
+    def test_a_fresh_red_verdict_is_an_issue_not_ok(self):
+        """slow_gate_report.json was fresh and ok=False on the VM 2026-09-30.
+
+        The sentinel read only mtime, so the slow gate's own docstring claim —
+        "a red slow gate escalates" — had no reader for `ok`.
+        """
+        rel = "data/_probe_verdict.json"
+        for payload, want in (({"ok": False}, "RED"), ({}, "RED"),
+                              ({"ok": "true"}, "RED"), ({"ok": True}, None)):
+            with self._probe(rel, payload, 1, {"verdict_key": "ok"}) as rep:
+                got = [i["status"] for i in rep["issues"] if i["item"] == rel]
+                self.assertEqual(got, [want] if want else [],
+                                 f"verdict {payload!r} classified {got}")
+
+    def test_the_slow_gate_entry_reads_its_verdict(self):
+        spec = self.fs.MANIFEST["data/slow_gate_report.json"]
+        self.assertEqual(spec.get("verdict_key"), "ok")
+
+    def test_a_red_verdict_is_never_auto_fixed(self):
+        """Re-running the suite does not fix the tests that failed in it."""
+        import json as _j
+        calls = []
+        rel = "data/_probe_verdict_fix.json"
+        path = self.fs.BASE_DIR / rel
+        path.write_text(_j.dumps({"ok": False}))
+        self.fs.MANIFEST[rel] = {"max_age_h": 10, "critical": False,
+                                 "verdict_key": "ok", "fix": "nope.py"}
+        try:
+            with patch.object(self.fs, "_attempt_fix",
+                              side_effect=lambda s: calls.append(s) or "fixed"):
+                rep = self._run_isolated(auto_fix=True)
+        finally:
+            self.fs.MANIFEST.pop(rel, None)
+            path.unlink(missing_ok=True)
+        self.assertIn(rel, [i["item"] for i in rep["issues"]])
+        self.assertNotIn("nope.py", calls)
+
     # ── the heartbeat is scoped the same way ──────────────────────────────
     def test_the_heartbeat_is_scoped_to_the_host_that_runs_the_pipeline(self):
         """A frozen heartbeat on a host that no longer runs main.py is not news."""
@@ -31664,10 +31714,17 @@ class TestFastGateSplitIsTheOneWeShip(unittest.TestCase):
     """
 
     def _hook_text(self):
-        root = subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"],
-            cwd=str(Path(__file__).parent),
-        ).decode().strip()
+        try:
+            root = subprocess.check_output(
+                ["git", "rev-parse", "--show-toplevel"],
+                cwd=str(Path(__file__).parent), stderr=subprocess.DEVNULL,
+            ).decode().strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # Same skip as TestThePrePushGateIsTheOneWeShip: the hook is a
+            # property of the repo, and the VM is rsynced, not cloned — this
+            # ERRORed on every VM run from 2026-09-08 (when this class
+            # landed) to 2026-09-30.
+            self.skipTest("not a git checkout (the VM is rsynced, not cloned)")
         p = Path(root) / "scripts" / "git-hooks" / "pre-push"
         self.assertTrue(p.exists(), f"tracked hook missing: {p}")
         return p.read_text()
