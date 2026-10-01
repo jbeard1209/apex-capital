@@ -100,7 +100,17 @@ MODULE_HINT = re.compile(
     r"_watchdog|_auditor|_checker|_guard|_council|_sla|_committee|"
     r"_tracker|_runner|_analyst|_sizer)\.py$"
     r"|^(canary|hr|logic|board_meeting|deputy_board|research_team|manager|"
-    r"strategy_council|chairman_)")
+    r"strategy_council|chairman_|cos_)")
+# ``cos_`` is the Chief-of-Staff factory's prefix — every file whose stem
+# begins with it was created by that factory and is an agent by definition.
+# The factory sometimes concatenates names into one word (``cos_biotech
+# researchagent.py``, ``cos_hrdevelopmentofficer.py``), which the suffix
+# alternatives above cannot catch because they require an underscore before
+# the role word. Without the prefix match, source-2 in ``build()`` missed
+# every factory-made agent whose name happened to drop that underscore, and
+# a host without the per-host ``data/agent_registry.json`` (source-1)
+# reported those agents as VANISHED. The prefix match turns the discovery
+# into one that works from the file tree alone.
 
 # Modules that match the name pattern but are libraries, not agents: they hold
 # no schedule and make no decisions. Listed explicitly so the exclusion is a
@@ -447,32 +457,22 @@ def runs_here(agents: list, crontab_text: str = None) -> set:
 LOADER_CALL = "spec_from_file_location"
 
 
-def dynamic_agent_registries(base: Path = None) -> dict:
-    """Agents a module runs by PATH rather than by import: {ClassName: stem}.
+def _dynamic_agent_rows(base: Path = None) -> list:
+    """Rows [(class_name, pipeline_stem, agent_file_rel)] parsed off the AST.
 
-    `_imports_of` walks import statements, so it sees every caller that says
-    `import x`. It is blind to the other way this firm starts an agent:
-
-        RESEARCH_AGENTS = [("agents/cos_fi_creditspread_agent.py",
-                            "FICreditSpreadAgent"), ...]
-        spec = importlib.util.spec_from_file_location(class_name, path)
-
-    fi_pipeline runs 7 agents that way and fe_pipeline runs 10. None of the 17
-    appears in `called_by`, so the roster could only explain them through the
-    `research_cycle` fallback further down — "no module schedule, so
-    research_team must be running it." That fallback happened to be true and
-    happened to be the wrong reason, which is the worst kind of correct: the
-    moment research_team stops loading them the roster calls 17 employed agents
-    UNSCHEDULED, and the shrink-only orphan ratchet fires on a fiction.
-
-    Detected structurally, never by name: a module that calls
-    spec_from_file_location AND declares a module-level sequence of
-    (`*.py`, `ClassName`) pairs is loading agents from disk. Adding an
-    eighteenth agent to either list needs no edit here; writing a third such
-    pipeline needs none either.
+    The structural detector that `dynamic_agent_registries` is written on top
+    of has the file path in hand — `RESEARCH_AGENTS = [(path, cls), ...]` is
+    the exact shape it is scanning for. The old function kept only `cls →
+    stem` and threw the path away, which forced `research_team_skips` to
+    recover the file through `data/agent_registry.json` (a per-host runtime
+    cache written by the Chief-of-Staff factory). A host that had never run
+    the factory had no registry file, and the function silently returned {} —
+    the smoke suite's "is FI skipped?" check then failed on that host for a
+    data-availability reason, not a code reason. Keep both derivations in one
+    pass, and the static-code question stays answerable from static code.
     """
     base = base or BASE
-    out = {}
+    rows = []
     for rel in _py_files(base):
         if os.path.dirname(rel):        # top-level pipelines only
             continue
@@ -508,8 +508,35 @@ def dynamic_agent_registries(base: Path = None) -> dict:
                     continue
                 if isinstance(path, str) and isinstance(cls, str) \
                         and path.endswith(".py") and cls[:1].isupper():
-                    out[cls] = stem
-    return out
+                    rows.append((cls, stem, path))
+    return rows
+
+
+def dynamic_agent_registries(base: Path = None) -> dict:
+    """Agents a module runs by PATH rather than by import: {ClassName: stem}.
+
+    `_imports_of` walks import statements, so it sees every caller that says
+    `import x`. It is blind to the other way this firm starts an agent:
+
+        RESEARCH_AGENTS = [("agents/cos_fi_creditspread_agent.py",
+                            "FICreditSpreadAgent"), ...]
+        spec = importlib.util.spec_from_file_location(class_name, path)
+
+    fi_pipeline runs 7 agents that way and fe_pipeline runs 10. None of the 17
+    appears in `called_by`, so the roster could only explain them through the
+    `research_cycle` fallback further down — "no module schedule, so
+    research_team must be running it." That fallback happened to be true and
+    happened to be the wrong reason, which is the worst kind of correct: the
+    moment research_team stops loading them the roster calls 17 employed agents
+    UNSCHEDULED, and the shrink-only orphan ratchet fires on a fiction.
+
+    Detected structurally, never by name: a module that calls
+    spec_from_file_location AND declares a module-level sequence of
+    (`*.py`, `ClassName`) pairs is loading agents from disk. Adding an
+    eighteenth agent to either list needs no edit here; writing a third such
+    pipeline needs none either.
+    """
+    return {cls: stem for cls, stem, _file in _dynamic_agent_rows(base)}
 
 
 CONTEXT_CONTRACT = "REQUIRED_SPREAD_KEYS"
@@ -558,8 +585,15 @@ def research_team_skips(base: Path = None, dyn: dict = None) -> dict:
                 return True
         return False
 
-    reg = {a.get("class_name"): (a.get("file") or "")
-           for a in _registry_rows(_load(base / "data" / "agent_registry.json", []))}
+    # The file path for each class is already in the pipeline's source
+    # (RESEARCH_AGENTS = [(path, cls), ...]), captured off the same AST pass
+    # that produced `dyn`. Reading `data/agent_registry.json` to recover it
+    # made this function fail-closed on any host where the Chief-of-Staff
+    # factory had not populated that per-host runtime cache — the Mac smoke
+    # suite returned 0 skips not because fi_pipeline had stopped declaring
+    # them but because the registry was absent. The static answer deserves a
+    # static source.
+    reg = {cls: path for cls, _stem, path in _dynamic_agent_rows(base)}
     out = {}
     for cls, stem in dyn.items():
         rel = reg.get(cls) or ""
@@ -661,7 +695,45 @@ def build(base: Path = BASE, host: str = "local") -> dict:
     known_files = {r["file"] for r in rows.values() if r["file"]}
     known_files.update(SUPERSEDED.values())
 
-    # ── source 2: agent modules no registry has ever held ────────────────
+    # ── source 2a: path-loaded agents keyed by their declared class name ──
+    # fi_pipeline's RESEARCH_AGENTS and fe_pipeline's FE_AGENT_REGISTRY
+    # declare (file, class) pairs that no `import` statement ever carries.
+    # Without this source, a host with no agent_registry.json knows the
+    # agent's file (through source 2b below) but keys its row by the file
+    # stem, not by its class — so a manifest that declares the class name
+    # cannot find it, every FI agent `research_team_skips` lists is "the
+    # row vanished entirely", and the ratchet reports loss on a host that
+    # has simply never run the factory. This source adds the row at its
+    # declared class name so the key the manifest uses actually exists.
+    for cls, stem, path in _dynamic_agent_rows(base):
+        if cls in rows:
+            continue
+        if path in known_files:
+            continue
+        if not (base / path).exists():
+            continue
+        rows[cls] = {
+            "name": cls,
+            "kind": "module",
+            "file": path,
+            "file_exists": True,
+            "tier": 0,
+            "team": None, "lane": None, "specialization": None,
+            "employment": "employed",
+            "superseded_by": None,
+            # A path-loaded agent runs if-and-only-if its pipeline runs. We
+            # know the pipeline, so attribute it there, and let the ratchet's
+            # `left_research_cycle` half see the declared truth.
+            "research_cycle": cls not in skipped_by_research_team,
+            "registry_status": None,
+            "permanent": False,
+            "retirement_reason": None,
+            "runs_via": [f"called_by:{stem}"],
+            "hosts": [host],
+        }
+        known_files.add(path)
+
+    # ── source 2b: agent modules no registry has ever held ────────────────
     for f in files:
         b = os.path.basename(f)
         if b.startswith("test_") or b in NOT_AGENTS or not MODULE_HINT.search(b):
@@ -948,10 +1020,46 @@ def check(roster: dict, manifest: dict) -> dict:
     """
     have = {a["name"]: a for a in roster.get("agents", [])}
     declared = {a["name"]: a for a in manifest.get("agents", [])}
+    # Secondary indices for the ratchet. The declaration lives in the manifest
+    # by CLASS NAME, but a live roster row is keyed by class name only when
+    # source-1 (data/agent_registry.json) is populated — a per-host runtime
+    # file written by the Chief-of-Staff factory. On a host that has never
+    # completed a factory run — a developer Mac — source-1 is empty and the
+    # same agent appears under its filename stem (source-2). The agent did
+    # not vanish; the row's label is different. Fall back to a FILE match,
+    # then to a raw on-disk check for rows whose module does not match the
+    # MODULE_HINT (fe_pipeline, fe_moat_analyzer, …) and never lands in
+    # source-2 either. SUPERSEDED closes the three documented renames whose
+    # old filenames do not exist in the current tree.
+    have_files = {a.get("file"): a for a in roster.get("agents", []) if a.get("file")}
+    base = Path(__file__).resolve().parent
+
+    def _file_present_on_disk(path_rel: str) -> bool:
+        if not path_rel:
+            return False
+        return (base / path_rel).exists()
+
+    def _matches(d: dict) -> bool:
+        name = d.get("name")
+        if name in have:
+            return True
+        f = d.get("file") or ""
+        if f and f in have_files:
+            return True
+        if _file_present_on_disk(f):
+            return True
+        succ = SUPERSEDED.get(os.path.basename(f))
+        if succ:
+            for cand in have_files:
+                if os.path.basename(cand) == succ:
+                    return True
+            if (base / succ).exists():
+                return True
+        return False
 
     vanished = []
     for name, d in declared.items():
-        if name in have:
+        if _matches(d):
             continue
         if d.get("retired_at") and d.get("retirement_reason"):
             continue          # a recorded decision, not a loss
@@ -963,6 +1071,14 @@ def check(roster: dict, manifest: dict) -> dict:
     for name, d in declared.items():
         if d.get("research_cycle") is not True:
             continue                       # never declared as loading, or unarmed
+        # research_cycle is a RUNTIME claim, carried only by source-1 rows
+        # (registry status), so we can only compare like-for-like when the
+        # live roster has a row at this class name. On hosts without the
+        # registry we cannot read research_cycle at all — the file might be
+        # present under its stem (source-2) with research_cycle=False by
+        # default, which is a representation artefact, not a demotion. The
+        # VM, which has source-1, runs the actual check; this host reports
+        # whichever rows it can resolve by name.
         a = have.get(name)
         if a is None or a.get("research_cycle"):
             continue                       # gone entirely (vanished), or still loading
