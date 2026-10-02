@@ -575,6 +575,91 @@ class TestCITScannerPrecision(unittest.TestCase):
 
 
 # =============================================================================
+# 5c. EmailBuffer retries on EMFILE/ENFILE
+# =============================================================================
+class TestEmailBufferEMFILERetry(unittest.TestCase):
+    """7 of 15 ERROR lines in the morning scan were
+    `[EmailBuffer] could not save buffer: [Errno 24] Too many open files`.
+    _save_buffer now does one gc.collect + retry on EMFILE/ENFILE instead
+    of giving up and losing the message. Pin:
+      1. a successful write path is unchanged
+      2. an EMFILE error gets retried once (and succeeds if FDs are freed)
+      3. a non-FD exception is NOT retried (narrow suppression — same failure
+         mode as the scanner-suppression test above)"""
+
+    def _write_to_tmp(self):
+        """Set BUFFER_PATH to a tmp file, return paths and buffer_dir fn."""
+        import tempfile, os, email_buffer
+        d = tempfile.mkdtemp(prefix="eb_emfile_")
+        orig_path = email_buffer.BUFFER_PATH
+        orig_dir = email_buffer._buffer_dir
+        email_buffer.BUFFER_PATH = os.path.join(d, "email_buffer.json")
+        email_buffer._buffer_dir = lambda: d
+        return email_buffer, d, orig_path, orig_dir
+
+    def test_normal_save_still_works(self):
+        import os, shutil, email_buffer
+        eb, d, op, od = self._write_to_tmp()
+        try:
+            eb._save_buffer([{"subject": "test", "body": "x"}])
+            self.assertTrue(os.path.exists(eb.BUFFER_PATH))
+        finally:
+            eb.BUFFER_PATH = op
+            eb._buffer_dir = od
+            shutil.rmtree(d, ignore_errors=True)
+
+    def test_emfile_triggers_retry_and_can_succeed(self):
+        """Mock mkstemp to raise EMFILE once, then succeed on retry."""
+        import errno, os, shutil, email_buffer, tempfile as _tf
+        eb, d, op, od = self._write_to_tmp()
+        try:
+            real_mkstemp = _tf.mkstemp
+            calls = {"n": 0}
+            def flaky_mkstemp(*a, **kw):
+                calls["n"] += 1
+                if calls["n"] == 1:
+                    raise OSError(errno.EMFILE, "Too many open files")
+                return real_mkstemp(*a, **kw)
+            eb.tempfile.mkstemp = flaky_mkstemp
+            try:
+                eb._save_buffer([{"subject": "retry", "body": "y"}])
+                self.assertEqual(calls["n"], 2,
+                    "must retry exactly once after gc.collect")
+                self.assertTrue(os.path.exists(eb.BUFFER_PATH))
+            finally:
+                eb.tempfile.mkstemp = real_mkstemp
+        finally:
+            eb.BUFFER_PATH = op
+            eb._buffer_dir = od
+            shutil.rmtree(d, ignore_errors=True)
+
+    def test_non_fd_error_is_not_retried(self):
+        """A disk-full / permission-denied / etc. must raise on first failure
+        -- retrying would just produce the same error. Narrow suppression:
+        only EMFILE/ENFILE get the gc.collect+retry treatment."""
+        import errno, os, shutil, email_buffer, tempfile as _tf
+        eb, d, op, od = self._write_to_tmp()
+        try:
+            real_mkstemp = _tf.mkstemp
+            calls = {"n": 0}
+            def erroring_mkstemp(*a, **kw):
+                calls["n"] += 1
+                raise OSError(errno.ENOSPC, "No space left on device")
+            eb.tempfile.mkstemp = erroring_mkstemp
+            try:
+                with self.assertRaises(OSError):
+                    eb._save_buffer([{"subject": "no-retry", "body": "z"}])
+                self.assertEqual(calls["n"], 1,
+                    "non-FD errors must raise on first failure")
+            finally:
+                eb.tempfile.mkstemp = real_mkstemp
+        finally:
+            eb.BUFFER_PATH = op
+            eb._buffer_dir = od
+            shutil.rmtree(d, ignore_errors=True)
+
+
+# =============================================================================
 # 5b. CITDataQualityAnalyst canary check — market_open gate + NaN
 # =============================================================================
 class TestCanaryDataQualityCheck(unittest.TestCase):

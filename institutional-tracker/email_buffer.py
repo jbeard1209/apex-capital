@@ -350,24 +350,57 @@ def _save_buffer(buffer: list):
     concurrent reads came back empty, and 200 concurrent enqueues left 7
     survivors. mkstemp gives each writer a private name and os.replace swaps it
     in atomically — a reader sees the whole old queue or the whole new one.
+
+    EMFILE/ENFILE retry: 7 of 15 ERROR lines in the morning scan were
+    `could not save buffer: [Errno 24] Too many open files`. Something else
+    in the process is leaking FDs (likely `json.load(open(p))` in daemons —
+    CPython closes it on refcount drop, PyPy or GC-pressure does not).
+    One gc.collect() + retry gives the buffer a fighting chance to write the
+    message before giving up — losing the message is strictly worse than a
+    5ms stall. If retry also fails, raise so the caller sees the FD exhaustion.
     """
+    import errno as _errno, gc as _gc
+
+    def _attempt():
+        tmp = None
+        try:
+            fd, tmp = tempfile.mkstemp(dir=_buffer_dir(), prefix=".email_buffer.",
+                                       suffix=".tmp")
+            with os.fdopen(fd, "w") as f:
+                json.dump(buffer, f, indent=2, default=str)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, BUFFER_PATH)
+        except Exception:
+            if tmp and os.path.exists(tmp):
+                try:
+                    os.unlink(tmp)
+                except OSError:
+                    pass
+            raise
+
     os.makedirs(_buffer_dir(), exist_ok=True)
-    tmp = None
     try:
-        fd, tmp = tempfile.mkstemp(dir=_buffer_dir(), prefix=".email_buffer.",
-                                   suffix=".tmp")
-        with os.fdopen(fd, "w") as f:
-            json.dump(buffer, f, indent=2, default=str)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp, BUFFER_PATH)
+        _attempt()
+    except OSError as e:
+        # EMFILE: process limit. ENFILE: system-wide limit. Both are retryable
+        # after reclaiming abandoned FDs.
+        if e.errno in (_errno.EMFILE, _errno.ENFILE):
+            _gc.collect()
+            try:
+                _attempt()
+                logger.warning(
+                    f"  [EmailBuffer] FD exhaustion recovered after gc.collect "
+                    f"(errno={e.errno})")
+                return
+            except Exception as retry_e:   # noqa: BLE001
+                logger.error(
+                    f"  [EmailBuffer] could not save buffer after FD retry: {retry_e}")
+                raise
+        logger.error(f"  [EmailBuffer] could not save buffer: {e}")
+        raise
     except Exception as e:            # noqa: BLE001
         logger.error(f"  [EmailBuffer] could not save buffer: {e}")
-        if tmp and os.path.exists(tmp):
-            try:
-                os.unlink(tmp)
-            except OSError:
-                pass
         raise
 
 

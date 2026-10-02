@@ -28,8 +28,14 @@ def _save(p, data):
     os.replace(tmp, p)
 
 def _load(p, d):
-    try: return json.load(open(p)) if os.path.exists(p) else d
-    except: return d
+    try:
+        if not os.path.exists(p):
+            return d
+        with open(p) as _f:
+            return json.load(_f)
+    except Exception as e:
+        logger.debug(f"_load({p}) failed, using default: {e}")
+        return d
 
 def get_position_tickers():
     try:
