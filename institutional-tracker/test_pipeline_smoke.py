@@ -1566,9 +1566,17 @@ class TestWiringContracts(unittest.TestCase):
         # regenerated after the fix) and FAILED on the VM, where the last cron run
         # predated the deploy by 90 minutes. Asserting on a mutable runtime artifact
         # tests when the agent last ran, not whether the code is correct.
-        with patch.object(ia, "_pct_change", side_effect=lambda t: None if t == "^KS11" else 1.0), \
-             patch.object(ia, "_last_price", return_value=100.0):
-            fresh = ia.run(universe=["AAPL"])
+        #
+        # ia.run() writes REPORT_PATH unconditionally, so patch it to a tempdir —
+        # otherwise running this test overwrites data/international_report.json with
+        # the mocked 100.0 placeholders, and that stale file then feeds
+        # notable_indices in the next real pipeline run (observed 2026-10-01).
+        with tempfile.TemporaryDirectory() as _td:
+            fake_report = os.path.join(_td, "international_report.json")
+            with patch.object(ia, "REPORT_PATH", fake_report), \
+                 patch.object(ia, "_pct_change", side_effect=lambda t: None if t == "^KS11" else 1.0), \
+                 patch.object(ia, "_last_price", return_value=100.0):
+                fresh = ia.run(universe=["AAPL"])
         self.assertIn("unreadable", fresh,
                       "report must name the instruments it could not read")
         self.assertIn("^KS11", [r["ticker"] for r in fresh["unreadable"]],

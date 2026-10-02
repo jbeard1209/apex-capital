@@ -1,106 +1,106 @@
 {
-  "generated_at": "2026-09-08T21:00:46.288689+00:00",
-  "session": "after_hours",
-  "sentiment": "NEUTRAL",
-  "sentiment_score": 0,
+  "generated_at": "2026-10-02T00:24:27.157895+00:00",
+  "session": "asia_open",
+  "sentiment": "RISK_OFF",
+  "sentiment_score": -3,
   "indices": [
     {
       "name": "Nikkei 225",
       "ticker": "^N225",
-      "pct": null,
-      "price": null
+      "pct": -1.16,
+      "price": 68185.6562
     },
     {
       "name": "Hang Seng",
       "ticker": "^HSI",
-      "pct": null,
-      "price": null
+      "pct": 0.37,
+      "price": 24613.2695
     },
     {
       "name": "Shanghai Comp",
       "ticker": "000001.SS",
-      "pct": null,
-      "price": null
+      "pct": 0.31,
+      "price": 3842.1951
     },
     {
       "name": "KOSPI",
       "ticker": "^KS11",
-      "pct": null,
-      "price": null
+      "pct": -0.28,
+      "price": 6930.6802
     },
     {
       "name": "Taiwan Weighted",
       "ticker": "^TWII",
-      "pct": null,
-      "price": null
+      "pct": 0.39,
+      "price": 48353.49
     },
     {
       "name": "ASX 200",
       "ticker": "^AXJO",
-      "pct": null,
-      "price": null
+      "pct": 0.39,
+      "price": 8647.9004
     },
     {
       "name": "DAX",
       "ticker": "^GDAXI",
-      "pct": null,
-      "price": null
+      "pct": -1.03,
+      "price": 24939.35
     },
     {
       "name": "FTSE 100",
       "ticker": "^FTSE",
-      "pct": null,
-      "price": null
+      "pct": -1.68,
+      "price": 10428.27
     },
     {
       "name": "CAC 40",
       "ticker": "^FCHI",
-      "pct": null,
-      "price": null
+      "pct": -1.56,
+      "price": 7835.31
     },
     {
       "name": "Euro Stoxx 50",
       "ticker": "^STOXX50E",
-      "pct": null,
-      "price": null
+      "pct": -1.57,
+      "price": 6175.45
     }
   ],
   "currencies": [
     {
       "name": "EUR/USD",
       "ticker": "EURUSD=X",
-      "pct": null,
-      "price": null
+      "pct": -0.74,
+      "price": 1.1244
     },
     {
       "name": "GBP/USD",
       "ticker": "GBPUSD=X",
-      "pct": null,
-      "price": null
+      "pct": -0.55,
+      "price": 1.3192
     },
     {
       "name": "USD/JPY",
       "ticker": "USDJPY=X",
-      "pct": null,
-      "price": null
+      "pct": 0.3,
+      "price": 158.029
     },
     {
       "name": "USD/CNH",
       "ticker": "USDCNH=X",
-      "pct": null,
-      "price": null
+      "pct": 0.03,
+      "price": 6.7164
     },
     {
       "name": "AUD/USD",
       "ticker": "AUDUSD=X",
-      "pct": null,
-      "price": null
+      "pct": -0.3,
+      "price": 0.6925
     },
     {
       "name": "DXY",
       "ticker": "DX-Y.NYB",
-      "pct": null,
-      "price": null
+      "pct": 0.56,
+      "price": 102.023
     }
   ],
   "etfs": [
@@ -108,180 +108,176 @@
       "name": "Japan (EWJ)",
       "ticker": "EWJ",
       "pct": null,
-      "price": null
+      "price": 97.38
     },
     {
       "name": "Germany (EWG)",
       "ticker": "EWG",
       "pct": null,
-      "price": null
+      "price": 40.82
     },
     {
       "name": "China LC (FXI)",
       "ticker": "FXI",
       "pct": null,
-      "price": null
+      "price": 33.92
     },
     {
       "name": "UK (EWU)",
       "ticker": "EWU",
       "pct": null,
-      "price": null
+      "price": 45.89
     },
     {
       "name": "Europe (VGK)",
       "ticker": "VGK",
       "pct": null,
-      "price": null
+      "price": 85.49
     },
     {
       "name": "EM broad (EEM)",
       "ticker": "EEM",
       "pct": null,
-      "price": null
+      "price": 66.81
     },
     {
       "name": "EAFE (EFA)",
       "ticker": "EFA",
       "pct": null,
-      "price": null
+      "price": 102.82
     },
     {
       "name": "Korea (EWY)",
       "ticker": "EWY",
       "pct": null,
-      "price": null
+      "price": 186.11
     },
     {
       "name": "Taiwan (EWT)",
       "ticker": "EWT",
       "pct": null,
-      "price": null
+      "price": 112.78
     }
   ],
   "commodities": [
     {
       "name": "Brent Crude",
       "ticker": "BZ=F",
-      "pct": null,
-      "price": null
+      "pct": -1.04,
+      "price": 102.45
     },
     {
       "name": "WTI Crude",
       "ticker": "CL=F",
-      "pct": null,
-      "price": null
+      "pct": 2.84,
+      "price": 92.99
     },
     {
       "name": "Gold",
       "ticker": "GC=F",
-      "pct": null,
-      "price": null
+      "pct": 0.34,
+      "price": 4201.0
     },
     {
       "name": "Copper",
       "ticker": "HG=F",
-      "pct": null,
-      "price": null
+      "pct": 0.24,
+      "price": 6.575
     },
     {
       "name": "Silver",
       "ticker": "SI=F",
-      "pct": null,
-      "price": null
+      "pct": 1.92,
+      "price": 61.25
     }
   ],
-  "notable_indices": [],
-  "notable_currencies": [],
-  "notable_commodities": [],
-  "us_implications": [
-    "International session shows no outsized moves. US open likely to be driven by domestic catalysts."
-  ],
-  "watch_tickers": [],
-  "unreadable": [
-    {
-      "name": "Nikkei 225",
-      "ticker": "^N225"
-    },
-    {
-      "name": "Hang Seng",
-      "ticker": "^HSI"
-    },
-    {
-      "name": "Shanghai Comp",
-      "ticker": "000001.SS"
-    },
-    {
-      "name": "KOSPI",
-      "ticker": "^KS11"
-    },
-    {
-      "name": "Taiwan Weighted",
-      "ticker": "^TWII"
-    },
-    {
-      "name": "ASX 200",
-      "ticker": "^AXJO"
-    },
-    {
-      "name": "DAX",
-      "ticker": "^GDAXI"
-    },
+  "notable_indices": [
     {
       "name": "FTSE 100",
-      "ticker": "^FTSE"
-    },
-    {
-      "name": "CAC 40",
-      "ticker": "^FCHI"
+      "ticker": "^FTSE",
+      "pct": -1.68,
+      "price": 10428.27
     },
     {
       "name": "Euro Stoxx 50",
-      "ticker": "^STOXX50E"
+      "ticker": "^STOXX50E",
+      "pct": -1.57,
+      "price": 6175.45
     },
+    {
+      "name": "CAC 40",
+      "ticker": "^FCHI",
+      "pct": -1.56,
+      "price": 7835.31
+    },
+    {
+      "name": "Nikkei 225",
+      "ticker": "^N225",
+      "pct": -1.16,
+      "price": 68185.6562
+    },
+    {
+      "name": "DAX",
+      "ticker": "^GDAXI",
+      "pct": -1.03,
+      "price": 24939.35
+    }
+  ],
+  "notable_currencies": [
     {
       "name": "EUR/USD",
-      "ticker": "EURUSD=X"
-    },
-    {
-      "name": "GBP/USD",
-      "ticker": "GBPUSD=X"
-    },
-    {
-      "name": "USD/JPY",
-      "ticker": "USDJPY=X"
-    },
-    {
-      "name": "USD/CNH",
-      "ticker": "USDCNH=X"
-    },
-    {
-      "name": "AUD/USD",
-      "ticker": "AUDUSD=X"
+      "ticker": "EURUSD=X",
+      "pct": -0.74,
+      "price": 1.1244
     },
     {
       "name": "DXY",
-      "ticker": "DX-Y.NYB"
+      "ticker": "DX-Y.NYB",
+      "pct": 0.56,
+      "price": 102.023
     },
     {
-      "name": "Brent Crude",
-      "ticker": "BZ=F"
-    },
+      "name": "GBP/USD",
+      "ticker": "GBPUSD=X",
+      "pct": -0.55,
+      "price": 1.3192
+    }
+  ],
+  "notable_commodities": [
     {
       "name": "WTI Crude",
-      "ticker": "CL=F"
-    },
-    {
-      "name": "Gold",
-      "ticker": "GC=F"
-    },
-    {
-      "name": "Copper",
-      "ticker": "HG=F"
+      "ticker": "CL=F",
+      "pct": 2.84,
+      "price": 92.99
     },
     {
       "name": "Silver",
-      "ticker": "SI=F"
+      "ticker": "SI=F",
+      "pct": 1.92,
+      "price": 61.25
+    },
+    {
+      "name": "Brent Crude",
+      "ticker": "BZ=F",
+      "pct": -1.04,
+      "price": 102.45
     }
-  ]
+  ],
+  "us_implications": [
+    "EUR/USD -0.7% \u2014 weaker euro = tailwind for USD-denominated exports, headwind for European revenue translations."
+  ],
+  "watch_tickers": [
+    "AMD",
+    "AMZN",
+    "AVGO",
+    "GOOGL",
+    "GS",
+    "JPM",
+    "META",
+    "MS",
+    "MSFT",
+    "NVDA",
+    "QCOM"
+  ],
+  "unreadable": []
 }
