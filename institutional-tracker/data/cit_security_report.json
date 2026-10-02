@@ -1,22 +1,10 @@
 {
-  "generated_at": "2026-09-08T16:25:40.536259",
-  "total_findings": 1,
+  "generated_at": "2026-10-01T19:41:37.656371",
+  "total_findings": 0,
   "severity_counts": {
     "CRITICAL": 0,
     "HIGH": 0,
-    "MEDIUM": 1
+    "MEDIUM": 0
   },
-  "findings": [
-    {
-      "agent": "CITSecurityMonitor",
-      "category": "SECURITY",
-      "severity": "MEDIUM",
-      "confidence": 80,
-      "title": "Sensitive data file world-readable: data/hr_irm_sealed.json (mode 644)",
-      "description": "data/hr_irm_sealed.json has permissions 644 \u2014 the world-readable bit is set. This file contains sensitive trading or governance data and should be readable only by the owner.",
-      "evidence": "data/hr_irm_sealed.json mode: 644",
-      "proposed_fix": "Run: chmod 640 data/hr_irm_sealed.json  (or 600 for most sensitive files)",
-      "auto_implementable": true
-    }
-  ]
+  "findings": []
 }

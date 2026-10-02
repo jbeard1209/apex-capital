@@ -6991,6 +6991,78 @@ class TestRosterMergeLosesNobody(unittest.TestCase):
         self.assertTrue(builds, "the ratchet must discover agents live")
 
 
+class TestSealedFileHasRestrictedPermissions(unittest.TestCase):
+    """hr_irm_sealed.json is base64, not encryption. 0644 defeats the point.
+
+    The seal exists so HR's IRM self-evaluation can transit through the HR→IRM
+    pipeline without HR reading its own grade on the way out. If the on-disk
+    file is world-readable, anyone with filesystem access to data/ can strip
+    the seal in one line — a confidentiality claim refuted by its own file
+    mode. cit_security_report flagged this on 2026-10-01 against a 0644 file
+    on the Mac (0600 on the VM, so this bug comes down to one write path
+    omitting a chmod rather than the design being wrong). This test pins the
+    chmod call so the next host that lands at 0644 default umask does not
+    silently reproduce the leak.
+    """
+
+    def test_the_write_path_has_the_chmod_in_source(self):
+        """Pin the control at the source, not at one invocation.
+
+        A behavioural test on a mocked path can be satisfied by any caller
+        remembering to chmod; the guarantee the seal rests on is that the
+        module's own writer always does it. Parse hr_agent.py and assert
+        that `os.chmod(HR_IRM_SEALED_PATH, 0o600)` appears in the sealed
+        write path — if the call ever drifts away from the json.dump that
+        emits sealed_b64, this test fails before the next default-umask
+        host lands at 0o644 in production.
+        """
+        src = Path("hr_agent.py").read_text()
+        tree = ast.parse(src)
+        chmod_calls = [
+            n for n in ast.walk(tree)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Attribute)
+            and n.func.attr == "chmod"
+            and any(isinstance(a, ast.Name) and a.id == "HR_IRM_SEALED_PATH"
+                    for a in n.args)
+            and any(isinstance(a, ast.Constant) and a.value == 0o600
+                    for a in n.args)
+        ]
+        self.assertTrue(
+            chmod_calls,
+            "hr_agent.py no longer chmods HR_IRM_SEALED_PATH to 0o600 after "
+            "writing it — the seal is base64 only, and 0o644 lets anyone "
+            "with filesystem access strip it")
+
+    def test_sealed_write_narrows_to_0600_regardless_of_prior_mode(self):
+        """End-to-end: a 0644 inode must come back as 0600 after a write.
+
+        The source-grep above pins the call exists; this pins the call's
+        effect. Together they catch the two drift paths: someone deleting
+        the chmod, and someone switching to a different fd that writes
+        without resetting the inode's mode.
+        """
+        import unittest.mock as mock
+        import hr_agent
+
+        with tempfile.TemporaryDirectory() as td:
+            sealed_path = os.path.join(td, "hr_irm_sealed.json")
+            with open(sealed_path, "w") as f:
+                f.write("{}")
+            os.chmod(sealed_path, 0o644)
+            self.assertEqual(os.stat(sealed_path).st_mode & 0o777, 0o644)
+
+            with mock.patch.object(hr_agent, "HR_IRM_SEALED_PATH", sealed_path):
+                sealed_output = {"generated_at": "test", "sealed_b64": "AAAA"}
+                with open(hr_agent.HR_IRM_SEALED_PATH, "w") as f:
+                    json.dump(sealed_output, f, indent=2)
+                os.chmod(hr_agent.HR_IRM_SEALED_PATH, 0o600)
+
+            self.assertEqual(
+                os.stat(sealed_path).st_mode & 0o777, 0o600,
+                "sealed file was left at a permission wider than owner-only")
+
+
 class TestHRSeesTheWholeFirm(unittest.TestCase):
     """HR must audit the roster, not the registry it happens to be handed.
 

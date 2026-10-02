@@ -2007,6 +2007,14 @@ def run_hr_review(send_email: bool = False) -> dict:
         }
         with open(HR_IRM_SEALED_PATH, "w") as f:
             json.dump(sealed_output, f, indent=2)
+        # The seal is base64 — not encryption. World-readable (0644) defeats
+        # the whole point: anyone with filesystem read access to data/ could
+        # strip it in one line. Default umask on both hosts opens new files
+        # at 0644; narrow to 0600 after every write so the inode's final
+        # permissions always match the seal's semantics regardless of
+        # whether the file is new or pre-existing. cit_security_report
+        # catches this exact drift (2026-10-01).
+        os.chmod(HR_IRM_SEALED_PATH, 0o600)
         # Log only that the sealed file was written — never the content
         irm_rating_hint = (irm_hrpo or {}).get("rating", "?")
         logger.info(
