@@ -1923,25 +1923,47 @@ class CITDataQualityAnalyst:
                 "auto_implementable": False,
             })
 
-        # ── 3. sector_assignments.json — verify scores are not None ───────────
+        # ── 3. sector_assignments.json — verify scorer produced real numbers ──
+        # The old check read `assignment.get("score")`, a field the producer
+        # (rd_team_leader.py:570) never writes — it's `momentum_score`. So the
+        # check fired "None score" on 8 sectors every single CIT run, even
+        # when `momentum_score=5` was present. Classic wiring-contract bug.
+        #
+        # Widen the detector to the real failure mode: a sector record whose
+        # scorer output is unusable. `momentum_score is None` catches the
+        # original intent; a NaN or missing `momentum_data.price` catches the
+        # yfinance mid-session NaN that was poisoning every downstream metric
+        # (ret_1m_pct, ret_3m_pct, trend) and reaching Jack's brief as
+        # "returned +nan%". Same bug class as memory nan-is-not-none.
+        import math as _math2
         sector_asgn = _load_json_safe(DATA_DIR / "sector_assignments.json")
         bad_sectors = []
         for assignment in sector_asgn.get("assignments", []):
-            if isinstance(assignment, dict) and assignment.get("score") is None:
-                bad_sectors.append(assignment.get("sector_name", "?"))
+            if not isinstance(assignment, dict):
+                continue
+            name = assignment.get("sector_name", "?")
+            score = assignment.get("momentum_score")
+            if score is None or (isinstance(score, float) and _math2.isnan(score)):
+                bad_sectors.append(name)
+                continue
+            md = assignment.get("momentum_data", {}) or {}
+            price = md.get("price")
+            if price is None or (isinstance(price, float) and _math2.isnan(price)):
+                bad_sectors.append(name)
         if bad_sectors:
             findings.append({
                 "agent":        self.name,
                 "category":     "BUG_FIX",
                 "severity":     "MEDIUM",
                 "confidence":   85,
-                "title":        f"None score in sector_assignments.json ({len(bad_sectors)} sector(s))",
+                "title":        f"Garbage score in sector_assignments.json ({len(bad_sectors)} sector(s))",
                 "description":  (
-                    f"Sectors assigned with None scores: {bad_sectors}. "
-                    f"Agent assignment decisions based on null scores may produce arbitrary sector priority ordering."
+                    f"Sectors assigned with unusable scorer output (None/NaN momentum_score "
+                    f"or NaN momentum_data.price): {bad_sectors}. "
+                    f"Downstream pod agents receive bearish trend + 'returned +nan%' briefs."
                 ),
-                "evidence":     f"data/sector_assignments.json: {len(bad_sectors)} assignments with score=None",
-                "proposed_fix": "In rd_team_leader.py: filter out sectors with None scores before ranking. Treat None as score=0 or skip entirely.",
+                "evidence":     f"data/sector_assignments.json: {len(bad_sectors)} assignments with None/NaN momentum_score or price",
+                "proposed_fix": "In rd_team_leader._score_etf: drop NaN rows from close before `iloc[-1]` so mid-session yfinance partial candles don't pollute price/returns/trend. If price is still NaN after dropna, return None and let the sector drop out this cycle.",
                 "auto_implementable": False,
             })
 
@@ -2080,39 +2102,56 @@ class CITDataQualityAnalyst:
                 datetime.now() - datetime.fromisoformat(_gap_log["first_detected"])
             ).days
 
+            # One-shot: celebrate the recovery exactly once, and re-arm when
+            # coverage drops below the threshold again. Without this, the HIGH
+            # finding fires every single CIT run — the gap log here goes back
+            # to 2026-08-29 at 100% coverage and the celebratory HIGH has
+            # therefore shipped on every scan for a month (same bug class as
+            # memory presence-is-not-currency).
+            _already_celebrated = bool(_gap_log.get("celebrated_at"))
             if _coverage_pct >= 60:
-                # Coverage improved — alert board
-                findings.append({
-                    "agent":       self.name,
-                    "category":    "NEW_FEATURE",
-                    "severity":    "HIGH",
-                    "confidence":  90,
-                    "title":       f"yfinance beat_rate coverage restored: {_coverage_pct}% of sample tickers",
-                    "description": (
-                        f"yfinance earnings history now available for {_beat_rate_available}/{len(_sample_tickers)} "
-                        f"sample tickers. Earnings predictor beat_rate can now be re-enabled. "
-                        f"Gap lasted {_days_since_first} day(s)."
-                    ),
-                    "proposed_fix": "Re-enable beat_rate in earnings_predictor.py and remove the MEDIUM known-gap finding.",
-                    "auto_implementable": False,
-                })
-            elif _days_since_first >= 30:
-                # Gap has persisted 30+ days — recommend paid data source
-                findings.append({
-                    "agent":       self.name,
-                    "category":    "BUG_FIX",
-                    "severity":    "MEDIUM",
-                    "confidence":  85,
-                    "title":       f"beat_rate data gap: {_days_since_first} days at {_coverage_pct}% coverage — consider paid feed",
-                    "description": (
-                        f"yfinance has not reliably provided EPS beat rate history for {_days_since_first} days. "
-                        f"Coverage: {_coverage_pct}% of sample. "
-                        f"Recommend evaluating a paid data feed (e.g. Financial Modeling Prep, Polygon.io) "
-                        f"for earnings history before live trading launch."
-                    ),
-                    "proposed_fix": "Evaluate Financial Modeling Prep /v3/earning_surprises endpoint or Polygon.io earnings data.",
-                    "auto_implementable": False,
-                })
+                if not _already_celebrated:
+                    _gap_log["celebrated_at"] = datetime.now().isoformat()
+                    with open(_gap_log_path, "w") as _f:
+                        json.dump(_gap_log, _f, indent=2, default=str)
+                    findings.append({
+                        "agent":       self.name,
+                        "category":    "NEW_FEATURE",
+                        "severity":    "HIGH",
+                        "confidence":  90,
+                        "title":       f"yfinance beat_rate coverage restored: {_coverage_pct}% of sample tickers",
+                        "description": (
+                            f"yfinance earnings history now available for {_beat_rate_available}/{len(_sample_tickers)} "
+                            f"sample tickers. Gap lasted {_days_since_first} day(s). "
+                            f"Verify earnings_predictor._beat_rate() populates predictions and "
+                            f"remove the MEDIUM known-gap finding if present."
+                        ),
+                        "proposed_fix": "Verify beat_rate is populated in data/earnings_predictions.json; this is a one-shot celebration — the gap log is now marked celebrated so it will not re-fire until coverage drops below 60% again.",
+                        "auto_implementable": False,
+                    })
+            else:
+                # Coverage dropped — re-arm the celebration so a future recovery
+                # fires again, and raise the stale-gap MEDIUM if it has lasted.
+                if _already_celebrated:
+                    _gap_log["celebrated_at"] = None
+                    with open(_gap_log_path, "w") as _f:
+                        json.dump(_gap_log, _f, indent=2, default=str)
+                if _days_since_first >= 30:
+                    findings.append({
+                        "agent":       self.name,
+                        "category":    "BUG_FIX",
+                        "severity":    "MEDIUM",
+                        "confidence":  85,
+                        "title":       f"beat_rate data gap: {_days_since_first} days at {_coverage_pct}% coverage — consider paid feed",
+                        "description": (
+                            f"yfinance has not reliably provided EPS beat rate history for {_days_since_first} days. "
+                            f"Coverage: {_coverage_pct}% of sample. "
+                            f"Recommend evaluating a paid data feed (e.g. Financial Modeling Prep, Polygon.io) "
+                            f"for earnings history before live trading launch."
+                        ),
+                        "proposed_fix": "Evaluate Financial Modeling Prep /v3/earning_surprises endpoint or Polygon.io earnings data.",
+                        "auto_implementable": False,
+                    })
         except Exception as _gap_e:
             logger.debug(f"  [CITDataQualityAnalyst] Gap tracker error (non-fatal): {_gap_e}")
 

@@ -192,7 +192,16 @@ def _score_etf(etf: str) -> Optional[dict]:
         if len(df) < 30:
             return None
 
-        close  = df["Close"]
+        # yfinance mid-session returns a partial row with NaN Close for the
+        # current trading day. Taking `close.iloc[-1]` on that polluted the
+        # whole sector record with NaN: price=NaN, ret1m=NaN, ret3m=NaN, and
+        # trend="bearish" (because NaN>=ma is always False), which then
+        # reached Jack's morning brief as "returned +nan% (1M) / +nan% (3M)".
+        # Drop NaN rows BEFORE indexing so every downstream metric sees a
+        # real number. Same bug class as memory nan-is-not-none.
+        close  = df["Close"].dropna()
+        if len(close) < 30:
+            return None
         price  = float(close.iloc[-1])
         ma50   = float(close.iloc[-50:].mean())  if len(close) >= 50  else float(close.mean())
         ma200  = float(close.iloc[-200:].mean()) if len(close) >= 200 else ma50

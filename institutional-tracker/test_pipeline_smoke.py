@@ -604,6 +604,189 @@ class TestCanaryDataQualityCheck(unittest.TestCase):
 
 
 # =============================================================================
+# 5c. The beat_rate "coverage restored" celebration is one-shot
+# =============================================================================
+class TestBeatRateCelebrationIsOneShot(unittest.TestCase):
+    """The yfinance beat_rate coverage recovery is a STATE TRANSITION:
+    one-shot HIGH when it crosses up, re-armed when it crosses back down.
+
+    Without this, the celebratory HIGH fires every CIT run forever — the
+    production gap log already recorded 60 consecutive 100%-coverage
+    readings since 2026-08-29, and the HIGH shipped on every one. Same
+    bug class as memory presence-is-not-currency.
+    """
+
+    def _run_gap_tracker(self, initial_gap_log, coverage_pct, days_since_first=200):
+        """Replay the gap-tracker block in isolation with controlled inputs."""
+        import json as _json, tempfile, os
+        from datetime import datetime
+        from pathlib import Path
+
+        tmp = tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False, encoding="utf-8")
+        tmp.write(_json.dumps(initial_gap_log))
+        tmp.close()
+        gap_log_path = Path(tmp.name)
+        try:
+            with open(gap_log_path) as _f:
+                _gap_log = _json.load(_f)
+            _gap_log.setdefault("history", []).append(
+                {"ts": datetime.now().isoformat(),
+                 "beat_rate_coverage_pct": coverage_pct, "sample_size": 5})
+            _gap_log["history"] = _gap_log["history"][-60:]
+            _gap_log["latest_coverage_pct"] = coverage_pct
+            with open(gap_log_path, "w") as _f:
+                _json.dump(_gap_log, _f, indent=2, default=str)
+
+            findings = []
+            _already_celebrated = bool(_gap_log.get("celebrated_at"))
+            if coverage_pct >= 60:
+                if not _already_celebrated:
+                    _gap_log["celebrated_at"] = datetime.now().isoformat()
+                    with open(gap_log_path, "w") as _f:
+                        _json.dump(_gap_log, _f, indent=2, default=str)
+                    findings.append({"severity": "HIGH",
+                                     "title": "beat_rate coverage restored"})
+            else:
+                if _already_celebrated:
+                    _gap_log["celebrated_at"] = None
+                    with open(gap_log_path, "w") as _f:
+                        _json.dump(_gap_log, _f, indent=2, default=str)
+                if days_since_first >= 30:
+                    findings.append({"severity": "MEDIUM",
+                                     "title": "beat_rate data gap persisting"})
+
+            with open(gap_log_path) as _f:
+                return findings, _json.load(_f)
+        finally:
+            os.remove(gap_log_path)
+
+    def test_first_recovery_fires_high_and_sets_celebrated_at(self):
+        initial = {"first_detected": "2026-05-07T08:31:28",
+                   "history": [], "celebrated_at": None}
+        findings, log_after = self._run_gap_tracker(initial, coverage_pct=100)
+        self.assertEqual(len(findings), 1,
+                         "first recovery must fire the HIGH exactly once")
+        self.assertEqual(findings[0]["severity"], "HIGH")
+        self.assertIsNotNone(log_after.get("celebrated_at"),
+                             "celebrated_at must be stamped so a second run "
+                             "sees it and does NOT fire again")
+
+    def test_second_run_at_same_coverage_does_not_fire(self):
+        # Already celebrated — coverage stays high — must stay quiet.
+        initial = {"first_detected": "2026-05-07T08:31:28",
+                   "history": [],
+                   "celebrated_at": "2026-08-29T13:37:39"}
+        findings, log_after = self._run_gap_tracker(initial, coverage_pct=100)
+        self.assertEqual(findings, [],
+                         "a run while already celebrated must stay quiet; "
+                         "firing again is the bug this pins against")
+        self.assertEqual(log_after.get("celebrated_at"),
+                         "2026-08-29T13:37:39",
+                         "celebrated_at must not change on a quiet repeat run")
+
+    def test_coverage_drops_rearms_the_celebration(self):
+        # Covered → regressed → next run below 60% clears celebrated_at.
+        initial = {"first_detected": "2026-05-07T08:31:28",
+                   "history": [],
+                   "celebrated_at": "2026-08-29T13:37:39"}
+        findings, log_after = self._run_gap_tracker(
+            initial, coverage_pct=20, days_since_first=200)
+        self.assertIsNone(log_after.get("celebrated_at"),
+                          "a drop below 60% must re-arm the celebration")
+        self.assertTrue(any(f["severity"] == "MEDIUM" for f in findings),
+                        "a 200-day gap at 20% must fire the stale-gap MEDIUM")
+
+    def test_rearmed_then_recovers_fires_high_again(self):
+        # celebrated_at was cleared by the drop; a new recovery must fire.
+        initial = {"first_detected": "2026-05-07T08:31:28",
+                   "history": [], "celebrated_at": None}
+        findings, log_after = self._run_gap_tracker(initial, coverage_pct=80)
+        self.assertEqual(len(findings), 1,
+                         "a recovery after re-arming must fire the HIGH")
+        self.assertEqual(findings[0]["severity"], "HIGH")
+        self.assertIsNotNone(log_after.get("celebrated_at"))
+
+
+# =============================================================================
+# 5d. sector_assignments check reads the right field + catches NaN price
+# =============================================================================
+class TestSectorAssignmentsScoreCheck(unittest.TestCase):
+    """The sector-assignments data-quality check must:
+      * read `momentum_score` (what rd_team_leader actually writes), not `score`
+        (which it never writes). The old check fired "None score" MEDIUM on
+        every assignment every run — a false-positive wiring bug.
+      * also catch a NaN `momentum_data.price`, since the yfinance mid-session
+        partial-candle bug poisoned ret_1m_pct / ret_3m_pct / trend with NaN
+        and reached Jack's briefs as "returned +nan%".
+    """
+
+    def _findings_for(self, sector_asgn):
+        import cit_director as cd
+        orig = cd._load_json_safe
+        def fake(path):
+            if str(path).endswith("sector_assignments.json"):
+                return sector_asgn
+            return orig(path)
+        cd._load_json_safe = fake
+        try:
+            return cd.CITDataQualityAnalyst().analyze()
+        finally:
+            cd._load_json_safe = orig
+
+    def _bad_sector_titles(self, findings):
+        return [f["title"] for f in findings
+                if "sector_assignments.json" in f.get("title", "")]
+
+    def test_valid_momentum_score_and_price_do_not_fire(self):
+        asgn = {"assignments": [
+            {"sector_name": "Semiconductors", "momentum_score": 7,
+             "momentum_data": {"price": 617.81}},
+            {"sector_name": "Biotech", "momentum_score": 5,
+             "momentum_data": {"price": 203.0}},
+        ]}
+        titles = self._bad_sector_titles(self._findings_for(asgn))
+        self.assertEqual(
+            titles, [],
+            "clean sectors must not fire the MEDIUM; this pin catches the "
+            "wiring bug where the check read `score` instead of `momentum_score`")
+
+    def test_none_momentum_score_fires_medium(self):
+        asgn = {"assignments": [
+            {"sector_name": "Semiconductors", "momentum_score": None,
+             "momentum_data": {"price": 617.81}},
+        ]}
+        titles = self._bad_sector_titles(self._findings_for(asgn))
+        self.assertTrue(any("sector" in t.lower() for t in titles),
+                        f"None momentum_score must fire; got {titles}")
+
+    def test_nan_price_in_momentum_data_fires_medium(self):
+        asgn = {"assignments": [
+            {"sector_name": "Semiconductors", "momentum_score": 5,
+             "momentum_data": {"price": float("nan")}},
+        ]}
+        titles = self._bad_sector_titles(self._findings_for(asgn))
+        self.assertTrue(any("sector" in t.lower() for t in titles),
+                        f"NaN price in momentum_data must fire (nan-is-not-none); got {titles}")
+
+    def test_old_schema_bug_does_not_re_appear(self):
+        # Guard against the old wiring-contract regression: an assignment with
+        # a VALID momentum_score but with the TOP-LEVEL `score` field unset
+        # (as every real producer writes) must NOT fire. If it does, somebody
+        # pointed the check back at `assignment.get("score")`.
+        asgn = {"assignments": [
+            {"sector_name": "Semiconductors", "momentum_score": 7,
+             "momentum_data": {"price": 617.81}},
+            # explicitly no top-level `score` field — like production
+        ]}
+        titles = self._bad_sector_titles(self._findings_for(asgn))
+        self.assertEqual(
+            titles, [],
+            "the producer writes `momentum_score`, never `score`; "
+            "pointing the check at `score` is the regression this pins")
+
+
+# =============================================================================
 # 6. Deputy board routing
 # =============================================================================
 class TestDeputyBoardRouting(unittest.TestCase):
