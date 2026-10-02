@@ -1946,29 +1946,46 @@ class CITDataQualityAnalyst:
             })
 
         # ── 4. canary_state.json — None indicators in last_readings ──────────
+        # Two drift paths this check used to miss:
+        #
+        #  * After-hours: canary_agent only fetches SPY/QQQ inside `if market_open:`
+        #    (canary_agent.py:310). The state writer at :1166 reads those keys with
+        #    `.get()` and stores whatever came back — None when the keys are absent.
+        #    So `spy_pct is None` on a closed-market state is architectural, not a
+        #    feed gap, and the HIGH it raised every afternoon was a false alarm.
+        #    Gate the whole check on `last_readings.market_open is True`.
+        #
+        #  * NaN masquerading as a number: yfinance intermittently returns NaN
+        #    rather than None for a stale ticker. NaN passes `is not None` and
+        #    fails every numerical threshold, so without an `isnan()` branch a
+        #    broken feed during open market reads here as silence — the exact
+        #    pattern memory nan-is-not-none.md pins. Count NaN as missing too.
+        import math as _math
         canary = _load_json_safe(DATA_DIR / "canary_state.json")
         last_readings = canary.get("last_readings", {})
-        null_indicators = []
-        for key in ("spy_pct", "vix_level"):
-            if last_readings and last_readings.get(key) is None:
-                null_indicators.append(key)
-        # Only flag if last_readings exists but key indicators are None (real data gap)
-        if null_indicators and last_readings:
-            findings.append({
-                "agent":        self.name,
-                "category":     "BUG_FIX",
-                "severity":     "HIGH",
-                "confidence":   92,
-                "title":        f"None canary readings: {null_indicators}",
-                "description":  (
-                    f"yfinance failed to return data for SPY/VIX indicators: {null_indicators}. "
-                    f"The canary uses these to gate all trading — a None VIX or SPY means "
-                    f"the canary may have defaulted to GREEN when the market was actually stressed."
-                ),
-                "evidence":     f"data/canary_state.json last_readings: {null_indicators} are None",
-                "proposed_fix": "If SPY or VIX is None, default canary to ORANGE (fail-safe) and log the data gap rather than silently defaulting to GREEN.",
-                "auto_implementable": False,
-            })
+        if last_readings and last_readings.get("market_open") is True:
+            null_indicators = []
+            for key in ("spy_pct", "vix_level"):
+                v = last_readings.get(key)
+                if v is None or (isinstance(v, float) and _math.isnan(v)):
+                    null_indicators.append(key)
+            if null_indicators:
+                findings.append({
+                    "agent":        self.name,
+                    "category":     "BUG_FIX",
+                    "severity":     "HIGH",
+                    "confidence":   92,
+                    "title":        f"None canary readings: {null_indicators}",
+                    "description":  (
+                        f"yfinance failed to return data for SPY/VIX indicators: {null_indicators} "
+                        f"during a reading taken while the market was open. The canary uses these "
+                        f"to gate all trading — a missing VIX or SPY means it may have graded as "
+                        f"GREEN when the market was actually stressed."
+                    ),
+                    "evidence":     f"data/canary_state.json last_readings (market_open=True): {null_indicators} missing",
+                    "proposed_fix": "If SPY or VIX is missing during market hours, default canary to ORANGE (fail-safe) and log the data gap rather than silently defaulting to GREEN.",
+                    "auto_implementable": False,
+                })
 
         # ── 5. risk_manager_report.json — empty positions but positive value ──
         risk_rpt = _load_json_safe(DATA_DIR / "risk_manager_report.json")

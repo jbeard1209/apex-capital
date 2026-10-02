@@ -535,6 +535,75 @@ class TestCITScannerPrecision(unittest.TestCase):
 
 
 # =============================================================================
+# 5b. CITDataQualityAnalyst canary check — market_open gate + NaN
+# =============================================================================
+class TestCanaryDataQualityCheck(unittest.TestCase):
+    """`CITDataQualityAnalyst.analyze()` canary branch had two silent drifts:
+
+      * After-hours, canary_agent only populates spy_pct/vix_level inside
+        `if market_open:` — so `spy_pct is None` on a closed market is the
+        ARCHITECTURE, not a feed gap. The old check fired HIGH every afternoon.
+      * NaN masquerades as a number: yfinance returns NaN for stale tickers;
+        NaN passes `is not None` and fails every threshold, so a real break
+        read as silence (memory nan-is-not-none).
+
+    These pin that the finding fires ONLY when the market was open AND an
+    indicator is either None or NaN.
+    """
+
+    def _findings_for(self, canary_state):
+        import cit_director as cd
+        orig = cd._load_json_safe
+        def fake(path):
+            if str(path).endswith("canary_state.json"):
+                return canary_state
+            return orig(path)
+        cd._load_json_safe = fake
+        try:
+            return cd.CITDataQualityAnalyst().analyze()
+        finally:
+            cd._load_json_safe = orig
+
+    def _canary_titles(self, findings):
+        return [f["title"] for f in findings
+                if "canary readings" in f.get("title", "").lower()]
+
+    def test_market_closed_none_spy_does_not_fire(self):
+        state = {"last_readings": {"market_open": False,
+                                   "spy_pct": None, "vix_level": None}}
+        titles = self._canary_titles(self._findings_for(state))
+        self.assertEqual(
+            titles, [],
+            "closed-market None spy_pct/vix is architectural (canary_agent only "
+            "fetches inside `if market_open:`) and must NOT fire HIGH")
+
+    def test_market_open_none_spy_fires_high(self):
+        state = {"last_readings": {"market_open": True,
+                                   "spy_pct": None, "vix_level": -0.3}}
+        titles = self._canary_titles(self._findings_for(state))
+        self.assertTrue(
+            any("spy_pct" in t for t in titles),
+            f"missing SPY during open market is a real feed gap and must "
+            f"fire HIGH; got {titles}")
+
+    def test_market_open_nan_vix_fires_high(self):
+        state = {"last_readings": {"market_open": True,
+                                   "spy_pct": 0.5, "vix_level": float("nan")}}
+        titles = self._canary_titles(self._findings_for(state))
+        self.assertTrue(
+            any("vix_level" in t for t in titles),
+            f"NaN VIX must count as missing (nan-is-not-none); got {titles}")
+
+    def test_market_open_sane_readings_do_not_fire(self):
+        state = {"last_readings": {"market_open": True,
+                                   "spy_pct": 0.5, "vix_level": 18.2}}
+        titles = self._canary_titles(self._findings_for(state))
+        self.assertEqual(
+            titles, [],
+            "sane open-market SPY/VIX readings must not fire anything")
+
+
+# =============================================================================
 # 6. Deputy board routing
 # =============================================================================
 class TestDeputyBoardRouting(unittest.TestCase):
