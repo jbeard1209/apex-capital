@@ -19,9 +19,15 @@
         "ml_longterm_improvement_agent.py"
       ],
       "why": "Chairman-approved VM crontab batch 2026-08-28 scheduled the ML research-team chain (queue row AUD-20260702094001). The ratchet is shrink-only, so an agent that gained a scheduler MUST leave the baseline or the next genuine orphan hides behind a stale entry."
+    },
+    {
+      "date": "2026-10-01",
+      "action": "ADDED fe_cit_agent.py",
+      "why": "NOT a new regression and NOT a silenced finding \u2014 fourth instance of the same detector bug class as the 2026-07-30 / 07-31 / 08-21 additions above, now at the loose-fallback layer. scheduler_reachable() still runs an agent_roster.indexed_search word-level fallback on modules with unresolved invocation edges (dynamic subprocess/importlib calls), and apex_system_cit_agent.py \u2014 which IS scheduled on the VM \u2014 fits that profile. Its _CRON_LOG_CHECKS table held the string literal \"fe_cit_agent\" as a tuple key, which the loose fallback matched as a word and spuriously treated as an invocation edge from apex_system_cit_agent (scheduled) to fe_cit_agent.py (not scheduled). The 2026-08-21 fix narrowed primary resolution to AST _invocation_edges but KEPT the loose fallback deliberately (over-reaching for the orphan question means fewer false orphan accusations; the error should land where it is cheap). Removing the dead string from _CRON_LOG_CHECKS in commit 33e1f4a \u2014 which was itself a cleanup of 8 entries that named scripts no longer scheduled anywhere \u2014 severed that loose edge and surfaced the long-standing orphan. Hypothesis proven under the current build: OLD apex_system_cit_agent code \u2192 agent_roster.indexed_search('fe_cit_agent', as_word=True) = TRUE; NEW code \u2192 FALSE. Verified against ground truth before adding, per the 2026-07-30 rule: live VM crontab (ssh apex-capital 'crontab -l') has 0 occurrences of fe_cit across 484 lines; data/vm_crontab_snapshot.txt independently confirms the same; and fe_cit_agent.py has not appeared in the VM crontab in any of the last 10 snapshot commits (its docstring claims 'Runs daily at 11 AM UTC (cron: 0 11 * * *)' \u2014 documented, never built). Writes chairman_action_required.json (40 readers) and fe_approved_picks.json / fe_watchlist.json / fe_rejected_picks.json / fe_pipeline_log.json. Goes to the board under ARCH-2026-0730-orphan-agents; verdict recorded in triage below; my read is SCHEDULE (direct First Eagle equity analog of fi_cit_agent.py, which went SCHEDULE on 2026-07-31 with cron 30 13 * * 1-5 and has been clean since)."
     }
   ],
   "known_orphans": [
+    "fe_cit_agent.py",
     "overnight_board_sprint.py"
   ],
   "triage": {
@@ -60,6 +66,11 @@
         "verdict": "HOLD_BLOCKED",
         "blocker": "recent window is calendar-based; its input is quarterly",
         "evidence": "Verified on the VM: 'Recent window has only 0 rows (min 30). Skipping.' \u2014 recent=0, historical=24,576. Root cause is a design mismatch, not an outage: _fetch_windows() defines 'recent' as the last 60 days, but pipeline_snapshots is written on the 13F filing calendar \u2014 Feb/May/Aug/Nov, 2-3 distinct dates per quarter, unchanged for four years (last cluster 2026-05-15, next due mid-Aug). So for roughly two months in every three the recent window is empty BY CONSTRUCTION and this monitor can only skip. Scheduling it as-is buys a weekly no-op that reads like a clean run. Fix before scheduling: compare the latest filing cluster to the prior one, not a fixed 60/180-day window."
+      },
+      "fe_cit_agent.py": {
+        "verdict": "PENDING_CHAIRMAN",
+        "proposed_cron": "0 11 * * 1-5",
+        "evidence": "Direct First Eagle equity analog of fi_cit_agent.py (Fixed Income CIT, SCHEDULE verdict 2026-07-31, cron 30 13 * * 1-5). Writes chairman_action_required.json (same consumed output contract as fi_cit; 40 readers today), plus fe_approved_picks.json (7 readers incl. apex_improvement_board, fe_board, logic_team, fi_risk_monitor), fe_watchlist.json (9 readers), fe_rejected_picks.json, fe_pipeline_log.json (9 readers). Not smoke-run on the VM before this entry \u2014 scheduling a producer means owning its output, per the 2026-07-31 note, so verdict is PENDING until Chairman either (a) runs ~/venv/bin/python3 fe_cit_agent.py on apex-capital at exit 0 and installs the proposed_cron (becomes SCHEDULE, remove from known_orphans the same day per the ratchet), or (b) RETIRE/DELETE if the First Eagle pod is already covered elsewhere. The agent's own docstring claims 'Runs daily at 11 AM UTC (cron: 0 11 * * *)' \u2014 fix the weekday-only recommendation here if going with SCHEDULE, since the FE pod feeds the weekday pipeline. My read: SCHEDULE, but the Chairman decides and smoke-runs come before cron install."
       }
     }
   }
