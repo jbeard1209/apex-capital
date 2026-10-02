@@ -4998,7 +4998,10 @@
     "resolved_at": "2026-09-30T13:27:29.065161",
     "resolution": "Chairman decision 2026-09-30: ML drift monitor 3h over threshold - cron hygiene issue, not a governance decision. CIT already tracks; no chairman action required. Auto-resolve; standing detector remains armed.",
     "chairman_verdict": "INVESTIGATE",
-    "chairman_decided_at": "2026-09-30T13:27:29.065161"
+    "chairman_decided_at": "2026-09-30T13:27:29.065161",
+    "category": "cit_code",
+    "chairman_only": false,
+    "category_label": "\ud83d\udc1b cit-code"
   },
   {
     "id": "sla-escalation-investigator-20260921-dedup-key-permanent-mute",
@@ -5016,7 +5019,10 @@
     "resolved_at": "2026-09-30T13:27:29.065161",
     "resolution": "Chairman decision 2026-09-30: SLA fallback already routed this to the board (STRATEGY proposal). The 15-day-fallback path IS the intended disposition - chairman-visibility here is informational only. No chairman action required; board proposal is the live workstream.",
     "chairman_verdict": "BOARD_OWNS",
-    "chairman_decided_at": "2026-09-30T13:27:29.065161"
+    "chairman_decided_at": "2026-09-30T13:27:29.065161",
+    "category": "cit_code",
+    "chairman_only": false,
+    "category_label": "\ud83d\udc1b cit-code"
   },
   {
     "id": "sla-escalation-weekly-investigator-20260926-04c02225007b",
@@ -5034,7 +5040,10 @@
     "resolved_at": "2026-09-30T13:27:29.065161",
     "resolution": "Chairman decision 2026-09-30: Same as sibling SLA row - board owns via STRATEGY proposal. Chairman-visibility informational only.",
     "chairman_verdict": "BOARD_OWNS",
-    "chairman_decided_at": "2026-09-30T13:27:29.065161"
+    "chairman_decided_at": "2026-09-30T13:27:29.065161",
+    "category": "freshness",
+    "chairman_only": false,
+    "category_label": "\u23f1  freshness"
   },
   {
     "id": "sla-escalation-logic-officer-20260928-zero_picks_anomaly",
@@ -5052,7 +5061,10 @@
     "resolved_at": "2026-09-30T13:27:29.065161",
     "resolution": "Chairman decision 2026-09-30: Zero-picks-despite-28-active-agents is a real research-pipeline issue, but SLA already routed it to the board. Board proposal is the live workstream. Additional directive: research pipeline owner should log a root-cause note within 5 days.",
     "chairman_verdict": "BOARD_OWNS_PLUS_INVESTIGATE",
-    "chairman_decided_at": "2026-09-30T13:27:29.065161"
+    "chairman_decided_at": "2026-09-30T13:27:29.065161",
+    "category": "governance",
+    "chairman_only": false,
+    "category_label": "\u2696  governance"
   },
   {
     "id": "roster-vanished-2026-09-30",
@@ -5071,6 +5083,44 @@
     "resolved_at": "2026-09-30T13:27:29.065161",
     "resolution": "Chairman decision 2026-09-30: DO NOT delete the 67 manifest declarations. Presence-on-host is a discovery-side gap, not an HR event. Manifest is the source-of-truth for agent existence; host-discovery drift is a data-hygiene bug in the discovery layer. Standing directive to CIT: identify why agent_roster --check reports 67 agents missing when they were not retired. Preserve all 67 manifest rows until CIT reports root cause.",
     "chairman_verdict": "PRESERVE_AND_INVESTIGATE",
-    "chairman_decided_at": "2026-09-30T13:27:29.065161"
+    "chairman_decided_at": "2026-09-30T13:27:29.065161",
+    "category": "other",
+    "chairman_only": false,
+    "category_label": "\u2753 other"
+  },
+  {
+    "id": "apex-sys-cit-20260930-1300-cron_job_stale_on_we",
+    "severity": "MEDIUM",
+    "description": "Cron job stale on weekday -- ML drift monitor log 63h old (threshold 36h)",
+    "dedup_key": "sha1:380317878cdde5a6",
+    "source": "apex_system_cit_agent",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-10-01T12:30:01.479606",
+    "deadline": "2026-10-21T12:30:01.479606",
+    "upstream_first_seen": "2026-09-30T13:00:02.166156",
+    "surfaced_channel": "claude_app",
+    "category": "cit_code",
+    "chairman_only": false,
+    "category_label": "\ud83d\udc1b cit-code",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:sha1:380317878cdde5a6)"
+  },
+  {
+    "id": "inv-20260930-kalshi-cron",
+    "severity": "HIGH",
+    "description": "Commit 3d8016f (2026-09-30) added kalshi_daily_status.py and wrote its cron line into data/vm_crontab_snapshot.txt:359 by hand (20 12 * * * ... kalshi_daily_status.py --report --quiet). The snapshot is supposed to MIRROR the live crontab; the live VM crontab has 0 kalshi_daily_status lines (crontab -l, 2026-10-01 04:00 UTC). So the brief never runs, and test_pipeline_smoke.py::TestKalshiDailyStatusIsWiredEndToEnd.test_cron_snapshot_names_this_agent fails against the VM data. deploy.sh refreshes the snapshot from the live crontab, so after the next deploy this test is red on both hosts until the line is installed. DECISION: approve installing that one line on the VM crontab (investigator may not edit crontab without approval), or drop the agent.",
+    "dedup_key": "inv-20260930-kalshi-cron",
+    "title": "Approve VM cron line for kalshi_daily_status.py (committed as scheduled, but it is not)",
+    "source": "apex-weekly-investigator (scheduled)",
+    "status": "awaiting_chairman",
+    "first_surfaced": "2026-10-01T12:30:01.479606",
+    "deadline": "2026-10-21T12:30:01.479606",
+    "upstream_first_seen": "2026-10-01T04:33:11.209900",
+    "surfaced_channel": "claude_app",
+    "category": "other",
+    "chairman_only": false,
+    "category_label": "\u2753 other",
+    "times_seen": 1,
+    "merge_note": "2 decision record(s) folded by chairman_queue_sync (key=dk:inv-20260930-kalshi-cron)"
   }
 ]

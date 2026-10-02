@@ -32,6 +32,25 @@ in [docs/POSTMORTEMS.md](docs/POSTMORTEMS.md) and in the memory index.
 - README pod file names (`pod1_rd_*.py` etc. did not exist) and the
   test count (`6000+` → `~1,500`); minor drift that misdescribed the
   repo layout.
+- `apex_system_cit_agent._CRON_LOG_CHECKS` had drifted ~2 months from
+  the actual VM crontab: 8 of 11 entries named scripts no longer
+  scheduled anywhere (`ml_drift_monitor`, `ml_data_watchdog`,
+  `ml_alpha_decay_monitor`, `ml_research_team_leader`, `fe_cit_agent`,
+  `fe_watchlist_monitor`, `portfolio_risk_dashboard`, `edgar_scrape`)
+  and 2 scheduled entries pointed at the wrong log path (`fe_pipeline`
+  wrote `logs/fe_<date>.log`, `ml_improvement_loop` wrote
+  `logs/ml_improve_<date>.log`). The result was a daily flood of
+  false-positive MEDIUM Chairman items — 40+ of the
+  `apex-sys-cit-*-cron_job_stale_on_we` series in the resolved
+  archive. Rewrote the list to only track currently-scheduled jobs,
+  added per-entry `max_age_hours` so weekday-only jobs (`* * * * 1-5`)
+  no longer false-fire every Monday when Friday's log is 70h old,
+  and autoresolved the open ML-drift finding
+  (`apex-sys-cit-20260930-1300`) that opened this session. On the VM
+  the detector now reports `All cron job logs are current` with real
+  numbers (CIT pipeline integrity 0.2h, CIT director 0.9h, FE pipeline
+  7.8h, ML feature drift monitor 11.0h, ML improvement loop 16.4h,
+  EDGAR transcript agent 23.7h).
 
 ---
 

@@ -72,7 +72,6 @@ _DISK_ELEVATED_PCT      = 70
 _MEMORY_LOW_MB          = 500
 _DB_STALE_DAYS          = 120
 _DB_LARGE_GB            = 10
-_LOG_STALE_HOURS        = 36
 _EMAIL_OVERFLOW         = 50
 _EMAIL_LOOP_THRESHOLD   = 3
 _EDGAR_STALE_DAYS       = 30
@@ -107,20 +106,36 @@ _CRITICAL_FILES = [
     "data/chairman_action_required.json",
 ]
 
-# -- Cron log patterns: (cron_keyword, log_glob, label) ----------------------
-# We check that cron-scheduled jobs leave fresh log traces.
+# -- Cron log patterns: (cron_keyword, log_glob, label, max_age_hours) -------
+# Each entry MUST match a currently-scheduled VM cron line in
+# data/vm_crontab_snapshot.txt — otherwise the check manufactures a false
+# positive forever (the glob matches an abandoned stub, or nothing, and
+# "no log found" raises a MEDIUM every weekday).
+#
+# Prior shape of this list carried 11 entries, 8 of which named scripts that
+# were no longer scheduled (ml_drift_monitor, ml_data_watchdog,
+# ml_alpha_decay_monitor, ml_research_team_leader, fe_cit_agent,
+# fe_watchlist_monitor, portfolio_risk_dashboard, edgar_scrape) and 2 of which
+# had wrong globs for the scheduled script (fe_pipeline wrote logs/fe_<date>,
+# ml_improvement_loop wrote logs/ml_improve_<date>). The misdirection filed
+# 40+ identical MEDIUM Chairman items over two months — see the
+# apex-sys-cit-*-cron_job_stale_on_we series in chairman_resolved_archive.
+#
+# max_age_hours is per-entry because a global 36h threshold fired every Monday
+# on weekday-only jobs: Friday 15:00 UTC → Monday 13:00 UTC is 70h, well over
+# 36h. For `0 X * * 1-5` jobs the floor is ~73h to cover the weekend gap.
+#
+# Add a line here ONLY after verifying both the cron entry and the real log
+# path on the VM. The glob must match a file this script's own logger (or
+# shell `>>` redirect) actually writes.
 _CRON_LOG_CHECKS = [
-    ("ml_improvement_agent",      "logs/ml_improvement_*.log",           "ML improvement agent"),
-    ("ml_data_watchdog",          "logs/ml_watchdog_*.log",              "ML data watchdog"),
-    ("ml_drift_monitor",          "logs/ml_drift_*.log",                 "ML drift monitor"),
-    ("ml_alpha_decay_monitor",    "logs/ml_decay_*.log",                 "ML alpha decay monitor"),
-    ("ml_research_team_leader",   "logs/ml_team_leader_*.log",           "ML research team leader"),
-    ("cit_pipeline_integrity",    "logs/pipeline_integrity_*.log",       "CIT pipeline integrity"),
-    ("edgar_scrape",              "logs/edgar_scrape_*.log",             "EDGAR scraper"),
-    ("fe_cit_agent",              "logs/fe_cit_agent_*.log",             "FE CIT agent"),
-    ("fe_pipeline",               "logs/fe_pipeline_*.log",              "FE pipeline"),
-    ("fe_watchlist_monitor",      "logs/fe_watchlist_monitor_*.log",     "FE watchlist monitor"),
-    ("portfolio_risk_dashboard",  "logs/portfolio_risk_dashboard.log",   "Portfolio risk dashboard"),
+    # (cron_keyword, log_glob, label, max_age_hours)
+    ("cit_pipeline_integrity_agent", "logs/pipeline_integrity_*.log",      "CIT pipeline integrity",   6),   # every 2h
+    ("fe_pipeline",                  "logs/fe_*.log",                      "FE pipeline",             73),   # weekdays 15:00 UTC
+    ("ml_feature_drift_monitor",     "logs/ml_feature_drift.log",          "ML feature drift monitor",73),   # weekdays 12:00 UTC
+    ("ml_improvement_loop",          "logs/ml_improve_*.log",              "ML improvement loop",     36),   # daily 06:30 UTC
+    ("edgar_transcript_agent",       "logs/edgar_transcript_*.log",        "EDGAR transcript agent",  36),   # daily 23:20 UTC
+    ("cit_director",                 "logs/cit_*.log",                     "CIT director",            12),   # 4x daily
 ]
 
 
@@ -347,27 +362,22 @@ def check_cron_jobs(proposals):
         return
 
     stale_jobs = []
-    for keyword, log_pattern, label in _CRON_LOG_CHECKS:
+    for keyword, log_pattern, label, max_age_h in _CRON_LOG_CHECKS:
         age_hours = _newest_glob_age_hours(log_pattern)
         if age_hours == float("inf"):
             logger.info("    %s: no log found", label)
-            # Only flag jobs that clearly should have logs (not weekend-only)
-            # Skip EDGAR scraper (runs Mon/Thu only) on days other than Mon/Thu/Fri
-            weekday = datetime.now().weekday()
-            if keyword in ("edgar_scrape",) and weekday not in (0, 1, 3):
-                continue
-            stale_jobs.append((label, "no log found"))
-        elif age_hours > _LOG_STALE_HOURS:
-            logger.info("    %s: %.1fh old (STALE)", label, age_hours)
-            stale_jobs.append((label, "%.0fh old" % age_hours))
+            stale_jobs.append((label, "no log found", max_age_h))
+        elif age_hours > max_age_h:
+            logger.info("    %s: %.1fh old (STALE, threshold %dh)", label, age_hours, max_age_h)
+            stale_jobs.append((label, "%.0fh old" % age_hours, max_age_h))
         else:
-            logger.info("    %s: %.1fh old -- OK", label, age_hours)
+            logger.info("    %s: %.1fh old -- OK (threshold %dh)", label, age_hours, max_age_h)
 
     if stale_jobs:
-        for label, reason in stale_jobs:
+        for label, reason, max_age_h in stale_jobs:
             _raise_issue(proposals, "MEDIUM", "BUG_FIX",
                          "Cron job stale on weekday -- %s log %s (threshold %dh)"
-                         % (label, reason, _LOG_STALE_HOURS))
+                         % (label, reason, max_age_h))
     else:
         logger.info("    All cron job logs are current.")
 
