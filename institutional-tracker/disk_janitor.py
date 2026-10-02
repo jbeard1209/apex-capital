@@ -10,10 +10,11 @@
 #   - alerts only if STILL >88% after pruning (self-heal first, email second)
 # Cron: twice daily (before backup + mid-afternoon). Exits 1 only if still full.
 # =============================================================================
-import os, shutil, subprocess, sys, glob, time
+import logging, os, shutil, subprocess, sys, glob, time
 from pathlib import Path
 
 BASE = Path(__file__).parent
+logger = logging.getLogger("disk_janitor")
 
 def bytecode_caches():
     """Where THIS interpreter actually writes .pyc files. Two hosts, two answers.
@@ -64,7 +65,9 @@ def prune(paths_globs, older_days=None):
                 if os.path.isdir(p): shutil.rmtree(p, ignore_errors=True)
                 else: os.remove(p)
                 n += 1
-            except Exception: pass
+            except Exception as e:
+                # per-path failure must not abort the janitor, but it should log
+                logger.debug(f"disk_janitor skip {p}: {e}")
     return n
 
 if __name__ == "__main__":

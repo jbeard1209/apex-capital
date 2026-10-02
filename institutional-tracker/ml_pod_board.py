@@ -39,7 +39,8 @@ def _load(path, default=None):
     try:
         if path.exists():
             with open(path) as f: return json.load(f)
-    except Exception: pass
+    except Exception as e:
+        logger.warning(f"_load({path}) failed, returning default: {e}")
     return default if default is not None else {}
 
 

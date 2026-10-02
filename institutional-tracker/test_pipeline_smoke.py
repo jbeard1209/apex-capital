@@ -533,6 +533,46 @@ class TestCITScannerPrecision(unittest.TestCase):
         titles = " ".join(f["title"] for f in self._scan(src))
         self.assertIn("None guard", titles)
 
+    def test_atomic_write_cleanup_reraise_not_flagged(self):
+        """The idiomatic atomic-write cleanup pattern re-raises the real error.
+        The inner `except: pass` only guards the temp-file deletion. Flagging
+        it as a silent exception produced 5 identical false-positive MEDIUMs
+        every CIT run (edgar_transcript, liquidity_stress_test, portfolio_attribution,
+        short_interest_monitor, weekly_brainstorm).
+
+        The free-function `_audit_files` only scans two-line form, so test that path."""
+        src = ("import os\n"
+               "def write(tmp, path):\n"
+               "    try:\n"
+               "        os.replace(tmp, path)\n"
+               "    except Exception:\n"
+               "        try:\n"
+               "            os.unlink(tmp)\n"
+               "        except:\n"
+               "            pass\n"
+               "        raise\n")
+        titles = " ".join(f["title"] for f in self._scan(src))
+        self.assertNotIn("silent exception", titles,
+            "cleanup-then-reraise idiom must not be flagged — the error IS surfaced via `raise`")
+
+    def test_bare_pass_without_reraise_still_flagged(self):
+        """But if there's NO re-raise after the cleanup, it IS a silent drop.
+        Pin that the suppression is narrow — this is the regression failure
+        mode (over-suppress → scanner goes blind to real bugs). Two-line form,
+        same scanner path as the previous test."""
+        src = ("def do():\n"
+               "    try:\n"
+               "        risky()\n"
+               "    except Exception:\n"
+               "        try:\n"
+               "            cleanup()\n"
+               "        except:\n"
+               "            pass\n"
+               "        return None  # swallow, do NOT re-raise\n")
+        titles = " ".join(f["title"] for f in self._scan(src))
+        self.assertIn("silent exception", titles,
+            "a cleanup pattern that doesn't re-raise is still a silent drop")
+
 
 # =============================================================================
 # 5b. CITDataQualityAnalyst canary check — market_open gate + NaN

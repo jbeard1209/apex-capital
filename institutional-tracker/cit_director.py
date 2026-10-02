@@ -505,10 +505,40 @@ class CITCodeInspector:
             fname = src_path.name
 
             # ── 1. Bare `except: pass` or `except Exception: pass` ──────────
+            # Skip the atomic-write cleanup idiom:
+            #     except Exception:
+            #         try: os.unlink(tmp)
+            #         except: pass           <-- flagged here
+            #         raise
+            # The outer `except Exception` re-raises; the inner pass just tries
+            # to clean up a temp file that may not exist. Not a silent drop.
+            # Heuristic: a bare pass followed within 2 non-blank lines by a
+            # `raise` at <= its indent level is cleanup-then-reraise.
+            def _is_cleanup_reraise(idx: int) -> bool:
+                """idx is 1-based line of the `except: pass`. Returns True if
+                this is a cleanup inside a block that will re-raise."""
+                pass_line = lines[idx - 1]
+                pass_indent = len(pass_line) - len(pass_line.lstrip())
+                seen = 0
+                for j in range(idx, min(idx + 5, len(lines))):
+                    nxt = lines[j]
+                    s = nxt.strip()
+                    if not s:
+                        continue
+                    nxt_indent = len(nxt) - len(nxt.lstrip())
+                    if nxt_indent < pass_indent and (s == "raise" or s.startswith("raise ")):
+                        return True
+                    seen += 1
+                    if seen >= 3:
+                        break
+                return False
+
             for i, line in enumerate(lines, 1):
                 stripped = line.strip()
                 if stripped in ("except: pass", "except Exception: pass",
                                 "except Exception as e: pass"):
+                    if _is_cleanup_reraise(i):
+                        continue
                     findings.append({
                         "agent":        self.name,
                         "category":     "BUG_FIX",
@@ -2743,6 +2773,26 @@ def _audit_files(agent_name: str, filenames: list) -> list[dict]:
         # a documented `pass  # advisory, never block` is intentional, not a bug.
         # (The named `except Exception as e:` form at least binds the error and was
         # a large source of false positives, so it's no longer flagged here.)
+        # ALSO skip the atomic-write cleanup idiom (except block ends in `raise`),
+        # same reasoning as the inline-form scanner above.
+        def _cleanup_reraise_after(pass_idx: int, pass_indent: int) -> bool:
+            """pass_idx is 1-based line of the `pass`. Returns True if that pass
+            is immediately followed by a `raise` at a lower indent (cleanup block
+            inside an outer `except Exception: ... raise`)."""
+            seen = 0
+            for k in range(pass_idx, min(pass_idx + 5, len(lines))):
+                nxt = lines[k]
+                s = nxt.strip()
+                if not s:
+                    continue
+                nxt_indent = len(nxt) - len(nxt.lstrip())
+                if nxt_indent < pass_indent and (s == "raise" or s.startswith("raise ")):
+                    return True
+                seen += 1
+                if seen >= 3:
+                    break
+            return False
+
         for i, line in enumerate(lines, 1):
             stripped = line.strip()
             if stripped in ("except:", "except Exception:"):
@@ -2753,6 +2803,9 @@ def _audit_files(agent_name: str, filenames: list) -> list[dict]:
                     raw = lines[j] if j < len(lines) else ""
                     next_stripped = raw.strip()
                     if next_stripped == "pass":
+                        pass_indent = len(raw) - len(raw.lstrip())
+                        if _cleanup_reraise_after(j + 1, pass_indent):
+                            break  # cleanup-then-reraise idiom, not a silent drop
                         findings.append({
                             "source":   agent_name,
                             "severity": "MEDIUM",

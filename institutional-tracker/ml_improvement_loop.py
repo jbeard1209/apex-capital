@@ -965,7 +965,8 @@ def idea_feature_pruning(idea_id: int) -> tuple[float | None, float | None, str]
                  "n_analyzed": int(len(imps)), "n_pruned": int((~keep).sum()),
                  "pruned_st_auc": float(st_auc) if st_auc else None},
                 open(str(BASE_DIR / "data" / "alpha_decay_report.json"), "w"), indent=2)
-    except Exception: pass
+    except Exception as e:
+        log.warning(f"alpha_decay_report write failed: {e}")
 
     notes = f"Bottom-50% pruning. ST: {st_auc:.4f}. LT: {lt_auc:.4f}."
     return st_auc, lt_auc, notes

@@ -158,7 +158,8 @@ def run_quiver_signals():
                 f"Quiver Notable Signals: {', '.join(notable)}",
                 "\n".join(f"  {t}: congress_net={results[t]['congress_net_buys_90d']} contracts=${results[t]['govcontract_award_90d_m']:.0f}M" for t in notable),
                 urgency="NORMAL", ttl_hours=168.0)
-        except: pass
+        except Exception as e:
+            logger.warning(f"post_bulletin failed, notable signals lost: {e}")
 
     logger.info(f"  Done: {len(results)} tickers, {len(notable)} notable")
     return {"status": "OK", "tickers_analyzed": len(results), "notable": notable}

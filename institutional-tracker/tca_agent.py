@@ -169,7 +169,8 @@ def run_tca(days_back=90):
                 "TCA: High Average Slippage",
                 f"Avg slippage {avg_slip:.1f}bps across {len(valid)} fills. {len(flagged)} trades > 10bps.",
                 urgency="HIGH")
-        except Exception: pass
+        except Exception as e:
+            logger.warning(f"IRM slippage alert failed to send: {e}")
 
     logger.info(f"  Done: avg={avg_slip:.1f}bps, {len(flagged)} flagged >10bps" if avg_slip else "  Done")
     return report
