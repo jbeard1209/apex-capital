@@ -281,6 +281,28 @@ def check_deadmans_switch(issues: list, skipped: dict):
     logger.info("\n  [1/6] Dead-man's switch sanity check...")
     me = "deadmans_switch_sanity"
 
+    # --- Non-pipeline host short-circuit ---
+    # pipeline_heartbeat.json and manager_decisions.json are producer-side
+    # artifacts: main.py writes the first, manager_agent writes the second, and
+    # neither of them runs on a host that is not APEX_TRADING_HOST. Reading the
+    # LOCAL copies on a non-pipeline host is reading state that stopped moving
+    # the day the firm migrated to the other host (2026-08-14 on the Mac), which
+    # is architectural not an outage. Pattern 2 below would otherwise fire HIGH
+    # every weekday forever on the mirror host. The pipeline host's own health is
+    # judged on that host and reaches here via `peer_host_liveness` (check 5).
+    try:
+        import single_writer as _sw
+        _designated = _sw.designated_host()
+        if _designated and _sw.this_host() != _designated:
+            return _skip(skipped, me,
+                         f"this host ({_sw.this_host()}) does not run main.py "
+                         f"(designated={_designated}) — the local heartbeat and "
+                         f"manager_decisions files are producer-side artifacts "
+                         f"that only move on the designated host. Pipeline health "
+                         f"on that host is judged by check 5 (peer_host_liveness).")
+    except Exception:
+        pass
+
     # --- pipeline_heartbeat.json ---
     hb_data = _load_json(_HEARTBEAT_PATH)
     if hb_data is None:

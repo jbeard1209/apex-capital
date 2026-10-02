@@ -8139,6 +8139,56 @@ class TestPipelineIntegrityVerdicts(unittest.TestCase):
         self.assertEqual(pia._verdicts(issues, skipped)["peer_host_liveness"],
                          pia.SKIP)
 
+    def test_deadmans_switch_skips_off_the_pipeline_host(self):
+        """pipeline_heartbeat.json is a producer-side artifact of main.py.
+
+        On the mirror host (where main.py doesn't run) the local heartbeat
+        and manager_decisions files are frozen the day the pipeline migrated,
+        which is architectural — not an outage. Pattern 2's "stale on weekday"
+        branch would otherwise fire HIGH every weekday forever against a
+        48-day-old file (observed 2026-10-01: a false-positive HIGH that had
+        been reaching the Chairman queue, plus two older rows still open from
+        the pre-migration era). Pipeline health on the pipeline host is judged
+        by check 5 (peer_host_liveness), which answers from here.
+        """
+        import unittest.mock as mock
+        import cit_pipeline_integrity_agent as pia
+        import single_writer as sw
+        issues, skipped = [], {}
+        with mock.patch.object(sw, "this_host", return_value="mac"), \
+             mock.patch.object(sw, "designated_host", return_value="apexcapitalc"):
+            pia.check_deadmans_switch(issues, skipped)
+        self.assertIn("deadmans_switch_sanity", skipped,
+                      "a host that cannot see main.py's output must SKIP, "
+                      "not read someone else's stale producer file and raise")
+        self.assertEqual(issues, [],
+                         "nothing may be raised while skipped — SKIP closes "
+                         "nothing and must not fire either")
+        self.assertEqual(
+            pia._verdicts(issues, skipped)["deadmans_switch_sanity"],
+            pia.SKIP)
+
+    def test_deadmans_switch_still_runs_on_the_pipeline_host(self):
+        """The skip must not fire ON the pipeline host — this is the trap.
+
+        A guard that always skips is a guard that always passes. On the
+        designated host the check must proceed past the host short-circuit;
+        we don't need to assert what it then finds — only that it did not
+        exit with the "wrong host" SKIP reason.
+        """
+        import unittest.mock as mock
+        import cit_pipeline_integrity_agent as pia
+        import single_writer as sw
+        issues, skipped = [], {}
+        with mock.patch.object(sw, "this_host", return_value="apexcapitalc"), \
+             mock.patch.object(sw, "designated_host", return_value="apexcapitalc"):
+            pia.check_deadmans_switch(issues, skipped)
+        skip_reason = skipped.get("deadmans_switch_sanity", "")
+        self.assertNotIn("does not run main.py", skip_reason,
+                         "ON the designated host the host short-circuit must "
+                         "NOT fire — otherwise the pipeline is unjudged "
+                         "everywhere and this check is dead")
+
     def test_an_unreachable_peer_is_raised_not_swallowed(self):
         import unittest.mock as mock
         import cit_pipeline_integrity_agent as pia
