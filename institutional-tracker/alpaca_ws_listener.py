@@ -39,7 +39,8 @@ def get_position_tickers():
             # `symbol` raised KeyError into a bare `except: pass`, so this
             # returned [] and the listener subscribed to no position at all.
             return list(pos_df["ticker"].str.upper())
-    except: pass
+    except Exception as e:
+        logger.debug(f"get_position_tickers failed: {e}")
     return []
 
 def get_entry_prices():
@@ -48,9 +49,17 @@ def get_entry_prices():
         from alpaca_trader import AlpacaTrader
         pos_df = AlpacaTrader().get_positions()
         if pos_df is not None and not pos_df.empty:
-            return {str(row["symbol"]).upper(): float(row.get("avg_entry_price",0))
+            # Same bug class as get_position_tickers above: this used to read
+            # row["symbol"] AND row.get("avg_entry_price") -- BOTH wrong column
+            # names. KeyError got swallowed by bare `except: pass` -> returned
+            # {} -> polling fallback saw no tickers and alerted on nothing.
+            # Even if `symbol` had resolved, `avg_entry_price` -> default 0
+            # -> `if entry > 0` guard below skipped every position silently.
+            # The DataFrame columns are `ticker` and `avg_entry` (alpaca_trader.py:115,118).
+            return {str(row["ticker"]).upper(): float(row.get("avg_entry", 0))
                     for _, row in pos_df.iterrows()}
-    except: pass
+    except Exception as e:
+        logger.debug(f"get_entry_prices failed: {e}")
     return {}
 
 def add_alert(ticker, pct_move, current_price, entry_price):
@@ -93,7 +102,8 @@ def run_polling_fallback(interval_s=60):
                         pct = (price - entry) / entry * 100
                         if abs(pct) >= MOVE_THRESHOLD_PCT:
                             add_alert(ticker, pct, price, entry)
-                except Exception: pass
+                except Exception as e:
+                    logger.debug(f"polling fetch failed for {ticker}: {e}")
         except Exception as e:
             logger.debug(f"  Polling error: {e}")
         time.sleep(interval_s)
@@ -111,7 +121,8 @@ def run_websocket():
             try:
                 from config import ALPACA_API_KEY, ALPACA_SECRET_KEY
                 api_key, api_secret = ALPACA_API_KEY, ALPACA_SECRET_KEY
-            except: pass
+            except Exception as e:
+                logger.debug(f"config import failed: {e}")
         if not api_key:
             logger.info("  No Alpaca keys found for WebSocket — using polling fallback")
             run_polling_fallback(); return

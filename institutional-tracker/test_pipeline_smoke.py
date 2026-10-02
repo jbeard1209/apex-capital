@@ -787,6 +787,69 @@ class TestSectorAssignmentsScoreCheck(unittest.TestCase):
 
 
 # =============================================================================
+# 5b. WS listener reads positions by canonical column names
+# =============================================================================
+class TestWSListenerColumnNames(unittest.TestCase):
+    """alpaca_ws_listener.get_entry_prices used to read row["symbol"] and
+    row.get("avg_entry_price") -- both wrong column names. KeyError got
+    swallowed by bare `except: pass` -> {} -> polling fallback alerted on
+    nothing. Even if `symbol` had resolved, `avg_entry_price` -> default 0
+    -> `if entry > 0` skipped every position silently.
+    The DataFrame columns are `ticker` and `avg_entry` (alpaca_trader.py:115,118).
+    Pin that both functions use canonical column names so this cannot regress."""
+
+    def test_canonical_columns_are_ticker_and_avg_entry(self):
+        """Pin alpaca_trader.get_positions' DataFrame schema."""
+        import inspect, alpaca_trader
+        src = inspect.getsource(alpaca_trader.AlpacaTrader.get_positions)
+        self.assertIn('"ticker":', src,
+            "AlpacaTrader.get_positions must emit a `ticker` column")
+        self.assertIn('"avg_entry":', src,
+            "AlpacaTrader.get_positions must emit an `avg_entry` column")
+
+    def test_ws_listener_reads_canonical_columns(self):
+        """alpaca_ws_listener must read ticker/avg_entry, never symbol/avg_entry_price.
+        Inspect the AST of code only, not comments/docstrings -- the function's
+        own postmortem comment legitimately names the wrong columns."""
+        import ast, inspect, alpaca_ws_listener
+
+        def _string_subscript_keys(fn):
+            """Return the set of literal string keys used in subscripts/.get(...) in fn."""
+            tree = ast.parse(inspect.getsource(fn))
+            keys = set()
+            for node in ast.walk(tree):
+                # row["ticker"] -> Subscript(slice=Constant(value="ticker"))
+                if isinstance(node, ast.Subscript):
+                    sl = node.slice
+                    if isinstance(sl, ast.Constant) and isinstance(sl.value, str):
+                        keys.add(sl.value)
+                # row.get("avg_entry", 0) -> Call(func=Attribute(attr="get"), args=[Constant(...)])
+                if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+                    if node.func.attr == "get" and node.args:
+                        a0 = node.args[0]
+                        if isinstance(a0, ast.Constant) and isinstance(a0.value, str):
+                            keys.add(a0.value)
+            return keys
+
+        tickers_keys = _string_subscript_keys(alpaca_ws_listener.get_position_tickers)
+        self.assertIn("ticker", tickers_keys,
+            "get_position_tickers must read the `ticker` column")
+        self.assertNotIn("symbol", tickers_keys,
+            "get_position_tickers must not read `symbol` -- DataFrame has no such column")
+
+        prices_keys = _string_subscript_keys(alpaca_ws_listener.get_entry_prices)
+        self.assertIn("ticker", prices_keys,
+            "get_entry_prices must read the `ticker` column")
+        self.assertIn("avg_entry", prices_keys,
+            "get_entry_prices must read the `avg_entry` column")
+        self.assertNotIn("symbol", prices_keys,
+            "get_entry_prices must not read `symbol` -- DataFrame has no such column")
+        self.assertNotIn("avg_entry_price", prices_keys,
+            "get_entry_prices must read `avg_entry`, not `avg_entry_price` -- "
+            "that was the silent-zero bug this pins")
+
+
+# =============================================================================
 # 6. Deputy board routing
 # =============================================================================
 class TestDeputyBoardRouting(unittest.TestCase):
