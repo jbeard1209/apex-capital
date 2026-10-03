@@ -377,7 +377,11 @@ class HRPerformanceOfficer:
         # ── CRO: bulletin completeness ────────────────────────────────────
         risk_bulletin   = _safe_load(RISK_RPT)
         cro_complete    = bool(risk_bulletin.get("risk_level"))
-        cvar_non_zero   = (risk_bulletin.get("cvar_95") or 0) != 0
+        # The bulletin only gained a numeric cvar_95 on 2026-10-03; before that
+        # this read 0 every day and HR coached the CRO for a calculation that
+        # had succeeded. An old bulletin without the key is "unknown", not zero.
+        _cvar           = risk_bulletin.get("cvar_95", "absent")
+        cvar_non_zero   = _cvar == "absent" or (_cvar or 0) != 0
 
         # ── CIT HR memo: exoneration context for zero-pick agents ─────────
         # CIT cross-references canary + CRO + sector assignments and writes

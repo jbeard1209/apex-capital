@@ -99,7 +99,15 @@ def reconcile():
                 f"This does not self-heal and the queue below is this host's stale "
                 f"copy — chairman_queue_sync needs a look")
     except Exception as e:
-        return f"could not reach the VM ({str(e)[:60]}) — this queue may be stale"
+        # A local OSError is not a network failure; say which, and keep the TAIL
+        # of the message — a 60-char head cut a path to "/Users/jackbeard/Claud"
+        # and hid the one fact (which file) that names the cause.
+        msg = str(e)
+        msg = msg if len(msg) <= 120 else "…" + msg[-119:]
+        if isinstance(e, OSError) and getattr(e, "filename", None):
+            return (f"local file error during queue sync ({type(e).__name__}: {msg}) "
+                    f"— the VM may be fine; this queue may be stale")
+        return f"could not reach the VM ({msg}) — this queue may be stale"
 
 
 def _category_of(item: dict) -> str:

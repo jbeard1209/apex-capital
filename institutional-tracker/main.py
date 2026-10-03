@@ -690,7 +690,11 @@ def run_daily(send_email: bool = True, include_backtest: bool = False):
             if not _alpaca_ok:
                 raise Exception("Alpaca unavailable")
             _acct_tmp  = trader.get_account()
-            _cvar_1d   = _rb.get("cvar_95", 0) or 0
+            _cvar_1d   = _rb.get("cvar_95")
+            if _cvar_1d is None:
+                # Until 2026-10-03 the bulletin never carried cvar_95 and this
+                # read 0, so the breaker could not fire. Absent is not "zero risk".
+                raise Exception("risk_bulletin has no cvar_95 — breaker cannot evaluate")
             _pv_tmp    = _acct_tmp.get("portfolio_value", 1) or 1
             _cvar_pct  = (_cvar_1d / _pv_tmp * 100)
             _CVAR_CB_THRESH = 5.0

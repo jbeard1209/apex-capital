@@ -97,6 +97,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import re
 import subprocess
 import sys
@@ -586,10 +587,17 @@ def _load_remote(name: str, missing_ok: bool = False) -> list:
 
 
 def _write_local(name: str, obj) -> None:
+    # The tmp name is per-process. A shared "<name>.tmp" let two sessions whose
+    # SessionStart hooks fired together race: one's replace() moved the other's
+    # tmp away, the loser raised FileNotFoundError on a Mac path, and the inbox
+    # reported it as "could not reach the VM" (seen 2026-10-03).
     p = DATA / name
-    tmp = p.with_suffix(p.suffix + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=2))
-    tmp.replace(p)
+    tmp = p.with_name(f"{p.name}.{os.getpid()}.tmp")
+    try:
+        tmp.write_text(json.dumps(obj, indent=2))
+        tmp.replace(p)
+    finally:
+        tmp.unlink(missing_ok=True)
 
 
 def _write_remote(name: str, obj) -> None:

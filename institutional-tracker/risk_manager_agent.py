@@ -916,6 +916,15 @@ def _build_risk_bulletin(risk_assessment: dict, var_metrics: dict,
         "sector_warnings":  sector_warnings,
         "risk_flags_summary": risk_flags[:5],   # top 5, informational — no grading language
         "var_context":      var_ctx,
+        # Numeric copies of what var_context only says in prose. Three readers
+        # did .get("cvar_95") on this bulletin (main.py's CVaR circuit breaker,
+        # hr_agent's CRO check, manager_agent) and it was never here: the
+        # breaker read 0 and could not fire, and HR coached the CRO daily for a
+        # "zero CVaR" that was $3,180. None = not measured — never 0, which
+        # reads as "no risk" (see memory fallback-that-means-act).
+        "cvar_95":          var_metrics.get("cvar_95") if var_metrics else None,
+        "var_95_1d":        var_1d or None,
+        "portfolio_value":  pv or None,
         "capital_guidance": capital_guidance,
     }
 

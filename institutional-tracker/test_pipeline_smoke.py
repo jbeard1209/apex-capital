@@ -1413,6 +1413,28 @@ def _hr_publishes(key: str) -> bool:
 
 class TestWiringContracts(unittest.TestCase):
 
+    def test_the_risk_bulletin_carries_the_numeric_cvar_its_readers_get(self):
+        """risk_bulletin.json: CRO producer -> main.py breaker, hr_agent.
+
+        Until 2026-10-03 the bulletin held CVaR only inside the prose string
+        `var_context`; main.py's 5% CVaR circuit breaker and hr_agent both
+        did .get("cvar_95") and read 0, so the breaker could never fire and
+        HR coached the CRO every day for a "zero CVaR" that was $3,180.
+        """
+        import risk_manager_agent as rma
+        b = rma._build_risk_bulletin(
+            {"risk_level": "MODERATE", "risk_score": 3},
+            {"var_95_1d": 2180.66, "cvar_95": 3179.8},
+            {}, {"portfolio_value": 96443.0})
+        self.assertEqual(3179.8, b.get("cvar_95"))
+        self.assertIsInstance(b.get("var_context"), str)
+        # missing measurement must be None, never 0 ("no risk")
+        b0 = rma._build_risk_bulletin({"risk_level": "LOW"}, {}, {}, {})
+        self.assertIsNone(b0.get("cvar_95"))
+        # and the readers name the same key
+        for src in ("main.py", "hr_agent.py"):
+            self.assertIn('get("cvar_95"', (Path(__file__).parent / src).read_text(), src)
+
     def test_the_rejected_ledger_producer_and_consumer_name_one_file(self):
         """New routed producer 2026-08-19: cit_director writes rejections.
 
@@ -9004,6 +9026,46 @@ class TestPoisonedCountersAreFloored(unittest.TestCase):
                    and not isinstance(r.get("times_seen"), bool)
                    and r["times_seen"] > s.TIMES_SEEN_CEILING]
             self.assertEqual([], bad, f"{name} still carries poisoned counters: {bad[:5]}")
+
+
+class TestConcurrentInboxSyncDoesNotRaceOnOneTmpFile(unittest.TestCase):
+    """Two SessionStart hooks fired together (a scheduled run + a live session)
+    and shared "<name>.tmp": one replace() moved the other's tmp away and the
+    loser raised FileNotFoundError on a Mac path — which the inbox then
+    reported as "could not reach the VM", truncated so the filename was gone.
+    """
+
+    def test_parallel_local_writes_all_succeed_and_leave_no_tmp(self):
+        import chairman_queue_sync as s
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as d:
+            errors = []
+
+            def write(i):
+                try:
+                    for _ in range(25):
+                        s._write_local("q.json", [{"id": i}])
+                except Exception as e:  # noqa: BLE001 — the race is the failure
+                    errors.append(e)
+
+            # threads stand in for processes: one pid per thread, as in prod
+            with mock.patch.object(s, "DATA", Path(d)), \
+                 mock.patch.object(s.os, "getpid", side_effect=threading.get_ident):
+                ts = [threading.Thread(target=write, args=(i,)) for i in range(8)]
+                [t.start() for t in ts]
+                [t.join() for t in ts]
+            self.assertEqual([], errors)
+            self.assertEqual(["q.json"], sorted(os.listdir(d)))
+
+    def test_a_local_file_error_is_not_reported_as_an_unreachable_vm(self):
+        import chairman_inbox as ci
+        from unittest import mock
+        err = FileNotFoundError(2, "No such file or directory",
+                                "/Users/x/Claude investment strategy/institutional-tracker/data/q.json.tmp")
+        with mock.patch("chairman_queue_sync.sync", side_effect=err):
+            msg = ci.reconcile()
+        self.assertNotIn("could not reach the VM", msg)
+        self.assertIn("q.json.tmp", msg, "the filename is the diagnosis; don't truncate it away")
 
 
 class TestSuppressionIsCheckedOnTheIdentityItWasDecidedOn(unittest.TestCase):
@@ -31198,7 +31260,8 @@ class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
         """A degraded 'which host am I' must not resolve to 'I own it all'."""
         with patch.object(self.fs, "_this_host", return_value=""):
             rep = self._run_isolated()
-        owned = [r for r, s in self.fs.MANIFEST.items() if s.get("owner")]
+        owned = [r for r, s in self.fs.MANIFEST.items()
+                 if s.get("owner") and r not in self._weekend_skipped()]
         self.assertEqual(rep["deferred_n"], len(owned),
                          "an unidentified host measured artifacts it cannot own")
 
@@ -31348,13 +31411,20 @@ class TestTheSentinelMeasuresOnTheHostThatOwns(unittest.TestCase):
 
     # ── helpers ───────────────────────────────────────────────────────────
     def _weekday_skips(self):
+        # run() applies the weekend skip BEFORE the ownership check, so on a
+        # weekend every weekdays_only entry is skipped — including ones another
+        # host owns, which therefore never reach `deferred`. This helper used to
+        # count only this host's entries and the unknown-host test ignored the
+        # skip entirely: both were green Mon-Fri and red every weekend, so the
+        # pre-push gate (only ever run on weekdays) never saw it. Found by the
+        # 2026-10-03 (Saturday) investigator run on the VM.
+        return len(self._weekend_skipped())
+
+    def _weekend_skipped(self):
         from datetime import datetime as _dt
         if _dt.now().weekday() in self.fs.MARKET_DAYS_ONLY:
-            return 0
-        host = self.fs._this_host()
-        return sum(1 for s in self.fs.MANIFEST.values()
-                   if s.get("weekdays_only")
-                   and (not s.get("owner") or s["owner"] == host))
+            return set()
+        return {r for r, s in self.fs.MANIFEST.items() if s.get("weekdays_only")}
 
     def _run_isolated(self, auto_fix=False):
         """run() against the real data dir but writing state/report to a temp dir.
